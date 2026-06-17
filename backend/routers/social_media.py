@@ -17,6 +17,7 @@ from backend.models.social_media import (
     TransformPostRequest,
 )
 from backend.services.agent_service import AgentService
+from backend.services.audit_service import AuditService
 from backend.services.external.facebook import FacebookService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
@@ -95,6 +96,16 @@ async def sync_posts(
                         await SocialMediaService.store_comment(supabase, simulation_id, stored_post["id"], c)
                         comments_count += 1
 
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "social_media_posts",
+        None,
+        "sync",
+        {"posts_synced": len(stored), "comments_synced": comments_count},
+    )
+
     return SuccessResponse(
         data=SocialSyncResponse(
             posts_synced=len(stored),
@@ -137,6 +148,16 @@ async def transform_post(
         },
     )
 
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "social_media_posts",
+        post_id,
+        "transform",
+        {"transformation_type": body.transformation_type},
+    )
+
     return SuccessResponse(data=updated)
 
 
@@ -177,6 +198,15 @@ async def analyze_sentiment(
         update_data["original_sentiment"] = sentiment_data
 
     updated = await SocialMediaService.update_post(supabase, simulation_id, post_id, update_data)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "social_media_posts",
+        post_id,
+        "analyze_sentiment",
+        {"target": "transformed" if transformed else "original"},
+    )
     return SuccessResponse(data=updated)
 
 
@@ -245,6 +275,15 @@ async def generate_reactions(
                 exc_info=True,
             )
 
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "social_media_posts",
+        post_id,
+        "generate_reactions",
+        {"reactions_generated": len(reactions), "agents_attempted": len(agents)},
+    )
     return SuccessResponse(data=reactions)
 
 

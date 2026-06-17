@@ -40,8 +40,19 @@ def _make_chain(execute_data=None, execute_count=None):
     """Create a mock Supabase query chain with all common methods."""
     c = MagicMock()
     for method in (
-        "select", "eq", "in_", "is_", "not_", "order", "limit",
-        "single", "maybe_single", "insert", "update", "delete", "upsert",
+        "select",
+        "eq",
+        "in_",
+        "is_",
+        "not_",
+        "order",
+        "limit",
+        "single",
+        "maybe_single",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
     ):
         getattr(c, method).return_value = c
     # Support `not_.is_(...)` attribute chaining (not_ is accessed as property)
@@ -92,7 +103,10 @@ class TestCreateProposal:
         ):
             with pytest.raises(HTTPException) as exc:
                 await AllianceService.create_proposal(
-                    sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                    sb,
+                    EPOCH_ID,
+                    TEAM_ID,
+                    PROPOSER_SIM_ID,
                 )
             assert exc.value.status_code == 400
             assert "reckoning" in exc.value.detail.lower()
@@ -112,7 +126,10 @@ class TestCreateProposal:
         ):
             with pytest.raises(HTTPException) as exc:
                 await AllianceService.create_proposal(
-                    sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                    sb,
+                    EPOCH_ID,
+                    TEAM_ID,
+                    PROPOSER_SIM_ID,
                 )
             assert exc.value.status_code == 404
             assert "not a participant" in exc.value.detail.lower()
@@ -121,10 +138,12 @@ class TestCreateProposal:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_rejects_if_proposer_already_has_team(self, mock_bls):
         """Proposer must be unaligned (no team_id)."""
-        participants_chain = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": str(uuid4()),  # already on a team
-        })
+        participants_chain = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": str(uuid4()),  # already on a team
+            }
+        )
 
         sb = _make_sb(table_map={"epoch_participants": participants_chain})
 
@@ -135,7 +154,10 @@ class TestCreateProposal:
         ):
             with pytest.raises(HTTPException) as exc:
                 await AllianceService.create_proposal(
-                    sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                    sb,
+                    EPOCH_ID,
+                    TEAM_ID,
+                    PROPOSER_SIM_ID,
                 )
             assert exc.value.status_code == 400
             assert "leave" in exc.value.detail.lower()
@@ -144,10 +166,12 @@ class TestCreateProposal:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_rejects_if_team_not_found(self, mock_bls):
         """Team must exist and not be dissolved."""
-        participants_chain = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": None,
-        })
+        participants_chain = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": None,
+            }
+        )
         teams_chain = _make_chain(execute_data=None)
 
         call_count = {"epoch_participants": 0}
@@ -172,7 +196,10 @@ class TestCreateProposal:
         ):
             with pytest.raises(HTTPException) as exc:
                 await AllianceService.create_proposal(
-                    sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                    sb,
+                    EPOCH_ID,
+                    TEAM_ID,
+                    PROPOSER_SIM_ID,
                 )
             assert exc.value.status_code == 404
             assert "not found" in exc.value.detail.lower()
@@ -181,21 +208,27 @@ class TestCreateProposal:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_rejects_if_team_full(self, mock_bls):
         """Team at max_team_size must reject new proposals."""
-        participants_proposer = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": None,
-        })
-        teams_chain = _make_chain(execute_data={
-            "id": str(TEAM_ID),
-            "name": "TestTeam",
-            "epoch_id": str(EPOCH_ID),
-        })
+        participants_proposer = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": None,
+            }
+        )
+        teams_chain = _make_chain(
+            execute_data={
+                "id": str(TEAM_ID),
+                "name": "TestTeam",
+                "epoch_id": str(EPOCH_ID),
+            }
+        )
         # Default max_team_size is 3, so 3 members = full
-        members_chain = _make_chain(execute_data=[
-            {"id": str(uuid4())},
-            {"id": str(uuid4())},
-            {"id": str(uuid4())},
-        ])
+        members_chain = _make_chain(
+            execute_data=[
+                {"id": str(uuid4())},
+                {"id": str(uuid4())},
+                {"id": str(uuid4())},
+            ]
+        )
 
         participant_call = {"n": 0}
 
@@ -219,7 +252,10 @@ class TestCreateProposal:
         ):
             with pytest.raises(HTTPException) as exc:
                 await AllianceService.create_proposal(
-                    sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                    sb,
+                    EPOCH_ID,
+                    TEAM_ID,
+                    PROPOSER_SIM_ID,
                 )
             assert exc.value.status_code == 400
             assert "full" in exc.value.detail.lower()
@@ -238,19 +274,21 @@ class TestCreateProposal:
             "status": "accepted",
         }
 
-        participants_proposer = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": None,
-        })
-        teams_chain = _make_chain(execute_data={
-            "id": str(TEAM_ID),
-            "name": "SoloTeam",
-            "epoch_id": str(EPOCH_ID),
-        })
+        participants_proposer = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": None,
+            }
+        )
+        teams_chain = _make_chain(
+            execute_data={
+                "id": str(TEAM_ID),
+                "name": "SoloTeam",
+                "epoch_id": str(EPOCH_ID),
+            }
+        )
         # 1 member = solo team
         members_chain = _make_chain(execute_data=[{"id": str(uuid4())}])
-        # update chain for setting team_id on participant
-        update_chain = _make_chain(execute_data=[{"id": str(PARTICIPANT_ID)}])
         # insert proposal chain
         insert_chain = _make_chain(execute_data=[proposal_record])
 
@@ -261,9 +299,7 @@ class TestCreateProposal:
                 participant_call["n"] += 1
                 if participant_call["n"] == 1:
                     return participants_proposer  # proposer lookup
-                if participant_call["n"] == 2:
-                    return members_chain  # member count
-                return update_chain  # update team_id
+                return members_chain  # member count
             if name == "epoch_teams":
                 return teams_chain
             if name == "epoch_alliance_proposals":
@@ -273,18 +309,41 @@ class TestCreateProposal:
         sb = MagicMock()
         sb.table.side_effect = table_router
 
-        with patch(
-            "backend.services.epoch_service.EpochService.get",
-            new_callable=AsyncMock,
-            return_value=EPOCH_DATA_COMPETITION,
+        # The solo-team join now goes through fn_join_team_checked on the admin
+        # client (True = joined). Stub the admin client + RPC.
+        admin_mock = MagicMock()
+        admin_mock.rpc.return_value = _make_chain(execute_data=True)
+
+        with (
+            patch(
+                "backend.services.epoch_service.EpochService.get",
+                new_callable=AsyncMock,
+                return_value=EPOCH_DATA_COMPETITION,
+            ),
+            patch(
+                "backend.services.alliance_service.get_admin_supabase_client",
+                new_callable=AsyncMock,
+                return_value=admin_mock,
+            ),
         ):
             result = await AllianceService.create_proposal(
-                sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                sb,
+                EPOCH_ID,
+                TEAM_ID,
+                PROPOSER_SIM_ID,
             )
 
         assert result["status"] == "accepted"
+        # The atomic join RPC was invoked with the team-size cap.
+        admin_mock.rpc.assert_called_once()
+        assert admin_mock.rpc.call_args[0][0] == "fn_join_team_checked"
         mock_bls.log_alliance_proposal_resolved.assert_awaited_once_with(
-            sb, EPOCH_ID, 5, PROPOSER_SIM_ID, "SoloTeam", "accepted",
+            sb,
+            EPOCH_ID,
+            5,
+            PROPOSER_SIM_ID,
+            "SoloTeam",
+            "accepted",
         )
 
     @pytest.mark.asyncio
@@ -302,20 +361,26 @@ class TestCreateProposal:
             "expires_at_cycle": 7,
         }
 
-        participants_proposer = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": None,
-        })
-        teams_chain = _make_chain(execute_data={
-            "id": str(TEAM_ID),
-            "name": "MultiTeam",
-            "epoch_id": str(EPOCH_ID),
-        })
+        participants_proposer = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": None,
+            }
+        )
+        teams_chain = _make_chain(
+            execute_data={
+                "id": str(TEAM_ID),
+                "name": "MultiTeam",
+                "epoch_id": str(EPOCH_ID),
+            }
+        )
         # 2 members = needs vote
-        members_chain = _make_chain(execute_data=[
-            {"id": str(uuid4())},
-            {"id": str(uuid4())},
-        ])
+        members_chain = _make_chain(
+            execute_data=[
+                {"id": str(uuid4())},
+                {"id": str(uuid4())},
+            ]
+        )
         insert_chain = _make_chain(execute_data=[proposal_record])
 
         participant_call = {"n": 0}
@@ -341,13 +406,20 @@ class TestCreateProposal:
             return_value=EPOCH_DATA_COMPETITION,
         ):
             result = await AllianceService.create_proposal(
-                sb, EPOCH_ID, TEAM_ID, PROPOSER_SIM_ID,
+                sb,
+                EPOCH_ID,
+                TEAM_ID,
+                PROPOSER_SIM_ID,
             )
 
         assert result["status"] == "pending"
         assert result["expires_at_cycle"] == 7
         mock_bls.log_alliance_proposal.assert_awaited_once_with(
-            sb, EPOCH_ID, 5, PROPOSER_SIM_ID, "MultiTeam",
+            sb,
+            EPOCH_ID,
+            5,
+            PROPOSER_SIM_ID,
+            "MultiTeam",
         )
 
 
@@ -361,16 +433,22 @@ class TestInviteToTeam:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_rejects_if_inviter_not_on_team(self, mock_bls):
         """Inviter must be a member of the target team."""
-        inviter_chain = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": str(uuid4()),  # different team
-        })
+        inviter_chain = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": str(uuid4()),  # different team
+            }
+        )
 
         sb = _make_sb(table_map={"epoch_participants": inviter_chain})
 
         with pytest.raises(HTTPException) as exc:
             await AllianceService.invite_to_team(
-                sb, EPOCH_ID, TEAM_ID, INVITER_SIM_ID, TARGET_SIM_ID,
+                sb,
+                EPOCH_ID,
+                TEAM_ID,
+                INVITER_SIM_ID,
+                TARGET_SIM_ID,
             )
         assert exc.value.status_code == 403
         assert "member of this team" in exc.value.detail.lower()
@@ -379,27 +457,37 @@ class TestInviteToTeam:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_delegates_to_create_proposal(self, mock_bls):
         """After inviter validation, delegates to create_proposal with target as proposer."""
-        inviter_chain = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": str(TEAM_ID),
-        })
+        inviter_chain = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": str(TEAM_ID),
+            }
+        )
 
         sb = _make_sb(table_map={"epoch_participants": inviter_chain})
 
         expected_result = {"id": str(PROPOSAL_ID), "status": "pending"}
 
         with patch.object(
-            AllianceService, "create_proposal",
+            AllianceService,
+            "create_proposal",
             new_callable=AsyncMock,
             return_value=expected_result,
         ) as mock_create:
             result = await AllianceService.invite_to_team(
-                sb, EPOCH_ID, TEAM_ID, INVITER_SIM_ID, TARGET_SIM_ID,
+                sb,
+                EPOCH_ID,
+                TEAM_ID,
+                INVITER_SIM_ID,
+                TARGET_SIM_ID,
             )
 
         assert result == expected_result
         mock_create.assert_awaited_once_with(
-            sb, EPOCH_ID, TEAM_ID, TARGET_SIM_ID,
+            sb,
+            EPOCH_ID,
+            TEAM_ID,
+            TARGET_SIM_ID,
         )
 
 
@@ -418,7 +506,10 @@ class TestVoteOnProposal:
 
         with pytest.raises(HTTPException) as exc:
             await AllianceService.vote_on_proposal(
-                sb, PROPOSAL_ID, VOTER_SIM_ID, "accept",
+                sb,
+                PROPOSAL_ID,
+                VOTER_SIM_ID,
+                "accept",
             )
         assert exc.value.status_code == 404
         assert "not found" in exc.value.detail.lower()
@@ -427,19 +518,24 @@ class TestVoteOnProposal:
     @patch("backend.services.alliance_service.BattleLogService")
     async def test_rejects_if_proposal_already_resolved(self, mock_bls):
         """Already accepted/rejected proposal raises 400."""
-        proposal_chain = _make_chain(execute_data={
-            "id": str(PROPOSAL_ID),
-            "epoch_id": str(EPOCH_ID),
-            "team_id": str(TEAM_ID),
-            "proposer_simulation_id": str(PROPOSER_SIM_ID),
-            "status": "accepted",
-        })
+        proposal_chain = _make_chain(
+            execute_data={
+                "id": str(PROPOSAL_ID),
+                "epoch_id": str(EPOCH_ID),
+                "team_id": str(TEAM_ID),
+                "proposer_simulation_id": str(PROPOSER_SIM_ID),
+                "status": "accepted",
+            }
+        )
 
         sb = _make_sb(table_map={"epoch_alliance_proposals": proposal_chain})
 
         with pytest.raises(HTTPException) as exc:
             await AllianceService.vote_on_proposal(
-                sb, PROPOSAL_ID, VOTER_SIM_ID, "accept",
+                sb,
+                PROPOSAL_ID,
+                VOTER_SIM_ID,
+                "accept",
             )
         assert exc.value.status_code == 400
         assert "already accepted" in exc.value.detail.lower()
@@ -456,10 +552,12 @@ class TestVoteOnProposal:
             "status": "pending",
         }
         proposal_chain = _make_chain(execute_data=proposal_data)
-        voter_chain = _make_chain(execute_data={
-            "id": str(PARTICIPANT_ID),
-            "team_id": str(uuid4()),  # different team
-        })
+        voter_chain = _make_chain(
+            execute_data={
+                "id": str(PARTICIPANT_ID),
+                "team_id": str(uuid4()),  # different team
+            }
+        )
 
         def table_router(name):
             if name == "epoch_alliance_proposals":
@@ -473,7 +571,10 @@ class TestVoteOnProposal:
 
         with pytest.raises(HTTPException) as exc:
             await AllianceService.vote_on_proposal(
-                sb, PROPOSAL_ID, VOTER_SIM_ID, "accept",
+                sb,
+                PROPOSAL_ID,
+                VOTER_SIM_ID,
+                "accept",
             )
         assert exc.value.status_code == 403
         assert "team members" in exc.value.detail.lower()
@@ -521,7 +622,10 @@ class TestVoteOnProposal:
         sb.table.side_effect = table_router
 
         result = await AllianceService.vote_on_proposal(
-            sb, PROPOSAL_ID, VOTER_SIM_ID, "accept",
+            sb,
+            PROPOSAL_ID,
+            VOTER_SIM_ID,
+            "accept",
         )
 
         assert result["vote"] == "accept"
@@ -578,7 +682,10 @@ class TestVoteOnProposal:
             return_value=EPOCH_DATA_COMPETITION,
         ):
             result = await AllianceService.vote_on_proposal(
-                sb, PROPOSAL_ID, VOTER_SIM_ID, "accept",
+                sb,
+                PROPOSAL_ID,
+                VOTER_SIM_ID,
+                "accept",
             )
 
         assert result["vote"] == "accept"
@@ -646,7 +753,9 @@ class TestListProposals:
         sb = _make_sb(table_map={"epoch_alliance_proposals": proposals_chain})
 
         await AllianceService.list_proposals(
-            sb, EPOCH_ID, status_filter="pending",
+            sb,
+            EPOCH_ID,
+            status_filter="pending",
         )
 
         proposals_chain.eq.assert_any_call("status", "pending")
@@ -716,10 +825,20 @@ class TestDeductUpkeep:
         )
         assert mock_bls.log_alliance_upkeep.await_count == 2
         mock_bls.log_alliance_upkeep.assert_any_await(
-            sb, EPOCH_ID, 5, "Alpha", 2, 3,
+            sb,
+            EPOCH_ID,
+            5,
+            "Alpha",
+            2,
+            3,
         )
         mock_bls.log_alliance_upkeep.assert_any_await(
-            sb, EPOCH_ID, 5, "Bravo", 3, 2,
+            sb,
+            EPOCH_ID,
+            5,
+            "Bravo",
+            3,
+            2,
         )
 
     @pytest.mark.asyncio
@@ -763,7 +882,12 @@ class TestComputeTension:
 
         assert len(result) == 1
         mock_bls.log_tension_change.assert_awaited_once_with(
-            sb, EPOCH_ID, 5, "TenseTeam", 20, 40,
+            sb,
+            EPOCH_ID,
+            5,
+            "TenseTeam",
+            20,
+            40,
         )
         mock_bls.log_tension_dissolution.assert_not_awaited()
 
@@ -787,10 +911,12 @@ class TestComputeTension:
             },
         ]
 
-        members_chain = _make_chain(execute_data=[
-            {"simulation_id": sim_a},
-            {"simulation_id": sim_b},
-        ])
+        members_chain = _make_chain(
+            execute_data=[
+                {"simulation_id": sim_a},
+                {"simulation_id": sim_b},
+            ]
+        )
 
         rpc_chain = _make_chain(execute_data=tension_results)
 
@@ -803,10 +929,19 @@ class TestComputeTension:
         assert len(result) == 1
         # Tension increased so log_tension_change should be called
         mock_bls.log_tension_change.assert_awaited_once_with(
-            sb, EPOCH_ID, 5, "BrokenTeam", 80, 100,
+            sb,
+            EPOCH_ID,
+            5,
+            "BrokenTeam",
+            80,
+            100,
         )
         mock_bls.log_tension_dissolution.assert_awaited_once_with(
-            sb, EPOCH_ID, 5, "BrokenTeam", [sim_a, sim_b],
+            sb,
+            EPOCH_ID,
+            5,
+            "BrokenTeam",
+            [sim_a, sim_b],
         )
 
     @pytest.mark.asyncio
@@ -846,12 +981,13 @@ class TestClearDissolvedTeamIds:
         dissolved_team_a = str(uuid4())
         dissolved_team_b = str(uuid4())
 
-        teams_chain = _make_chain(execute_data=[
-            {"id": dissolved_team_a},
-            {"id": dissolved_team_b},
-        ])
+        teams_chain = _make_chain(
+            execute_data=[
+                {"id": dissolved_team_a},
+                {"id": dissolved_team_b},
+            ]
+        )
         update_chain = _make_chain(execute_data=[])
-
 
         def table_router(name):
             if name == "epoch_teams":
@@ -928,7 +1064,10 @@ class TestDissolveTeam:
             return_value=EPOCH_DATA_COMPETITION,
         ):
             await AllianceService.dissolve_team(
-                sb, EPOCH_ID, TEAM_ID, "tension_max",
+                sb,
+                EPOCH_ID,
+                TEAM_ID,
+                "tension_max",
             )
 
         # Team was updated with dissolved fields

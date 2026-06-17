@@ -45,6 +45,7 @@ from backend.models.journal import (
     CrystallizeResult,
     FragmentResponse,
 )
+from backend.services.audit_service import AuditService
 from backend.services.journal.attunement_service import AttunementService
 from backend.services.journal.constellation_service import ConstellationService
 from backend.services.journal.fragment_service import FragmentService
@@ -62,10 +63,20 @@ router = APIRouter(prefix="/api/v1/journal", tags=["resonance-journal"])
 
 
 _VALID_SOURCE_TYPES = {
-    "dungeon", "epoch", "simulation", "bond", "achievement", "bleed",
+    "dungeon",
+    "epoch",
+    "simulation",
+    "bond",
+    "achievement",
+    "bleed",
 }
 _VALID_FRAGMENT_TYPES = {
-    "imprint", "signature", "echo", "impression", "mark", "tremor",
+    "imprint",
+    "signature",
+    "echo",
+    "impression",
+    "mark",
+    "tremor",
 }
 _VALID_RARITIES = {"common", "uncommon", "rare", "singular"}
 
@@ -188,6 +199,15 @@ async def create_constellation(
         name_de=body.name_de,
         name_en=body.name_en,
     )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        data.id,
+        "create",
+        {"name_de": body.name_de, "name_en": body.name_en},
+    )
     return SuccessResponse(data=data)
 
 
@@ -205,6 +225,15 @@ async def rename_constellation(
         name_de=body.name_de,
         name_en=body.name_en,
     )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        constellation_id,
+        "rename",
+        {"name_de": body.name_de, "name_en": body.name_en},
+    )
     return SuccessResponse(data=data)
 
 
@@ -215,6 +244,14 @@ async def archive_constellation(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConstellationResponse]:
     data = await ConstellationService.archive(supabase, user.id, constellation_id)
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        constellation_id,
+        "archive",
+    )
     return SuccessResponse(data=data)
 
 
@@ -240,6 +277,15 @@ async def place_fragment(
         position_x=body.position_x,
         position_y=body.position_y,
     )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        constellation_id,
+        "place_fragment",
+        {"fragment_id": str(body.fragment_id)},
+    )
     return SuccessResponse(data=data)
 
 
@@ -255,6 +301,15 @@ async def remove_fragment(
         user.id,
         constellation_id,
         fragment_id,
+    )
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        constellation_id,
+        "remove_fragment",
+        {"fragment_id": str(fragment_id)},
     )
     return SuccessResponse(data=data)
 
@@ -299,6 +354,15 @@ async def crystallize_constellation(
     except InsightGenerationError as err:
         # 502 Bad Gateway — the upstream LLM failed transiently.
         raise HTTPException(status_code=502, detail=f"insight generation failed: {err}") from err
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "journal_constellations",
+        constellation_id,
+        "crystallize",
+        {"unlocked_attunement": data.newly_unlocked_attunement is not None},
+    )
     return SuccessResponse(data=data)
 
 

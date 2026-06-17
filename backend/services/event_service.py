@@ -19,6 +19,7 @@ from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -443,6 +444,12 @@ class EventService(BaseService):
         """
         await GameMechanicsService.refresh_metrics(supabase)
 
+        # narrative_arcs + building_condition are service-role-managed (RLS grants
+        # authenticated only SELECT; fn_degrade_building is service_role-only since
+        # migration 258), so the heartbeat enrichment below runs on the admin
+        # client. Surrounding RLS-scoped reads stay on the user `supabase` client.
+        admin = await get_admin_supabase_client()
+
         # ── Heartbeat integration: attach new events to matching arcs ──
         try:
             _resp = await (
@@ -472,17 +479,13 @@ class EventService(BaseService):
                         if sig in tags:
                             existing_ids = arc.get("source_event_ids") or []
                             if event["id"] not in existing_ids:
-                                existing_ids.append(event["id"])
-                                await (
-                                    supabase.table("narrative_arcs")
-                                    .update(
-                                        {
-                                            "source_event_ids": existing_ids,
-                                        }
-                                    )
-                                    .eq("id", arc["id"])
-                                    .execute()
-                                )
+                                # Atomic dedup-append (migration 259) — the RPC's
+                                # NOT (... = ANY(...)) guard is the race-free dedup;
+                                # the snapshot check above is just a cheap pre-filter.
+                                await admin.rpc(
+                                    "fn_arc_attach_event",
+                                    {"p_arc_id": arc["id"], "p_event_id": event["id"]},
+                                ).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError):
             logger.debug("Heartbeat arc attachment unavailable")
 
@@ -542,11 +545,16 @@ class EventService(BaseService):
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.debug("Warding check unavailable", exc_info=True)
 
-                degradation = await PlatformConfigService.get(
-                    supabase,
-                    "heartbeat_building_crisis_degradation",
-                    0.10,
-                )
+                # Degrade by one enum step (good->moderate->poor->ruined) via the
+                # atomic fn_degrade_building RPC (migration 148). It carries a
+                # WHERE building_condition = v_old compare-and-swap, so concurrent
+                # crisis events can no longer lose-update, and it keeps the column
+                # the TEXT enum every other consumer expects — the previous Python
+                # float read-modify-write both raced AND wrote numeric strings
+                # ("0.9") into a TEXT column, permanently breaking the enum CASE,
+                # condition filtering, and codex/Forge rendering. fn_degrade_building
+                # is service_role-only since migration 258, so it runs on the admin
+                # client; the surrounding reads stay on the RLS-scoped user client.
                 for ev in crisis_events:
                     _resp = await (
                         supabase.table("event_zone_links").select("zone_id").eq("event_id", ev["id"]).execute()
@@ -556,37 +564,31 @@ class EventService(BaseService):
                     if zone_ids:
                         _resp = await (
                             supabase.table("buildings")
-                            .select("id, building_condition")
+                            .select("id")
                             .eq("simulation_id", str(simulation_id))
                             .in_("zone_id", zone_ids)
                             .is_("deleted_at", "null")
                             .execute()
                         )
                         buildings = extract_list(_resp)
+                        degraded = 0
                         for bldg in buildings:
                             if "__all__" in protected_building_ids or bldg["id"] in protected_building_ids:
                                 continue  # Building protected by elemental warding
-                            old_cond = float(bldg.get("building_condition") or 1.0)
-                            new_cond = round(max(0.0, old_cond - degradation), 4)
-                            if new_cond < old_cond:
-                                await (
-                                    supabase.table("buildings")
-                                    .update(
-                                        {
-                                            "building_condition": new_cond,
-                                        }
-                                    )
-                                    .eq("id", bldg["id"])
-                                    .execute()
-                                )
+                            degrade_resp = await admin.rpc(
+                                "fn_degrade_building",
+                                {"p_building_id": bldg["id"]},
+                            ).execute()
+                            if (degrade_resp.data or {}).get("changed"):
+                                degraded += 1
                         logger.info(
-                            "Crisis event degraded %d building(s) by %.2f",
+                            "Crisis event degraded %d of %d building(s) by one condition step",
+                            degraded,
                             len(buildings),
-                            degradation,
                             extra={
                                 "simulation_id": str(simulation_id),
                                 "event_id": ev["id"],
-                                "buildings_affected": len(buildings),
+                                "buildings_affected": degraded,
                             },
                         )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):

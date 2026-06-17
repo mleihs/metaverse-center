@@ -24,6 +24,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -35,49 +36,40 @@ DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 _SWEEP_INTERVAL = 30  # seconds
 
 
-class EpochCycleScheduler:
-    """Periodic background task that auto-resolves epoch cycles at deadline."""
+class EpochCycleScheduler(BaseSchedulerMixin):
+    """Periodic background task that auto-resolves epoch cycles at deadline.
 
-    _task: asyncio.Task | None = None
+    The 30s polling sweep is the durability safety net; it inherits the resilient
+    run-loop from BaseSchedulerMixin (the silent-tick-death guard + tagged Sentry
+    capture). The eager-timer subsystem (sub-second precision for known deadlines)
+    is epoch-cycle-specific and layered on top via the start() override.
+    Previously this class hand-rolled the same loop with an untagged
+    capture_exception in the middle clause.
+    """
+
+    _scheduler_name = "epoch_cycle"
     _eager_timers: dict[str, asyncio.Task] = {}
 
     # ── Lifecycle ────────────────────────────────────────────
 
     @classmethod
     async def start(cls) -> asyncio.Task:
-        """Launch the scheduler. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_sweep_loop())
+        """Launch the sweep loop (via the mixin) + seed eager timers."""
+        task = await super().start()
         await cls._seed_eager_timers()
-        logger.info("Epoch cycle scheduler started")
-        return cls._task
-
-    # ── Sweep Loop (Safety Net) ──────────────────────────────
+        return task
 
     @classmethod
-    async def _run_sweep_loop(cls) -> None:
-        """Infinite loop: sleep 30s → check for expired deadlines."""
-        while True:
-            try:
-                admin = await get_admin_supabase()
-                await cls._sweep_expired_cycles(admin)
-            except asyncio.CancelledError:
-                logger.info("Epoch cycle scheduler shutting down")
-                raise
-            except (httpx.ConnectError, httpx.ConnectTimeout):
-                logger.warning("Epoch cycle scheduler: database unavailable, retrying in %ds", _SWEEP_INTERVAL)
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception("Epoch cycle scheduler sweep error")
-                sentry_sdk.capture_exception(exc)
-            except Exception as exc:
-                # Last-resort guard: an unexpected exception type must not kill the sweep loop —
-                # a propagating exception ends the task (silent stop while /health stays 200).
-                # Report and keep looping.
-                logger.exception("Epoch cycle scheduler sweep: unexpected error, continuing")
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("service", "EpochCycleScheduler")
-                    scope.set_tag("phase", "scheduler_loop_unexpected")
-                    sentry_sdk.capture_exception(exc)
-            await asyncio.sleep(_SWEEP_INTERVAL)
+    async def _load_config(cls, admin: Client) -> dict:
+        """Sweep runs unconditionally on a fixed interval (no platform_settings gate)."""
+        return {"enabled": True, "interval": _SWEEP_INTERVAL}
+
+    @classmethod
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One sweep tick: resolve any epochs whose deadline has passed."""
+        await cls._sweep_expired_cycles(admin)
+
+    # ── Sweep (Safety Net) ───────────────────────────────────
 
     @classmethod
     async def _sweep_expired_cycles(cls, admin: Client) -> None:

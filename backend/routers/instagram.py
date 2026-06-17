@@ -19,7 +19,6 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from backend.dependencies import get_admin_supabase, require_platform_admin
@@ -41,6 +40,11 @@ from backend.services.audit_service import AuditService
 from backend.services.external.instagram import InstagramService
 from backend.services.instagram_content_service import InstagramContentService
 from backend.services.instagram_scheduler import InstagramScheduler
+from backend.services.social.scheduler_base import (
+    PostNotPublishableError,
+    PublishFailedError,
+    SocialCredentialsError,
+)
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -50,23 +54,6 @@ router = APIRouter(
     prefix="/api/v1/admin/instagram",
     tags=["Instagram"],
 )
-
-
-# ── Helpers ────────────────────────────────────────────────────────────
-
-
-async def _get_instagram_service(admin_supabase: Client) -> InstagramService:
-    """Load Instagram credentials and return a configured service client."""
-    config = await InstagramContentService.load_instagram_credentials(admin_supabase)
-    if not config["access_token"] or not config["ig_user_id"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Instagram credentials not configured.",
-        )
-    return InstagramService(
-        access_token=config["access_token"],
-        ig_user_id=config["ig_user_id"],
-    )
 
 
 # ── Queue Management ────────────────────────────────────────────────────
@@ -305,41 +292,11 @@ async def force_publish(
         },
     )
 
-    post = await InstagramContentService.get_post(admin_supabase, post_id)
-
-    if post["status"] not in ("draft", "scheduled"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot publish post with status '{post['status']}'.",
-        )
-
-    ig = await _get_instagram_service(admin_supabase)
-
     try:
-        await InstagramScheduler.publish_post(admin_supabase, ig, post)
-    except Exception as exc:
-        logger.exception(
-            "Force-publish failed",
-            extra={
-                "post_id": str(post_id),
-                "user_id": str(user.id),
-            },
-        )
-        with sentry_sdk.push_scope() as scope:
-            scope.set_tag("instagram_phase", "force_publish")
-            scope.set_context(
-                "instagram",
-                {
-                    "post_id": str(post_id),
-                    "user_id": str(user.id),
-                },
-            )
-            sentry_sdk.capture_exception(exc)
-        await InstagramContentService.reset_post_status(
-            admin_supabase,
-            str(post_id),
-            f"Force-publish failed: {str(exc)[:300]}",
-        )
+        updated = await InstagramScheduler.force_publish_post(admin_supabase, post_id, actor_id=user.id)
+    except (PostNotPublishableError, SocialCredentialsError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except PublishFailedError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"Force-publish failed: {str(exc)[:200]}",
@@ -355,7 +312,6 @@ async def force_publish(
         {"action": "force_publish"},
     )
 
-    updated = await InstagramContentService.get_post(admin_supabase, post_id)
     return SuccessResponse(data=updated)
 
 

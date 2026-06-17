@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import UTC, datetime
 from uuid import UUID
@@ -174,12 +173,16 @@ class DossierEvolutionService:
             )
             addendum = result.output if isinstance(result.output, str) else str(result.output)
 
-            # 5. Append to existing body
+            # 5. Build the English addendum + separator. The concatenation onto
+            # the live body happens server-side in fn_record_dossier_evolution
+            # (migration 262), not here, so concurrent evolutions can't clobber.
             separator = "\n\n─── BUREAU ADDENDUM ───\n\n"
-            updated_body = section["body"] + separator + addendum
 
-            # 5b. Translate addendum and append to body_de
-            updated_body_de = section.get("body_de") or ""
+            # 5b. Translate the addendum for body_de. Default to the English
+            # fallback (so body_de never falls behind) and override the separator
+            # + text only on a successful translation.
+            body_de_separator = separator
+            addendum_de = addendum
             try:
                 context = TranslationContext(
                     simulation_name=sim_name,
@@ -197,49 +200,32 @@ class DossierEvolutionService:
                     context=context,
                     openrouter_key=openrouter_key,
                 )
-                separator_de = "\n\n─── BUREAU-NACHTRAG ───\n\n"
-                updated_body_de = updated_body_de + separator_de + addendum_de
+                body_de_separator = "\n\n─── BUREAU-NACHTRAG ───\n\n"
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception("Dossier addendum translation failed, English only")
-                # Fallback: append English so body_de doesn't fall behind
-                updated_body_de = updated_body_de + separator + addendum
 
-            now = datetime.now(UTC).isoformat()
             log_entry = {
                 "trigger": trigger,
                 "entity": entity_name,
-                "timestamp": now,
+                "timestamp": datetime.now(UTC).isoformat(),
                 "words_added": len(addendum.split()),
             }
 
-            # Fetch current evolution_log
-            log_resp = await (
-                admin_supabase.table("simulation_lore")
-                .select("evolution_log")
-                .eq("id", section["id"])
-                .single()
-                .execute()
-            )
-            current_log = log_resp.data.get("evolution_log") or []
-            if isinstance(current_log, str):
-                current_log = json.loads(current_log)
-            current_log.append(log_entry)
-
-            # Update section
-            await (
-                admin_supabase.table("simulation_lore")
-                .update(
-                    {
-                        "body": updated_body,
-                        "body_de": updated_body_de,
-                        "evolved_at": now,
-                        "evolution_count": evolution_count + 1,
-                        "evolution_log": current_log,
-                    }
-                )
-                .eq("id", section["id"])
-                .execute()
-            )
+            # Atomic evolution: body/body_de concatenation, evolution_count
+            # increment, and evolution_log append all happen server-side on the
+            # live row in one statement (fn_record_dossier_evolution, migration
+            # 262) -- no stale read-modify-write, no lost concurrent evolution.
+            await admin_supabase.rpc(
+                "fn_record_dossier_evolution",
+                {
+                    "p_section_id": section["id"],
+                    "p_body_separator": separator,
+                    "p_addendum": addendum,
+                    "p_body_de_separator": body_de_separator,
+                    "p_addendum_de": addendum_de,
+                    "p_log_entry": log_entry,
+                },
+            ).execute()
 
             logger.info(
                 "Dossier section evolved",

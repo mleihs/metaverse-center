@@ -12,6 +12,7 @@ import time
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.settings import decrypt_setting
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -47,17 +48,8 @@ async def _load_all(admin_supabase: Client) -> None:
             if not raw:
                 new_cache[key] = None
                 continue
-            # Decrypt if encrypted
-            if raw.startswith("gAAAAA"):
-                try:
-                    from backend.utils.encryption import decrypt
-
-                    new_cache[key] = decrypt(raw)
-                except (ValueError, Exception):
-                    logger.warning("Failed to decrypt platform key '%s'", key)
-                    new_cache[key] = None
-            else:
-                new_cache[key] = raw
+            # Decrypt if encrypted; preserve None on failure (cache is str | None)
+            new_cache[key] = decrypt_setting(raw) or None
         _cache = new_cache
         _cache_loaded_at = time.monotonic()
     except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):

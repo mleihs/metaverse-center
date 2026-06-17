@@ -10,6 +10,7 @@ invariants live in one place.
 
 from __future__ import annotations
 
+import json
 import logging
 from uuid import UUID
 
@@ -91,16 +92,46 @@ async def load_platform_settings(
     settings_map: dict[str, str] = {}
     try:
         resp = await (
-            admin.table("platform_settings")
-            .select("setting_key, setting_value")
-            .in_("setting_key", keys)
-            .execute()
+            admin.table("platform_settings").select("setting_key, setting_value").in_("setting_key", keys).execute()
         )
         for row in extract_list(resp):
             settings_map[row["setting_key"]] = row["setting_value"]
     except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
         logger.warning("Failed to load platform settings for keys %s", keys, exc_info=True)
 
+    return settings_map
+
+
+async def load_settings_with_description(admin: Client, keys: list[str]) -> dict[str, dict]:
+    """Load platform_settings rows as ``{key: {"value": str, "description": str}}``.
+
+    Like ``load_platform_settings`` but also carries each row's ``description`` and
+    coerces the jsonb ``setting_value`` to the string shape the admin Platform-
+    settings UI renders: dict/list -> JSON text, bool -> "true"/"false", other
+    non-null -> ``str(...)``, null -> "". Shared by the Instagram + Bluesky
+    pipeline-settings readers (their ``get_pipeline_settings`` were byte-identical).
+    """
+    resp = await (
+        admin.table("platform_settings")
+        .select("setting_key, setting_value, description")
+        .in_("setting_key", keys)
+        .execute()
+    )
+    settings_map: dict[str, dict] = {}
+    for row in extract_list(resp):
+        raw = row["setting_value"]
+        if isinstance(raw, dict | list):
+            value = json.dumps(raw)
+        elif isinstance(raw, bool):
+            value = "true" if raw else "false"
+        elif raw is not None:
+            value = str(raw)
+        else:
+            value = ""
+        settings_map[row["setting_key"]] = {
+            "value": value,
+            "description": row.get("description", ""),
+        }
     return settings_map
 
 
@@ -129,8 +160,4 @@ async def upsert_platform_setting(
     }
     if updated_by_id is not None:
         row["updated_by_id"] = str(updated_by_id)
-    await (
-        admin.table("platform_settings")
-        .upsert(row, on_conflict="setting_key")
-        .execute()
-    )
+    await admin.table("platform_settings").upsert(row, on_conflict="setting_key").execute()
