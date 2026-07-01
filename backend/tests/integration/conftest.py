@@ -118,30 +118,57 @@ def test_user_ids(admin_client: Client) -> list[UUID]:
     """
     import httpx
 
+    def _extract_uid(payload: object) -> str | None:
+        """Pull a user id out of a signup/token response, tolerating shapes.
+
+        Signup returns the user at the top level or nested under ``user``;
+        the token endpoint nests it under ``user``. Error responses (e.g.
+        ``{"message": "..."}``) carry no id and yield ``None``.
+        """
+        if not isinstance(payload, dict):
+            return None
+        candidate = payload.get("user")
+        if not isinstance(candidate, dict):
+            candidate = payload
+        uid = candidate.get("id")
+        return uid if isinstance(uid, str) else None
+
     user_ids: list[UUID] = []
     for i in range(1, 5):
         email = f"gamedb-test-{i}@test.velgarien.dev"
-        resp = httpx.post(
-            f"{settings.supabase_url}/auth/v1/signup",
-            json={"email": email, "password": "gamedb-test-pass-123"},
-            headers={"apikey": settings.supabase_anon_key},
-            timeout=5.0,
-        )
-        data = resp.json()
-        # signup returns user on both create and "already registered"
-        uid = data.get("user", data).get("id")
-        if uid:
-            user_ids.append(UUID(uid))
-        else:
-            # User exists, sign in to get ID
-            resp2 = httpx.post(
-                f"{settings.supabase_url}/auth/v1/token?grant_type=password",
-                json={"email": email, "password": "gamedb-test-pass-123"},
-                headers={"apikey": settings.supabase_anon_key},
+        creds = {"email": email, "password": "gamedb-test-pass-123"}
+        headers = {"apikey": settings.supabase_anon_key}
+        try:
+            resp = httpx.post(
+                f"{settings.supabase_url}/auth/v1/signup",
+                json=creds,
+                headers=headers,
                 timeout=5.0,
             )
-            data2 = resp2.json()
-            user_ids.append(UUID(data2["user"]["id"]))
+            # signup returns user on both create and "already registered"
+            uid = _extract_uid(resp.json())
+            if uid is None:
+                # User exists (or signup suppressed the body) — sign in for the ID.
+                resp = httpx.post(
+                    f"{settings.supabase_url}/auth/v1/token?grant_type=password",
+                    json=creds,
+                    headers=headers,
+                    timeout=5.0,
+                )
+                uid = _extract_uid(resp.json())
+        except httpx.HTTPError as e:
+            pytest.skip(f"Supabase auth service unavailable ({email}): {e}")
+
+        if uid is None:
+            # Auth reachable but couldn't yield an id (e.g. 503 "name
+            # resolution failed", email confirmation required). Skip
+            # rather than raise a cryptic KeyError — the response body
+            # tells us why.
+            pytest.skip(
+                f"Could not resolve test auth user {email} "
+                f"(HTTP {resp.status_code}): {resp.text[:200]}"
+            )
+        user_ids.append(UUID(uid))
 
     return user_ids
 
