@@ -488,12 +488,17 @@ class TestDataIsolation:
 
             from backend.dependencies import get_supabase
 
-            await get_supabase(user=user_a)
-
-            # Verify the client had set_session called with user_a's token
-            mock_client.auth.set_session.assert_called_once_with(
-                user_a.access_token, ""
-            )
+            # get_supabase is a yield-dependency (async generator): drive it
+            # to the yield to run setup, then close it to run teardown.
+            gen = get_supabase(user=user_a)
+            await gen.__anext__()
+            try:
+                # Verify the client had set_session called with user_a's token
+                mock_client.auth.set_session.assert_called_once_with(
+                    user_a.access_token, ""
+                )
+            finally:
+                await gen.aclose()
 
     def test_require_role_queries_correct_simulation(self, user_a, mock_supabase_client):
         """require_role should query simulation_members for the given simulation_id."""

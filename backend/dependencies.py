@@ -14,6 +14,7 @@ from backend.config import settings
 from backend.models.common import CurrentUser
 from backend.utils.db import maybe_single_data
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
+from backend.utils.supabase_lifecycle import aclose_supabase_client
 from supabase import AsyncClient as Client
 from supabase import create_async_client
 
@@ -113,28 +114,50 @@ async def get_current_user(
 
 async def get_supabase(
     user: CurrentUser = Depends(get_current_user),
-) -> Client:
-    """Create a Supabase client authenticated with the user's JWT.
+):
+    """Yield a Supabase client authenticated with the user's JWT.
 
     This ensures RLS policies are applied for the current user.
+
+    A fresh client is required per request (the JWT session is mutated
+    below), so it cannot be shared like the admin singleton. It is
+    therefore torn down in ``finally`` — supabase-py's ``AsyncClient``
+    holds httpx sub-clients whose sockets would otherwise leak until GC,
+    exhausting file descriptors under load
+    (``OSError: [Errno 24] Too many open files``).
     """
     client = await create_async_client(settings.supabase_url, settings.supabase_anon_key)
     try:
-        await client.auth.set_session(user.access_token, "")
-    except AuthApiError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session expired or invalid.",
-        ) from e
-    return client
+        try:
+            await client.auth.set_session(user.access_token, "")
+        except AuthApiError as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session expired or invalid.",
+            ) from e
+        yield client
+    finally:
+        await aclose_supabase_client(client)
 
 
-async def get_anon_supabase() -> Client:
-    """Create a Supabase client with the anon key only (no JWT).
+async def get_anon_supabase():
+    """Yield a Supabase client with the anon key only (no JWT).
 
     Applies anon RLS policies — used for public read-only endpoints.
+
+    Torn down in ``finally`` for the same reason as ``get_supabase``:
+    supabase-py's ``AsyncClient`` holds httpx sub-clients whose sockets
+    would otherwise leak until GC, exhausting file descriptors under load
+    (``OSError: [Errno 24] Too many open files``). A process-wide anon
+    singleton was avoided deliberately — a shared client binds its httpx
+    connection pool to one event loop, which is fine in production but
+    fragile across the per-test loops in the suite.
     """
-    return await create_async_client(settings.supabase_url, settings.supabase_anon_key)
+    client = await create_async_client(settings.supabase_url, settings.supabase_anon_key)
+    try:
+        yield client
+    finally:
+        await aclose_supabase_client(client)
 
 
 # ── Slug/UUID Resolution ───────────────────────────────────────────────
