@@ -286,3 +286,63 @@ def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
             admin_client.table("game_epochs").delete().eq("id", str(eid)).execute()
         except Exception:  # noqa: S110
             pass  # Best-effort cleanup
+
+
+# ── DRIFT chart fixtures (the travel suites navigate a real chart) ─────────────
+
+
+def _broadcast_homes(admin_client: Client) -> dict[str, dict]:
+    """The active chart version's broadcast_rand nodes, keyed by stable_key."""
+    versions = (
+        admin_client.table("chart_versions")
+        .select("version").order("version", desc=True).limit(1).execute()
+    )
+    if not versions.data:
+        pytest.skip("no chart version seeded")
+    version = versions.data[0]["version"]
+    nodes = (
+        admin_client.table("drift_chart_nodes")
+        .select("id, stable_key, simulation_id")
+        .eq("chart_version", version)
+        .eq("node_type", "broadcast_rand")
+        .execute()
+    )
+    return {n["stable_key"]: n for n in nodes.data}
+
+
+@pytest.fixture(scope="session")
+def chart_home(admin_client: Client) -> dict:
+    """The traveller's anchor world edge on the active chart (Velgarien's broadcast node)."""
+    homes = _broadcast_homes(admin_client)
+    return homes.get("home-velgarien") or next(iter(homes.values()))
+
+
+@pytest.fixture(scope="session")
+def chart_foreign(admin_client: Client, chart_home: dict) -> dict:
+    """A FOREIGN world edge — the Depesche target and the un-surveyed honor node."""
+    for node in _broadcast_homes(admin_client).values():
+        if node["id"] != chart_home["id"]:
+            return node
+    pytest.skip("chart has only one broadcast home — a foreign dock is required")
+
+
+@pytest.fixture(scope="session")
+def home_neighbor(admin_client: Client, chart_home: dict) -> str:
+    """Any node adjacent to home — the one legal move a collapsing run still has."""
+    versions = (
+        admin_client.table("chart_versions")
+        .select("version").order("version", desc=True).limit(1).execute()
+    )
+    version = versions.data[0]["version"]
+    edges = (
+        admin_client.table("drift_chart_edges")
+        .select("from_node, to_node")
+        .eq("chart_version", version)
+        .execute()
+    )
+    for e in edges.data:
+        if e["from_node"] == chart_home["id"]:
+            return e["to_node"]
+        if e["to_node"] == chart_home["id"]:
+            return e["from_node"]
+    pytest.skip("home node has no edges on the active chart")

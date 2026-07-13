@@ -286,8 +286,10 @@ class DriftService:
         resp = await (
             supabase.table("travel_runs")
             .select("*")
-            .eq("user_id", str(user_id))
-            .in_("status", ["active", "frozen", "distress"])
+            # 'havarie' is an OPEN run (migration 265): it is stranded, awaiting the
+            # traveller's decision, and it holds the single-active slot. Omitting it here
+            # would show the HUD "no run" while the wreck still blocks fn_travel_run_open.
+            .in_("status", ["active", "frozen", "distress", "havarie"])
             .order("opened_at", desc=True)
             .limit(1)
             .execute()
@@ -660,6 +662,36 @@ class DriftService:
         )
 
     @staticmethod
+    async def resolve_havarie(
+        supabase: Client,
+        user_id: UUID,
+        run_id: UUID,
+        run_version: int,
+        choice: str,
+        jettison_cargo_ids: list[UUID] | None = None,
+    ) -> TravelRunResponse:
+        """Resolve a Havarie: the traveller's decision at the failure floor (migration 265).
+
+        Returns the run as it stands AFTER the choice — active again (notabwurf / notruf /
+        ueberziehen), banked (rueckruf) or unravelled (zerfaserung, or a TTL-expired wreck
+        that the Drift decided for). The RPC's `expired` flag rides the same jsonb; it is
+        the run row that matters to the HUD, and the run row tells the story either way.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_travel_havarie_resolve",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_choice": choice,
+                "p_jettison_cargo_ids": [str(c) for c in jettison_cargo_ids]
+                if jettison_cargo_ids
+                else None,
+            },
+        )
+
+    @staticmethod
     async def accept_quest(
         supabase: Client,
         user_id: UUID,
@@ -758,6 +790,12 @@ class DriftService:
         # PostgREST's 40001 retry) → 409 Conflict: the client refetches + retries.
         if message == "RUN_STALE":
             return conflict(message)
+        # P0001 is also the DRIFT "you cannot do that YET" code (VP_TOO_LOW / SIEGEL_TOO_LOW,
+        # migration 264): a refused precondition, not a server fault. Without this it would
+        # fall through to a 500 and tell the traveller the Bureau is broken when the truth is
+        # that they are 12 VP short.
+        if code == "P0001":
+            return bad_request(message)
         factory = _RPC_ERROR_FACTORIES.get(code)
         if factory is None:
             logger.warning("DRIFT %s raised unmapped SQLSTATE %s: %s", rpc_name, code, message)

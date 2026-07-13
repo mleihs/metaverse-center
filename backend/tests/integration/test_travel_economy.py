@@ -565,7 +565,15 @@ class TestClearanceExam:
 
 
 class TestZerfaserungCounter:
-    """fn_travel_move's collapse floor finally writes traveler_profiles.zerfaserung_count."""
+    """The collapse floor and traveler_profiles.zerfaserung_count (dead since migration 239).
+
+    Migration 264 armed the counter in the collapse floor itself. Migration 265 then turned
+    that floor into the Havarie CHOICE, so the counter moved to where the run ACTUALLY
+    unravels (fn_travel_zerfasern — the chosen zerfaserung or the TTL sweep); a Havarie
+    survived is not a Zerfaserung. What remains asserted here is the gate-OFF half — the P0
+    snap, with the column untouched — and the Havarie paths are covered in
+    test_travel_havarie.py.
+    """
 
     def _collapse(self, admin_client, client, user, chart_home, neighbor_id) -> dict:
         """Force a Kohärenz-floor collapse: 1 KH, 0 BB → the move pays Notfrequenz and unravels."""
@@ -577,7 +585,7 @@ class TestZerfaserungCounter:
              "p_to_node": neighbor_id},
         ).execute().data
 
-    def test_collapse_increments_the_counter(
+    def test_gate_on_the_floor_is_a_havarie_not_a_scar(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
         user, client = test_user_ids[0], user_clients[0]
@@ -586,14 +594,15 @@ class TestZerfaserungCounter:
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             run = self._collapse(admin_client, client, user, chart_home, home_neighbor)
-            assert run["status"] == "abandoned"
-            assert run["checkpoint"]["recall"] == "kohaerenz"
-            assert _profile(admin_client, user)["zerfaserung_count"] == 1
+            assert run["status"] == "havarie", "the run stops for a decision (265)"
+            assert _profile(admin_client, user)["zerfaserung_count"] == 0, (
+                "nothing has unravelled yet — the scar is not written on the stumble"
+            )
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
 
-    def test_gate_off_leaves_the_counter_dead(
+    def test_gate_off_snaps_and_leaves_the_counter_dead(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
         user, client = test_user_ids[0], user_clients[0]
@@ -608,47 +617,3 @@ class TestZerfaserungCounter:
             )
         finally:
             _reset_traveler(admin_client, user)
-
-
-# ── chart fixtures (module-local: only the economy suite navigates the chart) ──
-
-
-@pytest.fixture(scope="session")
-def chart_home(admin_client) -> dict:
-    """The traveller's anchor world edge on the active chart (Velgarien's broadcast node)."""
-    _, homes = _chart(admin_client)
-    node = homes.get("home-velgarien") or next(iter(homes.values()))
-    return node
-
-
-@pytest.fixture(scope="session")
-def chart_foreign(admin_client, chart_home) -> dict:
-    """A FOREIGN world edge — the Depesche target and the un-surveyed honor node."""
-    _, homes = _chart(admin_client)
-    for key, node in homes.items():
-        if node["id"] != chart_home["id"]:
-            assert key  # keyed by stable_key, kept for the assertion message
-            return node
-    pytest.skip("chart has only one broadcast home — a foreign dock is required")
-
-
-@pytest.fixture(scope="session")
-def home_neighbor(admin_client, chart_home) -> str:
-    """Any node adjacent to home — the one legal move a collapsing run still has."""
-    versions = (
-        admin_client.table("chart_versions")
-        .select("version").order("version", desc=True).limit(1).execute()
-    )
-    version = versions.data[0]["version"]
-    edges = (
-        admin_client.table("drift_chart_edges")
-        .select("from_node, to_node")
-        .eq("chart_version", version)
-        .execute()
-    )
-    for e in edges.data:
-        if e["from_node"] == chart_home["id"]:
-            return e["to_node"]
-        if e["to_node"] == chart_home["id"]:
-            return e["from_node"]
-    pytest.skip("home node has no edges on the active chart")

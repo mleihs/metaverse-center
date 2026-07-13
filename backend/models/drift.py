@@ -20,6 +20,19 @@ class TravelRunOpenRequest(BaseModel):
     anchor_simulation_id: UUID
 
 
+class HavarieResolveRequest(BaseModel):
+    """The traveller's decision at the failure floor (fn_travel_havarie_resolve, 265).
+
+    `jettison_cargo_ids` is required by (and only meaningful for) `notabwurf` — the RPC
+    validates both the choice against the options the Havarie actually offered and each id
+    against the run's own manifest, so an empty or foreign list is refused there, not here.
+    """
+
+    run_version: int = Field(ge=0)
+    choice: Literal["notabwurf", "notruf", "zerfaserung", "ueberziehen", "rueckruf"]
+    jettison_cargo_ids: list[UUID] | None = None
+
+
 class ClearanceExamRequest(BaseModel):
     """Sit the Bureau clearance exam for a rank (fn_clearance_exam, migration 264)."""
 
