@@ -38,6 +38,7 @@ from backend.models.drift import (
     DriftHonorResponse,
     DriftProfileResponse,
     DriftTuningResponse,
+    HavarieResolveRequest,
     QuestAcceptResponse,
     QuestDeliverResponse,
     QuestStateResponse,
@@ -213,6 +214,27 @@ async def complete_run(
 ) -> SuccessResponse[TravelRunResponse]:
     """Close the run at the home broadcast edge (Entladung)."""
     run = await DriftService.complete_run(supabase, user.id, run_id, body.run_version)
+    return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/havarie/resolve")
+async def resolve_havarie(
+    run_id: UUID,
+    body: HavarieResolveRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Decide a Havarie (M3): jettison, call for rescue, overstay, recall, or unravel.
+
+    Returns the run AFTER the choice — active again, banked, or abandoned. A wreck whose
+    48-hour TTL has run out unravels here regardless of the choice (the lazy finalisation
+    that lets P0.5 skip a scheduler); the returned run row says so.
+    """
+    run = await DriftService.resolve_havarie(
+        supabase, user.id, run_id, body.run_version, body.choice, body.jettison_cargo_ids
+    )
     return SuccessResponse(data=run)
 
 
