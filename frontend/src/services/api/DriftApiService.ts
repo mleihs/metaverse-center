@@ -1,7 +1,10 @@
 import type {
   DriftChart,
+  DriftClearanceExam,
   DriftDock,
+  DriftHavarieChoice,
   DriftHonor,
+  DriftProfile,
   DriftPublicState,
   DriftQuestAcceptResult,
   DriftQuestDeliverResult,
@@ -36,6 +39,34 @@ export class DriftApiService extends BaseApiService {
   /** HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning. */
   getTuning(): Promise<ApiResponse<DriftTuning>> {
     return this.get('/drift/tuning');
+  }
+
+  /** The traveller's Bureau account (Siegel, VP, rank + progress, scars); null before the
+   *  first run. Not gated on the Fun-Kern — with the gate closed it simply reads zeroes. */
+  getProfile(): Promise<ApiResponse<DriftProfile | null>> {
+    return this.get('/drift/profile');
+  }
+
+  /** Sit the Bureau clearance exam (VP threshold + Siegel fee → promotion). */
+  sitClearanceExam(rank: string): Promise<ApiResponse<DriftClearanceExam>> {
+    return this.post('/drift/clearance-exam', { rank });
+  }
+
+  /** Decide a Havarie: jettison, call for rescue, overstay, recall, or unravel. Returns the
+   *  run AFTER the choice — active again, banked, or abandoned. `jettisonCargoIds` belongs
+   *  to `notabwurf` only; the server validates both the choice against the options the
+   *  Havarie actually offered and every id against the run's own manifest. */
+  resolveHavarie(
+    runId: string,
+    runVersion: number,
+    choice: DriftHavarieChoice,
+    jettisonCargoIds?: string[],
+  ): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/havarie/resolve`, {
+      run_version: runVersion,
+      choice,
+      jettison_cargo_ids: jettisonCargoIds ?? null,
+    });
   }
 
   /** A world's identity for the dock panel (name + lore voice + a few Träger). */

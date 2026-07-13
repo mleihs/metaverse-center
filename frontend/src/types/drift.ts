@@ -2,7 +2,83 @@
 
 import type { UUID } from './index.js';
 
-export type DriftRunStatus = 'active' | 'frozen' | 'distress' | 'completed' | 'abandoned';
+export type DriftRunStatus =
+  | 'active'
+  | 'frozen'
+  | 'distress'
+  /** Stranded at the failure floor, awaiting the traveller's decision (migration 265). */
+  | 'havarie'
+  | 'completed'
+  | 'abandoned';
+
+/** The five Havarie options. Which ones are OFFERED is decided server-side and written
+ *  into the checkpoint when the Havarie opens — the client never invents one. */
+export type DriftHavarieChoice =
+  | 'notabwurf'
+  | 'notruf'
+  | 'zerfaserung'
+  | 'ueberziehen'
+  | 'rueckruf';
+
+/** The Havarie block the RPC writes into checkpoint.havarie (migration 265). */
+export interface DriftHavarie {
+  cause: 'kohaerenz' | 'window';
+  options: DriftHavarieChoice[];
+  cargo_aboard: number;
+  haul_at_risk: number;
+  /** The tuning catalogue, so the panel can STATE each option's price instead of hiding it. */
+  catalogue: Record<string, Record<string, number>>;
+  expires_at: string;
+}
+
+/** What an act of the run paid (fn_drift_award). One shape for every payer. */
+export interface DriftEarnings {
+  source: string;
+  siegel_earned: number;
+  vp_earned: number;
+  siegel_balance: number;
+  vp_total: number;
+  clearance_rank: string;
+}
+
+/** ONE thing a delivery did to the world — or was stopped from doing. A filtered card is
+ *  not an error: a world that only admits echoes has ANSWERED, and the card says so. */
+export interface DriftEffectCard {
+  kind: string;
+  status: 'applied' | 'filtered';
+  target_kind: 'self' | 'simulation' | 'agent' | 'none';
+  target_label: string;
+  simulation_id: UUID | null;
+  simulation_slug: string | null;
+  agent_id: UUID | null;
+  event_id: UUID | null;
+  hospitality: string | null;
+  reason: string | null;
+}
+
+/** The traveller's Bureau account (GET /drift/profile). Null before the first run. */
+export interface DriftProfile {
+  siegel: number;
+  vp: number;
+  clearance_rank: string;
+  bandwidth_class: number;
+  zerfaserung_count: number;
+  vermessung_lodged: number;
+  unlocked_vectors: string[];
+  next_rank: string | null;
+  next_rank_vp: number | null;
+  next_rank_fee: number | null;
+  next_rank_progress: number;
+  exam_ready: boolean;
+}
+
+/** fn_clearance_exam result. */
+export interface DriftClearanceExam {
+  clearance_rank: string;
+  fee_paid: number;
+  siegel_balance: number;
+  vp_total: number;
+}
 
 export type DriftFrequency =
   | 'commerce'
@@ -43,6 +119,9 @@ export interface TravelRun {
   closed_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Lifted out of checkpoint.earnings by the backend model — the receipt of the act that
+   *  closed (or paid) this run. Null while the Fun-Kern gate is closed. */
+  earnings: DriftEarnings | null;
 }
 
 export interface DriftChartNode {
@@ -172,9 +251,13 @@ export interface DriftQuestAcceptResult {
   cargo: DriftCargo;
 }
 
-/** fn_quest_advance result — the version-bumped run + completed instance + effects. */
+/** fn_quest_advance result — the version-bumped run + completed instance + effects.
+ *  `cards` is the honest per-effect breakdown (named targets + receipt links); `earnings`
+ *  is what the Depesche paid (null while the Fun-Kern gate is closed). */
 export interface DriftQuestDeliverResult {
   run: TravelRun;
   instance: DriftQuestInstance;
   effects: DriftQuestEffects;
+  cards: DriftEffectCard[];
+  earnings: DriftEarnings | null;
 }
