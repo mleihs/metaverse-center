@@ -1,0 +1,108 @@
+# Drift signal skeletons — class: geruecht (rumour).
+#
+# A Gerücht does not stop the run either — it writes a line into the logbook
+# and, in most cases, lifts one undiscovered node out of the fog
+# (`rumor_reveal`). It is the class that makes the NEXT run better than this
+# one: knowledge is the only thing a courier carries home that a Havarie
+# cannot scatter (concept R12 — the logbook is the "resuming is free" anchor).
+#
+# {sim} is substituted with a real world's name at draw time. A rumour that
+# names nothing is atmosphere; a rumour that names a world you can actually
+# reach is a plan.
+#
+# See stoerung.yaml for the field contract. Bilingual, en dashes only.
+schema_version: 1
+pack_slug: drift_w2_signals
+signal_class: geruecht
+signals:
+  # (1) The plain reveal — a bearing overheard.
+  - template_key: geruecht_fremdpeilung
+    band_weights: { near: 14, mid: 14, deep: 10 }
+    prose:
+      title_de: "Fremdpeilung"
+      title_en: "Foreign Bearing"
+      body_de: "Auf einem Kanal, der eigentlich leer sein müsste, wiederholt jemand eine Peilung. Immer dieselbe, in immer denselben Abständen, als hoffe er noch, dass jemand sie mitschreibt."
+      body_en: "On a channel that ought to be empty, someone repeats a bearing. Always the same one, always at the same interval, as if still hoping someone is writing it down."
+    auto:
+      text_de: "Der Träger schreibt mit. Der Kanal wiederholt die Peilung noch zweimal und schweigt dann, zufrieden oder erschöpft."
+      text_en: "The courier writes it down. The channel repeats the bearing twice more and then falls silent, satisfied or exhausted."
+      deltas: { rumor_reveal: {} }
+
+  # (2) A rumour with a named world — the KPI-1 slot.
+  - template_key: geruecht_hafenklatsch
+    band_weights: { near: 18, mid: 10, deep: 4 }
+    prose:
+      title_de: "Hafenklatsch"
+      title_en: "Harbour Talk"
+      body_de: "Klatsch aus der Nähe von {sim}: Man rede dort über eine Sendung, die nie angekommen sei, und über den Ort, an dem sie zuletzt gesehen wurde. Der Ort steht auf keiner Karte des Büros."
+      body_en: "Talk from near {sim}: they speak of a consignment that never arrived, and of the place where it was last seen. The place is on no Bureau chart."
+    auto:
+      text_de: "Der Träger notiert den Ort, so wie man einen Namen notiert, den man auf einer Feier gehört hat und morgen brauchen wird."
+      text_en: "The courier notes the place down, the way one notes a name heard at a party and needed tomorrow."
+      deltas: { rumor_reveal: {} }
+
+  # (3) A deep rumour — points deep, worth the most.
+  - template_key: geruecht_tiefenmeldung
+    band_weights: { near: 2, mid: 10, deep: 18 }
+    prose:
+      title_de: "Tiefenmeldung"
+      title_en: "Deep Report"
+      body_de: "Eine Meldung aus der Tiefe, in der Formsprache des Büros, aber mit einem Rufzeichen, das seit Jahren nicht mehr vergeben wird. Sie beschreibt einen Knoten so genau, als stünde der Sprecher darauf."
+      body_en: "A report from the deep, in the Bureau's own phrasing, but with a call sign that has not been issued in years. It describes a node so precisely that the speaker must be standing on it."
+    auto:
+      text_de: "Der Träger trägt den Knoten ein. Ob der Sprecher noch dort steht, wird sich zeigen, wenn jemand hinfährt."
+      text_en: "The courier charts the node. Whether the speaker is still standing on it will become clear when someone goes."
+      deltas: { rumor_reveal: { band: deep } }
+
+  # (4) A rumour that pays instead of reveals — the Bureau buys hearsay.
+  - template_key: geruecht_maerkte
+    band_weights: { near: 12, mid: 12, deep: 6 }
+    prose:
+      title_de: "Marktgerücht"
+      title_en: "Market Rumour"
+      body_de: "Ein Kursgerücht, wie es sie zu Hunderten gibt, nur dass dieses eine Zahl nennt und eine Frist. In {sim} wird jemand sehr genau zugehört haben."
+      body_en: "A price rumour, of the kind that exists by the hundred, except this one names a figure and a deadline. In {sim}, someone will have been listening very closely."
+    auto:
+      text_de: "Der Träger meldet das Gerücht weiter, wie es die Dienstvorschrift verlangt, und das Büro zahlt die kleine Prämie, die es für Ohren zahlt."
+      text_en: "The courier passes the rumour on, as the standing orders require, and the Bureau pays the small premium it pays for ears."
+      deltas: { siegel: 5 }
+
+  # (5) A rumour with a shadow — knowledge that costs calm.
+  - template_key: geruecht_nachruf
+    band_weights: { near: 8, mid: 12, deep: 12 }
+    prose:
+      title_de: "Nachruf"
+      title_en: "Obituary"
+      body_de: "Ein Nachruf auf einen Träger, den es nach den Akten nie gegeben hat, gesendet auf einer Frequenz, die dem Träger auffällig gut liegt. Der Nachruf ist warm. Er ist auch sehr detailliert."
+      body_en: "An obituary for a courier who, by the records, never existed, broadcast on a frequency that suits this courier uncomfortably well. The obituary is warm. It is also very detailed."
+    auto:
+      text_de: "Der Träger hört zu Ende und trägt den Knoten ein, den der Nachruf erwähnt. Man hört sich seinen eigenen Nachruf nicht ohne Kosten an."
+      text_en: "The courier listens to the end and charts the node the obituary mentions. One does not listen to one's own obituary for free."
+      deltas: { rumor_reveal: {}, dz: 3 }
+
+  # (6) Requires a battered hull — the Drift offers directions to the desperate.
+  - template_key: geruecht_relaisruf
+    band_weights: { near: 12, mid: 14, deep: 10 }
+    requires: { kh_band: [kritisch, angeschlagen] }
+    prose:
+      title_de: "Relaisruf"
+      title_en: "Relay Call"
+      body_de: "Ein Relais ruft in die Leere und sagt seine Position, wieder und wieder, wie ein Leuchtturm, der nicht weiß, ob es noch Schiffe gibt. Angeschlagen hört man solche Rufe deutlicher."
+      body_en: "A relay calls into the void, giving its position again and again, like a lighthouse unsure whether ships still exist. Battered, one hears such calls more clearly."
+    auto:
+      text_de: "Der Träger nimmt die Position auf. Es ist kein Zuhause. Aber es ist ein Ort, der antwortet, und das ist hier draußen fast dasselbe."
+      text_en: "The courier takes down the position. It is not home. But it is a place that answers, and out here that is nearly the same thing."
+      deltas: { rumor_reveal: { band: near } }
+
+  # (7) A rumour that names a mid-band node and hands over a marker read.
+  - template_key: geruecht_grabungsnotiz
+    band_weights: { near: 8, mid: 16, deep: 10 }
+    prose:
+      title_de: "Grabungsnotiz"
+      title_en: "Excavation Note"
+      body_de: "Eine Notiz über eine Sondierung, die jemand abgebrochen hat, kurz bevor sie sich gelohnt hätte. Die Notiz nennt den Knoten und sagt, wie oft dort schon gegraben wurde. Sie sagt nicht, warum abgebrochen wurde."
+      body_en: "A note on an excavation someone abandoned just before it would have paid. The note names the node and says how often it has been dug. It does not say why they stopped."
+    auto:
+      text_de: "Der Träger trägt Knoten und Zahl ein. Die zweite Zahl ist die wichtigere, und sie steht nicht dabei."
+      text_en: "The courier charts the node and the count. The second number is the one that matters, and it is not written down."
+      deltas: { rumor_reveal: { band: mid } }

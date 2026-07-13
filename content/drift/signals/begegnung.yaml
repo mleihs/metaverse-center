@@ -1,0 +1,113 @@
+# Drift signal skeletons — class: begegnung (encounter).
+#
+# The second interactive class: someone else is out here. A Begegnung stops the
+# run like a Störung, but the thing across from the traveller is a WHO, not a
+# WHAT — and every option is a stance towards them, not a manoeuvre against
+# them. The Wildermyth lesson: the encounter must be able to end well, badly,
+# and awkwardly, and the courier must be the one who chose which.
+#
+# Rare by design (the tuned per-band class weights keep this at ~5-15 %) —
+# an encounter that happens every third move is a corridor, not a meeting.
+#
+# See stoerung.yaml for the field contract. Bilingual, en dashes only.
+schema_version: 1
+pack_slug: drift_w2_signals
+signal_class: begegnung
+signals:
+  # (1) Another courier, in worse shape. The mirror.
+  - template_key: begegnung_havarist
+    band_weights: { near: 10, mid: 14, deep: 14 }
+    prose:
+      title_de: "Havarist"
+      title_en: "Castaway"
+      body_de: "Ein Träger, angeschlagen bis zur Durchsichtigkeit, sitzt auf seinem Manifest wie auf einem Koffer am falschen Bahnsteig. Er bittet nicht. Er sieht nur her, und das reicht."
+      body_en: "A courier, battered to the point of transparency, sits on their manifest like a suitcase on the wrong platform. They do not ask. They only look over, and that is enough."
+    options:
+      - key: kohaerenz_teilen
+        label_de: "Kohärenz teilen"
+        label_en: "Share coherence"
+        cost: { kh: 12 }
+        result:
+          text_de: "Der Träger gibt ab, was er hat, und der andere nimmt es, ohne zu danken, weil Danken hier draußen Zeit kostet, die keiner hat. Später wird jemand darüber reden, dass es einen gibt, der teilt."
+          text_en: "The courier gives what they have, and the other takes it without thanks, because out here thanks costs time no one has. Later, someone will mention that there is one who shares."
+          deltas: { siegel: 8, dz: -3 }
+      - key: fracht_kaufen
+        label_de: "Sein Manifest abkaufen"
+        label_en: "Buy their manifest"
+        check: { vector: commerce, difficulty: 6 }
+        success:
+          text_de: "Sie einigen sich, schnell und ohne Groll. Der andere reist leicht weiter, der Träger schwer, und beide halten das für den besseren Teil."
+          text_en: "They come to terms, quickly and without rancour. The other travels on light, the courier heavy, and both consider theirs the better half of the deal."
+          deltas: { cargo_grant: { family: sehnsuchtsgut, vector: desire, haul: 4 } }
+        failure:
+          text_de: "Der andere versteht das Angebot als das, was es zur Hälfte ist. Er gibt die Fracht her und sieht dabei weg, und der Blick bleibt am Träger hängen wie ein Widerhaken."
+          text_en: "The other understands the offer for the half of it that it is. They hand the freight over looking away, and the look catches on the courier like a barb."
+          deltas: { cargo_grant: { family: sehnsuchtsgut, vector: desire, haul: 4 }, dz: 5 }
+      - key: weiterfahren
+        label_de: "Weiterfahren"
+        label_en: "Travel on"
+        result:
+          text_de: "Der Träger fährt weiter. Es ist die vernünftige Entscheidung, und sie hallt genau so lange nach, wie das Fenster noch offen steht."
+          text_en: "The courier travels on. It is the sensible decision, and it echoes for exactly as long as the window stays open."
+          deltas: { dz: 2 }
+
+  # (2) A Bureau inspector who may or may not still be employed.
+  - template_key: begegnung_pruefer
+    band_weights: { near: 16, mid: 10, deep: 4 }
+    prose:
+      title_de: "Prüfer im Feld"
+      title_en: "Field Examiner"
+      body_de: "Ein Prüfer des Büros, mitten im Drift, mit einer Klemmmappe und einer Ruhe, die entweder Dienstalter ist oder Wahnsinn. Er möchte das Manifest sehen. Er hat sichtlich Zeit."
+      body_en: "A Bureau examiner, in the middle of the Drift, with a clipboard and a calm that is either seniority or madness. They would like to see the manifest. They evidently have time."
+    options:
+      - key: vorlegen
+        label_de: "Manifest vorlegen"
+        label_en: "Present the manifest"
+        cost: { takt: 1 }
+        result:
+          text_de: "Der Prüfer geht Zeile für Zeile durch, findet nichts, und sieht darüber beinahe enttäuscht aus. Dann stempelt er, sorgfältig, in die Luft."
+          text_en: "The examiner goes through it line by line, finds nothing, and looks almost disappointed about it. Then they stamp, meticulously, into the air."
+          deltas: { siegel: 6 }
+      - key: berufen
+        label_de: "Sich auf die Dienstvorschrift berufen"
+        label_en: "Cite the standing orders"
+        check: { vector: language, difficulty: 7 }
+        success:
+          text_de: "Der Träger zitiert eine Vorschrift, die es geben müsste, und der Prüfer nickt, weil es sie geben müsste. Man trennt sich mit gegenseitigem Respekt vor der Verwaltung."
+          text_en: "The courier cites a regulation that ought to exist, and the examiner nods, because it ought to. They part with a shared respect for administration."
+          deltas: { dz: -2 }
+        failure:
+          text_de: "Der Prüfer kennt die Vorschrift. Er kennt auch die, die sie aufgehoben hat. Die Nachprüfung dauert, und sie steht dem Träger ins Gesicht geschrieben."
+          text_en: "The examiner knows the regulation. They also know the one that repealed it. The follow-up inspection takes time, and it is written all over the courier's face."
+          deltas: { takt: -1, dz: 3 }
+
+  # (3) Something that is not a person and is doing an excellent impression.
+  - template_key: begegnung_spiegelgaenger
+    band_weights: { near: 4, mid: 10, deep: 18 }
+    requires: { dz_band: [erhoeht, kritisch] }
+    prose:
+      title_de: "Spiegelgänger"
+      title_en: "Mirror-Walker"
+      body_de: "Jemand kommt entgegen, der geht wie der Träger geht, und trägt, was der Träger trägt. Er hebt die Hand zum Gruß einen Augenblick zu früh, als hätte er die Geste geübt und nicht gelernt."
+      body_en: "Someone comes the other way who walks as the courier walks and carries what the courier carries. They raise a hand in greeting a moment too early, as though they had practised the gesture rather than learned it."
+    options:
+      - key: gruessen
+        label_de: "Zurückgrüßen"
+        label_en: "Return the greeting"
+        check: { vector: memory, difficulty: 9 }
+        success:
+          text_de: "Der Träger grüßt zurück, mit einer Geste, die nur er kennen kann, weil sie aus einer Erinnerung stammt, die er niemandem erzählt hat. Der Spiegelgänger kann sie nicht erwidern und löst sich auf, höflich, fast erleichtert."
+          text_en: "The courier returns the greeting with a gesture only they can know, because it comes from a memory they have told no one. The mirror-walker cannot answer it and dissolves, politely, almost relieved."
+          deltas: { dz: -8 }
+        failure:
+          text_de: "Der Träger grüßt zurück, und der Spiegelgänger erwidert perfekt. Für einen Moment ist nicht mehr entscheidbar, wer von beiden geübt hat."
+          text_en: "The courier returns the greeting, and the mirror-walker answers perfectly. For a moment it is no longer decidable which of the two was practising."
+          deltas: { kh: -12, dz: 4 }
+      - key: ausweichen
+        label_de: "Ausweichen"
+        label_en: "Step aside"
+        cost: { takt: 1, kh: 4 }
+        result:
+          text_de: "Der Träger geht einen weiten Bogen und sieht nicht hin. Der Spiegelgänger geht denselben Bogen, spiegelverkehrt, und sieht ebenfalls nicht hin."
+          text_en: "The courier takes a wide arc and does not look. The mirror-walker takes the same arc, reversed, and does not look either."
+          deltas: {}
