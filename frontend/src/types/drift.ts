@@ -51,6 +51,8 @@ export interface DriftEffectCard {
   simulation_id: UUID | null;
   simulation_slug: string | null;
   agent_id: UUID | null;
+  /** The agent route addresses by slug, not by id — the receipt link needs this one. */
+  agent_slug: string | null;
   event_id: UUID | null;
   hospitality: string | null;
   reason: string | null;

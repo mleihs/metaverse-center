@@ -426,8 +426,17 @@ BEGIN
             -- aboard, the haul is still on the books, and the traveller decides.
             SELECT count(*) INTO v_cargo_n FROM travel_cargo WHERE run_id = p_run;
             v_opts := drift_tuning_value('havarie_options');
+            -- Notabwurf buys Kohärenz with cargo AND with window (window_cost, default 2).
+            -- It is only a real out if the run can still MOVE afterwards: jettison at
+            -- window_remaining = 2 and the run returns to 'active' with 0 Takte left, so the
+            -- very next move that is not home drops it straight back into Havarie — cargo
+            -- gone, Depeschen failed, nothing bought. An option that cannot be used is worse
+            -- than no option (same rule as the no-cargo case below), so it is offered only
+            -- when at least one Takt survives the price.
             v_options := CASE
                 WHEN v_cause = 'kohaerenz' AND v_cargo_n > 0
+                     AND v_run.window_remaining
+                         > COALESCE((v_opts #>> '{notabwurf,window_cost}')::int, 2)
                     THEN '["notabwurf","notruf","zerfaserung"]'::jsonb
                 WHEN v_cause = 'kohaerenz'
                     -- No cargo → nothing to jettison. A dead option on the panel is worse
@@ -553,7 +562,19 @@ DECLARE
     v_haul    INT;
     v_scatter JSONB;
 BEGIN
-    SELECT * INTO v_run FROM travel_runs WHERE id = p_run;
+    -- FOR UPDATE + open-status guard = idempotency. Two concurrent callers CAN reach this
+    -- (fn_travel_run_open's TTL sweep is reachable from a double-clicked Aufbruch), and an
+    -- unravelling is not repeatable: it would scatter the manifest twice, audit twice, and
+    -- — worst — add TWO scars to a record that can never be cleared. The second caller now
+    -- finds the run already closed and returns it untouched.
+    SELECT * INTO v_run FROM travel_runs WHERE id = p_run FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'fn_travel_zerfasern: run not found' USING ERRCODE = 'P0002';
+    END IF;
+    IF v_run.status NOT IN ('active', 'frozen', 'distress', 'havarie') THEN
+        RETURN to_jsonb(v_run);
+    END IF;
+
     SELECT anchor_simulation_id INTO v_anchor FROM traveler_profiles WHERE user_id = p_user;
     SELECT n.id INTO v_home FROM drift_chart_nodes n
      WHERE n.simulation_id = v_anchor AND n.node_type = 'broadcast_rand'
@@ -566,9 +587,14 @@ BEGIN
 
     -- The scar is recorded HERE, not when the Havarie opened: a Havarie survived is not a
     -- Zerfaserung, and a counter that says otherwise is a lie about the traveller's record.
-    UPDATE traveler_profiles
-       SET zerfaserung_count = zerfaserung_count + 1
-     WHERE user_id = p_user;
+    -- Gated, like every other Fun-Kern write: with the gate off (a rollback draining the
+    -- wrecks it left behind, see the gate branch of fn_travel_havarie_resolve) the build is
+    -- P0 again, and P0 never counted scars. Zero residue is the price of a one-line rollback.
+    IF drift_gate_enabled('drift_fun_core_enabled') THEN
+        UPDATE traveler_profiles
+           SET zerfaserung_count = zerfaserung_count + 1
+         WHERE user_id = p_user;
+    END IF;
 
     UPDATE travel_runs SET
         position_node_id = COALESCE(v_home, position_node_id),
@@ -631,14 +657,36 @@ BEGIN
     IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
         RAISE EXCEPTION 'fn_travel_havarie_resolve: caller is not the run owner' USING ERRCODE = '42501';
     END IF;
-    IF NOT drift_gate_enabled('drift_fun_core_enabled') THEN
-        RAISE EXCEPTION 'GATE_CLOSED' USING ERRCODE = '22023';
-    END IF;
 
     SELECT * INTO v_run FROM travel_runs WHERE id = p_run AND user_id = p_user FOR UPDATE;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'fn_travel_havarie_resolve: run not found' USING ERRCODE = 'P0002';
     END IF;
+
+    -- ── The gate, and the one thing it must never do ─────────────────────────────
+    -- A closed gate refuses to CREATE Fun-Kern state. It must not refuse to DRAIN state the
+    -- Fun-Kern already created — that is the difference between a rollback and a trap.
+    --
+    -- The trap this replaces: flip the gate off while a traveller sits in `havarie`, and
+    -- EVERY exit is locked. move/complete demand 'active', abandon (246) does not accept
+    -- 'havarie', run_open hands the wreck straight back, and even the admin kill-switch
+    -- (fn_drift_emergency_return) skipped the status entirely. The run was un-actionable for
+    -- 48 h until the TTL swept it — while the plan's whole rollback story is "one flip, and
+    -- the build is P0 again".
+    --
+    -- So: with the gate closed, a wreck unravels — the P0 ending, which is exactly what P0
+    -- would have done to this run at the moment of collapse. Whatever the player picked is
+    -- moot (the options were Fun-Kern promises the build no longer keeps), and the CAS token
+    -- is not demanded either: the only exit from a trap must not be blocked by a stale
+    -- version from the tab that was open when the gate flipped.
+    IF NOT drift_gate_enabled('drift_fun_core_enabled') THEN
+        IF v_run.status = 'havarie' THEN
+            RETURN fn_travel_zerfasern(p_user, p_run, 'gate_closed')
+                || jsonb_build_object('gate_drained', TRUE);
+        END IF;
+        RAISE EXCEPTION 'GATE_CLOSED' USING ERRCODE = '22023';
+    END IF;
+
     IF v_run.status <> 'havarie' THEN
         RAISE EXCEPTION 'NOT_IN_HAVARIE' USING ERRCODE = '22023';
     END IF;
@@ -783,7 +831,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.fn_travel_havarie_resolve(UUID, UUID, INT, TEXT, UUID[]) IS
-    'Resolve a DRIFT Havarie (M3, migration 265). PLAYER-class: auth.uid() = p_user guard, run_version CAS, gate-checked (GATE_CLOSED while drift_fun_core_enabled is off). The choice must be one the Havarie actually offered (INVALID_CHOICE) — the option list is written into the checkpoint when the Havarie opens, and notabwurf only appears when there IS cargo aboard. notabwurf: jettison the SELECTED cargo (validated to be this run''s own — CARGO_NOT_ABOARD otherwise), fail its bound Depeschen, restore Kohärenz, pay two Takte of the window; the freight sinks unsent (only an unravelling scatters echoes). notruf: the Bureau tows you home — half the haul and a Siegel debt marked in qualities (a mark, never a negative balance). ueberziehen: an overstay permit — every further Takt costs +Dissonanz (fn_travel_move applies it). rueckruf: an orderly recall through fn_travel_bank_run at 70 %. zerfaserung: fn_travel_zerfasern. An EXPIRED Havarie (TTL, checkpoint.expires_at) unravels regardless of the choice and returns {expired: true} — the lazy finalisation that lets P0.5 skip a scheduler.';
+    'Resolve a DRIFT Havarie (M3, migration 265). PLAYER-class: auth.uid() = p_user guard, run_version CAS, gate-checked — but a CLOSED gate does not refuse a run that is ALREADY in havarie: it drains it (forced zerfaserung, {gate_drained: true}, no CAS demanded, no scar counted). A gate must refuse to CREATE Fun-Kern state, never to DRAIN it; refusing here would strand the traveller for the full 48 h TTL with no legal action left (move/complete want ''active'', abandon does not take ''havarie'', run_open hands the wreck back), which would break the very rollback the gate exists for. GATE_CLOSED is still raised for any other status. The choice must be one the Havarie actually offered (INVALID_CHOICE) — the option list is written into the checkpoint when the Havarie opens, and notabwurf only appears when there IS cargo aboard. notabwurf: jettison the SELECTED cargo (validated to be this run''s own — CARGO_NOT_ABOARD otherwise), fail its bound Depeschen, restore Kohärenz, pay two Takte of the window; the freight sinks unsent (only an unravelling scatters echoes). notruf: the Bureau tows you home — half the haul and a Siegel debt marked in qualities (a mark, never a negative balance). ueberziehen: an overstay permit — every further Takt costs +Dissonanz (fn_travel_move applies it). rueckruf: an orderly recall through fn_travel_bank_run at 70 %. zerfaserung: fn_travel_zerfasern. An EXPIRED Havarie (TTL, checkpoint.expires_at) unravels regardless of the choice and returns {expired: true} — the lazy finalisation that lets P0.5 skip a scheduler.';
 
 DO $$
 BEGIN
@@ -827,9 +875,14 @@ BEGIN
     ON CONFLICT (user_id) DO NOTHING;
 
     -- Single-active-run CAS (now including 'havarie' — a wreck holds the slot).
+    -- FOR UPDATE: this lookup can fall through into the TTL sweep below, and a double-clicked
+    -- Aufbruch would otherwise let two transactions sweep the SAME expired wreck (fn_travel_
+    -- zerfasern is now idempotent as well — belt and braces, since only the lock makes the
+    -- read-then-write here atomic).
     SELECT * INTO v_existing FROM travel_runs
      WHERE user_id = p_user AND status IN ('active', 'frozen', 'distress', 'havarie')
-     LIMIT 1;
+     LIMIT 1
+     FOR UPDATE;
     IF FOUND THEN
         IF v_existing.status = 'havarie' THEN
             v_expires := NULLIF(v_existing.checkpoint #>> '{havarie,expires_at}', '')::timestamptz;
@@ -903,7 +956,61 @@ $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 9. Player-class posture re-asserted (CREATE OR REPLACE preserves ACLs)
+-- 9. fn_drift_emergency_return — the kill-switch learns to see wrecks
+-- ═══════════════════════════════════════════════════════════════════
+-- The admin kill-switch (246) repatriates runs with status IN ('active','distress'). A new
+-- status that it does not know about is a new class of traveller it cannot rescue — and
+-- 'havarie' is precisely the status a traveller is stuck in when something has gone wrong,
+-- i.e. the case the kill-switch exists for. Adding it here (rather than editing 246) keeps
+-- the status and the RPC that must know it in the same migration.
+--
+-- The repatriated run comes back 'active' at its home node with a fresh checkpoint — which
+-- also clears the `havarie` block, so no stale wreck panel greets the rescued traveller.
+-- 'frozen' stays excluded for the same reason as in 246: a gate-flip freeze is already a
+-- safe suspended state that thaws on re-enable (239).
+
+CREATE OR REPLACE FUNCTION public.fn_drift_emergency_return()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_count INT := 0;
+BEGIN
+    WITH homed AS (
+        UPDATE travel_runs r SET
+            position_node_id = n.id,
+            status           = 'active',
+            run_version      = r.run_version + 1,
+            checkpoint       = jsonb_build_object('position_node_id', n.id, 'emergency_return', true)
+        FROM traveler_profiles p
+        JOIN drift_chart_nodes n
+          ON n.simulation_id = p.anchor_simulation_id
+         AND n.node_type = 'broadcast_rand'
+        WHERE r.user_id = p.user_id
+          AND n.chart_version = r.chart_version
+          AND r.status IN ('active', 'distress', 'havarie')
+        RETURNING r.id, r.user_id
+    )
+    SELECT count(*) INTO v_count FROM homed;
+
+    PERFORM travel_audit(NULL, 'travel_emergency_return', 'travel_run', NULL, NULL,
+        jsonb_build_object('runs_returned', v_count));
+
+    RETURN jsonb_build_object('runs_returned', v_count);
+END;
+$$;
+
+COMMENT ON FUNCTION public.fn_drift_emergency_return() IS
+    'DRIFT kill-switch (246, extended in 265): repatriates every open run to its home broadcast node and resets the checkpoint. Since 265 it also sees ''havarie'' — a wreck is exactly the state an operator needs to be able to rescue a traveller out of. ''frozen'' stays excluded (a gate freeze thaws on re-enable, 239). ADMIN-class: service_role only, called from the platform-admin router.';
+
+REVOKE ALL    ON FUNCTION public.fn_drift_emergency_return() FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_drift_emergency_return() TO service_role;
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 10. Player-class posture re-asserted (CREATE OR REPLACE preserves ACLs)
 -- ═══════════════════════════════════════════════════════════════════
 
 DO $$

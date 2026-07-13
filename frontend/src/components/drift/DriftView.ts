@@ -42,8 +42,13 @@ import './DriftDockPanel.js';
 import './DriftEffectCards.js';
 import './DriftLedgerStrip.js';
 import './DriftStoryletPanel.js';
+import type { VelgDriftEffectCards } from './DriftEffectCards.js';
 import { rankLabel } from './DriftLedgerStrip.js';
-import type { StoryletOption, StoryletSelectable } from './DriftStoryletPanel.js';
+import type {
+  StoryletOption,
+  StoryletSelectable,
+  VelgDriftStoryletPanel,
+} from './DriftStoryletPanel.js';
 import { FREQUENCIES, freqColorByName } from './palette.js';
 
 /** The scene currently holding the board: a Havarie decision, the delivery's effect cards,
@@ -500,20 +505,33 @@ export class VelgDriftView extends LitElement {
     }
   };
 
+  /** A refused refetch is not nothing: the HUD then shows a stale account, a stale manifest
+   *  or a stale seal overlay, and the traveller acts on numbers that are no longer true. It
+   *  is not worth a toast (the mutation itself already spoke), but it IS worth observing —
+   *  silence here is how a wrong HUD reaches production unnoticed. */
+  private _refetchFailed(what: string, message?: string): void {
+    captureError(new Error(`drift refetch failed: ${what}${message ? ` – ${message}` : ''}`), {
+      source: `VelgDriftView._refresh${what}`,
+    });
+  }
+
   private async _refreshRun(): Promise<void> {
     const res = await driftApi.getRun();
     if (res.success) this._run = res.data ?? null;
+    else this._refetchFailed('Run', res.error?.message);
   }
 
   private async _refreshQuests(): Promise<void> {
     const res = await driftApi.getQuests();
     if (res.success) this._quests = res.data;
+    else this._refetchFailed('Quests', res.error?.message);
   }
 
   /** Re-pull the shared-chart honors (after an Entladung, newly-won seals appear). */
   private async _refreshHonors(): Promise<void> {
     const res = await driftApi.getHonors();
     if (res.success) this._honors = res.data ?? [];
+    else this._refetchFailed('Honors', res.error?.message);
   }
 
   /** Accept a deliver Depesche at the current world edge → cargo bound to the run. */
@@ -552,7 +570,9 @@ export class VelgDriftView extends LitElement {
       async (data) => {
         this._run = data.run;
         await this._refreshQuests();
-        await this._refreshProfile();
+        // The account is refreshed when the scene CLOSES, not here: the strip lives in the
+        // HUD, the HUD sits behind the scene's scrim, and a count-up that runs while it is
+        // dimmed is a ceremony nobody attends (§8 M-01 fires on the traveller's return).
         this._scene = { kind: 'cards', cards: data.cards, earnings: data.earnings };
       },
       'VelgDriftView._deliver',
@@ -563,6 +583,7 @@ export class VelgDriftView extends LitElement {
   private async _refreshProfile(): Promise<void> {
     const res = await driftApi.getProfile();
     if (res.success) this._profile = res.data ?? null;
+    else this._refetchFailed('Profile', res.error?.message);
   }
 
   /** Sit the clearance exam. The strip only offers the button when the server says every
@@ -600,8 +621,11 @@ export class VelgDriftView extends LitElement {
       async (resolved) => {
         this._scene = null;
         this._adoptRun(resolved);
-        await this._refreshProfile();
         if (resolved.status === 'active') {
+          // The run goes on: no debriefing will open, so the account is refreshed here (a
+          // Notruf marks a debt, an Überziehen pays nothing — either way the strip must tell
+          // the truth on the next glance). A terminal outcome refreshes on debriefing-close.
+          await this._refreshProfile();
           VelgToast.info(this._havarieOutcome(choice));
         }
       },
@@ -625,7 +649,33 @@ export class VelgDriftView extends LitElement {
   }
 
   private _closeScene = (): void => {
+    // Closing a scene that PAID is the moment the account may move — and the moment the
+    // traveller is looking at the HUD again. That is where the odometer belongs.
+    const paid = this._scene?.kind === 'cards' || this._scene?.kind === 'debrief';
     this._scene = null;
+    if (paid) void this._refreshProfile();
+  };
+
+  /** After a refused mutation the run has been resynced — the SCENE must follow it.
+   *
+   *  It held a snapshot: the panel rendered its options from the run object it was opened
+   *  with. If the Havarie had meanwhile been settled elsewhere (a second tab, or the 48 h TTL
+   *  firing server-side), the panel stayed up on that dead snapshot and every option came
+   *  back NOT_IN_HAVARIE — forever, with no way to dismiss it. A scene is a view OF the run,
+   *  so it is re-derived from the run, never remembered past it. */
+  private _resyncScene(): void {
+    if (this._scene?.kind !== 'havarie') return;
+    const run = this._run;
+    this._scene = run?.status === 'havarie' ? { kind: 'havarie', run } : null;
+  }
+
+  /** Escape closes a scene the traveller is allowed to walk away from. A Havarie is not one
+   *  of them: the run is stopped until it is answered, and an Escape that silently dismissed
+   *  the decision would leave a wreck on the board with no way back to it. */
+  private _onSceneKeydown = (e: KeyboardEvent): void => {
+    if (e.key !== 'Escape' || !this._scene || this._scene.kind === 'havarie') return;
+    e.stopPropagation();
+    this._closeScene();
   };
 
   /** Display label for a cargo family (the 7 frequency-matter slugs, concept §7.8). */
@@ -725,6 +775,7 @@ export class VelgDriftView extends LitElement {
         VelgToast.error(this._friendlyError(res.error.message ?? ''));
         await this._refreshRun();
         await this._refreshQuests();
+        this._resyncScene();
       }
     } catch (err) {
       captureError(err, { source });
@@ -743,9 +794,10 @@ export class VelgDriftView extends LitElement {
       this._quests = null;
       this._closeDock();
       // The Bureau debriefing replaces the P0 toast salvo: one dossier that states what the
-      // run brought in, what it cost, and how it ended (§8 M-04).
+      // run brought in, what it cost, and how it ended (§8 M-04). The account is refreshed
+      // when the traveller closes it (_closeScene) — the count-up plays to a lit HUD, not to
+      // one dimmed behind the scrim.
       this._scene = { kind: 'debrief', run };
-      void this._refreshProfile();
     } else if (run.status === 'havarie') {
       // The floor gave way. Everything else waits.
       this._run = run;
@@ -816,6 +868,22 @@ export class VelgDriftView extends LitElement {
     }
 
     return lines.join(' ');
+  }
+
+  /** The wreck's own deadline, in words. The Havarie carries an `expires_at` (48 h) after
+   *  which it unravels whatever the traveller would have picked — a fact that was typed,
+   *  shipped and never shown. A deadline nobody is told about is not a deadline, it is a
+   *  trap; and "decide now" reads very differently when you know how long "now" lasts. */
+  private _havarieDeadline(hav: DriftHavarie): string {
+    if (!hav.expires_at) return '';
+    const hours = Math.floor((new Date(hav.expires_at).getTime() - Date.now()) / 3_600_000);
+    if (Number.isNaN(hours)) return '';
+    if (hours <= 0)
+      return msg('Die Frist ist abgelaufen – der Zwischenraum entscheidet gleich selbst.');
+    if (hours < 2) return msg('Weniger als eine Stunde, dann zerfasert das Wrack von selbst.');
+    return msg(
+      str`Bleibt das Wrack ${hours} Stunden unbeantwortet, entscheidet der Zwischenraum: Zerfaserung.`,
+    );
   }
 
   /** Havarie → the scene's options, built from the SERVER's catalogue (checkpoint), never
@@ -982,6 +1050,12 @@ export class VelgDriftView extends LitElement {
     const freqIndex = run ? Math.max(0, FREQUENCIES.indexOf(run.frequency)) : 2;
     const dz = run ? Math.min(1, run.dissonanz / this._dzCap) : 0.12;
 
+    // A scene is modal in fact, so it must be modal in the DOM: `inert` takes the board and
+    // the HUD out of the tab order and out of pointer reach entirely. The scrim only stopped
+    // POINTERS — a keyboard traveller could still tab to Entladung / Rückzug behind a Havarie
+    // and fire a run mutation the scene existed to prevent.
+    const sceneOpen = this._scene !== null;
+
     return html`
       <div class="drift">
         <velg-drift-chart
@@ -993,9 +1067,10 @@ export class VelgDriftView extends LitElement {
           .claimedKeys=${this._claimedKeys}
           .selfKeys=${this._selfKeys}
           .gutterLeft=${HUD_GUTTER_PX}
+          ?inert=${sceneOpen}
           @drift-node-pick=${this._onNodePick}
         ></velg-drift-chart>
-        ${this._renderHud(run)}
+        ${this._renderHud(run, sceneOpen)}
         ${
           this._dockOpen && this._dock && !this._scene
             ? html`<velg-drift-dock-panel
@@ -1009,13 +1084,27 @@ export class VelgDriftView extends LitElement {
     `;
   }
 
+  /** Move focus INTO the scene when it opens, so a keyboard or screen-reader traveller is
+   *  told a decision is waiting instead of having to hunt for it behind an inert board. */
+  protected updated(changed: PropertyValues): void {
+    if (!changed.has('_scene') || !this._scene) return;
+    const panel = this.renderRoot.querySelector<VelgDriftStoryletPanel | VelgDriftEffectCards>(
+      'velg-drift-storylet-panel, velg-drift-effect-cards',
+    );
+    // The panel EXISTS at this point but has not rendered its own shadow content yet (a
+    // child's first update runs after the parent's `updated`), so focusing it synchronously
+    // finds no button and silently does nothing — measured: focus stayed on <body>. Wait for
+    // the child's own update to complete, then take the focus.
+    void panel?.updateComplete.then(() => panel.focusFirst());
+  }
+
   /** The scene layer: exactly one of Havarie / Wirkungsbericht / Debriefing. */
   private _renderScene() {
     const scene = this._scene;
     if (!scene) return '';
 
     if (scene.kind === 'cards') {
-      return html`<div class="scene-layer">
+      return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
         <velg-drift-effect-cards
           .cards=${scene.cards}
           .earnings=${scene.earnings}
@@ -1025,7 +1114,7 @@ export class VelgDriftView extends LitElement {
     }
 
     if (scene.kind === 'debrief') {
-      return html`<div class="scene-layer">
+      return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
         <velg-drift-storylet-panel
           eyebrow=${msg('Bureau für Zwischenraumfragen')}
           sceneTitle=${msg('Debriefing')}
@@ -1047,7 +1136,7 @@ export class VelgDriftView extends LitElement {
 
     const hav = havarieOf(scene.run);
     if (!hav) return '';
-    return html`<div class="scene-layer">
+    return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
       <velg-drift-storylet-panel
         eyebrow=${msg('Havarie')}
         tone="danger"
@@ -1057,13 +1146,13 @@ export class VelgDriftView extends LitElement {
             : msg('Das Fenster ist zugefallen')
         }
         prose=${
-          hav.cause === 'kohaerenz'
+          (hav.cause === 'kohaerenz'
             ? msg(
                 str`Der Träger franst aus. Du hängst zwischen den Welten, ${hav.haul_at_risk} Punkte Vermessung an Bord und nichts, was dich hält. Noch ist nichts verloren – aber du musst dich jetzt entscheiden.`,
               )
             : msg(
                 str`Dein Aufenthaltsfenster ist abgelaufen, und die Heimat ist nicht in Reichweite. ${hav.haul_at_risk} Punkte Vermessung hängen an dieser Entscheidung.`,
-              )
+              )) + (this._havarieDeadline(hav) ? ` ${this._havarieDeadline(hav)}` : '')
         }
         selectionLabel=${msg('Fracht über Bord geben')}
         .options=${this._havarieOptions(hav)}
@@ -1074,7 +1163,7 @@ export class VelgDriftView extends LitElement {
     </div>`;
   }
 
-  private _renderHud(run: TravelRun | null) {
+  private _renderHud(run: TravelRun | null, sceneOpen = false) {
     if (!run) {
       // Public-first (plan §22.2): a guest reads the shared chart but cannot open a run
       // (openRun requires auth). Show a spectator prompt instead of an AUFBRUCH control
@@ -1082,8 +1171,22 @@ export class VelgDriftView extends LitElement {
       // member HUD swaps in the moment a guest authenticates.
       const isMember = appState.isAuthenticated.value;
       return html`
-        <div class="hud">
+        <div class="hud" ?inert=${sceneOpen}>
           <p class="hud__title">${msg('No active drift')}</p>
+          ${
+            // BETWEEN runs is exactly when the account matters most: the Entladung just paid,
+            // and the promotion it unlocked is sat from this strip. The strip used to live in
+            // the run branch only, so closing a run unmounted the Konto AND the exam stamp —
+            // the reward vanished at the moment it was earned, and the rank could not be
+            // claimed until the traveller opened another run.
+            isMember
+              ? html`<velg-drift-ledger-strip
+                  .profile=${this._profile}
+                  ?busy=${this._busy}
+                  @drift-exam=${this._sitExam}
+                ></velg-drift-ledger-strip>`
+              : ''
+          }
           <p class="hud__hint">
             ${
               isMember
@@ -1109,7 +1212,7 @@ export class VelgDriftView extends LitElement {
     const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
     const atHome = posNode?.node_type === 'broadcast_rand' && posNode.simulation_id === anchor;
     return html`
-      <div class="hud">
+      <div class="hud" ?inert=${sceneOpen}>
         <p class="hud__title">${msg('Träger')} · ${this._positionName()}</p>
         <velg-drift-ledger-strip
           .profile=${this._profile}

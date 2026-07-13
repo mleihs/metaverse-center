@@ -21,6 +21,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
 import type { DriftProfile } from '../../types/drift.js';
 import { icons } from '../../utils/icons.js';
 
@@ -259,14 +260,86 @@ export class VelgDriftLedgerStrip extends LitElement {
   @state() private _dSiegel = 0;
   @state() private _dVp = 0;
 
+  /** What the odometer currently READS (the tween's output), as opposed to what the account
+   *  IS (`profile`). M-01 promised a count-up; the values used to be printed raw. */
+  @state() private _shownSiegel = 0;
+  @state() private _shownVp = 0;
+
+  /** Bumped on every payout so the delta chip is a NEW element each time. Without this Lit
+   *  reuses the same <span> (same template position), the CSS animation does not restart,
+   *  and every payout after the first one leaves a chip sitting at opacity 0 — the ceremony
+   *  fires exactly once in the lifetime of the strip and then goes silent forever. */
+  @state() private _deltaNonce = 0;
+
+  private _raf: number | null = null;
+  private _snap: number | null = null;
+
+  disconnectedCallback(): void {
+    if (this._raf !== null) cancelAnimationFrame(this._raf);
+    if (this._snap !== null) clearTimeout(this._snap);
+    this._raf = null;
+    this._snap = null;
+    super.disconnectedCallback();
+  }
+
   protected willUpdate(changed: PropertyValues): void {
     if (!changed.has('profile') || !this.profile) return;
     const { siegel, vp } = this.profile;
     // First sight of an account is not an earning — only a CHANGE is.
-    this._dSiegel = this._prevSiegel === null ? 0 : siegel - this._prevSiegel;
-    this._dVp = this._prevVp === null ? 0 : vp - this._prevVp;
+    const first = this._prevSiegel === null;
+    this._dSiegel = first ? 0 : siegel - (this._prevSiegel ?? 0);
+    this._dVp = first ? 0 : vp - (this._prevVp ?? 0);
+    const from = { siegel: this._prevSiegel ?? siegel, vp: this._prevVp ?? vp };
     this._prevSiegel = siegel;
     this._prevVp = vp;
+
+    if (this._dSiegel > 0 || this._dVp > 0) this._deltaNonce++;
+    this._countUp(from, { siegel, vp });
+  }
+
+  /** M-01: the odometer. 240 ms of counting is what makes a payout feel PAID — a number that
+   *  merely swaps has no moment. The tween is the only thing the motion carries; the value it
+   *  lands on is the account's, so reduced motion simply skips to it. */
+  private _countUp(from: { siegel: number; vp: number }, to: { siegel: number; vp: number }): void {
+    if (this._raf !== null) cancelAnimationFrame(this._raf);
+    this._raf = null;
+    if (this._snap !== null) clearTimeout(this._snap);
+    this._snap = null;
+
+    const still = from.siegel === to.siegel && from.vp === to.vp;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // A hidden tab does not run requestAnimationFrame at all. That is not a missing
+    // animation, it is a LYING BALANCE: the tween is what writes the displayed number, so a
+    // payout that lands while the tab is in the background would leave the strip showing the
+    // OLD account forever (measured: profile 22 Siegel, strip still reading 14). And the tab
+    // being hidden at exactly that moment is the normal case, not an exotic one — the
+    // traveller just clicked "Beleg ansehen" and is reading the event in the other tab.
+    if (still || reduced || document.hidden) {
+      this._shownSiegel = to.siegel;
+      this._shownVp = to.vp;
+      return;
+    }
+
+    const DURATION = 240;
+    const start = performance.now();
+    const step = (now: number): void => {
+      const p = Math.min(1, (now - start) / DURATION);
+      const eased = 1 - (1 - p) ** 3; // ease-out: the count decelerates onto the number
+      this._shownSiegel = Math.round(from.siegel + (to.siegel - from.siegel) * eased);
+      this._shownVp = Math.round(from.vp + (to.vp - from.vp) * eased);
+      this._raf = p < 1 ? requestAnimationFrame(step) : null;
+    };
+    this._raf = requestAnimationFrame(step);
+
+    // Belt and braces: setTimeout DOES fire in a backgrounded tab (throttled), so even if the
+    // tab is hidden mid-tween the number still arrives. The truth outlives the ceremony.
+    this._snap = window.setTimeout(() => {
+      if (this._raf !== null) cancelAnimationFrame(this._raf);
+      this._raf = null;
+      this._snap = null;
+      this._shownSiegel = to.siegel;
+      this._shownVp = to.vp;
+    }, DURATION + 60);
   }
 
   private _sitExam(): void {
@@ -293,13 +366,21 @@ export class VelgDriftLedgerStrip extends LitElement {
         <div class="ledger__row">
           <span class="coin">
             <span class="coin__label">${msg('Siegel')}</span>
-            <span class="coin__value">${p.siegel}</span>
-            ${this._dSiegel > 0 ? html`<span class="delta">+${this._dSiegel}</span>` : ''}
+            <span class="coin__value">${this._shownSiegel}</span>
+            ${
+              this._dSiegel > 0
+                ? keyed(`s${this._deltaNonce}`, html`<span class="delta">+${this._dSiegel}</span>`)
+                : ''
+            }
           </span>
           <span class="coin coin--vp">
             <span class="coin__label">${msg('VP')}</span>
-            <span class="coin__value">${p.vp}</span>
-            ${this._dVp > 0 ? html`<span class="delta">+${this._dVp}</span>` : ''}
+            <span class="coin__value">${this._shownVp}</span>
+            ${
+              this._dVp > 0
+                ? keyed(`v${this._deltaNonce}`, html`<span class="delta">+${this._dVp}</span>`)
+                : ''
+            }
           </span>
         </div>
 

@@ -559,6 +559,15 @@ export class VelgApp extends LitElement {
           this._enterSimulationRoute(id, 'buildings', entitySlug),
       },
       {
+        // Events are addressed by id, not slug (they have none) — the param carries the
+        // event id. The DRIFT Wirkungsbericht links here: the receipt for an effect that
+        // landed in a foreign world is the event it wrote there, and until this route
+        // existed that link fell through to <velg-not-found>.
+        path: '/simulations/:id/events/:entitySlug',
+        render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'events', entitySlug),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'events', entitySlug),
+      },
+      {
         path: '/simulations/:id/agents',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'agents'),
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'agents', entitySlug),
@@ -1165,7 +1174,7 @@ export class VelgApp extends LitElement {
         content = html`<velg-buildings-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-buildings-view>`;
         break;
       case 'events':
-        content = html`<velg-events-view .simulationId=${resolvedId}></velg-events-view>`;
+        content = html`<velg-events-view .simulationId=${resolvedId} .entityId=${entitySlug ?? ''}></velg-events-view>`;
         break;
       case 'chat':
         content = html`<velg-chat-view .simulationId=${resolvedId}></velg-chat-view>`;

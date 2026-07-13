@@ -165,6 +165,66 @@ class TestDeterministicDice:
         assert min(values) >= 8 and max(values) <= 12, f"roll escaped [8,12]: {sorted(values)}"
 
 
+class TestSeedSecrecy:
+    """The dice are deterministic for the server and opaque to the player.
+
+    Every other seed term (run id, instance id, takt) is a value the client already holds and
+    hashtext is open source, so WITHOUT a server-only term a traveller could precompute each
+    roll and simply wait for the takt that pays best. In W1 that is worth ~4 Siegel; in W2 the
+    same dice draw the signals and the Sondierungs-Bust, where a readable next card would
+    delete the push-your-luck outright. The salt is what keeps the roll a roll.
+    """
+
+    def test_the_salt_is_stable_per_run_and_differs_between_runs(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            run_a = _open_run(client, user, chart_home["simulation_id"])
+            salt_a1 = admin_client.rpc("drift_run_salt", {"p_run": run_a["id"]}).execute().data
+            salt_a2 = admin_client.rpc("drift_run_salt", {"p_run": run_a["id"]}).execute().data
+            assert salt_a1 and salt_a1 == salt_a2, (
+                "the salt is created once and then read — a re-rolled salt would re-roll "
+                "every payout of the run with it"
+            )
+
+            admin_client.table("travel_runs").update({"status": "abandoned"}).eq(
+                "id", run_a["id"]
+            ).execute()
+            run_b = _open_run(client, user, chart_home["simulation_id"])
+            salt_b = admin_client.rpc("drift_run_salt", {"p_run": run_b["id"]}).execute().data
+            assert salt_b != salt_a1, "a fresh run draws a fresh secret"
+        finally:
+            _reset_traveler(admin_client, user)
+
+    def test_the_traveller_cannot_read_their_own_salt(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        """The owner is the adversary — which is why the salt is NOT a travel_runs column.
+
+        travel_runs_owner_select (RLS, 246) lets a traveller read their own run row straight
+        through PostgREST with the public anon key. A salt stored there would be handed to
+        exactly the party it is kept from. It lives in travel_run_seeds: no anon/authenticated
+        grant, no policy for them, reachable only through the SECURITY DEFINER dice.
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            run = _open_run(client, user, chart_home["simulation_id"])
+            admin_client.rpc("drift_run_salt", {"p_run": run["id"]}).execute()  # ensure it exists
+
+            with pytest.raises(Exception, match=r"(?i)permission denied|does not exist|42501"):
+                client.table("travel_run_seeds").select("*").execute()
+
+            with pytest.raises(Exception, match=r"(?i)permission denied|not find|42883|404"):
+                client.rpc("drift_run_salt", {"p_run": run["id"]}).execute()
+        finally:
+            _reset_traveler(admin_client, user)
+
+
 # ── the ledger writer ─────────────────────────────────────────────────────────
 
 
@@ -286,9 +346,14 @@ class TestDispatchPayout:
             ).execute().data
 
             reward = _tuning(admin_client, "reward_dispatch_tier1")
+            # The seed carries a server-only salt (migration 264 §4b), so recomputing the
+            # roll takes service_role. Reproducing it here is exactly the point: the roll is
+            # deterministic for the SERVER (replay, CI, bug reports) and unforgeable for the
+            # client — the two properties the dice must hold at the same time.
+            salt = admin_client.rpc("drift_run_salt", {"p_run": run["id"]}).execute().data
             expected_siegel = admin_client.rpc(
                 "drift_rand_int",
-                {"p_seed": f"{run['id']}:{instance['id']}:{run['takt_count']}",
+                {"p_seed": f"{salt}:{run['id']}:{instance['id']}:{run['takt_count']}",
                  "p_lo": reward["siegel_min"], "p_hi": reward["siegel_max"]},
             ).execute().data
 
@@ -301,8 +366,10 @@ class TestDispatchPayout:
             row = _profile(admin_client, user)
             assert row["siegel"] == expected_siegel, "the roll landed on the profile"
             assert row["vp"] == reward["vp"]
-            # The receipt also rides the checkpoint, so a refetch can stage the ceremony.
-            assert out["run"]["checkpoint"]["last_delivery"]["earnings"]["vp_earned"] == reward["vp"]
+            # The receipt rides the checkpoint at the TOP level — that is where
+            # TravelRunResponse._lift_earnings looks, so a plain refetch of the run (second
+            # device, reload mid-ceremony) can still stage the Zeremonie.
+            assert out["run"]["checkpoint"]["earnings"]["vp_earned"] == reward["vp"]
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
