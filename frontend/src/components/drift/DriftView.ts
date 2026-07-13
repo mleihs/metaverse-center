@@ -21,7 +21,12 @@ import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
 import type {
   DriftChart,
   DriftDock,
+  DriftEarnings,
+  DriftEffectCard,
+  DriftHavarie,
+  DriftHavarieChoice,
   DriftHonor,
+  DriftProfile,
   DriftQuestOffer,
   DriftQuestState,
   DriftTuning,
@@ -34,7 +39,36 @@ import { buttonStyles } from '../shared/button-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import './DriftChartHost.js';
 import './DriftDockPanel.js';
+import './DriftEffectCards.js';
+import './DriftLedgerStrip.js';
+import './DriftStoryletPanel.js';
+import { rankLabel } from './DriftLedgerStrip.js';
+import type { StoryletOption, StoryletSelectable } from './DriftStoryletPanel.js';
 import { FREQUENCIES, freqColorByName } from './palette.js';
+
+/** The scene currently holding the board: a Havarie decision, the delivery's effect cards,
+ *  or the Bureau debriefing after a run closed. Only one at a time — a run that stops to
+ *  ask a question must not be asked two. */
+type DriftScene =
+  | { kind: 'havarie'; run: TravelRun }
+  | { kind: 'cards'; cards: DriftEffectCard[]; earnings: DriftEarnings | null }
+  | { kind: 'debrief'; run: TravelRun };
+
+/** Read the Havarie block the RPC wrote into the checkpoint. The client NEVER invents an
+ *  option: which ones exist is the server's decision (a Kohärenz-Havarie with no cargo has
+ *  no Notabwurf), and the prices are read from the tuning catalogue the RPC shipped along. */
+function havarieOf(run: TravelRun | null): DriftHavarie | null {
+  const block = run?.checkpoint?.havarie;
+  if (!block || typeof block !== 'object') return null;
+  const h = block as Partial<DriftHavarie>;
+  return Array.isArray(h.options) && typeof h.cause === 'string' ? (block as DriftHavarie) : null;
+}
+
+/** How much of the board's left edge the HUD covers: its width (320px, `.hud`) plus the
+ *  16px inset on either side. The chart frames the graph into the band that is left over —
+ *  otherwise a third of the Driftkarte sits under the HUD on a narrow screen. Kept in sync
+ *  with the `.hud` rule below by construction (both derive from the same two numbers). */
+const HUD_GUTTER_PX = 320 + 32;
 
 // Gauge maxima come from the tuning API (drift_tuning is the source of truth); these
 // are only the fail-soft fallbacks if that fetch fails. P0 travellers are class 1.
@@ -66,11 +100,38 @@ export class VelgDriftView extends LitElement {
         position: absolute;
         inset: 0;
       }
+      /* The scene layer: where the run stops and asks. Sits above the board, below any
+         global modal. A scrim dims the chart so the decision is the only thing lit —
+         the Havarie's drama is in the ENTRANCE, the clarity is in the choice (§8 M-15). */
+      .scene-layer {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-4);
+        background: color-mix(in srgb, var(--color-surface-sunken) 72%, transparent);
+        overflow-y: auto;
+        z-index: var(--z-overlay);
+      }
+      .scene-layer > * {
+        width: min(560px, 100%);
+      }
       .hud {
         position: absolute;
         top: var(--space-4);
         left: var(--space-4);
         width: min(320px, calc(100% - var(--space-8)));
+        /* The HUD is a panel INSIDE the board, so it must never grow past it. It had no
+           bound at all: with a full Depeschen list it already reached the board's edge, and
+           the Konto strip pushed it 137px out over the page footer (measured). Bound it to
+           the board and let the content scroll — the board frame is the contract. */
+        max-height: calc(100% - var(--space-8));
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        /* Shadow DOM does NOT inherit the document's border-box reset — without this the
+           padding + border are added ON TOP of max-height and the panel still spills. */
+        box-sizing: border-box;
         padding: var(--space-4);
         background: color-mix(in srgb, var(--color-surface) 86%, transparent);
         border: var(--border-medium);
@@ -78,6 +139,8 @@ export class VelgDriftView extends LitElement {
         box-shadow: var(--shadow-md);
         backdrop-filter: blur(2px);
         z-index: var(--z-raised);
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
       }
       .hud__title {
         margin: 0 0 var(--space-3);
@@ -311,6 +374,10 @@ export class VelgDriftView extends LitElement {
   private _selfKeys: Set<string> = new Set();
   @state() private _dock: DriftDock | null = null;
   @state() private _dockOpen = false;
+  /** The Bureau account behind the ledger strip (null before the traveller's first run). */
+  @state() private _profile: DriftProfile | null = null;
+  /** The one scene currently holding the board (Havarie / effect cards / debriefing). */
+  @state() private _scene: DriftScene | null = null;
   @state() private _loading = true;
   @state() private _error = false;
   @state() private _busy = false;
@@ -395,22 +462,27 @@ export class VelgDriftView extends LitElement {
       // manifest or seal overlay. The mode decision lives here at the call site (never in
       // the API layer); appState.isAuthenticated is the canonical authed signal.
       if (appState.isAuthenticated.value) {
-        const [chartRes, runRes, tuningRes, questRes, honorRes] = await Promise.all([
+        const [chartRes, runRes, tuningRes, questRes, honorRes, profileRes] = await Promise.all([
           driftApi.getChart('member'),
           driftApi.getRun(),
           driftApi.getTuning(),
           driftApi.getQuests(),
           driftApi.getHonors(),
+          driftApi.getProfile(),
         ]);
         this._chart = chartRes.success ? (chartRes.data ?? null) : null;
         this._run = runRes.success ? (runRes.data ?? null) : null;
         if (tuningRes.success) this._tuning = tuningRes.data;
         if (questRes.success) this._quests = questRes.data;
         if (honorRes.success) this._honors = honorRes.data ?? [];
+        if (profileRes.success) this._profile = profileRes.data ?? null;
         if (!chartRes.success) this._error = true;
         this._loadedAsMember = true;
         // Resumed onto a foreign broadcast edge? Surface its dossier.
         if (this._run) void this._maybeDock(this._run);
+        // Resumed INTO a wreck: the decision is still open and it is the only thing that
+        // matters — a traveller who closes the tab mid-Havarie comes back to the scene.
+        if (this._run?.status === 'havarie') this._scene = { kind: 'havarie', run: this._run };
       } else {
         const chartRes = await driftApi.getChart('public');
         this._chart = chartRes.success ? (chartRes.data ?? null) : null;
@@ -465,7 +537,12 @@ export class VelgDriftView extends LitElement {
     );
   }
 
-  /** Deliver the carried Depesche at the target broadcast edge → fires the gate. */
+  /** Deliver the carried Depesche at the target broadcast edge → fires the gate.
+   *
+   *  P0 answered this with a counting toast ("3 Wirkungen"). Now the delivery opens the
+   *  Wirkungsbericht: one card per effect, with the named world it landed in and a link to
+   *  the receipt — and a redacted card for every effect the world's hospitality refused.
+   *  That refusal is not a failure to hide; it is the world answering. */
   private _deliver(): void {
     const run = this._run;
     const active = this._quests?.active;
@@ -474,15 +551,82 @@ export class VelgDriftView extends LitElement {
       () => driftApi.advanceQuest(active.id, run.id, run.run_version),
       async (data) => {
         this._run = data.run;
-        const fired = data.effects.applied.length;
         await this._refreshQuests();
-        VelgToast.success(
-          msg(str`Depesche abgeliefert – ${fired} Wirkung${fired === 1 ? '' : 'en'} ausgelöst.`),
-        );
+        await this._refreshProfile();
+        this._scene = { kind: 'cards', cards: data.cards, earnings: data.earnings };
       },
       'VelgDriftView._deliver',
     );
   }
+
+  /** Re-pull the Bureau account (after any act that pays: delivery, Entladung, exam). */
+  private async _refreshProfile(): Promise<void> {
+    const res = await driftApi.getProfile();
+    if (res.success) this._profile = res.data ?? null;
+  }
+
+  /** Sit the clearance exam. The strip only offers the button when the server says every
+   *  precondition holds (exam_ready), so this path is the happy one by construction — a
+   *  refusal still resyncs the account rather than trusting the click. */
+  private _sitExam(e: CustomEvent<{ rank: string }>): void {
+    void this._mutate(
+      () => driftApi.sitClearanceExam(e.detail.rank),
+      async (result) => {
+        await this._refreshProfile();
+        VelgToast.success(
+          msg(
+            str`Prüfung bestanden: ${rankLabel(result.clearance_rank)}. Gebühr ${result.fee_paid} Siegel.`,
+          ),
+        );
+      },
+      'VelgDriftView._sitExam',
+    );
+  }
+
+  /** Resolve a Havarie. The choice and any jettisoned cargo are validated server-side
+   *  against what the wreck actually offered — the client cannot smuggle an option in. */
+  private _resolveHavarie(e: CustomEvent<{ key: string; selected: string[] }>): void {
+    const run = this._run;
+    if (!run) return;
+    const choice = e.detail.key as DriftHavarieChoice;
+    void this._mutate(
+      () =>
+        driftApi.resolveHavarie(
+          run.id,
+          run.run_version,
+          choice,
+          choice === 'notabwurf' ? e.detail.selected : undefined,
+        ),
+      async (resolved) => {
+        this._scene = null;
+        this._adoptRun(resolved);
+        await this._refreshProfile();
+        if (resolved.status === 'active') {
+          VelgToast.info(this._havarieOutcome(choice));
+        }
+      },
+      'VelgDriftView._resolveHavarie',
+    );
+  }
+
+  /** What just happened, in one line — for the options that KEEP the run alive (the ones
+   *  that end it get the full debriefing instead). */
+  private _havarieOutcome(choice: DriftHavarieChoice): string {
+    switch (choice) {
+      case 'notabwurf':
+        return msg('Fracht abgeworfen. Kohärenz stabilisiert, das Fenster ist kürzer.');
+      case 'notruf':
+        return msg('Notruf abgesetzt. Das Bureau schleppt dich heim – der Vermerk bleibt.');
+      case 'ueberziehen':
+        return msg('Überzogen. Jeder weitere Takt kostet Dissonanz.');
+      default:
+        return msg('Havarie beigelegt.');
+    }
+  }
+
+  private _closeScene = (): void => {
+    this._scene = null;
+  };
 
   /** Display label for a cargo family (the 7 frequency-matter slugs, concept §7.8). */
   private _cargoLabel(family: string): string {
@@ -598,7 +742,16 @@ export class VelgDriftView extends LitElement {
       this._run = null;
       this._quests = null;
       this._closeDock();
-      this._announceClose(run);
+      // The Bureau debriefing replaces the P0 toast salvo: one dossier that states what the
+      // run brought in, what it cost, and how it ended (§8 M-04).
+      this._scene = { kind: 'debrief', run };
+      void this._refreshProfile();
+    } else if (run.status === 'havarie') {
+      // The floor gave way. Everything else waits.
+      this._run = run;
+      this._closeDock();
+      this._scene = { kind: 'havarie', run };
+      void this._refreshQuests();
     } else {
       this._run = run;
       void this._maybeDock(run);
@@ -606,44 +759,134 @@ export class VelgDriftView extends LitElement {
     }
   };
 
-  /** Toast a closed run's outcome: haul banked (Entladung), lost (recall), or Rückzug. */
-  private _announceClose(run: TravelRun): void {
+  /**
+   * The Bureau debriefing: the run's own account of itself, in the Bureau's voice.
+   *
+   * Pure template text parameterised with the run's facts (no LLM touchpoint in W1 — KPI 6
+   * says the template must carry it). It replaces the P0 toast salvo, which stacked up to
+   * three messages that scrolled past before the traveller could read them.
+   */
+  private _debriefProse(run: TravelRun): string {
     const cp = run.checkpoint;
-    const recall = typeof cp.recall === 'string' ? cp.recall : null;
+    const banked = Number(cp.haul_banked ?? 0);
+    const lost = Number(cp.haul_lost ?? 0);
+    const honors = Number(cp.honors_won ?? 0);
+    const closeReason = typeof cp.close_reason === 'string' ? cp.close_reason : null;
+    const scatter = cp.scattered;
+    const scattered =
+      scatter !== null && typeof scatter === 'object' && 'scattered' in scatter
+        ? Number((scatter as { scattered: unknown }).scattered)
+        : 0;
+
+    const lines: string[] = [];
+
     if (run.status === 'completed') {
-      VelgToast.success(msg(str`Entladung: ${Number(cp.haul_banked ?? 0)} Vermessung gesichert.`));
-      const honors = Number(cp.honors_won ?? 0);
+      lines.push(
+        closeReason === 'rueckruf'
+          ? msg(
+              str`Rückruf bestätigt. Von der Vermessung dieser Fahrt sind ${banked} Punkte durch die Schleuse gekommen – der Rest blieb im Zwischenraum.`,
+            )
+          : msg(str`Entladung protokolliert. ${banked} Punkte Vermessung sind gesichert.`),
+      );
       if (honors > 0) {
-        // The Erstvermessung ceremony (§19.4): a first-to-chart claim now stands on the
-        // shared Driftkarte. A toast is the static-flag ceremony (reduced-motion safe).
-        VelgToast.success(
+        lines.push(
           msg(
-            str`Erstvermessung: ${honors} Knoten zuerst kartiert – dein Siegel steht auf der Karte.`,
+            str`Erstvermessung: ${honors} Knoten hat vor dir niemand kartiert. Dein Siegel steht jetzt auf der gemeinsamen Karte.`,
           ),
         );
       }
-    } else if (recall) {
-      const reason = recall === 'kohaerenz' ? msg('Kohärenz zerfasert') : msg('Fenster abgelaufen');
-      VelgToast.error(
-        msg(str`Recall (${reason}): ${Number(cp.haul_lost ?? 0)} Vermessung verloren.`),
+    } else if (scattered > 0) {
+      lines.push(
+        msg(
+          str`Zerfaserung. ${lost} Punkte Vermessung sind verloren, und ${scattered} Depesche(n) verwehen als Echo über den Welten, für die sie bestimmt waren.`,
+        ),
       );
-      // §19.4 failure floor: the collapsed run's carried Depeschen don't just vanish – they
-      // scatter as faint echoes into the worlds they were bound for (hospitality-gated).
-      // cp.scattered is the floor's {scattered, applied, skipped} summary; a second toast
-      // marks the lost cargo's diegetic afterlife in the Drift.
-      const scatter = cp.scattered;
-      const scattered =
-        scatter !== null && typeof scatter === 'object' && 'scattered' in scatter
-          ? Number(scatter.scattered)
-          : 0;
-      if (scattered > 0) {
-        VelgToast.warning(
-          msg(str`Fracht zerfasert – ${scattered} Depesche(n) als Echo in den Drift verweht.`),
-        );
-      }
+    } else if (lost > 0) {
+      lines.push(msg(str`Zerfaserung. ${lost} Punkte Vermessung sind verloren.`));
     } else {
-      VelgToast.info(msg('Rückzug eingeleitet.'));
+      lines.push(msg('Rückzug eingeleitet. Die Fahrt ist ohne Eintrag geschlossen.'));
     }
+
+    if (run.earnings) {
+      lines.push(
+        msg(
+          str`Gutgeschrieben: ${run.earnings.siegel_earned} Siegel, ${run.earnings.vp_earned} VP. Kontostand: ${run.earnings.siegel_balance} Siegel.`,
+        ),
+      );
+    }
+
+    return lines.join(' ');
+  }
+
+  /** Havarie → the scene's options, built from the SERVER's catalogue (checkpoint), never
+   *  from a client-side copy that could quietly drift out of date. Every price on a chip is
+   *  the price the RPC will actually charge. */
+  private _havarieOptions(hav: DriftHavarie): StoryletOption[] {
+    const cat = hav.catalogue ?? {};
+    const num = (key: string, field: string, fallback: number): number =>
+      Number(cat[key]?.[field] ?? fallback);
+
+    const build: Record<DriftHavarieChoice, () => StoryletOption> = {
+      notabwurf: () => ({
+        key: 'notabwurf',
+        label: msg('Notabwurf'),
+        detail: msg(
+          'Fracht über Bord – Ballast gegen Kohärenz. Was du behältst, bleibt an Bord; was du wirfst, sinkt ungesendet in den Drift.',
+        ),
+        chips: [
+          msg(str`+${num('notabwurf', 'kh_restore', 30)} Kohärenz`),
+          msg(str`−${num('notabwurf', 'window_cost', 2)} Takte`),
+        ],
+        requiresSelection: true,
+      }),
+      notruf: () => ({
+        key: 'notruf',
+        label: msg('Notruf'),
+        detail: msg(
+          'Das Bureau schleppt dich heim. Die Fracht bleibt bei dir, die Vermessung nicht – und der Schuldvermerk steht in deiner Akte.',
+        ),
+        chips: [
+          msg(str`Haul ×${num('notruf', 'haul_mult', 0.5)}`),
+          msg(str`${num('notruf', 'siegel_debt', 10)} Siegel Schuld`),
+        ],
+      }),
+      zerfaserung: () => ({
+        key: 'zerfaserung',
+        label: msg('Zerfaserung'),
+        detail: msg(
+          'Du lässt los. Die Fracht verweht als Echo über den Welten, für die sie bestimmt war – und dein Name trägt eine Narbe mehr.',
+        ),
+        chips: [msg('Vermessung verloren'), msg('Narbe')],
+        danger: true,
+      }),
+      ueberziehen: () => ({
+        key: 'ueberziehen',
+        label: msg('Überziehen'),
+        detail: msg(
+          'Bleib über das Permit hinaus. Der Bleed bemerkt es: jeder weitere Takt kostet Dissonanz, bis die Kohärenz nachgibt.',
+        ),
+        chips: [msg(str`+${num('ueberziehen', 'dz_per_takt', 5)} Dissonanz je Takt`)],
+      }),
+      rueckruf: () => ({
+        key: 'rueckruf',
+        label: msg('Rückruf'),
+        detail: msg(
+          'Geordneter Abbruch. Die Schleuse nimmt, was durchpasst – der Rest bleibt im Zwischenraum.',
+        ),
+        chips: [msg(str`Haul ×${num('rueckruf', 'haul_mult', 0.7)}`), msg('Fahrt endet')],
+      }),
+    };
+
+    return hav.options.filter((o) => o in build).map((o) => build[o]());
+  }
+
+  /** The manifest the Notabwurf may throw overboard — the run's own cargo, nothing else. */
+  private _havarieSelectables(): StoryletSelectable[] {
+    return (this._quests?.cargo ?? []).map((c) => ({
+      id: c.id,
+      label: this._cargoLabel(c.family),
+      hint: c.vector,
+    }));
   }
 
   private _open(): void {
@@ -700,6 +943,20 @@ export class VelgDriftView extends LitElement {
     if (message.includes('QUEST_ACTIVE')) return msg('Du trägst bereits eine Depesche.');
     if (message.includes('CARGO_MISSING')) return msg('Die Fracht ist nicht mehr an Bord.');
     if (message.includes('RUN_STALE')) return msg('Aus dem Takt geraten, neu synchronisiert.');
+    // Havarie (migration 265) + Bureau ledger (264)
+    if (message.includes('NOT_IN_HAVARIE'))
+      return msg('Diese Fahrt liegt nicht in Havarie. Die Lage hat sich bereits geklärt.');
+    if (message.includes('INVALID_CHOICE'))
+      return msg('Diese Option steht bei dieser Havarie nicht offen.');
+    if (message.includes('NOTHING_SELECTED'))
+      return msg('Wähle zuerst, welche Fracht über Bord geht.');
+    if (message.includes('CARGO_NOT_ABOARD'))
+      return msg('Diese Fracht ist nicht an Bord dieser Fahrt.');
+    if (message.includes('VP_TOO_LOW'))
+      return msg('Für diese Prüfung fehlen dir noch Vermessungspunkte.');
+    if (message.includes('SIEGEL_TOO_LOW')) return msg('Die Prüfungsgebühr übersteigt dein Konto.');
+    if (message.includes('RANK_ALREADY_HELD')) return msg('Diesen Rang trägst du bereits.');
+    if (message.includes('GATE_CLOSED')) return msg('Das Bureau hat diesen Schalter geschlossen.');
     return message || msg('Der Drift hat das verweigert.');
   }
 
@@ -735,19 +992,86 @@ export class VelgDriftView extends LitElement {
           .dissonance=${dz}
           .claimedKeys=${this._claimedKeys}
           .selfKeys=${this._selfKeys}
+          .gutterLeft=${HUD_GUTTER_PX}
           @drift-node-pick=${this._onNodePick}
         ></velg-drift-chart>
         ${this._renderHud(run)}
         ${
-          this._dockOpen && this._dock
+          this._dockOpen && this._dock && !this._scene
             ? html`<velg-drift-dock-panel
               .dock=${this._dock}
               @dock-close=${this._closeDock}
             ></velg-drift-dock-panel>`
             : ''
         }
+        ${this._renderScene()}
       </div>
     `;
+  }
+
+  /** The scene layer: exactly one of Havarie / Wirkungsbericht / Debriefing. */
+  private _renderScene() {
+    const scene = this._scene;
+    if (!scene) return '';
+
+    if (scene.kind === 'cards') {
+      return html`<div class="scene-layer">
+        <velg-drift-effect-cards
+          .cards=${scene.cards}
+          .earnings=${scene.earnings}
+          @cards-close=${this._closeScene}
+        ></velg-drift-effect-cards>
+      </div>`;
+    }
+
+    if (scene.kind === 'debrief') {
+      return html`<div class="scene-layer">
+        <velg-drift-storylet-panel
+          eyebrow=${msg('Bureau für Zwischenraumfragen')}
+          sceneTitle=${msg('Debriefing')}
+          prose=${this._debriefProse(scene.run)}
+          tone=${scene.run.status === 'completed' ? 'default' : 'danger'}
+          .options=${[
+            {
+              key: 'close',
+              label: msg('Akte schließen'),
+              detail: msg('Die Fahrt ist protokolliert. Der Zwischenraum wartet nicht.'),
+              chips: [],
+            },
+          ]}
+          ?busy=${this._busy}
+          @storylet-pick=${this._closeScene}
+        ></velg-drift-storylet-panel>
+      </div>`;
+    }
+
+    const hav = havarieOf(scene.run);
+    if (!hav) return '';
+    return html`<div class="scene-layer">
+      <velg-drift-storylet-panel
+        eyebrow=${msg('Havarie')}
+        tone="danger"
+        sceneTitle=${
+          hav.cause === 'kohaerenz'
+            ? msg('Die Kohärenz gibt nach')
+            : msg('Das Fenster ist zugefallen')
+        }
+        prose=${
+          hav.cause === 'kohaerenz'
+            ? msg(
+                str`Der Träger franst aus. Du hängst zwischen den Welten, ${hav.haul_at_risk} Punkte Vermessung an Bord und nichts, was dich hält. Noch ist nichts verloren – aber du musst dich jetzt entscheiden.`,
+              )
+            : msg(
+                str`Dein Aufenthaltsfenster ist abgelaufen, und die Heimat ist nicht in Reichweite. ${hav.haul_at_risk} Punkte Vermessung hängen an dieser Entscheidung.`,
+              )
+        }
+        selectionLabel=${msg('Fracht über Bord geben')}
+        .options=${this._havarieOptions(hav)}
+        .selectables=${this._havarieSelectables()}
+        ?busy=${this._busy}
+        @storylet-pick=${this._resolveHavarie}
+      ></velg-drift-storylet-panel>
+    </div>`;
   }
 
   private _renderHud(run: TravelRun | null) {
@@ -787,6 +1111,11 @@ export class VelgDriftView extends LitElement {
     return html`
       <div class="hud">
         <p class="hud__title">${msg('Träger')} · ${this._positionName()}</p>
+        <velg-drift-ledger-strip
+          .profile=${this._profile}
+          ?busy=${this._busy}
+          @drift-exam=${this._sitExam}
+        ></velg-drift-ledger-strip>
         <div class="hud__haul">
           <span class="hud__haul-label">${msg('Vermessung (Haul)')}</span>
           <span class="hud__haul-value">${Number(run.checkpoint.haul ?? 0)}</span>

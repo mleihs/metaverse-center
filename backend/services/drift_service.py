@@ -391,7 +391,10 @@ class DriftService:
 
     @staticmethod
     async def _build_effect_cards(
-        supabase: Client, instance_id: UUID, effects: QuestEffectsResponse
+        supabase: Client,
+        instance_id: UUID,
+        effects: QuestEffectsResponse,
+        slots: dict | None = None,
     ) -> list[EffectCard]:
         """Turn the gate's applied/skipped lists into per-effect cards with real targets.
 
@@ -411,8 +414,27 @@ class DriftService:
         if not entries:
             return []
 
-        sim_ids = {str(e.get("target_sim")) for e, _ in entries if e.get("target_sim")}
-        agent_ids = {str(e.get("target_agent")) for e, _ in entries if e.get("target_agent")}
+        # The hospitality gate's SKIP entries carry only {kind, reason} — the target is
+        # dropped (migration 255). A filtered card would therefore read "Unbekanntes Ziel",
+        # which is precisely the wrong thing to say: the whole point of the card is that a
+        # NAMED world refused you. For a deliver Depesche every effect targets the instance's
+        # resolved slots, so those are the truthful fallback (browser-verified).
+        slots = slots or {}
+        fallback_sim = slots.get("target_sim")
+        fallback_agent = slots.get("target_agent")
+
+        def target_sim_of(entry: dict) -> str | None:
+            return entry.get("target_sim") or (
+                fallback_sim if entry.get("kind") != "emit_fragment" else None
+            )
+
+        def target_agent_of(entry: dict) -> str | None:
+            if entry.get("target_agent"):
+                return entry["target_agent"]
+            return fallback_agent if entry.get("kind") == "inject_agent_memory" else None
+
+        sim_ids = {str(s) for e, _ in entries if (s := target_sim_of(e))}
+        agent_ids = {str(a) for e, _ in entries if (a := target_agent_of(e))}
 
         sims: dict[str, dict] = {}
         if sim_ids:
@@ -438,8 +460,15 @@ class DriftService:
 
         # The receipts: events this delivery wrote, keyed by effect kind (emit_echo →
         # travel_echo, spawn_event → travel_dispatch — the gate stamps `kind` in metadata).
+        #
+        # active_events, NOT events: `events_select` gates the base table on
+        # user_has_simulation_access, and a traveller is by definition NOT a member of the
+        # foreign world they just delivered to — the receipt would be invisible in exactly
+        # the case it matters most (browser-verified: the applied Echo card came back with
+        # no link). active_events is the public-read view (the active_agents precedent);
+        # public-first is the rule for every read on a foreign world.
         events_resp = await (
-            supabase.table("events")
+            supabase.table("active_events")
             .select("id, metadata")
             .contains("metadata", {"quest_instance_id": str(instance_id)})
             .execute()
@@ -454,8 +483,10 @@ class DriftService:
         for entry, status in entries:
             kind = str(entry.get("kind") or "unknown")
             target_kind = _EFFECT_TARGET_KIND.get(kind, "none")
-            sim = sims.get(str(entry.get("target_sim"))) if entry.get("target_sim") else None
-            agent = agents.get(str(entry.get("target_agent"))) if entry.get("target_agent") else None
+            sim_id = target_sim_of(entry)
+            agent_id = target_agent_of(entry)
+            sim = sims.get(str(sim_id)) if sim_id else None
+            agent = agents.get(str(agent_id)) if agent_id else None
 
             if target_kind == "self":
                 label = "Eigenes Journal"
@@ -472,9 +503,9 @@ class DriftService:
                     status=status,  # type: ignore[arg-type]  (Literal, values are fixed above)
                     target_kind=target_kind,  # type: ignore[arg-type]
                     target_label=label,
-                    simulation_id=entry.get("target_sim"),
+                    simulation_id=sim_id,
                     simulation_slug=sim.get("slug") if sim else None,
-                    agent_id=entry.get("target_agent"),
+                    agent_id=agent_id,
                     event_id=receipts.get(kind) if status == "applied" else None,
                     hospitality=entry.get("hospitality"),
                     reason=entry.get("reason") if status == "filtered" else None,
@@ -741,7 +772,9 @@ class DriftService:
             },
         )
         effects = QuestEffectsResponse(**data["effects"])
-        cards = await DriftService._build_effect_cards(supabase, instance_id, effects)
+        cards = await DriftService._build_effect_cards(
+            supabase, instance_id, effects, (data["instance"] or {}).get("slots")
+        )
         earnings_raw = data.get("earnings")
         return QuestDeliverResponse(
             run=TravelRunResponse(**data["run"]),

@@ -265,6 +265,83 @@ class TestEffectCards:
         assert orphan.reason == "no_target_agent"
         assert orphan.target_label == "Unbekannter Träger"
 
+    async def test_filtered_card_names_its_target_from_the_instance_slots(
+        self, admin_client, async_admin_client, anchor_sim
+    ):
+        """The hospitality gate's SKIP entries carry only {kind, reason} — the target is
+        dropped (migration 255). Without the slots fallback a filtered card reads
+        "Unbekanntes Ziel", which is exactly the wrong sentence: the entire point of the card
+        is that a NAMED world refused you. (Found in the W1 browser run.)"""
+        sim = (
+            admin_client.table("simulations").select("id, name, slug").eq("id", anchor_sim).execute()
+        ).data[0]
+        agent = (
+            admin_client.table("active_agents")
+            .select("id, name")
+            .eq("simulation_id", anchor_sim)
+            .limit(1)
+            .execute()
+        ).data
+
+        effects = QuestEffectsResponse(
+            already_applied=False,
+            applied=[],
+            # Exactly what fn_apply_drift_effects writes: no target on a hospitality skip.
+            skipped=[
+                {"kind": "spawn_event", "reason": "hospitality_nur_echos"},
+                {"kind": "inject_agent_memory", "reason": "hospitality_nur_echos"},
+            ],
+        )
+        slots = {"target_sim": sim["id"], "target_agent": agent[0]["id"] if agent else None}
+        cards = await DriftService._build_effect_cards(
+            async_admin_client, uuid4(), effects, slots
+        )
+
+        event_card = next(c for c in cards if c.kind == "spawn_event")
+        assert event_card.target_label == sim["name"], "the refusing world is NAMED"
+        assert event_card.simulation_slug == sim["slug"]
+        assert event_card.event_id is None, "a refused effect wrote nothing"
+
+        if agent:
+            agent_card = next(c for c in cards if c.kind == "inject_agent_memory")
+            assert agent_card.target_label == agent[0]["name"]
+
+    async def test_receipt_is_read_from_the_public_events_view(
+        self, admin_client, async_admin_client, anchor_sim
+    ):
+        """The receipt must resolve for a FOREIGN world — which is the only kind a Depesche
+        is ever delivered to. `events.events_select` gates the base table on
+        user_has_simulation_access, so a traveller (never a member of the target world) got
+        an applied card with NO link. The read goes through active_events, the public view
+        (the active_agents precedent). (Found in the W1 browser run.)"""
+        instance_id = uuid4()
+        sim = (admin_client.table("simulations").select("id").eq("id", anchor_sim).execute()).data[0]
+        event = (
+            admin_client.table("events")
+            .insert({
+                "simulation_id": sim["id"],
+                "title": "Echo aus dem Drift",
+                "event_type": "travel_echo",
+                "description": "Testbeleg.",
+                "impact_level": 1,
+                "metadata": {"kind": "emit_echo", "quest_instance_id": str(instance_id)},
+            })
+            .execute()
+        ).data[0]
+        try:
+            cards = await DriftService._build_effect_cards(
+                async_admin_client,
+                instance_id,
+                QuestEffectsResponse(
+                    applied=[{"kind": "emit_echo", "target_sim": sim["id"]}], skipped=[]
+                ),
+            )
+            assert str(cards[0].event_id) == event["id"], (
+                "the applied card links the receipt the gate actually wrote"
+            )
+        finally:
+            admin_client.table("events").delete().eq("id", event["id"]).execute()
+
     async def test_empty_verdict_yields_no_cards(self, async_admin_client):
         cards = await DriftService._build_effect_cards(
             async_admin_client, uuid4(), QuestEffectsResponse(already_applied=True)
