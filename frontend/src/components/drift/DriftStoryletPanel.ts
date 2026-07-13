@@ -17,7 +17,7 @@
  * Under prefers-reduced-motion the panel simply is there, fully legible.
  */
 
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
@@ -286,11 +286,26 @@ export class VelgDriftStoryletPanel extends LitElement {
     return !!option.requiresSelection && this._selected.size === 0;
   }
 
+  /** Called by the view when the scene opens: a decision that stops the run must also take
+   *  the focus, or a keyboard traveller is left tabbing through an inert board looking for
+   *  the thing that just interrupted them. Falls back to the dialog itself (tabindex="-1")
+   *  when every option is still disabled (a Notabwurf awaiting its first checkbox). */
+  focusFirst(): void {
+    const target =
+      this.renderRoot.querySelector<HTMLElement>('input:not([disabled]), button:not([disabled])') ??
+      this.renderRoot.querySelector<HTMLElement>('.scene');
+    target?.focus();
+  }
+
   protected render() {
     const needsManifest = this.options.some((o) => o.requiresSelection);
 
+    // aria-modal="false" is the truth, and it is now backed by behaviour: the view marks the
+    // board and the HUD inert while a scene is open, so nothing behind the scrim is reachable
+    // by tab or pointer. tabindex="-1" gives focusFirst() a landing spot while every option is
+    // still blocked (a Notabwurf awaiting its first checkbox).
     return html`
-      <div class="scene" role="dialog" aria-modal="false" aria-label=${this.sceneTitle}>
+      <div class="scene" role="dialog" aria-modal="false" aria-label=${this.sceneTitle} tabindex="-1">
         <p class="scene__eyebrow">
           ${icons.stampClassified(14)}<span>${this.eyebrow}</span>
         </p>
@@ -324,7 +339,6 @@ export class VelgDriftStoryletPanel extends LitElement {
               class="option ${option.danger ? 'option--danger' : ''}"
               ?disabled=${this.busy || this._blocked(option)}
               @click=${() => this._pick(option)}
-              aria-label=${msg(str`${option.label}: ${option.detail}`)}
             >
               <span class="option__label">${option.label}</span>
               <p class="option__detail">${option.detail}</p>

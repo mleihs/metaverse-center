@@ -256,8 +256,10 @@ export class VelgDriftEffectCards extends LitElement {
     if (card.status !== 'applied') return '';
     const slug = card.simulation_slug;
     if (!slug) return '';
-    if (card.target_kind === 'agent' && card.agent_id) {
-      return html`<a class="card__link" href="/simulations/${slug}/agents/${card.agent_id}">
+    // The agent route resolves by SLUG (AgentService.get_by_slug) — an id in that position
+    // silently lands on the agents list, which is why the card now carries agent_slug.
+    if (card.target_kind === 'agent' && card.agent_slug) {
+      return html`<a class="card__link" href="/simulations/${slug}/agents/${card.agent_slug}">
         ${icons.externalLink(12)} <span>${msg('Beleg ansehen')}</span>
       </a>`;
     }
@@ -283,12 +285,22 @@ export class VelgDriftEffectCards extends LitElement {
     }
   }
 
+  /** Called by the view when the report opens. The sheet is a report, not a decision, so the
+   *  first thing the traveller should land on is the way out (Escape works too) — reading
+   *  order stays natural because the close control is the sheet's last element. */
+  focusFirst(): void {
+    const target =
+      this.renderRoot.querySelector<HTMLElement>('button:not([disabled])') ??
+      this.renderRoot.querySelector<HTMLElement>('.sheet');
+    target?.focus();
+  }
+
   protected render() {
     const applied = this.cards.filter((c) => c.status === 'applied').length;
     const e = this.earnings;
 
     return html`
-      <div class="sheet" role="dialog" aria-label=${msg('Wirkungsbericht')}>
+      <div class="sheet" role="dialog" aria-label=${msg('Wirkungsbericht')} tabindex="-1">
         <p class="sheet__eyebrow">${msg('Bureau für Zwischenraumfragen')}</p>
         <h2 class="sheet__title">${msg('Wirkungsbericht')}</h2>
 

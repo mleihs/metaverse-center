@@ -153,6 +153,66 @@ GRANT EXECUTE ON FUNCTION public.drift_rand_int(TEXT, INT, INT) TO service_role;
 
 
 -- ═══════════════════════════════════════════════════════════════════
+-- 4b. travel_run_seeds — the half of the seed the traveller cannot see
+-- ═══════════════════════════════════════════════════════════════════
+-- drift_rand is deterministic BY DESIGN, and its inputs (run_id, instance_id, takt) are all
+-- values the client already holds. hashtext is open source. Without a server-only term a
+-- player can therefore precompute every roll and simply wait for the takt on which the dice
+-- land well — the reward loses its texture, and in W2 (signal draw, Sondierungs-Bust) a
+-- precomputable roll would delete the push-your-luck entirely: there is no luck to push if
+-- you can read the next card.
+--
+-- The salt must NOT live on travel_runs: `travel_runs_owner_select` (RLS, 246) lets the
+-- owner read their own run row straight through PostgREST — i.e. exactly the adversary would
+-- hold the secret. It lives in its own table with NO anon/authenticated grant and no RLS
+-- policy for them; only the SECURITY DEFINER dice-callers (and service_role) ever see it.
+--
+-- Lazily created per run (ON CONFLICT DO NOTHING), so runs opened before this migration get
+-- a salt on their first roll instead of needing a backfill.
+
+CREATE TABLE IF NOT EXISTS public.travel_run_seeds (
+    run_id     UUID PRIMARY KEY REFERENCES travel_runs(id) ON DELETE CASCADE,
+    salt       TEXT NOT NULL DEFAULT encode(gen_random_bytes(12), 'hex'),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.travel_run_seeds ENABLE ROW LEVEL SECURITY;
+
+-- service_role only. No owner-select policy: the point of the row is that its owner must not
+-- be able to read it.
+DROP POLICY IF EXISTS travel_run_seeds_service_role ON public.travel_run_seeds;
+CREATE POLICY travel_run_seeds_service_role ON public.travel_run_seeds
+    FOR ALL TO service_role USING (TRUE) WITH CHECK (TRUE);
+
+REVOKE ALL ON TABLE public.travel_run_seeds FROM PUBLIC, anon, authenticated;
+GRANT ALL  ON TABLE public.travel_run_seeds TO service_role;
+
+COMMENT ON TABLE public.travel_run_seeds IS
+    'Per-run secret salt for the DRIFT dice (migration 264). drift_rand is deterministic and its other seed terms (run_id, instance_id, takt) are all client-visible, so without this salt every roll would be precomputable by the player — fatal for W2''s push-your-luck. Deliberately NOT a travel_runs column: RLS lets a traveller read their own run row, which would hand the secret to the one party it is kept from. No anon/authenticated grant, no RLS policy for them; read only through drift_run_salt() (SECURITY DEFINER) and service_role.';
+
+CREATE OR REPLACE FUNCTION public.drift_run_salt(p_run UUID)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_salt TEXT;
+BEGIN
+    INSERT INTO travel_run_seeds (run_id) VALUES (p_run) ON CONFLICT (run_id) DO NOTHING;
+    SELECT salt INTO v_salt FROM travel_run_seeds WHERE run_id = p_run;
+    RETURN v_salt;
+END;
+$$;
+
+COMMENT ON FUNCTION public.drift_run_salt(UUID) IS
+    'The server-only term of every DRIFT seed (migration 264): returns the run''s secret salt, creating it on first use. Every drift_rand seed in the Fun-Kern is prefixed with it, so a roll stays perfectly replayable server-side (CI, bug reports, retry-safety) while being unforgeable client-side. INTERNAL-class: service_role only.';
+
+REVOKE ALL    ON FUNCTION public.drift_run_salt(UUID) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.drift_run_salt(UUID) TO service_role;
+
+
+-- ═══════════════════════════════════════════════════════════════════
 -- 5. fn_drift_award — the SINGLE writer of the Siegel/VP ledger
 -- ═══════════════════════════════════════════════════════════════════
 -- Credits only (a debit has different failure semantics — see fn_clearance_exam's guarded
@@ -317,8 +377,11 @@ BEGIN
     v_fun_core := drift_gate_enabled('drift_fun_core_enabled');
     IF v_fun_core THEN
         v_reward := drift_tuning_value('reward_dispatch_tier1');
+        -- Seed = SECRET : run : instance : takt. The salt (4b) is the term the traveller
+        -- cannot read; without it the roll would be precomputable and the dice pointless.
         v_siegel := drift_rand_int(
-            p_run::text || ':' || p_instance::text || ':' || v_run.takt_count::text,
+            drift_run_salt(p_run) || ':' || p_run::text || ':' || p_instance::text
+                || ':' || v_run.takt_count::text,
             COALESCE((v_reward ->> 'siegel_min')::int, 8),
             COALESCE((v_reward ->> 'siegel_max')::int, 12));
         v_vp := COALESCE((v_reward ->> 'vp')::int, 10);
@@ -331,12 +394,17 @@ BEGIN
 
     UPDATE travel_runs
        SET run_version = run_version + 1, event_seq = event_seq + 1,
-           checkpoint = v_run.checkpoint || jsonb_build_object('last_delivery',
-               jsonb_build_object('instance', p_instance, 'target_sim', v_target_sim)
-               -- The receipt rides the checkpoint too, so a refetch (or a second device)
-               -- can still stage the Entladungs-Zeremonie without replaying the RPC.
+           checkpoint = v_run.checkpoint
+               || jsonb_build_object('last_delivery',
+                      jsonb_build_object('instance', p_instance, 'target_sim', v_target_sim))
+               -- The receipt rides the checkpoint too, so a refetch (or a second device) can
+               -- still stage the Zeremonie without replaying the RPC. It sits at the TOP
+               -- level because that is where the one reader looks: TravelRunResponse lifts
+               -- `checkpoint.earnings` into its typed `earnings` field (models/drift.py). It
+               -- was nested under last_delivery before (jsonb `||` binds inside the argument),
+               -- so the lift silently found nothing and the promise in this comment was false.
                || CASE WHEN v_fun_core THEN jsonb_build_object('earnings', v_earnings)
-                       ELSE '{}'::jsonb END)
+                       ELSE '{}'::jsonb END
      WHERE id = p_run
      RETURNING * INTO v_run;
 

@@ -452,7 +452,7 @@ class DriftService:
             # when the traveller is not a member of it (public-first).
             agents_resp = await (
                 supabase.table("active_agents")
-                .select("id, name")
+                .select("id, name, slug")
                 .in_("id", sorted(agent_ids))
                 .execute()
             )
@@ -506,6 +506,7 @@ class DriftService:
                     simulation_id=sim_id,
                     simulation_slug=sim.get("slug") if sim else None,
                     agent_id=agent_id,
+                    agent_slug=agent.get("slug") if agent else None,
                     event_id=receipts.get(kind) if status == "applied" else None,
                     hospitality=entry.get("hospitality"),
                     reason=entry.get("reason") if status == "filtered" else None,

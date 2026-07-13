@@ -185,6 +185,9 @@ export class VelgDriftChartHost extends LitElement {
   private _mounted = false;
   private _pointerDownAt: { x: number; y: number; t: number } | null = null;
   private _adjacentIds = new Set<string>();
+  /** Held once instead of re-created per pointer event: the MediaQueryList keeps `matches`
+   *  live, so a mouse→touch switch is still picked up without allocating on every move. */
+  private _coarsePointer = matchMedia('(pointer: coarse)');
 
   // HTML world-name labels over the canvas (homes only); transforms updated per frame.
   private _labelLayer: HTMLElement | null = null;
@@ -574,22 +577,42 @@ export class VelgDriftChartHost extends LitElement {
     offsetY: number,
     opts: { reachableOnly?: boolean } = {},
   ): string | null {
-    if (!this._controller || !this._gameGraph) return null;
+    const hit = this._nodesAt(offsetX, offsetY);
+    return opts.reachableOnly ? hit.reachable : hit.any;
+  }
+
+  /** Both answers in ONE scan: the nearest node (what the dossier inspects) and the nearest
+   *  REACHABLE node (what a click may move to). The pointermove path needs both on every
+   *  single mouse event, and used to walk the whole node list twice — each walk allocating a
+   *  fresh MediaQueryList via `matchMedia(...)` — to get them. */
+  private _nodesAt(
+    offsetX: number,
+    offsetY: number,
+  ): { any: string | null; reachable: string | null } {
+    if (!this._controller || !this._gameGraph) return { any: null, reachable: null };
     const world = this._controller.screenToWorld(offsetX, offsetY);
     // A coarse pointer (finger) needs the 44px WCAG touch target; a mouse is fine with 30.
-    const tapPx = matchMedia('(pointer: coarse)').matches ? 44 : 30;
+    const tapPx = this._coarsePointer.matches ? 44 : 30;
     const radius = tapPx * this._controller.unitsPerPixel;
-    let bestId: string | null = null;
-    let bestDist = radius;
+
+    let anyId: string | null = null;
+    let anyDist = radius;
+    let reachId: string | null = null;
+    let reachDist = radius;
+
     for (const node of this._gameGraph.nodeWorldPositions) {
-      if (opts.reachableOnly && !this._adjacentIds.has(node.id)) continue;
       const d = Math.hypot(node.x - world.x, node.y - world.y);
-      if (d < bestDist) {
-        bestDist = d;
-        bestId = node.id;
+      if (d >= radius) continue;
+      if (d < anyDist) {
+        anyDist = d;
+        anyId = node.id;
+      }
+      if (d < reachDist && this._adjacentIds.has(node.id)) {
+        reachDist = d;
+        reachId = node.id;
       }
     }
-    return bestId;
+    return { any: anyId, reachable: reachId };
   }
 
   // A click (little movement, short dwell) on a reachable node emits a move intent;
@@ -620,11 +643,10 @@ export class VelgDriftChartHost extends LitElement {
       if (this._hoverNode) this._hoverNode = null;
       return;
     }
-    const id = this._nodeAt(e.offsetX, e.offsetY);
+    const { any: id, reachable } = this._nodesAt(e.offsetX, e.offsetY);
     // The pointer cursor promises a MOVE, so it may only appear where a move is possible.
     // (It used to appear over every node, including the unreachable ones — an affordance
     // that lied, and the reason the board read as "clicks do nothing".)
-    const reachable = this._nodeAt(e.offsetX, e.offsetY, { reachableOnly: true });
     (e.currentTarget as HTMLElement).style.cursor = reachable ? 'pointer' : '';
     if (id !== (this._hoverNode?.id ?? null)) {
       this._hoverNode = id ? (this.chartData?.nodes.find((n) => n.id === id) ?? null) : null;

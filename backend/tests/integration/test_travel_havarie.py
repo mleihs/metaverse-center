@@ -501,9 +501,18 @@ class TestHavarieChoices:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
 
-    def test_gate_off_makes_the_resolver_unreachable(
+    def test_gate_off_drains_an_open_wreck_instead_of_trapping_it(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
+        """The rollback invariant, in the one place it nearly broke.
+
+        A closed gate must refuse to CREATE Fun-Kern state, never to DRAIN it. If the resolver
+        simply raised GATE_CLOSED (it did), a traveller caught in `havarie` at the moment of a
+        rollback had NO legal action left: move/complete demand 'active', abandon (246) does
+        not take 'havarie', run_open hands the wreck straight back and the admin kill-switch
+        did not even see the status. They were frozen out for the full 48 h TTL — by the very
+        flip that is supposed to hand them a working P0 build back.
+        """
         user, client = test_user_ids[0], user_clients[0]
         _reset_traveler(admin_client, user)
         _set_gate(admin_client, True)
@@ -511,6 +520,32 @@ class TestHavarieChoices:
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor)
             _set_gate(admin_client, False)
+
+            # Even the choice the panel offered before the flip resolves — into the P0 ending.
+            out = self._resolve(client, user, run, "notruf")
+            assert out["gate_drained"] is True
+            assert out["status"] == "abandoned", "the wreck unravels — the P0 ending"
+            assert out["checkpoint"]["zerfaserung"]["reason"] == "gate_closed"
+            assert _profile(admin_client, user)["zerfaserung_count"] == 0, (
+                "gate off = zero Fun-Kern residue: P0 never counted scars"
+            )
+
+            # And the slot is free again: the traveller can play the P0 build.
+            fresh = _open_run(client, user, chart_home["simulation_id"])
+            assert fresh["status"] == "active" and fresh["id"] != run["id"]
+        finally:
+            _reset_traveler(admin_client, user)
+
+    def test_gate_off_still_refuses_a_run_that_is_not_in_havarie(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        """Draining is the exception, not an open door: no wreck, no Fun-Kern RPC."""
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, False)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            run = _open_run(client, user, chart_home["simulation_id"])
             with pytest.raises(Exception) as exc:
                 self._resolve(client, user, run, "zerfaserung")
             assert "GATE_CLOSED" in str(exc.value)
@@ -570,6 +605,107 @@ class TestHavarieTTL:
             assert fresh["status"] == "active"
             assert _run_row(admin_client, wreck["id"])["status"] == "abandoned"
             assert _profile(admin_client, user)["zerfaserung_count"] == 1
+        finally:
+            _set_gate(admin_client, False)
+            _reset_traveler(admin_client, user)
+
+    def test_unravelling_the_same_wreck_twice_scars_it_once(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """The sweep is reachable twice (a double-clicked Aufbruch races itself into it).
+
+        An unravelling is not repeatable: it scatters the manifest, writes audit + telemetry
+        and — the part that cannot be taken back — adds a permanent scar. fn_travel_zerfasern
+        now takes the row FOR UPDATE and refuses a run that is already closed, so the second
+        caller finds the wreck gone instead of unravelling it a second time.
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, True)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            wreck = _strand(admin_client, client, user, chart_home, home_neighbor)
+            first = admin_client.rpc(
+                "fn_travel_zerfasern",
+                {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
+            ).execute().data
+            assert first["status"] == "abandoned"
+            assert _profile(admin_client, user)["zerfaserung_count"] == 1
+
+            second = admin_client.rpc(
+                "fn_travel_zerfasern",
+                {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
+            ).execute().data
+            assert second["status"] == "abandoned", "the closed run comes back untouched"
+            assert _profile(admin_client, user)["zerfaserung_count"] == 1, (
+                "one wreck, one scar — a record that says otherwise cannot be corrected"
+            )
+        finally:
+            _set_gate(admin_client, False)
+            _reset_traveler(admin_client, user)
+
+
+class TestHavarieRescueHatches:
+    """The two ways out that must never be closed: the option list, and the operator."""
+
+    def test_notabwurf_is_not_offered_when_the_window_cannot_pay_for_it(
+        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign, home_neighbor
+    ):
+        """Notabwurf buys Kohärenz with cargo AND with Takte. Offered at window == cost, it is
+        a trap: the run returns to 'active' with 0 Takte, so the next move that is not home
+        drops it straight back into Havarie — cargo gone, Depeschen failed, nothing bought."""
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, True)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        cost = _tuning(admin_client, "havarie_options")["notabwurf"]["window_cost"]
+        try:
+            run = _open_run(client, user, chart_home["simulation_id"])
+            run = _accept_depesche(client, user, run, chart_foreign["simulation_id"])["run"]
+            # The move spends one Takt, so the wreck opens with exactly `cost` left over.
+            admin_client.table("travel_runs").update(
+                {"kohaerenz": 1, "bandbreite": 0, "window_remaining": cost + 1}
+            ).eq("id", run["id"]).execute()
+
+            wrecked = client.rpc(
+                "fn_travel_move",
+                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
+                 "p_to_node": home_neighbor},
+            ).execute().data
+
+            hav = wrecked["checkpoint"]["havarie"]
+            assert wrecked["window_remaining"] == cost
+            assert hav["cargo_aboard"] == 1, "there IS cargo — it is the window that is short"
+            assert "notabwurf" not in hav["options"], (
+                "an option that buys nothing must not be offered, cargo or not"
+            )
+            assert hav["options"] == ["notruf", "zerfaserung"]
+        finally:
+            _set_gate(admin_client, False)
+            _reset_traveler(admin_client, user)
+
+    def test_the_kill_switch_can_repatriate_a_wreck(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """fn_drift_emergency_return (246) only knew 'active' and 'distress' — so the one
+        status an operator most needs to rescue someone out of was invisible to the rescue."""
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, True)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            wreck = _strand(admin_client, client, user, chart_home, home_neighbor)
+            assert wreck["status"] == "havarie"
+
+            admin_client.rpc("fn_drift_emergency_return", {}).execute()
+
+            row = _run_row(admin_client, wreck["id"])
+            assert row["status"] == "active", "the operator can reach a wrecked traveller"
+            assert row["position_node_id"] == chart_home["id"], "repatriated to home"
+            assert row["checkpoint"].get("emergency_return") is True
+            assert "havarie" not in row["checkpoint"], (
+                "the checkpoint is reset, so no stale wreck panel greets the rescued traveller"
+            )
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)

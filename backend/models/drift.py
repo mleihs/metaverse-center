@@ -334,6 +334,11 @@ class EffectCard(BaseModel):
     simulation_id: UUID | None = None
     simulation_slug: str | None = None
     agent_id: UUID | None = None
+    # The receipt link needs the SLUG, not the id: the agent route is
+    # /simulations/{sim}/agents/{entitySlug} and resolves by slug (AgentService.get_by_slug),
+    # so a UUID in that position lands on the agents list instead of the Träger who now
+    # remembers the traveller. Both are carried: the id identifies, the slug addresses.
+    agent_slug: str | None = None
     event_id: UUID | None = None
     hospitality: str | None = None
     reason: str | None = None  # only on filtered cards (the gate's own skip reason)
