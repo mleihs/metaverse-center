@@ -173,6 +173,40 @@ def test_user_ids(admin_client: Client) -> list[UUID]:
     return user_ids
 
 
+@pytest.fixture(scope="session")
+def user_clients(admin_client: Client, test_user_ids: list[UUID]) -> list[Client]:
+    """4 sync Supabase clients authenticated AS the 4 test users (index-aligned with
+    ``test_user_ids``) — i.e. every request carries that user's JWT, so ``auth.uid()``
+    resolves inside the database.
+
+    This is what makes the PLAYER-class RPCs testable in CI. The DRIFT run/quest RPCs
+    (and the dungeon/DRIFT family generally) open with
+    ``IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN RAISE 42501`` — a guard that
+    ``admin_client`` (service_role, ``auth.uid() = NULL``) can never pass. Until now that
+    left every player path browser-verified-only (see the header of
+    ``test_travel_failure_scatter.py``); with this fixture they run in the suite.
+
+    The one obstacle was signup's ``email_confirm``: the local auth stack refuses the
+    password grant for an unconfirmed address ("Email not confirmed"). We confirm the
+    address through the service_role admin API — the same thing an operator would do in
+    Studio — and then sign in normally. Session-scoped: four token exchanges, once.
+    """
+    clients: list[Client] = []
+    for i, uid in enumerate(test_user_ids, start=1):
+        creds = {
+            "email": f"gamedb-test-{i}@test.velgarien.dev",
+            "password": "gamedb-test-pass-123",
+        }
+        try:
+            admin_client.auth.admin.update_user_by_id(str(uid), {"email_confirm": True})
+            client = create_client(settings.supabase_url, settings.supabase_anon_key)
+            client.auth.sign_in_with_password(creds)
+        except Exception as e:  # auth stack down / confirmation policy changed
+            pytest.skip(f"Could not authenticate test user {creds['email']}: {e}")
+        clients.append(client)
+    return clients
+
+
 @pytest.fixture()
 def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
     """Factory that creates isolated test epochs with auto-cleanup.
