@@ -24,7 +24,7 @@ from uuid import uuid4
 
 import pytest
 
-from backend.models.drift import QuestEffectsResponse
+from backend.models.drift import QuestEffectsResponse, TravelRunResponse
 from backend.services.drift_service import DriftService
 from backend.tests.integration.conftest import requires_supabase
 
@@ -347,3 +347,69 @@ class TestEffectCards:
             async_admin_client, uuid4(), QuestEffectsResponse(already_applied=True)
         )
         assert cards == []
+
+
+class TestRunResponseLiftsSignals:
+    """The signal blocks reach the HUD as TYPED fields, not as a dict to dig through.
+
+    Every run RPC RETURNS to_jsonb(run), so a scene can only travel inside the
+    checkpoint jsonb. The model lifts it (the earnings precedent from W1) — otherwise
+    the HUD has to know the checkpoint's internal shape, and the shape becomes an API
+    contract nobody wrote down.
+    """
+
+    def _row(self, checkpoint: dict) -> dict:
+        now = "2026-07-13T00:00:00+00:00"
+        return {
+            "id": str(uuid4()), "user_id": str(uuid4()), "status": "active",
+            "run_version": 3, "kohaerenz": 80, "bandbreite": 6, "dissonanz": 4,
+            "frequency": "memory", "scale": "drift", "window_remaining": 7,
+            "takt_count": 5, "checkpoint": checkpoint, "event_seq": 5,
+            "opened_at": now, "created_at": now, "updated_at": now,
+        }
+
+    async def test_pending_signal_is_lifted(self):
+        run = TravelRunResponse(**self._row({
+            "pending_signal": {
+                "template_key": "stoerung_frequenzscherung",
+                "signal_class": "stoerung",
+                "takt": 5,
+                "prose": {"title_de": "Frequenzscherung", "title_en": "Frequency Shear",
+                          "body_de": "de", "body_en": "en"},
+                "options": [
+                    {"key": "durchdruecken", "label_de": "drücken", "label_en": "push",
+                     "check": {"vector": "architecture", "difficulty": 7}},
+                    {"key": "treiben_lassen", "label_de": "treiben", "label_en": "drift",
+                     "cost": {"takt": 1}},
+                ],
+            }
+        }))
+        assert run.pending_signal is not None
+        assert run.pending_signal.signal_class == "stoerung"
+        assert run.pending_signal.prose.title_de == "Frequenzscherung"
+        assert run.pending_signal.options[0].check.vector == "architecture"
+        assert run.pending_signal.options[1].cost.takt == 1
+        assert run.last_signal is None
+
+    async def test_resolved_signal_is_lifted(self):
+        run = TravelRunResponse(**self._row({
+            "last_signal": {
+                "template_key": "stoerung_bandbreitenfrass",
+                "signal_class": "stoerung",
+                "option_key": "abschirmen",
+                "success": True,
+                "outcome": {"text_de": "de", "text_en": "en", "deltas": {"bb": 1}},
+                "applied": {"bb": 1},
+            }
+        }))
+        assert run.last_signal is not None
+        assert run.last_signal.option_key == "abschirmen"
+        assert run.last_signal.applied.bb == 1
+        assert run.pending_signal is None
+
+    async def test_a_p0_checkpoint_lifts_nothing(self):
+        """Gate off ⇒ the fields are simply None. That IS the rollback contract."""
+        run = TravelRunResponse(**self._row({"haul": 3, "visited": []}))
+        assert run.pending_signal is None
+        assert run.last_signal is None
+        assert run.earnings is None

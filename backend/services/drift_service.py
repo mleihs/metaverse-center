@@ -46,6 +46,7 @@ from backend.models.drift import (
     QuestInstanceResponse,
     QuestOfferResponse,
     QuestStateResponse,
+    TravelLogEntryResponse,
     TravelRunResponse,
 )
 from backend.services.travel.chart_generator import ChartGeneratorService
@@ -722,6 +723,54 @@ class DriftService:
                 else None,
             },
         )
+
+    @staticmethod
+    async def resolve_signal(
+        supabase: Client,
+        user_id: UUID,
+        run_id: UUID,
+        run_version: int,
+        option_key: str,
+    ) -> TravelRunResponse:
+        """Answer a pending Störung/Begegnung (M1, migration 267).
+
+        Returns the run AFTER the answer: active again with `last_signal` set, or in a
+        Havarie if the outcome took the last of the hull (a Störung is allowed to have
+        teeth). The RPC pays the option's cost whatever the roll says, rolls the check
+        from the salted seed, and validates the option against the TEMPLATE — never
+        against the copy the client can see.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_signal_resolve",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_option_key": option_key,
+            },
+        )
+
+    @staticmethod
+    async def get_logbook(
+        supabase: Client, user_id: UUID, *, limit: int = 50
+    ) -> list[TravelLogEntryResponse]:
+        """The traveller's logbook (R12) — newest first, ACROSS runs.
+
+        Deliberately not run-scoped: the logbook is the career, not the journey. It is
+        what makes coming back after a week free — three lines and you know where you
+        were and what you learned. RLS (travel_log_entries_owner_select) is what keeps it
+        the traveller's own; the user-JWT client is the enforcement, not the filter.
+        """
+        resp = await (
+            supabase.table("travel_log_entries")
+            .select("*")
+            .eq("user_id", str(user_id))
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return [TravelLogEntryResponse(**row) for row in (resp.data or [])]
 
     @staticmethod
     async def accept_quest(
