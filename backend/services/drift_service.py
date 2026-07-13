@@ -27,6 +27,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.drift import (
     CargoResponse,
     ChartGenerationResponse,
+    ClearanceExamResponse,
     DockAgentResponse,
     DockLoreResponse,
     DriftChartEdgeResponse,
@@ -34,8 +35,11 @@ from backend.models.drift import (
     DriftChartResponse,
     DriftDockResponse,
     DriftHonorResponse,
+    DriftProfileResponse,
     DriftPublicState,
     DriftTuningResponse,
+    EarningsBlock,
+    EffectCard,
     QuestAcceptResponse,
     QuestDeliverResponse,
     QuestEffectsResponse,
@@ -53,6 +57,22 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 _P0_GATE_KEY = "drift_p0_enabled"
+_FUN_CORE_GATE_KEY = "drift_fun_core_enabled"
+
+# The rank ladder in order. W1 opens the first rung only (drift_tuning.clearance_thresholds
+# carries exactly one key); the list is what tells the HUD which rung comes NEXT, and it is
+# the one place a new rank has to be inserted when its exam ships.
+_RANK_LADDER = ["aspirant", "feldkartograph", "vermesser", "grenzgaenger", "kartograph_1k"]
+
+# What the hospitality gate writes, per effect kind (migration 255) → how the HUD reads it.
+# The gate's skip reasons are pass-through strings ("hospitality_geschlossen", …) — the
+# frontend renders them, it does not re-derive them.
+_EFFECT_TARGET_KIND = {
+    "emit_fragment": "self",
+    "emit_echo": "simulation",
+    "spawn_event": "simulation",
+    "inject_agent_memory": "agent",
+}
 
 # SQLSTATE → HTTP error factory for the run-lifecycle RPCs (migration 246).
 #   42501 caller-is-not-owner · P0002 not-found · 22023 bad-state
@@ -82,6 +102,19 @@ class DriftService:
         settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
         if not parse_setting_bool(settings_map.get(_P0_GATE_KEY)):
             raise not_found("DRIFT is not available.")
+
+    @staticmethod
+    async def assert_fun_core_enabled(admin_supabase: Client) -> None:
+        """Raise 404 unless the drift_fun_core_enabled gate is on (migration 264).
+
+        Same fail-closed read as assert_p0_enabled, same 404-not-403 reasoning: while the
+        Fun-Kern is down, its endpoints are "not available", not "forbidden". The SQL side
+        checks the identical key inside every new RPC (drift_gate_enabled), so a stale
+        cache here can never open a write path there.
+        """
+        settings_map = await load_platform_settings(admin_supabase, [_FUN_CORE_GATE_KEY])
+        if not parse_setting_bool(settings_map.get(_FUN_CORE_GATE_KEY)):
+            raise not_found("The DRIFT Bureau ledger is not available.")
 
     @staticmethod
     async def get_public_state(admin_supabase: Client) -> DriftPublicState:
@@ -261,6 +294,191 @@ class DriftService:
         )
         rows = resp.data or []
         return TravelRunResponse(**rows[0]) if rows else None
+
+    # ── the Bureau account (M4/M6 — the HUD's ledger strip) ─────────────────────
+
+    @staticmethod
+    async def get_profile(supabase: Client, user_id: UUID) -> DriftProfileResponse | None:
+        """The traveller's account: currencies, rank, rank progress, scars.
+
+        None before the first run (the profile row is created by fn_travel_run_open) — the
+        HUD renders the strip empty rather than inventing a zeroed account that does not
+        exist. Reads are owner-RLS on traveler_profiles + the public drift_tuning.
+        """
+        row = await maybe_single_data(
+            supabase.table("traveler_profiles")
+            .select(
+                "siegel, vp, clearance_rank, bandwidth_class, zerfaserung_count, "
+                "qualities, unlocked_vectors"
+            )
+            .eq("user_id", str(user_id))
+            .maybe_single()
+        )
+        if not row:
+            return None
+
+        tuning_resp = await (
+            supabase.table("drift_tuning")
+            .select("setting_key, value")
+            .in_("setting_key", ["clearance_thresholds", "clearance_exam_fee"])
+            .execute()
+        )
+        tuning = {r["setting_key"]: r["value"] for r in (tuning_resp.data or [])}
+        thresholds = tuning.get("clearance_thresholds") or {}
+        fees = tuning.get("clearance_exam_fee") or {}
+
+        rank = row["clearance_rank"]
+        next_rank = DriftService._next_rank(rank, thresholds)
+        next_vp = int(thresholds[next_rank]) if next_rank else None
+        next_fee = int(fees.get(next_rank, 0)) if next_rank else None
+
+        vp = int(row["vp"])
+        siegel = int(row["siegel"])
+        # Progress toward the NEXT rung only (0 when the ladder is exhausted — a full bar
+        # would read as "one point from a promotion that does not exist").
+        progress = min(1.0, vp / next_vp) if next_vp else 0.0
+        exam_ready = bool(next_rank and vp >= (next_vp or 0) and siegel >= (next_fee or 0))
+
+        return DriftProfileResponse(
+            siegel=siegel,
+            vp=vp,
+            clearance_rank=rank,
+            bandwidth_class=int(row["bandwidth_class"]),
+            zerfaserung_count=int(row["zerfaserung_count"]),
+            vermessung_lodged=int((row.get("qualities") or {}).get("vermessung_lodged", 0)),
+            unlocked_vectors=list(row.get("unlocked_vectors") or []),
+            next_rank=next_rank,
+            next_rank_vp=next_vp,
+            next_rank_fee=next_fee,
+            next_rank_progress=progress,
+            exam_ready=exam_ready,
+        )
+
+    @staticmethod
+    def _next_rank(current: str, thresholds: dict) -> str | None:
+        """The next rung ABOVE `current` that actually has an exam configured.
+
+        A rank with no threshold row is a rank whose exam has not shipped — it must not be
+        dangled in front of the player as a bar they can fill (W1 ships exactly one rung).
+        """
+        try:
+            idx = _RANK_LADDER.index(current)
+        except ValueError:
+            return None
+        for rank in _RANK_LADDER[idx + 1 :]:
+            if rank in thresholds:
+                return rank
+        return None
+
+    @staticmethod
+    async def sit_clearance_exam(
+        supabase: Client, user_id: UUID, rank: str
+    ) -> ClearanceExamResponse:
+        """Sit the Bureau exam for a rank (player-class RPC: VP threshold + Siegel fee)."""
+        try:
+            resp = await supabase.rpc(
+                "fn_clearance_exam", {"p_user": str(user_id), "p_rank": rank}
+            ).execute()
+        except PostgrestAPIError as exc:
+            raise DriftService._rpc_error("fn_clearance_exam", exc) from exc
+        if not resp.data:
+            raise server_error("fn_clearance_exam returned no payload.")
+        return ClearanceExamResponse(**resp.data)
+
+    # ── effect cards (the honest verdict of the hospitality gate) ────────────────
+
+    @staticmethod
+    async def _build_effect_cards(
+        supabase: Client, instance_id: UUID, effects: QuestEffectsResponse
+    ) -> list[EffectCard]:
+        """Turn the gate's applied/skipped lists into per-effect cards with real targets.
+
+        P0 only ever COUNTED these lists (DriftView.ts:477 → "3 Wirkungen"), so the one
+        thing the traveller crossed the Drift for — evidence that a world changed — was
+        invisible. Here each entry becomes a card that names its target and links to the
+        receipt: the events the delivery wrote carry `metadata.quest_instance_id`, so the
+        exact event id is resolvable without the RPC having to return it (and therefore
+        without changing what the gate-closed RPC returns — the P0 parity contract holds).
+
+        Filtered effects become cards too, carrying the gate's own reason. A world that
+        refuses is a world that answered.
+        """
+        entries = [(e, "applied") for e in effects.applied] + [
+            (e, "filtered") for e in effects.skipped
+        ]
+        if not entries:
+            return []
+
+        sim_ids = {str(e.get("target_sim")) for e, _ in entries if e.get("target_sim")}
+        agent_ids = {str(e.get("target_agent")) for e, _ in entries if e.get("target_agent")}
+
+        sims: dict[str, dict] = {}
+        if sim_ids:
+            sims_resp = await (
+                supabase.table("simulations")
+                .select("id, name, slug")
+                .in_("id", sorted(sim_ids))
+                .execute()
+            )
+            sims = {r["id"]: r for r in (sims_resp.data or [])}
+
+        agents: dict[str, dict] = {}
+        if agent_ids:
+            # active_agents: the public-read view — a foreign world's Träger resolves even
+            # when the traveller is not a member of it (public-first).
+            agents_resp = await (
+                supabase.table("active_agents")
+                .select("id, name")
+                .in_("id", sorted(agent_ids))
+                .execute()
+            )
+            agents = {r["id"]: r for r in (agents_resp.data or [])}
+
+        # The receipts: events this delivery wrote, keyed by effect kind (emit_echo →
+        # travel_echo, spawn_event → travel_dispatch — the gate stamps `kind` in metadata).
+        events_resp = await (
+            supabase.table("events")
+            .select("id, metadata")
+            .contains("metadata", {"quest_instance_id": str(instance_id)})
+            .execute()
+        )
+        receipts: dict[str, str] = {}
+        for row in events_resp.data or []:
+            kind = (row.get("metadata") or {}).get("kind")
+            if kind and kind not in receipts:
+                receipts[kind] = row["id"]
+
+        cards: list[EffectCard] = []
+        for entry, status in entries:
+            kind = str(entry.get("kind") or "unknown")
+            target_kind = _EFFECT_TARGET_KIND.get(kind, "none")
+            sim = sims.get(str(entry.get("target_sim"))) if entry.get("target_sim") else None
+            agent = agents.get(str(entry.get("target_agent"))) if entry.get("target_agent") else None
+
+            if target_kind == "self":
+                label = "Eigenes Journal"
+            elif target_kind == "agent":
+                label = agent["name"] if agent else "Unbekannter Träger"
+            elif sim:
+                label = sim["name"]
+            else:
+                label = "Unbekanntes Ziel"
+
+            cards.append(
+                EffectCard(
+                    kind=kind,
+                    status=status,  # type: ignore[arg-type]  (Literal, values are fixed above)
+                    target_kind=target_kind,  # type: ignore[arg-type]
+                    target_label=label,
+                    simulation_id=entry.get("target_sim"),
+                    simulation_slug=sim.get("slug") if sim else None,
+                    agent_id=entry.get("target_agent"),
+                    event_id=receipts.get(kind) if status == "applied" else None,
+                    hospitality=entry.get("hospitality"),
+                    reason=entry.get("reason") if status == "filtered" else None,
+                )
+            )
+        return cards
 
     # ── quest reads (owner-RLS; offers computed, no writes) ─────────────────────
 
@@ -472,7 +690,14 @@ class DriftService:
     async def deliver_quest(
         supabase: Client, user_id: UUID, run_id: UUID, run_version: int, instance_id: UUID
     ) -> QuestDeliverResponse:
-        """Deliver a Depesche at the target edge: fires the effects through the gate (CAS)."""
+        """Deliver a Depesche at the target edge: fires the effects through the gate (CAS),
+        pays the traveller (Fun-Kern), and returns the honest per-effect breakdown.
+
+        `earnings` is absent while the Fun-Kern gate is closed — the RPC then returns the
+        exact P0 payload and this maps it to None (no second gate read needed here: the
+        presence of the key IS the gate's answer, and it comes from the same transaction
+        that decided it).
+        """
         data = await DriftService._call_quest_rpc(
             supabase,
             "fn_quest_advance",
@@ -483,10 +708,15 @@ class DriftService:
                 "p_instance": str(instance_id),
             },
         )
+        effects = QuestEffectsResponse(**data["effects"])
+        cards = await DriftService._build_effect_cards(supabase, instance_id, effects)
+        earnings_raw = data.get("earnings")
         return QuestDeliverResponse(
             run=TravelRunResponse(**data["run"]),
             instance=QuestInstanceResponse(**data["instance"]),
-            effects=QuestEffectsResponse(**data["effects"]),
+            effects=effects,
+            cards=cards,
+            earnings=EarningsBlock(**earnings_raw) if earnings_raw else None,
         )
 
     # ── internal ────────────────────────────────────────────────────────────────

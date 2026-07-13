@@ -31,9 +31,12 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.drift import (
     ChartGenerationResponse,
+    ClearanceExamRequest,
+    ClearanceExamResponse,
     DriftChartResponse,
     DriftDockResponse,
     DriftHonorResponse,
+    DriftProfileResponse,
     DriftTuningResponse,
     QuestAcceptResponse,
     QuestDeliverResponse,
@@ -58,6 +61,16 @@ async def require_drift_p0(
 ) -> None:
     """Phase gate: 404 unless drift_p0_enabled is on (migration 239)."""
     await DriftService.assert_p0_enabled(admin_supabase)
+
+
+async def require_drift_fun_core(
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> None:
+    """Fun-Kern gate: 404 unless drift_fun_core_enabled is on (migration 264).
+
+    Cumulative with require_drift_p0 — an endpoint that needs the Fun-Kern declares both.
+    """
+    await DriftService.assert_fun_core_enabled(admin_supabase)
 
 
 @router.get("/chart")
@@ -115,6 +128,42 @@ async def regenerate_chart(
     their pinned version. The fn is service_role-only, hence the admin client.
     """
     result = await DriftService.regenerate_chart(admin_supabase)
+    return SuccessResponse(data=result)
+
+
+@router.get("/profile")
+async def get_profile(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[DriftProfileResponse | None]:
+    """The traveller's Bureau account (Siegel, VP, rank + progress, scars); null before
+    the first run.
+
+    Deliberately NOT behind the Fun-Kern gate: with the gate closed the account simply
+    reads all zeroes (nothing writes it), and a HUD strip that 404s mid-render is worse
+    than one that honestly shows an empty ledger. The WRITE paths are what the gate holds.
+    """
+    profile = await DriftService.get_profile(supabase, user.id)
+    return SuccessResponse(data=profile)
+
+
+@router.post("/clearance-exam")
+async def sit_clearance_exam(
+    body: ClearanceExamRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[ClearanceExamResponse]:
+    """Sit the Bureau clearance exam (VP threshold + Siegel fee → promotion).
+
+    Player-class RPC → user-JWT client (the auth.uid() guard, as for the run mutations).
+    Double-gated on purpose: the HTTP gate keeps the endpoint invisible while the Fun-Kern
+    is down, and the RPC re-checks the same key in-transaction (GATE_CLOSED) so no other
+    call path can slip past it.
+    """
+    result = await DriftService.sit_clearance_exam(supabase, user.id, body.rank)
     return SuccessResponse(data=result)
 
 

@@ -6,9 +6,10 @@ SECURITY DEFINER RPCs return via to_jsonb(run) (migration 246).
 """
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ── Request bodies ────────────────────────────────────────────────────────────
 
@@ -17,6 +18,12 @@ class TravelRunOpenRequest(BaseModel):
     """Open (or resume) a run anchored to the traveler's home simulation."""
 
     anchor_simulation_id: UUID
+
+
+class ClearanceExamRequest(BaseModel):
+    """Sit the Bureau clearance exam for a rank (fn_clearance_exam, migration 264)."""
+
+    rank: str
 
 
 class TravelMoveRequest(BaseModel):
@@ -33,6 +40,23 @@ class TravelRunVersionRequest(BaseModel):
 
 
 # ── Responses ─────────────────────────────────────────────────────────────────
+
+
+class EarningsBlock(BaseModel):
+    """What an act of the run PAID (fn_drift_award, migration 264).
+
+    The same shape for every payer (a delivered Depesche, an Entladung), so the HUD's
+    count-up ceremony has one contract to read. `vp_total` is a lifetime figure by
+    construction — VP is a rank score and is never spent; `siegel_balance` is the
+    spendable purse (it falls again from W3's requisition).
+    """
+
+    source: str
+    siegel_earned: int
+    vp_earned: int
+    siegel_balance: int
+    vp_total: int
+    clearance_rank: str
 
 
 class TravelRunResponse(BaseModel):
@@ -59,6 +83,23 @@ class TravelRunResponse(BaseModel):
     closed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+    # Lifted out of the checkpoint (see below) — never sent by the RPC as a column.
+    earnings: EarningsBlock | None = None
+
+    @model_validator(mode="after")
+    def _lift_earnings(self) -> "TravelRunResponse":
+        """Surface checkpoint.earnings as a typed field.
+
+        fn_travel_complete RETURNS to_jsonb(run), so its payout can only travel inside the
+        checkpoint jsonb. Lifting it here means the HUD reads one typed field instead of
+        digging through an untyped dict, and every consumer of a run row (complete, a
+        refetch, a second device resuming) gets the receipt the same way. Absent while the
+        Fun-Kern gate is closed — the field is simply None, which is exactly P0.
+        """
+        block = self.checkpoint.get("earnings") if isinstance(self.checkpoint, dict) else None
+        if self.earnings is None and isinstance(block, dict):
+            self.earnings = EarningsBlock(**block)
+        return self
 
 
 class DriftChartNodeResponse(BaseModel):
@@ -259,10 +300,70 @@ class QuestAcceptResponse(BaseModel):
     cargo: CargoResponse
 
 
+class EffectCard(BaseModel):
+    """ONE thing a delivery did to the world — or was stopped from doing.
+
+    P0 collapsed the hospitality gate's verdict into a number (`DriftView.ts:477` counted
+    the applied list and said "3 Wirkungen"), so a traveller could never see WHAT landed,
+    WHERE, or why a world refused them. The card is the honest unit: the kind of effect,
+    the named target, a link to the receipt in that world, and — for a filtered effect —
+    the actual reason (`hospitality_nur_echos`), which the HUD renders redacted rather
+    than hiding.
+
+    `status='filtered'` is not an error. A world that only admits echoes is exercising its
+    hospitality setting; showing that is the point (the Bureau's world is one that answers).
+    """
+
+    kind: str  # emit_fragment | emit_echo | inject_agent_memory | spawn_event | …
+    status: Literal["applied", "filtered"]
+    target_kind: Literal["self", "simulation", "agent", "none"]
+    target_label: str
+    simulation_id: UUID | None = None
+    simulation_slug: str | None = None
+    agent_id: UUID | None = None
+    event_id: UUID | None = None
+    hospitality: str | None = None
+    reason: str | None = None  # only on filtered cards (the gate's own skip reason)
+
+
 class QuestDeliverResponse(BaseModel):
     """fn_quest_advance result: the version-bumped run + the completed instance + the
-    hospitality-gate effect summary."""
+    hospitality-gate effect summary, the honest per-effect cards, and what it paid."""
 
     run: TravelRunResponse
     instance: QuestInstanceResponse
     effects: QuestEffectsResponse
+    cards: list[EffectCard] = Field(default_factory=list)
+    earnings: EarningsBlock | None = None
+
+
+class DriftProfileResponse(BaseModel):
+    """The traveller's Bureau account — the HUD's Konto-Strip (M4/M6).
+
+    Everything the ledger strip needs in one read: the two currencies, the rank and how far
+    the next one is, and the two lifetime scars/marks. `exam_ready` is the whole promotion
+    predicate resolved server-side (VP threshold AND Siegel fee AND not already held), so
+    the button is never offered on a click that would only 400.
+    """
+
+    siegel: int
+    vp: int
+    clearance_rank: str
+    bandwidth_class: int
+    zerfaserung_count: int
+    vermessung_lodged: int
+    unlocked_vectors: list[str] = Field(default_factory=list)
+    next_rank: str | None = None
+    next_rank_vp: int | None = None
+    next_rank_fee: int | None = None
+    next_rank_progress: float = 0.0  # 0.0–1.0 for the rank bar
+    exam_ready: bool = False
+
+
+class ClearanceExamResponse(BaseModel):
+    """fn_clearance_exam result: the new rank + what it cost."""
+
+    clearance_rank: str
+    fee_paid: int
+    siegel_balance: int
+    vp_total: int
