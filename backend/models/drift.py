@@ -33,6 +33,17 @@ class HavarieResolveRequest(BaseModel):
     jettison_cargo_ids: list[UUID] | None = None
 
 
+class SignalResolveRequest(BaseModel):
+    """The traveller's answer to a pending Störung/Begegnung (M1, migration 267).
+
+    `option_key` is validated against the TEMPLATE server-side, not against the copy in
+    the checkpoint — the panel's copy is display, never law.
+    """
+
+    run_version: int = Field(ge=0)
+    option_key: str = Field(min_length=1, max_length=64)
+
+
 class ClearanceExamRequest(BaseModel):
     """Sit the Bureau clearance exam for a rank (fn_clearance_exam, migration 264)."""
 
@@ -72,6 +83,112 @@ class EarningsBlock(BaseModel):
     clearance_rank: str
 
 
+class SignalProse(BaseModel):
+    """The scene text of a drawn signal, with {sim} already resolved to a real world."""
+
+    title_de: str
+    title_en: str
+    body_de: str
+    body_en: str
+
+
+class SignalCheckSpec(BaseModel):
+    """A vector check on an option. The DIFFICULTY is shown to nobody.
+
+    The panel says "riskant" and names the vector; it never numbers the odds (concept
+    R4 — the traveller learns the shape of a risk by living it, not by reading it off a
+    tooltip). The field is here because the FE needs to know a check EXISTS.
+    """
+
+    vector: str
+    difficulty: int
+
+
+class SignalCost(BaseModel):
+    """What an option costs up front — paid whatever the roll says.
+
+    The HUD promises this on the chip, and a promise that only holds on success is a lie.
+    """
+
+    kh: int | None = None
+    bb: int | None = None
+    takt: int | None = None
+
+
+class SignalDeltas(BaseModel):
+    """The closed outcome vocabulary (migration 266's schema), as the HUD renders it."""
+
+    kh: int | None = None
+    bb: int | None = None
+    dz: int | None = None
+    takt: int | None = None
+    siegel: int | None = None
+    siegel_balance: int | None = None
+    cargo_grant: dict | None = None
+    rumor_reveal: dict | None = None
+    marker_add: str | None = None
+
+
+class SignalOptionSpec(BaseModel):
+    """One answer the traveller may give. Only PAYABLE options ever reach the panel."""
+
+    key: str
+    label_de: str
+    label_en: str
+    cost: SignalCost | None = None
+    check: SignalCheckSpec | None = None
+
+
+class PendingSignal(BaseModel):
+    """The scene the run is standing in and cannot walk away from (M1).
+
+    While this is set, fn_travel_move raises SIGNAL_PENDING — a Störung is a decision,
+    not a notification.
+    """
+
+    template_key: str
+    signal_class: str
+    takt: int | None = None
+    prose: SignalProse | None = None
+    options: list[SignalOptionSpec] = Field(default_factory=list)
+
+
+class SignalOutcome(BaseModel):
+    """The branch that actually happened, in prose plus what it wrote."""
+
+    text_de: str | None = None
+    text_en: str | None = None
+    deltas: SignalDeltas | None = None
+
+
+class ResolvedSignal(BaseModel):
+    """What the answer did — the result state of the panel."""
+
+    template_key: str
+    signal_class: str
+    option_key: str
+    success: bool
+    outcome: SignalOutcome | None = None
+    applied: SignalDeltas | None = None
+
+
+class TravelLogEntryResponse(BaseModel):
+    """One line of the traveller's logbook (travel_log_entries, migration 267).
+
+    Outlives its run: knowledge is the only thing a courier carries home that a Havarie
+    cannot scatter (R12). `payload` stays open — each kind writes its own shape, and the
+    logbook is a record, not an API contract the HUD may depend on field by field.
+    """
+
+    id: UUID
+    run_id: UUID | None = None
+    takt: int
+    kind: str
+    node_id: UUID | None = None
+    payload: dict = Field(default_factory=dict)
+    created_at: datetime
+
+
 class TravelRunResponse(BaseModel):
     """A travel_runs row as returned by the run-lifecycle RPCs (to_jsonb(run))."""
 
@@ -98,20 +215,38 @@ class TravelRunResponse(BaseModel):
     updated_at: datetime
     # Lifted out of the checkpoint (see below) — never sent by the RPC as a column.
     earnings: EarningsBlock | None = None
+    pending_signal: PendingSignal | None = None
+    last_signal: ResolvedSignal | None = None
 
     @model_validator(mode="after")
-    def _lift_earnings(self) -> "TravelRunResponse":
-        """Surface checkpoint.earnings as a typed field.
+    def _lift_checkpoint_blocks(self) -> "TravelRunResponse":
+        """Surface the checkpoint's typed blocks as typed fields.
 
-        fn_travel_complete RETURNS to_jsonb(run), so its payout can only travel inside the
-        checkpoint jsonb. Lifting it here means the HUD reads one typed field instead of
-        digging through an untyped dict, and every consumer of a run row (complete, a
-        refetch, a second device resuming) gets the receipt the same way. Absent while the
-        Fun-Kern gate is closed — the field is simply None, which is exactly P0.
+        Every run RPC RETURNS to_jsonb(run), so anything they want to tell the HUD can
+        only travel inside the checkpoint jsonb. Lifting the blocks here means the HUD
+        reads typed fields instead of digging through an untyped dict, and every consumer
+        of a run row (the mutation's own response, a refetch, a second device resuming)
+        gets the same story the same way.
+
+        `earnings`       — the Entladung receipt (migration 264).
+        `pending_signal` — the scene the run is WAITING on (267): while this is set the
+                           run cannot move, so the HUD must be able to see it without
+                           knowing the checkpoint's internal shape.
+        `last_signal`    — what the answer did, for the result state of the panel.
+
+        All three are absent while the Fun-Kern gate is closed — the fields are simply
+        None, which is exactly P0.
         """
-        block = self.checkpoint.get("earnings") if isinstance(self.checkpoint, dict) else None
-        if self.earnings is None and isinstance(block, dict):
-            self.earnings = EarningsBlock(**block)
+        if not isinstance(self.checkpoint, dict):
+            return self
+        if self.earnings is None and isinstance(self.checkpoint.get("earnings"), dict):
+            self.earnings = EarningsBlock(**self.checkpoint["earnings"])
+        if self.pending_signal is None and isinstance(
+            self.checkpoint.get("pending_signal"), dict
+        ):
+            self.pending_signal = PendingSignal(**self.checkpoint["pending_signal"])
+        if self.last_signal is None and isinstance(self.checkpoint.get("last_signal"), dict):
+            self.last_signal = ResolvedSignal(**self.checkpoint["last_signal"])
         return self
 
 

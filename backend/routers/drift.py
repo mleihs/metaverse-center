@@ -42,6 +42,8 @@ from backend.models.drift import (
     QuestAcceptResponse,
     QuestDeliverResponse,
     QuestStateResponse,
+    SignalResolveRequest,
+    TravelLogEntryResponse,
     TravelMoveRequest,
     TravelQuestAcceptRequest,
     TravelQuestAdvanceRequest,
@@ -236,6 +238,44 @@ async def resolve_havarie(
         supabase, user.id, run_id, body.run_version, body.choice, body.jettison_cargo_ids
     )
     return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/signal/resolve")
+async def resolve_signal(
+    run_id: UUID,
+    body: SignalResolveRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Answer the pending Störung/Begegnung (M1, migration 267).
+
+    Returns the run AFTER the answer: active again with `last_signal` set, or in a
+    Havarie if the outcome took the last of the hull. While a signal is pending the run
+    cannot move (SIGNAL_PENDING → 400) — a Störung is a decision, not a notification.
+    """
+    run = await DriftService.resolve_signal(
+        supabase, user.id, run_id, body.run_version, body.option_key
+    )
+    return SuccessResponse(data=run)
+
+
+@router.get("/logbook")
+async def get_logbook(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[list[TravelLogEntryResponse]]:
+    """The traveller's logbook — signals, rumours, banks and Havarien, newest first.
+
+    NOT behind the Fun-Kern gate: with the gate closed the table is simply empty, and an
+    empty logbook is a truthful answer where a 404 in the middle of the HUD is not (same
+    reasoning as GET /drift/profile in W1). Across runs by design — the logbook is the
+    career, not the journey, and it is what makes coming back after a week free (R12).
+    """
+    entries = await DriftService.get_logbook(supabase, user.id)
+    return SuccessResponse(data=entries)
 
 
 @router.post("/run/{run_id}/abandon")
