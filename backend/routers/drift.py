@@ -261,6 +261,38 @@ async def resolve_signal(
     return SuccessResponse(data=run)
 
 
+@router.post("/run/{run_id}/sondieren")
+async def sondieren(
+    run_id: UUID,
+    body: TravelRunVersionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Dig the node the run is standing on (M2) — one Takt, a rising yield, an open marker.
+
+    The third marker of one class tears the node (Resonanzriss): the loose yield dug there
+    is forfeit. The returned run carries `checkpoint.last_sondierung` for the reveal.
+    """
+    run = await DriftService.sondieren(supabase, user.id, run_id, body.run_version)
+    return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/bank")
+async def bank_haul(
+    run_id: UUID,
+    body: TravelRunVersionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Funkboje: transmit 70 % of the loose haul from a dock, safe from everything after."""
+    run = await DriftService.bank_haul(supabase, user.id, run_id, body.run_version)
+    return SuccessResponse(data=run)
+
+
 @router.get("/logbook")
 async def get_logbook(
     user: Annotated[CurrentUser, Depends(get_current_user)],

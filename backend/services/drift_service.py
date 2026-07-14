@@ -752,6 +752,38 @@ class DriftService:
         )
 
     @staticmethod
+    async def sondieren(
+        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
+    ) -> TravelRunResponse:
+        """Dig the node the run is standing on (M2, migration 268).
+
+        Costs a Takt, pays a rising yield, and lays an open marker on the node. The third
+        marker of one class tears it: the loose yield dug there is forfeit (never the
+        banked reserve). The returned run carries `checkpoint.last_sondierung` — the
+        reveal the HUD plays.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_sondieren",
+            {"p_user": str(user_id), "p_run": str(run_id), "p_run_version": run_version},
+        )
+
+    @staticmethod
+    async def bank_haul(
+        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
+    ) -> TravelRunResponse:
+        """Transmit the loose haul from a dock (Funkboje, migration 268).
+
+        70 % of it becomes safe from everything that follows — a Havarie, a Resonanzriss,
+        even a Zerfaserung. Refused at the anchor world, where the Entladung pays in full.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_funkboje_bank",
+            {"p_user": str(user_id), "p_run": str(run_id), "p_run_version": run_version},
+        )
+
+    @staticmethod
     async def get_logbook(
         supabase: Client, user_id: UUID, *, limit: int = 50
     ) -> list[TravelLogEntryResponse]:
