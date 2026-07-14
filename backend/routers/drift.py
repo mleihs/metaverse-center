@@ -66,14 +66,25 @@ async def require_drift_p0(
     await DriftService.assert_p0_enabled(admin_supabase)
 
 
-async def require_drift_fun_core(
-    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
-) -> None:
-    """Fun-Kern gate: 404 unless drift_fun_core_enabled is on (migration 264).
-
-    Cumulative with require_drift_p0 — an endpoint that needs the Fun-Kern declares both.
-    """
-    await DriftService.assert_fun_core_enabled(admin_supabase)
+# NOTE — there is deliberately NO `require_drift_fun_core` router dependency (W2.6/A).
+#
+# The Fun-Kern gate lives in ONE place: SQL. Every Fun-Kern RPC re-reads
+# `drift_fun_core_enabled` in-transaction (drift_gate_enabled, migration 264) and knows what
+# a closed gate means for ITS OWN state — refuse to CREATE (GATE_CLOSED → 400), but DRAIN
+# whatever the Fun-Kern already created (a wrecked run unravels, a pending scene clears).
+# That distinction is the W1/1.5 rule: a gate may refuse to create state, never to lock a
+# traveller inside it.
+#
+# A router-level gate cannot make that distinction — it answers 404 before the RPC runs, so
+# the coarse guard silently overrules the fine one. It already did: the carefully built
+# gate-drain in fn_travel_havarie_resolve was UNREACHABLE, and a rollback would have jailed
+# every wrecked run for its full 48-hour TTL. The dependency was removed from /havarie/resolve
+# and /signal/resolve in the W1+W2 acceptance; W2.6 removes the last three (clearance-exam,
+# sondieren, bank), where it was merely redundant — each of those RPCs raises GATE_CLOSED
+# itself — and would have become the same trap the day one of them grew a drain.
+#
+# Read-/nav-gating is unaffected: the frontend hides the surfaces, and GET /public/drift/state
+# reports the phase flags.
 
 
 @router.get("/chart")
@@ -156,15 +167,13 @@ async def sit_clearance_exam(
     body: ClearanceExamRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _gate: Annotated[None, Depends(require_drift_p0)],
-    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[ClearanceExamResponse]:
     """Sit the Bureau clearance exam (VP threshold + Siegel fee → promotion).
 
     Player-class RPC → user-JWT client (the auth.uid() guard, as for the run mutations).
-    Double-gated on purpose: the HTTP gate keeps the endpoint invisible while the Fun-Kern
-    is down, and the RPC re-checks the same key in-transaction (GATE_CLOSED) so no other
-    call path can slip past it.
+    The Fun-Kern gate is the RPC's own (GATE_CLOSED → 400), not the router's — see the note
+    above the endpoints.
     """
     result = await DriftService.sit_clearance_exam(supabase, user.id, body.rank)
     return SuccessResponse(data=result)
@@ -281,13 +290,12 @@ async def sondieren(
     body: TravelRunVersionRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _gate: Annotated[None, Depends(require_drift_p0)],
-    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[TravelRunResponse]:
     """Dig the node the run is standing on (M2) — one Takt, a rising yield, an open marker.
 
     The third marker of one class tears the node (Resonanzriss): the loose yield dug there
-    is forfeit. The returned run carries `checkpoint.last_sondierung` for the reveal.
+    is forfeit. The returned run carries `last_sondierung` for the reveal.
     """
     run = await DriftService.sondieren(supabase, user.id, run_id, body.run_version)
     return SuccessResponse(data=run)
@@ -299,7 +307,6 @@ async def bank_haul(
     body: TravelRunVersionRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _gate: Annotated[None, Depends(require_drift_p0)],
-    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[TravelRunResponse]:
     """Funkboje: transmit 70 % of the loose haul from a dock, safe from everything after."""

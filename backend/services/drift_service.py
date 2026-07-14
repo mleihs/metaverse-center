@@ -58,7 +58,6 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 _P0_GATE_KEY = "drift_p0_enabled"
-_FUN_CORE_GATE_KEY = "drift_fun_core_enabled"
 
 # The rank ladder in order. W1 opens the first rung only (drift_tuning.clearance_thresholds
 # carries exactly one key); the list is what tells the HUD which rung comes NEXT, and it is
@@ -104,18 +103,13 @@ class DriftService:
         if not parse_setting_bool(settings_map.get(_P0_GATE_KEY)):
             raise not_found("DRIFT is not available.")
 
-    @staticmethod
-    async def assert_fun_core_enabled(admin_supabase: Client) -> None:
-        """Raise 404 unless the drift_fun_core_enabled gate is on (migration 264).
-
-        Same fail-closed read as assert_p0_enabled, same 404-not-403 reasoning: while the
-        Fun-Kern is down, its endpoints are "not available", not "forbidden". The SQL side
-        checks the identical key inside every new RPC (drift_gate_enabled), so a stale
-        cache here can never open a write path there.
-        """
-        settings_map = await load_platform_settings(admin_supabase, [_FUN_CORE_GATE_KEY])
-        if not parse_setting_bool(settings_map.get(_FUN_CORE_GATE_KEY)):
-            raise not_found("The DRIFT Bureau ledger is not available.")
+    # No `assert_fun_core_enabled` twin of the above (removed in W2.6/A). The Fun-Kern gate
+    # is enforced in SQL only — every Fun-Kern RPC re-reads drift_fun_core_enabled
+    # in-transaction and knows what a closed gate means for its own state (refuse to CREATE,
+    # but DRAIN what the Fun-Kern already created). An HTTP pre-check answers 404 before the
+    # RPC runs and therefore silently overrules that distinction; it made the gate-drain in
+    # fn_travel_havarie_resolve unreachable. `drift_p0_enabled` keeps its HTTP gate: it hides
+    # a whole FEATURE, and there is no state behind it that could need draining.
 
     @staticmethod
     async def get_public_state(admin_supabase: Client) -> DriftPublicState:
