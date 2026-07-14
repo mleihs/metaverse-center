@@ -302,6 +302,7 @@ DECLARE
     v_loose    INT;
     v_safe     INT;
     v_total    INT;
+    v_sond     JSONB;
 BEGIN
     IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
         RAISE EXCEPTION 'fn_funkboje_bank: caller is not the run owner' USING ERRCODE = '42501';
@@ -347,12 +348,32 @@ BEGIN
     v_safe  := floor(v_loose * v_rate)::int;   -- floor: the Bureau never rounds your way
     v_total := COALESCE((v_run.checkpoint ->> 'haul_safe')::int, 0) + v_safe;
 
+    -- SETTLE THE SUB-LEDGERS. `haul` is not a lone number: two ledgers record how much of
+    -- the LOOSE haul came from where, and both are read as a debit later —
+    --   * sondierung[node].yield  → what a Resonanzriss at that node confiscates (fn_sondieren)
+    --   * travel_cargo.haul_value → what a Notabwurf of that freight deducts (fn_travel_jettison_haul)
+    -- Transmitting the haul empties `haul` but not them, and a stale sub-ledger cuts BOTH
+    -- ways: a later bust at an already-banked node confiscates haul the traveller dug
+    -- somewhere else entirely (over-confiscation), while the same staleness makes the bust
+    -- cost exactly nothing whenever the loose haul is back at 0 — dig → bank → dig → bank
+    -- (the Funkboje costs no Takt) would turn the gamble into a risk-free 70 %, and the
+    -- push-your-luck of the whole wave evaporates. What is ashore can neither be lost nor
+    -- deducted again, so both ledgers go to zero here.
+    -- `digs` and `rissig` STAY: they describe the NODE (its place in the yield table, its
+    -- torn state), not the haul, and banking does not un-dig a hole.
+    SELECT COALESCE(jsonb_object_agg(k, v || jsonb_build_object('yield', 0)), '{}'::jsonb)
+      INTO v_sond
+      FROM jsonb_each(COALESCE(v_run.checkpoint -> 'sondierung', '{}'::jsonb)) AS e(k, v);
+
+    UPDATE travel_cargo SET haul_value = 0 WHERE run_id = p_run AND haul_value <> 0;
+
     UPDATE travel_runs SET
         event_seq   = event_seq + 1,
         run_version = run_version + 1,
         checkpoint  = checkpoint || jsonb_build_object(
             'haul', 0,
             'haul_safe', v_total,
+            'sondierung', v_sond,
             'last_bank', jsonb_build_object('loose', v_loose, 'safe', v_safe,
                                             'rate', v_rate, 'haul_safe', v_total))
      WHERE id = p_run
@@ -458,6 +479,20 @@ BEGIN
         v_siegel := floor(v_haul * COALESCE((drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int
                     + v_honors * COALESCE((v_erstv ->> 'siegel')::int, 40);
         v_earnings := fn_drift_award(p_user, p_source, v_siegel, v_vp, p_run);
+    ELSIF v_haul_safe > 0 THEN
+        -- GATE CLOSED, BUT THE RESERVE STILL PAYS. Same ruling as fn_travel_zerfasern and
+        -- fn_travel_abandon: a transmitted reserve is not Fun-Kern residue, it is money the
+        -- traveller already brought ashore under an OPEN gate (haul_safe can be non-zero no
+        -- other way, so a run that never saw the Fun-Kern is untouched and parity holds).
+        -- This is the third and likeliest closing path — the traveller simply walks home and
+        -- files the Entladung — and it was the one that had not been told: a rollback flipped
+        -- mid-run would have let the haul flow into vermessung_lodged while paying 0 Siegel,
+        -- and a Rückzug would have paid better than arriving. The LOOSE haul and the honors
+        -- stay gated (they are earned by the wave's mechanics); only the reserve is settled.
+        v_vp     := v_haul_safe * COALESCE((drift_tuning_value('reward_survey_vp_per_haul'))::int, 1);
+        v_siegel := floor(v_haul_safe * COALESCE(
+            (drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int;
+        v_earnings := fn_drift_award(p_user, p_source || '_transmitted', v_siegel, v_vp, p_run);
     END IF;
 
     v_checkpoint := jsonb_build_object(

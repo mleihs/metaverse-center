@@ -634,3 +634,152 @@ class TestGuards:
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=10)
         with pytest.raises(Exception, match="RUN_STALE"):
             _dig(client, user, {**run, "run_version": run["run_version"] - 1})
+
+
+class TestTheFunkbojeSettlesItsLedgers:
+    """`haul` is not a lone number — two sub-ledgers record where the LOOSE haul came from,
+    and both are read as a debit later. Transmitting the haul must settle them in the same
+    breath, or they keep pointing at money that is no longer loose.
+
+    The Gesamtabnahme review found both directions of the same staleness, and 173 green
+    tests had seen neither: a bust after a bank confiscated haul dug somewhere else
+    entirely, AND — because the Funkboje costs no Takt — dig → bank → dig → bank turned the
+    Riss into a free ride, which is the push-your-luck of the whole wave evaporating.
+    """
+
+    def _dug_and_banked(self, admin_client, client, user, run, chart_foreign):
+        """One dig at a foreign dock, then transmit it. Returns (run, first_yield)."""
+        _force_run_state(admin_client, run["id"], position_node_id=chart_foreign["id"])
+        run = _run_row(admin_client, run["id"])
+        run = _dig(client, user, run)
+        dug = run["checkpoint"]["last_sondierung"]["yield"]
+        assert dug > 0, "the first dig at a fresh node cannot bust (it takes three markers)"
+        return _bank(client, user, run), dug
+
+    def test_banking_zeroes_the_node_yield_but_not_the_node(
+        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
+    ):
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home, window_remaining=20)
+        banked, _ = self._dug_and_banked(admin_client, client, user, run, chart_foreign)
+
+        at_node = banked["checkpoint"]["sondierung"][str(chart_foreign["id"])]
+        assert at_node["yield"] == 0, "what is ashore can no longer be confiscated"
+        assert at_node["digs"] == 1, "banking does not un-dig the hole — the table moves on"
+
+    def test_a_bust_after_a_bank_cannot_confiscate_what_it_never_paid_for(
+        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
+    ):
+        """The regression, stated as the player would feel it: dig a node, transmit it, earn
+        fresh haul elsewhere, come back and tear the node open — and lose only what is
+        actually still loose AT THAT NODE, which is nothing. Before the fix the stale node
+        ledger ate the 7 points the traveller had dug somewhere else.
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home, window_remaining=20)
+        banked, dug = self._dug_and_banked(admin_client, client, user, run, chart_foreign)
+        safe_before = banked["checkpoint"]["haul_safe"]
+
+        # Fresh loose haul from elsewhere, and a marker stack that busts on ANY draw:
+        # two of every class means the next marker — whatever the salt hands us — is a third.
+        classes = _tuning(admin_client, "sondierung_marker_classes")
+        _force_run_state(
+            admin_client,
+            banked["id"],
+            checkpoint={
+                **banked["checkpoint"],
+                "haul": 7,
+                "markers": {str(chart_foreign["id"]): [c for c in classes for _ in range(2)]},
+            },
+        )
+        armed = _run_row(admin_client, banked["id"])
+
+        torn = _dig(client, user, armed)
+
+        assert torn["checkpoint"]["last_sondierung"]["bust"] is True, "two of each = a bust"
+        assert torn["checkpoint"]["haul"] == 7, (
+            f"the Riss took haul dug elsewhere: expected 7, got {torn['checkpoint']['haul']} "
+            f"(the stale node ledger still claimed the {dug} that were banked)"
+        )
+        assert torn["checkpoint"]["haul_safe"] == safe_before, "the reserve is never touched"
+
+    def test_banking_settles_the_freight_ledger_too(
+        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
+    ):
+        """travel_cargo.haul_value is what a Notabwurf deducts from the loose haul. Once the
+        Fund's haul is ashore, throwing the crate overboard must not deduct it a second time.
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home)
+        admin_client.table("travel_cargo").insert(
+            {
+                "owner_user_id": str(user),
+                "run_id": run["id"],
+                "family": "kontrakte",   # one of the 7 cargo families (241) — as a Fund grants
+                "vector": "commerce",
+                "manifest_slot": 0,
+                "haul_value": 6,
+            }
+        ).execute()
+        run = self._at_foreign_dock_for(admin_client, run, chart_foreign, haul=6)
+
+        _bank(client, user, run)
+
+        rows = (
+            admin_client.table("travel_cargo").select("haul_value").eq("run_id", run["id"])
+        ).execute().data
+        assert rows[0]["haul_value"] == 0, "transmitted freight stops paying a second time"
+
+    @staticmethod
+    def _at_foreign_dock_for(admin_client, run, chart_foreign, *, haul):
+        _force_run_state(
+            admin_client,
+            run["id"],
+            position_node_id=chart_foreign["id"],
+            checkpoint={**run["checkpoint"], "haul": haul},
+        )
+        return _run_row(admin_client, run["id"])
+
+
+class TestTheReserveOutlivesTheGate:
+    """A closed gate leaves no residue — but a transmitted reserve is not residue, it is
+    money the traveller already brought ashore under an OPEN gate. Zerfaserung and Rückzug
+    were told this (W2/2.5). The Entladung — the third and likeliest closing path, the one
+    where the traveller simply walks home — was not.
+    """
+
+    def test_the_entladung_pays_the_reserve_with_the_gate_shut(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        user, client = test_user_ids[0], user_clients[0]
+        ratio = _tuning(admin_client, "reward_survey_siegel_ratio")
+        per_haul = _tuning(admin_client, "reward_survey_vp_per_haul")
+        run = _armed_run(admin_client, client, user, chart_home)
+        _force_run_state(
+            admin_client,
+            run["id"],
+            position_node_id=chart_home["id"],
+            checkpoint={**run["checkpoint"], "haul": 10, "haul_safe": 8},
+        )
+        run = _run_row(admin_client, run["id"])
+        before = _profile(admin_client, user)
+
+        # The rollback lands mid-run: the traveller banked under an open gate and walks home
+        # into a closed one.
+        _set_gate(admin_client, False)
+        closed = _complete(client, user, run)
+
+        after = _profile(admin_client, user)
+        # The ACCOUNT is where a closed gate must still tell the truth. The closing
+        # checkpoint deliberately does not: with the gate shut it is pinned to the exact
+        # migration-256 key set (byte parity — no `earnings`, no `haul_transmitted`), the
+        # same ruling fn_travel_zerfasern follows when it pays a reserve into a rolled-back
+        # world. Money moves; the Fun-Kern's receipt keys do not reappear.
+        assert after["siegel"] == before["siegel"] + int(8 * ratio), (
+            "the reserve pays, even with the gate shut — it was banked under an open one"
+        )
+        assert after["vp"] == before["vp"] + 8 * per_haul
+        assert closed["checkpoint"]["haul_banked"] == 10 + 8
+        assert "earnings" not in closed["checkpoint"], "rollback parity: the key set is 256's"
+        # And the LOOSE haul does not pay: it is the wave's own mechanic, and the gate is shut.
+        assert after["siegel"] - before["siegel"] < int((10 + 8) * ratio)
