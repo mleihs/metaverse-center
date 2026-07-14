@@ -184,7 +184,17 @@ class DriftService:
         resp = await (
             supabase.table("drift_tuning")
             .select("setting_key, value")
-            .in_("setting_key", ["window_base", "dz_p0_cap", "bandwidth_class_bb_max"])
+            .in_(
+                "setting_key",
+                [
+                    "window_base",
+                    "dz_p0_cap",
+                    "bandwidth_class_bb_max",
+                    "sondierung_yields",
+                    "funkboje_rate",
+                    "funkboje_node_types",
+                ],
+            )
             .execute()
         )
         values = {row["setting_key"]: row["value"] for row in (resp.data or [])}
@@ -193,6 +203,9 @@ class DriftService:
             window_base=int(values.get("window_base", 8)),
             dz_cap=int(values.get("dz_p0_cap", 20)),
             bandwidth_class_bb_max={str(k): int(v) for k, v in bb_max.items()},
+            sondierung_yields=[int(v) for v in (values.get("sondierung_yields") or [])],
+            funkboje_rate=float(values.get("funkboje_rate", 0.7)),
+            funkboje_node_types=[str(v) for v in (values.get("funkboje_node_types") or [])],
         )
 
     @staticmethod

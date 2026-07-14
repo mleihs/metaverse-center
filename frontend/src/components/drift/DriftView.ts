@@ -26,9 +26,14 @@ import type {
   DriftHavarie,
   DriftHavarieChoice,
   DriftHonor,
+  DriftLogEntry,
+  DriftMarkerClass,
+  DriftPendingSignal,
   DriftProfile,
   DriftQuestOffer,
   DriftQuestState,
+  DriftSignalDeltas,
+  DriftSondierungReveal,
   DriftTuning,
   TravelRun,
 } from '../../types/drift.js';
@@ -41,10 +46,14 @@ import './DriftChartHost.js';
 import './DriftDockPanel.js';
 import './DriftEffectCards.js';
 import './DriftLedgerStrip.js';
+import './DriftLogbook.js';
+import './DriftMarkerStack.js';
 import './DriftStoryletPanel.js';
+import { vectorLabel } from './DriftChartHost.js';
 import type { VelgDriftEffectCards } from './DriftEffectCards.js';
 import { rankLabel } from './DriftLedgerStrip.js';
 import type {
+  StoryletDelta,
   StoryletOption,
   StoryletSelectable,
   VelgDriftStoryletPanel,
@@ -56,8 +65,47 @@ import { FREQUENCIES, freqColorByName } from './palette.js';
  *  ask a question must not be asked two. */
 type DriftScene =
   | { kind: 'havarie'; run: TravelRun }
+  /** A Störung/Begegnung the run is standing in and cannot walk away from (W2). Derived
+   *  from run.pending_signal, never remembered past it — same rule as the Havarie. */
+  | { kind: 'signal'; run: TravelRun }
+  /** What the answer did. Dismissable: the decision is already made. */
+  | { kind: 'signal-result'; run: TravelRun }
   | { kind: 'cards'; cards: DriftEffectCard[]; earnings: DriftEarnings | null }
   | { kind: 'debrief'; run: TravelRun };
+
+/** The reveal of the last dig (checkpoint.last_sondierung) — the Riss line and the stack
+ *  animation both read it. Absent on any run that has not dug this Takt. */
+function revealOf(run: TravelRun | null): DriftSondierungReveal | null {
+  const block = run?.checkpoint?.last_sondierung;
+  if (!block || typeof block !== 'object') return null;
+  const reveal = block as Partial<DriftSondierungReveal>;
+  return typeof reveal.dig === 'number' && typeof reveal.bust === 'boolean'
+    ? (block as DriftSondierungReveal)
+    : null;
+}
+
+/** The dig record of the node the run is standing on: the open marker stack, how often it
+ *  has been dug, and whether it has already torn. All three come from the run — the client
+ *  keeps no memory of a node, so a second tab and a fresh reload agree. */
+function digSiteOf(run: TravelRun | null): {
+  markers: DriftMarkerClass[];
+  digs: number;
+  rissig: boolean;
+} {
+  const node = run?.position_node_id;
+  if (!node) return { markers: [], digs: 0, rissig: false };
+  const markerMap = (run?.checkpoint?.markers ?? {}) as Record<string, DriftMarkerClass[]>;
+  const sondMap = (run?.checkpoint?.sondierung ?? {}) as Record<
+    string,
+    { digs?: number; rissig?: boolean }
+  >;
+  const site = sondMap[node] ?? {};
+  return {
+    markers: Array.isArray(markerMap[node]) ? markerMap[node] : [],
+    digs: Number(site.digs ?? 0),
+    rissig: site.rissig === true,
+  };
+}
 
 /** Read the Havarie block the RPC wrote into the checkpoint. The client NEVER invents an
  *  option: which ones exist is the server's decision (a Kohärenz-Havarie with no cargo has
@@ -381,8 +429,15 @@ export class VelgDriftView extends LitElement {
   @state() private _dockOpen = false;
   /** The Bureau account behind the ledger strip (null before the traveller's first run). */
   @state() private _profile: DriftProfile | null = null;
-  /** The one scene currently holding the board (Havarie / effect cards / debriefing). */
+  /** The one scene currently holding the board (Havarie / signal / cards / debriefing). */
   @state() private _scene: DriftScene | null = null;
+  /** The traveller's logbook — across runs, because it is the career, not the journey. */
+  @state() private _logbook: DriftLogEntry[] = [];
+  /** The sounding ceremony is running (§8 M-10) — decision first, reveal second. */
+  @state() private _digging = false;
+  /** Something paid while a scene was up. The account is refreshed when the traveller is
+   *  looking at the HUD again (a count-up behind a scrim is a count-up nobody saw). */
+  private _profileDirty = false;
   @state() private _loading = true;
   @state() private _error = false;
   @state() private _busy = false;
@@ -467,27 +522,34 @@ export class VelgDriftView extends LitElement {
       // manifest or seal overlay. The mode decision lives here at the call site (never in
       // the API layer); appState.isAuthenticated is the canonical authed signal.
       if (appState.isAuthenticated.value) {
-        const [chartRes, runRes, tuningRes, questRes, honorRes, profileRes] = await Promise.all([
-          driftApi.getChart('member'),
-          driftApi.getRun(),
-          driftApi.getTuning(),
-          driftApi.getQuests(),
-          driftApi.getHonors(),
-          driftApi.getProfile(),
-        ]);
+        const [chartRes, runRes, tuningRes, questRes, honorRes, profileRes, logRes] =
+          await Promise.all([
+            driftApi.getChart('member'),
+            driftApi.getRun(),
+            driftApi.getTuning(),
+            driftApi.getQuests(),
+            driftApi.getHonors(),
+            driftApi.getProfile(),
+            driftApi.getLogbook(),
+          ]);
         this._chart = chartRes.success ? (chartRes.data ?? null) : null;
         this._run = runRes.success ? (runRes.data ?? null) : null;
         if (tuningRes.success) this._tuning = tuningRes.data;
         if (questRes.success) this._quests = questRes.data;
         if (honorRes.success) this._honors = honorRes.data ?? [];
         if (profileRes.success) this._profile = profileRes.data ?? null;
+        if (logRes.success) this._logbook = logRes.data ?? [];
         if (!chartRes.success) this._error = true;
         this._loadedAsMember = true;
         // Resumed onto a foreign broadcast edge? Surface its dossier.
         if (this._run) void this._maybeDock(this._run);
         // Resumed INTO a wreck: the decision is still open and it is the only thing that
         // matters — a traveller who closes the tab mid-Havarie comes back to the scene.
+        // Resumed INTO a scene: a wreck, or a Störung that was never answered. Either way
+        // the run cannot move until it is settled, so the scene is what the traveller comes
+        // back to — the same derivation the mutations use, never a remembered snapshot.
         if (this._run?.status === 'havarie') this._scene = { kind: 'havarie', run: this._run };
+        else if (this._run?.pending_signal) this._scene = { kind: 'signal', run: this._run };
       } else {
         const chartRes = await driftApi.getChart('public');
         this._chart = chartRes.success ? (chartRes.data ?? null) : null;
@@ -604,6 +666,185 @@ export class VelgDriftView extends LitElement {
     );
   }
 
+  /** Re-pull the logbook — after any act that writes one (signal, dig, bank, Havarie). */
+  private async _refreshLogbook(): Promise<void> {
+    const res = await driftApi.getLogbook();
+    if (res.success) this._logbook = res.data ?? [];
+    else this._refetchFailed('Logbook', res.error?.message);
+  }
+
+  /**
+   * Answer the pending Störung/Begegnung.
+   *
+   * The option key travels; nothing else does. The server re-reads the option from the
+   * TEMPLATE (not from the checkpoint copy the panel rendered), pays its cost whatever the
+   * roll says, and can end the run in a Havarie if the outcome takes the last of the hull.
+   * So the outcome is adopted exactly like any other run mutation — the scene that follows
+   * is DERIVED from the run, never decided here.
+   */
+  private _resolveSignal(e: CustomEvent<{ key: string }>): void {
+    const run = this._run;
+    if (!run) return;
+    void this._mutate(
+      () => driftApi.resolveSignal(run.id, run.run_version, e.detail.key),
+      async (resolved) => {
+        this._run = resolved;
+        // A Störung with teeth: the answer stranded the run. The Havarie takes the stage,
+        // and the result of the signal is told inside its prose instead of stacking a second
+        // panel on top of the first (a run that stops to ask must not be asked twice).
+        this._scene =
+          resolved.status === 'havarie'
+            ? { kind: 'havarie', run: resolved }
+            : { kind: 'signal-result', run: resolved };
+        await Promise.all([this._refreshLogbook(), this._refreshQuests()]);
+        // A resolved signal can pay Siegel (fn_drift_award) — the strip must not lie on the
+        // next glance. The odometer plays when the scene closes (_closeScene), to a lit HUD.
+        if (resolved.last_signal?.applied?.siegel) this._profileDirty = true;
+      },
+      'VelgDriftView._resolveSignal',
+    );
+  }
+
+  /**
+   * One more dig (M2).
+   *
+   * The decision is made BEFORE the reveal — the button commits, the sonar goes out, and
+   * only then does the yield (or the Riss) land. `_digging` drives that: it is set for the
+   * duration of the ceremony, not for the duration of the request.
+   */
+  private _sondieren(): void {
+    const run = this._run;
+    if (!run) return;
+    this._digging = true;
+    void this._mutate(
+      () => driftApi.sondieren(run.id, run.run_version),
+      async (dug) => {
+        this._adoptRun(dug);
+        await this._refreshLogbook();
+        const reveal = revealOf(dug);
+        if (reveal?.bust) {
+          // M-11: the Riss is announced with words, not with a red flash. The loss is
+          // stated exactly — a bust the traveller cannot audit is a bust they cannot learn
+          // from, and learning is the only thing that makes the next dig a decision.
+          VelgToast.warning(
+            msg(str`Resonanzriss. ${reveal.forfeited} Punkte Vermessung bleiben im Knoten.`),
+          );
+        }
+      },
+      'VelgDriftView._sondieren',
+    );
+    // The ceremony outlives the request on purpose: a 40 ms round trip must still LOOK like
+    // a sounding (§8 M-10), and a 2 s one must not leave the ring spinning forever.
+    window.setTimeout(() => {
+      this._digging = false;
+    }, 720);
+  }
+
+  /** Funkboje: send the loose haul home. Refused at the anchor world by the server (there
+   *  the Entladung pays in full) — the button is not even offered there. */
+  private _bank(): void {
+    const run = this._run;
+    if (!run) return;
+    void this._mutate(
+      () => driftApi.bankHaul(run.id, run.run_version),
+      async (banked) => {
+        this._adoptRun(banked);
+        await this._refreshLogbook();
+        const receipt = banked.checkpoint.last_bank as
+          | { safe?: number; loose?: number }
+          | undefined;
+        VelgToast.success(
+          msg(
+            str`Funkboje: ${Number(receipt?.safe ?? 0)} von ${Number(receipt?.loose ?? 0)} Punkten sind gesichert.`,
+          ),
+        );
+      },
+      'VelgDriftView._bank',
+    );
+  }
+
+  /** The class, in the Bureau's filing language. It is the first thing the traveller reads,
+   *  and it tells them what KIND of moment this is before they read a word of prose. */
+  private _signalEyebrow(signalClass: string): string {
+    switch (signalClass) {
+      case 'stoerung':
+        return msg('Störung');
+      case 'begegnung':
+        return msg('Begegnung');
+      case 'fund':
+        return msg('Fund');
+      case 'geruecht':
+        return msg('Gerücht');
+      default:
+        return msg('Signal');
+    }
+  }
+
+  /**
+   * The options, with their prices ON them.
+   *
+   * Two rules, both load-bearing:
+   *   - The COST is stated exactly (it is paid whatever the roll says — a chip that only
+   *     holds on success is a lie).
+   *   - The RISK is named and never numbered (concept R4). "Riskant · Architektur" tells
+   *     the traveller which part of themselves is being tested; the difficulty stays with
+   *     the Bureau. A percentage would turn a decision into a calculation.
+   */
+  private _signalOptions(options: DriftPendingSignal['options']): StoryletOption[] {
+    return options.map((option) => {
+      const chips: string[] = [];
+      if (option.cost?.takt) chips.push(msg(str`${option.cost.takt} Takt`));
+      if (option.cost?.bb) chips.push(msg(str`${option.cost.bb} Bandbreite`));
+      if (option.cost?.kh) chips.push(msg(str`${option.cost.kh} Kohärenz`));
+      if (option.check) chips.push(msg(str`Riskant · ${vectorLabel(option.check.vector)}`));
+      return {
+        key: option.key,
+        label: option.label_de,
+        detail: option.check
+          ? msg('Ein Wurf. Der Ausgang ist nicht dein Eigentum.')
+          : msg('Kein Wurf. Der Preis steht fest.'),
+        chips,
+        danger: !!option.check,
+      };
+    });
+  }
+
+  /** The outcome ledger: what the scene actually wrote. A resolved signal that only tells a
+   *  story is one nobody can learn from — and learning is what makes the NEXT one a decision. */
+  private _deltaLines(applied: DriftSignalDeltas | null): StoryletDelta[] {
+    if (!applied) return [];
+    const lines: StoryletDelta[] = [];
+    const num = (label: string, value: number | undefined, goodWhenPositive: boolean) => {
+      if (!value) return;
+      lines.push({
+        label,
+        value: value > 0 ? `+${value}` : `${value}`,
+        tone: value > 0 === goodWhenPositive ? 'gain' : 'loss',
+      });
+    };
+    num(msg('Kohärenz'), applied.kh, true);
+    num(msg('Bandbreite'), applied.bb, true);
+    num(msg('Dissonanz'), applied.dz, false);
+    num(msg('Takte'), applied.takt, true);
+    num(msg('Siegel'), applied.siegel, true);
+    if (applied.cargo_grant) {
+      lines.push({
+        label: msg('Fracht'),
+        value: msg(
+          str`${this._cargoLabel(applied.cargo_grant.family)} · +${applied.cargo_grant.haul}`,
+        ),
+        tone: 'gain',
+      });
+    }
+    if (applied.rumor_reveal) {
+      lines.push({ label: msg('Logbuch'), value: msg('Ein Knoten mehr'), tone: 'gain' });
+    }
+    if (applied.marker_add) {
+      lines.push({ label: msg('Marker'), value: applied.marker_add, tone: 'neutral' });
+    }
+    return lines;
+  }
+
   /** Resolve a Havarie. The choice and any jettisoned cargo are validated server-side
    *  against what the wreck actually offered — the client cannot smuggle an option in. */
   private _resolveHavarie(e: CustomEvent<{ key: string; selected: string[] }>): void {
@@ -651,7 +892,9 @@ export class VelgDriftView extends LitElement {
   private _closeScene = (): void => {
     // Closing a scene that PAID is the moment the account may move — and the moment the
     // traveller is looking at the HUD again. That is where the odometer belongs.
-    const paid = this._scene?.kind === 'cards' || this._scene?.kind === 'debrief';
+    const paid =
+      this._scene?.kind === 'cards' || this._scene?.kind === 'debrief' || this._profileDirty;
+    this._profileDirty = false;
     this._scene = null;
     if (paid) void this._refreshProfile();
   };
@@ -664,16 +907,34 @@ export class VelgDriftView extends LitElement {
    *  back NOT_IN_HAVARIE — forever, with no way to dismiss it. A scene is a view OF the run,
    *  so it is re-derived from the run, never remembered past it. */
   private _resyncScene(): void {
-    if (this._scene?.kind !== 'havarie') return;
     const run = this._run;
-    this._scene = run?.status === 'havarie' ? { kind: 'havarie', run } : null;
+    if (this._scene?.kind === 'havarie') {
+      this._scene = run?.status === 'havarie' ? { kind: 'havarie', run } : null;
+      return;
+    }
+    // The same rule for a signal: if the scene was answered elsewhere (a second tab), the
+    // pending_signal is gone from the run and the panel must go with it, rather than sitting
+    // on a dead snapshot answering NO_PENDING_SIGNAL forever.
+    if (this._scene?.kind === 'signal') {
+      this._scene = run?.pending_signal ? { kind: 'signal', run } : null;
+    }
   }
 
   /** Escape closes a scene the traveller is allowed to walk away from. A Havarie is not one
    *  of them: the run is stopped until it is answered, and an Escape that silently dismissed
    *  the decision would leave a wreck on the board with no way back to it. */
   private _onSceneKeydown = (e: KeyboardEvent): void => {
-    if (e.key !== 'Escape' || !this._scene || this._scene.kind === 'havarie') return;
+    // A Havarie and a pending Störung both STOP the run: dismissing them with Escape would
+    // leave the board un-actionable with no way back to the decision. A result or a receipt
+    // is a different matter — the decision is already made, and reading it is optional.
+    if (
+      e.key !== 'Escape' ||
+      !this._scene ||
+      this._scene.kind === 'havarie' ||
+      this._scene.kind === 'signal'
+    ) {
+      return;
+    }
     e.stopPropagation();
     this._closeScene();
   };
@@ -803,6 +1064,13 @@ export class VelgDriftView extends LitElement {
       this._run = run;
       this._closeDock();
       this._scene = { kind: 'havarie', run };
+      void this._refreshQuests();
+    } else if (run.pending_signal) {
+      // The Drift said something and is waiting for an answer. The server refuses the next
+      // move until it gets one (SIGNAL_PENDING), so the HUD must not pretend otherwise.
+      this._run = run;
+      this._closeDock();
+      this._scene = { kind: 'signal', run };
       void this._refreshQuests();
     } else {
       this._run = run;
@@ -1025,6 +1293,22 @@ export class VelgDriftView extends LitElement {
     if (message.includes('SIEGEL_TOO_LOW')) return msg('Die Prüfungsgebühr übersteigt dein Konto.');
     if (message.includes('RANK_ALREADY_HELD')) return msg('Diesen Rang trägst du bereits.');
     if (message.includes('GATE_CLOSED')) return msg('Das Bureau hat diesen Schalter geschlossen.');
+    // Signale + Sondierung (Migrationen 267/268)
+    if (message.includes('SIGNAL_PENDING'))
+      return msg('Der Drift wartet auf deine Antwort. Erst die Szene, dann der Zug.');
+    if (message.includes('NO_PENDING_SIGNAL')) return msg('Diese Szene ist bereits entschieden.');
+    if (message.includes('UNKNOWN_OPTION'))
+      return msg('Diese Antwort steht bei diesem Signal nicht offen.');
+    if (message.includes('OPTION_UNAFFORDABLE'))
+      return msg('Diesen Preis kannst du gerade nicht zahlen.');
+    if (message.includes('WINDOW_EMPTY'))
+      return msg('Kein Takt mehr im Fenster. Sondieren kostet einen.');
+    if (message.includes('NOT_ON_A_NODE')) return msg('Du stehst auf keinem Knoten.');
+    if (message.includes('NO_TRANSMITTER'))
+      return msg('Hier gibt es keinen Empfänger. Die Funkboje braucht eine Welt, die zuhört.');
+    if (message.includes('NOTHING_TO_BANK')) return msg('Du trägst nichts Loses zum Senden.');
+    if (message.includes('AT_HOME'))
+      return msg('Zu Hause zahlt die Entladung voll. Die Funkboje wäre ein Verlustgeschäft.');
     return message || msg('Der Drift hat das verweigert.');
   }
 
@@ -1102,6 +1386,49 @@ export class VelgDriftView extends LitElement {
   private _renderScene() {
     const scene = this._scene;
     if (!scene) return '';
+
+    // The Drift is talking, and the run is not moving until it is answered.
+    if (scene.kind === 'signal') {
+      const signal = scene.run.pending_signal;
+      if (!signal) return '';
+      return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
+        <velg-drift-storylet-panel
+          scene-kind=${signal.signal_class === 'begegnung' ? 'begegnung' : 'stoerung'}
+          tone=${signal.signal_class === 'stoerung' ? 'danger' : 'default'}
+          eyebrow=${this._signalEyebrow(signal.signal_class)}
+          sceneTitle=${signal.prose?.title_de ?? msg('Signal')}
+          prose=${signal.prose?.body_de ?? ''}
+          .options=${this._signalOptions(signal.options)}
+          ?busy=${this._busy}
+          @storylet-pick=${this._resolveSignal}
+        ></velg-drift-storylet-panel>
+      </div>`;
+    }
+
+    // What the answer did. Dismissable — the decision is behind the traveller now.
+    if (scene.kind === 'signal-result') {
+      const last = scene.run.last_signal;
+      if (!last) return '';
+      const outcome = last.outcome;
+      return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
+        <velg-drift-storylet-panel
+          tone=${last.success ? 'default' : 'danger'}
+          eyebrow=${last.success ? msg('Ausgang') : msg('Fehlschlag')}
+          sceneTitle=${last.success ? msg('Es hat gehalten') : msg('Es hat nicht gehalten')}
+          prose=${outcome?.text_de ?? ''}
+          .deltas=${this._deltaLines(last.applied ?? null)}
+          .options=${[
+            {
+              key: 'close',
+              label: msg('Weiter'),
+              detail: msg('Der Zwischenraum wartet nicht.'),
+              chips: [],
+            },
+          ]}
+          @storylet-pick=${this._closeScene}
+        ></velg-drift-storylet-panel>
+      </div>`;
+    }
 
     if (scene.kind === 'cards') {
       return html`<div class="scene-layer" @keydown=${this._onSceneKeydown}>
@@ -1211,6 +1538,22 @@ export class VelgDriftView extends LitElement {
     const posNode = this._chart?.nodes.find((n) => n.id === run.position_node_id);
     const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
     const atHome = posNode?.node_type === 'broadcast_rand' && posNode.simulation_id === anchor;
+
+    // The dig site, straight out of the run — the client remembers nothing about a node, so
+    // a second tab and a fresh reload tell the same story.
+    const site = digSiteOf(run);
+    const loose = Number(run.checkpoint.haul ?? 0);
+    const safe = Number(run.checkpoint.haul_safe ?? 0);
+    // What one more dig is worth: the server's table, with the last entry repeating (the
+    // limiter is the bust, not the table running out).
+    const yields = this._tuning?.sondierung_yields ?? [];
+    const nextYield = yields.length ? (yields[Math.min(site.digs, yields.length - 1)] ?? 0) : 0;
+    // A transmitter, and NOT at home: banking at the anchor could only ever cost the
+    // traveller 30 % of their own haul (the Entladung pays in full there), so the server
+    // refuses it — and an option the server refuses must not be on the board at all.
+    const transmitters = this._tuning?.funkboje_node_types ?? [];
+    const canBank = !atHome && !!posNode && transmitters.includes(posNode.node_type);
+
     return html`
       <div class="hud" ?inert=${sceneOpen}>
         <p class="hud__title">${msg('Träger')} · ${this._positionName()}</p>
@@ -1220,9 +1563,17 @@ export class VelgDriftView extends LitElement {
           @drift-exam=${this._sitExam}
         ></velg-drift-ledger-strip>
         <div class="hud__haul">
-          <span class="hud__haul-label">${msg('Vermessung (Haul)')}</span>
-          <span class="hud__haul-value">${Number(run.checkpoint.haul ?? 0)}</span>
+          <span class="hud__haul-label">${msg('Vermessung (lose)')}</span>
+          <span class="hud__haul-value">${loose}</span>
         </div>
+        ${
+          safe > 0
+            ? html`<div class="hud__haul">
+              <span class="hud__haul-label">${msg('Gesendet und sicher')}</span>
+              <span class="hud__haul-value">${safe}</span>
+            </div>`
+            : ''
+        }
         <dl class="hud__stats">
           ${this._stat(msg('Kohärenz'), run.kohaerenz, 100, 'kh')}
           ${this._stat(msg('Bandbreite'), run.bandbreite, this._bbMax, 'bb')}
@@ -1232,6 +1583,26 @@ export class VelgDriftView extends LitElement {
           ${msg('Takte übrig')} ${run.window_remaining}/${this._windowBase} · ${msg('Takt')} ${run.takt_count}
         </p>
         ${this._renderQuests(run)}
+
+        <velg-drift-marker-stack
+          .markers=${site.markers}
+          .digs=${site.digs}
+          .nextYield=${nextYield}
+          ?rissig=${site.rissig}
+          .loose=${loose}
+          .safe=${safe}
+          .bankRate=${this._tuning?.funkboje_rate ?? 0.7}
+          ?canBank=${canBank}
+          .reveal=${revealOf(run)}
+          .window=${run.window_remaining}
+          ?busy=${this._busy}
+          ?digging=${this._digging}
+          @drift-sondieren=${this._sondieren}
+          @drift-bank=${this._bank}
+        ></velg-drift-marker-stack>
+
+        <velg-drift-logbook .entries=${this._logbook}></velg-drift-logbook>
+
         ${
           atHome
             ? ''

@@ -31,6 +31,102 @@ export interface DriftHavarie {
   expires_at: string;
 }
 
+/* === Signals + Sondierung (Welle 2, migrations 266-268) ==================== */
+
+/** The five signal classes. The first two STOP the run and wait for an answer; the other
+ *  three resolve the moment they are drawn and only write a logbook line. */
+export type DriftSignalClass = 'stoerung' | 'fund' | 'geruecht' | 'begegnung' | 'stille';
+
+/** The three Sondierung marker classes. Three of one kind at a node and it tears. */
+export type DriftMarkerClass = 'resonanz' | 'statik' | 'echo';
+
+/** The closed outcome vocabulary (migration 266). Every key optional — a signal writes
+ *  only what it touches, and a key that is absent is a line the HUD must not print. */
+export interface DriftSignalDeltas {
+  kh?: number;
+  bb?: number;
+  dz?: number;
+  takt?: number;
+  siegel?: number;
+  siegel_balance?: number;
+  cargo_grant?: { family: string; vector: string; haul: number };
+  rumor_reveal?: { node_id?: string; band?: string };
+  marker_add?: DriftMarkerClass;
+}
+
+/** The scene text, with {sim} already resolved to a real world by the server. */
+export interface DriftSignalProse {
+  title_de: string;
+  title_en: string;
+  body_de: string;
+  body_en: string;
+}
+
+/** One answer the traveller may give. Only PAYABLE options ever reach the panel — the draw
+ *  refuses to show a scene it knows the run cannot afford to leave. */
+export interface DriftSignalOption {
+  key: string;
+  label_de: string;
+  label_en: string;
+  /** Paid up front, whatever the roll says. The chip promises it; the RPC keeps it. */
+  cost?: { kh?: number; bb?: number; takt?: number };
+  /** Present ⇒ the option is a gamble. The DIFFICULTY is never shown (concept R4): the chip
+   *  says "riskant" and names the vector, and the traveller learns the rest by living. */
+  check?: { vector: string; difficulty: number };
+}
+
+/** The scene the run is standing in and cannot walk away from (checkpoint.pending_signal,
+ *  lifted to a typed field by the backend model). While it is set, a move is refused. */
+export interface DriftPendingSignal {
+  template_key: string;
+  signal_class: DriftSignalClass;
+  takt?: number | null;
+  prose?: DriftSignalProse | null;
+  options: DriftSignalOption[];
+}
+
+/** What the answer did — the result state of the panel (checkpoint.last_signal). */
+export interface DriftResolvedSignal {
+  template_key: string;
+  signal_class: DriftSignalClass;
+  option_key: string;
+  success: boolean;
+  outcome?: { text_de?: string; text_en?: string; deltas?: DriftSignalDeltas } | null;
+  applied?: DriftSignalDeltas | null;
+}
+
+/** The reveal of one dig (checkpoint.last_sondierung, migration 268). `bust` is the
+ *  Resonanzriss: the loose yield of THIS node is gone — nothing else is. */
+export interface DriftSondierungReveal {
+  node_id: string;
+  dig: number;
+  marker: DriftMarkerClass;
+  stack: DriftMarkerClass[];
+  yield: number;
+  bust: boolean;
+  forfeited: number;
+}
+
+/** The Funkboje's receipt (checkpoint.last_bank). */
+export interface DriftBankReceipt {
+  loose: number;
+  safe: number;
+  rate: number;
+  haul_safe: number;
+}
+
+/** One line of the traveller's logbook — signals, rumours, banks, digs, Havarien. Outlives
+ *  its run: knowledge is the only thing a Havarie cannot scatter. */
+export interface DriftLogEntry {
+  id: UUID;
+  run_id: UUID | null;
+  takt: number;
+  kind: 'signal' | 'rumor' | 'bank' | 'havarie' | 'sondierung';
+  node_id: UUID | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
 /** What an act of the run paid (fn_drift_award). One shape for every payer. */
 export interface DriftEarnings {
   source: string;
@@ -124,6 +220,12 @@ export interface TravelRun {
   /** Lifted out of checkpoint.earnings by the backend model — the receipt of the act that
    *  closed (or paid) this run. Null while the Fun-Kern gate is closed. */
   earnings: DriftEarnings | null;
+  /** Lifted out of checkpoint.pending_signal: the scene the run is WAITING on. While this
+   *  is set the server refuses a move (SIGNAL_PENDING) — a Störung is a decision, not a
+   *  notification. Null while the Fun-Kern gate is closed. */
+  pending_signal: DriftPendingSignal | null;
+  /** Lifted out of checkpoint.last_signal: what the last answer did. */
+  last_signal: DriftResolvedSignal | null;
 }
 
 export interface DriftChartNode {
@@ -195,6 +297,13 @@ export interface DriftTuning {
   dz_cap: number;
   /** Bandbreite max keyed by bandwidth class ("1".."4"); P0 travellers are class 1. */
   bandwidth_class_bb_max: Record<string, number>;
+  /** What each successive dig at the same node is worth. The HUD STATES the next yield;
+   *  the table is the server's, or a re-tune would turn the panel into a liar. */
+  sondierung_yields: number[];
+  /** The Funkboje's exchange rate (0.7 = 70 % of the loose haul arrives safely). */
+  funkboje_rate: number;
+  /** Where a haul can be transmitted at all (broadcast edges today, relays from W3). */
+  funkboje_node_types: string[];
 }
 
 /* === Quests / Depeschen (P0c deliver) === */
