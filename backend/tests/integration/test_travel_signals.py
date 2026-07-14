@@ -313,12 +313,16 @@ class TestMoveDrawsSignals:
     ):
         """The first-arrival Vermessung of THIS move must survive the draw.
 
-        The snapshot trap, from the other side: fn_drift_apply_deltas re-reads
-        checkpoint.haul from the COLUMN, so a survey that only lived in the caller's local
-        variable was silently rolled back by the helper's own write — and `visited` still
-        recorded the node, so it could never pay again. The passive classes are the
-        majority of the draw, so this was most of the survey economy. Found by review, not
-        by the 48 tests that were green around it."""
+        The snapshot trap, from the other side: fn_drift_apply_deltas re-read the haul from
+        the COLUMN, so a survey that only lived in the caller's local variable was silently
+        rolled back by the helper's own write — and `visited` still recorded the node, so it
+        could never pay again. The passive classes are the majority of the draw, so this was
+        most of the survey economy. Found by review, not by the 48 tests green around it.
+
+        W2.6 retired the bug class rather than the bug: the haul is DERIVED (haul_survey +
+        the dig sites + the manifest) and nobody writes it, so there is no number left for a
+        caller to hold in a local and have overwritten. The test stays — it is the behaviour
+        that matters, not the mechanism that used to break it."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
 
@@ -337,7 +341,7 @@ class TestMoveDrawsSignals:
         # Whatever the draw did on top (a Fund can ADD to the haul), the survey itself must
         # be in there — never less than the band pays for a first arrival.
         assert moved["checkpoint"]["last_move"]["survey"] == expected
-        assert moved["checkpoint"]["haul"] >= expected, (
+        assert moved["haul"] >= expected, (
             "the draw ate the first-arrival Vermessung of this move"
         )
 
@@ -664,9 +668,13 @@ class TestDeltas:
         cargo = (
             admin_client.table("travel_cargo").select("*").eq("run_id", run["id"]).execute()
         ).data
-        assert after["checkpoint"]["haul"] == 5
         assert len(cargo) == 1
         assert cargo[0]["haul_value"] == 5
+        assert after["haul"] == 5, (
+            "the manifest row IS the haul: travel_cargo.haul_value is one of the three "
+            "sources of the derived travel_runs.haul, so the freight raises it by "
+            "arithmetic and nothing has to be kept in step by hand"
+        )
         assert cargo[0]["family"] == "blaupausen"
 
     def test_jettisoned_salvage_stops_paying(
@@ -701,7 +709,7 @@ class TestDeltas:
         if stranded["status"] != "havarie":
             pytest.skip("the move did not strand the run (a passive signal healed it)")
         assert "notabwurf" in stranded["checkpoint"]["havarie"]["options"]
-        haul_before = stranded["checkpoint"]["haul"]
+        haul_before = stranded["haul"]
 
         resolved = (
             client.rpc(
@@ -719,7 +727,10 @@ class TestDeltas:
         )
 
         assert resolved["status"] == "active"
-        assert resolved["checkpoint"]["haul"] == haul_before - 5
+        assert resolved["haul"] == haul_before - 5, (
+            "deleting the cargo row removes its haul from the derivation — there is no "
+            "fn_travel_jettison_haul any more, and no second booking to correct"
+        )
         assert resolved["checkpoint"]["last_havarie"]["haul_lost"] == 5
 
     def test_rumor_reveal_charts_an_undiscovered_node(
@@ -758,9 +769,14 @@ class TestDeltas:
     def test_marker_add_lands_on_the_node_and_survives_a_move(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
-        """The marker stack is run-level state. fn_travel_move REBUILDS the checkpoint on
-        every advance — drift_checkpoint_carry is what stops that rebuild from quietly
-        emptying the stack (which would make the Sondierung bust in 268 unreachable)."""
+        """The marker stack is run-level state, and fn_travel_move REBUILDS the checkpoint on
+        every advance.
+
+        That rebuild used to empty the stack (which would make the Sondierung bust in 268
+        unreachable), and the fix was a whitelist of keys the rebuild must carry —
+        drift_checkpoint_carry, i.e. a workaround for the rebuild rather than a fix for it.
+        Since W2.6 the stack is a COLUMN: the rebuild cannot reach it, the whitelist is gone,
+        and this test asserts the same behaviour against a shape where it cannot break."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         node = run["position_node_id"]
@@ -776,12 +792,10 @@ class TestDeltas:
         ).execute()
 
         run = _run_row(admin_client, run["id"])
-        assert run["checkpoint"]["markers"][node] == ["statik"]
+        assert run["markers"][node] == ["statik"]
 
         moved = _move(client, user, run, home_neighbor)
-        assert moved["checkpoint"]["markers"][node] == ["statik"], (
-            "the move forgot the marker stack — carry list out of date"
-        )
+        assert moved["markers"][node] == ["statik"], "the move forgot the marker stack"
 
     def test_siegel_goes_through_the_single_ledger_writer(
         self, admin_client, user_clients, test_user_ids, chart_home

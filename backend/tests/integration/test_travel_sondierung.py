@@ -146,7 +146,7 @@ class TestDigging:
         node = run["position_node_id"]
 
         run = _dig(client, user, run)
-        stack = run["checkpoint"]["markers"][node]
+        stack = run["markers"][node]
 
         assert len(stack) == 1
         assert stack[0] in classes
@@ -162,11 +162,13 @@ class TestDigging:
         first = _dig(client, user, run)["checkpoint"]["last_sondierung"]["marker"]
 
         # Rewind the run to exactly the pre-dig state (same salt, same node, same dig
-        # index) — the same marker must come up.
+        # index) — the same marker must come up. Since W2.6 the dig site and the marker
+        # stack are COLUMNS, so the rewind names them instead of a jsonb blob.
         _force_run_state(
             admin_client,
             run["id"],
-            checkpoint=run["checkpoint"],
+            markers={},
+            sondierung={},
             window_remaining=run["window_remaining"],
             takt_count=run["takt_count"],
         )
@@ -179,15 +181,15 @@ class TestBust:
         """Two markers of EVERY class at this node — so the next dig is the third of
         whatever it draws, and the bust is certain regardless of the salt."""
         node = run["position_node_id"]
+        # 12 loose: 5 of them dug HERE (the node's own ledger), 7 from elsewhere
+        # (haul_survey). The split is the whole point of the next test — a Riss may take
+        # only what is loose AT THIS NODE.
         _force_run_state(
             admin_client,
             run["id"],
-            checkpoint={
-                **run["checkpoint"],
-                "haul": 12,
-                "sondierung": {node: {"digs": 2, "yield": 5}},
-                "markers": {node: [c for c in classes for _ in range(2)]},
-            },
+            haul_survey=7,
+            sondierung={node: {"digs": 2, "yield": 5}},
+            markers={node: [c for c in classes for _ in range(2)]},
         )
         return _run_row(admin_client, run["id"])
 
@@ -208,10 +210,10 @@ class TestBust:
         assert last["yield"] == 0
         assert last["forfeited"] == 5
         # The LOOSE yield of this node is gone — and only that.
-        assert after["checkpoint"]["haul"] == 12 - 5
+        assert after["haul"] == 12 - 5
         assert after["dissonanz"] == riss["dz"]
-        assert after["checkpoint"]["sondierung"][node]["rissig"] is True
-        assert after["checkpoint"]["sondierung"][node]["yield"] == 0
+        assert after["sondierung"][node]["rissig"] is True
+        assert after["sondierung"][node]["yield"] == 0
 
     def test_the_bust_never_touches_the_reserve_or_the_manifest(
         self, admin_client, user_clients, test_user_ids, chart_home
@@ -234,23 +236,22 @@ class TestBust:
             },
         ).execute()
         run = _run_row(admin_client, run["id"])
+        # 10 loose = 4 dug here + 4 in the manifest (the Fund above) + 2 from elsewhere.
         _force_run_state(
             admin_client,
             run["id"],
-            checkpoint={
-                **run["checkpoint"],
-                "haul": 10,
-                "haul_safe": 9,
-                "sondierung": {node: {"digs": 2, "yield": 4}},
-                "markers": {node: [c for c in classes for _ in range(2)]},
-            },
+            haul_survey=2,
+            haul_safe=9,
+            sondierung={node: {"digs": 2, "yield": 4}},
+            markers={node: [c for c in classes for _ in range(2)]},
         )
         run = _run_row(admin_client, run["id"])
+        assert run["haul"] == 10
 
         after = _dig(client, user, run)
 
         assert after["checkpoint"]["last_sondierung"]["bust"] is True
-        assert after["checkpoint"]["haul_safe"] == 9, "the reserve is safe from the Riss"
+        assert after["haul_safe"] == 9, "the reserve is safe from the Riss"
         assert after["status"] == "active", "a Riss does not end the run"
         cargo = (
             admin_client.table("travel_cargo").select("id").eq("run_id", run["id"]).execute()
@@ -278,7 +279,7 @@ class TestBust:
             ).execute()
 
         run = _run_row(admin_client, run["id"])
-        assert run["checkpoint"]["markers"][node] == ["statik", "statik"]
+        assert run["markers"][node] == ["statik", "statik"]
 
         # Dig until the salt hands us a statik — the third one must tear the node.
         for _ in range(6):
@@ -299,7 +300,7 @@ class TestFunkboje:
             admin_client,
             run["id"],
             position_node_id=chart_foreign["id"],
-            checkpoint={**run["checkpoint"], "haul": haul},
+            haul_survey=haul,
         )
         return _run_row(admin_client, run["id"])
 
@@ -313,8 +314,8 @@ class TestFunkboje:
 
         after = _bank(client, user, run)
 
-        assert after["checkpoint"]["haul_safe"] == int(10 * rate)
-        assert after["checkpoint"]["haul"] == 0, "what is transmitted is no longer loose"
+        assert after["haul_safe"] == int(10 * rate)
+        assert after["haul"] == 0, "what is transmitted is no longer loose"
         assert _log(admin_client, run["id"], "bank")
 
     def test_banking_at_home_is_refused(
@@ -324,7 +325,7 @@ class TestFunkboje:
         30 % of their own haul. A dead option is worse than no option."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
-        _force_run_state(admin_client, run["id"], checkpoint={**run["checkpoint"], "haul": 10})
+        _force_run_state(admin_client, run["id"], haul_survey=10)
         run = _run_row(admin_client, run["id"])
 
         with pytest.raises(Exception, match="AT_HOME"):
@@ -349,7 +350,7 @@ class TestFunkboje:
             admin_client,
             run["id"],
             position_node_id=home_neighbor,
-            checkpoint={**run["checkpoint"], "haul": 10},
+            haul_survey=10,
         )
         run = _run_row(admin_client, run["id"])
 
@@ -365,7 +366,8 @@ class TestTheReserveArrives:
             admin_client,
             run["id"],
             position_node_id=chart_home["id"],
-            checkpoint={**run["checkpoint"], "haul": haul, "haul_safe": safe},
+            haul_survey=haul,
+            haul_safe=safe,
         )
         return _run_row(admin_client, run["id"])
 
@@ -378,8 +380,8 @@ class TestTheReserveArrives:
 
         closed = _complete(client, user, run)
 
-        assert closed["checkpoint"]["haul_banked"] == 17
-        assert closed["checkpoint"]["haul_transmitted"] == 7
+        assert closed["checkpoint"]["closing"]["haul_banked"] == 17
+        assert closed["checkpoint"]["closing"]["haul_transmitted"] == 7
         assert closed["checkpoint"]["earnings"]["vp_earned"] >= 17
 
     def test_the_rueckruf_multiplier_never_touches_the_reserve(
@@ -395,7 +397,7 @@ class TestTheReserveArrives:
             admin_client,
             run["id"],
             window_remaining=1,
-            checkpoint={**run["checkpoint"], "haul_safe": 7},
+            haul_safe=7,
         )
         run = _run_row(admin_client, run["id"])
         stranded = (
@@ -410,7 +412,7 @@ class TestTheReserveArrives:
         if stranded["status"] != "havarie":
             pytest.skip("the move did not strand the run")
 
-        loose = stranded["checkpoint"]["haul"]
+        loose = stranded["haul"]
         closed = (
             client.rpc(
                 "fn_travel_havarie_resolve",
@@ -421,8 +423,8 @@ class TestTheReserveArrives:
             .data
         )
 
-        assert closed["checkpoint"]["haul_banked"] == int(loose * mult) + 7
-        assert closed["checkpoint"]["haul_transmitted"] == 7
+        assert closed["checkpoint"]["closing"]["haul_banked"] == int(loose * mult) + 7
+        assert closed["checkpoint"]["closing"]["haul_transmitted"] == 7
 
     def test_even_a_rueckzug_pays_the_reserve(
         self, admin_client, user_clients, test_user_ids, chart_home
@@ -433,9 +435,7 @@ class TestTheReserveArrives:
         evaporated. The reserve is not the run's; it is ashore."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
-        _force_run_state(
-            admin_client, run["id"], checkpoint={**run["checkpoint"], "haul_safe": 9}
-        )
+        _force_run_state(admin_client, run["id"], haul_safe=9)
         run = _run_row(admin_client, run["id"])
         vp_before = _profile(admin_client, user)["vp"]
 
@@ -450,7 +450,8 @@ class TestTheReserveArrives:
         )
 
         assert closed["status"] == "abandoned"
-        assert closed["checkpoint"]["haul_transmitted"] == 9
+        assert closed["checkpoint"]["closing"]["reason"] == "rueckzug"
+        assert closed["checkpoint"]["closing"]["haul_transmitted"] == 9
         assert _profile(admin_client, user)["vp"] == vp_before + 9
 
     def test_the_reserve_survives_a_gate_rollback(
@@ -467,7 +468,7 @@ class TestTheReserveArrives:
             run["id"],
             kohaerenz=1,
             bandbreite=0,
-            checkpoint={**run["checkpoint"], "haul_safe": 6},
+            haul_safe=6,
         )
         run = _run_row(admin_client, run["id"])
         stranded = (
@@ -514,7 +515,7 @@ class TestTheReserveArrives:
             run["id"],
             kohaerenz=1,
             bandbreite=0,
-            checkpoint={**run["checkpoint"], "haul_safe": 8},
+            haul_safe=8,
         )
         run = _run_row(admin_client, run["id"])
         stranded = (
@@ -541,8 +542,8 @@ class TestTheReserveArrives:
         )
 
         assert closed["status"] == "abandoned"
-        assert closed["checkpoint"]["haul"] == 0, "the loose half is gone"
-        assert closed["checkpoint"]["haul_transmitted"] == 8
+        assert closed["haul"] == 0, "the loose half is gone"
+        assert closed["checkpoint"]["closing"]["haul_transmitted"] == 8
         assert _profile(admin_client, user)["vp"] == vp_before + 8, (
             "what the traveller transmitted arrived, even though they did not"
         )
@@ -552,14 +553,16 @@ class TestGuards:
     def test_the_reserve_survives_a_move(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
-        """fn_travel_move REBUILDS the checkpoint — drift_checkpoint_carry is what keeps
-        the reserve from evaporating on the next Takt (the `haul_banked`-vs-`haul_safe`
-        name collision this migration corrected would have done exactly that, silently)."""
+        """fn_travel_move REBUILDS the checkpoint on every advance, and the reserve must not
+        evaporate on the next Takt.
+
+        It used to be a checkpoint key kept alive by a whitelist (drift_checkpoint_carry) —
+        and it nearly shipped under the name `haul_banked`, which was ALREADY the closing
+        receipt of a finished run: one key, two meanings, and every banked haul would have
+        vanished silently. Since W2.6 it is a COLUMN and the rebuild cannot reach it."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
-        _force_run_state(
-            admin_client, run["id"], checkpoint={**run["checkpoint"], "haul_safe": 6}
-        )
+        _force_run_state(admin_client, run["id"], haul_safe=6)
         run = _run_row(admin_client, run["id"])
 
         moved = (
@@ -571,7 +574,7 @@ class TestGuards:
             .execute()
             .data
         )
-        assert moved["checkpoint"].get("haul_safe") == 6
+        assert moved["haul_safe"] == 6
 
     def test_a_pending_scene_blocks_the_shovel(
         self, admin_client, user_clients, test_user_ids, chart_home
@@ -663,7 +666,7 @@ class TestTheFunkbojeSettlesItsLedgers:
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=20)
         banked, _ = self._dug_and_banked(admin_client, client, user, run, chart_foreign)
 
-        at_node = banked["checkpoint"]["sondierung"][str(chart_foreign["id"])]
+        at_node = banked["sondierung"][str(chart_foreign["id"])]
         assert at_node["yield"] == 0, "what is ashore can no longer be confiscated"
         assert at_node["digs"] == 1, "banking does not un-dig the hole — the table moves on"
 
@@ -678,7 +681,7 @@ class TestTheFunkbojeSettlesItsLedgers:
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=20)
         banked, dug = self._dug_and_banked(admin_client, client, user, run, chart_foreign)
-        safe_before = banked["checkpoint"]["haul_safe"]
+        safe_before = banked["haul_safe"]
 
         # Fresh loose haul from elsewhere, and a marker stack that busts on ANY draw:
         # two of every class means the next marker — whatever the salt hands us — is a third.
@@ -686,22 +689,20 @@ class TestTheFunkbojeSettlesItsLedgers:
         _force_run_state(
             admin_client,
             banked["id"],
-            checkpoint={
-                **banked["checkpoint"],
-                "haul": 7,
-                "markers": {str(chart_foreign["id"]): [c for c in classes for _ in range(2)]},
-            },
+            haul_survey=7,
+            markers={str(chart_foreign["id"]): [c for c in classes for _ in range(2)]},
         )
         armed = _run_row(admin_client, banked["id"])
+        assert armed["haul"] == 7, "the banked dig is ashore — only the fresh 7 are loose"
 
         torn = _dig(client, user, armed)
 
         assert torn["checkpoint"]["last_sondierung"]["bust"] is True, "two of each = a bust"
-        assert torn["checkpoint"]["haul"] == 7, (
-            f"the Riss took haul dug elsewhere: expected 7, got {torn['checkpoint']['haul']} "
+        assert torn["haul"] == 7, (
+            f"the Riss took haul dug elsewhere: expected 7, got {torn['haul']} "
             f"(the stale node ledger still claimed the {dug} that were banked)"
         )
-        assert torn["checkpoint"]["haul_safe"] == safe_before, "the reserve is never touched"
+        assert torn["haul_safe"] == safe_before, "the reserve is never touched"
 
     def test_banking_settles_the_freight_ledger_too(
         self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
@@ -732,13 +733,14 @@ class TestTheFunkbojeSettlesItsLedgers:
 
     @staticmethod
     def _at_foreign_dock_for(admin_client, run, chart_foreign, *, haul):
+        # No haul_survey here: the loose haul comes ENTIRELY from the manifest row the caller
+        # inserted (travel_cargo.haul_value), which is exactly the ledger under test.
         _force_run_state(
-            admin_client,
-            run["id"],
-            position_node_id=chart_foreign["id"],
-            checkpoint={**run["checkpoint"], "haul": haul},
+            admin_client, run["id"], position_node_id=chart_foreign["id"]
         )
-        return _run_row(admin_client, run["id"])
+        run = _run_row(admin_client, run["id"])
+        assert run["haul"] == haul, "the freight IS the loose haul"
+        return run
 
 
 class TestTheReserveOutlivesTheGate:
@@ -759,7 +761,8 @@ class TestTheReserveOutlivesTheGate:
             admin_client,
             run["id"],
             position_node_id=chart_home["id"],
-            checkpoint={**run["checkpoint"], "haul": 10, "haul_safe": 8},
+            haul_survey=10,
+            haul_safe=8,
         )
         run = _run_row(admin_client, run["id"])
         before = _profile(admin_client, user)
@@ -770,16 +773,24 @@ class TestTheReserveOutlivesTheGate:
         closed = _complete(client, user, run)
 
         after = _profile(admin_client, user)
-        # The ACCOUNT is where a closed gate must still tell the truth. The closing
-        # checkpoint deliberately does not: with the gate shut it is pinned to the exact
-        # migration-256 key set (byte parity — no `earnings`, no `haul_transmitted`), the
-        # same ruling fn_travel_zerfasern follows when it pays a reserve into a rolled-back
-        # world. Money moves; the Fun-Kern's receipt keys do not reappear.
         assert after["siegel"] == before["siegel"] + int(8 * ratio), (
             "the reserve pays, even with the gate shut — it was banked under an open one"
         )
         assert after["vp"] == before["vp"] + 8 * per_haul
-        assert closed["checkpoint"]["haul_banked"] == 10 + 8
-        assert "earnings" not in closed["checkpoint"], "rollback parity: the key set is 256's"
+        closing = closed["checkpoint"]["closing"]
+        assert closing["haul_banked"] == 10 + 8
+
+        # THE RECEIPT FOLLOWS THE MONEY (W2.6). This assertion used to be its opposite:
+        # `"earnings" not in checkpoint`, on the grounds that a shut gate must leave the exact
+        # migration-256 key set. But money DID move here — real Siegel, into a real account —
+        # and a receipt for a payment that actually happened is not rollback residue. Hiding it
+        # only made the HUD lie: the ledger strip kept showing the old balance while the
+        # traveller had already been paid. (fn_travel_zerfasern always wrote it; fn_travel_bank_run
+        # hid it. That inconsistency is what the consolidation surfaced.)
+        assert closed["checkpoint"]["earnings"]["source"] == "entladung_transmitted"
+        assert closed["checkpoint"]["earnings"]["siegel_earned"] == int(8 * ratio)
+
+        # What a shut gate still must NOT do: state a Fun-Kern fact in the receipt.
+        assert "haul_transmitted" not in closing, "no Fun-Kern key behind a shut gate"
         # And the LOOSE haul does not pay: it is the wave's own mechanic, and the gate is shut.
         assert after["siegel"] - before["siegel"] < int((10 + 8) * ratio)

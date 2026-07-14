@@ -11,8 +11,8 @@ export type DriftRunStatus =
   | 'completed'
   | 'abandoned';
 
-/** The five Havarie options. Which ones are OFFERED is decided server-side and written
- *  into the checkpoint when the Havarie opens — the client never invents one. */
+/** The five Havarie options. Which ones are OFFERED is decided server-side when the Havarie
+ *  opens — the client never invents one, and an option the server did not offer is refused. */
 export type DriftHavarieChoice =
   | 'notabwurf'
   | 'notruf'
@@ -20,7 +20,7 @@ export type DriftHavarieChoice =
   | 'ueberziehen'
   | 'rueckruf';
 
-/** The Havarie block the RPC writes into checkpoint.havarie (migration 265). */
+/** The wreck the run is standing in (TravelRun.havarie, migration 265). */
 export interface DriftHavarie {
   cause: 'kohaerenz' | 'window';
   options: DriftHavarieChoice[];
@@ -70,9 +70,11 @@ export interface DriftSignalOption {
   label_en: string;
   /** Paid up front, whatever the roll says. The chip promises it; the RPC keeps it. */
   cost?: { kh?: number; bb?: number; takt?: number };
-  /** Present ⇒ the option is a gamble. The DIFFICULTY is never shown (concept R4): the chip
-   *  says "riskant" and names the vector, and the traveller learns the rest by living. */
-  check?: { vector: string; difficulty: number };
+  /** Present ⇒ the option is a gamble. The chip says "riskant" and names the vector; the
+   *  DIFFICULTY is not in this type because it is no longer in the RESPONSE (W2.6/B — the
+   *  backend model parses it and drops it). The traveller learns the shape of a risk by
+   *  living it, not by reading it off a tooltip (concept R4). */
+  check?: { vector: string };
 }
 
 /** The scene the run is standing in and cannot walk away from (checkpoint.pending_signal,
@@ -95,7 +97,7 @@ export interface DriftResolvedSignal {
   applied?: DriftSignalDeltas | null;
 }
 
-/** The reveal of one dig (checkpoint.last_sondierung, migration 268). `bust` is the
+/** The reveal of one dig (TravelRun.last_sondierung, migration 268). `bust` is the
  *  Resonanzriss: the loose yield of THIS node is gone — nothing else is. */
 export interface DriftSondierungReveal {
   node_id: string;
@@ -107,12 +109,40 @@ export interface DriftSondierungReveal {
   forfeited: number;
 }
 
-/** The Funkboje's receipt (checkpoint.last_bank). */
+/** The Funkboje's receipt (TravelRun.last_bank). */
 export interface DriftBankReceipt {
   loose: number;
   safe: number;
   rate: number;
   haul_safe: number;
+}
+
+/** How a run ENDED, and what it was worth (TravelRun.closing, W2.6).
+ *
+ *  Five endings write this one block server-side (drift_closing_payload), so the Bureau
+ *  debriefing has a single contract to read. It used to be a flat set of loose checkpoint keys
+ *  hand-built by four different functions — which is how four copies of a contract drift apart.
+ *
+ *  `haul_transmitted` is the Funkboje reserve that arrived anyway. It reads 0 while the
+ *  Fun-Kern gate is shut (the reserve is still PAID in that case — money brought ashore under
+ *  an open gate is not rollback residue — and `earnings` says so). */
+export interface DriftClosingReceipt {
+  reason: 'entladung' | 'rueckruf' | 'zerfaserung' | 'rueckzug' | 'kollaps';
+  /** Why it ended, when it ended badly. */
+  cause?: 'kohaerenz' | 'window' | null;
+  /** How the unravelling was reached. */
+  detail?: 'choice' | 'ttl_expired' | 'gate_closed' | null;
+  haul_banked: number;
+  haul_lost: number;
+  haul_transmitted: number;
+  /** The loose haul BEFORE a recall multiplier (a recalled haul must never be presented as
+   *  a full one). */
+  haul_before?: number | null;
+  haul_mult?: number | null;
+  surveys_delivered: number;
+  honors_won: number;
+  honor_keys: string[];
+  scattered?: { scattered?: number; [k: string]: unknown } | null;
 }
 
 /** One line of the traveller's logbook — signals, rumours, banks, digs, Havarien. Outlives
@@ -198,7 +228,19 @@ export interface DriftPublicState {
   enabled: boolean;
 }
 
-/** A travel_runs row as returned by the run-lifecycle RPCs (mirrors TravelRunResponse). */
+/** A travel_runs row as the API returns it (mirrors backend TravelRunResponse).
+ *
+ *  There is NO `checkpoint` here. The raw jsonb used to be shipped 1:1 alongside the typed
+ *  fields that carefully lift only what the panel may see — which made the typing worthless
+ *  for confidentiality: the blob carried every option's `check.difficulty` and the deltas of
+ *  EVERY branch of a pending scene. The concept says the odds are never numbered (R4); via
+ *  DevTools they were. W2.6/B made the checkpoint input-only, server-side.
+ *
+ *  What used to be untyped keys in that blob is now split in two:
+ *    - the run's live STATE → columns (haul, haul_safe, overstay, markers, sondierung)
+ *    - the run's SCENES     → typed fields (pending_signal, last_signal, last_sondierung,
+ *                             last_bank, havarie, closing, earnings)
+ *  A column is what is TRUE of the run; a scene is what JUST HAPPENED. */
 export interface TravelRun {
   id: UUID;
   user_id: UUID;
@@ -214,22 +256,48 @@ export interface TravelRun {
   begehung_zone_id: UUID | null;
   window_remaining: number;
   takt_count: number;
-  checkpoint: Record<string, unknown>;
   event_seq: number;
   chart_version: number | null;
   opened_at: string;
   closed_at: string | null;
   created_at: string;
   updated_at: string;
-  /** Lifted out of checkpoint.earnings by the backend model — the receipt of the act that
-   *  closed (or paid) this run. Null while the Fun-Kern gate is closed. */
+  /* ── The run's live state: COLUMNS (W2.6/D) ───────────────────────────────
+   * These were untyped keys in the checkpoint jsonb, which is where a marker stack could
+   * silently empty on a move and the same money could be booked three times. */
+
+  /** The LOOSE haul — everything a Havarie, a Riss or a Zerfaserung can still take.
+   *  DERIVED server-side (the Erstvermessung + the dig sites + the manifest); no writer sets
+   *  it, so no partial booking can go stale. */
+  haul: number;
+  /** What the Funkboje transmitted: already ashore. Nothing after it can take it — not a
+   *  Havarie, not a Riss, not a Zerfaserung, not a Rückzug (all four pay it out). */
+  haul_safe: number;
+  /** The Havarie's `ueberziehen` permit: the expired window no longer collapses the run, and
+   *  every further Takt costs extra Dissonanz. */
+  overstay: boolean;
+  /** {node_id: [marker_class, …]} — the open, COUNTABLE marker stack (R4). */
+  markers: Record<string, DriftMarkerClass[]>;
+  /** {node_id: {digs, yield, rissig}} — the dig sites this run has opened. */
+  sondierung: Record<string, { digs?: number; yield?: number; rissig?: boolean }>;
+
+  /* ── The run's scenes: lifted out of the checkpoint, server-side ──────────── */
+
+  /** What the last act PAID. The count-up ceremony's contract; null when nothing moved. */
   earnings: DriftEarnings | null;
-  /** Lifted out of checkpoint.pending_signal: the scene the run is WAITING on. While this
-   *  is set the server refuses a move (SIGNAL_PENDING) — a Störung is a decision, not a
-   *  notification. Null while the Fun-Kern gate is closed. */
+  /** The scene the run is WAITING on. While this is set the server refuses a move, a dig AND
+   *  a bank (SIGNAL_PENDING) — a Störung is a decision, not a notification. */
   pending_signal: DriftPendingSignal | null;
-  /** Lifted out of checkpoint.last_signal: what the last answer did. */
+  /** What the last answer did — the result state of the panel. */
   last_signal: DriftResolvedSignal | null;
+  /** The reveal of the last dig. */
+  last_sondierung: DriftSondierungReveal | null;
+  /** The Funkboje's receipt. */
+  last_bank: DriftBankReceipt | null;
+  /** The wreck the run is standing in, with the options the SERVER offered. */
+  havarie: DriftHavarie | null;
+  /** How the run ended, and what it was worth. Only on a closed run. */
+  closing: DriftClosingReceipt | null;
 }
 
 export interface DriftChartNode {

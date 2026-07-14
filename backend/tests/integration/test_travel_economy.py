@@ -419,9 +419,13 @@ class TestEntladungPayout:
         self, admin_client, client, user, chart_home, haul: int, visited: list[str]
     ) -> dict:
         run = _open_run(client, user, chart_home["simulation_id"])
+        # Since W2.6 the run's live state is COLUMNS, not keys in an untyped checkpoint.
+        # `haul_survey` is the source of the loose haul that has no other ledger behind it
+        # (the other two are the dig sites and the manifest), so forcing it here is exactly
+        # "this run walked in with N points of un-lodged Vermessung".
         _force_run_state(
             admin_client, run["id"],
-            checkpoint={"position_node_id": chart_home["id"], "haul": haul, "visited": visited},
+            haul_survey=haul, visited=visited,
         )
         return client.rpc(
             "fn_travel_complete",
@@ -449,7 +453,11 @@ class TestEntladungPayout:
             ratio = float(_tuning(admin_client, "reward_survey_siegel_ratio"))
             per_haul = int(_tuning(admin_client, "reward_survey_vp_per_haul"))
 
-            assert run["checkpoint"]["honors_won"] == 1, "first-ever survey of that node"
+            assert run["haul"] == 0, "a closed run has no loose haul left — it was banked"
+            closing = run["checkpoint"]["closing"]
+            assert closing["reason"] == "entladung"
+            assert closing["honors_won"] == 1, "first-ever survey of that node"
+            assert closing["haul_banked"] == haul
             earnings = run["checkpoint"]["earnings"]
             assert earnings["vp_earned"] == haul * per_haul + erstv["vp"]
             assert earnings["siegel_earned"] == int(haul * ratio) + erstv["siegel"], (
@@ -487,7 +495,7 @@ class TestEntladungPayout:
             run2 = self._complete_with_haul(
                 admin_client, client, user, chart_home, 4, [chart_foreign["id"]]
             )
-            assert run2["checkpoint"]["honors_won"] == 0, "the honor is already held"
+            assert run2["checkpoint"]["closing"]["honors_won"] == 0, "the honor is already held"
 
             erstv = _tuning(admin_client, "reward_erstvermessung")
             second = _profile(admin_client, user)
@@ -501,9 +509,18 @@ class TestEntladungPayout:
             ).execute()
             _reset_traveler(admin_client, user)
 
-    def test_gate_off_bank_pays_nothing_and_keeps_the_p0_checkpoint(
+    def test_gate_off_bank_pays_nothing_and_leaves_no_fun_kern_residue(
         self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
     ):
+        """The rollback contract, as it stands after W2.6.
+
+        It was once phrased as byte parity with migration 256's four checkpoint keys. That
+        phrasing died with the checkpoint's old SHAPE (the closing receipt is one typed block
+        now, and it is written by all five endings through drift_closing_payload). What the
+        contract actually protects is BEHAVIOUR, and that is what is pinned here: with the gate
+        shut the P0 survey stat still lodges, no Siegel and no VP move, and the receipt carries
+        NO Fun-Kern fact — no earnings block, no transmitted reserve.
+        """
         user, client = test_user_ids[0], user_clients[0]
         _reset_traveler(admin_client, user)
         _set_gate(admin_client, False)
@@ -512,9 +529,15 @@ class TestEntladungPayout:
             run = self._complete_with_haul(
                 admin_client, client, user, chart_home, 6, [chart_foreign["id"]]
             )
-            assert set(run["checkpoint"].keys()) == {
-                "haul_banked", "surveys_delivered", "honors_won", "honor_keys"
-            }, "gate off → the exact migration-256 completion checkpoint"
+            assert set(run["checkpoint"].keys()) == {"closing"}, (
+                "gate off → the closing receipt and nothing else (no earnings ceremony)"
+            )
+            closing = run["checkpoint"]["closing"]
+            assert set(closing.keys()) == {
+                "reason", "haul_banked", "haul_lost", "surveys_delivered",
+                "honors_won", "honor_keys",
+            }, "no `haul_transmitted` — a Fun-Kern fact must not appear behind a shut gate"
+            assert closing["haul_banked"] == 6
             row = _profile(admin_client, user)
             assert row["vp"] == 0 and row["siegel"] == 0
             assert row["qualities"]["vermessung_lodged"] == 6, "the P0 stat still lodges"

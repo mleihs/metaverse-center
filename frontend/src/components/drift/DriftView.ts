@@ -73,20 +73,19 @@ type DriftScene =
   | { kind: 'cards'; cards: DriftEffectCard[]; earnings: DriftEarnings | null }
   | { kind: 'debrief'; run: TravelRun };
 
-/** The reveal of the last dig (checkpoint.last_sondierung) — the Riss line and the stack
- *  animation both read it. Absent on any run that has not dug this Takt. */
+/** The reveal of the last dig — the Riss line and the stack animation both read it. Absent on
+ *  any run that has not dug this Takt.
+ *
+ *  It used to be dug out of the raw `checkpoint` blob and validated by hand here, because the
+ *  blob was untyped. Since W2.6/B the backend lifts it into a typed field and the raw
+ *  checkpoint never leaves the API at all — so this is a read, not an excavation. */
 function revealOf(run: TravelRun | null): DriftSondierungReveal | null {
-  const block = run?.checkpoint?.last_sondierung;
-  if (!block || typeof block !== 'object') return null;
-  const reveal = block as Partial<DriftSondierungReveal>;
-  return typeof reveal.dig === 'number' && typeof reveal.bust === 'boolean'
-    ? (block as DriftSondierungReveal)
-    : null;
+  return run?.last_sondierung ?? null;
 }
 
-/** The dig record of the node the run is standing on: the open marker stack, how often it
- *  has been dug, and whether it has already torn. All three come from the run — the client
- *  keeps no memory of a node, so a second tab and a fresh reload agree. */
+/** The dig record of the node the run is standing on: the open marker stack, how often it has
+ *  been dug, and whether it has already torn. All three come from the run — the client keeps
+ *  no memory of a node, so a second tab and a fresh reload tell the same story. */
 function digSiteOf(run: TravelRun | null): {
   markers: DriftMarkerClass[];
   digs: number;
@@ -94,27 +93,19 @@ function digSiteOf(run: TravelRun | null): {
 } {
   const node = run?.position_node_id;
   if (!node) return { markers: [], digs: 0, rissig: false };
-  const markerMap = (run?.checkpoint?.markers ?? {}) as Record<string, DriftMarkerClass[]>;
-  const sondMap = (run?.checkpoint?.sondierung ?? {}) as Record<
-    string,
-    { digs?: number; rissig?: boolean }
-  >;
-  const site = sondMap[node] ?? {};
+  const site = run?.sondierung?.[node] ?? {};
   return {
-    markers: Array.isArray(markerMap[node]) ? markerMap[node] : [],
+    markers: run?.markers?.[node] ?? [],
     digs: Number(site.digs ?? 0),
     rissig: site.rissig === true,
   };
 }
 
-/** Read the Havarie block the RPC wrote into the checkpoint. The client NEVER invents an
- *  option: which ones exist is the server's decision (a Kohärenz-Havarie with no cargo has
- *  no Notabwurf), and the prices are read from the tuning catalogue the RPC shipped along. */
+/** The wreck the run is standing in. The client NEVER invents an option: which ones exist is
+ *  the server's decision (a Kohärenz-Havarie with no cargo has no Notabwurf), and the prices
+ *  come from the tuning catalogue the RPC shipped along. */
 function havarieOf(run: TravelRun | null): DriftHavarie | null {
-  const block = run?.checkpoint?.havarie;
-  if (!block || typeof block !== 'object') return null;
-  const h = block as Partial<DriftHavarie>;
-  return Array.isArray(h.options) && typeof h.cause === 'string' ? (block as DriftHavarie) : null;
+  return run?.havarie ?? null;
 }
 
 /** How much of the board's left edge the HUD covers: its width (320px, `.hud`) plus the
@@ -759,9 +750,7 @@ export class VelgDriftView extends LitElement {
       () => driftApi.bankHaul(run.id, run.run_version),
       async (banked) => {
         this._adoptRun(banked); // refreshes the logbook
-        const receipt = banked.checkpoint.last_bank as
-          | { safe?: number; loose?: number }
-          | undefined;
+        const receipt = banked.last_bank;
         VelgToast.success(
           msg(
             str`Funkboje: ${Number(receipt?.safe ?? 0)} von ${Number(receipt?.loose ?? 0)} Punkten sind gesichert.`,
@@ -1118,20 +1107,20 @@ export class VelgDriftView extends LitElement {
    * three messages that scrolled past before the traveller could read them.
    */
   private _debriefProse(run: TravelRun): string {
-    const cp = run.checkpoint;
-    const banked = Number(cp.haul_banked ?? 0);
-    const lost = Number(cp.haul_lost ?? 0);
+    // One typed block, written by all five endings through the same server-side builder
+    // (drift_closing_payload). It used to be a handful of loose keys fished out of the raw
+    // checkpoint — four functions hand-building four copies of the same contract, which is
+    // how the copies drift apart.
+    const closing = run.closing;
+    const banked = closing?.haul_banked ?? 0;
+    const lost = closing?.haul_lost ?? 0;
     // What the Funkboje had already sent home before it all went wrong. On the unravelling
     // path this is the ONE promise the run kept ("was du sendest, kommt an") — and the
     // debriefing was the only place that never said so.
-    const transmitted = Number(cp.haul_transmitted ?? 0);
-    const honors = Number(cp.honors_won ?? 0);
-    const closeReason = typeof cp.close_reason === 'string' ? cp.close_reason : null;
-    const scatter = cp.scattered;
-    const scattered =
-      scatter !== null && typeof scatter === 'object' && 'scattered' in scatter
-        ? Number((scatter as { scattered: unknown }).scattered)
-        : 0;
+    const transmitted = closing?.haul_transmitted ?? 0;
+    const honors = closing?.honors_won ?? 0;
+    const closeReason = closing?.reason ?? null;
+    const scattered = Number(closing?.scattered?.scattered ?? 0);
 
     const lines: string[] = [];
 
@@ -1150,16 +1139,24 @@ export class VelgDriftView extends LitElement {
           ),
         );
       }
+    } else if (closeReason === 'rueckzug') {
+      // The quiet ending — neither a failure nor a success, just a traveller walking away.
+      // It has to be named by the SERVER's reason, not guessed from the numbers: a Rückzug
+      // forfeits its loose haul too, so "lost > 0 ⇒ Zerfaserung" (which is what this used to
+      // read) would file a withdrawal as a catastrophe.
+      lines.push(
+        lost > 0
+          ? msg(str`Rückzug eingeleitet. ${lost} Punkte loser Vermessung bleiben im Zwischenraum.`)
+          : msg('Rückzug eingeleitet. Die Fahrt ist ohne Eintrag geschlossen.'),
+      );
     } else if (scattered > 0) {
       lines.push(
         msg(
           str`Zerfaserung. ${lost} Punkte Vermessung sind verloren, und ${scattered} Depesche(n) verwehen als Echo über den Welten, für die sie bestimmt waren.`,
         ),
       );
-    } else if (lost > 0) {
-      lines.push(msg(str`Zerfaserung. ${lost} Punkte Vermessung sind verloren.`));
     } else {
-      lines.push(msg('Rückzug eingeleitet. Die Fahrt ist ohne Eintrag geschlossen.'));
+      lines.push(msg(str`Zerfaserung. ${lost} Punkte Vermessung sind verloren.`));
     }
 
     if (transmitted > 0 && run.status !== 'completed') {
@@ -1609,8 +1606,8 @@ export class VelgDriftView extends LitElement {
     // The dig site, straight out of the run — the client remembers nothing about a node, so
     // a second tab and a fresh reload tell the same story.
     const site = digSiteOf(run);
-    const loose = Number(run.checkpoint.haul ?? 0);
-    const safe = Number(run.checkpoint.haul_safe ?? 0);
+    const loose = run.haul;
+    const safe = run.haul_safe;
     // What one more dig is worth: the server's table, with the last entry repeating (the
     // limiter is the bust, not the table running out).
     // Fail-soft like the gauge maxima: a failed tuning fetch (which _load tolerates) must

@@ -95,13 +95,19 @@ class SignalProse(BaseModel):
 class SignalCheckSpec(BaseModel):
     """A vector check on an option. The DIFFICULTY is shown to nobody.
 
-    The panel says "riskant" and names the vector; it never numbers the odds (concept
-    R4 — the traveller learns the shape of a risk by living it, not by reading it off a
-    tooltip). The field is here because the FE needs to know a check EXISTS.
+    The panel says "riskant" and names the vector; it never numbers the odds (concept R4 —
+    the traveller learns the shape of a risk by living it, not by reading it off a tooltip).
+    The presence of this block is what the HUD needs: a check EXISTS, and it tests THIS vector.
+
+    `difficulty` is therefore parsed (the template has it) and then DROPPED (`exclude=True`).
+    It used to be declared here and shipped — the docstring above said the number was shown to
+    nobody while the response carried it in plain sight, and the raw `checkpoint` blob next to
+    it carried the deltas of every branch as well. W2.6/B closed both: the checkpoint is
+    input-only now, and the number stops here.
     """
 
     vector: str
-    difficulty: int
+    difficulty: int = Field(0, exclude=True)
 
 
 class SignalCost(BaseModel):
@@ -172,6 +178,77 @@ class ResolvedSignal(BaseModel):
     applied: SignalDeltas | None = None
 
 
+class SondierungReveal(BaseModel):
+    """The reveal of ONE dig (checkpoint.last_sondierung, migration 268).
+
+    `stack` is the whole marker stack at that node AFTER this dig — the traveller counts it
+    themselves. Nobody is ever shown a percentage (R4: the odds are never numbered, the
+    evidence always is).
+    """
+
+    node_id: UUID
+    dig: int
+    marker: str
+    stack: list[str] = Field(default_factory=list)
+    yield_: int = Field(0, alias="yield")
+    bust: bool = False
+    forfeited: int = 0
+
+    model_config = {"populate_by_name": True}
+
+
+class BankReceipt(BaseModel):
+    """The Funkboje's receipt (checkpoint.last_bank): what went in, what came ashore."""
+
+    loose: int
+    safe: int
+    rate: float
+    haul_safe: int
+
+
+class HavarieBlock(BaseModel):
+    """The wreck the run is standing in (checkpoint.havarie, migration 265).
+
+    `options` is what the SERVER offered — the client never invents one, and an option that is
+    not on this list is refused (INVALID_CHOICE). `catalogue` carries the tuning numbers so the
+    panel can STATE what each choice costs instead of hardcoding it.
+    """
+
+    cause: str
+    options: list[str] = Field(default_factory=list)
+    cargo_aboard: int = 0
+    haul_at_risk: int = 0
+    catalogue: dict = Field(default_factory=dict)
+    expires_at: datetime | None = None
+
+
+class ClosingReceipt(BaseModel):
+    """How the run ENDED, and what it was worth (checkpoint.closing, W2.6).
+
+    Five endings write this one block through `drift_closing_payload()` — entladung, rueckruf,
+    zerfaserung, rueckzug, kollaps — so the Bureau debriefing has a single contract to read.
+    Before the consolidation each closing path hand-built its own flat set of checkpoint keys
+    for the same facts, which is how four copies of a contract drift apart.
+
+    `haul_transmitted` is the Fun-Kern-only field: with the gate shut the receipt carries no
+    Fun-Kern fact (it reads 0). The reserve is still PAID in that case — money brought ashore
+    under an open gate is not rollback residue — and `earnings` says so.
+    """
+
+    reason: str  # entladung | rueckruf | zerfaserung | rueckzug | kollaps
+    cause: str | None = None  # kohaerenz | window — why it ended, when it ended badly
+    detail: str | None = None  # choice | ttl_expired | gate_closed
+    haul_banked: int = 0
+    haul_lost: int = 0
+    haul_transmitted: int = 0
+    haul_before: int | None = None  # the loose haul BEFORE a recall multiplier
+    haul_mult: float | None = None
+    surveys_delivered: int = 0
+    honors_won: int = 0
+    honor_keys: list[str] = Field(default_factory=list)
+    scattered: dict | None = None
+
+
 class TravelLogEntryResponse(BaseModel):
     """One line of the traveller's logbook (travel_log_entries, migration 267).
 
@@ -190,7 +267,18 @@ class TravelLogEntryResponse(BaseModel):
 
 
 class TravelRunResponse(BaseModel):
-    """A travel_runs row as returned by the run-lifecycle RPCs (to_jsonb(run))."""
+    """A travel_runs row as the run-lifecycle RPCs return it (to_jsonb(run)).
+
+    THE RAW CHECKPOINT IS NOT PART OF THIS RESPONSE (W2.6/B). It is accepted as INPUT — the
+    RPCs can only speak through it — and every block the HUD may see is lifted out of it into
+    a typed field below. It is then dropped (`exclude=True`).
+
+    It used to go out 1:1, right next to the typed fields that carefully lift only what is
+    allowed, which made the typing worthless for confidentiality: the raw blob carries
+    `check.difficulty` and the `deltas` of EVERY branch of a pending scene (the draw stores
+    jsonb_agg over the complete template options). The concept is explicit — "die Odds werden
+    nie beziffert" (R4) — and via DevTools they were.
+    """
 
     id: UUID
     user_id: UUID
@@ -206,47 +294,84 @@ class TravelRunResponse(BaseModel):
     begehung_zone_id: UUID | None = None
     window_remaining: int
     takt_count: int
-    checkpoint: dict
     event_seq: int
     chart_version: int | None = None
     opened_at: datetime
     closed_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
-    # Lifted out of the checkpoint (see below) — never sent by the RPC as a column.
+
+    # ── The run's live state: COLUMNS since W2.6/D ────────────────────────────
+    # These were untyped keys in the checkpoint jsonb, which is where the marker stack could
+    # silently empty on a move and the same money could be booked three times. `haul` is the
+    # DERIVED loose haul (haul_survey + Σ sondierung yields + Σ cargo haul_value); no writer
+    # sets it, a trigger recomputes it from its sources on every write.
+    haul: int = 0
+    haul_safe: int = 0
+    overstay: bool = False
+    markers: dict[str, list[str]] = Field(default_factory=dict)
+    sondierung: dict[str, dict] = Field(default_factory=dict)
+
+    # ── The scene payloads: lifted out of the checkpoint ──────────────────────
     earnings: EarningsBlock | None = None
     pending_signal: PendingSignal | None = None
     last_signal: ResolvedSignal | None = None
+    last_sondierung: SondierungReveal | None = None
+    last_bank: BankReceipt | None = None
+    havarie: HavarieBlock | None = None
+    closing: ClosingReceipt | None = None
+
+    # Input only. Never serialised — see the class docstring.
+    checkpoint: dict = Field(default_factory=dict, exclude=True)
 
     @model_validator(mode="after")
     def _lift_checkpoint_blocks(self) -> "TravelRunResponse":
-        """Surface the checkpoint's typed blocks as typed fields.
+        """Surface the checkpoint's scene payloads as typed fields.
 
-        Every run RPC RETURNS to_jsonb(run), so anything they want to tell the HUD can
-        only travel inside the checkpoint jsonb. Lifting the blocks here means the HUD
-        reads typed fields instead of digging through an untyped dict, and every consumer
-        of a run row (the mutation's own response, a refetch, a second device resuming)
-        gets the same story the same way.
+        Every run RPC RETURNS to_jsonb(run), so anything they want to tell the HUD can only
+        travel inside the checkpoint jsonb. Lifting the blocks here means the HUD reads typed
+        fields instead of digging through an untyped dict, and every consumer of a run row (the
+        mutation's own response, a refetch, a second device resuming) gets the same story the
+        same way.
 
-        `earnings`       — the Entladung receipt (migration 264).
-        `pending_signal` — the scene the run is WAITING on (267): while this is set the
-                           run cannot move, so the HUD must be able to see it without
-                           knowing the checkpoint's internal shape.
-        `last_signal`    — what the answer did, for the result state of the panel.
+        `earnings`        — what the last act PAID (264). The count-up ceremony's contract.
+        `pending_signal`  — the scene the run is WAITING on (267): while this is set the run
+                            cannot move, dig or bank.
+        `last_signal`     — what the answer did (the result state of the panel).
+        `last_sondierung` — the reveal of the last dig (268).
+        `last_bank`       — the Funkboje's receipt (268).
+        `havarie`         — the wreck, with the options the SERVER offered (265).
+        `closing`         — how the run ended and what it was worth (W2.6).
 
-        All three are absent while the Fun-Kern gate is closed — the fields are simply
-        None, which is exactly P0.
+        Every one of them is absent while the Fun-Kern gate is closed (`closing` excepted — a
+        P0 run still ends), and the fields are then simply None, which is exactly P0.
+
+        A key the model does not know does not break the mutation — it breaks every subsequent
+        GET on the run, quietly. `test_drift_run_contract.py` drives every mutation through
+        this model for exactly that reason.
         """
         if not isinstance(self.checkpoint, dict):
             return self
-        if self.earnings is None and isinstance(self.checkpoint.get("earnings"), dict):
-            self.earnings = EarningsBlock(**self.checkpoint["earnings"])
-        if self.pending_signal is None and isinstance(
-            self.checkpoint.get("pending_signal"), dict
-        ):
-            self.pending_signal = PendingSignal(**self.checkpoint["pending_signal"])
-        if self.last_signal is None and isinstance(self.checkpoint.get("last_signal"), dict):
-            self.last_signal = ResolvedSignal(**self.checkpoint["last_signal"])
+        cp = self.checkpoint
+
+        def _block(key: str) -> dict | None:
+            value = cp.get(key)
+            return value if isinstance(value, dict) else None
+
+        if self.earnings is None and (block := _block("earnings")):
+            self.earnings = EarningsBlock(**block)
+        if self.pending_signal is None and (block := _block("pending_signal")):
+            self.pending_signal = PendingSignal(**block)
+        if self.last_signal is None and (block := _block("last_signal")):
+            self.last_signal = ResolvedSignal(**block)
+        if self.last_sondierung is None and (block := _block("last_sondierung")):
+            self.last_sondierung = SondierungReveal(**block)
+        if self.last_bank is None and (block := _block("last_bank")):
+            self.last_bank = BankReceipt(**block)
+        if self.havarie is None and (block := _block("havarie")):
+            self.havarie = HavarieBlock(**block)
+        if self.closing is None and (block := _block("closing")):
+            self.closing = ClosingReceipt(**block)
         return self
 
 

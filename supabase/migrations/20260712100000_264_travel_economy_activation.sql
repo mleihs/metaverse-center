@@ -1,6 +1,7 @@
--- Migration 264: DRIFT Fun-Kern — travel_economy_activation (Welle 1, Schritt 1.1)
+-- Migration 264: DRIFT Fun-Kern — das Fundament: die FORM eines Runs und seine ÖKONOMIE
 --
--- Plan: docs/plans/drift-fun-core-implementation-plan.md §3 Schritt 1.1.
+-- Plan:    docs/plans/drift-fun-core-implementation-plan.md §3 Schritt 1.1
+--          docs/plans/drift-w25-architecture-consolidation-plan.md (D, E, C)
 -- Concept: docs/concepts/drift-gameplay-redesign-concept.md (D1 "die Ökonomie ist tot",
 --          M4 Reward-Kern, M6 Rangleiter).
 --
@@ -15,40 +16,115 @@
 --
 -- This migration turns the existing loop into an economy:
 --   * Ablieferung (fn_quest_advance)  → deterministic Siegel roll + flat VP.
---   * Entladung   (fn_travel_complete) → Haul → VP (1:1) + Siegel (ratio), plus a
+--   * Entladung   (fn_travel_bank_run) → Haul → VP (1:1) + Siegel (ratio), plus a
 --                                        per-honor Erstvermessungs-Bonus.
---   * Kollaps     (fn_travel_move)     → zerfaserung_count finally increments.
+--   * Kollaps     (fn_travel_zerfasern) → zerfaserung_count finally increments.
 --   * Rangleiter  (fn_clearance_exam)  → VP threshold + Siegel fee → clearance_rank.
+--
+--
+-- ════════════════════════════════════════════════════════════════════════════════
+-- W2.6: THE CHECKPOINT GETS A FORM (§3 below) — the change that made this file
+--       worth re-reading
+-- ════════════════════════════════════════════════════════════════════════════════
+-- Until W2.6 the run's whole live state lived in an untyped multi-writer jsonb
+-- (`travel_runs.checkpoint`) with 42 direct writes across five migrations. It was the source
+-- of almost every P0/P1 this project has had:
+--
+--   * `last_signal.class` vs `signal_class`  — a key name IS a silent API contract → 500 on
+--                                              every GET, with a green RPC suite
+--   * two mirrored snapshot bugs             — caller overwrites helper's write, and back
+--   * the `drift_checkpoint_carry` whitelist — a key not listed there vanished on the next
+--                                              move (a marker stack that silently emptied)
+--   * `haul` / `haul_safe` / `haul_banked`   — three near-identical names, three meanings
+--   * sub-ledger staleness (the Funkboje)    — three bookings of the SAME money, no owner:
+--                                              banking emptied one and left two standing,
+--                                              which cut BOTH ways (over-confiscation on a
+--                                              later bust, and a free bust that deleted the
+--                                              push-your-luck of the entire wave)
+--
+-- The carry-whitelist was itself only a workaround for `fn_travel_move` rebuilding the
+-- checkpoint from scratch on every advance.
+--
+-- So the load-bearing keys become COLUMNS (§3.1): `haul_survey`, `haul_safe`, `overstay`,
+-- `markers`, `sondierung`, `visited` — with types and CHECKs. What stays in the checkpoint is
+-- only the genuinely polymorphic part: the SCENE PAYLOADS (`pending_signal`, `last_signal`,
+-- `last_sondierung`, `last_bank`, `havarie`, `earnings`, `last_move`, `last_havarie`,
+-- `closing`). A scene is "what just happened"; a column is "what is true".
+--
+-- Dead as of this migration: the rebuild, the carry whitelist (`drift_checkpoint_carry`),
+-- the snapshot trap, and `fn_travel_jettison_haul`. fn_travel_move can rebuild the checkpoint
+-- as freely as it likes now — there is nothing run-level left in there to forget.
+--
+--
+-- ════════════════════════════════════════════════════════════════════════════════
+-- W2.6: `haul` HAS AN OWNER (§3.2) — and the owner is arithmetic, not a writer
+-- ════════════════════════════════════════════════════════════════════════════════
+-- The same money used to be booked three times, by three different functions:
+--     checkpoint.haul          — the loose take
+--     sondierung[node].yield   — what a Resonanzriss at that node confiscates
+--     travel_cargo.haul_value  — what a Notabwurf of that freight deducts
+-- Nobody owned the set. That is precisely how the Funkboje could empty one and leave the
+-- other two standing.
+--
+-- So the loose haul is not STORED as an independent number at all. It is DERIVED:
+--
+--     haul  =  haul_survey  +  Σ sondierung[*].yield  +  Σ travel_cargo.haul_value
+--
+-- stated exactly once, in `drift_haul_of()`. There is no partial booking left that could go
+-- stale, because there is no partial booking: a Riss zeroes one node's yield and the haul
+-- falls out of the arithmetic; a Notabwurf deletes cargo rows and the haul falls with them.
+-- Nobody has to REMEMBER to debit any more.
+--
+-- Why it is nevertheless a materialised COLUMN (a trigger, §3.3) and not a view: every run
+-- RPC answers with `to_jsonb(travel_runs)`, INCLUDING RPCs outside this migration set
+-- (fn_quest_accept lives in 249 and is deployed). A view-only derivation would have forced a
+-- redefinition of those functions here purely to reshape their return value — trading one
+-- multi-definition problem for another, which is exactly what W2.6/C exists to end. The
+-- trigger makes `haul` a materialised view of the three ledgers instead: NO writer may set it
+-- (every write to travel_runs recomputes it from NEW, every write to travel_cargo.haul_value
+-- recomputes it on the run), so staleness is not "avoided by discipline" — it is unreachable.
+--
+-- The one place that ever CONSUMES the loose haul (banking it, forfeiting it, halving it on a
+-- Notruf) is `drift_haul_settle()` (§3.4): the single function that collapses all three
+-- sub-ledgers at once. Three ledgers, one consumer, no way to settle half of them.
+--
 --
 -- THE GATE (plan §2.4, §9)
 -- -----------------------
--- Everything above sits behind the NEW platform_settings key `drift_fun_core_enabled`
--- (jsonb false, seeded here, fail-closed). Gate off ⇒ every RPC behaves EXACTLY as its P0
--- predecessor: no ledger write, no extra response key, no counter bump. That is the
--- regression net protecting the live P0 system (drift_p0_enabled=true on prod) until the
--- flip. The SQL-side check (drift_gate_enabled) mirrors the Python `parse_setting_bool`
--- semantics — positive-match {true, "true", "1", "yes", "on"}, everything else false — so a
--- jsonb-null round-trip or a typo can never silently arm the economy (F32 precedent).
+-- The economy sits behind the platform_settings key `drift_fun_core_enabled` (jsonb false,
+-- seeded here, fail-closed). Gate off ⇒ no ledger write, no scar, no signal, no Sondierung.
+-- The SQL-side check (drift_gate_enabled) mirrors the Python `parse_setting_bool` semantics —
+-- positive-match {true, "true", "1", "yes", "on"}, everything else false — so a jsonb-null
+-- round-trip or a typo can never silently arm the economy (F32 precedent).
+--
+-- The gate lives HERE and nowhere else (W2.6/A): every RPC re-reads it in-transaction and
+-- knows what a closed gate means for its own state — refuse to CREATE, but DRAIN what the
+-- Fun-Kern already created. There is deliberately no HTTP twin: a 404 before the RPC runs
+-- cannot make that distinction, and it once made the Havarie drain unreachable.
+--
+-- NOTE ON THE ROLLBACK CONTRACT. "Gate off = P0" is a contract about BEHAVIOUR (no ledger
+-- write, no scar, no scene), not about the byte-layout of a jsonb column. §3 changes where
+-- the run's state lives in BOTH gate states — the P0 survey economy is preserved exactly, it
+-- simply lives in columns now — and §3.5 backfills every in-flight run so nothing is lost at
+-- deploy. What the gate-off suites pin is the behaviour and the absence of every Fun-Kern
+-- key; that is what a rollback has to restore, and it still does.
 --
 -- DETERMINISM (plan §2.7)
 -- ----------------------
--- All new randomness is drawn from drift_rand(seed) = hashtext(seed) mapped into [0,1),
--- with the seed built from run/entity/takt. No random() in a payout path: a payout must be
--- replayable in CI and reproducible in a bug report. (fn_travel_move's legacy deep-surge
--- random() is left untouched here — it is retired wholesale in migration 266 when the
--- Störungs-Signalklasse absorbs it, plan §4 Schritt 2.2.)
+-- All randomness is drawn from drift_rand(seed) = hashtext(seed) → [0,1), seeded from a
+-- per-run SECRET salt (§2b) plus run/entity/takt. No random() in a payout path: a payout must
+-- be replayable in CI, reproducible in a bug report, and unforgeable by the player.
 --
 -- GRANT CLASSES (ADR-006, plan §2.2)
 --   PLAYER-class (auth.uid() = p_user guard, GRANT authenticated + service_role):
---       fn_clearance_exam  — new; joins fn_travel_move/complete/quest_* which keep theirs
---                            (CREATE OR REPLACE preserves the ACL; re-asserted at the foot).
---   EFFECT/INTERNAL-class (service_role only, explicit anon+authenticated REVOKE):
---       drift_gate_enabled, drift_rand, drift_rand_int, fn_drift_award.
---   fn_drift_award is the SINGLE writer of the Siegel/VP ledger — one audit shape, one
---   place to change, no payout arithmetic duplicated across three RPCs.
+--       fn_clearance_exam, fn_quest_advance, fn_travel_move, fn_travel_complete
+--   INTERNAL-class (service_role only, explicit anon+authenticated REVOKE):
+--       drift_gate_enabled, drift_rand, drift_rand_int, drift_run_salt, drift_haul_of,
+--       drift_haul_settle, fn_drift_award
 --
 -- Active-view refresh: none (no agents/buildings/simulations/events column changes).
 
+BEGIN;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 1. The gate key (fail-closed) — one flip, one rollback
@@ -56,7 +132,7 @@
 
 INSERT INTO public.platform_settings (setting_key, setting_value, description) VALUES
     ('drift_fun_core_enabled', 'false'::jsonb,
-     'DRIFT Fun-Kern gate (P0.5: economy, Havarie, signals, Sondierung, requisition). Off → every DRIFT RPC behaves exactly as its P0 predecessor. Cumulative: requires drift_p0_enabled on.')
+     'DRIFT Fun-Kern gate (P0.5: economy, Havarie, signals, Sondierung, requisition). Off → every DRIFT RPC behaves exactly as its P0 predecessor: no ledger write, no scar, no scene. Enforced in SQL only (drift_gate_enabled), never as an HTTP pre-check — a 404 before the RPC runs cannot tell "refuse to create state" from "refuse to drain state", and it once jailed every wrecked run for 48 h. Cumulative: requires drift_p0_enabled on.')
 ON CONFLICT (setting_key) DO NOTHING;
 
 
@@ -66,7 +142,7 @@ ON CONFLICT (setting_key) DO NOTHING;
 
 INSERT INTO drift_tuning (setting_key, value, description) VALUES
     ('reward_dispatch_tier1', '{"siegel_min": 8, "siegel_max": 12, "vp": 10}'::jsonb,
-        'Payout for a delivered Depesche (tier 1 = the only tier in W1). Siegel is a deterministic roll in [min,max] (drift_rand, seeded run:instance:takt) so the reward has texture without being forgeable; VP is flat — the rank ladder must not be gambled.'),
+        'Payout for a delivered Depesche (tier 1 = the only tier in W1). Siegel is a deterministic roll in [min,max] (drift_rand, salted run:instance:takt) so the reward has texture without being forgeable; VP is flat — the rank ladder must not be gambled.'),
     ('reward_survey_vp_per_haul', '1'::jsonb,
         'VP per point of banked Vermessung on Entladung (1:1). Haul is the survey economy''s base income; the Depesche is the premium on top.'),
     ('reward_survey_siegel_ratio', '0.5'::jsonb,
@@ -81,7 +157,7 @@ ON CONFLICT (setting_key) DO NOTHING;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 3. drift_gate_enabled(key) — the SQL twin of parse_setting_bool (fail-closed)
+-- 2a. drift_gate_enabled(key) — the SQL twin of parse_setting_bool (fail-closed)
 -- ═══════════════════════════════════════════════════════════════════
 -- Python reads the gate via backend/utils/settings.parse_setting_bool; the RPCs need the
 -- same answer without a round trip. Positive-match semantics, deliberately identical to the
@@ -108,20 +184,20 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.drift_gate_enabled(TEXT) IS
-    'Fail-closed SQL read of a platform_settings boolean gate — the twin of backend/utils/settings.parse_setting_bool (F32 positive-match semantics: only jsonb true / "true" / "1" / "yes" / "on" are ON; missing row, jsonb null, anything else → FALSE). Used by the DRIFT RPCs to gate the Fun-Kern (drift_fun_core_enabled) in-transaction, so the SQL and Python answers can never disagree. INTERNAL-class: SECURITY DEFINER (platform_settings is service_role-only), REVOKEd from anon+authenticated; the player RPCs reach it DEFINER→DEFINER as owner.';
+    'Fail-closed SQL read of a platform_settings boolean gate — the twin of backend/utils/settings.parse_setting_bool (F32 positive-match semantics: only jsonb true / "true" / "1" / "yes" / "on" are ON; missing row, jsonb null, anything else → FALSE). THE single enforcement point of the DRIFT Fun-Kern gate: every Fun-Kern RPC calls it in-transaction, because only the RPC knows whether a closed gate should refuse (it would CREATE state) or drain (state the Fun-Kern already created). INTERNAL-class: SECURITY DEFINER (platform_settings is service_role-only), REVOKEd from anon+authenticated; the player RPCs reach it DEFINER→DEFINER as owner.';
 
 REVOKE ALL    ON FUNCTION public.drift_gate_enabled(TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.drift_gate_enabled(TEXT) TO service_role;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 4. drift_rand / drift_rand_int — the deterministic dice (plan §2.7)
+-- 2b. drift_rand / drift_rand_int / the per-run salt — the deterministic dice
 -- ═══════════════════════════════════════════════════════════════════
 -- hashtext(seed) is IMMUTABLE and stable across sessions/backends; shifting its int4 range
 -- into [0, 2^32) and dividing yields a uniform-enough [0,1) for game payouts. The point is
 -- not cryptographic quality — it is that the SAME (run, entity, takt) ALWAYS produces the
--- same roll: a payout is replayable in CI, reproducible in a bug report, and cannot be
--- re-rolled by a client retry (a retried call recomputes the identical value).
+-- same roll: replayable in CI, reproducible in a bug report, and retry-safe (a repeated call
+-- recomputes the identical value instead of re-rolling).
 
 CREATE OR REPLACE FUNCTION public.drift_rand(p_seed TEXT)
 RETURNS NUMERIC
@@ -141,7 +217,7 @@ AS $$
 $$;
 
 COMMENT ON FUNCTION public.drift_rand(TEXT) IS
-    'Deterministic DRIFT dice (plan §2.7): hashtext(seed) → [0,1). Seeds are built from run_id/entity/takt, so every roll is replayable (CI), reproducible (bug reports) and retry-safe (a repeated call recomputes the same value instead of re-rolling). INTERNAL-class: service_role only.';
+    'Deterministic DRIFT dice (plan §2.7): hashtext(seed) → [0,1). Every Fun-Kern seed is prefixed with the run''s SECRET salt (drift_run_salt), so a roll stays perfectly replayable server-side while being unforgeable client-side. INTERNAL-class: service_role only.';
 
 COMMENT ON FUNCTION public.drift_rand_int(TEXT, INT, INT) IS
     'Deterministic integer roll in the inclusive range [p_lo, p_hi], drawn from drift_rand(p_seed). INTERNAL-class: service_role only.';
@@ -151,24 +227,17 @@ GRANT EXECUTE ON FUNCTION public.drift_rand(TEXT) TO service_role;
 REVOKE ALL    ON FUNCTION public.drift_rand_int(TEXT, INT, INT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.drift_rand_int(TEXT, INT, INT) TO service_role;
 
-
--- ═══════════════════════════════════════════════════════════════════
--- 4b. travel_run_seeds — the half of the seed the traveller cannot see
--- ═══════════════════════════════════════════════════════════════════
--- drift_rand is deterministic BY DESIGN, and its inputs (run_id, instance_id, takt) are all
--- values the client already holds. hashtext is open source. Without a server-only term a
--- player can therefore precompute every roll and simply wait for the takt on which the dice
--- land well — the reward loses its texture, and in W2 (signal draw, Sondierungs-Bust) a
--- precomputable roll would delete the push-your-luck entirely: there is no luck to push if
--- you can read the next card.
+-- The half of the seed the traveller cannot see.
 --
--- The salt must NOT live on travel_runs: `travel_runs_owner_select` (RLS, 246) lets the
--- owner read their own run row straight through PostgREST — i.e. exactly the adversary would
--- hold the secret. It lives in its own table with NO anon/authenticated grant and no RLS
--- policy for them; only the SECURITY DEFINER dice-callers (and service_role) ever see it.
+-- drift_rand is deterministic BY DESIGN, and its other inputs (run_id, instance_id, takt) are
+-- values the client already holds; hashtext is open source. Without a server-only term a
+-- player could precompute every roll and simply wait for the takt on which the dice land well
+-- — and in W2 (the signal draw, the Sondierungs-Bust) a precomputable roll deletes the
+-- push-your-luck entirely: there is no luck to push if you can read the next card.
 --
--- Lazily created per run (ON CONFLICT DO NOTHING), so runs opened before this migration get
--- a salt on their first roll instead of needing a backfill.
+-- The salt must NOT live on travel_runs: `travel_runs_owner_select` (RLS, 246) lets the owner
+-- read their own run row straight through PostgREST — i.e. exactly the adversary would hold
+-- the secret. Its own table, no anon/authenticated grant, no policy for them.
 
 CREATE TABLE IF NOT EXISTS public.travel_run_seeds (
     run_id     UUID PRIMARY KEY REFERENCES travel_runs(id) ON DELETE CASCADE,
@@ -188,7 +257,7 @@ REVOKE ALL ON TABLE public.travel_run_seeds FROM PUBLIC, anon, authenticated;
 GRANT ALL  ON TABLE public.travel_run_seeds TO service_role;
 
 COMMENT ON TABLE public.travel_run_seeds IS
-    'Per-run secret salt for the DRIFT dice (migration 264). drift_rand is deterministic and its other seed terms (run_id, instance_id, takt) are all client-visible, so without this salt every roll would be precomputable by the player — fatal for W2''s push-your-luck. Deliberately NOT a travel_runs column: RLS lets a traveller read their own run row, which would hand the secret to the one party it is kept from. No anon/authenticated grant, no RLS policy for them; read only through drift_run_salt() (SECURITY DEFINER) and service_role.';
+    'Per-run secret salt for the DRIFT dice (migration 264). Deliberately NOT a travel_runs column: RLS lets a traveller read their own run row, which would hand the secret to the one party it is kept from. No anon/authenticated grant, no RLS policy for them; read only through drift_run_salt() (SECURITY DEFINER) and service_role.';
 
 CREATE OR REPLACE FUNCTION public.drift_run_salt(p_run UUID)
 RETURNS TEXT
@@ -206,23 +275,347 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.drift_run_salt(UUID) IS
-    'The server-only term of every DRIFT seed (migration 264): returns the run''s secret salt, creating it on first use. Every drift_rand seed in the Fun-Kern is prefixed with it, so a roll stays perfectly replayable server-side (CI, bug reports, retry-safety) while being unforgeable client-side. INTERNAL-class: service_role only.';
+    'The server-only term of every DRIFT seed (migration 264): returns the run''s secret salt, creating it on first use (so runs opened before the migration get one on their first roll, with no backfill). INTERNAL-class: service_role only.';
 
 REVOKE ALL    ON FUNCTION public.drift_run_salt(UUID) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.drift_run_salt(UUID) TO service_role;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 5. fn_drift_award — the SINGLE writer of the Siegel/VP ledger
+-- 3. THE SHAPE OF A RUN (W2.6/D+E) — columns, one derivation, one consumer
+-- ═══════════════════════════════════════════════════════════════════
+-- The full reasoning is in the header. In short: the load-bearing run state stops being
+-- untyped keys in a multi-writer jsonb and becomes columns with CHECKs; the loose haul stops
+-- being a fourth, independent booking of money that is already recorded in two other places,
+-- and becomes the SUM of those places.
+
+-- ── 3.1 The columns ──────────────────────────────────────────────────────────
+
+-- A Fund's freight remembers what it was worth. This is not a second booking of the haul —
+-- since §3.2 it IS one of the haul's three sources, so removing the freight (a Notabwurf, a
+-- fenced sale in W3) removes its haul by arithmetic, not by anyone remembering to debit it.
+-- Quest cargo carries 0: its value is the Depesche's payout, not survey points.
+ALTER TABLE public.travel_cargo
+    ADD COLUMN IF NOT EXISTS haul_value INTEGER NOT NULL DEFAULT 0;
+
+COMMENT ON COLUMN public.travel_cargo.haul_value IS
+    'Survey points this freight is worth (Fund cargo, migration 264/W2.6). One of the three sources of travel_runs.haul (drift_haul_of) — NOT a copy of it. Deleting the row therefore removes its haul automatically; nothing has to remember to debit. Quest cargo carries 0.';
+
+ALTER TABLE public.travel_runs
+    -- The loose haul, DERIVED (§3.2/§3.3). No writer may set it: every write recomputes it.
+    ADD COLUMN IF NOT EXISTS haul        INTEGER NOT NULL DEFAULT 0,
+    -- Source 1 of the loose haul: the Erstvermessung a move pays for a first arrival. It has
+    -- no other ledger, so it needs a column of its own.
+    ADD COLUMN IF NOT EXISTS haul_survey INTEGER NOT NULL DEFAULT 0,
+    -- The Funkboje's transmitted reserve. NOT part of `haul`: it is already ashore, and
+    -- nothing after it — Havarie, Riss, Zerfaserung, Rückzug — can take it (that promise is
+    -- the whole reason the Funkboje is a decision and not a formality).
+    ADD COLUMN IF NOT EXISTS haul_safe   INTEGER NOT NULL DEFAULT 0,
+    -- The Havarie's `ueberziehen` permit: every further Takt costs extra Dissonanz, and the
+    -- expired window no longer collapses the run.
+    ADD COLUMN IF NOT EXISTS overstay    BOOLEAN NOT NULL DEFAULT FALSE,
+    -- {node_id: [marker_class, …]} — the open, countable Störungs-/Sondierungs-stack (R4).
+    ADD COLUMN IF NOT EXISTS markers     JSONB   NOT NULL DEFAULT '{}'::jsonb,
+    -- {node_id: {digs, yield, rissig}} — source 2 of the loose haul.
+    ADD COLUMN IF NOT EXISTS sondierung  JSONB   NOT NULL DEFAULT '{}'::jsonb,
+    -- The first-arrival set the Entladung delivers to the shared chart (Erstvermessung).
+    ADD COLUMN IF NOT EXISTS visited     JSONB   NOT NULL DEFAULT '[]'::jsonb;
+
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_haul_check;
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_haul_survey_check;
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_haul_safe_check;
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_markers_check;
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_sondierung_check;
+ALTER TABLE public.travel_runs DROP CONSTRAINT IF EXISTS travel_runs_visited_check;
+
+ALTER TABLE public.travel_runs
+    ADD CONSTRAINT travel_runs_haul_check        CHECK (haul        >= 0),
+    ADD CONSTRAINT travel_runs_haul_survey_check CHECK (haul_survey >= 0),
+    ADD CONSTRAINT travel_runs_haul_safe_check   CHECK (haul_safe   >= 0),
+    ADD CONSTRAINT travel_runs_markers_check     CHECK (jsonb_typeof(markers)    = 'object'),
+    ADD CONSTRAINT travel_runs_sondierung_check  CHECK (jsonb_typeof(sondierung) = 'object'),
+    ADD CONSTRAINT travel_runs_visited_check     CHECK (jsonb_typeof(visited)    = 'array');
+
+COMMENT ON COLUMN public.travel_runs.haul IS
+    'The LOOSE haul — DERIVED, never written by hand (W2.6/E). haul = haul_survey + Σ sondierung[*].yield + Σ travel_cargo.haul_value, stated once in drift_haul_of() and materialised by trg_travel_runs_haul / trg_travel_cargo_haul: every write to any source recomputes it, so a direct UPDATE of this column is silently overwritten and a stale partial booking is unreachable. Consumed (banked, forfeited, halved) only through drift_haul_settle().';
+COMMENT ON COLUMN public.travel_runs.haul_safe IS
+    'The Funkboje''s transmitted reserve — already ashore. NOT part of `haul`, and untouched by the recall multiplier, a Resonanzriss, a Zerfaserung or a Rückzug: what you sent home, arrived. (Distinct from checkpoint.closing.haul_banked, which is the CLOSING RECEIPT of a finished run.)';
+COMMENT ON COLUMN public.travel_runs.markers IS
+    '{node_id: [marker_class, …]}. The open Sondierungs-/Störungs-marker stack — laid OPEN so the traveller can always COUNT it (R4: the odds are never numbered, the evidence always is). A Störung''s marker_add lands here too, so the Drift can poison a dig site.';
+COMMENT ON COLUMN public.travel_runs.sondierung IS
+    '{node_id: {digs, yield, rissig}}. `yield` is the LOOSE take dug at that node (a source of `haul`); `digs` places the node in the yield table; `rissig` marks it torn (the signal draw sends more Störungen through the tear). Banking zeroes `yield` and keeps the other two — banking does not un-dig a hole.';
+
+COMMENT ON TABLE public.travel_runs IS
+    'A DRIFT expedition in flight. Since W2.6 the run''s LIVE STATE lives in columns (haul/haul_survey/haul_safe/overstay/markers/sondierung/visited) and `checkpoint` holds ONLY the polymorphic SCENE PAYLOADS: pending_signal, last_signal, last_sondierung, last_bank, last_move, last_havarie, last_delivery, havarie, earnings, closing. The distinction is the load-bearing one: a column is WHAT IS TRUE, a checkpoint key is WHAT JUST HAPPENED. fn_travel_move rebuilds the checkpoint on every advance — which is safe precisely because nothing run-level is left in there to forget (the drift_checkpoint_carry whitelist that used to paper over this is gone).';
+
+-- ── 3.2 drift_haul_of — THE definition of the loose haul, in one place ───────
+
+CREATE OR REPLACE FUNCTION public.drift_haul_of(
+    p_survey     INT,
+    p_sondierung JSONB,
+    p_run        UUID
+) RETURNS INT
+LANGUAGE sql
+STABLE
+AS $$
+    -- The three sources, added. GREATEST(0, …) is belt and braces: the CHECKs already
+    -- forbid a negative component, and a negative haul would be a lie in either direction.
+    SELECT GREATEST(0,
+        COALESCE(p_survey, 0)
+      + COALESCE((SELECT sum((e.value ->> 'yield')::int)::int
+                    FROM jsonb_each(COALESCE(p_sondierung, '{}'::jsonb)) AS e), 0)
+      + COALESCE((SELECT sum(c.haul_value)::int
+                    FROM public.travel_cargo c WHERE c.run_id = p_run), 0));
+$$;
+
+COMMENT ON FUNCTION public.drift_haul_of(INT, JSONB, UUID) IS
+    'THE definition of a run''s loose haul (W2.6/E): haul_survey + Σ sondierung[*].yield + Σ travel_cargo.haul_value. Takes the first two as VALUES rather than reading them from the row, so the BEFORE trigger can compute from NEW (an uncommitted row is not readable from the table). Everything that needs the haul goes through this or through the column it materialises — there is exactly one place where the arithmetic is written down. INTERNAL-class.';
+
+REVOKE ALL    ON FUNCTION public.drift_haul_of(INT, JSONB, UUID) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.drift_haul_of(INT, JSONB, UUID) TO service_role;
+
+-- ── 3.3 The materialisation — no writer may set `haul` ──────────────────────
+-- Two triggers, because the haul has two kinds of source: the run's own columns, and the
+-- manifest. Together they make staleness UNREACHABLE rather than merely unlikely.
+
+CREATE OR REPLACE FUNCTION public.trg_drift_run_haul()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+    -- Unconditional: whatever the statement tried to write into `haul` is discarded and the
+    -- derivation put in its place. That is deliberate — it means an accidental (or a
+    -- well-meaning) direct write cannot re-open the stale-booking bug class by hand.
+    NEW.haul := drift_haul_of(NEW.haul_survey, NEW.sondierung, NEW.id);
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_travel_runs_haul ON public.travel_runs;
+CREATE TRIGGER trg_travel_runs_haul
+    BEFORE INSERT OR UPDATE ON public.travel_runs
+    FOR EACH ROW EXECUTE FUNCTION public.trg_drift_run_haul();
+
+CREATE OR REPLACE FUNCTION public.trg_drift_cargo_haul()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+DECLARE
+    v_run UUID := COALESCE(NEW.run_id, OLD.run_id);
+BEGIN
+    IF v_run IS NOT NULL THEN
+        UPDATE travel_runs r
+           SET haul = drift_haul_of(r.haul_survey, r.sondierung, r.id)
+         WHERE r.id = v_run;
+    END IF;
+    RETURN NULL;   -- AFTER trigger: the return value is ignored
+END;
+$$;
+
+-- The WHEN guards are not an optimisation, they are what keeps this from re-entering: the
+-- close-cleanup trigger (250) DELETEs the manifest during a travel_runs UPDATE, and without
+-- the guard every such close would fire a nested UPDATE back onto the row being updated.
+-- Every closing path settles the haul to zero BEFORE the status flip (drift_haul_settle), so
+-- by the time the cleanup runs there is no haul_value left to be relevant — and the guard
+-- says so out loud.
+DROP TRIGGER IF EXISTS trg_travel_cargo_haul_ins ON public.travel_cargo;
+CREATE TRIGGER trg_travel_cargo_haul_ins
+    AFTER INSERT ON public.travel_cargo
+    FOR EACH ROW WHEN (NEW.haul_value <> 0)
+    EXECUTE FUNCTION public.trg_drift_cargo_haul();
+
+DROP TRIGGER IF EXISTS trg_travel_cargo_haul_upd ON public.travel_cargo;
+CREATE TRIGGER trg_travel_cargo_haul_upd
+    AFTER UPDATE ON public.travel_cargo
+    FOR EACH ROW WHEN (NEW.haul_value IS DISTINCT FROM OLD.haul_value
+                       OR NEW.run_id IS DISTINCT FROM OLD.run_id)
+    EXECUTE FUNCTION public.trg_drift_cargo_haul();
+
+DROP TRIGGER IF EXISTS trg_travel_cargo_haul_del ON public.travel_cargo;
+CREATE TRIGGER trg_travel_cargo_haul_del
+    AFTER DELETE ON public.travel_cargo
+    FOR EACH ROW WHEN (OLD.haul_value <> 0)
+    EXECUTE FUNCTION public.trg_drift_cargo_haul();
+
+-- ── 3.4 drift_haul_settle — the ONE consumer of the loose haul ───────────────
+-- Banking it (Funkboje, Entladung, Rückruf), forfeiting it (Zerfaserung, Rückzug, the
+-- gate-off collapse) and halving it (Notruf) are the same act: the three sub-ledgers are
+-- collapsed into ONE number, all at once. There is no way to settle half of them — which is
+-- exactly the bug the Funkboje shipped with.
+--
+-- `digs` and `rissig` deliberately SURVIVE: they describe the NODE (its place in the yield
+-- table, its torn state), not the haul. Banking does not un-dig a hole.
+
+CREATE OR REPLACE FUNCTION public.drift_haul_settle(p_run UUID, p_keep NUMERIC)
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_total INT;
+BEGIN
+    SELECT r.haul INTO v_total FROM travel_runs r WHERE r.id = p_run;
+    IF v_total IS NULL THEN
+        RAISE EXCEPTION 'drift_haul_settle: run not found' USING ERRCODE = 'P0002';
+    END IF;
+
+    -- Both sub-ledgers to zero, and whatever survives the settlement lands in the one column
+    -- that has no other ledger behind it. floor(): the Bureau never rounds in the traveller's
+    -- favour, and an integer haul keeps every downstream payout exact.
+    UPDATE travel_cargo SET haul_value = 0 WHERE run_id = p_run AND haul_value <> 0;
+
+    UPDATE travel_runs r SET
+        haul_survey = floor(v_total * p_keep)::int,
+        sondierung  = COALESCE((
+            SELECT jsonb_object_agg(e.key, e.value || jsonb_build_object('yield', 0))
+              FROM jsonb_each(r.sondierung) AS e), '{}'::jsonb)
+     WHERE r.id = p_run;
+
+    RETURN v_total;   -- the loose haul as it stood BEFORE the settlement
+END;
+$$;
+
+COMMENT ON FUNCTION public.drift_haul_settle(UUID, NUMERIC) IS
+    'The single CONSUMER of a run''s loose haul (W2.6/E). Collapses all three sub-ledgers at once — travel_cargo.haul_value → 0, sondierung[*].yield → 0, and floor(haul × p_keep) into haul_survey — and returns the loose haul as it stood BEFORE. p_keep: 0 for a bank/forfeit (Funkboje, Entladung, Zerfaserung, Rückzug, Kollaps), the notruf multiplier for a rescue. Nothing else may empty a sub-ledger: the Funkboje once emptied ONE of the three and left two standing, which over-confiscated on a later bust AND made the bust free (dig → bank → dig → bank, the Funkboje costs no Takt), deleting the push-your-luck of the whole wave. `digs`/`rissig` survive — they describe the node, not the haul. INTERNAL-class.';
+
+REVOKE ALL    ON FUNCTION public.drift_haul_settle(UUID, NUMERIC) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.drift_haul_settle(UUID, NUMERIC) TO service_role;
+
+-- ── 3.5 Backfill — an in-flight run must not lose what it has earned ─────────
+-- On prod, DRIFT P0 is LIVE (drift_p0_enabled = true) and travellers are mid-run with their
+-- accrued haul and their visited set in the checkpoint. Deploying the new shape without this
+-- would silently confiscate both.
+--
+-- Guarded by `checkpoint ?| ARRAY[…]` so it is idempotent: a re-apply finds no row still
+-- carrying the old keys and touches nothing. (Without the guard, a second run would read the
+-- already-stripped checkpoint as zero and wipe the columns it had just filled.)
+--
+-- haul_survey gets the haul MINUS the two sub-ledgers, so nothing is double-counted: on prod
+-- both are empty (the Fun-Kern never ran there) and this reduces to checkpoint.haul, but on a
+-- dev database mid-W2 it is the only correct answer.
+
+UPDATE public.travel_runs r SET
+    haul_survey = GREATEST(0,
+        COALESCE((r.checkpoint ->> 'haul')::int, 0)
+      - COALESCE((SELECT sum((e.value ->> 'yield')::int)::int
+                    FROM jsonb_each(COALESCE(r.checkpoint -> 'sondierung', '{}'::jsonb)) AS e), 0)
+      - COALESCE((SELECT sum(c.haul_value)::int
+                    FROM travel_cargo c WHERE c.run_id = r.id), 0)),
+    haul_safe   = COALESCE((r.checkpoint ->> 'haul_safe')::int, 0),
+    overstay    = COALESCE((r.checkpoint ->> 'overstay')::boolean, FALSE),
+    markers     = COALESCE(r.checkpoint -> 'markers', '{}'::jsonb),
+    sondierung  = COALESCE(r.checkpoint -> 'sondierung', '{}'::jsonb),
+    visited     = COALESCE(r.checkpoint -> 'visited', '[]'::jsonb),
+    -- The keys have moved out. Leaving copies behind would be worse than useless: two places
+    -- claiming the same fact is how this whole class of bug started.
+    checkpoint  = r.checkpoint - 'haul' - 'haul_safe' - 'overstay' - 'markers'
+                              - 'sondierung' - 'visited' - 'position_node_id'
+ WHERE r.checkpoint ?| ARRAY['haul', 'haul_safe', 'overstay', 'markers', 'sondierung',
+                            'visited', 'position_node_id'];
+
+-- ── 3.6 The dead ────────────────────────────────────────────────────────────
+-- Both existed only in unmerged iterations of this wave; a fresh database never creates them.
+-- Dropped explicitly so a development database that ran the earlier drafts converges on the
+-- same schema as CI — and so nobody finds them and wonders what they are for.
+--
+--   drift_checkpoint_carry  — the whitelist of checkpoint keys that survived a move. It only
+--                             existed because fn_travel_move rebuilt the checkpoint; with the
+--                             run-level state in columns there is nothing left to carry.
+--   fn_travel_jettison_haul — subtracted a jettisoned Fund's haul from checkpoint.haul.
+--                             Deleting the cargo row now does that by arithmetic (§3.2).
+DROP FUNCTION IF EXISTS public.drift_checkpoint_carry(JSONB);
+DROP FUNCTION IF EXISTS public.fn_travel_jettison_haul(UUID, UUID[]);
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 3b. travel_log_entries — das Logbuch (R12)
+-- ═══════════════════════════════════════════════════════════════════
+-- Every signal, every revealed rumour, every dig, every bank and every Havarie writes one
+-- line. It is the "resuming is free" anchor: a traveller who comes back after a week reads
+-- three lines and knows where they were and what they know.
+--
+-- It lives in the FOUNDATION, not with the signals that were its first writer, because by the
+-- end of the wave four different files write to it (Havarie 265, signals 267, Sondierung +
+-- Funkboje 268) — and a table whose DDL sits downstream of half its writers is a migration
+-- ordering accident waiting to happen.
+--
+-- Rows OUTLIVE their run (run_id ON DELETE SET NULL, no TTL, no cleanup): deleting a run must
+-- not delete what the traveller LEARNED on it. The run is the journey, the logbook is the
+-- career — and knowledge is the one thing a courier carries home that a Havarie cannot
+-- scatter.
+
+CREATE TABLE IF NOT EXISTS public.travel_log_entries (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    run_id     UUID REFERENCES travel_runs(id) ON DELETE SET NULL,
+    takt       INTEGER NOT NULL DEFAULT 0,
+    kind       TEXT NOT NULL,
+    node_id    UUID REFERENCES drift_chart_nodes(id) ON DELETE SET NULL,
+    payload    JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT travel_log_entries_kind_check CHECK (
+        kind IN ('signal', 'rumor', 'bank', 'havarie', 'sondierung')
+    )
+);
+
+COMMENT ON TABLE public.travel_log_entries IS
+    'The traveller''s logbook (M1/R12): one line per signal, revealed rumour, dig, bank and Havarie. Owner-read, RPC-written. Outlives its run (run_id ON DELETE SET NULL) — knowledge is the only thing a courier carries home that a Havarie cannot scatter, and it is what makes coming back after a week free.';
+
+CREATE INDEX IF NOT EXISTS idx_travel_log_entries_user_time
+    ON public.travel_log_entries (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_travel_log_entries_run
+    ON public.travel_log_entries (run_id);
+
+ALTER TABLE public.travel_log_entries ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS travel_log_entries_owner_select ON public.travel_log_entries;
+CREATE POLICY travel_log_entries_owner_select
+    ON public.travel_log_entries FOR SELECT TO authenticated
+    USING ((SELECT auth.uid()) = user_id);
+
+DROP POLICY IF EXISTS travel_log_entries_service_role ON public.travel_log_entries;
+CREATE POLICY travel_log_entries_service_role
+    ON public.travel_log_entries FOR ALL TO service_role USING (TRUE) WITH CHECK (TRUE);
+
+GRANT SELECT ON public.travel_log_entries TO authenticated;
+GRANT ALL    ON public.travel_log_entries TO service_role;
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 3c. Telemetry vocabulary (KPI F1/F5)
+-- ═══════════════════════════════════════════════════════════════════
+-- Same reasoning as the logbook: the CHECK constrains a column written from four files, so it
+-- belongs where the shape is defined, not where the first writer happens to live.
+
+ALTER TABLE public.travel_telemetry_events
+    DROP CONSTRAINT IF EXISTS travel_telemetry_events_event_key_check;
+ALTER TABLE public.travel_telemetry_events
+    ADD CONSTRAINT travel_telemetry_events_event_key_check CHECK (
+        event_key IN (
+            'drift_first_session_start', 'drift_first_foreign_dock', 'drift_run_opened',
+            'drift_run_closed', 'drift_quest_completed', 'drift_decision',
+            'drift_zerfaserung', 'drift_rescue',
+            -- Welle 2: the decision counters KPI F1 ("median >= 4 decisions per run") and
+            -- F5 (the bust that feels good) are measured from.
+            'drift_signal_shown', 'drift_signal_resolved', 'drift_sondierung', 'drift_bank'
+        )
+    );
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 4. fn_drift_award — the SINGLE writer of the Siegel/VP ledger
 -- ═══════════════════════════════════════════════════════════════════
 -- Credits only (a debit has different failure semantics — see fn_clearance_exam's guarded
 -- CAS). One atomic increment (no fetch-compute-update, ADR-007), one audit row, one return
--- shape that every payer reuses. Callers pass a source tag; the audit row carries it so a
+-- shape that every payer reuses. Callers pass a source tag; the audit row carries it, so a
 -- ledger movement is always traceable to the act that caused it.
 
 CREATE OR REPLACE FUNCTION public.fn_drift_award(
     p_user    UUID,
-    p_source  TEXT,     -- 'dispatch' | 'survey' | 'erstvermessung' | (later: signal, sondierung …)
+    p_source  TEXT,     -- 'dispatch' | 'entladung' | 'rueckruf' | 'signal:…' | …_transmitted
     p_siegel  INT,
     p_vp      INT,
     p_run     UUID DEFAULT NULL
@@ -276,21 +669,21 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.fn_drift_award(UUID, TEXT, INT, INT, UUID) IS
-    'The single writer of the DRIFT Siegel/VP ledger (plan §3 Schritt 1.1). Atomic increment on traveler_profiles (no read-modify-write, ADR-007), one travel_award audit row carrying the source tag, one return shape {source, siegel_earned, vp_earned, siegel_balance, vp_total, clearance_rank} reused by every payer. Credits only — 22023 on a negative delta; debits use their own guarded CAS (fn_clearance_exam) because an insufficient balance must fail, not clamp. A zero award is a legitimate no-op (a run that banked nothing) and writes no audit noise. EFFECT-class: REVOKE anon+authenticated, GRANT service_role; reached DEFINER→DEFINER from fn_quest_advance / fn_travel_complete.';
+    'The single writer of the DRIFT Siegel/VP ledger (plan §3 Schritt 1.1). Atomic increment on traveler_profiles (no read-modify-write, ADR-007), one travel_award audit row carrying the source tag, one return shape {source, siegel_earned, vp_earned, siegel_balance, vp_total, clearance_rank} reused by every payer — it is the EarningsBlock the HUD''s count-up ceremony reads. Credits only — 22023 on a negative delta; debits use their own guarded CAS (fn_clearance_exam) because an insufficient balance must fail, not clamp. A zero award is a legitimate no-op and writes no audit noise. INTERNAL-class: REVOKE anon+authenticated, GRANT service_role.';
 
 REVOKE ALL    ON FUNCTION public.fn_drift_award(UUID, TEXT, INT, INT, UUID) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.fn_drift_award(UUID, TEXT, INT, INT, UUID) TO service_role;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 6. fn_quest_advance — the Depesche finally pays (M4)
+-- 5. fn_quest_advance — the Depesche finally pays (M4)
 -- ═══════════════════════════════════════════════════════════════════
--- Body of migration 249 verbatim, plus: after the effects fire and the cargo is consumed,
--- a gated payout. Siegel is a deterministic roll in [siegel_min, siegel_max] seeded with
--- run:instance:takt — the same delivery always pays the same, but two deliveries in a run
--- differ. VP is flat (the rank ladder is not a slot machine).
+-- Body of migration 249, plus: after the effects fire and the cargo is consumed, a gated
+-- payout. Siegel is a deterministic roll in [siegel_min, siegel_max] seeded with
+-- salt:run:instance:takt — the same delivery always pays the same, but two deliveries in a
+-- run differ. VP is flat (the rank ladder is not a slot machine).
 --
--- Gate off ⇒ byte-identical to 249: no award, no 'earnings' key, no checkpoint field.
+-- Gate off ⇒ byte-identical to 249: no award, no 'earnings' key.
 
 CREATE OR REPLACE FUNCTION public.fn_quest_advance(
     p_user          UUID,
@@ -377,8 +770,8 @@ BEGIN
     v_fun_core := drift_gate_enabled('drift_fun_core_enabled');
     IF v_fun_core THEN
         v_reward := drift_tuning_value('reward_dispatch_tier1');
-        -- Seed = SECRET : run : instance : takt. The salt (4b) is the term the traveller
-        -- cannot read; without it the roll would be precomputable and the dice pointless.
+        -- Seed = SECRET : run : instance : takt. Without the salt (§2b) the roll would be
+        -- precomputable and the dice pointless.
         v_siegel := drift_rand_int(
             drift_run_salt(p_run) || ':' || p_run::text || ':' || p_instance::text
                 || ':' || v_run.takt_count::text,
@@ -388,7 +781,8 @@ BEGIN
         v_earnings := fn_drift_award(p_user, 'dispatch', v_siegel, v_vp, p_run);
     END IF;
 
-    -- Consume the delivered cargo + close the instance.
+    -- Consume the delivered cargo + close the instance. (Quest cargo carries haul_value 0,
+    -- so this DELETE moves no haul — see the WHEN guard on trg_travel_cargo_haul_del.)
     DELETE FROM travel_cargo WHERE id = v_cargo_id;
     UPDATE travel_quest_instances SET status = 'completed' WHERE id = p_instance RETURNING * INTO v_inst;
 
@@ -398,11 +792,9 @@ BEGIN
                || jsonb_build_object('last_delivery',
                       jsonb_build_object('instance', p_instance, 'target_sim', v_target_sim))
                -- The receipt rides the checkpoint too, so a refetch (or a second device) can
-               -- still stage the Zeremonie without replaying the RPC. It sits at the TOP
-               -- level because that is where the one reader looks: TravelRunResponse lifts
-               -- `checkpoint.earnings` into its typed `earnings` field (models/drift.py). It
-               -- was nested under last_delivery before (jsonb `||` binds inside the argument),
-               -- so the lift silently found nothing and the promise in this comment was false.
+               -- still stage the Zeremonie without replaying the RPC. TOP level, because that
+               -- is where the one reader looks: TravelRunResponse lifts `checkpoint.earnings`
+               -- into its typed `earnings` field (models/drift.py).
                || CASE WHEN v_fun_core THEN jsonb_build_object('earnings', v_earnings)
                        ELSE '{}'::jsonb END
      WHERE id = p_run
@@ -427,347 +819,12 @@ $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 7. fn_travel_complete — the Entladung finally pays (M4)
--- ═══════════════════════════════════════════════════════════════════
--- Body of migration 256 verbatim, plus a gated payout computed from what the run actually
--- produced: banked Vermessung → VP (1:1) + Siegel (ratio, floored), and a per-honor bonus
--- for every Erstvermessung this Entladung won (fn_survey_deliver already arbitrated them —
--- the honor count is read from ITS return value, so the bonus can never be double-claimed
--- by a re-run: a second delivery of the same node returns honors_won = 0).
---
--- Gate off ⇒ byte-identical to 256: the completion checkpoint keeps its 4 keys, no award.
-
-CREATE OR REPLACE FUNCTION public.fn_travel_complete(
-    p_user UUID, p_run UUID, p_run_version INT
-) RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-    v_run        travel_runs%ROWTYPE;
-    v_is_home    BOOLEAN;
-    v_haul       INT;
-    v_anchor     UUID;
-    v_visited    JSONB;
-    v_keys       TEXT[];
-    v_survey     JSONB;
-    v_fun_core   BOOLEAN;
-    v_honors     INT := 0;
-    v_erstv      JSONB;
-    v_siegel     INT := 0;
-    v_vp         INT := 0;
-    v_earnings   JSONB;
-    v_checkpoint JSONB;
-BEGIN
-    IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
-        RAISE EXCEPTION 'fn_travel_complete: caller is not the run owner' USING ERRCODE = '42501';
-    END IF;
-
-    SELECT * INTO v_run FROM travel_runs WHERE id = p_run AND user_id = p_user FOR UPDATE;
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'fn_travel_complete: run not found' USING ERRCODE = 'P0002';
-    END IF;
-    IF v_run.status <> 'active' THEN
-        RAISE EXCEPTION 'fn_travel_complete: run is %, not active', v_run.status USING ERRCODE = '22023';
-    END IF;
-    IF v_run.run_version <> p_run_version THEN
-        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
-    END IF;
-
-    -- Must be standing on the anchor's home broadcast node.
-    SELECT p.anchor_simulation_id INTO v_anchor FROM traveler_profiles p WHERE p.user_id = p_user;
-    SELECT EXISTS (
-        SELECT 1 FROM drift_chart_nodes n
-        WHERE n.id = v_run.position_node_id
-          AND n.node_type = 'broadcast_rand'
-          AND n.simulation_id = v_anchor
-    ) INTO v_is_home;
-    IF NOT v_is_home THEN
-        RAISE EXCEPTION 'NOT_AT_HOME' USING ERRCODE = '22023';
-    END IF;
-
-    -- Entladung: lodge the run's accrued Vermessung into the traveler's lifetime total
-    -- (qualities.vermessung_lodged — the P0 stat; the ledger below is what the player SEES).
-    v_haul := COALESCE((v_run.checkpoint ->> 'haul')::int, 0);
-    UPDATE traveler_profiles
-       SET qualities = jsonb_set(qualities, '{vermessung_lodged}',
-             to_jsonb(COALESCE((qualities ->> 'vermessung_lodged')::int, 0) + v_haul))
-     WHERE user_id = p_user;
-
-    -- Survey delivery: resolve every FIRST-arrival node this run (checkpoint.visited),
-    -- minus the traveller's own home, to its stable_key, then claim Erstvermessung honors
-    -- first-write-wins. Only ever runs on a clean bank (a recall closed the run abandoned).
-    v_visited := COALESCE(v_run.checkpoint -> 'visited', '[]'::jsonb);
-    SELECT array_agg(n.stable_key)
-      INTO v_keys
-      FROM drift_chart_nodes n
-     WHERE n.chart_version = v_run.chart_version
-       AND n.id::text IN (SELECT jsonb_array_elements_text(v_visited))
-       AND n.simulation_id IS DISTINCT FROM v_anchor;
-    v_survey := fn_survey_deliver(p_user, COALESCE(v_keys, ARRAY[]::text[]), v_run.chart_version);
-
-    -- Close out an undelivered Depesche the traveller banked while still carrying it (256).
-    UPDATE travel_quest_instances qi
-       SET status = 'failed'
-      FROM travel_cargo c
-     WHERE c.run_id = p_run AND c.quest_instance_id = qi.id AND qi.status = 'active';
-    DELETE FROM travel_cargo WHERE run_id = p_run;
-
-    -- ── Fun-Kern (M4): the haul and the honors finally pay ────────────────────────
-    v_fun_core := drift_gate_enabled('drift_fun_core_enabled');
-    IF v_fun_core THEN
-        v_honors := COALESCE((v_survey ->> 'honors_won')::int, 0);
-        v_erstv  := drift_tuning_value('reward_erstvermessung');
-        v_vp     := v_haul * COALESCE((drift_tuning_value('reward_survey_vp_per_haul'))::int, 1)
-                    + v_honors * COALESCE((v_erstv ->> 'vp')::int, 25);
-        v_siegel := floor(v_haul * COALESCE((drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int
-                    + v_honors * COALESCE((v_erstv ->> 'siegel')::int, 40);
-        v_earnings := fn_drift_award(p_user, 'entladung', v_siegel, v_vp, p_run);
-    END IF;
-
-    v_checkpoint := jsonb_build_object(
-        'haul_banked', v_haul,
-        'surveys_delivered', v_survey -> 'surveys_delivered',
-        'honors_won', v_survey -> 'honors_won',
-        'honor_keys', v_survey -> 'honor_keys');
-    IF v_fun_core THEN
-        v_checkpoint := v_checkpoint || jsonb_build_object('earnings', v_earnings);
-    END IF;
-
-    UPDATE travel_runs
-       SET status = 'completed', closed_at = now(), run_version = run_version + 1,
-           checkpoint = v_checkpoint
-     WHERE id = p_run
-     RETURNING * INTO v_run;
-
-    INSERT INTO travel_telemetry_events (user_id, event_key, run_id)
-    VALUES (p_user, 'drift_run_closed', p_run);
-    PERFORM travel_audit(p_user, 'travel_complete', 'travel_run', p_run, NULL,
-        jsonb_build_object('takt_count', v_run.takt_count, 'haul_banked', v_haul,
-                           'honors_won', v_survey -> 'honors_won'));
-
-    RETURN to_jsonb(v_run);
-END;
-$$;
-
-
--- ═══════════════════════════════════════════════════════════════════
--- 8. fn_travel_move — the collapse counter finally counts
--- ═══════════════════════════════════════════════════════════════════
--- Body of migration 255 verbatim, plus one gated statement on the recall floor:
--- traveler_profiles.zerfaserung_count (a column that has existed since 239 and was never
--- written) increments on every involuntary collapse. It is the scar count the Bureau HUD
--- reads — and, from W2, the input to the Havarie escalation.
---
--- Why gated: the plan's rollback contract is "gate off = EXACTLY P0" (§9.1). A counter the
--- P0 build never wrote is still a write; keeping it inside the gate means a rollback flip
--- restores P0 semantics with zero residue. It arms with the rest of the Fun-Kern.
-
-CREATE OR REPLACE FUNCTION public.fn_travel_move(
-    p_user          UUID,
-    p_run           UUID,
-    p_run_version   INT,
-    p_to_node       UUID
-) RETURNS JSONB
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-    v_run        travel_runs%ROWTYPE;
-    v_weight     INT;
-    v_perm       JSONB;
-    v_affinity   INT;
-    v_mult       NUMERIC;
-    v_bb_cost    INT;
-    v_band       TEXT;
-    v_dz_add     INT;
-    v_dz_cap     INT;
-    v_notfreq    BOOLEAN := FALSE;
-    v_surge      BOOLEAN := FALSE;
-    v_home       UUID;
-    v_anchor     UUID;
-    v_to_sim     UUID;
-    v_to_type    TEXT;
-    v_haul       INT;
-    v_visited    JSONB;
-    v_survey     INT := 0;
-    v_dz_bleed   JSONB;
-    v_surge_cfg  JSONB;
-    v_scatter    JSONB;
-BEGIN
-    IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
-        RAISE EXCEPTION 'fn_travel_move: caller is not the run owner' USING ERRCODE = '42501';
-    END IF;
-
-    -- Lock + load the run; run_version CAS (concurrent move from a 2nd client loses).
-    SELECT * INTO v_run FROM travel_runs WHERE id = p_run AND user_id = p_user FOR UPDATE;
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'fn_travel_move: run not found' USING ERRCODE = 'P0002';
-    END IF;
-    IF v_run.status <> 'active' THEN
-        RAISE EXCEPTION 'fn_travel_move: run is %, not active', v_run.status USING ERRCODE = '22023';
-    END IF;
-    IF v_run.run_version <> p_run_version THEN
-        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
-    END IF;
-
-    -- Adjacency: an edge between the current position and the target in this chart.
-    SELECT weight, permeability INTO v_weight, v_perm FROM drift_chart_edges
-     WHERE chart_version = v_run.chart_version
-       AND ((from_node = v_run.position_node_id AND to_node = p_to_node)
-         OR (to_node   = v_run.position_node_id AND from_node = p_to_node))
-     LIMIT 1;
-    IF v_weight IS NULL THEN
-        RAISE EXCEPTION 'NOT_ADJACENT' USING ERRCODE = '22023';
-    END IF;
-
-    -- Frequency multiplier: on-vector if the edge is permeable on the current frequency
-    -- (≥1); else the affinity-banded off-vector penalty (§2.2).
-    IF COALESCE((v_perm ->> v_run.frequency)::numeric, 0) >= 1 THEN
-        v_mult := (drift_tuning_value('freq_offvector_mult') ->> 'on')::numeric;
-    ELSE
-        v_affinity := COALESCE((SELECT (affinities ->> v_run.frequency)::int
-                                FROM traveler_profiles WHERE user_id = p_user), 0);
-        v_mult := (drift_tuning_value('freq_offvector_mult') ->> (
-            CASE WHEN v_affinity <= 1 THEN 'aff_0_1'
-                 WHEN v_affinity <= 3 THEN 'aff_2_3'
-                 ELSE 'aff_4_5' END))::numeric;
-    END IF;
-    v_bb_cost := ceil(v_weight * v_mult)::int;
-
-    -- Pay: Bandbreite if affordable, else Notfrequenz (KH per edge, BB stays 0).
-    IF v_run.bandbreite >= v_bb_cost THEN
-        v_run.bandbreite := v_run.bandbreite - v_bb_cost;
-    ELSE
-        v_notfreq := TRUE;
-        v_run.kohaerenz := GREATEST(0, v_run.kohaerenz
-            - COALESCE((drift_tuning_value('notfreq_kh_per_edge'))::int, 2));
-    END IF;
-
-    -- Target node band + identity (Dissonanz scaling, survey value, foreign-dock bonus).
-    SELECT distance_band, simulation_id, node_type INTO v_band, v_to_sim, v_to_type
-      FROM drift_chart_nodes WHERE id = p_to_node AND chart_version = v_run.chart_version;
-    SELECT anchor_simulation_id INTO v_anchor FROM traveler_profiles WHERE user_id = p_user;
-    SELECT n.id INTO v_home FROM drift_chart_nodes n
-     WHERE n.simulation_id = v_anchor AND n.node_type = 'broadcast_rand'
-       AND n.chart_version = v_run.chart_version;
-
-    -- One Takt of the Aufenthaltsfenster spent (§2.6) — the time pressure.
-    v_run.window_remaining := v_run.window_remaining - 1;
-
-    -- Dissonanz by the target band, capped. Above the bleed threshold it erodes Kohärenz.
-    v_dz_add := COALESCE((drift_tuning_value('dz_per_move_by_band') ->> COALESCE(v_band, 'near'))::int, 1);
-    v_dz_cap := COALESCE((drift_tuning_value('dz_p0_cap'))::int, 74);
-    v_run.dissonanz := LEAST(v_dz_cap, v_run.dissonanz + v_dz_add);
-    v_dz_bleed := drift_tuning_value('dz_kh_bleed');
-    IF v_dz_bleed IS NOT NULL AND v_run.dissonanz >= (v_dz_bleed ->> 'threshold')::int THEN
-        v_run.kohaerenz := GREATEST(0, v_run.kohaerenz - (v_dz_bleed ->> 'amount')::int);
-    END IF;
-
-    -- Deep-Drift surge (variance / push-your-luck). NB: still random() — the deterministic
-    -- rewrite happens when migration 266 folds this into the Störungs-Signalklasse (plan
-    -- §4/2.2); pulling it forward here would change P0 behavior under a closed gate.
-    IF v_band = 'deep' THEN
-        v_surge_cfg := drift_tuning_value('deep_surge');
-        IF v_surge_cfg IS NOT NULL AND random() < (v_surge_cfg ->> 'chance')::numeric THEN
-            v_surge := TRUE;
-            v_run.dissonanz := LEAST(v_dz_cap, v_run.dissonanz + (v_surge_cfg ->> 'dz')::int);
-            v_run.kohaerenz := GREATEST(0, v_run.kohaerenz - (v_surge_cfg ->> 'kh')::int);
-        END IF;
-    END IF;
-
-    -- Vermessung: first arrival at this node this run → survey value (band + foreign dock).
-    v_haul    := COALESCE((v_run.checkpoint ->> 'haul')::int, 0);
-    v_visited := COALESCE(v_run.checkpoint -> 'visited', '[]'::jsonb);
-    IF NOT (v_visited @> to_jsonb(p_to_node::text)) THEN
-        v_survey := COALESCE((drift_tuning_value('survey_value_by_band') ->> COALESCE(v_band, 'near'))::int, 0);
-        IF v_to_type = 'broadcast_rand' AND v_to_sim IS DISTINCT FROM v_anchor THEN
-            v_survey := v_survey + COALESCE((drift_tuning_value('foreign_dock_bonus'))::int, 0);
-        END IF;
-        v_haul := v_haul + v_survey;
-        v_visited := v_visited || to_jsonb(p_to_node::text);
-    END IF;
-
-    -- Recall floor: depleted Kohärenz (§19.4) or an expired Aufenthaltsfenster away from
-    -- home collapses the excursion — cargo scatters as echoes, the un-lodged Vermessung is
-    -- lost. (W1 keeps this snap; migration 265 turns it into the Havarie CHOICE, plan §3.3.)
-    IF v_run.kohaerenz <= 0 OR (v_run.window_remaining <= 0 AND p_to_node IS DISTINCT FROM v_home) THEN
-        v_scatter := fn_drift_scatter_cargo(p_run, p_user, v_anchor);
-
-        -- Fun-Kern: the scar is finally recorded (the column has been dead since 239).
-        IF drift_gate_enabled('drift_fun_core_enabled') THEN
-            UPDATE traveler_profiles
-               SET zerfaserung_count = zerfaserung_count + 1
-             WHERE user_id = p_user;
-        END IF;
-
-        UPDATE travel_runs SET
-            position_node_id = COALESCE(v_home, position_node_id),
-            status           = 'abandoned',   -- the expedition collapsed (terminal)
-            closed_at        = now(),
-            bandbreite       = v_run.bandbreite,
-            kohaerenz        = v_run.kohaerenz,
-            dissonanz        = v_run.dissonanz,
-            window_remaining = GREATEST(0, v_run.window_remaining),
-            takt_count       = takt_count + 1,
-            event_seq        = event_seq + 1,
-            run_version      = run_version + 1,
-            checkpoint       = jsonb_build_object(
-                'position_node_id', COALESCE(v_home, v_run.position_node_id),
-                'recall', CASE WHEN v_run.kohaerenz <= 0 THEN 'kohaerenz' ELSE 'window' END,
-                'haul', 0, 'haul_lost', v_haul, 'visited', v_visited,
-                'scattered', v_scatter)
-        WHERE id = p_run
-        RETURNING * INTO v_run;
-
-        INSERT INTO travel_telemetry_events (user_id, event_key, run_id)
-        VALUES (p_user, 'drift_zerfaserung', p_run);
-        PERFORM travel_audit(p_user, 'travel_recall', 'travel_run', p_run, NULL,
-            jsonb_build_object('reason', v_run.checkpoint ->> 'recall',
-                               'haul_lost', v_haul, 'attempted_to', p_to_node,
-                               'scattered', COALESCE((v_scatter ->> 'scattered')::int, 0)));
-        RETURN to_jsonb(v_run);
-    END IF;
-
-    -- Advance: position + counters + the spent window; rewrite the checkpoint carrying
-    -- the accrued Vermessung haul + the visited set.
-    UPDATE travel_runs SET
-        position_node_id = p_to_node,
-        bandbreite       = v_run.bandbreite,
-        kohaerenz        = v_run.kohaerenz,
-        dissonanz        = v_run.dissonanz,
-        window_remaining = v_run.window_remaining,
-        takt_count       = takt_count + 1,
-        event_seq        = event_seq + 1,
-        run_version      = run_version + 1,
-        checkpoint       = jsonb_build_object(
-            'position_node_id', p_to_node, 'haul', v_haul, 'visited', v_visited,
-            'last_move', jsonb_build_object('from', v_run.position_node_id, 'bb_cost', v_bb_cost,
-                                            'notfrequenz', v_notfreq, 'dz_add', v_dz_add,
-                                            'surge', v_surge, 'survey', v_survey)
-        )
-    WHERE id = p_run
-    RETURNING * INTO v_run;
-
-    PERFORM travel_audit(p_user, 'travel_move', 'travel_run', p_run, NULL,
-        jsonb_build_object('to_node', p_to_node, 'bb_cost', v_bb_cost, 'notfrequenz', v_notfreq,
-                           'surge', v_surge, 'haul', v_haul, 'takt', v_run.takt_count));
-
-    RETURN to_jsonb(v_run);
-END;
-$$;
-
-
--- ═══════════════════════════════════════════════════════════════════
--- 9. fn_clearance_exam — the rank ladder gets its first rung (M6)
+-- 6. fn_clearance_exam — the rank ladder gets its first rung (M6)
 -- ═══════════════════════════════════════════════════════════════════
 -- PLAYER-class. No run required: the exam is sat at the Bureau, between expeditions.
--- W1 exposes it as a plain button; W2 dresses it as a storylet (plan §3.1 note).
 --
 -- The promotion is ONE guarded UPDATE — the WHERE clause IS the compare-and-swap (rank
--- unchanged AND vp ≥ threshold AND siegel ≥ fee). Two concurrent exam clicks: the first
+-- unchanged AND vp >= threshold AND siegel >= fee). Two concurrent exam clicks: the first
 -- flips the rank and takes the fee, the second matches no row and reports the true reason
 -- after a re-read. No fetch-compute-update, no double charge (ADR-007).
 
@@ -788,6 +845,9 @@ BEGIN
         RAISE EXCEPTION 'fn_clearance_exam: caller is not the profile owner' USING ERRCODE = '42501';
     END IF;
 
+    -- The gate refuses to CREATE state — and a promotion is nothing but new state. There is
+    -- nothing here to drain (a rank already held is not Fun-Kern residue in flight), so this
+    -- is the plain refusal, and the router no longer duplicates it (W2.6/A).
     IF NOT drift_gate_enabled('drift_fun_core_enabled') THEN
         RAISE EXCEPTION 'GATE_CLOSED' USING ERRCODE = '22023';
     END IF;
@@ -840,11 +900,11 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.fn_clearance_exam(UUID, TEXT) IS
-    'Sit the Bureau clearance exam for p_rank (M6, plan §3 Schritt 1.1). PLAYER-class: auth.uid() = p_user guard, GRANT authenticated + service_role. Gate-checked (drift_fun_core_enabled → GATE_CLOSED/22023 while closed). Requires vp ≥ clearance_thresholds[rank] and siegel ≥ clearance_exam_fee[rank]; the promotion + fee is ONE guarded UPDATE whose WHERE clause is the CAS, so two concurrent clicks can never double-charge (ADR-007). On a miss it re-reads the row and raises the TRUE reason: RANK_ALREADY_HELD (22023), VP_TOO_LOW / SIEGEL_TOO_LOW (P0001). Audited travel_clearance_exam. From W3 it also unlocks the architecture vector (migration 269).';
+    'Sit the Bureau clearance exam for p_rank (M6, plan §3 Schritt 1.1). PLAYER-class: auth.uid() = p_user guard, GRANT authenticated + service_role. Gate-checked in SQL — and ONLY in SQL (W2.6/A): GATE_CLOSED/22023 while the Fun-Kern is down. Requires vp >= clearance_thresholds[rank] and siegel >= clearance_exam_fee[rank]; the promotion + fee is ONE guarded UPDATE whose WHERE clause is the CAS, so two concurrent clicks can never double-charge (ADR-007). On a miss it re-reads the row and raises the TRUE reason: RANK_ALREADY_HELD (22023), VP_TOO_LOW / SIEGEL_TOO_LOW (P0001). Audited travel_clearance_exam. From W3 it also unlocks the architecture vector.';
 
 
 -- ═══════════════════════════════════════════════════════════════════
--- 10. Grants — player-class posture (CREATE OR REPLACE preserves ACLs; explicit for intent)
+-- 7. Grants — player-class posture (CREATE OR REPLACE preserves ACLs; explicit for intent)
 -- ═══════════════════════════════════════════════════════════════════
 
 DO $$
@@ -852,11 +912,11 @@ DECLARE sig TEXT;
 BEGIN
     FOREACH sig IN ARRAY ARRAY[
         'fn_clearance_exam(uuid, text)',
-        'fn_quest_advance(uuid, uuid, integer, uuid)',
-        'fn_travel_complete(uuid, uuid, integer)',
-        'fn_travel_move(uuid, uuid, integer, uuid)'
+        'fn_quest_advance(uuid, uuid, integer, uuid)'
     ] LOOP
         EXECUTE format('REVOKE ALL ON FUNCTION public.%s FROM PUBLIC, anon', sig);
         EXECUTE format('GRANT EXECUTE ON FUNCTION public.%s TO authenticated, service_role', sig);
     END LOOP;
 END $$;
+
+COMMIT;
