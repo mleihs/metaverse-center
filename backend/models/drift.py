@@ -309,6 +309,12 @@ class DriftTuningResponse(BaseModel):
     window_base: int
     dz_cap: int
     bandwidth_class_bb_max: dict[str, int]
+    # Welle 2 (M2): the HUD must be able to STATE what one more dig is worth and what the
+    # Funkboje pays — the yield table is the server's, never a client constant, or a
+    # re-tune would quietly turn the panel into a liar.
+    sondierung_yields: list[int] = Field(default_factory=list)
+    funkboje_rate: float = 0.7
+    funkboje_node_types: list[str] = Field(default_factory=list)
 
 
 class ChartGenerationResponse(BaseModel):

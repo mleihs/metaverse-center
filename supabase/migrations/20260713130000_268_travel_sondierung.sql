@@ -69,31 +69,10 @@ INSERT INTO drift_tuning (setting_key, value, description) VALUES
 ON CONFLICT (setting_key) DO NOTHING;
 
 
--- ═══════════════════════════════════════════════════════════════════
--- 2. drift_checkpoint_carry — the reserve is `haul_safe`, not `haul_banked`
--- ═══════════════════════════════════════════════════════════════════
--- 267 pre-registered `haul_banked` for this. That name is already the CLOSING RECEIPT
--- written by fn_travel_bank_run (265) — one key, two meanings, and the bug would have
--- been silent (the receipt is only written at close, so the carry would simply have
--- carried nothing and every banked haul would have evaporated on the next move).
-
-CREATE OR REPLACE FUNCTION public.drift_checkpoint_carry(p_cp JSONB)
-RETURNS JSONB
-LANGUAGE sql
-IMMUTABLE
-AS $$
-    SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb)
-      FROM jsonb_each(COALESCE(p_cp, '{}'::jsonb))
-     WHERE key IN (
-        'overstay',     -- the Havarie permit (265) survives the move that uses it
-        'markers',      -- {node_id: [marker_class, …]} — the open marker stack (267)
-        'sondierung',   -- {node_id: {digs, yield, rissig}} (268)
-        'haul_safe'     -- what the Funkboje already transmitted (268) — safe from everything
-     );
-$$;
-
-COMMENT ON FUNCTION public.drift_checkpoint_carry(JSONB) IS
-    'The run-level keys of a checkpoint that survive a move (267, corrected in 268). fn_travel_move REBUILDS the checkpoint each advance, so anything not listed here is deliberately forgotten (last_move, havarie, pending_signal — all "what just happened"). NOTE: the in-flight Funkboje reserve is `haul_safe`; `haul_banked` is a DIFFERENT key — the closing receipt fn_travel_bank_run writes on a completed run.';
+-- The checkpoint carry list (drift_checkpoint_carry, 267) already names `haul_safe` and
+-- `sondierung` — the run-level keys this migration writes. It is NOT redefined here on
+-- purpose: two migrations owning one function means re-applying the earlier one silently
+-- reverts the later one (measured — three tests went red exactly that way).
 
 
 -- ═══════════════════════════════════════════════════════════════════

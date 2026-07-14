@@ -104,8 +104,11 @@ function distanceBandLabel(band: string): string {
   }
 }
 
-/** German display label for a bleed vector (palette FREQUENCIES order, index 0–6). */
-function vectorLabel(vector: string): string {
+/** German display label for a bleed vector (palette FREQUENCIES order, index 0–6).
+ *  Exported because the HUD names the same vectors on the signal option chips (W2) — one
+ *  vocabulary, one place, or the board and the panel start calling the same thing two
+ *  different names. */
+export function vectorLabel(vector: string): string {
   switch (vector) {
     case 'commerce':
       return msg('Handel');

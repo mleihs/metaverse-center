@@ -40,6 +40,15 @@ export interface StoryletSelectable {
   hint?: string;
 }
 
+/** One line of the outcome ledger — what the scene actually WROTE. A resolved signal that
+ *  only tells you a story is a signal you cannot learn from; the deltas are how a traveller
+ *  builds a model of the Drift (W2). */
+export interface StoryletDelta {
+  label: string;
+  value: string;
+  tone: 'gain' | 'loss' | 'neutral';
+}
+
 @localized()
 @customElement('velg-drift-storylet-panel')
 export class VelgDriftStoryletPanel extends LitElement {
@@ -80,6 +89,97 @@ export class VelgDriftStoryletPanel extends LitElement {
         transform: translateY(0) translateX(2px);
       }
       100% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* M-05 (Störung): the panel arrives through a scanline wipe with one chroma jitter —
+       the Drift interrupting the transmission. M-06 (Begegnung/Fund): it arrives softly,
+       because a person is not an accident. Class-specific ENTRANCE, identical CHOICE. */
+    :host([scene-kind='stoerung']) .scene {
+      animation: scene-scan 560ms var(--ease-slam) both;
+      border-top-color: var(--color-danger);
+    }
+
+    :host([scene-kind='begegnung']) .scene {
+      animation: scene-float 480ms var(--ease-settle) both;
+      border-top-color: var(--color-info);
+    }
+
+    @keyframes scene-scan {
+      0% {
+        opacity: 0;
+        clip-path: inset(50% 0 50% 0);
+      }
+      45% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+      }
+      52% {
+        transform: translateX(3px);
+      }
+      58% {
+        transform: translateX(-2px);
+      }
+      100% {
+        opacity: 1;
+        transform: none;
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    @keyframes scene-float {
+      0% {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* The outcome ledger: what the scene wrote, line by line, staggered in. */
+    .deltas {
+      display: grid;
+      gap: var(--space-1);
+      margin: 0 0 var(--space-4);
+      padding: var(--space-3);
+      background: var(--color-surface-sunken);
+      border-left: var(--border-width-thick) solid var(--_accent);
+    }
+
+    .delta {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--color-text-secondary);
+      animation: delta-in 240ms var(--ease-out) both;
+      animation-delay: calc(var(--i, 0) * var(--duration-cascade));
+    }
+
+    .delta__value {
+      font-weight: var(--font-bold);
+      color: var(--color-text-primary);
+    }
+
+    .delta--gain .delta__value {
+      color: var(--color-success);
+    }
+
+    .delta--loss .delta__value {
+      color: var(--color-text-danger);
+    }
+
+    @keyframes delta-in {
+      from {
+        opacity: 0;
+        transform: translateX(-6px);
+      }
+      to {
         opacity: 1;
         transform: none;
       }
@@ -243,7 +343,11 @@ export class VelgDriftStoryletPanel extends LitElement {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .scene {
+      /* The information survives; only the movement goes. */
+      :host([scene-kind='stoerung']) .scene,
+      :host([scene-kind='begegnung']) .scene,
+      .scene,
+      .delta {
         animation: none;
       }
       .option {
@@ -256,8 +360,13 @@ export class VelgDriftStoryletPanel extends LitElement {
   @property({ type: String }) sceneTitle = '';
   @property({ type: String }) prose = '';
   @property({ type: String, reflect: true }) tone: 'default' | 'danger' = 'default';
+  /** Drives the class-specific entrance (§8 M-05/M-06). Never the choice — a Störung and a
+   *  Begegnung arrive differently and are DECIDED identically. */
+  @property({ type: String, reflect: true, attribute: 'scene-kind' })
+  sceneKind: 'default' | 'stoerung' | 'begegnung' = 'default';
   @property({ attribute: false }) options: StoryletOption[] = [];
   @property({ attribute: false }) selectables: StoryletSelectable[] = [];
+  @property({ attribute: false }) deltas: StoryletDelta[] = [];
   @property({ type: String }) selectionLabel = '';
   @property({ type: Boolean }) busy = false;
 
@@ -311,6 +420,19 @@ export class VelgDriftStoryletPanel extends LitElement {
         </p>
         <h2 class="scene__title">${this.sceneTitle}</h2>
         <p class="scene__prose">${this.prose}</p>
+
+        ${
+          this.deltas.length
+            ? html`<div class="deltas" aria-live="polite">
+                ${this.deltas.map(
+                  (delta, i) => html`<p class="delta delta--${delta.tone}" style="--i:${i}">
+                    <span>${delta.label}</span>
+                    <span class="delta__value">${delta.value}</span>
+                  </p>`,
+                )}
+              </div>`
+            : ''
+        }
 
         ${
           needsManifest && this.selectables.length

@@ -4,6 +4,7 @@ import type {
   DriftDock,
   DriftHavarieChoice,
   DriftHonor,
+  DriftLogEntry,
   DriftProfile,
   DriftPublicState,
   DriftQuestAcceptResult,
@@ -67,6 +68,37 @@ export class DriftApiService extends BaseApiService {
       choice,
       jettison_cargo_ids: jettisonCargoIds ?? null,
     });
+  }
+
+  /** Answer the pending Störung/Begegnung (M1, migration 267). Returns the run AFTER the
+   *  answer: active again with `last_signal` set, or in a Havarie if the outcome took the
+   *  last of the hull. The option is validated against the TEMPLATE server-side — the copy
+   *  in the checkpoint is what the panel RENDERS, never what the server obeys. */
+  resolveSignal(
+    runId: string,
+    runVersion: number,
+    optionKey: string,
+  ): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/signal/resolve`, {
+      run_version: runVersion,
+      option_key: optionKey,
+    });
+  }
+
+  /** Dig the node the run is standing on (M2, migration 268): one Takt, a rising yield, an
+   *  open marker. The third marker of one class tears the node. */
+  sondieren(runId: string, runVersion: number): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/sondieren`, { run_version: runVersion });
+  }
+
+  /** Funkboje: transmit 70 % of the loose haul from a dock, safe from everything after. */
+  bankHaul(runId: string, runVersion: number): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/bank`, { run_version: runVersion });
+  }
+
+  /** The traveller's logbook, newest first, ACROSS runs — the "resuming is free" anchor. */
+  getLogbook(): Promise<ApiResponse<DriftLogEntry[]>> {
+    return this.get('/drift/logbook');
   }
 
   /** A world's identity for the dock panel (name + lore voice + a few Träger). */

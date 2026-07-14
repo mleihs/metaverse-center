@@ -173,8 +173,13 @@ AS $$
      WHERE key IN (
         'overstay',     -- the Havarie permit (265) survives the move that uses it
         'markers',      -- {node_id: [marker_class, …]} — the open Störungsmarker stack
-        'sondierung',   -- {node_id: dig_count} (268)
-        'haul_banked'   -- (268) the Funkboje's safe half of the haul
+        'sondierung',   -- {node_id: {digs, yield, rissig}} (268)
+        -- The Funkboje's transmitted reserve (268). NOT `haul_banked`: that name is
+        -- already the CLOSING RECEIPT fn_travel_bank_run (265) writes on a completed run.
+        -- One key with two meanings would have failed silently — the receipt only exists
+        -- at close, so the carry would have carried nothing and every banked haul would
+        -- have evaporated on the next move.
+        'haul_safe'
      );
 $$;
 
@@ -1269,9 +1274,14 @@ BEGIN
     -- The scene is over: the run is free to move again.
     UPDATE travel_runs SET
         checkpoint  = (checkpoint - 'pending_signal')
+            -- The key is `signal_class`, NOT `class`: this block is lifted straight into a
+            -- typed field (models/drift.ResolvedSignal) and has to speak the same vocabulary
+            -- as `pending_signal` does. A second name for the same fact is how a checkpoint
+            -- becomes an undocumented API — and it broke every GET on the run, because the
+            -- model validates the whole row, not just the mutation's own response.
             || jsonb_build_object('last_signal', jsonb_build_object(
                    'template_key', v_tpl.template_key,
-                   'class',        v_tpl.signal_class,
+                   'signal_class', v_tpl.signal_class,
                    'option_key',   p_option_key,
                    'success',      v_success,
                    'outcome',      v_outcome,

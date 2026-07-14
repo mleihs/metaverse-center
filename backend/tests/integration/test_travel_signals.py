@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import pytest
 
+from backend.models.drift import TravelRunResponse
 from backend.tests.integration.conftest import requires_supabase
 from backend.tests.integration.test_travel_economy import (
     _force_run_state,
@@ -403,6 +404,29 @@ class TestResolve:
         entries = _log(admin_client, run["id"])
         assert entries and entries[-1]["kind"] == "signal"
         assert entries[-1]["payload"]["template_key"] == "stoerung_bandbreitenfrass"
+
+    def test_the_resolved_run_still_parses_as_a_run(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        """The checkpoint blocks are LIFTED into typed fields, so a key the model does not
+        know is not a cosmetic problem — it breaks every read of the run, not just the
+        mutation's own response.
+
+        Found in the browser, not here: fn_signal_resolve wrote `last_signal.class` while
+        the model reads `signal_class`, and GET /drift/quests started 500ing one call after
+        a perfectly green RPC. The RPC tests read the raw row; only the model sees the
+        contract. This test closes that gap."""
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home, kohaerenz=80, bandbreite=4)
+        run = _park(admin_client, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
+
+        resolved = _resolve(client, user, run, "abschirmen")
+
+        parsed = TravelRunResponse(**resolved)
+        assert parsed.last_signal is not None
+        assert parsed.last_signal.signal_class == "stoerung"
+        assert parsed.last_signal.option_key == "abschirmen"
+        assert parsed.pending_signal is None
 
     def test_a_checked_option_is_deterministic_and_reads_the_dissonanz(
         self, admin_client, user_clients, test_user_ids, chart_home
