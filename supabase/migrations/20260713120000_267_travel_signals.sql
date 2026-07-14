@@ -877,16 +877,27 @@ BEGIN
 
     -- ── (c) THE DRAW ─────────────────────────────────────────────────────────────
     IF v_fun_core AND NOT v_collapsing THEN
-        -- Persist the move's resource state first: the draw's helpers (deltas, markers,
-        -- rumours) read and write the run row, and they must see the post-move numbers,
-        -- not the pre-move ones. Status stays 'active'; the advance below writes the
-        -- position, the takt and the checkpoint.
+        -- Persist the move's state first: the draw's helpers (deltas, markers, rumours)
+        -- read AND WRITE the run row, and they must see the post-move numbers — ALL of
+        -- them, the haul included.
+        --
+        -- The haul is the trap here, and it is the snapshot bug from the other side:
+        -- fn_drift_apply_deltas re-reads checkpoint.haul from the COLUMN, adds its grant
+        -- and writes it back. If the first-arrival Vermessung of THIS move only existed in
+        -- the caller's local v_haul, the helper's write would silently roll it back — and
+        -- the advance below re-reads the helper's value. Every mid (+2) / deep (+3) first
+        -- arrival, and every foreign-dock bonus (+5, the KPI-1 act), that happened to land
+        -- on a move with a passive signal would pay ZERO, while `visited` still recorded
+        -- the node so it could never pay again. The passive classes are the majority of the
+        -- mix, so this was most of the survey economy.
         UPDATE travel_runs SET
             kohaerenz        = v_run.kohaerenz,
             bandbreite       = v_run.bandbreite,
             dissonanz        = v_run.dissonanz,
             window_remaining = v_run.window_remaining,
-            position_node_id = p_to_node
+            position_node_id = p_to_node,
+            checkpoint       = checkpoint || jsonb_build_object('haul', v_haul,
+                                                               'visited', v_visited)
          WHERE id = p_run;
 
         SELECT count(*) INTO v_cargo_n FROM travel_cargo WHERE run_id = p_run;
@@ -1032,11 +1043,18 @@ BEGIN
         checkpoint       = drift_checkpoint_carry(v_run.checkpoint)
             || jsonb_build_object(
                 'position_node_id', p_to_node, 'haul', v_haul, 'visited', v_visited,
+                -- Gate off ⇒ the exact six keys migration 265 wrote. `jsonb_build_object`
+                -- emits a NULL-valued key rather than omitting it, so building the two
+                -- signal keys unconditionally would have left "signal": null in every
+                -- gate-off checkpoint — P0 parity is byte parity, and a stray key is
+                -- exactly how it rots.
                 'last_move', jsonb_build_object('from', v_run.position_node_id, 'bb_cost', v_bb_cost,
                                                 'notfrequenz', v_notfreq, 'dz_add', v_dz_add,
-                                                'surge', v_surge, 'survey', v_survey,
-                                                'signal', v_signal -> 'template_key',
-                                                'signal_applied', v_applied))
+                                                'surge', v_surge, 'survey', v_survey)
+                    || CASE WHEN v_fun_core
+                            THEN jsonb_build_object('signal', v_signal -> 'template_key',
+                                                    'signal_applied', v_applied)
+                            ELSE '{}'::jsonb END)
             || CASE WHEN v_pending IS NOT NULL
                     THEN jsonb_build_object('pending_signal', v_pending)
                     ELSE '{}'::jsonb END
@@ -1153,6 +1171,28 @@ BEGIN
         RETURN to_jsonb(v_run) || jsonb_build_object('signal_vanished', TRUE);
     END IF;
 
+    -- A scene with NO resolvable option left is a trap, and content churn is how a run
+    -- falls into one: the pack reseed is a TRUNCATE + re-insert, so an option key renamed
+    -- (or its cost raised past what this run can still pay) while a traveller stands in the
+    -- scene would leave every button they can see answering 400 — and `pending_signal`
+    -- blocks the move, the dig AND the bank, so the only exit would be forfeiting the run.
+    -- The rule from W1 holds: a scene the traveller cannot leave must drain itself.
+    IF NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(v_tpl.definition -> 'options') o
+         WHERE drift_signal_affordable(o, v_run.kohaerenz, v_run.bandbreite,
+                                       v_run.window_remaining)
+    ) THEN
+        UPDATE travel_runs SET
+            checkpoint  = checkpoint - 'pending_signal',
+            run_version = run_version + 1
+         WHERE id = p_run
+        RETURNING * INTO v_run;
+        RETURN to_jsonb(v_run) || jsonb_build_object('scene_unresolvable', TRUE);
+    END IF;
+
+    -- Past this point at least one option IS payable, so a refusal is a real refusal: the
+    -- traveller picked something that does not exist, or something they cannot afford while
+    -- something else on the panel they can.
     SELECT o INTO v_option
       FROM jsonb_array_elements(v_tpl.definition -> 'options') o
      WHERE o ->> 'key' = p_option_key;

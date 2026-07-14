@@ -511,6 +511,13 @@ class DriftProfileResponse(BaseModel):
     bandwidth_class: int
     zerfaserung_count: int
     vermessung_lodged: int
+    # The traveller's HOME world. The server derives "at home" from this row
+    # (traveler_profiles.anchor_simulation_id) on every run RPC — so the HUD has to read it
+    # from here too. Deriving it from the ROUTE instead (which sim's page you happen to be
+    # on) makes the client and the server disagree the moment a traveller opens DRIFT from
+    # a world that is not their anchor: the Funkboje would be offered at the real home
+    # (where the server refuses it) and hidden at a foreign dock (where it would work).
+    anchor_simulation_id: UUID
     unlocked_vectors: list[str] = Field(default_factory=list)
     next_rank: str | None = None
     next_rank_vp: int | None = None

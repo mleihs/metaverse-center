@@ -424,6 +424,83 @@ class TestTheReserveArrives:
         assert closed["checkpoint"]["haul_banked"] == int(loose * mult) + 7
         assert closed["checkpoint"]["haul_transmitted"] == 7
 
+    def test_even_a_rueckzug_pays_the_reserve(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        """The Funkboje's promise is unconditional — and a Rückzug is the one closing path
+        that is neither a failure nor a success, just a traveller walking away. Which is
+        exactly why it was missed: bank 20, withdraw, and 14 already-transmitted points
+        evaporated. The reserve is not the run's; it is ashore."""
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home)
+        _force_run_state(
+            admin_client, run["id"], checkpoint={**run["checkpoint"], "haul_safe": 9}
+        )
+        run = _run_row(admin_client, run["id"])
+        vp_before = _profile(admin_client, user)["vp"]
+
+        closed = (
+            client.rpc(
+                "fn_travel_abandon",
+                {"p_user": str(user), "p_run": run["id"],
+                 "p_run_version": run["run_version"]},
+            )
+            .execute()
+            .data
+        )
+
+        assert closed["status"] == "abandoned"
+        assert closed["checkpoint"]["haul_transmitted"] == 9
+        assert _profile(admin_client, user)["vp"] == vp_before + 9
+
+    def test_the_reserve_survives_a_gate_rollback(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """The parity rule says a closed gate leaves no residue; the drain rule says it may
+        never EMPTY state it created. Here they pull against each other — and a reserve is
+        not residue, it is money the player already banked. Confiscating it on a rollback is
+        the worse failure by a wide margin."""
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home)
+        _force_run_state(
+            admin_client,
+            run["id"],
+            kohaerenz=1,
+            bandbreite=0,
+            checkpoint={**run["checkpoint"], "haul_safe": 6},
+        )
+        run = _run_row(admin_client, run["id"])
+        stranded = (
+            client.rpc(
+                "fn_travel_move",
+                {"p_user": str(user), "p_run": run["id"],
+                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+            )
+            .execute()
+            .data
+        )
+        if stranded["status"] != "havarie":
+            pytest.skip("the move did not strand the run")
+
+        # The gate flips under the stranded traveller → forced drain (zerfaserung).
+        _set_gate(admin_client, False)
+        vp_before = _profile(admin_client, user)["vp"]
+
+        drained = (
+            client.rpc(
+                "fn_travel_havarie_resolve",
+                {"p_user": str(user), "p_run": stranded["id"],
+                 "p_run_version": stranded["run_version"], "p_choice": "zerfaserung"},
+            )
+            .execute()
+            .data
+        )
+
+        assert drained["status"] == "abandoned"
+        assert _profile(admin_client, user)["vp"] == vp_before + 6, (
+            "a rollback confiscated a haul the traveller had already sent home"
+        )
+
     def test_even_an_unravelling_pays_the_reserve(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):

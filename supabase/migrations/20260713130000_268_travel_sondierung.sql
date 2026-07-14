@@ -566,19 +566,30 @@ BEGIN
         UPDATE traveler_profiles
            SET zerfaserung_count = zerfaserung_count + 1
          WHERE user_id = p_user;
+    END IF;
 
-        -- What the Funkboje transmitted, arrives — even though the traveller did not.
-        IF v_safe > 0 THEN
-            v_vp     := v_safe * COALESCE((drift_tuning_value('reward_survey_vp_per_haul'))::int, 1);
-            v_siegel := floor(v_safe * COALESCE(
-                (drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int;
-            v_earnings := fn_drift_award(p_user, 'zerfaserung_transmitted', v_siegel, v_vp, p_run);
+    -- What the Funkboje transmitted, arrives — even though the traveller did not, and even
+    -- if the gate closed in between.
+    --
+    -- This one write is deliberately NOT gated, and it is the only Fun-Kern write in the
+    -- file that is not. The parity rule says a closed gate leaves no residue; the drain
+    -- rule says a closed gate may refuse to CREATE state, never to EMPTY it. Here they
+    -- pull against each other — and a reserve is not residue, it is MONEY THE PLAYER
+    -- ALREADY BANKED. A rollback that silently confiscates it is the worse failure by a
+    -- wide margin (and the gate-closed path into this function is precisely the forced
+    -- drain in fn_travel_havarie_resolve, i.e. exactly the run that banked under an open
+    -- gate). haul_safe can only be non-zero if the gate WAS open, so a run that never saw
+    -- the Fun-Kern is untouched: parity holds where it can be held.
+    IF v_safe > 0 THEN
+        v_vp     := v_safe * COALESCE((drift_tuning_value('reward_survey_vp_per_haul'))::int, 1);
+        v_siegel := floor(v_safe * COALESCE(
+            (drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int;
+        v_earnings := fn_drift_award(p_user, 'zerfaserung_transmitted', v_siegel, v_vp, p_run);
 
-            UPDATE traveler_profiles
-               SET qualities = jsonb_set(qualities, '{vermessung_lodged}',
-                     to_jsonb(COALESCE((qualities ->> 'vermessung_lodged')::int, 0) + v_safe))
-             WHERE user_id = p_user;
-        END IF;
+        UPDATE traveler_profiles
+           SET qualities = jsonb_set(qualities, '{vermessung_lodged}',
+                 to_jsonb(COALESCE((qualities ->> 'vermessung_lodged')::int, 0) + v_safe))
+         WHERE user_id = p_user;
     END IF;
 
     UPDATE travel_runs SET
@@ -618,6 +629,94 @@ COMMENT ON FUNCTION public.fn_travel_zerfasern(UUID, UUID, TEXT) IS
 
 REVOKE ALL    ON FUNCTION public.fn_travel_zerfasern(UUID, UUID, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.fn_travel_zerfasern(UUID, UUID, TEXT) TO service_role;
+
+
+-- ═══════════════════════════════════════════════════════════════════
+-- 6b. fn_travel_abandon — a Rückzug does not un-send what was sent
+-- ═══════════════════════════════════════════════════════════════════
+-- 250's body, plus the same line the Zerfaserung just got. The Funkboje's promise is
+-- unconditional — "not a Havarie, not a Resonanzriss, not even a Zerfaserung" — and a
+-- Rückzug is none of those three, which is exactly why it was missed: it is the one
+-- closing path that is neither a failure nor a success, just a traveller walking away.
+-- Without this, banking 60 points at a foreign dock and then withdrawing evaporated 42
+-- points of already-transmitted, already-guaranteed haul. The reserve is not the run's;
+-- it is ashore.
+
+CREATE OR REPLACE FUNCTION public.fn_travel_abandon(
+    p_user UUID, p_run UUID, p_run_version INT
+) RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_run      travel_runs%ROWTYPE;
+    v_safe     INT;
+    v_siegel   INT := 0;
+    v_vp       INT := 0;
+    v_earnings JSONB := NULL;
+BEGIN
+    IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN
+        RAISE EXCEPTION 'fn_travel_abandon: caller is not the run owner' USING ERRCODE = '42501';
+    END IF;
+
+    SELECT * INTO v_run FROM travel_runs WHERE id = p_run AND user_id = p_user FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'fn_travel_abandon: run not found' USING ERRCODE = 'P0002';
+    END IF;
+    IF v_run.status NOT IN ('active', 'frozen') THEN
+        RAISE EXCEPTION 'fn_travel_abandon: run is %, not abandonable', v_run.status USING ERRCODE = '22023';
+    END IF;
+    IF v_run.run_version <> p_run_version THEN
+        RAISE EXCEPTION 'RUN_STALE' USING ERRCODE = 'P0001';
+    END IF;
+
+    -- What the Funkboje transmitted, arrives — even from a run the traveller abandoned.
+    -- Ungated, for the same reason fn_travel_zerfasern pays it ungated: a banked reserve
+    -- is not Fun-Kern residue, it is money the traveller already sent home. It can only be
+    -- non-zero if the gate was open when they banked it.
+    v_safe := COALESCE((v_run.checkpoint ->> 'haul_safe')::int, 0);
+    IF v_safe > 0 THEN
+        v_vp     := v_safe * COALESCE((drift_tuning_value('reward_survey_vp_per_haul'))::int, 1);
+        v_siegel := floor(v_safe * COALESCE(
+            (drift_tuning_value('reward_survey_siegel_ratio'))::numeric, 0.5))::int;
+        v_earnings := fn_drift_award(p_user, 'rueckzug_transmitted', v_siegel, v_vp, p_run);
+
+        UPDATE traveler_profiles
+           SET qualities = jsonb_set(qualities, '{vermessung_lodged}',
+                 to_jsonb(COALESCE((qualities ->> 'vermessung_lodged')::int, 0) + v_safe))
+         WHERE user_id = p_user;
+    END IF;
+
+    -- Rückzug: the status flip fires trg_travel_run_close_cleanup, which forfeits the
+    -- run's unanchored cargo + fails the bound Depeschen; discoveries are kept.
+    UPDATE travel_runs
+       SET status = 'abandoned', closed_at = now(), run_version = run_version + 1,
+           checkpoint = checkpoint
+               || CASE WHEN v_earnings IS NOT NULL
+                       THEN jsonb_build_object('haul_transmitted', v_safe,
+                                               'earnings', v_earnings)
+                       ELSE '{}'::jsonb END
+     WHERE id = p_run
+     RETURNING * INTO v_run;
+
+    INSERT INTO travel_telemetry_events (user_id, event_key, run_id)
+    VALUES (p_user, 'drift_run_closed', p_run);
+    PERFORM travel_audit(p_user, 'travel_abandon', 'travel_run', p_run, NULL,
+        jsonb_build_object('haul_transmitted', v_safe));
+
+    RETURN to_jsonb(v_run);
+END;
+$$;
+
+COMMENT ON FUNCTION public.fn_travel_abandon(UUID, UUID, INT) IS
+    'Rückzug — abandon an active run (250; extended in 268). The status flip fires the close-cleanup trigger (unanchored cargo forfeited, bound Depeschen failed, discoveries kept). From 268 it PAYS the Funkboje reserve (checkpoint.haul_safe): what the traveller transmitted arrives even from a run they walked away from. The reserve is not the run''s — it is ashore. Gated, like every Fun-Kern write. PLAYER-class (auth.uid() guard, run_version CAS).';
+
+DO $$
+BEGIN
+    EXECUTE 'REVOKE ALL ON FUNCTION public.fn_travel_abandon(uuid, uuid, integer) FROM PUBLIC, anon';
+    EXECUTE 'GRANT EXECUTE ON FUNCTION public.fn_travel_abandon(uuid, uuid, integer) TO authenticated, service_role';
+END $$;
 
 
 -- ═══════════════════════════════════════════════════════════════════
