@@ -225,7 +225,6 @@ async def resolve_havarie(
     body: HavarieResolveRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _gate: Annotated[None, Depends(require_drift_p0)],
-    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[TravelRunResponse]:
     """Decide a Havarie (M3): jettison, call for rescue, overstay, recall, or unravel.
@@ -233,6 +232,16 @@ async def resolve_havarie(
     Returns the run AFTER the choice — active again, banked, or abandoned. A wreck whose
     48-hour TTL has run out unravels here regardless of the choice (the lazy finalisation
     that lets P0.5 skip a scheduler); the returned run row says so.
+
+    NO `require_drift_fun_core` HERE, deliberately. A Havarie is a state only the Fun-Kern
+    can CREATE, but once a traveller is in one it is the only state they cannot leave by
+    themselves: `move` and `complete` demand `active`, `abandon` refuses `havarie`, and
+    `run_open` hands the wreck back because it holds the single-active slot. So the RPC
+    carries an explicit gate-closed DRAIN (forced Zerfaserung, `gate_drained: true`,
+    migration 267) — and a 404 from a router-level gate would make that drain unreachable
+    and strand every wrecked run for its full 48-hour TTL, which is exactly the trap the
+    W1/1.5 rule forbids: a gate may refuse to CREATE state, never to EMPTY it. The RPC
+    gates itself (GATE_CLOSED → 400) for every path that would create something new.
     """
     run = await DriftService.resolve_havarie(
         supabase, user.id, run_id, body.run_version, body.choice, body.jettison_cargo_ids
@@ -246,7 +255,6 @@ async def resolve_signal(
     body: SignalResolveRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _gate: Annotated[None, Depends(require_drift_p0)],
-    _fun_core: Annotated[None, Depends(require_drift_fun_core)],
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[TravelRunResponse]:
     """Answer the pending Störung/Begegnung (M1, migration 267).
@@ -254,6 +262,12 @@ async def resolve_signal(
     Returns the run AFTER the answer: active again with `last_signal` set, or in a
     Havarie if the outcome took the last of the hull. While a signal is pending the run
     cannot move (SIGNAL_PENDING → 400) — a Störung is a decision, not a notification.
+
+    No `require_drift_fun_core` here, same reasoning as the Havarie above: the RPC owns a
+    gate-closed drain (clear the unplayable scene, keep everything else, no CAS demanded),
+    and a router 404 would make it dead code. Less urgent than the Havarie — `fn_travel_move`
+    already ignores a leftover `pending_signal` when the gate is shut — but a scene the
+    traveller can see and cannot dismiss is a bug, and the drain exists to answer it.
     """
     run = await DriftService.resolve_signal(
         supabase, user.id, run_id, body.run_version, body.option_key

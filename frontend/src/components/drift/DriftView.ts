@@ -1065,6 +1065,16 @@ export class VelgDriftView extends LitElement {
     // and the HUD stays silent, which is exactly the emptiness W2 exists to end. A Havarie
     // (opened or resolved) writes a line too.
     void this._refreshLogbook();
+
+    // ...and two of those three (fund / geruecht) also PAY — real Siegel, credited on the
+    // move itself by fn_drift_apply_deltas, which files its receipt in run.earnings. The
+    // interactive path marks _profileDirty and lets _closeScene play the odometer to a lit
+    // HUD; a passive signal opens no scene, so there is no closer to redeem the mark. Left
+    // alone, the strip would keep showing the old balance until some unrelated act happened
+    // to refresh it — the wave's most frequent payout, invisible. Mark it here, and redeem
+    // it immediately in the sceneless branch below.
+    if (run.earnings) this._profileDirty = true;
+
     if (run.status === 'completed' || run.status === 'abandoned') {
       this._run = null;
       this._quests = null;
@@ -1091,6 +1101,12 @@ export class VelgDriftView extends LitElement {
       this._run = run;
       void this._maybeDock(run);
       void this._refreshQuests();
+      // No scene will open, so no _closeScene will come: the count-up plays now. The HUD is
+      // already lit — this is the same ceremony, just without a scrim to wait behind.
+      if (this._profileDirty) {
+        this._profileDirty = false;
+        void this._refreshProfile();
+      }
     }
   };
 

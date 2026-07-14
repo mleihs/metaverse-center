@@ -610,12 +610,22 @@ BEGIN
         v_applied := v_applied || jsonb_build_object('marker_add', v_marker);
     END IF;
 
+    -- FILE THE RECEIPT. Every payer writes checkpoint.earnings in the one shape the HUD's
+    -- count-up ceremony reads (EarningsBlock, 264) — an Entladung does, a delivered Depesche
+    -- does. The signal payer did not, and it is the wave's MOST FREQUENT one: a passive Fund
+    -- or Gerücht pays real Siegel on the move itself and opens no panel, so without a receipt
+    -- the client has nothing to notice and the ledger strip keeps showing the old balance
+    -- until some unrelated act happens to refresh it. Silent money is the emptiness W2 exists
+    -- to end. `earnings` is deliberately NOT in drift_checkpoint_carry: it is rebuilt per move,
+    -- so it always describes the act the traveller just performed and never an older one.
     UPDATE travel_runs SET
         kohaerenz        = v_run.kohaerenz,
         bandbreite       = v_run.bandbreite,
         dissonanz        = v_run.dissonanz,
         window_remaining = v_run.window_remaining,
         checkpoint       = v_run.checkpoint || jsonb_build_object('haul', v_haul)
+                           || CASE WHEN v_award IS NULL THEN '{}'::jsonb
+                                   ELSE jsonb_build_object('earnings', v_award) END
      WHERE id = p_run
     RETURNING * INTO v_run;
 

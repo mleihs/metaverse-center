@@ -300,6 +300,12 @@ class DriftService:
         resp = await (
             supabase.table("travel_runs")
             .select("*")
+            # Owner filter, explicitly — NOT left to RLS. The callers inject
+            # get_effective_supabase, which elevates a platform admin to service_role and
+            # switches RLS off; without this predicate such a caller gets the most recently
+            # opened run of ANY traveller, and every follow-up RPC (WHERE user_id = p_user)
+            # then 404s against it. Defense in depth: the same filter the other reads carry.
+            .eq("user_id", str(user_id))
             # 'havarie' is an OPEN run (migration 265): it is stranded, awaiting the
             # traveller's decision, and it holds the single-active slot. Omitting it here
             # would show the HUD "no run" while the wreck still blocks fn_travel_run_open.
