@@ -156,6 +156,10 @@ export interface DriftEffectCard {
 
 /** The traveller's Bureau account (GET /drift/profile). Null before the first run. */
 export interface DriftProfile {
+  /** The traveller's HOME world. The server derives "at home" from this (and only this) —
+   *  deriving it from the ROUTE instead makes the client disagree with the server the
+   *  moment DRIFT is opened from a world that is not the traveller's anchor. */
+  anchor_simulation_id: UUID;
   siegel: number;
   vp: number;
   clearance_rank: string;

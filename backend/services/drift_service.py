@@ -324,8 +324,8 @@ class DriftService:
         row = await maybe_single_data(
             supabase.table("traveler_profiles")
             .select(
-                "siegel, vp, clearance_rank, bandwidth_class, zerfaserung_count, "
-                "qualities, unlocked_vectors"
+                "anchor_simulation_id, siegel, vp, clearance_rank, bandwidth_class, "
+                "zerfaserung_count, qualities, unlocked_vectors"
             )
             .eq("user_id", str(user_id))
             .maybe_single()
@@ -362,6 +362,7 @@ class DriftService:
             bandwidth_class=int(row["bandwidth_class"]),
             zerfaserung_count=int(row["zerfaserung_count"]),
             vermessung_lodged=int((row.get("qualities") or {}).get("vermessung_lodged", 0)),
+            anchor_simulation_id=row["anchor_simulation_id"],
             unlocked_vectors=list(row.get("unlocked_vectors") or []),
             next_rank=next_rank,
             next_rank_vp=next_vp,

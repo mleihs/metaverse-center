@@ -128,6 +128,11 @@ const HUD_GUTTER_PX = 320 + 32;
 const DZ_CAP_FALLBACK = 20;
 const BB_MAX_FALLBACK = 11;
 const WINDOW_BASE_FALLBACK = 8;
+// Welle 2: the same fail-soft posture for the numbers the dig site STATES. A silent
+// fallback beats a strip that promises +0 while the server pays 2 (drift_tuning is the
+// source of truth; these mirror the COALESCE defaults in migration 268).
+const SONDIERUNG_YIELDS_FALLBACK = [2, 3, 5, 8];
+const FUNKBOJE_NODE_TYPES_FALLBACK = ['relais', 'broadcast_rand'];
 
 @localized()
 @customElement('velg-drift-view')
@@ -692,10 +697,16 @@ export class VelgDriftView extends LitElement {
         // A Störung with teeth: the answer stranded the run. The Havarie takes the stage,
         // and the result of the signal is told inside its prose instead of stacking a second
         // panel on top of the first (a run that stops to ask must not be asked twice).
+        // A resolve can come back with NOTHING to show: the RPC drains a pending scene
+        // whose template vanished from the content (signal_vanished) and writes no
+        // last_signal. Opening a result panel for it would put an empty scrim over an
+        // inert board. No block, no scene — the run simply goes on.
         this._scene =
           resolved.status === 'havarie'
             ? { kind: 'havarie', run: resolved }
-            : { kind: 'signal-result', run: resolved };
+            : resolved.last_signal
+              ? { kind: 'signal-result', run: resolved }
+              : null;
         await Promise.all([this._refreshLogbook(), this._refreshQuests()]);
         // A resolved signal can pay Siegel (fn_drift_award) — the strip must not lie on the
         // next glance. The odometer plays when the scene closes (_closeScene), to a lit HUD.
@@ -719,8 +730,7 @@ export class VelgDriftView extends LitElement {
     void this._mutate(
       () => driftApi.sondieren(run.id, run.run_version),
       async (dug) => {
-        this._adoptRun(dug);
-        await this._refreshLogbook();
+        this._adoptRun(dug); // refreshes the logbook
         const reveal = revealOf(dug);
         if (reveal?.bust) {
           // M-11: the Riss is announced with words, not with a red flash. The loss is
@@ -748,8 +758,7 @@ export class VelgDriftView extends LitElement {
     void this._mutate(
       () => driftApi.bankHaul(run.id, run.run_version),
       async (banked) => {
-        this._adoptRun(banked);
-        await this._refreshLogbook();
+        this._adoptRun(banked); // refreshes the logbook
         const receipt = banked.checkpoint.last_bank as
           | { safe?: number; loose?: number }
           | undefined;
@@ -1050,6 +1059,12 @@ export class VelgDriftView extends LitElement {
    *  status drops back to the Aufbruch state + announces the outcome; otherwise adopt the
    *  run, surface a foreign dock, and refresh the quest snapshot (position/cargo changed). */
   private _adoptRun = (run: TravelRun): void => {
+    // Three of the five signal classes (fund / geruecht / stille) never open a panel: they
+    // resolve on the move and write ONE logbook line. If the logbook is only refetched by
+    // the acts that DO open a panel, those three are invisible — the move says something
+    // and the HUD stays silent, which is exactly the emptiness W2 exists to end. A Havarie
+    // (opened or resolved) writes a line too.
+    void this._refreshLogbook();
     if (run.status === 'completed' || run.status === 'abandoned') {
       this._run = null;
       this._quests = null;
@@ -1090,6 +1105,10 @@ export class VelgDriftView extends LitElement {
     const cp = run.checkpoint;
     const banked = Number(cp.haul_banked ?? 0);
     const lost = Number(cp.haul_lost ?? 0);
+    // What the Funkboje had already sent home before it all went wrong. On the unravelling
+    // path this is the ONE promise the run kept ("was du sendest, kommt an") — and the
+    // debriefing was the only place that never said so.
+    const transmitted = Number(cp.haul_transmitted ?? 0);
     const honors = Number(cp.honors_won ?? 0);
     const closeReason = typeof cp.close_reason === 'string' ? cp.close_reason : null;
     const scatter = cp.scattered;
@@ -1125,6 +1144,14 @@ export class VelgDriftView extends LitElement {
       lines.push(msg(str`Zerfaserung. ${lost} Punkte Vermessung sind verloren.`));
     } else {
       lines.push(msg('Rückzug eingeleitet. Die Fahrt ist ohne Eintrag geschlossen.'));
+    }
+
+    if (transmitted > 0 && run.status !== 'completed') {
+      lines.push(
+        msg(
+          str`Die Funkboje hat gehalten: ${transmitted} Punkte waren gesendet, bevor die Fahrt riss. Sie sind angekommen.`,
+        ),
+      );
     }
 
     if (run.earnings) {
@@ -1338,7 +1365,15 @@ export class VelgDriftView extends LitElement {
     // the HUD out of the tab order and out of pointer reach entirely. The scrim only stopped
     // POINTERS — a keyboard traveller could still tab to Entladung / Rückzug behind a Havarie
     // and fire a run mutation the scene existed to prevent.
-    const sceneOpen = this._scene !== null;
+    //
+    // `inert` follows the scene that ACTUALLY RENDERED, never the intent to render one.
+    // _renderScene() bails to '' whenever the block it needs is missing from the run (a
+    // signal whose template was republished mid-run comes back with no last_signal — the
+    // RPC's `signal_vanished` drain path). Deriving inert from `_scene !== null` instead
+    // locked the whole board: no panel, no focus, no Escape (the keydown handler lives on
+    // the scene layer that was never rendered), and nothing left but a reload.
+    const sceneTpl = this._renderScene();
+    const sceneOpen = sceneTpl !== '';
 
     return html`
       <div class="drift">
@@ -1363,7 +1398,7 @@ export class VelgDriftView extends LitElement {
             ></velg-drift-dock-panel>`
             : ''
         }
-        ${this._renderScene()}
+        ${sceneTpl}
       </div>
     `;
   }
@@ -1532,11 +1567,27 @@ export class VelgDriftView extends LitElement {
                 </button>`
               : ''
           }
+          ${
+            // BETWEEN runs is when "where was I, and what do I know?" is actually asked —
+            // after the Entladung, after a Zerfaserung, before the next Aufbruch. A logbook
+            // that only exists during a run answers it at the one moment nobody is asking.
+            isMember
+              ? html`<velg-drift-logbook .entries=${this._logbook}></velg-drift-logbook>`
+              : ''
+          }
         </div>
       `;
     }
     const posNode = this._chart?.nodes.find((n) => n.id === run.position_node_id);
-    const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
+    // The SERVER derives "at home" from traveler_profiles.anchor_simulation_id, and so must
+    // the HUD. Taking it from the ROUTE (whichever world's page DRIFT was opened from) makes
+    // the two disagree the moment a traveller browses another world mid-run: the Funkboje
+    // would be offered at the real home (where the server answers AT_HOME — a dead option)
+    // and hidden at a foreign dock (where it would have worked). The route stays the
+    // fallback for the pre-profile case only.
+    const anchor =
+      this._profile?.anchor_simulation_id ??
+      (this.anchorSimulationId || appState.currentSimulation.value?.id);
     const atHome = posNode?.node_type === 'broadcast_rand' && posNode.simulation_id === anchor;
 
     // The dig site, straight out of the run — the client remembers nothing about a node, so
@@ -1546,12 +1597,19 @@ export class VelgDriftView extends LitElement {
     const safe = Number(run.checkpoint.haul_safe ?? 0);
     // What one more dig is worth: the server's table, with the last entry repeating (the
     // limiter is the bust, not the table running out).
-    const yields = this._tuning?.sondierung_yields ?? [];
-    const nextYield = yields.length ? (yields[Math.min(site.digs, yields.length - 1)] ?? 0) : 0;
+    // Fail-soft like the gauge maxima: a failed tuning fetch (which _load tolerates) must
+    // not make the strip say "+0" while the server pays 2, nor hide the Funkboje at a dock
+    // where it works. The fallbacks mirror the migrations' own COALESCE defaults.
+    const yields = this._tuning?.sondierung_yields?.length
+      ? this._tuning.sondierung_yields
+      : SONDIERUNG_YIELDS_FALLBACK;
+    const nextYield = yields[Math.min(site.digs, yields.length - 1)] ?? 0;
     // A transmitter, and NOT at home: banking at the anchor could only ever cost the
     // traveller 30 % of their own haul (the Entladung pays in full there), so the server
     // refuses it — and an option the server refuses must not be on the board at all.
-    const transmitters = this._tuning?.funkboje_node_types ?? [];
+    const transmitters = this._tuning?.funkboje_node_types?.length
+      ? this._tuning.funkboje_node_types
+      : FUNKBOJE_NODE_TYPES_FALLBACK;
     const canBank = !atHome && !!posNode && transmitters.includes(posNode.node_type);
 
     return html`

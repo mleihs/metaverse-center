@@ -178,22 +178,30 @@ class TestDraw:
         different draw. Without it every roll would be precomputable from public inputs."""
         user, client = test_user_ids[0], user_clients[0]
         bands = _bands(admin_client, 100, 0, 12)
-        drawn = []
+
+        # Compare the SEQUENCE, not a single Takt: two runs colliding on one Takt is
+        # perfectly legal (three classes, 32 skeletons), so asserting on one draw would be
+        # a coin-flip test — and a flaky test is worse than no test. Two full decks being
+        # identical, on the other hand, means the salt is not in the seed at all.
+        decks = []
         for _ in range(2):
             run = _armed_run(admin_client, client, user, chart_home)
-            drawn.append(
-                _draw(
-                    admin_client, run["id"], user, band="deep", takt=1, bands=bands,
-                    kh=100, bb=8, window=12, chart=run["chart_version"],
-                    anchor=chart_home["simulation_id"],
-                )
+            decks.append(
+                [
+                    (
+                        _draw(
+                            admin_client, run["id"], user, band="deep", takt=takt,
+                            bands=bands, kh=100, bb=8, window=12,
+                            chart=run["chart_version"],
+                            anchor=chart_home["simulation_id"],
+                        )
+                        or {}
+                    ).get("template_key")
+                    for takt in range(1, 13)
+                ]
             )
-        # Two independent decks. (A collision on ONE takt is possible in principle;
-        # what must not happen is the runs being identical by construction — the salt
-        # is a per-run random, so this asserts it is actually mixed into the seed.)
-        assert drawn[0]["template_key"] != drawn[1]["template_key"] or (
-            drawn[0]["prose"] != drawn[1]["prose"]
-        )
+
+        assert decks[0] != decks[1], "two runs share a deck — the salt is not in the seed"
 
     def test_requirements_gate_the_draw(
         self, admin_client, user_clients, test_user_ids, chart_home
@@ -299,6 +307,79 @@ class TestMoveDrawsSignals:
 
         with pytest.raises(Exception, match="SIGNAL_PENDING"):
             _move(client, user, run, home_neighbor)
+
+    def test_a_passive_signal_does_not_eat_the_survey(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """The first-arrival Vermessung of THIS move must survive the draw.
+
+        The snapshot trap, from the other side: fn_drift_apply_deltas re-reads
+        checkpoint.haul from the COLUMN, so a survey that only lived in the caller's local
+        variable was silently rolled back by the helper's own write — and `visited` still
+        recorded the node, so it could never pay again. The passive classes are the
+        majority of the draw, so this was most of the survey economy. Found by review, not
+        by the 48 tests that were green around it."""
+        user, client = test_user_ids[0], user_clients[0]
+        run = _armed_run(admin_client, client, user, chart_home)
+
+        band = (
+            admin_client.table("drift_chart_nodes")
+            .select("distance_band")
+            .eq("id", home_neighbor)
+            .execute()
+        ).data[0]["distance_band"]
+        expected = _tuning(admin_client, "survey_value_by_band")[band]
+        if expected == 0:
+            pytest.skip("the neighbour is a near node — no survey to lose")
+
+        moved = _move(client, user, run, home_neighbor)
+
+        # Whatever the draw did on top (a Fund can ADD to the haul), the survey itself must
+        # be in there — never less than the band pays for a first arrival.
+        assert moved["checkpoint"]["last_move"]["survey"] == expected
+        assert moved["checkpoint"]["haul"] >= expected, (
+            "the draw ate the first-arrival Vermessung of this move"
+        )
+
+    def test_a_scene_with_no_payable_option_left_drains_itself(
+        self, admin_client, user_clients, test_user_ids, chart_home
+    ):
+        """Content churn must not strand a run.
+
+        The pack reseed is a TRUNCATE + re-insert, so an option key renamed (or its cost
+        raised past what this run can still pay) while a traveller stands in the scene
+        would leave every button answering 400 — and a pending signal blocks the move, the
+        dig AND the bank. A scene the traveller cannot leave has to drain itself."""
+        user, client = test_user_ids[0], user_clients[0]
+        # begegnung_pruefer's only certain option costs a Takt; the risky one costs nothing
+        # but exists — so squeeze the window to 0 and pick a template whose every option
+        # needs one. stoerung_kartenfehler: both options cost a Takt.
+        run = _armed_run(admin_client, client, user, chart_home, window_remaining=0)
+        run = _park(admin_client, run, "stoerung_kartenfehler", [{"key": "nachvermessen"}])
+
+        drained = _resolve(client, user, run, "nachvermessen")
+
+        assert drained["scene_unresolvable"] is True
+        assert "pending_signal" not in drained["checkpoint"]
+        assert drained["status"] == "active", "the run goes on — it was not the run that broke"
+
+    def test_gate_off_keeps_the_p0_last_move_key_set(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """Byte parity is byte parity: jsonb_build_object emits a NULL-valued key rather
+        than omitting it, so building the signal keys unconditionally left "signal": null
+        in every gate-off checkpoint. A stray key is exactly how parity rots."""
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        _set_gate(admin_client, False)
+
+        run = _open_run(client, user, chart_home["simulation_id"])
+        moved = _move(client, user, run, home_neighbor)
+
+        assert set(moved["checkpoint"]["last_move"].keys()) == {
+            "from", "bb_cost", "notfrequenz", "dz_add", "surge", "survey",
+        }, "gate off → the exact migration-265 last_move key set"
 
     def test_gate_off_draws_nothing_and_writes_no_log(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor

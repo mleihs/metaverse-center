@@ -24,6 +24,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
 import type { DriftMarkerClass, DriftSondierungReveal } from '../../types/drift.js';
 import { icons } from '../../utils/icons.js';
 
@@ -327,13 +328,23 @@ export class VelgDriftMarkerStack extends LitElement {
         <div class="stack" aria-live="polite">
           ${
             this.markers.length
-              ? this.markers.map(
-                  (marker, i) => html`<span
-                    class="marker ${atRisk === marker ? 'marker--warn' : ''}"
-                    style="--_tone:${MARKER_TONE[marker]}; --i:${i}"
-                    title=${marker}
-                    >${marker.charAt(0).toUpperCase()}</span
-                  >`,
+              ? this.markers.map((marker, i) =>
+                  // keyed() on (dig-count, index): Lit recycles an element at the same
+                  // template position, and a recycled element does NOT restart its CSS
+                  // animation — so when the third marker lands, the two already on the node
+                  // would keep their old class list and simply never pulse. The warning
+                  // would fire for exactly one seal instead of the three that matter. Keying
+                  // on the dig count forces a fresh element per dig, which is also the only
+                  // way the punch-in (M-09) plays for a marker a Störung dropped here.
+                  keyed(
+                    `${this.digs}:${i}`,
+                    html`<span
+                      class="marker ${atRisk === marker ? 'marker--warn' : ''}"
+                      style="--_tone:${MARKER_TONE[marker]}; --i:${i}"
+                      title=${marker}
+                      >${marker.charAt(0).toUpperCase()}</span
+                    >`,
+                  ),
                 )
               : html`<span class="stack__empty">${msg('Der Knoten ist unberührt.')}</span>`
           }
