@@ -27,6 +27,8 @@ Requires a live Supabase instance; skipped automatically when unavailable.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from backend.models.drift import QuestDeliverResponse, TravelRunResponse
@@ -72,17 +74,17 @@ class _Ctx:
     def armed(self, *, haul: int = 0, **force) -> dict:
         """A fresh traveller, an open gate, an open run — forced into `force` state.
 
-        `haul` is the run's LOOSE haul. It is passed separately because it is the one piece
-        of run state that is not simply a column: reaching a given haul legally would take a
-        lucky chart and a dozen moves, so the suite forces it, and this is the single place
-        that has to know WHERE it lives.
+        `haul` is the run's LOOSE haul, and it is the one thing that cannot simply be SET: it
+        is derived (haul_survey + the dig sites + the manifest). `haul_survey` is the source
+        with no other ledger behind it, so forcing it reads as "this run walked in carrying N
+        points of un-lodged Vermessung".
         """
         _reset_traveler(self.admin, self.user)
         _seed_profile(self.admin, self.user, self.home["simulation_id"])
         _set_gate(self.admin, True)
         run = _open_run(self.client, self.user, self.home["simulation_id"])
         if haul:
-            force["checkpoint"] = {**run["checkpoint"], "haul": haul}
+            force["haul_survey"] = haul
         if force:
             _force_run_state(self.admin, run["id"], **force)
             run = self.row(run["id"])
@@ -375,9 +377,72 @@ class TestEveryMutationSpeaksTheRunContract:
             assert resolved.last_signal.signal_class == "stoerung"
             assert resolved.pending_signal is None, "an answered scene is not still pending"
 
+            dug = TravelRunResponse(**_m_sondieren(ctx))
+            assert dug.last_sondierung is not None, "the dig's reveal must be readable"
+            assert dug.last_sondierung.dig == 1
+
+            banked = TravelRunResponse(**_m_bank(ctx))
+            assert banked.last_bank is not None, "the Funkboje's receipt must be readable"
+            assert banked.last_bank.safe > 0
+            assert banked.haul == 0, "what is transmitted is no longer loose"
+            assert banked.haul_safe == banked.last_bank.safe
+
+            wrecked = TravelRunResponse(**ctx.row(_wreck(ctx, "kohaerenz")["id"]))
+            assert wrecked.havarie is not None, "the wreck panel must be readable"
+            assert wrecked.havarie.cause == "kohaerenz"
+            assert wrecked.havarie.options, "a Havarie with no options is a trap"
+
             closed = TravelRunResponse(**_m_complete(ctx))
             assert closed.earnings is not None, "the Entladung's receipt must be readable"
             assert closed.earnings.source == "entladung"
+            assert closed.closing is not None, "the debriefing must be readable"
+            assert closed.closing.reason == "entladung"
+            assert closed.closing.haul_banked == 6
+        finally:
+            _set_gate(admin_client, True)
+            _reset_traveler(admin_client, test_user_ids[0])
+
+    def test_the_raw_checkpoint_never_leaves_the_api(
+        self, admin_client, user_clients, test_user_ids,
+        chart_home, chart_foreign, home_neighbor,
+    ):
+        """The odds are never numbered (R4) — and until W2.6 they were, in DevTools.
+
+        `checkpoint` used to go out 1:1 next to the typed fields that carefully lift only what
+        the panel may see. That made the typing worthless for confidentiality: the raw blob
+        carries `check.difficulty` and the deltas of EVERY branch of a pending scene (the draw
+        stores jsonb_agg over the complete template options). It is INPUT to the model now, and
+        it is dropped on the way out.
+        """
+        ctx = _Ctx(
+            admin_client, user_clients[0], test_user_ids[0],
+            chart_home, chart_foreign, home_neighbor,
+        )
+        try:
+            run = ctx.armed(kohaerenz=80, bandbreite=4, window_remaining=20)
+            run = _park_signal(
+                ctx, run, "stoerung_bandbreitenfrass",
+                [{
+                    "key": "abschirmen",
+                    "label_de": "Abschirmen",
+                    "label_en": "Shield",
+                    "check": {"vector": "memory", "difficulty": 9},
+                }],
+            )
+            serialised = TravelRunResponse(**ctx.row(run["id"])).model_dump(mode="json")
+
+            assert "checkpoint" not in serialised
+            assert serialised["pending_signal"] is not None, "the scene still reaches the HUD"
+            # The panel is told a check EXISTS and which vector it tests. It is never told the
+            # number — the traveller learns the shape of a risk by living it, not by reading it
+            # off a tooltip.
+            option = serialised["pending_signal"]["options"][0]
+            assert option["check"]["vector"] == "memory", "the HUD knows a check exists"
+            blob = json.dumps(serialised)
+            assert "difficulty" not in blob, "the odds must not be shipped to the client"
+            assert '"deltas"' not in blob, (
+                "nor may the outcome of every branch — the raw checkpoint carried both"
+            )
         finally:
             _set_gate(admin_client, True)
             _reset_traveler(admin_client, test_user_ids[0])

@@ -149,8 +149,11 @@ class TestHavarieOpens:
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor)
             assert run["status"] == "abandoned"
-            assert run["checkpoint"]["recall"] == "kohaerenz"
-            assert run["checkpoint"]["haul"] == 0
+            closing = run["checkpoint"]["closing"]
+            assert closing["reason"] == "kollaps", "the P0 snap, not a Havarie"
+            assert closing["cause"] == "kohaerenz"
+            assert "haul_transmitted" not in closing, "no Fun-Kern fact behind a shut gate"
+            assert run["haul"] == 0, "the loose haul is forfeit"
             assert "havarie" not in run["checkpoint"]
             assert _profile(admin_client, user)["zerfaserung_count"] == 0, (
                 "gate off → the counter stays dead (exactly P0)"
@@ -324,9 +327,9 @@ class TestHavarieChoices:
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor)
             # Give the wreck a haul worth halving (the one-move strand banks nothing).
-            admin_client.table("travel_runs").update(
-                {"checkpoint": {**run["checkpoint"], "haul": 9}}
-            ).eq("id", run["id"]).execute()
+            admin_client.table("travel_runs").update({"haul_survey": 9}).eq(
+                "id", run["id"]
+            ).execute()
             run = _run_row(admin_client, run["id"])
 
             out = self._resolve(client, user, run, "notruf")
@@ -334,7 +337,10 @@ class TestHavarieChoices:
 
             assert out["status"] == "active"
             assert out["position_node_id"] == chart_home["id"], "the Bureau tows you home"
-            assert out["checkpoint"]["haul"] == int(9 * cfg["haul_mult"])
+            assert out["haul"] == int(9 * cfg["haul_mult"]), (
+                "the haul is halved through the ONE consumer (drift_haul_settle), so all "
+                "three sub-ledgers are halved together — no half-settled leftovers"
+            )
             assert out["kohaerenz"] >= cfg["kh_restore"]
 
             prof = _profile(admin_client, user)
@@ -361,7 +367,7 @@ class TestHavarieChoices:
 
             out = self._resolve(client, user, run, "ueberziehen")
             assert out["status"] == "active"
-            assert out["checkpoint"]["overstay"] is True
+            assert out["overstay"] is True, "the permit is a COLUMN, not a checkpoint key"
             assert out["window_remaining"] == 0
 
             # The next move must NOT collapse on the expired window — and must pay the tax.
@@ -377,7 +383,10 @@ class TestHavarieChoices:
             ).execute().data
 
             assert moved["status"] == "active", "an overstay permit survives the expired window"
-            assert moved["checkpoint"]["overstay"] is True, "and survives the move that used it"
+            assert moved["overstay"] is True, (
+                "and survives the move that used it — trivially, now that it is a column: "
+                "the checkpoint rebuild cannot reach it any more"
+            )
             tax = _tuning(admin_client, "havarie_options")["ueberziehen"]["dz_per_takt"]
             assert moved["dissonanz"] >= min(
                 int(_tuning(admin_client, "dz_p0_cap")), dz_before + tax
@@ -395,9 +404,9 @@ class TestHavarieChoices:
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor, cause="window")
-            admin_client.table("travel_runs").update(
-                {"checkpoint": {**run["checkpoint"], "haul": 10}}
-            ).eq("id", run["id"]).execute()
+            admin_client.table("travel_runs").update({"haul_survey": 10}).eq(
+                "id", run["id"]
+            ).execute()
             run = _run_row(admin_client, run["id"])
 
             out = self._resolve(client, user, run, "rueckruf")
@@ -405,17 +414,19 @@ class TestHavarieChoices:
             expected_haul = int(10 * mult)
 
             assert out["status"] == "completed", "an orderly recall CLOSES the run"
-            assert out["checkpoint"]["haul_banked"] == expected_haul
-            assert out["checkpoint"]["close_reason"] == "rueckruf", (
+            closing = out["checkpoint"]["closing"]
+            assert closing["haul_banked"] == expected_haul
+            assert closing["reason"] == "rueckruf", (
                 "the receipt must never present a recalled haul as a full one"
             )
-            assert out["checkpoint"]["haul_before"] == 10
+            assert closing["haul_before"] == 10
+            assert closing["haul_lost"] == 10 - expected_haul
 
             # It went through the SAME banking path as an Entladung: the haul pays, and the
             # nodes this run first charted still win their Erstvermessung honors (those are
             # NOT scaled by the recall multiplier — you charted the node or you did not).
             earnings = out["checkpoint"]["earnings"]
-            honors = out["checkpoint"]["honors_won"]
+            honors = closing["honors_won"]
             assert earnings["source"] == "rueckruf"
             assert earnings["vp_earned"] == (
                 expected_haul * int(_tuning(admin_client, "reward_survey_vp_per_haul"))
@@ -450,9 +461,10 @@ class TestHavarieChoices:
             out = self._resolve(client, user, run, "zerfaserung")
 
             assert out["status"] == "abandoned"
-            assert out["checkpoint"]["zerfaserung"]["reason"] == "choice"
-            assert out["checkpoint"]["haul_lost"] >= 0
-            assert out["checkpoint"]["scattered"]["scattered"] == 1, (
+            assert out["checkpoint"]["closing"]["reason"] == "zerfaserung"
+            assert out["checkpoint"]["closing"]["detail"] == "choice"
+            assert out["checkpoint"]["closing"]["haul_lost"] >= 0
+            assert out["checkpoint"]["closing"]["scattered"]["scattered"] == 1, (
                 "the carried Depesche scatters as an echo into the world it was headed for"
             )
             assert _profile(admin_client, user)["zerfaserung_count"] == 1, (
@@ -525,7 +537,7 @@ class TestHavarieChoices:
             out = self._resolve(client, user, run, "notruf")
             assert out["gate_drained"] is True
             assert out["status"] == "abandoned", "the wreck unravels — the P0 ending"
-            assert out["checkpoint"]["zerfaserung"]["reason"] == "gate_closed"
+            assert out["checkpoint"]["closing"]["detail"] == "gate_closed"
             assert _profile(admin_client, user)["zerfaserung_count"] == 0, (
                 "gate off = zero Fun-Kern residue: P0 never counted scars"
             )
@@ -582,7 +594,7 @@ class TestHavarieTTL:
 
             assert out["expired"] is True
             assert out["status"] == "abandoned", "the Drift decided for you"
-            assert out["checkpoint"]["zerfaserung"]["reason"] == "ttl_expired"
+            assert out["checkpoint"]["closing"]["detail"] == "ttl_expired"
             assert _profile(admin_client, user)["zerfaserung_count"] == 1
         finally:
             _set_gate(admin_client, False)
