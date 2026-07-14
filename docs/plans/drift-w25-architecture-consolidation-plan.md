@@ -1,7 +1,36 @@
 # DRIFT W2.6 — Architektur-Konsolidierung (vor W3)
 
-**Status:** geplant, nicht begonnen. Voraussetzung: Gesamtabnahme W1+W2 (2026-07-14) ist grün und committed.
-**Branch:** `feat/drift-fun-core-w2` (gestapelt auf `feat/drift-fun-core-w1`, beide ungemergt, undeployt, Gate `drift_fun_core_enabled=false` auf Prod).
+**Status: ✅ VOLLSTÄNDIG UMGESETZT (2026-07-14).** Alle sechs Befunde (A–F) sind erledigt,
+in zwei Commits auf `feat/drift-fun-core-w2`:
+
+* `4c2ccdb` — **A** (Gate an einen Ort) + **F** (Modell-Vertrags-Test)
+* `63e6826` — **D + E + C + B** (Spaltenschnitt · Haul-Ableitung · Migrations-Konsolidierung ·
+  roher Checkpoint raus aus der Response)
+
+Verifikation: 3590 pytest grün (12 skipped) · `ruff check backend/ scripts/` · `npm run lint:full`
+(biome + tsc + alle sechs Gates) · ADR-006-Guard gegen die migrierte DB (anon-SECDEF-Fläche
+unverändert sauber) · Browser-Playtest end-to-end (Signal-Szene · Sondierung · Resonanzriss ·
+Funkboje · Entladung · Debriefing), inklusive der beiden Dinge, die der Plan als Beleg für den
+Erfolg genannt hat: der rohe `checkpoint` erreicht den Client nicht mehr, und der riskante
+Options-Chip nennt den Vektor ohne die Zahl.
+
+**Abweichungen vom Plan** (beide im Migrationskopf 264 begründet):
+
+1. **E — „haul ableiten" ist als TRIGGER-materialisierte Ableitung umgesetzt**, nicht als reine
+   View. Grund: jede Run-RPC antwortet mit `to_jsonb(travel_runs)`, auch RPCs außerhalb dieses
+   Migrationssatzes (`fn_quest_accept` lebt in 249 und ist deployt). Eine View-Ableitung hätte
+   die hier neu definieren müssen, nur um ihren Rückgabewert umzuformen — und damit genau das
+   Mehrfach-Definitions-Problem eingeführt, das C beendet. Die Eigenschaft, um die es geht
+   („keine Teilbuchung kann veralten"), hält vollständig: kein Schreiber darf `haul` setzen,
+   jeder Write auf eine Quelle rechnet ihn neu.
+2. **Der Rollback-Vertrag ist als VERHALTEN neu formuliert**, nicht als Byte-Layout eines jsonb.
+   Der Spaltenschnitt ändert die Form des Checkpoints in BEIDEN Gate-Zuständen; was ein
+   geschlossenes Gate weiterhin garantiert (kein Ledger-Write, keine Narbe, keine Szene, keine
+   Fun-Kern-Tatsache im Beleg), ist unverändert gepinnt.
+
+**Branch:** `feat/drift-fun-core-w2` (gestapelt auf `feat/drift-fun-core-w1`, beide ungemergt,
+undeployt, Gate `drift_fun_core_enabled=false` auf Prod). **W1 und W2 gehen als EIN PR** — C hat
+W1s Migrationen mitverändert.
 
 ## Warum überhaupt
 
