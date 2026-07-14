@@ -73,6 +73,28 @@ jobs:
         run: bash scripts/lint-no-content-in-python.sh
         working-directory: .
 
+  lint-backend:
+    name: Lint Backend
+    # Enforces the FULL ruff ruleset declared in pyproject.toml (E,F,W,I,N,UP,S,B,A,
+    # C4,DTZ,T20,ICN,FAST). Until now the only ruff in CI was the security subset
+    # (`--select S`, security.yml), so the remaining rules were enforced by nobody —
+    # 164 violations had silently accumulated in scripts/ (dead imports, an undefined
+    # name, a shell-injection call). This job is the gate that keeps the tree clean.
+    # Mirrors lint-frontend: fast, no services, fails before the heavy test jobs.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Ruff (full ruleset, backend + scripts)
+        run: ruff check backend/ scripts/ --output-format github
+
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
