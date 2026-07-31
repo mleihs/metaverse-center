@@ -61,7 +61,6 @@ class LoreService:
         )
         if sim:
             schedule_auto_translation(
-                supabase,
                 TABLE,
                 section["id"],
                 section,
@@ -107,7 +106,6 @@ class LoreService:
             )
             if sim:
                 schedule_auto_translation(
-                    supabase,
                     TABLE,
                     section["id"],
                     section,

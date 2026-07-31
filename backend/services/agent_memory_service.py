@@ -69,7 +69,6 @@ class AgentMemoryService:
         )
         if sim_resp.data:
             schedule_auto_translation(
-                supabase,
                 "agent_memories",
                 saved["id"],
                 {"content": content},
@@ -85,7 +84,6 @@ class AgentMemoryService:
     @classmethod
     async def extract_from_chat(
         cls,
-        supabase: Client,
         simulation_id: UUID,
         agent_id: UUID,
         user_message: str,
@@ -94,7 +92,11 @@ class AgentMemoryService:
     ) -> list[dict]:
         """Extract memorable observations from a chat exchange.
 
-        Uses an admin client for writes (fire-and-forget from chat, RLS requires service_role).
+        Runs as a fire-and-forget task that outlives the request, so it takes no
+        client from the caller: a request-scoped client is closed at request
+        teardown, and using it here was a use-after-close (deep-audit P1-1).
+        Reads and writes both go through the admin singleton (writes additionally
+        need service_role — RLS on agent_memories).
         """
         admin = await _admin_client()
 
@@ -114,12 +116,12 @@ class AgentMemoryService:
                 saved.append(record)
             return saved
 
-        # Get simulation name (reads are fine with any client)
-        sim_resp = await supabase.table("simulations").select("name").eq("id", str(simulation_id)).limit(1).execute()
+        # Get simulation name
+        sim_resp = await admin.table("simulations").select("name").eq("id", str(simulation_id)).limit(1).execute()
         sim_name = sim_resp.data[0]["name"] if sim_resp.data else "Unknown"
 
         # Get agent name
-        agent_resp = await supabase.table("agents").select("name").eq("id", str(agent_id)).limit(1).execute()
+        agent_resp = await admin.table("agents").select("name").eq("id", str(agent_id)).limit(1).execute()
         agent_name = agent_resp.data[0]["name"] if agent_resp.data else "Agent"
 
         gen = GenerationService(admin, simulation_id, api_key or settings.openrouter_api_key)
