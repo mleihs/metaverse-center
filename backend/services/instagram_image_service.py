@@ -17,6 +17,7 @@ Decomposed into three modules:
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
 from uuid import uuid4
@@ -137,7 +138,9 @@ class InstagramImageService:
             },
         )
         raw_bytes = await self._download_image(portrait_url)
-        return self._compose_with_overlay(
+        # Full-canvas 1080×1350 PIL pipeline — CPU-bound, off the event loop (P1-6)
+        return await asyncio.to_thread(
+            self._compose_with_overlay,
             raw_bytes,
             title=f"PERSONNEL FILE — {agent_name}",
             subtitle=f"SHARD: {simulation_name}",
@@ -169,7 +172,9 @@ class InstagramImageService:
             },
         )
         raw_bytes = await self._download_image(image_url)
-        return self._compose_with_overlay(
+        # Full-canvas 1080×1350 PIL pipeline — CPU-bound, off the event loop (P1-6)
+        return await asyncio.to_thread(
+            self._compose_with_overlay,
             raw_bytes,
             title=f"SHARD SURVEILLANCE — {building_name}",
             subtitle=f"LOCATION: {simulation_name}",
@@ -209,7 +214,9 @@ class InstagramImageService:
         else:
             raw_bytes = generate_solid_background(color_background)
 
-        return self._compose_with_overlay(
+        # Full-canvas 1080×1350 PIL pipeline — CPU-bound, off the event loop (P1-6)
+        return await asyncio.to_thread(
+            self._compose_with_overlay,
             raw_bytes,
             title=f"DISPATCH [{dispatch_number:04d}]",
             subtitle=f"RE: {simulation_name}",

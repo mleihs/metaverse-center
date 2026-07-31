@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from uuid import UUID, uuid4
 
@@ -71,8 +72,8 @@ class StyleReferenceService:
         if scope == "entity" and entity_id is None:
             raise ValueError("entity_id is required when scope is 'entity'")
 
-        # Convert to AVIF
-        avif_bytes = _convert_to_avif(image_data)
+        # Convert to AVIF — CPU-bound encode, off the event loop (P1-6)
+        avif_bytes = await asyncio.to_thread(_convert_to_avif, image_data)
 
         # Upload to storage
         file_id = str(uuid4())

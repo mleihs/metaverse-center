@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
 from uuid import UUID, uuid4
@@ -463,9 +464,12 @@ class ForgeImageService:
         )
 
         # Upload path matches LoreScroll convention: /{sim_slug}/lore/{image_slug}.avif
+        # AVIF encodes are CPU-bound (0.1-5s each) — off the event loop (P1-6).
         path = f"{sim_slug}/lore/{image_slug}.avif"
-        full_avif = convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
-        thumb_avif = convert_to_avif(raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB)
+        full_avif = await asyncio.to_thread(convert_to_avif, raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+        thumb_avif = await asyncio.to_thread(
+            convert_to_avif, raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB
+        )
 
         full_path = path.replace(".avif", ".full.avif")
         await self._upload_to_storage("simulation.assets", full_path, full_avif)
@@ -657,12 +661,15 @@ class ForgeImageService:
         Full-res file: {uuid}.full.avif (native resolution, quality 85)
         Thumbnail file: {uuid}.avif (max 1024px, quality 80)
         """
-        full_avif = convert_to_avif(
+        # AVIF encodes are CPU-bound (0.1-5s each) — off the event loop (P1-6).
+        full_avif = await asyncio.to_thread(
+            convert_to_avif,
             raw_bytes,
             max_dimension=None,
             quality=AVIF_QUALITY,
         )
-        thumb_avif = convert_to_avif(
+        thumb_avif = await asyncio.to_thread(
+            convert_to_avif,
             raw_bytes,
             max_dimension=MAX_IMAGE_DIMENSION,
             quality=AVIF_QUALITY_THUMB,
