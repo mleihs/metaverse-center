@@ -1,9 +1,9 @@
 /**
  * Shared i18n-wrapped label functions for resonance signatures and archetypes.
  *
- * Single source of truth — used by ResonanceMonitor, ResonanceCard,
- * ResonanceDetailsPanel, and AdminResonancesTab. Prevents the 3-way
- * duplication of label maps across components.
+ * Single source of truth — used by ResonanceCard, ResonanceDetailsPanel,
+ * and AdminResonancesTab. Prevents the 3-way duplication of label maps
+ * across components.
  */
 
 import { msg } from '@lit/localize';
