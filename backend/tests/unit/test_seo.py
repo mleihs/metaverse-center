@@ -520,3 +520,39 @@ class TestInjectEntityContent:
             result = _inject_entity_content(base_html, "settings", "id", "Sim", "slug")
 
         assert result == base_html
+
+
+class TestRebuildSeoCaches:
+    """rebuild_seo_caches must rebind BOTH caches with the current TTL.
+
+    Regression pins for the deep-audit finding: TTLCache freezes its ttl at
+    construction, so the old admin-router path (``_sim_meta_cache.clear()``)
+    kept the import-time TTL forever — and left ``_entity_cache`` untouched
+    entirely.
+    """
+
+    def test_rebinds_both_caches_with_current_ttl(self, monkeypatch):
+        import backend.middleware.seo as seo_module
+
+        monkeypatch.setattr(seo_module, "get_ttl", lambda _key: 1234)
+        old_sim = seo_module._sim_meta_cache
+        old_entity = seo_module._entity_cache
+
+        seo_module.rebuild_seo_caches()
+
+        assert seo_module._sim_meta_cache is not old_sim
+        assert seo_module._entity_cache is not old_entity
+        assert seo_module._sim_meta_cache.ttl == 1234
+        assert seo_module._entity_cache.ttl == 1234
+
+    def test_rebuild_drops_stale_entries(self, monkeypatch):
+        import backend.middleware.seo as seo_module
+
+        monkeypatch.setattr(seo_module, "get_ttl", lambda _key: 60)
+        seo_module._sim_meta_cache["slug:stale"] = {"id": "x"}
+        seo_module._entity_cache["stale:agents:e"] = ("<p>x</p>", "{}")
+
+        seo_module.rebuild_seo_caches()
+
+        assert "slug:stale" not in seo_module._sim_meta_cache
+        assert "stale:agents:e" not in seo_module._entity_cache
