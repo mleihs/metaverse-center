@@ -65,26 +65,68 @@ async def test_base_mixin_loop_survives_unexpected_exception() -> None:
 
 @pytest.mark.asyncio
 async def test_heartbeat_loop_survives_unexpected_exception() -> None:
-    """The heartbeat is the game tick — an unexpected tick error must not silently stop it."""
+    """The heartbeat is the game tick — an unexpected tick error must not silently stop it.
+
+    HeartbeatService now inherits the loop from BaseSchedulerMixin; this test pins
+    that the wiring (``_load_config`` dict contract → ``_process_tick`` →
+    ``_tick_due_simulations``) routes an unexpected exception into the terminal guard.
+    """
     with (
         patch(
-            "backend.services.heartbeat_service.get_admin_supabase",
+            "backend.services.social.scheduler_base.get_admin_supabase",
             new=AsyncMock(return_value=MagicMock()),
         ),
-        patch.object(HeartbeatService, "_load_config", new=AsyncMock(return_value=(True, 0))),
+        patch.object(
+            HeartbeatService,
+            "_load_enabled_interval",
+            new=AsyncMock(return_value=(True, 0)),
+        ),
         patch.object(
             HeartbeatService,
             "_tick_due_simulations",
             new=AsyncMock(side_effect=RuntimeError("unexpected boom")),
         ),
-        patch("backend.services.heartbeat_service.sentry_sdk.capture_exception") as mock_cap,
+        patch("backend.services.social.scheduler_base.sentry_sdk.capture_exception") as mock_cap,
         patch(
-            "backend.services.heartbeat_service.asyncio.sleep",
+            "backend.services.social.scheduler_base.asyncio.sleep",
             new=AsyncMock(side_effect=asyncio.CancelledError),
         ),
     ):
         with pytest.raises(asyncio.CancelledError):
             await HeartbeatService._run_loop()
+
+    mock_cap.assert_called_once()
+    assert isinstance(mock_cap.call_args.args[0], RuntimeError)
+
+
+@pytest.mark.asyncio
+async def test_scanner_loop_survives_unexpected_exception() -> None:
+    """ScannerService inherits the mixin loop — same wiring pin as the heartbeat."""
+    from backend.services.scanning.scanner_service import ScannerService
+
+    with (
+        patch(
+            "backend.services.social.scheduler_base.get_admin_supabase",
+            new=AsyncMock(return_value=MagicMock()),
+        ),
+        patch.object(
+            ScannerService,
+            "_load_config",
+            new=AsyncMock(return_value={"enabled": True, "interval": 0}),
+        ),
+        patch.object(
+            ScannerService,
+            "run_scan_cycle",
+            new=AsyncMock(side_effect=RuntimeError("unexpected boom")),
+        ),
+        patch("backend.services.social.scheduler_base.sentry_sdk.capture_exception") as mock_cap,
+        patch(
+            "backend.services.social.scheduler_base.asyncio.sleep",
+            new=AsyncMock(side_effect=asyncio.CancelledError),
+        ),
+    ):
+        with pytest.raises(asyncio.CancelledError):
+            await ScannerService._run_loop()
 
     mock_cap.assert_called_once()
     assert isinstance(mock_cap.call_args.args[0], RuntimeError)

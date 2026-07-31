@@ -5,24 +5,22 @@ Runs as a background task (system actor) using admin Supabase client.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
-import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
-from backend.dependencies import get_admin_supabase
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
 from backend.services.scanning.registry import get_adapter, get_adapter_names
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from backend.utils.settings import upsert_platform_setting
@@ -43,47 +41,21 @@ _DEFAULT_INTERVAL = 21600  # 6 hours
 _FLOOR_INTERVAL = 3600  # 1 hour minimum
 
 
-class ScannerService:
-    """Substrate Scanner — background service for automated event detection."""
+class ScannerService(BaseSchedulerMixin):
+    """Substrate Scanner — background service for automated event detection.
 
-    _task: asyncio.Task | None = None
+    Inherits the resilient run-loop from BaseSchedulerMixin (the silent-tick-death
+    guard, the ConnectError retry clause, and tagged Sentry reporting). The old
+    hand-rolled loop had drifted: it lacked the ``httpx.ConnectError`` clause, so
+    a DB outage was reported as a full loop error instead of a quiet retry.
+    """
 
-    # ── Lifecycle ─────────────────────────────────────────────────────────
-
-    @classmethod
-    async def start(cls) -> asyncio.Task:
-        """Launch the scanner loop. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_loop())
-        logger.info("Substrate Scanner started")
-        return cls._task
+    _scheduler_name = "scanner"
 
     @classmethod
-    async def _run_loop(cls) -> None:
-        """Infinite loop: sleep → check config → run scan cycle."""
-        while True:
-            interval = _DEFAULT_INTERVAL
-            try:
-                admin = await get_admin_supabase()
-                config = await cls._load_config(admin)
-                interval = config["interval"]
-                if config["enabled"]:
-                    await cls.run_scan_cycle(admin, config)
-            except asyncio.CancelledError:
-                logger.info("Substrate Scanner shutting down")
-                raise
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception("Scanner loop error")
-                sentry_sdk.capture_exception(exc)
-            except Exception as exc:
-                # Last-resort guard: an unexpected exception type must not kill the loop —
-                # a propagating exception ends the task (silent stop while /health stays 200).
-                # Report and keep looping.
-                logger.exception("Scanner loop: unexpected error, continuing")
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("service", "ScannerService")
-                    scope.set_tag("phase", "scheduler_loop_unexpected")
-                    sentry_sdk.capture_exception(exc)
-            await asyncio.sleep(interval)
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One scheduler tick: run a full scan cycle."""
+        await cls.run_scan_cycle(admin, config)
 
     # ── Configuration ─────────────────────────────────────────────────────
 

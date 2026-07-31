@@ -26,7 +26,6 @@ import sentry_sdk
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.dependencies import get_admin_supabase
 from backend.services.agent_activity_service import AgentActivityService
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
@@ -41,6 +40,7 @@ from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
@@ -122,57 +122,37 @@ _MAX_CONCURRENT_TICKS = 3
 _SYSTEM_ACTOR = UUID("00000000-0000-0000-0000-000000000000")
 
 
-class HeartbeatService:
-    """Periodic background task that drives simulation heartbeats."""
+class HeartbeatService(BaseSchedulerMixin):
+    """Periodic background task that drives simulation heartbeats.
 
-    _task: asyncio.Task | None = None
+    Inherits the resilient run-loop from BaseSchedulerMixin (the silent-tick-death
+    guard, the ConnectError retry clause, and tagged Sentry reporting). The loop
+    wakes every 60s to check for due simulations (``interval``); the configured
+    tick interval (``tick_interval``) only feeds ``next_heartbeat_at`` inside the
+    tick pipeline.
+    """
 
-    # ── Lifecycle ───────────────────────────────────────────────
-
-    @classmethod
-    async def start(cls) -> asyncio.Task:
-        """Launch the heartbeat loop. Called from app lifespan."""
-        cls._task = asyncio.create_task(cls._run_loop())
-        logger.info("Heartbeat service started")
-        return cls._task
-
-    @classmethod
-    async def _run_loop(cls) -> None:
-        """Infinite loop: sleep → find due simulations → tick each."""
-        while True:
-            interval = _DEFAULT_INTERVAL
-            try:
-                admin = await get_admin_supabase()
-                enabled, interval = await cls._load_config(admin)
-                if enabled:
-                    await cls._tick_due_simulations(admin, interval)
-            except asyncio.CancelledError:
-                logger.info("Heartbeat service shutting down")
-                raise
-            except (httpx.ConnectError, httpx.ConnectTimeout):
-                logger.warning(
-                    "Heartbeat service: database unavailable, retrying in %ds",
-                    interval,
-                )
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
-                logger.exception("Heartbeat service loop error")
-                sentry_sdk.capture_exception(exc)
-            except Exception as exc:
-                # Last-resort guard: an unexpected exception type must not kill the game tick.
-                # A propagating exception ends the task and the heartbeat stops while /health
-                # stays 200 (silent tick-death). Report and keep looping.
-                logger.exception("Heartbeat service loop: unexpected error, continuing")
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("service", "HeartbeatService")
-                    scope.set_tag("phase", "scheduler_loop_unexpected")
-                    sentry_sdk.capture_exception(exc)
-            # Check every 60s for due simulations (not the full interval)
-            await asyncio.sleep(min(60, interval))
+    _scheduler_name = "heartbeat"
 
     # ── Configuration ───────────────────────────────────────────
 
     @classmethod
-    async def _load_config(cls, admin: Client) -> tuple[bool, int]:
+    async def _load_config(cls, admin: Client) -> dict:
+        """Mixin contract: loop cadence is the 60s due-check, not the tick interval."""
+        enabled, tick_interval = await cls._load_enabled_interval(admin)
+        return {
+            "enabled": enabled,
+            "interval": min(60, tick_interval),
+            "tick_interval": tick_interval,
+        }
+
+    @classmethod
+    async def _process_tick(cls, admin: Client, config: dict) -> None:
+        """One scheduler tick: find and process all due simulations."""
+        await cls._tick_due_simulations(admin, config["tick_interval"])
+
+    @classmethod
+    async def _load_enabled_interval(cls, admin: Client) -> tuple[bool, int]:
         """Read heartbeat config from platform_settings."""
         enabled = _DEFAULT_ENABLED
         interval = _DEFAULT_INTERVAL
@@ -1307,7 +1287,7 @@ class HeartbeatService:
     @classmethod
     async def get_admin_dashboard(cls, admin: Client) -> dict:
         """Build admin heartbeat dashboard data. Moved from router for SoC."""
-        enabled, interval = await cls._load_config(admin)
+        enabled, interval = await cls._load_enabled_interval(admin)
 
         # Load active systems
         _resp = await (
@@ -1472,7 +1452,7 @@ class HeartbeatService:
             raise not_found(detail="Simulation not found.")
 
         sim = response.data[0]
-        _, interval = await cls._load_config(admin)
+        _, interval = await cls._load_enabled_interval(admin)
         await cls._tick_simulation(admin, sim, interval)
 
         # Return the completed heartbeat record
