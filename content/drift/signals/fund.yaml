@@ -1,0 +1,110 @@
+# Drift signal skeletons — class: fund (find).
+#
+# A Fund does NOT stop the run. fn_travel_move applies the `auto` outcome on
+# the spot and writes a log line — no modal, no OK button. A find that
+# interrupts the journey to ask "do you want the free thing?" is a find that
+# costs more attention than it gives (concept R4: only real trades get a
+# panel).
+#
+# Most Funde put actual freight in the manifest (`cargo_grant`), which is
+# income the run can still LOSE — salvage you have not brought home is not
+# salvage. That is the whole tension: a full manifest far from home is a
+# reason to turn around, and turning around is a decision.
+#
+# See stoerung.yaml for the field contract. Bilingual, en dashes only.
+schema_version: 1
+pack_slug: drift_w2_signals
+signal_class: fund
+signals:
+  # (1) The plain one — a courier who did not make it, and their manifest did.
+  - template_key: fund_verwaiste_sendung
+    band_weights: { near: 12, mid: 16, deep: 12 }
+    prose:
+      title_de: "Verwaiste Sendung"
+      title_en: "Orphaned Consignment"
+      body_de: "Eine Sendung ohne Träger, sauber verzurrt, das Siegel intakt. Wer sie hierher gebracht hat, ist nicht weitergekommen, und hat vorher noch ordentlich gepackt."
+      body_en: "A consignment without a courier, neatly lashed, seal intact. Whoever brought it here did not get further, and packed carefully before they stopped."
+    auto:
+      text_de: "Der Träger nimmt die Sendung auf und trägt sie weiter, weil das die Antwort des Büros auf alles ist, was liegen bleibt."
+      text_en: "The courier takes the consignment aboard and carries it on, because that is the Bureau's answer to everything left lying."
+      deltas: { cargo_grant: { family: kontrakte, vector: commerce, haul: 2 } }
+
+  # (2) Bandwidth salvage — the antenna economy's small mercy.
+  - template_key: fund_bandbreitenader
+    band_weights: { near: 10, mid: 14, deep: 12 }
+    prose:
+      title_de: "Bandbreitenader"
+      title_en: "Bandwidth Vein"
+      body_de: "Eine Ader offener Bandbreite, dick wie ein Seil, aus keiner erkennbaren Quelle. Sie liegt einfach da, wie Wasser in einer Wüste, die nicht dafür bekannt ist."
+      body_en: "A vein of open bandwidth, thick as a rope, from no discernible source. It simply lies there, like water in a desert not known for it."
+    auto:
+      text_de: "Der Träger zapft an, so lange es geht. Die Ader versiegt, kaum dass sie gemerkt hat, dass jemand trinkt."
+      text_en: "The courier taps in for as long as it lasts. The vein runs dry almost as soon as it notices someone drinking."
+      deltas: { bb: 2 }
+
+  # (3) Deep-band prize: real money, deep out.
+  - template_key: fund_siegelkassette
+    band_weights: { near: 2, mid: 10, deep: 18 }
+    prose:
+      title_de: "Siegelkassette"
+      title_en: "Seal Casket"
+      body_de: "Eine Kassette des Büros, tief im Drift, mit einer Prägung, die seit Jahren nicht mehr vergeben wird. Das Schloss ist offen. Der Inhalt ist vollzählig."
+      body_en: "A Bureau casket, deep in the Drift, stamped with a mark that has not been issued for years. The lock is open. The contents are complete."
+    auto:
+      text_de: "Der Träger zählt nach, zweimal, und schreibt sich die Kassette gut. Wer sie verloren hat, wird nicht mehr danach fragen."
+      text_en: "The courier counts twice and books the casket to their own ledger. Whoever lost it will not be asking after it."
+      deltas: { siegel: 14 }
+
+  # (4) A find that costs — the manifest is a finite thing (couples to overload).
+  - template_key: fund_schwere_bergung
+    band_weights: { near: 8, mid: 12, deep: 12 }
+    requires: { kh_band: [angeschlagen, intakt] }
+    prose:
+      title_de: "Schwere Bergung"
+      title_en: "Heavy Salvage"
+      body_de: "Etwas Großes, Wertvolles und Unbequemes. Es passt nicht gut in das Manifest und es lässt sich auch nicht gut liegen lassen, und der Träger weiß beides, während er zugreift."
+      body_en: "Something large, valuable and inconvenient. It does not fit the manifest well and it does not sit well being left behind, and the courier knows both while reaching for it."
+    auto:
+      text_de: "Der Träger nimmt sie auf. Der Rumpf ächzt einmal, kurz und sehr deutlich, und dann fährt man eben schwerer."
+      text_en: "The courier takes it aboard. The hull groans once, briefly and very clearly, and from here one simply travels heavier."
+      deltas: { cargo_grant: { family: blaupausen, vector: architecture, haul: 5 }, kh: -4 }
+
+  # (5) A find that heals — needed, or the class is only ever a haul faucet.
+  - template_key: fund_stilles_wasser
+    band_weights: { near: 12, mid: 10, deep: 8 }
+    requires: { kh_band: [kritisch, angeschlagen] }
+    prose:
+      title_de: "Stilles Wasser"
+      title_en: "Still Water"
+      body_de: "Eine Stelle, an der der Drift nicht zieht. Kein Fund im Sinne des Büros, nichts, was man abliefern könnte. Nur eine Handbreit Ruhe, die niemandem gehört."
+      body_en: "A place where the Drift does not pull. No find in the Bureau's sense, nothing one could deliver. Just a hand's breadth of calm that belongs to no one."
+    auto:
+      text_de: "Der Träger hält an, länger als er müsste, und lässt sich zusammenlaufen. Es ist kein Vermögen. Es ist der Grund, warum man ankommt."
+      text_en: "The courier stops, longer than necessary, and lets themselves run back together. It is not a fortune. It is the reason one arrives at all."
+      deltas: { kh: 14, dz: -2 }
+
+  # (6) Dream-freight — volatile, valuable, and it makes the Drift louder.
+  - template_key: fund_traumnest
+    band_weights: { near: 6, mid: 12, deep: 14 }
+    prose:
+      title_de: "Traumnest"
+      title_en: "Dream Nest"
+      body_de: "Ein Nest aus Traumfracht, ineinander verhakt wie schlafende Tiere. Es gehört niemandem und es ist etwas wert und es träumt weiter, während man es einpackt."
+      body_en: "A nest of dream-freight, hooked into itself like sleeping animals. It belongs to no one and it is worth something and it keeps dreaming while one packs it."
+    auto:
+      text_de: "Der Träger packt ein, so vorsichtig es geht. Etwas im Nest träumt jetzt von ihm, und der Drift hört zu."
+      text_en: "The courier packs it, as carefully as possible. Something in the nest now dreams of them, and the Drift is listening."
+      deltas: { cargo_grant: { family: traumfracht, vector: dream, haul: 4 }, dz: 2 }
+
+  # (7) A find that is knowledge, not freight — the bridge to the rumour class.
+  - template_key: fund_peilprotokoll
+    band_weights: { near: 10, mid: 12, deep: 10 }
+    prose:
+      title_de: "Peilprotokoll"
+      title_en: "Bearing Log"
+      body_de: "Ein Protokoll fremder Peilungen, mit einer Handschrift, die zum Schluss hin ruhiger wird statt hektischer. Die letzten Einträge sind sehr genau."
+      body_en: "A log of someone else's bearings, in a hand that grows calmer towards the end rather than more frantic. The final entries are very precise."
+    auto:
+      text_de: "Der Träger übernimmt die Peilungen ins eigene Logbuch. Ein Knoten, den bisher niemand hier verzeichnet hat, hat auf einmal eine Adresse."
+      text_en: "The courier copies the bearings into their own log. A node no one here had charted suddenly has an address."
+      deltas: { rumor_reveal: {}, siegel: 3 }

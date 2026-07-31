@@ -67,7 +67,6 @@ MAX_SAFE_PROMPTS = {
 async def main() -> None:
     from backend.dependencies import get_admin_supabase
     from backend.services.forge_image_service import ForgeImageService
-    from backend.utils.responses import extract_list
 
     supabase = await get_admin_supabase()
 

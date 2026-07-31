@@ -1,0 +1,56 @@
+# Drift signal skeletons — class: stille (silence).
+#
+# The most important class in the file, and the one with no mechanics worth
+# speaking of. Stille is what makes the other four classes mean something: if
+# every move produced an event, no event would be an event. It writes ONE log
+# line and never opens a panel (§8 M-08: the log line slides in, and that is
+# the entire ceremony).
+#
+# Three variants, and they are variants of MOOD, not of numbers. The tiny
+# deltas some of them carry exist so that silence is legibly a state of the
+# world and not the absence of the feature: quiet water lets a courier settle;
+# a dead calm in the deep is not restful at all.
+#
+# See stoerung.yaml for the field contract. Bilingual, en dashes only.
+schema_version: 1
+pack_slug: drift_w2_signals
+signal_class: stille
+signals:
+  # (1) The default silence — nothing happens, and nothing is the good outcome.
+  - template_key: stille_ruhige_passage
+    band_weights: { near: 20, mid: 16, deep: 10 }
+    prose:
+      title_de: "Ruhige Passage"
+      title_en: "Quiet Passage"
+      body_de: "Nichts. Der Drift steht offen und desinteressiert, und die Instrumente haben nichts zu melden."
+      body_en: "Nothing. The Drift lies open and uninterested, and the instruments have nothing to report."
+    auto:
+      text_de: "Eine ruhige Passage. Der Träger nutzt sie, wie man eine ruhige Passage nutzt: er wird ein wenig ruhiger."
+      text_en: "A quiet passage. The courier uses it the way one uses a quiet passage: they become a little quieter themselves."
+      deltas: { dz: -1 }
+
+  # (2) Silence as maintenance — the courier does the small work.
+  - template_key: stille_wartungsfenster
+    band_weights: { near: 14, mid: 14, deep: 10 }
+    prose:
+      title_de: "Wartungsfenster"
+      title_en: "Maintenance Window"
+      body_de: "Kein Signal, keine Peilung, keine Gegenstimme. Nur der eigene Rumpf, der leise arbeitet, und Zeit, ihm zuzuhören."
+      body_en: "No signal, no bearing, no countervoice. Only one's own hull working quietly, and time to listen to it."
+    auto:
+      text_de: "Der Träger zieht nach, was sich gelockert hat. Es ist keine Reparatur. Es ist der Unterschied zwischen einer Reparatur und einer Havarie."
+      text_en: "The courier tightens what has worked loose. It is not a repair. It is the difference between a repair and a Havarie."
+      deltas: { kh: 3 }
+
+  # (3) Deep-band silence — the calm that is not calming.
+  - template_key: stille_totwasser
+    band_weights: { near: 4, mid: 10, deep: 20 }
+    prose:
+      title_de: "Totwasser"
+      title_en: "Dead Water"
+      body_de: "Eine Stille, die nicht leer ist, sondern geräumt. Etwas hat hier aufgehört zu senden, und es hat vorher aufgeräumt."
+      body_en: "A silence that is not empty but cleared. Something stopped broadcasting here, and tidied up before it did."
+    auto:
+      text_de: "Der Träger fährt hindurch und hört sich selbst dabei zu, wie er nichts hört. Man kommt aus solchen Passagen nicht ruhiger heraus, als man hineingefahren ist."
+      text_en: "The courier passes through and listens to themselves hearing nothing. One does not come out of such passages calmer than one went in."
+      deltas: { dz: 1 }

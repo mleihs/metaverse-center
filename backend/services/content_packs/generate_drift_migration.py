@@ -2,9 +2,10 @@
 
 Sibling of `generate_migration.py` (the dungeon generator). Both reuse the
 generic `seed_emit.render_seed_document` scaffolding; this module owns the
-drift specifics — loading `content/drift/quests/*.yaml` and building
-`travel_quest_templates` rows. Kept separate so the dungeon generator never
-imports travel code (no cross-domain coupling) and vice versa.
+drift specifics — loading `content/drift/**/*.yaml` and building the
+`travel_quest_templates` + `travel_signal_templates` rows. Kept separate so
+the dungeon generator never imports travel code (no cross-domain coupling)
+and vice versa.
 
 Usage:
     python -m backend.services.content_packs.generate_drift_migration --stdout
@@ -22,19 +23,24 @@ from pathlib import Path
 from backend.services.content_packs.seed_emit import render_seed_document
 from backend.services.content_packs.travel_loader import (
     DEFAULT_DRIFT_PACK_ROOT,
-    QuestTemplateRecord,
-    load_quest_templates,
+    DriftPackContent,
+    load_drift_content,
 )
-from backend.services.content_packs.travel_row_builders import build_quest_template_rows
+from backend.services.content_packs.travel_row_builders import (
+    build_quest_template_rows,
+    build_signal_template_rows,
+)
 from backend.services.content_packs.travel_table_specs import (
     DRIFT_EMISSION_ORDER,
     TRAVEL_QUEST_TEMPLATES,
+    TRAVEL_SIGNAL_TEMPLATES,
 )
 
 # Dispatch: TableSpec -> row builder. Mirrors `generate_migration`'s
 # _BUILDER_FOR_SPEC; one row builder per drift table.
 _BUILDER_FOR_SPEC = {
     TRAVEL_QUEST_TEMPLATES: build_quest_template_rows,
+    TRAVEL_SIGNAL_TEMPLATES: build_signal_template_rows,
 }
 
 _TRUNCATE_NOTE = [
@@ -44,11 +50,11 @@ _TRUNCATE_NOTE = [
 
 
 def generate_drift_sql(
-    records: list[QuestTemplateRecord], *, truncate: bool = True
+    content: DriftPackContent, *, truncate: bool = True
 ) -> tuple[str, dict[str, int]]:
     """Produce the drift seed SQL string plus a per-table row-count map."""
     sections = [
-        (spec, _BUILDER_FOR_SPEC[spec](records)) for spec in DRIFT_EMISSION_ORDER
+        (spec, _BUILDER_FOR_SPEC[spec](content)) for spec in DRIFT_EMISSION_ORDER
     ]
     return render_seed_document(
         sections,
@@ -89,8 +95,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    records = load_quest_templates(args.root)
-    sql, counts = generate_drift_sql(records, truncate=not args.no_truncate)
+    content = load_drift_content(args.root)
+    sql, counts = generate_drift_sql(content, truncate=not args.no_truncate)
 
     if args.dry_run or (not args.output and not args.stdout):
         _print_counts(counts)

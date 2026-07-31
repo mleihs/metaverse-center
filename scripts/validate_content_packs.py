@@ -34,6 +34,7 @@ import argparse
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import get_args
 
 # Make `backend.*` importable when invoked directly.
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -49,8 +50,12 @@ from backend.services.content_packs.schemas import (  # noqa: E402
     ARCHETYPE_SLUG_TO_NAME,
 )
 from backend.services.content_packs.travel_loader import (  # noqa: E402
-    QuestTemplateRecord,
-    load_quest_templates,
+    DriftPackContent,
+    load_drift_content,
+)
+from backend.services.content_packs.travel_schema import (  # noqa: E402
+    INTERACTIVE_SIGNAL_CLASSES,
+    SignalClass,
 )
 
 
@@ -78,21 +83,52 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     return violations, warnings
 
 
-def validate_drift(records: list[QuestTemplateRecord]) -> tuple[list[str], list[str]]:
+def validate_drift(content: DriftPackContent) -> tuple[list[str], list[str]]:
     """Cross-file invariants for the drift (travel) pack.
 
     Per-item invariants (family/vector pairing, effect shape, bilingual
-    completeness, prose-token sanity) are enforced by the Pydantic models at
-    load time. The only cross-item invariant is `template_key` global
-    uniqueness — the soft FK target that `travel_quest_instances` references.
+    completeness, prose-token sanity, signal option/auto shape) are enforced by
+    the Pydantic models at load time. What only a whole-pack view can see:
+
+      - `template_key` global uniqueness, per table — the soft FK target that
+        `travel_quest_instances` / a run's `pending_signal` reference by key.
+        A duplicate key does not fail the INSERT (ON CONFLICT DO UPDATE): the
+        second row silently overwrites the first, and one authored signal
+        vanishes from the game with no error anywhere.
+      - Every signal class has at least one template. `fn_travel_move` (267)
+        picks a CLASS from the tuned per-band weights and THEN a template
+        within it; a class with no templates would make that draw fall through
+        to silence, so an empty class is a hole in the engine, not just in the
+        content.
     """
     violations: list[str] = []
-    keys = [record.template_key for record in records]
-    for dup, count in Counter(keys).items():
-        if count > 1:
-            violations.append(
-                f"quest template_key '{dup}' appears {count}× (must be globally unique)"
-            )
+
+    for label, keys in (
+        ("quest", [record.template_key for record in content.quests]),
+        ("signal", [record.template_key for record in content.signals]),
+    ):
+        for dup, count in Counter(keys).items():
+            if count > 1:
+                violations.append(
+                    f"{label} template_key '{dup}' appears {count}× (must be globally unique)"
+                )
+
+    if content.signals:
+        per_class = Counter(record.signal_class for record in content.signals)
+        for signal_class in get_args(SignalClass):
+            if not per_class[signal_class]:
+                violations.append(
+                    f"signal class '{signal_class}' has no templates — the draw in "
+                    "fn_travel_move can select it and would find nothing"
+                )
+        for signal_class in sorted(INTERACTIVE_SIGNAL_CLASSES):
+            if per_class[signal_class] < 2:
+                violations.append(
+                    f"signal class '{signal_class}' stops the run and has only "
+                    f"{per_class[signal_class]} template(s) — a decision the player has "
+                    "already seen is not a decision"
+                )
+
     return violations, []
 
 
@@ -212,9 +248,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.domain == "drift":
-            records = load_quest_templates(args.root)
-            violations, warnings = validate_drift(records)
-            summary = f"{len(records)} drift quest template(s)"
+            content = load_drift_content(args.root)
+            violations, warnings = validate_drift(content)
+            summary = (
+                f"{len(content.quests)} drift quest template(s), "
+                f"{len(content.signals)} signal template(s)"
+            )
         else:
             result = load_packs(args.root)
             violations, warnings = validate(result)

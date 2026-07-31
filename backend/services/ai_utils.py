@@ -13,7 +13,7 @@ import sentry_sdk
 from fastapi import HTTPException
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from backend.config import settings
@@ -76,7 +76,7 @@ def ai_error_to_http(exc: ModelHTTPError) -> HTTPException:
 def get_openrouter_model(
     api_key: str | None = None,
     model_id: str = "anthropic/claude-sonnet-4-6",
-) -> OpenAIModel:
+) -> OpenAIChatModel:
     """Return a Pydantic AI model configured for OpenRouter.
 
     Parameters
@@ -90,7 +90,7 @@ def get_openrouter_model(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key or settings.openrouter_api_key,
     )
-    return OpenAIModel(
+    return OpenAIChatModel(
         model_id,
         provider=provider,
     )

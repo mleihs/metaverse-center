@@ -31,13 +31,19 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.drift import (
     ChartGenerationResponse,
+    ClearanceExamRequest,
+    ClearanceExamResponse,
     DriftChartResponse,
     DriftDockResponse,
     DriftHonorResponse,
+    DriftProfileResponse,
     DriftTuningResponse,
+    HavarieResolveRequest,
     QuestAcceptResponse,
     QuestDeliverResponse,
     QuestStateResponse,
+    SignalResolveRequest,
+    TravelLogEntryResponse,
     TravelMoveRequest,
     TravelQuestAcceptRequest,
     TravelQuestAdvanceRequest,
@@ -58,6 +64,27 @@ async def require_drift_p0(
 ) -> None:
     """Phase gate: 404 unless drift_p0_enabled is on (migration 239)."""
     await DriftService.assert_p0_enabled(admin_supabase)
+
+
+# NOTE — there is deliberately NO `require_drift_fun_core` router dependency (W2.6/A).
+#
+# The Fun-Kern gate lives in ONE place: SQL. Every Fun-Kern RPC re-reads
+# `drift_fun_core_enabled` in-transaction (drift_gate_enabled, migration 264) and knows what
+# a closed gate means for ITS OWN state — refuse to CREATE (GATE_CLOSED → 400), but DRAIN
+# whatever the Fun-Kern already created (a wrecked run unravels, a pending scene clears).
+# That distinction is the W1/1.5 rule: a gate may refuse to create state, never to lock a
+# traveller inside it.
+#
+# A router-level gate cannot make that distinction — it answers 404 before the RPC runs, so
+# the coarse guard silently overrules the fine one. It already did: the carefully built
+# gate-drain in fn_travel_havarie_resolve was UNREACHABLE, and a rollback would have jailed
+# every wrecked run for its full 48-hour TTL. The dependency was removed from /havarie/resolve
+# and /signal/resolve in the W1+W2 acceptance; W2.6 removes the last three (clearance-exam,
+# sondieren, bank), where it was merely redundant — each of those RPCs raises GATE_CLOSED
+# itself — and would have become the same trap the day one of them grew a drain.
+#
+# Read-/nav-gating is unaffected: the frontend hides the surfaces, and GET /public/drift/state
+# reports the phase flags.
 
 
 @router.get("/chart")
@@ -118,6 +145,40 @@ async def regenerate_chart(
     return SuccessResponse(data=result)
 
 
+@router.get("/profile")
+async def get_profile(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[DriftProfileResponse | None]:
+    """The traveller's Bureau account (Siegel, VP, rank + progress, scars); null before
+    the first run.
+
+    Deliberately NOT behind the Fun-Kern gate: with the gate closed the account simply
+    reads all zeroes (nothing writes it), and a HUD strip that 404s mid-render is worse
+    than one that honestly shows an empty ledger. The WRITE paths are what the gate holds.
+    """
+    profile = await DriftService.get_profile(supabase, user.id)
+    return SuccessResponse(data=profile)
+
+
+@router.post("/clearance-exam")
+async def sit_clearance_exam(
+    body: ClearanceExamRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[ClearanceExamResponse]:
+    """Sit the Bureau clearance exam (VP threshold + Siegel fee → promotion).
+
+    Player-class RPC → user-JWT client (the auth.uid() guard, as for the run mutations).
+    The Fun-Kern gate is the RPC's own (GATE_CLOSED → 400), not the router's — see the note
+    above the endpoints.
+    """
+    result = await DriftService.sit_clearance_exam(supabase, user.id, body.rank)
+    return SuccessResponse(data=result)
+
+
 @router.get("/run")
 async def get_run(
     user: Annotated[CurrentUser, Depends(get_current_user)],
@@ -165,6 +226,109 @@ async def complete_run(
     """Close the run at the home broadcast edge (Entladung)."""
     run = await DriftService.complete_run(supabase, user.id, run_id, body.run_version)
     return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/havarie/resolve")
+async def resolve_havarie(
+    run_id: UUID,
+    body: HavarieResolveRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Decide a Havarie (M3): jettison, call for rescue, overstay, recall, or unravel.
+
+    Returns the run AFTER the choice — active again, banked, or abandoned. A wreck whose
+    48-hour TTL has run out unravels here regardless of the choice (the lazy finalisation
+    that lets P0.5 skip a scheduler); the returned run row says so.
+
+    NO `require_drift_fun_core` HERE, deliberately. A Havarie is a state only the Fun-Kern
+    can CREATE, but once a traveller is in one it is the only state they cannot leave by
+    themselves: `move` and `complete` demand `active`, `abandon` refuses `havarie`, and
+    `run_open` hands the wreck back because it holds the single-active slot. So the RPC
+    carries an explicit gate-closed DRAIN (forced Zerfaserung, `gate_drained: true`,
+    migration 267) — and a 404 from a router-level gate would make that drain unreachable
+    and strand every wrecked run for its full 48-hour TTL, which is exactly the trap the
+    W1/1.5 rule forbids: a gate may refuse to CREATE state, never to EMPTY it. The RPC
+    gates itself (GATE_CLOSED → 400) for every path that would create something new.
+    """
+    run = await DriftService.resolve_havarie(
+        supabase, user.id, run_id, body.run_version, body.choice, body.jettison_cargo_ids
+    )
+    return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/signal/resolve")
+async def resolve_signal(
+    run_id: UUID,
+    body: SignalResolveRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Answer the pending Störung/Begegnung (M1, migration 267).
+
+    Returns the run AFTER the answer: active again with `last_signal` set, or in a
+    Havarie if the outcome took the last of the hull. While a signal is pending the run
+    cannot move (SIGNAL_PENDING → 400) — a Störung is a decision, not a notification.
+
+    No `require_drift_fun_core` here, same reasoning as the Havarie above: the RPC owns a
+    gate-closed drain (clear the unplayable scene, keep everything else, no CAS demanded),
+    and a router 404 would make it dead code. Less urgent than the Havarie — `fn_travel_move`
+    already ignores a leftover `pending_signal` when the gate is shut — but a scene the
+    traveller can see and cannot dismiss is a bug, and the drain exists to answer it.
+    """
+    run = await DriftService.resolve_signal(
+        supabase, user.id, run_id, body.run_version, body.option_key
+    )
+    return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/sondieren")
+async def sondieren(
+    run_id: UUID,
+    body: TravelRunVersionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Dig the node the run is standing on (M2) — one Takt, a rising yield, an open marker.
+
+    The third marker of one class tears the node (Resonanzriss): the loose yield dug there
+    is forfeit. The returned run carries `last_sondierung` for the reveal.
+    """
+    run = await DriftService.sondieren(supabase, user.id, run_id, body.run_version)
+    return SuccessResponse(data=run)
+
+
+@router.post("/run/{run_id}/bank")
+async def bank_haul(
+    run_id: UUID,
+    body: TravelRunVersionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[TravelRunResponse]:
+    """Funkboje: transmit 70 % of the loose haul from a dock, safe from everything after."""
+    run = await DriftService.bank_haul(supabase, user.id, run_id, body.run_version)
+    return SuccessResponse(data=run)
+
+
+@router.get("/logbook")
+async def get_logbook(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _gate: Annotated[None, Depends(require_drift_p0)],
+    supabase: Annotated[Client, Depends(get_supabase)],
+) -> SuccessResponse[list[TravelLogEntryResponse]]:
+    """The traveller's logbook — signals, rumours, banks and Havarien, newest first.
+
+    NOT behind the Fun-Kern gate: with the gate closed the table is simply empty, and an
+    empty logbook is a truthful answer where a 404 in the middle of the HUD is not (same
+    reasoning as GET /drift/profile in W1). Across runs by design — the logbook is the
+    career, not the journey, and it is what makes coming back after a week free (R12).
+    """
+    entries = await DriftService.get_logbook(supabase, user.id)
+    return SuccessResponse(data=entries)
 
 
 @router.post("/run/{run_id}/abandon")

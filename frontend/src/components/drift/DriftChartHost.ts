@@ -104,8 +104,11 @@ function distanceBandLabel(band: string): string {
   }
 }
 
-/** German display label for a bleed vector (palette FREQUENCIES order, index 0–6). */
-function vectorLabel(vector: string): string {
+/** German display label for a bleed vector (palette FREQUENCIES order, index 0–6).
+ *  Exported because the HUD names the same vectors on the signal option chips (W2) — one
+ *  vocabulary, one place, or the board and the panel start calling the same thing two
+ *  different names. */
+export function vectorLabel(vector: string): string {
   switch (vector) {
     case 'commerce':
       return msg('Handel');
@@ -144,6 +147,11 @@ export class VelgDriftChartHost extends LitElement {
   /** The subset of claimedKeys the viewer owns — rendered as the amber --self seal. */
   @property({ attribute: false }) selfKeys: Set<string> = new Set();
 
+  /** Pixels of the board's LEFT edge that the HUD overlays. The camera fit frames the graph
+   *  into the band the player can actually see, not into the full canvas (see
+   *  _frameCameraToGraph). The owner sets it because only the owner knows its HUD. */
+  @property({ type: Number }) gutterLeft = 0;
+
   @state() private _offline = false;
   /** The node under the cursor — drives the hover dossier (inspect without moving). */
   @state() private _hoverNode: DriftChartNode | null = null;
@@ -164,6 +172,8 @@ export class VelgDriftChartHost extends LitElement {
   private _post: ReturnType<typeof createComposer> | null = null;
 
   private _resizeObserver: ResizeObserver | null = null;
+  /** Viewport size the camera was last framed for (drives the re-fit on a real resize). */
+  private _framedFor: { w: number; h: number } | null = null;
   private _rafId = 0;
   private _elapsed = 0;
   /** 0 when the user prefers reduced motion (freezes the background drift), else 1. */
@@ -178,6 +188,9 @@ export class VelgDriftChartHost extends LitElement {
   private _mounted = false;
   private _pointerDownAt: { x: number; y: number; t: number } | null = null;
   private _adjacentIds = new Set<string>();
+  /** Held once instead of re-created per pointer event: the MediaQueryList keeps `matches`
+   *  live, so a mouse→touch switch is still picked up without allocating on every move. */
+  private _coarsePointer = matchMedia('(pointer: coarse)');
 
   // HTML world-name labels over the canvas (homes only); transforms updated per frame.
   private _labelLayer: HTMLElement | null = null;
@@ -339,6 +352,17 @@ export class VelgDriftChartHost extends LitElement {
     this._renderer.setSize(w, h, false);
     this._post.setSize(w, h, this._pixelRatio);
     this._background.setAspect(w / h);
+
+    // Re-frame on a real size change. The fit is aspect-dependent, and this observer used to
+    // resize the RENDERER only — so a window resize, a rotation or a split-screen left the
+    // camera framed for the previous format (the graph half off-board, or lost in space).
+    // Guarded on a meaningful delta so a scrollbar flicker cannot fight the user's own zoom.
+    const last = this._framedFor;
+    const changed = !last || Math.abs(last.w - w) > 24 || Math.abs(last.h - h) > 24;
+    if (changed && this._gameGraph) {
+      this._framedFor = { w, h };
+      this._frameCameraToGraph();
+    }
   };
 
   private _applyCamera(wrap: HTMLElement): void {
@@ -484,8 +508,24 @@ export class VelgDriftChartHost extends LitElement {
       maxY = Math.max(maxY, n.y);
     }
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
-    const aspect = wrap ? this._aspect(wrap) : 1.6;
-    const fitH = Math.max(maxY - minY, (maxX - minX) / aspect) * 1.25 + 200;
+    const w = wrap?.clientWidth ?? 0;
+    const h = wrap?.clientHeight ?? 0;
+    if (!w || !h) return;
+
+    // The HUD is painted ON the board and permanently hides a left band of it. Framing the
+    // graph into the FULL canvas therefore parks part of it under the HUD — worst on narrow
+    // screens, where that band is a third of the width. Fit into the band the player can
+    // actually see, and shift the camera so the graph is centred in THAT band.
+    const gutter = Math.min(this.gutterLeft, Math.max(0, w - 240));
+    const visibleW = Math.max(240, w - gutter);
+
+    const dx = maxX - minX;
+    const dy = maxY - minY;
+    // Orthographic: viewHeight = world units across the canvas height. The graph must fit
+    // vertically (dy) AND horizontally inside the visible band (dx scaled by h/visibleW).
+    // Padding is a RATIO, not a constant: a fixed +200 world units was a wide margin on a
+    // small board and invisible on a 4K one — the same graph framed differently per screen.
+    const fitH = Math.max(dy, (dx * h) / visibleW) * 1.18;
     // frameTo sets BOTH live + target zoom; a bare viewHeight assignment is eased
     // back to the controller's initial target on the next frame (the ring overflowed).
     const fitView = Math.max(420, fitH);
@@ -493,7 +533,12 @@ export class VelgDriftChartHost extends LitElement {
     // when you zoom out (so they don't dwarf the shrinking nodes) and grow when you zoom
     // in — both clamped in _frame so a claim marker never vanishes or turns gigantic.
     this._refViewHeight = fitView;
-    this._controller.frameTo({ x: (minX + maxX) / 2, y: (minY + maxY) / 2 }, fitView);
+
+    // The camera centre lands at the canvas centre, so to put the graph's centre in the
+    // middle of the VISIBLE band it must sit half a gutter to the left of it.
+    const unitsPerPixel = fitView / h;
+    const centerX = (minX + maxX) / 2 - (unitsPerPixel * gutter) / 2;
+    this._controller.frameTo({ x: centerX, y: (minY + maxY) / 2 }, fitView);
   }
 
   /** Push the traveler's position + reachable neighbours into the graph highlight. */
@@ -519,21 +564,58 @@ export class VelgDriftChartHost extends LitElement {
     this._pointerDownAt = { x: e.clientX, y: e.clientY, t: performance.now() };
   };
 
-  /** The gameplay node nearest a canvas point, within a forgiving tap radius (or null). */
-  private _nodeAt(offsetX: number, offsetY: number): string | null {
-    if (!this._controller || !this._gameGraph) return null;
+  /**
+   * The gameplay node nearest a canvas point, within a forgiving tap radius (or null).
+   *
+   * `reachableOnly` is what makes the board actually clickable. The Drift is dense — 40+
+   * interstitials packed into the middle band — so the node nearest the cursor is very often
+   * one you cannot move to. The click path used to take that nearest node and then discard
+   * the click because it was not adjacent: a reachable node well inside the tap radius was
+   * silently ignored, and the board felt broken (reported in the W1 playtest). The move
+   * intent now searches only among REACHABLE nodes; the hover dossier keeps searching all of
+   * them (you may inspect anything, you may only travel to a neighbour).
+   */
+  private _nodeAt(
+    offsetX: number,
+    offsetY: number,
+    opts: { reachableOnly?: boolean } = {},
+  ): string | null {
+    const hit = this._nodesAt(offsetX, offsetY);
+    return opts.reachableOnly ? hit.reachable : hit.any;
+  }
+
+  /** Both answers in ONE scan: the nearest node (what the dossier inspects) and the nearest
+   *  REACHABLE node (what a click may move to). The pointermove path needs both on every
+   *  single mouse event, and used to walk the whole node list twice — each walk allocating a
+   *  fresh MediaQueryList via `matchMedia(...)` — to get them. */
+  private _nodesAt(
+    offsetX: number,
+    offsetY: number,
+  ): { any: string | null; reachable: string | null } {
+    if (!this._controller || !this._gameGraph) return { any: null, reachable: null };
     const world = this._controller.screenToWorld(offsetX, offsetY);
-    const radius = 30 * this._controller.unitsPerPixel; // forgiving tap target
-    let bestId: string | null = null;
-    let bestDist = radius;
+    // A coarse pointer (finger) needs the 44px WCAG touch target; a mouse is fine with 30.
+    const tapPx = this._coarsePointer.matches ? 44 : 30;
+    const radius = tapPx * this._controller.unitsPerPixel;
+
+    let anyId: string | null = null;
+    let anyDist = radius;
+    let reachId: string | null = null;
+    let reachDist = radius;
+
     for (const node of this._gameGraph.nodeWorldPositions) {
       const d = Math.hypot(node.x - world.x, node.y - world.y);
-      if (d < bestDist) {
-        bestDist = d;
-        bestId = node.id;
+      if (d >= radius) continue;
+      if (d < anyDist) {
+        anyDist = d;
+        anyId = node.id;
+      }
+      if (d < reachDist && this._adjacentIds.has(node.id)) {
+        reachDist = d;
+        reachId = node.id;
       }
     }
-    return bestId;
+    return { any: anyId, reachable: reachId };
   }
 
   // A click (little movement, short dwell) on a reachable node emits a move intent;
@@ -544,8 +626,8 @@ export class VelgDriftChartHost extends LitElement {
     this._pointerDownAt = null;
     if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return;
     if (performance.now() - down.t > 500) return;
-    const bestId = this._nodeAt(e.offsetX, e.offsetY);
-    if (bestId && this._adjacentIds.has(bestId)) {
+    const bestId = this._nodeAt(e.offsetX, e.offsetY, { reachableOnly: true });
+    if (bestId) {
       this.dispatchEvent(
         new CustomEvent('drift-node-pick', {
           detail: { nodeId: bestId },
@@ -564,8 +646,11 @@ export class VelgDriftChartHost extends LitElement {
       if (this._hoverNode) this._hoverNode = null;
       return;
     }
-    const id = this._nodeAt(e.offsetX, e.offsetY);
-    (e.currentTarget as HTMLElement).style.cursor = id ? 'pointer' : '';
+    const { any: id, reachable } = this._nodesAt(e.offsetX, e.offsetY);
+    // The pointer cursor promises a MOVE, so it may only appear where a move is possible.
+    // (It used to appear over every node, including the unreachable ones — an affordance
+    // that lied, and the reason the board read as "clicks do nothing".)
+    (e.currentTarget as HTMLElement).style.cursor = reachable ? 'pointer' : '';
     if (id !== (this._hoverNode?.id ?? null)) {
       this._hoverNode = id ? (this.chartData?.nodes.find((n) => n.id === id) ?? null) : null;
     }

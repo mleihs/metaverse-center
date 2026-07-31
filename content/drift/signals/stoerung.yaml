@@ -1,0 +1,399 @@
+# Drift signal skeletons — class: stoerung (disturbance).
+#
+# A Störung STOPS the run: fn_travel_move parks it in `pending_signal` and the
+# traveller must answer through fn_signal_resolve. Every skeleton therefore
+# offers 2-3 options, and every option is a trade, never a punishment screen:
+# a check to gamble, or a certain price to refuse the gamble. If one option is
+# strictly better than the others in every state, the skeleton is broken.
+#
+# The old hard-coded deep_surge (40 % chance of -10 KH / +3 DZ on a deep move)
+# is dissolved into this class — `stoerung_frequenzscherung` is its heir, but
+# now it has a name, a text, and a way to fight back.
+#
+# Contract (backend/services/content_packs/travel_schema.py):
+#   band_weights  — draw weight within the class, per distance band. 0 = the
+#                   skeleton does not exist in that band.
+#   requires      — resource bands the run must be in (AND). Absent = any.
+#   cost          — paid up front, whatever the roll says (honest chip).
+#   check         — roll d10 + affinity[vector] - floor(DZ/10) >= difficulty.
+#   deltas        — closed vocabulary: kh, bb, dz, takt (pools; dz is a burden),
+#                   siegel (credit), cargo_grant, rumor_reveal, marker_add.
+#
+# Bilingual (de + en), en dashes only. Regenerate the seed after editing:
+#   .venv/bin/python -m backend.services.content_packs.generate_drift_migration \
+#     --output supabase/migrations/<ts>_266a_drift_content_seed.sql
+schema_version: 1
+pack_slug: drift_w2_signals
+signal_class: stoerung
+signals:
+  # (1) The heir of deep_surge — the deep Drift pushing back.
+  - template_key: stoerung_frequenzscherung
+    band_weights: { near: 4, mid: 10, deep: 22 }
+    prose:
+      title_de: "Frequenzscherung"
+      title_en: "Frequency Shear"
+      body_de: "Die Trägerfrequenz reißt in zwei Hälften, die einander nicht mehr kennen. Für einen Moment steht der Träger in beiden und in keiner. Die Instrumente zeigen zwei Positionen an, beide plausibel."
+      body_en: "The carrier frequency tears into two halves that no longer know each other. For a moment the courier stands in both and in neither. The instruments report two positions, both plausible."
+    options:
+      - key: durchdruecken
+        label_de: "Durch die Scherung drücken"
+        label_en: "Push through the shear"
+        check: { vector: architecture, difficulty: 7 }
+        success:
+          text_de: "Der Träger legt sich in die Naht wie in eine Tür und hält sie auf, bis die beiden Hälften wieder dieselbe Sprache sprechen. Die Instrumente einigen sich auf eine Position."
+          text_en: "The courier leans into the seam like a door and holds it open until the two halves speak the same language again. The instruments settle on one position."
+          deltas: { kh: -4 }
+        failure:
+          text_de: "Die Naht schließt sich schneller als der Träger sie halten kann. Was durchkommt, ist vollständig, aber es klingt, als wäre es zweimal gefaltet worden."
+          text_en: "The seam closes faster than the courier can hold it. What comes through is complete, but it rings like something folded twice."
+          deltas: { kh: -12, dz: 3 }
+      - key: treiben_lassen
+        label_de: "Treiben lassen, bis die Scherung ausläuft"
+        label_en: "Drift until the shear runs out"
+        cost: { takt: 1 }
+        result:
+          text_de: "Der Träger hört auf zu steuern und lässt sich von der Scherung tragen, wie man sich von einem Streit tragen lässt, den man nicht führen will. Es kostet Zeit. Es kostet keine Substanz."
+          text_en: "The courier stops steering and lets the shear carry them, the way one lets an argument one refuses to have carry one along. It costs time. It costs no substance."
+          deltas: { dz: 2 }
+
+  # (2) Bandbreite bleeds — the antenna is the first thing the Drift eats.
+  - template_key: stoerung_bandbreitenfrass
+    band_weights: { near: 8, mid: 12, deep: 10 }
+    prose:
+      title_de: "Bandbreitenfraß"
+      title_en: "Bandwidth Rot"
+      body_de: "Etwas frisst an der Bandbreite. Nicht laut, nicht schnell, sondern mit der Geduld von Rost. Die Anzeige verliert eine Stelle, dann noch eine."
+      body_en: "Something is eating the bandwidth. Not loudly, not fast, but with the patience of rust. The gauge loses a digit, then another."
+    options:
+      - key: abschirmen
+        label_de: "Kanal abschirmen"
+        label_en: "Shield the channel"
+        cost: { kh: 8 }
+        result:
+          text_de: "Der Träger legt die eigene Kohärenz um den Kanal wie einen Mantel um ein Kind. Der Fraß findet nichts mehr zu beißen und zieht weiter."
+          text_en: "The courier wraps their own coherence around the channel like a coat around a child. The rot finds nothing left to bite and moves on."
+          deltas: { bb: 1 }
+      - key: aussitzen
+        label_de: "Fraß aussitzen"
+        label_en: "Sit the rot out"
+        check: { vector: resonance, difficulty: 6 }
+        success:
+          text_de: "Der Träger wartet, bis der Fraß satt ist. Er ist früher satt als erwartet, und was er zurücklässt, schwingt sauberer als vorher."
+          text_en: "The courier waits until the rot is sated. It is sated sooner than expected, and what it leaves behind rings cleaner than before."
+          deltas: { dz: 1 }
+        failure:
+          text_de: "Der Fraß ist nicht satt zu bekommen. Als er weiterzieht, fehlt der Anlage ein Stück, das keine Werkstatt im Drift ersetzt."
+          text_en: "The rot cannot be sated. When it moves on, the rig is missing a piece no workshop in the Drift will replace."
+          deltas: { bb: -2, dz: 2 }
+
+  # (3) Overload-only: the manifest is what is killing you.
+  - template_key: stoerung_manifestlast
+    band_weights: { near: 10, mid: 10, deep: 6 }
+    requires: { overload: true }
+    prose:
+      title_de: "Manifestlast"
+      title_en: "Manifest Load"
+      body_de: "Die Fracht ist zu viel für das, was der Träger ist. Sie zieht nicht am Rumpf, sie zieht am Träger selbst, und der Drift merkt es sofort, so wie Wasser einen Schwimmer merkt, der zu viel trägt."
+      body_en: "The freight is more than the courier is. It does not pull at the hull, it pulls at the courier, and the Drift notices at once, the way water notices a swimmer carrying too much."
+    options:
+      - key: umschichten
+        label_de: "Manifest umschichten"
+        label_en: "Restow the manifest"
+        cost: { takt: 1 }
+        result:
+          text_de: "Der Träger ordnet die Ladung neu, bis sie wenigstens in dieselbe Richtung zieht wie er. Es ist Handarbeit, und Handarbeit kostet Fenster."
+          text_en: "The courier restows the load until it at least pulls in the same direction as they do. It is handwork, and handwork costs window."
+          deltas: { kh: -2 }
+      - key: schleppen
+        label_de: "Weiterschleppen"
+        label_en: "Haul on regardless"
+        check: { vector: commerce, difficulty: 8 }
+        success:
+          text_de: "Der Träger schleppt und schleppt und kommt an. Der Rücken wird sich morgen melden. Das Manifest ist vollständig."
+          text_en: "The courier hauls and hauls and arrives. The back will file its complaint tomorrow. The manifest is intact."
+          deltas: { kh: -5 }
+        failure:
+          text_de: "Die Last gewinnt. Nichts geht verloren, aber der Träger zahlt jeden Meter zweimal, und der Drift schreibt mit."
+          text_en: "The load wins. Nothing is lost, but the courier pays for every metre twice, and the Drift keeps the ledger."
+          deltas: { kh: -14, dz: 3 }
+
+  # (4) Damaged-hull-only: the Drift smells blood.
+  - template_key: stoerung_rissfaenger
+    band_weights: { near: 6, mid: 12, deep: 14 }
+    requires: { kh_band: [kritisch, angeschlagen] }
+    prose:
+      title_de: "Rissfänger"
+      title_en: "Crack-Catcher"
+      body_de: "Der Drift hat den Riss gefunden, den der Träger mit sich trägt, und legt einen Finger hinein. Kein Angriff, eher Neugier. Neugier, die weiter aufmacht."
+      body_en: "The Drift has found the crack the courier carries and lays a finger in it. Not an attack, more like curiosity. Curiosity that keeps opening."
+    options:
+      - key: kitten
+        label_de: "Riss kitten"
+        label_en: "Seal the crack"
+        cost: { bb: 1, takt: 1 }
+        result:
+          text_de: "Der Träger gibt Bandbreite her, um Substanz zu kaufen. Ein schlechter Kurs, aber der einzige, der hier angeboten wird."
+          text_en: "The courier trades bandwidth for substance. A poor rate, and the only one on offer out here."
+          deltas: { kh: 12 }
+      - key: ignorieren
+        label_de: "Den Finger ignorieren"
+        label_en: "Ignore the finger"
+        check: { vector: memory, difficulty: 9 }
+        success:
+          text_de: "Der Träger erinnert sich, wer er war, bevor der Riss da war, und der Drift verliert das Interesse an einer Wunde, die ihr Träger nicht anerkennt."
+          text_en: "The courier remembers who they were before the crack, and the Drift loses interest in a wound its bearer will not acknowledge."
+          deltas: { dz: 1 }
+        failure:
+          text_de: "Der Riss wird ein Spalt. Der Träger sieht durch sich hindurch auf den Drift dahinter und wünschte, er hätte es nicht getan."
+          text_en: "The crack becomes a gap. The courier looks through themselves at the Drift beyond and wishes they had not."
+          deltas: { kh: -15, dz: 4 }
+
+  # (5) High-dissonanz-only: the Drift starts answering back.
+  - template_key: stoerung_gegenstimme
+    band_weights: { near: 5, mid: 10, deep: 14 }
+    requires: { dz_band: [erhoeht, kritisch] }
+    prose:
+      title_de: "Gegenstimme"
+      title_en: "Countervoice"
+      body_de: "Die Dissonanz hat eine Stimme bekommen. Sie spricht mit dem Timbre des Trägers und sagt Sätze, die der Träger fast gesagt hätte. Sie ist plausibel. Das ist das Schlimme."
+      body_en: "The dissonance has found a voice. It speaks in the courier's timbre and says sentences the courier almost said. It is plausible. That is the bad part."
+    options:
+      - key: antworten
+        label_de: "Der Stimme antworten"
+        label_en: "Answer the voice"
+        check: { vector: language, difficulty: 8 }
+        success:
+          text_de: "Der Träger antwortet in einer Grammatik, die die Stimme nicht kennt. Sie verstummt beleidigt, und mit ihr ein Teil des Lärms, den sie mitgebracht hat."
+          text_en: "The courier answers in a grammar the voice does not know. It falls silent, affronted, and takes part of the noise it brought with it."
+          deltas: { dz: -6 }
+        failure:
+          text_de: "Der Träger antwortet, und die Stimme antwortet zurück, besser. Das Gespräch dauert länger, als es dürfte."
+          text_en: "The courier answers, and the voice answers back, better. The conversation lasts longer than it should."
+          deltas: { dz: 4, kh: -6 }
+      - key: schweigen
+        label_de: "Schweigen"
+        label_en: "Say nothing"
+        result:
+          text_de: "Der Träger schweigt, wie man in einem leeren Haus schweigt, in dem etwas mitgeht. Die Stimme redet weiter. Man gewöhnt sich, und das ist die eigentliche Kosten."
+          text_en: "The courier says nothing, the way one says nothing in an empty house where something walks along. The voice keeps talking. One gets used to it, and that is the real cost."
+          deltas: { dz: 2, kh: -2 }
+
+  # (6) Window-pressure-only: the permit itself becomes the hazard.
+  - template_key: stoerung_fensterzug
+    band_weights: { near: 12, mid: 10, deep: 6 }
+    requires: { window_band: [knapp] }
+    prose:
+      title_de: "Fensterzug"
+      title_en: "Window Draft"
+      body_de: "Das Aufenthaltsfenster steht nicht mehr still. Es zieht, wie eine Tür zieht, die jemand am anderen Ende des Ganges geöffnet hat. Alles im Träger will schneller werden."
+      body_en: "The permit window will not hold still. It draws, the way a door draws when someone opens another at the far end of the corridor. Everything in the courier wants to hurry."
+    options:
+      - key: hetzen
+        label_de: "Dem Zug nachgeben"
+        label_en: "Give in to the draft"
+        check: { vector: desire, difficulty: 7 }
+        success:
+          text_de: "Der Träger wird schneller, ohne unsauber zu werden. Der Zug trägt ihn. Für einen Takt fühlt sich Eile an wie Können."
+          text_en: "The courier speeds up without going ragged. The draft carries them. For one Takt, haste feels like skill."
+          deltas: { takt: 1 }
+        failure:
+          text_de: "Eile ist keine Geschwindigkeit. Der Träger verliert am Ende genau die Zeit, die er sich nehmen wollte, und dazu ein Stück Ruhe."
+          text_en: "Haste is not speed. In the end the courier loses exactly the time they meant to take, and a piece of their calm on top."
+          deltas: { takt: -1, dz: 2 }
+      - key: verankern
+        label_de: "Sich verankern"
+        label_en: "Anchor yourself"
+        cost: { kh: 6 }
+        result:
+          text_de: "Der Träger stellt sich quer in den Zug und wartet, bis das Fenster wieder ein Fenster ist und keine Tür. Es kostet Substanz, ruhig zu bleiben."
+          text_en: "The courier stands crosswise in the draft and waits until the window is a window again and not a door. Staying calm costs substance."
+          deltas: { dz: -2 }
+
+  # (7) A marker-poisoning storm — couples the class to Sondierung (M2).
+  - template_key: stoerung_statikschwarm
+    band_weights: { near: 8, mid: 12, deep: 12 }
+    prose:
+      title_de: "Statikschwarm"
+      title_en: "Static Swarm"
+      body_de: "Ein Schwarm aus Statik zieht über den Knoten, dicht wie Regen und ebenso unpersönlich. Er lädt alles auf, was hier liegt, und was aufgeladen ist, lässt sich nicht mehr sauber vermessen."
+      body_en: "A swarm of static crosses the node, dense as rain and just as impersonal. It charges everything lying here, and what is charged can no longer be surveyed cleanly."
+    options:
+      - key: erden
+        label_de: "Knoten erden"
+        label_en: "Ground the node"
+        cost: { takt: 1, bb: 1 }
+        result:
+          text_de: "Der Träger erdet den Knoten gegen sich selbst und nimmt die Ladung auf. Sie brennt, aber sie brennt in ihm und nicht in der Karte."
+          text_en: "The courier grounds the node against themselves and takes the charge. It burns, but it burns in them and not in the chart."
+          deltas: { kh: -6 }
+      - key: durchziehen_lassen
+        label_de: "Schwarm durchziehen lassen"
+        label_en: "Let the swarm pass"
+        result:
+          text_de: "Der Träger lässt den Schwarm ziehen. Er hinterlässt eine Ladung im Knoten, die dort bleiben wird, bis jemand sie ausgräbt oder sie jemanden findet."
+          text_en: "The courier lets the swarm pass. It leaves a charge in the node that will stay there until someone digs it out, or it finds someone."
+          deltas: { marker_add: statik }
+      - key: anzapfen
+        label_de: "Ladung anzapfen"
+        label_en: "Tap the charge"
+        check: { vector: resonance, difficulty: 9 }
+        success:
+          text_de: "Der Träger zapft den Schwarm an, während er noch zieht. Die Bandbreite füllt sich mit fremder Energie, die sich sauber anfühlt und es nicht ist."
+          text_en: "The courier taps the swarm while it is still passing. The bandwidth fills with borrowed energy that feels clean and is not."
+          deltas: { bb: 2, dz: 2 }
+        failure:
+          text_de: "Der Schwarm lässt sich anzapfen und zapft zurück. Was hier bleibt, gehört jetzt beiden."
+          text_en: "The swarm allows the tap and taps back. What stays here now belongs to both."
+          deltas: { kh: -8, marker_add: statik }
+
+  # (8) Cargo-focused: the freight itself starts arguing.
+  - template_key: stoerung_frachtunruhe
+    band_weights: { near: 10, mid: 10, deep: 8 }
+    prose:
+      title_de: "Frachtunruhe"
+      title_en: "Freight Unrest"
+      body_de: "Die Fracht wird unruhig. Sie hat gemerkt, wohin sie gebracht wird, und sie ist anderer Meinung. Frequenzgeformte Materie hat keine Stimme, aber sie hat Gewicht, und Gewicht kann man verlagern."
+      body_en: "The freight grows restless. It has understood where it is being taken and disagrees. Frequency-shaped matter has no voice, but it has weight, and weight can shift."
+    options:
+      - key: beruhigen
+        label_de: "Fracht beruhigen"
+        label_en: "Settle the freight"
+        check: { vector: dream, difficulty: 6 }
+        success:
+          text_de: "Der Träger erzählt der Fracht, wohin sie kommt, und macht es gut klingen. Sie glaubt es. Fracht ist leichtgläubig, wenn man ihr zuhört."
+          text_en: "The courier tells the freight where it is going and makes it sound good. It believes them. Freight is credulous when it is listened to."
+          deltas: { kh: -2 }
+        failure:
+          text_de: "Die Fracht glaubt kein Wort. Sie verlagert sich gegen die Fahrtrichtung, und der Träger trägt ab jetzt gegen sie an."
+          text_en: "The freight believes not a word. It shifts against the direction of travel, and from here the courier carries against it."
+          deltas: { kh: -9, dz: 2 }
+      - key: festzurren
+        label_de: "Festzurren"
+        label_en: "Lash it down"
+        cost: { bb: 1 }
+        result:
+          text_de: "Der Träger zurrt die Fracht mit Bandbreite fest, weil es das Einzige ist, was hier lang genug hält. Sie schweigt. Sie ist nicht überzeugt."
+          text_en: "The courier lashes the freight down with bandwidth, because it is the only thing out here that holds long enough. It goes quiet. It is not convinced."
+          deltas: { kh: -1 }
+
+  # (9) Near-band, low-drama: a bureaucratic disturbance. Points of light.
+  - template_key: stoerung_zollschranke
+    band_weights: { near: 16, mid: 6, deep: 0 }
+    prose:
+      title_de: "Zollschranke"
+      title_en: "Customs Barrier"
+      body_de: "Eine Zollschranke im Nichts, gestellt von einem Büro, das es vielleicht nicht mehr gibt. Der Balken ist unten. Die Formulare sind echt. Irgendjemand hat sie ausgedruckt und dann alles verlassen."
+      body_en: "A customs barrier in the middle of nowhere, put there by a bureau that may no longer exist. The bar is down. The forms are real. Someone printed them and then left everything behind."
+    options:
+      - key: ausfuellen
+        label_de: "Formulare ausfüllen"
+        label_en: "Fill in the forms"
+        cost: { takt: 1 }
+        result:
+          text_de: "Der Träger füllt aus, unterschreibt, stempelt sich selbst ab. Der Balken hebt sich, langsam und würdevoll, für niemanden."
+          text_en: "The courier fills in, signs, stamps themselves through. The bar rises, slow and dignified, for no one."
+          deltas: { siegel: 2 }
+      - key: unterfahren
+        label_de: "Schranke unterfahren"
+        label_en: "Duck under the bar"
+        check: { vector: commerce, difficulty: 5 }
+        success:
+          text_de: "Der Träger geht unten durch. Nichts passiert. Das Büro schweigt, wie Büros schweigen, wenn sie leer sind."
+          text_en: "The courier goes under. Nothing happens. The bureau stays silent, the way bureaus are silent when they are empty."
+          deltas: { dz: 1 }
+        failure:
+          text_de: "Das Büro ist nicht leer. Etwas notiert den Vorgang in einer Akte, die der Träger nie sehen wird, und der Drift wird ihn daran erinnern."
+          text_en: "The bureau is not empty. Something records the incident in a file the courier will never see, and the Drift will remind them of it."
+          deltas: { dz: 5 }
+
+  # (10) Deep-band specialist: the chart itself is wrong here.
+  - template_key: stoerung_kartenfehler
+    band_weights: { near: 0, mid: 8, deep: 18 }
+    prose:
+      title_de: "Kartenfehler"
+      title_en: "Chart Error"
+      body_de: "Die Karte behauptet, hier sei nichts. Der Träger steht darin. Eines von beiden muss nachgeben, und die Karte hat den längeren Atem."
+      body_en: "The chart insists there is nothing here. The courier is standing in it. One of the two must give way, and the chart has the longer breath."
+    options:
+      - key: nachvermessen
+        label_de: "Nachvermessen"
+        label_en: "Re-survey it"
+        cost: { takt: 1 }
+        check: { vector: architecture, difficulty: 8 }
+        success:
+          text_de: "Der Träger vermisst gegen die Karte an und gewinnt. Was hier steht, steht ab jetzt auch dort, wo man es nachlesen kann."
+          text_en: "The courier surveys against the chart and wins. What stands here now stands where it can be read as well."
+          deltas: { siegel: 6, rumor_reveal: {} }
+        failure:
+          text_de: "Die Karte gewinnt. Für einen Moment ist der Träger das, was die Karte sagt: nichts. Es geht vorbei. Es geht nicht spurlos vorbei."
+          text_en: "The chart wins. For a moment the courier is what the chart says: nothing. It passes. It does not pass without a trace."
+          deltas: { kh: -13, dz: 3 }
+      - key: umgehen
+        label_de: "Fehler umgehen"
+        label_en: "Route around the error"
+        cost: { kh: 5, takt: 1 }
+        result:
+          text_de: "Der Träger geht um den Fehler herum, wie man um ein Loch im Eis geht: weit, und ohne hinzusehen."
+          text_en: "The courier routes around the error the way one routes around a hole in ice: widely, and without looking."
+          deltas: {}
+
+  # (11) Bandwidth-starved-only: the emergency frequency bites.
+  - template_key: stoerung_notfrequenzhusten
+    band_weights: { near: 10, mid: 12, deep: 10 }
+    requires: { kh_band: [angeschlagen, intakt], dz_band: [erhoeht, kritisch] }
+    prose:
+      title_de: "Notfrequenzhusten"
+      title_en: "Emergency-Band Cough"
+      body_de: "Die Notfrequenz setzt aus und wieder ein, wie ein Husten, der nicht aufhören will. Jedes Aussetzen ist ein kurzer Blick darauf, wie es wäre, hier ohne sie zu sein."
+      body_en: "The emergency band cuts out and back in, like a cough that will not stop. Every cut is a brief look at what it would be like to be out here without it."
+    options:
+      - key: durchtakten
+        label_de: "Frequenz durchtakten"
+        label_en: "Re-clock the band"
+        cost: { takt: 1 }
+        result:
+          text_de: "Der Träger taktet die Frequenz von Hand durch, Schlag für Schlag, bis sie wieder von selbst atmet. Es ist stumpfe Arbeit und sie hilft."
+          text_en: "The courier re-clocks the band by hand, beat by beat, until it breathes on its own again. It is dull work and it helps."
+          deltas: { bb: 1, dz: -3 }
+      - key: husten_lassen
+        label_de: "Husten lassen"
+        label_en: "Let it cough"
+        check: { vector: resonance, difficulty: 7 }
+        success:
+          text_de: "Der Träger lässt die Frequenz husten und fährt weiter. Sie fängt sich. Manche Dinge heilen, wenn man aufhört, an ihnen zu ziehen."
+          text_en: "The courier lets the band cough and keeps moving. It catches itself. Some things heal when you stop pulling at them."
+          deltas: { dz: -1 }
+        failure:
+          text_de: "Sie fängt sich nicht. Zwischen zwei Schlägen ist nichts, und in diesem Nichts verliert der Träger etwas, das er nicht benennen kann."
+          text_en: "It does not catch itself. Between two beats there is nothing, and in that nothing the courier loses something they cannot name."
+          deltas: { kh: -10, bb: -1 }
+
+  # (12) The mercy skeleton: a disturbance you can profit from if you are whole.
+  - template_key: stoerung_echofracht
+    band_weights: { near: 6, mid: 10, deep: 10 }
+    requires: { kh_band: [intakt] }
+    prose:
+      title_de: "Echofracht"
+      title_en: "Echo Freight"
+      body_de: "Etwas treibt heran, das aussieht wie eine Sendung und sich anfühlt wie ein Echo. Es hat ein Siegel, das der Träger fast kennt. Es ist entweder eine Bergung oder ein Köder, und es sieht in beiden Fällen gleich aus."
+      body_en: "Something drifts up that looks like a consignment and feels like an echo. It carries a seal the courier almost recognises. It is either salvage or bait, and it looks the same either way."
+    options:
+      - key: bergen
+        label_de: "Bergen"
+        label_en: "Take it aboard"
+        check: { vector: memory, difficulty: 8 }
+        success:
+          text_de: "Es ist eine Bergung. Der Träger nimmt sie auf, und das Siegel gehört tatsächlich zu einem Büro, das noch antwortet."
+          text_en: "It is salvage. The courier takes it aboard, and the seal does belong to a bureau that still answers."
+          deltas: { cargo_grant: { family: erinnerungsstuecke, vector: memory, haul: 3 } }
+        failure:
+          text_de: "Es ist ein Köder. Das Siegel löst sich auf, sobald es an Bord ist, und was darunter lag, hat auf Gesellschaft gewartet."
+          text_en: "It is bait. The seal dissolves the moment it is aboard, and what lay beneath it had been waiting for company."
+          deltas: { kh: -11, dz: 3 }
+      - key: treiben_lassen
+        label_de: "Treiben lassen"
+        label_en: "Let it drift on"
+        result:
+          text_de: "Der Träger lässt es ziehen und sieht ihm nach, länger als nötig. Der Drift ist voll von Sendungen, die niemand abgeholt hat. Eine mehr."
+          text_en: "The courier lets it go and watches it longer than necessary. The Drift is full of consignments no one collected. One more."
+          deltas: { dz: 1 }

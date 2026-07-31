@@ -286,7 +286,7 @@ def main() -> None:
     # F05: All classifications
     for classif in ("PUBLIC", "AMBER", "RESTRICTED"):
         add(f"feed_{classif.lower()}.jpg", svc._compose_with_overlay(
-            image_bytes=bg, title=f"DISPATCH [0001] -- Classification Test",
+            image_bytes=bg, title="DISPATCH [0001] -- Classification Test",
             subtitle=f"RE: Test Shard -- {classif}",
             color_primary="#e2e8f0", color_background="#0f172a", classification=classif, cipher_hint=None))
 

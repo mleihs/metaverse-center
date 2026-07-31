@@ -34,7 +34,6 @@ import asyncio
 import logging
 import sys
 from datetime import UTC, datetime
-from uuid import uuid4
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("seed-crystallized")
