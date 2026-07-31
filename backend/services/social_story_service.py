@@ -717,8 +717,11 @@ class SocialStoryService:
         magnitude = float(story.get("magnitude") or 0)
 
         try:
+            # Story composes are full-canvas 1080×1920 PIL pipelines —
+            # CPU-bound, off the event loop (P1-6). The async helpers wrap
+            # their own compose calls; the sync helpers are wrapped here.
             if story_type == "detection":
-                jpeg_bytes = cls._compose_detection(composer, story, accent_hex, magnitude)
+                jpeg_bytes = await asyncio.to_thread(cls._compose_detection, composer, story, accent_hex, magnitude)
             elif story_type == "classification":
                 jpeg_bytes = await cls._compose_classification(
                     composer,
@@ -734,7 +737,7 @@ class SocialStoryService:
                     accent_hex,
                 )
             elif story_type == "advisory":
-                jpeg_bytes = cls._compose_advisory(composer, story, accent_hex)
+                jpeg_bytes = await asyncio.to_thread(cls._compose_advisory, composer, story, accent_hex)
             elif story_type == "subsiding":
                 jpeg_bytes = await cls._compose_subsiding(composer, admin, story, accent_hex)
             else:
@@ -869,7 +872,8 @@ class SocialStoryService:
         highest = impacts[0] if impacts else {}
         sim_data = highest.get("simulations") or {}
 
-        return composer.compose_story_classification(
+        return await asyncio.to_thread(
+            composer.compose_story_classification,
             archetype=archetype,
             source_category=res_data.get("source_category", "unknown"),
             affected_shard_count=len(impacts),
@@ -1005,7 +1009,8 @@ class SocialStoryService:
                     }
                 )
 
-        return composer.compose_story_impact(
+        return await asyncio.to_thread(
+            composer.compose_story_impact,
             simulation_name=sim_name,
             effective_magnitude=eff_mag,
             events_spawned=event_titles,
@@ -1059,7 +1064,8 @@ class SocialStoryService:
             shards_affected = len(impacts)
             events_total = sum(len(imp.get("spawned_event_ids") or []) for imp in impacts)
 
-        return composer.compose_story_subsiding(
+        return await asyncio.to_thread(
+            composer.compose_story_subsiding,
             archetype=archetype,
             events_spawned_total=events_total,
             shards_affected=shards_affected,

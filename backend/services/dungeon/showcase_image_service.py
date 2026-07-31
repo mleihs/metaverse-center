@@ -27,6 +27,7 @@ Prompt rules (from research):
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 
@@ -426,9 +427,10 @@ async def generate_and_upload_showcase(
     openrouter = OpenRouterService()
     raw_bytes = await generate_showcase_image(openrouter, archetype_id)
 
-    # Convert to AVIF (full + display thumbnail at 1920px)
-    full_avif = convert_to_avif(raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
-    thumb_avif = convert_to_avif(raw_bytes, max_dimension=1920, quality=AVIF_QUALITY)
+    # Convert to AVIF (full + display thumbnail at 1920px).
+    # CPU-bound encodes — off the event loop (P1-6).
+    full_avif = await asyncio.to_thread(convert_to_avif, raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+    thumb_avif = await asyncio.to_thread(convert_to_avif, raw_bytes, max_dimension=1920, quality=AVIF_QUALITY)
 
     # Upload to simulation.assets/showcase/
     base_path = f"showcase/dungeon-{archetype_id}.avif"

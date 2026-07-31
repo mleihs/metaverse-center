@@ -279,41 +279,11 @@ class BlueskyService:
         img_width = 0
         img_height = 0
 
-        # Resize + recompress pipeline for JPEG images
+        # Resize + recompress pipeline for JPEG images — CPU-bound PIL work,
+        # off the event loop (P1-6)
         if mime_type == "image/jpeg" and original_size > BLOB_RECOMPRESS_THRESHOLD:
-            img = PILImage.open(io.BytesIO(data))
-
-            # Resize oversized images (>2000px on longest side) to save bandwidth
-            if max(img.size) > 2000:
-                img.thumbnail((2000, 2000), PILImage.LANCZOS)
-                logger.info(
-                    "Resized oversized image for Bluesky upload",
-                    extra={
-                        "original_bytes": original_size,
-                        "resized_to": img.size,
-                    },
-                )
-
-            # Handle non-RGB modes before JPEG save
-            if img.mode == "RGBA":
-                bg = PILImage.new("RGB", img.size, (0, 0, 0))
-                bg.paste(img, mask=img.split()[3])
-                img = bg
-            elif img.mode != "RGB":
-                img = img.convert("RGB")
-
-            img_width, img_height = img.size
-            buf = io.BytesIO()
-            img.save(buf, format="JPEG", quality=80, optimize=True, progressive=True)
-            data = buf.getvalue()
-            logger.info(
-                "Recompressed JPEG for Bluesky upload",
-                extra={
-                    "original_bytes": original_size,
-                    "compressed_bytes": len(data),
-                    "quality": 80,
-                    "dimensions": f"{img_width}x{img_height}",
-                },
+            data, img_width, img_height = await asyncio.to_thread(
+                self._resize_recompress_jpeg, data
             )
         elif mime_type.startswith("image/"):
             # Read dimensions without recompression for smaller images
@@ -655,17 +625,47 @@ class BlueskyService:
         raise api_exc
 
     @staticmethod
-    def _recompress_jpeg(data: bytes, quality: int = 80) -> bytes:
-        """Recompress JPEG at lower quality to fit under Bluesky's 1 MB limit."""
+    def _resize_recompress_jpeg(data: bytes) -> tuple[bytes, int, int]:
+        """Resize (>2000px) + recompress a JPEG for Bluesky's 1 MB blob limit.
+
+        Pure bytes-in/bytes-out — invoked via ``asyncio.to_thread`` from
+        ``upload_media`` (P1-6). Returns (jpeg_bytes, width, height).
+        """
         from PIL import Image
 
+        original_size = len(data)
         img = Image.open(io.BytesIO(data))
+
+        # Resize oversized images (>2000px on longest side) to save bandwidth
+        if max(img.size) > 2000:
+            img.thumbnail((2000, 2000), Image.LANCZOS)
+            logger.info(
+                "Resized oversized image for Bluesky upload",
+                extra={
+                    "original_bytes": original_size,
+                    "resized_to": img.size,
+                },
+            )
+
+        # Handle non-RGB modes before JPEG save
         if img.mode == "RGBA":
             bg = Image.new("RGB", img.size, (0, 0, 0))
             bg.paste(img, mask=img.split()[3])
             img = bg
         elif img.mode != "RGB":
             img = img.convert("RGB")
+
+        img_width, img_height = img.size
         buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=quality, optimize=True)
-        return buf.getvalue()
+        img.save(buf, format="JPEG", quality=80, optimize=True, progressive=True)
+        out = buf.getvalue()
+        logger.info(
+            "Recompressed JPEG for Bluesky upload",
+            extra={
+                "original_bytes": original_size,
+                "compressed_bytes": len(out),
+                "quality": 80,
+                "dimensions": f"{img_width}x{img_height}",
+            },
+        )
+        return out, img_width, img_height
