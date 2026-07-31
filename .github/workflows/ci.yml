@@ -95,6 +95,34 @@ jobs:
       - name: Ruff (full ruleset, backend + scripts)
         run: ruff check backend/ scripts/ --output-format github
 
+  lock-backend:
+    name: Backend Lock Divergence
+    # backend/requirements.txt is the SHIPPED dependency set (the Dockerfile installs
+    # it with --require-hashes); pyproject.toml is the single source of truth it is
+    # compiled from. The 2026-07 deep audit (P1-4) found the two had silently diverged
+    # (fastapi==0.135.1 shipped vs >=0.136.0 declared, zero hashes) — prod installed a
+    # set that CI never tested and pip-audit never scanned. This job recompiles the
+    # lock with the exact command documented in its header. uv reuses the committed
+    # pins whenever they still satisfy pyproject, so a new upstream release does NOT
+    # fail the build — only a pyproject edit without `uv pip compile`, or a hand-edited
+    # lock, does.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install uv (pinned — lock output must be byte-reproducible)
+        run: pip install uv==0.11.16
+
+      - name: Recompile lock from pyproject
+        run: uv pip compile pyproject.toml --universal --python-version 3.13 --generate-hashes -o backend/requirements.txt
+
+      - name: Fail on divergence
+        run: git diff --exit-code -- backend/requirements.txt
+
   test-frontend:
     name: Test Frontend
     runs-on: ubuntu-latest
