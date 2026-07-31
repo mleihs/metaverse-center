@@ -4,6 +4,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+from backend.services.generation_service import GenerationService
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -13,6 +14,38 @@ logger = logging.getLogger(__name__)
 
 class SocialTrendsService:
     """Service for social trends CRUD and workflow operations."""
+
+    @staticmethod
+    async def transform_article_content(
+        gen: GenerationService,
+        *,
+        title: str,
+        platform: str,
+        url: str | None = None,
+        raw_data: dict | None = None,
+    ) -> dict:
+        """Build the news-content block from raw article data and run the AI transformation.
+
+        Shared by the trend-, article-, and batch-transform endpoints, which
+        previously carried three identical copies of this assembly. Exceptions
+        from the generation call propagate unchanged — each caller applies its
+        own error policy (502 for single transforms, collected error entries
+        for the batch).
+        """
+        raw = raw_data or {}
+        news_content_parts = [
+            raw.get("trail_text") or raw.get("description") or "",
+            f"Source: {platform}",
+        ]
+        if url:
+            news_content_parts.append(f"URL: {url}")
+        if raw.get("byline") or raw.get("author"):
+            news_content_parts.append(f"Author: {raw.get('byline') or raw.get('author')}")
+
+        return await gen.generate_news_transformation(
+            news_title=title,
+            news_content="\n".join(news_content_parts),
+        )
 
     @staticmethod
     async def list_trends(
