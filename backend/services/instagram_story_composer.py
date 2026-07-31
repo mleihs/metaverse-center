@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.services.instagram_image_helpers import (
     BADGE_PAD_X,
     BADGE_PAD_Y,
@@ -213,8 +214,6 @@ class StoryComposer:
         Content distributed across full 1080x1920 canvas.
         """
         from PIL import ImageDraw
-
-        from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 
         # Detection uses gradient + heavier grain; scan lines applied after bokeh
         img, accent, w, h = self._init_story_canvas(

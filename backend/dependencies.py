@@ -12,6 +12,7 @@ from supabase_auth.errors import AuthApiError
 
 from backend.config import settings
 from backend.models.common import CurrentUser
+from backend.services.simulation_service import SimulationService
 from backend.utils.db import maybe_single_data
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from backend.utils.supabase_lifecycle import aclose_supabase_client
@@ -200,8 +201,6 @@ async def resolve_simulation_id(
         return cached
 
     # DB lookup via SimulationService
-    from backend.services.simulation_service import SimulationService
-
     sim = await SimulationService.get_by_slug(supabase, simulation_id)
     if not sim:
         raise HTTPException(

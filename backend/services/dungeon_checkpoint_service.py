@@ -34,6 +34,7 @@ from backend.services.combat.ability_schools import get_agent_all_abilities
 from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.stress_system import stress_threshold
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id
+from backend.services.dungeon.dungeon_threshold import THRESHOLD_CHOICES, THRESHOLD_ENTRY_TEXT
 from backend.services.dungeon_instance_store import store as _store
 from backend.services.dungeon_shared import AUTO_APPLY_EFFECT_TYPES, CLIENT_TIMER_BUFFER_MS, log_extra
 from backend.utils.errors import forbidden, not_found, service_unavailable
@@ -335,11 +336,6 @@ class DungeonCheckpointService:
         if instance.phase == "threshold":
             # Threshold: structural toll choices from dedicated module.
             # Run through format_encounter_choices for consistent client shape.
-            from backend.services.dungeon.dungeon_threshold import (
-                THRESHOLD_CHOICES,
-                THRESHOLD_ENTRY_TEXT,
-            )
-
             encounter_choices = cls.format_encounter_choices(THRESHOLD_CHOICES)
             entry_text = THRESHOLD_ENTRY_TEXT.get(instance.archetype, THRESHOLD_ENTRY_TEXT["The Shadow"])
             encounter_desc_en = entry_text["en"]

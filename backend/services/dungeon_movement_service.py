@@ -31,7 +31,7 @@ from backend.models.resonance_dungeon import (
     SalvageResponse,
     ScoutResponse,
 )
-from backend.services.combat.condition_tracks import can_act
+from backend.services.combat.condition_tracks import CONDITION_SEVERITY, apply_condition_damage, can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
 from backend.services.combat.stress_system import REST_STRESS_HEAL, calculate_ambient_stress
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
@@ -42,6 +42,11 @@ from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id, select_encounter
 from backend.services.dungeon.dungeon_loot import roll_loot
 from backend.services.dungeon.dungeon_objektanker import get_barometer_text, select_anchor_text
+from backend.services.dungeon.dungeon_threshold import (
+    THRESHOLD_CHOICES,
+    THRESHOLD_ENTRY_TEXT,
+    THRESHOLD_RESOLUTION_TEXT,
+)
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_instance_store import store as _store
@@ -1024,11 +1029,6 @@ class DungeonMovementService:
         Sets phase to 'threshold' and returns the 3 irrevocable toll choices.
         Uses the same choice format as encounters for frontend compatibility.
         """
-        from backend.services.dungeon.dungeon_threshold import (
-            THRESHOLD_CHOICES,
-            THRESHOLD_ENTRY_TEXT,
-        )
-
         instance.phase = "threshold"
         entry_text = THRESHOLD_ENTRY_TEXT.get(instance.archetype, THRESHOLD_ENTRY_TEXT["The Shadow"])
 
@@ -1053,9 +1053,6 @@ class DungeonMovementService:
         - Memory:   a random positive archetype modifier is silently removed (unknown)
         - Defiance: boss encounter difficulty is silently increased (deferred)
         """
-        from backend.services.combat.condition_tracks import apply_condition_damage
-        from backend.services.dungeon.dungeon_threshold import THRESHOLD_RESOLUTION_TEXT
-
         choice_id = action.choice_id
         if choice_id not in ("threshold_blood", "threshold_memory", "threshold_defiance"):
             raise bad_request(f"Unknown threshold choice: {choice_id}")
@@ -1065,8 +1062,6 @@ class DungeonMovementService:
 
         if choice_id == "threshold_blood":
             # Auto-select the healthiest agent (highest condition = most to lose)
-            from backend.services.combat.condition_tracks import CONDITION_SEVERITY
-
             candidates = sorted(
                 [a for a in instance.party if a.condition != "captured"],
                 key=lambda a: CONDITION_SEVERITY.get(a.condition, 0),

@@ -17,9 +17,10 @@ from backend.config import settings
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.resonance_service import ResonanceService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
-from backend.services.scanning.registry import get_adapter, get_adapter_names
+from backend.services.scanning.registry import get_adapter, get_adapter_info, get_adapter_names
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
@@ -312,8 +313,6 @@ class ScannerService(BaseSchedulerMixin):
         config: dict,
     ) -> dict | None:
         """Create a substrate resonance directly from a scan result."""
-        from backend.services.resonance_service import ResonanceService
-
         impacts_at = datetime.now(UTC) + timedelta(hours=delay_hours)
 
         # Generate bureau dispatch if LLM is available
@@ -595,8 +594,6 @@ class ScannerService(BaseSchedulerMixin):
         delay_hours: int = 4,
     ) -> dict:
         """Approve a candidate → create resonance + mark as 'created'."""
-        from backend.services.resonance_service import ResonanceService
-
         # Load candidate
         resp = await (
             admin.table("news_scan_candidates")
@@ -676,8 +673,6 @@ class ScannerService(BaseSchedulerMixin):
     @classmethod
     async def get_dashboard(cls, admin: Client) -> dict:
         """Get scanner dashboard data: adapter status, metrics, last scan."""
-        from backend.services.scanning.registry import get_adapter_info
-
         config = await cls._load_config(admin)
 
         # Get adapter info with availability

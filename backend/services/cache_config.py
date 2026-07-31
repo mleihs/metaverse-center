@@ -12,7 +12,8 @@ import logging
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.services.platform_settings_service import DEFAULT_SETTINGS
+from backend.services.platform_settings_service import DEFAULT_SETTINGS, PlatformSettingsService
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +32,6 @@ async def load_ttls_from_db() -> None:
     """Load cache TTLs from platform_settings via admin client."""
     global _cache_ttls  # noqa: PLW0603
     try:
-        from backend.services.platform_settings_service import PlatformSettingsService
-        from backend.utils.supabase_admin_cache import get_admin_supabase_client
-
         admin_client = await get_admin_supabase_client()
         _cache_ttls = await PlatformSettingsService.get_cache_ttls(admin_client)
         logger.debug("Loaded cache TTLs from platform_settings")

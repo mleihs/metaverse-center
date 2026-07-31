@@ -17,6 +17,7 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -72,8 +73,6 @@ def decrypt_setting(raw: str) -> str:
         return str(raw).strip().strip('"') if raw else ""
 
     try:
-        from backend.utils.encryption import decrypt
-
         return decrypt(raw)
     except Exception:
         logger.warning("Failed to decrypt platform setting", exc_info=True)

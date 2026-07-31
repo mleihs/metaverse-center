@@ -37,6 +37,7 @@ from backend.services.social.constants import (
 )
 from backend.services.social.scheduler_base import BaseSchedulerMixin, SocialCredentialsError
 from backend.services.social_story_service import SocialStoryService
+from backend.utils.encryption import encrypt
 from backend.utils.responses import extract_list
 from backend.utils.settings import (
     decrypt_setting,
@@ -720,8 +721,6 @@ class InstagramScheduler(BaseSchedulerMixin):
 
                 # Only update if we got a genuinely new token
                 if new_token != access_token:
-                    from backend.utils.encryption import encrypt
-
                     encrypted = encrypt(new_token)
                     await upsert_platform_setting(
                         admin,

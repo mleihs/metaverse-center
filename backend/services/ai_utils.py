@@ -17,6 +17,10 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from backend.config import settings
+from backend.services.budget_enforcement_service import (
+    BudgetEnforcementService,
+    BudgetExceededError,
+)
 from backend.services.platform_model_config import get_platform_model
 from backend.utils.errors import bad_gateway, payment_required, service_unavailable, too_many_requests
 from supabase import AsyncClient as Client
@@ -130,14 +134,8 @@ async def run_ai(
     On any other failure, logs with exc_info and re-raises so existing
     error-handling continues to work.
     """
-    # Bureau Ops pre-call budget check (AD-3). Imported inside the function
-    # to break a circular import between ai_utils and budget_enforcement_service
-    # (the service itself uses sentry_sdk.add_breadcrumb, which is fine, but
-    # some tests of BudgetEnforcementService construct stub pydantic-ai Agents
-    # to exercise retries — keeping the import late eliminates the cycle risk).
+    # Bureau Ops pre-call budget check (AD-3).
     if admin_supabase is not None:
-        from backend.services.budget_enforcement_service import BudgetEnforcementService
-
         await BudgetEnforcementService.pre_check(
             admin_supabase,
             purpose=purpose,
@@ -272,10 +270,6 @@ def safe_background(func):
     result pattern, but the operator does NOT get a Sentry alert for an
     event they themselves triggered.
     """
-    # Late import to break a circular import chain:
-    # budget_enforcement_service -> ops_ledger_service -> ai_utils.
-    from backend.services.budget_enforcement_service import BudgetExceededError
-
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         task_name = func.__qualname__

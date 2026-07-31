@@ -15,8 +15,10 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
+from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.platform_model_config import get_platform_model
 from backend.utils.db import maybe_single_data
+from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -559,8 +561,6 @@ class ForgeThemeService:
         Stores variants in the feature_purchases result field and marks complete.
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        from backend.services.forge_feature_service import ForgeFeatureService
-
         try:
             # Fetch simulation data for context
             sim_resp = (
@@ -583,8 +583,6 @@ class ForgeThemeService:
             current_theme = {s["setting_key"]: s["setting_value"] for s in (extract_list(settings_resp))}
 
             # Get user BYOK key
-            from backend.utils.encryption import decrypt
-
             wallet_data = await maybe_single_data(
                 admin_supabase.table("user_wallets")
                 .select("encrypted_openrouter_key")
