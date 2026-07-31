@@ -736,39 +736,6 @@ class TestPublicEndpointIsolation:
         )
 
 
-# ===========================================================================
-# 1.6  SECURITY DEFINER RPC Permission Validation
-# ===========================================================================
-
-
-@pytest.mark.integration
-@pytest.mark.skipif(
-    True,  # Will be replaced by requires_supabase when run against real DB
-    reason="RPC tests require real Supabase instance — run with local or branch DB",
-)
-class TestSecurityDefinerRPCs:
-    """Verify SECURITY DEFINER RPCs validate permissions internally.
-
-    These tests require a real Supabase instance because they need to invoke
-    actual PostgreSQL functions. They are skipped in CI and should be run
-    manually against a local Supabase or test branch.
-
-    RPCs under test:
-    - fn_update_user_byok_keys (migration 125): auth.uid() guard
-    - fn_auto_draft_participants (migration 128): epoch creator check
-    - fn_compute_cycle_scores (migration 127): epoch creator check
-    """
-
-    def test_byok_keys_rejects_other_user(self):
-        """fn_update_user_byok_keys should reject updates for a different user."""
-        # This test will be implemented when running against real Supabase.
-        # The function checks: IF auth.uid() IS DISTINCT FROM p_user_id
-        pytest.skip("Requires real Supabase — implement with integration branch")
-
-    def test_auto_draft_rejects_non_creator(self):
-        """fn_auto_draft_participants should reject non-epoch-creators."""
-        pytest.skip("Requires real Supabase — implement with integration branch")
-
-    def test_compute_scores_rejects_non_creator(self):
-        """fn_compute_cycle_scores should reject non-epoch-creators."""
-        pytest.skip("Requires real Supabase — implement with integration branch")
+# SECURITY DEFINER RPC permission tests live in test_rls_matrix.py
+# (TestSecdefRpcSurface) — implemented against the real CI Supabase,
+# replacing the skipif(True) stub that sat here since migration 128.
