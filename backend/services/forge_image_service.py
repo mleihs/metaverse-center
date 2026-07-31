@@ -14,6 +14,7 @@ from backend.services.model_resolver import ModelResolver
 from backend.services.style_reference_service import StyleReferenceService
 from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
 from backend.utils.responses import extract_list
+from backend.utils.safe_fetch import safe_download
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -88,8 +89,6 @@ class ForgeImageService:
            only support PNG/JPEG/WebP — convert to PNG for compatibility.
         """
         from PIL import Image
-
-        from backend.utils.safe_fetch import safe_download
 
         allowed = {"image/png", "image/jpeg", "image/webp", "image/avif", "image/gif"}
         data, _ = await safe_download(url, allowed_content_types=allowed)

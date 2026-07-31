@@ -9,6 +9,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
+from backend.dependencies import get_admin_supabase
 from backend.utils.responses import extract_list
 
 logger = logging.getLogger(__name__)
@@ -30,8 +31,6 @@ async def _load_embedding_config() -> tuple[str, int]:
 
     model, dims = _DEFAULT_MODEL, _DEFAULT_DIMS
     try:
-        from backend.dependencies import get_admin_supabase
-
         admin = await get_admin_supabase()
         resp = await (
             admin.table("platform_settings")

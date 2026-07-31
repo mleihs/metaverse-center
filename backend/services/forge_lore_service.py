@@ -16,6 +16,9 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.services.forge_feature_service import ForgeFeatureService
+from backend.services.forge_image_service import ForgeImageService
+from backend.services.simulation_service import SimulationService
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -416,8 +419,6 @@ class ForgeLoreService:
         Persists as simulation_lore rows with chapter='CLASSIFIED' and sort_order 100+.
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        from backend.services.forge_feature_service import ForgeFeatureService
-
         try:
             # 1. Fetch full simulation data
             sim_resp = (
@@ -631,9 +632,6 @@ REQUIREMENTS:
 
             # 5. Generate dossier images
             try:
-                from backend.services.forge_image_service import ForgeImageService
-                from backend.services.simulation_service import SimulationService
-
                 image_sections = [s for s in sections if s.get("image_slug")]
                 if image_sections:
                     sim_data = await SimulationService.get_active_by_id(admin_supabase, simulation_id)

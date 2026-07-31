@@ -75,12 +75,27 @@ _SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)(?:/([a-z0-9
 # Cache the raw index.html contents (read once per process)
 _index_html_cache: str | None = None
 
-# TTL cache for simulation metadata lookups (slug/UUID → sim data)
-# TTL is read from platform_settings; cache is rebuilt when admin changes the value.
+# TTL cache for simulation metadata lookups (slug/UUID → sim data).
+# Constructed with the import-time TTL; rebuild_seo_caches() replaces both
+# instances once the DB-configured TTL is known (lifespan) or changes (admin).
 _sim_meta_cache: TTLCache = TTLCache(maxsize=64, ttl=get_ttl("cache_seo_metadata_ttl"))
 
 # TTL cache for entity content (per view per simulation)
 _entity_cache: TTLCache = TTLCache(maxsize=128, ttl=get_ttl("cache_seo_metadata_ttl"))
+
+
+def rebuild_seo_caches() -> None:
+    """Rebuild both SEO caches with the current TTL from cache_config.
+
+    TTLCache freezes its ttl at construction — ``.clear()`` empties the entries
+    but keeps the stale TTL, so a TTL change requires fresh instances. Called
+    from the app lifespan (after the DB-configured TTLs are loaded) and from
+    the admin settings router when ``cache_seo_metadata_ttl`` changes.
+    """
+    global _sim_meta_cache, _entity_cache  # noqa: PLW0603
+    ttl = get_ttl("cache_seo_metadata_ttl")
+    _sim_meta_cache = TTLCache(maxsize=64, ttl=ttl)
+    _entity_cache = TTLCache(maxsize=128, ttl=ttl)
 
 # Human labels for crawler <title> / breadcrumbs. Public views pull the label from
 # the registry; unregistered paths that still match the URL regex (rare — would need

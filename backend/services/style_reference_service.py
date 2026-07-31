@@ -9,7 +9,9 @@ from uuid import UUID, uuid4
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.utils.image import convert_to_avif
 from backend.utils.responses import extract_list
+from backend.utils.safe_fetch import safe_download
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -139,8 +141,6 @@ class StyleReferenceService:
         Raises:
             ValueError: On validation failure or SSRF attempt.
         """
-        from backend.utils.safe_fetch import safe_download
-
         return await safe_download(
             url,
             max_size=MAX_FILE_SIZE,
@@ -390,6 +390,4 @@ def _convert_to_avif(image_bytes: bytes, quality: int = 85) -> bytes:
     Delegates to the canonical implementation in utils.image.
     Reference images are capped at 2048px (manageable for style transfer).
     """
-    from backend.utils.image import convert_to_avif
-
     return convert_to_avif(image_bytes, max_dimension=2048, quality=quality)

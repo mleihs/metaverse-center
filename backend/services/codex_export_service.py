@@ -14,6 +14,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
+from backend.services.forge_feature_service import ForgeFeatureService
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -37,8 +38,6 @@ class CodexExportService:
         Supabase Storage.
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        from backend.services.forge_feature_service import ForgeFeatureService
-
         try:
             # 1. Fetch all simulation data
             sim_resp = (
@@ -179,8 +178,6 @@ class CodexExportService:
         Supabase Storage.
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        from backend.services.forge_feature_service import ForgeFeatureService
-
         try:
             # 1. Fetch simulation metadata
             sim_resp = (

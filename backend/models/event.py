@@ -74,6 +74,12 @@ class EventResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+    # Live columns added when the public read surface was typed. search_vector
+    # (internal tsvector) is deliberately absent — typing strips it.
+    title_de: str | None = None
+    description_de: str | None = None
+    heartbeat_pressure: float | None = None
+    ticks_in_status: int | None = None
 
 
 class EventChainCreate(BaseModel):

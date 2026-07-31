@@ -14,6 +14,7 @@ from uuid import UUID
 import httpx
 
 from backend.config import settings
+from backend.services.budget_enforcement_service import BudgetEnforcementService
 from backend.services.circuit_breaker_service import circuit_breaker
 from supabase import AsyncClient as Client
 
@@ -106,17 +107,9 @@ class BudgetContext:
 
 
 async def _pre_check_budget(budget: BudgetContext | None) -> None:
-    """Run BudgetEnforcementService.pre_check if a context was provided.
-
-    Late import breaks a potential cycle: budget_enforcement_service
-    re-uses this module's circuit_breaker import chain indirectly via
-    OpsLedgerService in some test fixtures. Keeping the import inside
-    the function keeps the module-load graph flat at boot.
-    """
+    """Run BudgetEnforcementService.pre_check if a context was provided."""
     if budget is None:
         return
-    from backend.services.budget_enforcement_service import BudgetEnforcementService
-
     await BudgetEnforcementService.pre_check(
         budget.admin_supabase,
         purpose=budget.purpose,

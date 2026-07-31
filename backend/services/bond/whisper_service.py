@@ -23,6 +23,7 @@ from backend.dependencies import get_admin_supabase
 from backend.services.bond.whisper_template_service import WhisperTemplateService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.journal.fragment_service import FragmentService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -856,11 +857,6 @@ class WhisperService:
             "whisper_type": whisper_type,
             "bond_depth": bond.get("depth", 2),
         }
-
-        # Late import breaks a potential cycle (FragmentService imports
-        # BudgetContext which imports OpenRouterService; whisper_service
-        # is already in that graph from its own generate path).
-        from backend.services.journal.fragment_service import FragmentService
 
         await FragmentService.enqueue_request(
             admin,

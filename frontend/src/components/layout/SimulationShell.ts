@@ -13,6 +13,7 @@ import { themeService } from '../../services/ThemeService.js';
 import type { BleedStatus, ThresholdState } from '../../types/health.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 
 import '../bleed/BleedPalimpsestOverlay.js';
 import '../forge/VelgBureauDispatch.js';
@@ -404,7 +405,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   private _appliedSimulationId = '';
   private _bureauNoticeTimer?: ReturnType<typeof setTimeout>;
-  private _bleedPollTimer?: ReturnType<typeof setInterval>;
+  private _stopBleedPoll?: StopPoll;
   private _boundCloseDropdown = (e: MouseEvent) => this._onOutsideClick(e);
   private _boundKeyDown = (e: KeyboardEvent) => this._onKeyDown(e);
 
@@ -838,14 +839,12 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   private _startBleedPolling(): void {
     this._stopBleedPolling();
-    this._bleedPollTimer = setInterval(() => this._fetchBleedStatus(), 60_000);
+    this._stopBleedPoll = startVisibilityPoll(() => void this._fetchBleedStatus(), 60_000);
   }
 
   private _stopBleedPolling(): void {
-    if (this._bleedPollTimer) {
-      clearInterval(this._bleedPollTimer);
-      this._bleedPollTimer = undefined;
-    }
+    this._stopBleedPoll?.();
+    this._stopBleedPoll = undefined;
   }
 
   private _navigate(path: string, e: Event): void {

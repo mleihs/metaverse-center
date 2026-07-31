@@ -1,14 +1,19 @@
 """In-process cache configuration loaded from platform_settings.
 
-Stores cache TTL values in module-level dict. Loaded lazily on first access,
-invalidated by the admin router when settings change.
+Stores cache TTL values in a module-level dict. Populated from the DB at app
+startup (lifespan) and re-loaded by the admin router when a ``cache_*`` setting
+changes; until the first successful load, ``get_ttl`` serves DEFAULT_SETTINGS.
 """
 
 from __future__ import annotations
 
 import logging
 
-from backend.services.platform_settings_service import DEFAULT_SETTINGS
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
+from backend.services.platform_settings_service import DEFAULT_SETTINGS, PlatformSettingsService
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 
 logger = logging.getLogger(__name__)
 
@@ -27,24 +32,12 @@ async def load_ttls_from_db() -> None:
     """Load cache TTLs from platform_settings via admin client."""
     global _cache_ttls  # noqa: PLW0603
     try:
-        from backend.services.platform_settings_service import PlatformSettingsService
-        from backend.utils.supabase_admin_cache import get_admin_supabase_client
-
         admin_client = await get_admin_supabase_client()
         _cache_ttls = await PlatformSettingsService.get_cache_ttls(admin_client)
         logger.debug("Loaded cache TTLs from platform_settings")
-    except (OSError, KeyError, TypeError, ValueError):
+    except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
+        # Non-fatal by design: the lifespan calls this at startup and a DB
+        # hiccup must not prevent boot — fall back to defaults until the next
+        # admin-triggered reload.
         logger.warning("Failed to load cache TTLs from DB, using defaults")
         _cache_ttls = dict(DEFAULT_SETTINGS)
-
-
-def invalidate() -> None:
-    """Force reload on next access."""
-    global _cache_ttls  # noqa: PLW0603
-    _cache_ttls = None
-
-
-def set_ttls(ttls: dict[str, int]) -> None:
-    """Directly set TTL values (used after admin update)."""
-    global _cache_ttls  # noqa: PLW0603
-    _cache_ttls = ttls

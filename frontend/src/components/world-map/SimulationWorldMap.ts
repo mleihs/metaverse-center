@@ -23,6 +23,7 @@ import type {
 } from '../../types/world-map.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import {
   type AgentRoleArchetype,
   agentRoleColorVar,
@@ -256,8 +257,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
   private _agentsById: Map<string, WorldMapAgentMarker> = new Map();
   private _markers: MapLibreMarker[] = [];
   private _hoverPopup: MapLibrePopup | null = null;
-  private _stabilityTimer: ReturnType<typeof setInterval> | null = null;
-  private _visibilityChangeHandler: (() => void) | null = null;
+  private _stopStabilityPoll: StopPoll | null = null;
   private _eventsChannel: RealtimeChannel | null = null;
   private _eventMarkers: Map<
     string,
@@ -568,34 +568,17 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
 
   private _startStabilityRefresh(): void {
     this._stopStabilityRefresh();
-    // Visibility-aware tick: the setInterval keeps firing on its 60s cadence
-    // (kept-alive by the browser even when the tab is hidden, throttled to a
-    // 1s minimum anyway), but the work is gated on document visibility.
-    // The cost of a no-op tick is negligible vs. the lifecycle complexity of
-    // start/stop cycling.
-    this._stabilityTimer = setInterval(() => {
-      if (document.hidden) return;
-      void this._refreshStability();
+    // Visibility-gated tick + catch-up on tab return — the shared helper is
+    // the extraction of the pattern that originated here. The _map guard sits
+    // in the tick so it applies to interval and catch-up ticks alike.
+    this._stopStabilityPoll = startVisibilityPoll(() => {
+      if (this._map) void this._refreshStability();
     }, VelgSimulationWorldMap._STABILITY_REFRESH_MS);
-    // Catch-up refresh when the user returns to a previously-hidden tab — we
-    // may have missed several heartbeats while away.
-    this._visibilityChangeHandler = () => {
-      if (!document.hidden && this._map) {
-        void this._refreshStability();
-      }
-    };
-    document.addEventListener('visibilitychange', this._visibilityChangeHandler);
   }
 
   private _stopStabilityRefresh(): void {
-    if (this._stabilityTimer !== null) {
-      clearInterval(this._stabilityTimer);
-      this._stabilityTimer = null;
-    }
-    if (this._visibilityChangeHandler !== null) {
-      document.removeEventListener('visibilitychange', this._visibilityChangeHandler);
-      this._visibilityChangeHandler = null;
-    }
+    this._stopStabilityPoll?.();
+    this._stopStabilityPoll = null;
   }
 
   /**

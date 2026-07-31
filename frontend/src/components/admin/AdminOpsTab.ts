@@ -45,6 +45,7 @@ import {
   type LedgerSnapshot,
 } from '../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../services/SentryService.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import './ops/BurnRatePanel.js';
 import './ops/CircuitMatrixPanel.js';
 import './ops/DispatchTicker.js';
@@ -244,27 +245,23 @@ export class VelgAdminOpsTab extends LitElement {
   /** P4.3 — true during the CRT-tube-off animation after CUT ALL AI. */
   @state() private _crtOff = false;
 
-  private _ledgerTimer: number | null = null;
-  private _circuitTimer: number | null = null;
+  private _stopLedgerPoll: StopPoll | null = null;
+  private _stopCircuitPoll: StopPoll | null = null;
   private _crtOffTimer: number | null = null;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     await Promise.all([this._fetchLedger(), this._fetchCircuit()]);
-    this._ledgerTimer = window.setInterval(() => void this._fetchLedger(), LEDGER_POLL_MS);
-    this._circuitTimer = window.setInterval(() => void this._fetchCircuit(), CIRCUIT_POLL_MS);
+    this._stopLedgerPoll = startVisibilityPoll(() => void this._fetchLedger(), LEDGER_POLL_MS);
+    this._stopCircuitPoll = startVisibilityPoll(() => void this._fetchCircuit(), CIRCUIT_POLL_MS);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._ledgerTimer !== null) {
-      window.clearInterval(this._ledgerTimer);
-      this._ledgerTimer = null;
-    }
-    if (this._circuitTimer !== null) {
-      window.clearInterval(this._circuitTimer);
-      this._circuitTimer = null;
-    }
+    this._stopLedgerPoll?.();
+    this._stopLedgerPoll = null;
+    this._stopCircuitPoll?.();
+    this._stopCircuitPoll = null;
     if (this._crtOffTimer !== null) {
       window.clearTimeout(this._crtOffTimer);
       this._crtOffTimer = null;
