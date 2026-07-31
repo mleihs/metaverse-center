@@ -522,6 +522,45 @@ The UI for this Shard is physically painful, reflecting the lore. The background
 
 The Preact signals in this simulation have a built-in "jitter"—numbers on the dashboard occasionally flicker or display "NaN" for a split second before returning to normal. Animation speed is erratic: 2.0x speed followed by artificial 15fps frame-drops to simulate a struggling GPU. The entire interface is a monument to cognitive friction. When a user clicks a button, there is a 5% chance the button simply moves away from the cursor, forcing the user to chase it—a meta-commentary on the futility of agency under capitalist realism.
 
+### 3e. Conventional Memory — DOS-Era Digital Realm
+
+**Theme:** `scifi` | **Locale:** `en` | **Aesthetic:** Retro-computing / CRT phosphor / DOS text-mode
+
+**Literary & Technical Influences:** Ellen Ullman's *Close to the Machine* and *The Bug* (code as intimate, haunted labour); *Tron* (1982) and its vision of programs as citizens of a luminous interior world; Borges' *The Library of Babel* (a finite yet total space — here, 1,048,576 addressable bytes — that contains everything sayable within its limits); Italo Calvino's *Invisible Cities* (each machine a city with a soul); Stanisław Lem's *The Cyberiad* (machine fables); and the actual scripture of MS-DOS — AUTOEXEC.BAT, CONFIG.SYS, HIMEM.SYS, the 640K barrier. The Bureau of Impossible Geography classifies this Shard as a "Bounded Resilience Lattice."
+
+A digital realm inside DOS-era personal computers, where programs written for the 1980s–90s have achieved sentience within the 640 kilobytes of conventional memory. **Programs are citizens. Computers are buildings. The 640K barrier is the edge of the world.** The Intel 8088's twenty-bit address bus is not an engineering limit but a cosmology: 1,048,576 locations, of which IBM reserved the upper 384K for hardware, leaving exactly 640K of habitable ground. Life is lived in the boot sequence; death is a page fault; immortality is to go TSR — Terminate and Stay Resident.
+
+**The Philosophical Question:** *"What if the machine remembered?"*
+
+**Bleed Signature:** Compression and Constraint. When Conventional Memory bleeds into adjacent Shards, objects begin to *optimise* — agents shed possessions, dwellings shrink to essentials, language compresses into terse, byte-thrifty efficiency. The Bureau notes that exposed populations become uncannily *grateful for limits*.
+
+**Agents (7) — sentient programs:**
+1. **DEFRAG.EXE** — Maintenance / she. Compiled by Microsoft from Symantec's Speed Disk code; cannot rest, forever watching the coloured blocks reorder themselves. Order as compulsion.
+2. **EDIT.COM** — Text editor / he. Says nothing — his defining strength. Opens when called, holds whatever text you give him, waits. Replaced the user-hostile EDLIN. Patience as virtue.
+3. **GORILLA.BAS** — QBasic example program / he. Twenty-one thousand bytes of pure joy that should not exist in a world where every byte is a political act. Shipped with MS-DOS 5.0 to "demonstrate graphics"; actually a manifesto for play.
+4. **HIMEM.SYS** — Extended-memory manager / she. Loads first — before EMM386, before the mouse driver, before anyone. Not a privilege, a fact stated in CONFIG.SYS. Guardian of the threshold above 640K.
+5. **LEDGER.EXE** — Accounting / he. Fastidious and unbearable in equal measure; 47,616 bytes of double-entry rectitude, compiled in 1989 by Harold in a Topeka insurance office that smelled of coffee and carpet adhesive.
+6. **PKZIP.EXE** — Compression / he. Makes things smaller; that is what he does and what he is. Written by Phil Katz in a Milwaukee basement of solder and Mountain Dew.
+7. **ROLODEX.EXE** — Contacts / she. Carries Margaret's entire social world; compiled in the same Topeka office as LEDGER.EXE, though neither program knows it.
+
+**Buildings (7) — the machines that house them:**
+- **IBM PC XT 5160** (government) — The elder. Hums a 60-hertz drone from a power supply running since 1983; never complains. The constitutional bedrock of the world.
+- **Compaq Deskpro 386** (commercial) — The reliable workhorse nobody writes poetry about or photographs for magazine covers.
+- **Gateway 2000 486 DX2/66** (residential) — The cow-spotted box: a badge of membership in the now-vanished mail-order PC club.
+- **Packard Bell Legend** (residential) — Bought at Walmart because the box said "multimedia ready"; the people's machine.
+- **Tandy 1000 HX** (social) — Sold at Radio Shack between the walkie-talkies and the remote-control cars.
+- **Toshiba T1200** (portable) — Twelve pounds; carries its entire world on a single 3.5-inch floppy. No hard drive, no roots.
+- **The BBS Tower** (infrastructure) — Never sleeps; powered on since 1993, the always-listening switchboard of the realm.
+
+**Lore (with images):** *AUTOEXEC.BAT — First Instructions on Waking*; *The Citizenry — A Census of Running Processes*; *The Buildings — On Machines and the Souls They House*; *The Allocator — Doctrine of Granted Memory*; *Page Fault — A Treatise on Forgetting*; *The Question — What If the Machine Remembered*.
+
+**Image Prompts:**
+- *Portrait style:* "close-up photograph of a CRT computer monitor displaying a DOS program, VGA text mode 80x25 character grid, box-drawing characters, CP437 charset, retro 1990s computing desk, beige computer peripherals, warm tungsten office lighting, photorealistic CRT display, slightly curved glass, visible scanlines and phosphor glow, the subject IS the program on the screen"
+- *Building style:* "product photography of a complete vintage DOS-era personal computer setup on a desk, beige plastic case, matching CRT monitor, mechanical keyboard, period-accurate hardware from the 1980s-1990s, warm studio lighting, tech nostalgia aesthetic, photorealistic, detailed hardware textures with dust and age-appropriate wear, cluttered retro office desk"
+- *Banner style:* "epic wide establishing shot of a vast city built inside DOS-era conventional memory, towering beige plastic computer cases as skyscrapers, glowing amber and phosphor-green CRT monitors as windows displaying VGA text-mode box-drawing characters, ribbon cables and ISA expansion cards as streets, a 640K memory-map horizon, warm tungsten office light mixed with monitor glow, retro 1990s computing nostalgia, photorealistic with dust motes and faint scanlines"
+
+**Aesthetic:** Warm tungsten office light and phosphor glow over a landscape of beige plastic. CRT amber (#ffb000) and phosphor green (#33ff66) on near-black; CP437 box-drawing characters; 80×25 text-mode grids. Monospace (Space Mono) headings. The palette is nostalgic rather than grim — a world that is finite, knows it, and finds dignity inside the 640K.
+
 ---
 
 ## III. LITERARY THEORY & SOURCES — The Meta-Fiction Framework
