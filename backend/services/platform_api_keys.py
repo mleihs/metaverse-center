@@ -12,6 +12,7 @@ import time
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.services.platform_settings_service import PlatformSettingsService
 from backend.utils.settings import decrypt_setting
 from supabase import AsyncClient as Client
 
@@ -34,8 +35,6 @@ _API_KEY_SETTINGS = (
 async def _load_all(admin_supabase: Client) -> None:
     """Load and decrypt all API keys from platform_settings."""
     global _cache, _cache_loaded_at  # noqa: PLW0603
-
-    from backend.services.platform_settings_service import PlatformSettingsService
 
     try:
         rows = await PlatformSettingsService.list_all(admin_supabase)

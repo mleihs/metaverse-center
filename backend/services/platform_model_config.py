@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import time
 
+from backend.config import settings
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -74,8 +75,6 @@ def get_platform_model(purpose: str) -> str:
     In non-production environments, resolves the ``_dev`` variant first,
     falling back to the production key if the dev key is absent.
     """
-    from backend.config import settings
-
     if purpose == "forge":
         base_key = "model_forge"
     elif purpose == "research":

@@ -6,6 +6,7 @@ import { captureError } from '../../services/SentryService.js';
 import type { GazetteEntry } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import '../shared/LoadingState.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
 
@@ -294,17 +295,18 @@ export class VelgBleedGazetteSidebar extends LitElement {
   @state() private _loading = false;
   @state() private _collapsed = false;
 
-  private _pollTimer = 0;
+  private _stopPoll: StopPoll | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
     this._load();
-    this._pollTimer = window.setInterval(() => this._load(), 60_000);
+    this._stopPoll = startVisibilityPoll(() => void this._load(), 60_000);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    clearInterval(this._pollTimer);
+    this._stopPoll?.();
+    this._stopPoll = null;
   }
 
   private async _load(): Promise<void> {

@@ -27,6 +27,7 @@ import {
   type HeatmapDimension,
 } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { type StopPoll, startVisibilityPoll } from '../../../utils/visibility-poll.js';
 import { bureauPanelFrameStyles } from '../../shared/bureau-panel-styles.js';
 import '../../shared/VelgHeatmapGrid.js';
 
@@ -166,20 +167,18 @@ export class VelgOpsHeatmapPanel extends LitElement {
   @state() private _loading = true;
   @state() private _error: string | null = null;
 
-  private _timer: number | null = null;
+  private _stopPoll: StopPoll | null = null;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     await this._fetch();
-    this._timer = window.setInterval(() => void this._fetch(), REFRESH_MS);
+    this._stopPoll = startVisibilityPoll(() => void this._fetch(), REFRESH_MS);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._timer !== null) {
-      window.clearInterval(this._timer);
-      this._timer = null;
-    }
+    this._stopPoll?.();
+    this._stopPoll = null;
   }
 
   private async _fetch(): Promise<void> {

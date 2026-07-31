@@ -36,3 +36,8 @@ class ChronicleResponse(BaseModel):
     published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
+    # Live fields added when the public read surface was typed: ``mentions``
+    # is a jsonb column; ``simulation`` is the joined summary the global
+    # /public/chronicles feed embeds per row.
+    mentions: list | None = None
+    simulation: dict | None = None

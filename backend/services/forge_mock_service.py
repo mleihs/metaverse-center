@@ -16,6 +16,8 @@ import logging
 
 from pydantic import BaseModel
 
+from backend.models.forge import ForgeAgentDraft, ForgeBuildingDraft, ForgeGeographyDraft, PhilosophicalAnchor
+
 logger = logging.getLogger(__name__)
 
 
@@ -110,8 +112,6 @@ def mock_anchors(seed: str) -> list[dict]:
         },
     ]
     # Rotate based on seed for variety
-    from backend.models.forge import PhilosophicalAnchor
-
     offset = h % 3
     rotated = variants[offset:] + variants[:offset]
     return _validate_mock_list(rotated, PhilosophicalAnchor)
@@ -285,8 +285,6 @@ def mock_geography(seed: str, zone_count: int = 5, street_count: int = 5) -> dic
         s = {**street_pool[i % len(street_pool)]}
         s["zone_name"] = zones[i % len(zones)]["name"]
         streets.append(s)
-
-    from backend.models.forge import ForgeGeographyDraft
 
     geo = {
         "city_name": city,
@@ -564,8 +562,6 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             ),
         },
     ]
-    from backend.models.forge import ForgeAgentDraft
-
     return _validate_mock_list(pool[:count], ForgeAgentDraft)
 
 
@@ -720,8 +716,6 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_condition_de": "gut",
         },
     ]
-    from backend.models.forge import ForgeBuildingDraft
-
     return _validate_mock_list(pool[:count], ForgeBuildingDraft)
 
 
@@ -1234,8 +1228,6 @@ def mock_recruits(
             ),
         },
     ]
-    from backend.models.forge import ForgeAgentDraft
-
     return _validate_mock_list(pool[:3], ForgeAgentDraft)
 
 

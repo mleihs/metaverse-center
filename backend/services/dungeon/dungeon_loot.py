@@ -28,6 +28,7 @@ import random
 
 from backend.models.resonance_dungeon import LootItem
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
+from backend.services.dungeon_content_service import get_loot_registry
 
 # ── Deluge: Debris Pool (Tier 0, auto-apply, deposited by the current) ──────
 #
@@ -131,8 +132,6 @@ def roll_loot(
         List of LootItem drops. Tier 3 returns all guaranteed items.
         Tiers 1-2 return 1 item via weighted random.
     """
-    from backend.services.dungeon_content_service import get_loot_registry
-
     loot_tables = get_loot_registry().get(archetype, {})
     table = loot_tables.get(tier, loot_tables.get(1, []))
 

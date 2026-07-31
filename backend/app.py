@@ -60,6 +60,7 @@ from backend.middleware.seo import (
     get_crawler_redirect,
     get_legacy_redirect,
     is_crawler,
+    rebuild_seo_caches,
 )
 from backend.routers import (
     achievements,
@@ -125,7 +126,9 @@ from backend.routers import (
 from backend.services.ai_usage_rollup_scheduler import AiUsageRollupScheduler
 from backend.services.bluesky_scheduler import BlueskyScheduler
 from backend.services.budget_enforcement_service import BudgetExceededError
+from backend.services.cache_config import load_ttls_from_db
 from backend.services.circuit_revert_sweeper import CircuitRevertSweeper
+from backend.services.connection_service import ConnectionService
 from backend.services.content_packs.orphan_sweeper_scheduler import (
     OrphanSweeperScheduler,
 )
@@ -153,6 +156,14 @@ async def lifespan(app: FastAPI):
     await ensure_model_config(admin_sb)
     await ensure_research_domains(admin_sb)
     await load_dungeon_content(admin_sb)
+
+    # Cache TTLs: load the DB-configured values (non-fatal, falls back to
+    # defaults), then rebuild the caches that froze their TTL at import time
+    # (SEO middleware ×2, connection map data) so the configured TTL actually
+    # applies from the first request on.
+    await load_ttls_from_db()
+    rebuild_seo_caches()
+    ConnectionService.invalidate_map_cache()
 
     # Populate the Sentry rule cache before normal request traffic begins.
     # A DB failure here is non-fatal — the cache keeps its empty snapshot

@@ -679,3 +679,21 @@ class BYOKUserOverride(BaseModel):
     user_id: str
     byok_bypass: bool | None = None
     byok_allowed: bool | None = None
+
+
+class ForgeProgressResponse(BaseModel):
+    """Public forge-ceremony progress (``get_forge_progress(slug)`` PG function).
+
+    ``agents``/``buildings``/``lore`` are lists of ``{name, image_url}``
+    pairs assembled inside the function; ``done`` flips when every asset
+    (including the banner) is generated.
+    """
+
+    total: int = 0
+    completed: int = 0
+    done: bool = False
+    banner_url: str | None = None
+    lore_progress: dict | None = None
+    agents: list[dict] = Field(default_factory=list)
+    buildings: list[dict] = Field(default_factory=list)
+    lore: list[dict] = Field(default_factory=list)

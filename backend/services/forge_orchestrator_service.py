@@ -28,8 +28,10 @@ from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai, validate_bilingual_output
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external.replicate import ReplicateBillingError, ReplicateError
+from backend.services.forge_ascii_art_service import ForgeAsciiArtService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
+from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_image_service import ForgeImageService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_map_service import ForgeMapService
@@ -1332,8 +1334,6 @@ class ForgeOrchestratorService:
 
                 # ── Generate terminal boot art from the banner image ──
                 try:
-                    from backend.services.forge_ascii_art_service import ForgeAsciiArtService
-
                     # Find the banner URL from storage
                     banner_resp = await supabase.storage.from_(
                         "simulation.banners",
@@ -1613,8 +1613,6 @@ class ForgeOrchestratorService:
         prompt that requires arrival narratives and relationships.
         """
         structlog.contextvars.bind_contextvars(simulation_id=str(simulation_id))
-        from backend.services.forge_feature_service import ForgeFeatureService
-
         try:
             # 1. Fetch simulation data
             sim_resp = (

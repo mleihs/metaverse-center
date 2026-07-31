@@ -106,8 +106,23 @@ class BleedStatusResponse(BaseModel):
 
 
 class MapDataResponse(BaseModel):
-    """Aggregated map data for the Cartographer's Map."""
+    """Aggregated map data for the Cartographer's Map.
+
+    The aggregate keys below simulations/connections/echo_counts were live in
+    the service response but missing here until the public read surface was
+    typed — SuccessResponse[T] would have silently dropped them.
+    """
 
     simulations: list[dict]
     connections: list[dict]
     echo_counts: dict  # {simulation_id: count}
+    embassies: list[dict] = Field(default_factory=list)
+    anchors: list[dict] = Field(default_factory=list)
+    active_bleed_details: dict = Field(default_factory=dict)
+    active_instance_counts: dict = Field(default_factory=dict)
+    heartbeat_status: dict = Field(default_factory=dict)
+    historical_events: dict = Field(default_factory=dict)
+    operative_flow: dict = Field(default_factory=dict)
+    score_dimensions: dict = Field(default_factory=dict)
+    sparklines: dict = Field(default_factory=dict)
+    zone_topology: dict = Field(default_factory=dict)

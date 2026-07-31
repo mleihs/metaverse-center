@@ -25,6 +25,8 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS
 from backend.models.social_story import ARCHETYPE_COLORS, ARCHETYPE_OPERATIVE_ALIGNMENT
 from backend.services.base_service import serialize_for_json
+from backend.services.external_service_resolver import ExternalServiceResolver
+from backend.services.generation_service import GenerationService
 from backend.services.instagram_image_service import InstagramImageService
 from backend.utils.errors import bad_gateway, bad_request, not_found, server_error
 from backend.utils.responses import extract_list
@@ -1262,9 +1264,6 @@ class SocialStoryService:
         Returns None if AI is unavailable or generation fails (non-fatal).
         """
         try:
-            from backend.services.external_service_resolver import ExternalServiceResolver
-            from backend.services.generation_service import GenerationService
-
             resolver = ExternalServiceResolver(admin, simulation_id)
             ai_config = await resolver.get_ai_provider_config()
             gen_service = GenerationService(admin, simulation_id, ai_config.openrouter_api_key)

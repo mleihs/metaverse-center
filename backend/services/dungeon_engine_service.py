@@ -59,6 +59,7 @@ from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_content_service import (
     get_anchor_objects as _get_anchor_objects_cache,
 )
+from backend.services.dungeon_content_service import get_entrance_texts
 from backend.services.dungeon_distribution_service import DungeonDistributionService
 from backend.services.dungeon_instance_store import store as _store
 from backend.services.dungeon_movement_service import DungeonMovementService
@@ -319,8 +320,6 @@ class DungeonEngineService:
         )
 
         # Select random entrance atmosphere text from pool
-        from backend.services.dungeon_content_service import get_entrance_texts
-
         entrance_pool = get_entrance_texts().get(archetype, [])
         entrance_text = random.choice(entrance_pool) if entrance_pool else None
 

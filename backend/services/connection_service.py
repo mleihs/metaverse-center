@@ -36,8 +36,12 @@ class ConnectionService:
 
     @classmethod
     def invalidate_map_cache(cls) -> None:
-        """Clear the in-process map data cache (called when TTL settings change)."""
-        cls._map_data_cache.clear()
+        """Rebuild the in-process map data cache (called when TTL settings change).
+
+        TTLCache freezes its ttl at construction — rebind with the current
+        configured TTL instead of ``.clear()``, which would keep the stale TTL.
+        """
+        cls._map_data_cache = TTLCache(maxsize=1, ttl=get_ttl("cache_map_data_ttl"))
 
     @classmethod
     async def list_all(

@@ -7,6 +7,7 @@ import { seoService } from '../../services/SeoService.js';
 import type { MapData, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import { getThemeColor } from './map-data.js';
 import type { MapEdgeData, MapEmbassyEdge, MapNodeData } from './map-types.js';
 
@@ -268,7 +269,7 @@ export class VelgCartographerMap extends LitElement {
   private _miniVby = 0;
   private _miniVbw = 800;
   private _miniVbh = 600;
-  private _pollTimer: ReturnType<typeof setInterval> | null = null;
+  private _stopPoll: StopPoll | null = null;
   private _searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
   connectedCallback(): void {
@@ -276,16 +277,15 @@ export class VelgCartographerMap extends LitElement {
     seoService.setTitle([msg('Multiverse Map')]);
     analyticsService.trackPageView('/multiverse', 'Multiverse Map');
     this._loadData();
-    // Auto-refresh every 30s to show live game instance changes
-    this._pollTimer = setInterval(() => this._refreshData(), 30000);
+    // Auto-refresh every 30s to show live game instance changes —
+    // visibility-gated, with a catch-up refresh on tab return.
+    this._stopPoll = startVisibilityPoll(() => this._refreshData(), 30000);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._pollTimer) {
-      clearInterval(this._pollTimer);
-      this._pollTimer = null;
-    }
+    this._stopPoll?.();
+    this._stopPoll = null;
     if (this._searchDebounce) {
       clearTimeout(this._searchDebounce);
       this._searchDebounce = null;

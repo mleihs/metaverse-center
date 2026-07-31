@@ -13,6 +13,7 @@ from backend.config import settings as platform_settings
 from backend.services.platform_api_keys import get_platform_api_key
 from backend.utils.responses import extract_list
 from backend.utils.settings import decrypt_setting
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -85,8 +86,6 @@ class ExternalServiceResolver:
         if self._admin_supabase:
             return self._admin_supabase
         try:
-            from backend.utils.supabase_admin_cache import get_admin_supabase_client
-
             self._admin_supabase = await get_admin_supabase_client()
             return self._admin_supabase
         except (PostgrestAPIError, httpx.HTTPError, OSError):

@@ -18,6 +18,8 @@ from __future__ import annotations
 import random
 from collections.abc import Callable
 
+from backend.services.dungeon_content_service import get_banter_registry
+
 
 def _entropy_decay_tier(archetype_state: dict) -> int:
     """Map Entropy decay counter to banter degradation tier (0-3)."""
@@ -149,8 +151,6 @@ def select_banter(
         archetype_state: Archetype-specific state for tier filtering.
         depth: Current dungeon depth (0-based). Banter with min_depth > depth is excluded.
     """
-    from backend.services.dungeon_content_service import get_banter_registry
-
     banter_pool = get_banter_registry().get(archetype, [])
     candidates = [
         b for b in banter_pool

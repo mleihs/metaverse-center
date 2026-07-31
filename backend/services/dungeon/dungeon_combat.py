@@ -25,6 +25,8 @@ from uuid import uuid4
 import sentry_sdk
 
 from backend.models.resonance_dungeon import EnemyInstance
+from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS, DIFFICULTY_MULTIPLIERS
+from backend.services.dungeon_content_service import get_enemy_registry, get_spawn_registry
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +50,6 @@ def spawn_enemies(
     Returns:
         List of EnemyInstance ready for combat.
     """
-    from backend.services.dungeon.dungeon_archetypes import DIFFICULTY_MULTIPLIERS
-    from backend.services.dungeon_content_service import get_enemy_registry, get_spawn_registry
-
     spawn_registry = get_spawn_registry().get(archetype, {})
     config = spawn_registry.get(encounter_id, [])
     if not config:
@@ -107,8 +106,6 @@ def check_ambush(
     Shadow: visibility-based (Review #7: VP 0 = 40%, VP 1 = 15%).
     Tower: stability-based (added in Phase E).
     """
-    from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
-
     if encounter and encounter.get("is_ambush"):
         return True  # Forced ambush encounters always trigger
 
@@ -162,7 +159,5 @@ def check_ambush(
 
 def get_enemy_templates_dict(archetype: str = "The Shadow") -> dict[str, dict]:
     """Get enemy templates as plain dicts for combat engine."""
-    from backend.services.dungeon_content_service import get_enemy_registry
-
     registry = get_enemy_registry().get(archetype, {})
     return {eid: template.model_dump() for eid, template in registry.items()}

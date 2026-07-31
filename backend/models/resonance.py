@@ -177,6 +177,7 @@ class ResonanceImpactResponse(BaseModel):
     magnitude_class: str | None = None
     spawned_event_ids: list[UUID] = Field(default_factory=list)
     narrative_context: str | None = None
+    updated_at: datetime | None = None
     created_at: datetime
 
 

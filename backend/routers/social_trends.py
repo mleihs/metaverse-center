@@ -157,21 +157,13 @@ async def transform_trend(
 
     gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
-    # Build content from raw_data if available
-    raw = trend.get("raw_data") or {}
-    news_content_parts = [
-        raw.get("trail_text") or raw.get("description") or "",
-        f"Source: {trend['platform']}",
-    ]
-    if trend.get("url"):
-        news_content_parts.append(f"URL: {trend['url']}")
-    if raw.get("byline") or raw.get("author"):
-        news_content_parts.append(f"Author: {raw.get('byline') or raw.get('author')}")
-
     try:
-        result = await gen.generate_news_transformation(
-            news_title=trend["name"],
-            news_content="\n".join(news_content_parts),
+        result = await SocialTrendsService.transform_article_content(
+            gen,
+            title=trend["name"],
+            platform=trend["platform"],
+            url=trend.get("url"),
+            raw_data=trend.get("raw_data"),
         )
     except Exception as exc:
         logger.exception("AI transformation failed", extra={"trend_id": body.trend_id})
@@ -350,20 +342,13 @@ async def transform_article(
 
     gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
-    raw = body.article_raw_data or {}
-    news_content_parts = [
-        raw.get("trail_text") or raw.get("description") or "",
-        f"Source: {body.article_platform}",
-    ]
-    if body.article_url:
-        news_content_parts.append(f"URL: {body.article_url}")
-    if raw.get("byline") or raw.get("author"):
-        news_content_parts.append(f"Author: {raw.get('byline') or raw.get('author')}")
-
     try:
-        result = await gen.generate_news_transformation(
-            news_title=body.article_name,
-            news_content="\n".join(news_content_parts),
+        result = await SocialTrendsService.transform_article_content(
+            gen,
+            title=body.article_name,
+            platform=body.article_platform,
+            url=body.article_url,
+            raw_data=body.article_raw_data,
         )
     except Exception as exc:
         logger.exception("AI transformation failed", extra={"article_name": body.article_name})
@@ -480,20 +465,13 @@ async def batch_transform_articles(
 
     results: list[dict] = []
     for article in body.articles:
-        raw = article.article_raw_data or {}
-        news_content_parts = [
-            raw.get("trail_text") or raw.get("description") or "",
-            f"Source: {article.article_platform}",
-        ]
-        if article.article_url:
-            news_content_parts.append(f"URL: {article.article_url}")
-        if raw.get("byline") or raw.get("author"):
-            news_content_parts.append(f"Author: {raw.get('byline') or raw.get('author')}")
-
         try:
-            result = await gen.generate_news_transformation(
-                news_title=article.article_name,
-                news_content="\n".join(news_content_parts),
+            result = await SocialTrendsService.transform_article_content(
+                gen,
+                title=article.article_name,
+                platform=article.article_platform,
+                url=article.article_url,
+                raw_data=article.article_raw_data,
             )
             results.append(
                 {
