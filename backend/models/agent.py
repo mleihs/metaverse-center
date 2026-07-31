@@ -55,3 +55,12 @@ class AgentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+    # Live columns added when the public read surface was typed. search_vector
+    # (internal tsvector) is deliberately absent — typing strips it.
+    slug: str | None = None
+    personality_profile: dict | None = None
+    autonomy_active: bool | None = None
+    current_building_id: UUID | None = None
+    current_zone_id: UUID | None = None
+    ambassador_blocked_until: datetime | None = None
+    style_reference_url: str | None = None

@@ -193,6 +193,7 @@ class ParticipantResponse(BaseModel):
     consecutive_afk_cycles: int = 0
     total_afk_cycles: int = 0
     afk_replaced_by_ai: bool = False
+    betrayal_penalty: float | None = None
     simulations: dict | None = None
     bot_players: dict | None = None
 
@@ -445,6 +446,19 @@ class BattleLogEntry(BaseModel):
     is_public: bool
     metadata: dict
     created_at: datetime
+    # Joined epoch summary the global /public/battle-feed embeds per row
+    game_epochs: dict | None = None
+
+
+class OperativeTypeInfo(BaseModel):
+    """Operative type metadata (costs, colors, durations, target rules)."""
+
+    type: str
+    cost_rp: int
+    color: str
+    deploy_cycles: int
+    mission_cycles: int
+    needs_target: str
 
 
 # ── Typed Responses for Previously Untyped Endpoints ────────────

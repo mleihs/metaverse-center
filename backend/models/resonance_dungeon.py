@@ -835,3 +835,23 @@ class LootItem(BaseModel):
     description_en: str = ""
     description_de: str = ""
     drop_weight: int = 10
+
+
+class PublicDungeonRunSummary(BaseModel):
+    """Public run-history projection (``_PUBLIC_RUN_FIELDS`` in
+    DungeonQueryService.list_history_public) — narrower than
+    DungeonRunResponse, which requires fields this select omits."""
+
+    id: UUID
+    simulation_id: UUID
+    archetype: str
+    resonance_signature: str | None = None
+    difficulty: int | None = None
+    depth_target: int | None = None
+    current_depth: int | None = None
+    rooms_cleared: int | None = None
+    rooms_total: int | None = None
+    status: str
+    outcome: str | None = None
+    completed_at: datetime | None = None
+    created_at: datetime

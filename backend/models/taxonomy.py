@@ -42,4 +42,5 @@ class TaxonomyResponse(BaseModel):
     is_default: bool = False
     is_active: bool = True
     metadata: dict | None = None
+    game_weight: float | None = None
     created_at: datetime

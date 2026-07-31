@@ -187,9 +187,11 @@ class TestPublicConnections:
 class TestPublicMapData:
     @patch("backend.routers.public.ConnectionService.get_map_data", new_callable=AsyncMock)
     def test_returns_map_data(self, mock_map, anon_client):
+        # Raw dicts, like the real service returns — the endpoint is typed
+        # (SuccessResponse[MapDataResponse] with connections: list[dict]).
         mock_map.return_value = {
             "simulations": [{"id": str(SIM_A), "name": "Test"}],
-            "connections": [MOCK_CONN],
+            "connections": [MOCK_CONN.model_dump(mode="json")],
             "echo_counts": {str(SIM_A): 3},
         }
 
@@ -207,8 +209,20 @@ class TestPublicMapData:
 class TestPublicRelationships:
     @patch("backend.routers.public.RelationshipService.list_for_agent", new_callable=AsyncMock)
     def test_public_agent_relationships(self, mock_list, anon_client):
+        # Full realistic row — the endpoint is typed (RelationshipResponse),
+        # so a degenerate stub would now 500 the serializer.
         mock_list.return_value = [
-            {"id": "rel1", "relationship_type": "ally"},
+            {
+                "id": "eeeeeeee-1111-2222-3333-444444444444",
+                "simulation_id": str(SIM_A),
+                "source_agent_id": str(AGENT_ID),
+                "target_agent_id": "cccccccc-cccc-cccc-cccc-ccccccccccc1",
+                "relationship_type": "ally",
+                "is_bidirectional": True,
+                "intensity": 5,
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-01T00:00:00Z",
+            },
         ]
 
         resp = anon_client.get(f"/api/v1/public/simulations/{SIM_A}/agents/{AGENT_ID}/relationships")
@@ -231,7 +245,20 @@ class TestPublicRelationships:
 class TestPublicEchoes:
     @patch("backend.routers.public.EchoService.list_for_simulation", new_callable=AsyncMock)
     def test_public_simulation_echoes(self, mock_list, anon_client):
-        echo = {"id": "echo1", "status": "completed"}
+        # Full realistic row — the endpoint is typed (EchoResponse),
+        # so a degenerate stub would now 500 the serializer.
+        echo = {
+            "id": "ffffffff-1111-2222-3333-444444444444",
+            "source_event_id": str(EVENT_ID),
+            "source_simulation_id": str(SIM_B),
+            "target_simulation_id": str(SIM_A),
+            "echo_vector": "resonance",
+            "echo_strength": 0.6,
+            "echo_depth": 1,
+            "status": "completed",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
         mock_list.return_value = ([echo], 1)
 
         resp = anon_client.get(f"/api/v1/public/simulations/{SIM_A}/echoes")

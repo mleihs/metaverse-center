@@ -56,6 +56,22 @@ class SimulationResponse(BaseModel):
     building_count: int | None = None
     event_count: int | None = None
     member_count: int | None = None
+    # Heartbeat/world state (live columns; added when the public read surface
+    # was typed — without them SuccessResponse[T] would silently drop them)
+    last_heartbeat_tick: int | None = None
+    last_heartbeat_at: datetime | None = None
+    next_heartbeat_at: datetime | None = None
+    weather_lat: float | None = None
+    weather_lon: float | None = None
+    lore_progress: dict | None = None
+
+
+class PlatformStatsResponse(BaseModel):
+    """Aggregated platform statistics for the public landing page."""
+
+    simulation_count: int = 0
+    active_epoch_count: int = 0
+    resonance_count: int = 0
 
 
 class SimulationDashboardResponse(BaseModel):

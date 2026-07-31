@@ -78,6 +78,11 @@ class BuildingResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+    # Live columns added when the public read surface was typed. search_vector
+    # (internal tsvector) is deliberately absent — typing strips it.
+    slug: str | None = None
+    sanctuary: bool | None = None
+    style_reference_url: str | None = None
 
 
 class BuildingAgentResponse(BaseModel):
