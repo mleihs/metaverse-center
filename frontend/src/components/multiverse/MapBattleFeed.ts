@@ -10,6 +10,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { connectionsApi } from '../../services/api/index.js';
 import type { BattleLogEntry } from '../../types/index.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 
 /** Battle log event type → dot color (semantic tokens for inline style binding) */
 const EVENT_TYPE_COLORS: Record<string, string> = {
@@ -133,20 +134,18 @@ export class VelgMapBattleFeed extends LitElement {
   `;
 
   @state() private _entries: BattleLogEntry[] = [];
-  private _refreshTimer: ReturnType<typeof setInterval> | null = null;
+  private _stopPoll: StopPoll | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
     this._loadFeed();
-    this._refreshTimer = setInterval(() => this._loadFeed(), 30000);
+    this._stopPoll = startVisibilityPoll(() => void this._loadFeed(), 30000);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._refreshTimer) {
-      clearInterval(this._refreshTimer);
-      this._refreshTimer = null;
-    }
+    this._stopPoll?.();
+    this._stopPoll = null;
   }
 
   private async _loadFeed() {

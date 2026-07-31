@@ -23,6 +23,7 @@ import { customElement, state } from 'lit/decorators.js';
 
 import { bureauOpsApi, type OpsAuditEntry } from '../../../services/api/BureauOpsApiService.js';
 import { captureError } from '../../../services/SentryService.js';
+import { type StopPoll, startVisibilityPoll } from '../../../utils/visibility-poll.js';
 import '../../shared/VelgDispatchTicker.js';
 import type { TickerItem } from '../../shared/VelgDispatchTicker.js';
 
@@ -123,20 +124,18 @@ export class VelgOpsDispatchTicker extends LitElement {
   @state() private _items: TickerItem[] = [];
   @state() private _loaded = false;
 
-  private _timer: number | null = null;
+  private _stopPoll: StopPoll | null = null;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     await this._fetch();
-    this._timer = window.setInterval(() => void this._fetch(), POLL_MS);
+    this._stopPoll = startVisibilityPoll(() => void this._fetch(), POLL_MS);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this._timer !== null) {
-      window.clearInterval(this._timer);
-      this._timer = null;
-    }
+    this._stopPoll?.();
+    this._stopPoll = null;
   }
 
   private async _fetch(): Promise<void> {
