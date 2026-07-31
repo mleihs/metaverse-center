@@ -15,11 +15,11 @@ from backend.models.campaign import CampaignCreate, CampaignResponse
 from backend.models.chat import (
     AddAgentRequest,
     AgentBrief,
+    ChatMessageResponse,
     ConversationCreate,
     EventReferenceCreate,
     EventReferenceResponse,
     MessageCreate,
-    MessageResponse,
 )
 from backend.models.event import EventCreate, EventUpdate
 from backend.models.member import MemberCreate, MemberUpdate
@@ -225,7 +225,7 @@ class TestMessageCreate:
 class TestMessageResponse:
     def test_valid(self):
         now = datetime.now(UTC)
-        m = MessageResponse(
+        m = ChatMessageResponse(
             id=uuid4(),
             conversation_id=uuid4(),
             sender_role="assistant",
@@ -239,7 +239,7 @@ class TestMessageResponse:
     def test_with_agent_attribution(self):
         now = datetime.now(UTC)
         agent_id = uuid4()
-        m = MessageResponse(
+        m = ChatMessageResponse(
             id=uuid4(),
             conversation_id=uuid4(),
             sender_role="assistant",

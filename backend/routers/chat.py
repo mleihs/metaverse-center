@@ -12,13 +12,13 @@ from backend.dependencies import get_current_user, get_effective_supabase, requi
 from backend.middleware.rate_limit import RATE_LIMIT_AI_CHAT, limiter
 from backend.models.chat import (
     AddAgentRequest,
+    ChatMessageResponse,
     ConversationCreate,
     ConversationResponse,
     ConversationUpdate,
     EventReferenceCreate,
     EventReferenceResponse,
     MessageCreate,
-    MessageResponse,
     ReactionSummary,
     ReactionToggleRequest,
     ReactionToggleResponse,
@@ -87,7 +87,7 @@ async def get_messages(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     before: Annotated[str | None, Query(description="Cursor: ISO timestamp for pagination")] = None,
-) -> SuccessResponse[list[MessageResponse]]:
+) -> SuccessResponse[list[ChatMessageResponse]]:
     """Get messages for a conversation with cursor-based pagination."""
     await _service.verify_ownership(supabase, conversation_id, user.id)
     messages = await _service.get_messages(supabase, conversation_id, limit=limit, before=before)
@@ -107,7 +107,7 @@ async def send_message(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse[list[MessageResponse]]:
+) -> SuccessResponse[list[ChatMessageResponse]]:
     """Send a message in a conversation.
 
     Always returns a list of messages. When generate_response=true, includes

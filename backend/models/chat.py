@@ -67,7 +67,7 @@ class ConversationResponse(BaseModel):
     event_references: list["EventReferenceResponse"] = []
 
 
-class MessageResponse(BaseModel):
+class ChatMessageResponse(BaseModel):
     """Full chat message response."""
 
     id: UUID

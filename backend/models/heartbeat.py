@@ -159,7 +159,7 @@ class AttunementCreate(BaseModel):
     resonance_signature: str = Field(pattern=r"^[a-z_]+$")
 
 
-class AttunementResponse(BaseModel):
+class SubstrateAttunementResponse(BaseModel):
     """A substrate attunement record."""
 
     id: UUID

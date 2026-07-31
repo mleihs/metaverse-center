@@ -143,7 +143,6 @@ class ChronicleService:
 
         # Fire-and-forget translation
         schedule_auto_translation(
-            supabase,
             "simulation_chronicles",
             saved["id"],
             {"title": entry.title, "headline": entry.headline or "", "content": entry.content},

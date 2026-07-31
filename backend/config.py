@@ -74,6 +74,15 @@ class Settings(BaseSettings):
             raise ValueError("supabase_url must not be empty")
         if not self.supabase_anon_key:
             raise ValueError("supabase_anon_key must not be empty")
+        # HS256 verification runs only in development/test (see _decode_jwt).
+        # An empty secret there would make every HMAC check verify against ""
+        # — a forged token away from platform admin (deep-audit P1-3), so
+        # fail at boot instead.
+        if self.environment in ("development", "test") and not self.supabase_jwt_secret:
+            raise ValueError(
+                "supabase_jwt_secret must not be empty in development/test "
+                "(HS256 token verification would accept empty-key HMACs)"
+            )
         return self
 
 

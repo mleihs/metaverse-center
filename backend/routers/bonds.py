@@ -157,6 +157,10 @@ async def mark_whisper_read(
         supabase, user.id, bond_id, whisper_id,
     )
     await BondService.check_depth_progression(supabase, bond_id)
+    await AuditService.safe_log(
+        supabase, None, user.id,
+        "bond_whispers", whisper_id, "read",
+    )
     return SuccessResponse(data=data)
 
 
@@ -172,4 +176,8 @@ async def mark_whisper_acted(
         supabase, user.id, bond_id, whisper_id,
     )
     await BondService.check_depth_progression(supabase, bond_id)
+    await AuditService.safe_log(
+        supabase, None, user.id,
+        "bond_whispers", whisper_id, "acted",
+    )
     return SuccessResponse(data=data)

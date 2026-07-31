@@ -51,12 +51,23 @@ def _get_jwks_client() -> PyJWKClient:
     return _jwks_client
 
 
-def _decode_jwt(token: str) -> dict:
-    """Decode a JWT using JWKS (ES256) or shared secret (HS256)."""
-    header = pyjwt.get_unverified_header(token)
-    alg = header.get("alg", "HS256")
+# Supabase JWKS keys are asymmetric (ES256 today, RS256 on legacy projects).
+# HS* is deliberately absent: a symmetric alg on the JWKS path would let a
+# token demote verification to a shared-secret comparison.
+_JWKS_ALGORITHMS = ["ES256", "RS256"]
 
-    if alg == "HS256":
+
+def _decode_jwt(token: str) -> dict:
+    """Decode a JWT — JWKS (asymmetric) in production, shared secret locally.
+
+    The verification path is chosen by *environment*, never by the token's own
+    ``alg`` header: the header is attacker-controlled, and branching on it
+    would let a forged HS256 token opt into the shared-secret path in
+    production (deep-audit P1-3). Locally (development/test) Supabase signs
+    HS256 with the shared secret; a config validator guarantees that secret is
+    non-empty wherever this branch can run.
+    """
+    if settings.environment in ("development", "test"):
         return pyjwt.decode(
             token,
             settings.supabase_jwt_secret,
@@ -64,7 +75,7 @@ def _decode_jwt(token: str) -> dict:
             audience="authenticated",
         )
 
-    # For ES256+, look up the signing key from JWKS
+    # Production-like environments: JWKS only, issuer pinned to this project.
     try:
         jwks_client = _get_jwks_client()
         signing_key = jwks_client.get_signing_key_from_jwt(token)
@@ -74,8 +85,9 @@ def _decode_jwt(token: str) -> dict:
     return pyjwt.decode(
         token,
         signing_key.key,
-        algorithms=[alg],
+        algorithms=_JWKS_ALGORITHMS,
         audience="authenticated",
+        issuer=f"{settings.supabase_url}/auth/v1",
     )
 
 
