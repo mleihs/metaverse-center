@@ -2,6 +2,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { describeArc } from '../../utils/svg.js';
 import {
   EMBASSY_EDGE_COLOR,
   getGlowColor,
@@ -1125,7 +1126,7 @@ export class VelgMapGraph extends LitElement {
             <!-- Background arc -->
             <path
               class="health-arc-bg"
-              d="${this._describeArc(0, 0, ringRadius, startAngle, startAngle + arcAngle)}"
+              d="${describeArc(0, 0, ringRadius, startAngle, startAngle + arcAngle)}"
               stroke="${color}"
               stroke-width="${strokeW}"
             />
@@ -1135,7 +1136,7 @@ export class VelgMapGraph extends LitElement {
                 ? svg`
               <path
                 class="health-arc-value"
-                d="${this._describeArc(0, 0, ringRadius, startAngle, startAngle + valueAngle)}"
+                d="${describeArc(0, 0, ringRadius, startAngle, startAngle + valueAngle)}"
                 stroke="${color}"
                 stroke-width="${strokeW}"
               />
@@ -1146,24 +1147,6 @@ export class VelgMapGraph extends LitElement {
         })}
       </g>
     `;
-  }
-
-  private _describeArc(
-    cx: number,
-    cy: number,
-    r: number,
-    startAngle: number,
-    endAngle: number,
-  ): string {
-    const start = this._polarToCartesian(cx, cy, r, endAngle);
-    const end = this._polarToCartesian(cx, cy, r, startAngle);
-    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
-  }
-
-  private _polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
-    const rad = ((angleDeg - 90) * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
   }
 
   // ── A4: Sparklines ──────────────────────────────────────
