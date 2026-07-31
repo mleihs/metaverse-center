@@ -525,6 +525,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       this._users = raw.map((u) => resolveUser(u, u.email === currentEmail));
       this._userCache = this._users;
     } catch (e) {
+      captureError(e, { source: 'VelgDevAccountSwitcher._fetchUsers' });
       this._fetchError = e instanceof Error ? e.message : 'Network error';
     } finally {
       this._loading = false;

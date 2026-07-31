@@ -650,6 +650,7 @@ export class VelgAdminResonancesTab extends LitElement {
         this._error = resp.error?.message ?? msg('Failed to load resonances');
       }
     } catch (err) {
+      captureError(err, { source: 'AdminResonancesTab._loadResonances' });
       this._error = err instanceof Error ? err.message : msg('Failed to load resonances');
     } finally {
       this._loading = false;

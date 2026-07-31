@@ -255,6 +255,7 @@ export class ChatSessionStore {
         }
       });
     } catch (err) {
+      captureError(err, { source: 'ChatSessionStore.loadOlder' });
       session.error.value = err instanceof Error ? err.message : 'Failed to load messages';
     } finally {
       session.loading.value = false;

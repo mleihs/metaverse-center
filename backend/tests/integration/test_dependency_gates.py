@@ -1,9 +1,11 @@
-"""Security tests verifying role-based access control and data isolation.
+"""Dependency-layer gate tests: role-based access control at the FastAPI layer.
 
-Tests the FastAPI dependency layer that enforces authentication, role-based
-access, and data isolation between users/simulations. Since we cannot run
-against a real Supabase instance in CI, these tests mock the auth and database
-layers to verify that the FastAPI routing layer correctly gates access.
+Formerly named test_rls_policies.py — a misnomer the 2026-07-12 deep audit
+called out (P1-8): everything here mocks the auth and database layers, so no
+actual Row Level Security is ever exercised. What these tests DO verify is
+valuable and distinct: that the FastAPI dependency gates (``get_current_user``,
+``require_role``, client scoping) reject the right requests before any query
+runs. Real RLS against a live database lives in test_rls_matrix.py.
 
 Markers:
     integration: Requires app instantiation but not external services.

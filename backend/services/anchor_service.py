@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
@@ -99,47 +98,46 @@ class AnchorService:
         )
         return response.data[0]
 
+    @staticmethod
+    def _rpc_payload(result: object) -> dict:
+        """Collapse a jsonb-returning RPC result into a plain dict."""
+        data = getattr(result, "data", result)
+        if isinstance(data, str):
+            data = json.loads(data)
+        if isinstance(data, list):
+            data = data[0] if data else None
+        if not isinstance(data, dict):
+            raise server_error("Unexpected anchor RPC result shape.")
+        return data
+
     @classmethod
     async def join_anchor(
         cls,
-        supabase: Client,
+        admin: Client,
         anchor_id: UUID,
         sim_id: UUID,
         user_id: UUID,
     ) -> dict:
-        """Join an existing anchor."""
-        _resp = await (
-            supabase.table("collaborative_anchors")
-            .select("*")
-            .eq("id", str(anchor_id))
-            .in_("status", ["forming", "active"])
-            .limit(1)
-            .execute()
-        )
-        anchor = _resp.data
-        if not anchor:
+        """Join an existing anchor via the atomic ``fn_anchor_join`` RPC.
+
+        The dedup-append and the status guard run in ONE statement
+        (migration 271), so concurrent joins cannot lose participants
+        (ADR-007). Service-role client required: the RPC's write rides on
+        the service_role RLS policy; the router validates the editor role
+        before calling in.
+        """
+        result = await admin.rpc(
+            "fn_anchor_join",
+            {"p_anchor_id": str(anchor_id), "p_sim_id": str(sim_id)},
+        ).execute()
+        payload = cls._rpc_payload(result)
+
+        outcome = payload.get("outcome")
+        if outcome in ("not_found", "not_accepting"):
             raise not_found(detail="Anchor not found or no longer accepting participants.")
-
-        anchor = anchor[0]
-        sim_ids = anchor.get("anchor_simulation_ids") or []
-        if str(sim_id) in sim_ids:
+        if outcome == "already_member":
             raise conflict("Simulation already participating in this anchor.")
-
-        # Add simulation
-        sim_ids.append(str(sim_id))
-        response = await (
-            supabase.table("collaborative_anchors")
-            .update(
-                {
-                    "anchor_simulation_ids": sim_ids,
-                    "updated_at": datetime.now(UTC).isoformat(),
-                }
-            )
-            .eq("id", str(anchor_id))
-            .execute()
-        )
-
-        if not response.data:
+        if outcome != "joined" or not payload.get("anchor"):
             raise server_error("Failed to join anchor.")
 
         logger.info(
@@ -148,46 +146,36 @@ class AnchorService:
             anchor_id,
             extra={"simulation_id": str(sim_id), "anchor_id": str(anchor_id)},
         )
-        return response.data[0]
+        return payload["anchor"]
 
     @classmethod
     async def leave_anchor(
         cls,
-        supabase: Client,
+        admin: Client,
         anchor_id: UUID,
         sim_id: UUID,
     ) -> dict:
-        """Leave an anchor."""
-        _resp = await (
-            supabase.table("collaborative_anchors")
-            .select("id, anchor_simulation_ids")
-            .eq("id", str(anchor_id))
-            .limit(1)
-            .execute()
-        )
-        anchor = _resp.data
-        if not anchor:
+        """Leave an anchor via the atomic ``fn_anchor_leave`` RPC.
+
+        Removal and the dissolve-on-last-participant decision happen in
+        ONE statement (migration 271) — a leave racing a join can no
+        longer wrongly dissolve or resurrect the anchor (ADR-007).
+        """
+        result = await admin.rpc(
+            "fn_anchor_leave",
+            {"p_anchor_id": str(anchor_id), "p_sim_id": str(sim_id)},
+        ).execute()
+        payload = cls._rpc_payload(result)
+
+        outcome = payload.get("outcome")
+        if outcome == "not_found":
             raise not_found(detail="Anchor not found.")
-
-        anchor = anchor[0]
-        sim_ids = anchor.get("anchor_simulation_ids") or []
-        if str(sim_id) not in sim_ids:
+        if outcome == "not_member":
             raise bad_request("Simulation not participating in this anchor.")
-
-        sim_ids.remove(str(sim_id))
-        update_data: dict = {
-            "anchor_simulation_ids": sim_ids,
-            "updated_at": datetime.now(UTC).isoformat(),
-        }
-        if not sim_ids:
-            update_data["status"] = "dissolved"
-
-        response = await supabase.table("collaborative_anchors").update(update_data).eq("id", str(anchor_id)).execute()
-
-        if not response.data:
+        if outcome != "left" or not payload.get("anchor"):
             raise server_error("Failed to leave anchor.")
 
-        return response.data[0]
+        return payload["anchor"]
 
     @classmethod
     async def list_anchors(

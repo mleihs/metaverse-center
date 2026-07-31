@@ -334,6 +334,7 @@ export class VelgAdminBlueskyTab extends LitElement {
         this._pdsDraft = this._settingValue('bluesky_pds_url');
       }
     } catch (err) {
+      captureError(err, { source: 'AdminBlueskyTab._loadAll' });
       this._error = err instanceof Error ? err.message : msg('Failed to load Bluesky data');
     } finally {
       this._loading = false;

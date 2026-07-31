@@ -535,6 +535,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         this._error = response.error?.message ?? msg('Failed to load access settings');
       }
     } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._loadAccessSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
@@ -620,6 +621,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       VelgToast.success(msg('Access settings saved successfully.'));
       this.dispatchEvent(new CustomEvent('settings-saved', { bubbles: true, composed: true }));
     } catch (err) {
+      captureError(err, { source: 'AccessSettingsPanel._handleSave' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
       VelgToast.error(this._error);
     } finally {

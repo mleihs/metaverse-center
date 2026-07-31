@@ -687,6 +687,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       });
     } catch (err) {
       if (!(err instanceof Error && err.name === 'AbortError')) {
+        captureError(err, { source: 'VelgChatWindow._handleRegenerate' });
         VelgToast.error(msg('Failed to regenerate response.'));
       }
     } finally {

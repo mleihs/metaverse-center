@@ -11,6 +11,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
 import {
@@ -72,6 +73,7 @@ export class VelgTerminalView extends SignalWatcher(LitElement) {
       await initializeTerminalZones(sid);
       this._initialized = true;
     } catch (err) {
+      captureError(err, { source: 'VelgTerminalView._initialize' });
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');
     }
   }

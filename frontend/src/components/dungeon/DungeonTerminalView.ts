@@ -518,6 +518,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         );
       }
     } catch (err) {
+      captureError(err, { source: 'VelgDungeonTerminalView._initialize' });
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');
     }
   }

@@ -3,6 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { settingsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PRESET_NAMES, THEME_PRESETS, type ThemePresetName } from '../../services/theme-presets.js';
 import type { SimulationSetting } from '../../types/index.js';
@@ -686,6 +687,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
         this._error = response.error?.message ?? msg('Failed to load design settings');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgDesignSettingsPanel._loadSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
