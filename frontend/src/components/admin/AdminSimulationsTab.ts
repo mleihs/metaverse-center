@@ -341,6 +341,7 @@ export class VelgAdminSimulationsTab extends LitElement {
         this._error = deletedResp.error?.message ?? msg('Failed to load deleted simulations');
       }
     } catch (err) {
+      captureError(err, { source: 'AdminSimulationsTab._loadSimulations' });
       this._error = err instanceof Error ? err.message : msg('Failed to load simulations');
     } finally {
       this._loading = false;

@@ -364,6 +364,7 @@ export class VelgAgentEditModal extends LitElement {
         this._apiError = response.error?.message ?? msg('An unknown error occurred');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgAgentEditModal._handleSave' });
       this._apiError = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._saving = false;

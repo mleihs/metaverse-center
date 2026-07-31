@@ -4,7 +4,7 @@
 #
 # Exit code: 0 = pass, 1 = violations found.
 #
-# Rejects two sibling anti-patterns for silent exception swallowing:
+# Rejects three sibling anti-patterns for silent exception swallowing:
 #
 # Rule 1 — empty-var `catch {` without an `(err)` binding. Without the
 #   binding, the error object is unreachable, so `captureError()` can never
@@ -19,6 +19,13 @@
 #   is discarded, so Sentry is blind to it.
 #     foo().catch(() => {});
 #     foo().catch(() => { log("failed"); });
+#
+# Rule 3 — bound-but-unobserved catch bodies (deep audit 2026-07-12).
+#   `catch (err) { console.error(err); }` passes Rules 1+2 (a binding
+#   exists) while still leaving Sentry blind. Delegated to
+#   scripts/lint-catch-observability.mjs, which brace-matches every catch
+#   body and every `.catch((err) => ...)` handler and requires
+#   captureError-or-throw inside.
 #
 # Correct patterns:
 #   } catch (err) {
@@ -35,6 +42,14 @@
 # "Frontend Rules > Error Observability (MANDATORY)".
 
 set -euo pipefail
+
+# Anchor all paths to the frontend root. CI and `npm run lint:full` invoke
+# this script from the REPO root, where a bare `src/` matches nothing and the
+# `2>/dev/null || true` guards turned Rules 1+2 into silent no-op passes
+# (found during the 2026-07 deep-audit sweep). Resolve SCRIPT_DIR BEFORE the
+# cd — BASH_SOURCE may be a relative path that dies with the old cwd.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 FAIL=0
 
@@ -70,6 +85,11 @@ if [ -n "$PROMISE_VIOLATIONS" ]; then
   echo "Fix: bind the rejection and route through captureError:"
   echo "    .catch((err) => captureError(err, { source: 'ClassName.methodName' }))"
   echo ""
+  FAIL=1
+fi
+
+# Rule 3: bound-but-unobserved catch bodies (captureError-or-throw required).
+if ! node "$SCRIPT_DIR/lint-catch-observability.mjs"; then
   FAIL=1
 fi
 

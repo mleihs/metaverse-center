@@ -440,6 +440,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
         VelgToast.error(response.error?.message ?? msg('Failed to delete agent.'));
       }
     } catch (err) {
+      captureError(err, { source: 'VelgAgentsView._handleAgentDelete' });
       VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred.'));
     }
   }

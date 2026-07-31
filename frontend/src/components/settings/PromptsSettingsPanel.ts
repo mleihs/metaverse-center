@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { promptTemplatesApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { PromptCategory, PromptTemplate, PromptTemplateType } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -285,6 +286,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
         this._error = response.error?.message || msg('Failed to load templates');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgPromptsSettingsPanel._loadTemplates' });
       this._error = err instanceof Error ? err.message : msg('Failed to load templates');
     } finally {
       this._loading = false;
@@ -372,6 +374,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
         VelgToast.error(this._formError);
       }
     } catch (err) {
+      captureError(err, { source: 'VelgPromptsSettingsPanel._handleSave' });
       this._formError = err instanceof Error ? err.message : msg('Failed to save template');
       VelgToast.error(this._formError);
     } finally {
@@ -398,6 +401,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
         VelgToast.error(response.error?.message || msg('Failed to deactivate template'));
       }
     } catch (err) {
+      captureError(err, { source: 'VelgPromptsSettingsPanel._handleDelete' });
       VelgToast.error(err instanceof Error ? err.message : msg('Failed to deactivate template'));
     }
   }

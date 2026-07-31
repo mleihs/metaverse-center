@@ -186,6 +186,7 @@ class ChatAudioService {
         },
       });
     } catch (err) {
+      captureError(err, { source: 'ChatAudioService._loadSprite' });
       console.warn('[ChatAudio] Howler import failed:', err);
     }
   }

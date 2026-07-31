@@ -13,6 +13,7 @@ import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { EpochParticipant, EpochStatus, EpochTeam } from '../../types/index.js';
 import { initializeTerminalZones } from '../../utils/terminal-initialization.js';
@@ -89,6 +90,7 @@ export class VelgEpochTerminalView extends SignalWatcher(LitElement) {
       await initializeTerminalZones(sid);
       this._initialized = true;
     } catch (err) {
+      captureError(err, { source: 'VelgEpochTerminalView._initialize' });
       this._error = err instanceof Error ? err.message : msg('Initialization failed.');
     }
   }

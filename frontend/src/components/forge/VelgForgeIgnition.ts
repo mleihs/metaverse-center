@@ -3,6 +3,7 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { captureError } from '../../services/SentryService.js';
 import { navigate } from '../../utils/navigation.js';
 import {
   forgeBackButtonStyles,
@@ -229,6 +230,7 @@ export class VelgForgeIgnition extends LitElement {
         VelgToast.error(errorMsg);
       }
     } catch (err) {
+      captureError(err, { source: 'VelgForgeIgnition._executeIgnition' });
       const errorMsg = err instanceof Error ? err.message : msg('Ignition sequence failed.');
       this._error = errorMsg;
       VelgToast.error(errorMsg);

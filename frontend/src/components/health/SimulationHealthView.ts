@@ -865,6 +865,7 @@ export class VelgSimulationHealthView extends LitElement {
         this._anchors = anchorResult.data as typeof this._anchors;
       }
     } catch (err) {
+      captureError(err, { source: 'VelgSimulationHealthView._load' });
       this._error = err instanceof Error ? err.message : msg('An unexpected error occurred.');
     } finally {
       this._loading = false;

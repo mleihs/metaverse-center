@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chronicleApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { ApiResponse, Chronicle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
@@ -683,6 +684,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
         VelgToast.error(detail);
       }
     } catch (err) {
+      captureError(err, { source: 'VelgChronicleView._generate' });
       const detail = err instanceof Error ? err.message : msg('Failed to generate chronicle.');
       this._error = detail;
       VelgToast.error(detail);
