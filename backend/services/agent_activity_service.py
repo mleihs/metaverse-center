@@ -505,7 +505,6 @@ class AgentActivityService:
         # Schedule async DeepL translation (fire-and-forget)
         if sim_name and saved.get("id"):
             schedule_auto_translation(
-                supabase,
                 "agent_activities",
                 saved["id"],
                 {"narrative_text": narrative, "name": agent_name},
@@ -750,7 +749,6 @@ class AgentActivityService:
                 saved = resp.data[0] if resp.data else None
                 if sim_name and saved and saved.get("id"):
                     schedule_auto_translation(
-                        supabase,
                         "agent_activities",
                         saved["id"],
                         {"narrative_text": narrative, "name": agent.get("name", "")},

@@ -319,13 +319,18 @@ def merge_stale_de_nulls(table: str, update_data: dict) -> dict:
 
 
 async def _run_auto_translate(
-    supabase: Client,
     table: str,
     entity_id: str,
     entity_data: dict,
     context: TranslationContext,
 ) -> None:
-    """Translate fields and write _de columns back. Meant to run as background task."""
+    """Translate fields and write _de columns back. Meant to run as background task.
+
+    Persists via the admin singleton acquired inside the task: the task outlives
+    the request, and the request-scoped client is closed at request teardown
+    (``get_supabase``'s ``finally``) — a captured request client would be a
+    use-after-close by the time the LLM translation returns.
+    """
     field_map = TRANSLATABLE_FIELDS.get(table, {})
     if not field_map:
         return
@@ -358,7 +363,8 @@ async def _run_auto_translate(
         return
 
     try:
-        await supabase.table(table).update(update_data).eq("id", entity_id).execute()
+        admin = await get_admin_supabase()
+        await admin.table(table).update(update_data).eq("id", entity_id).execute()
         logger.info(
             "Auto-translated fields",
             extra={"entity_type": table, "entity_id": entity_id, "entity_count": len(update_data)},
@@ -378,8 +384,12 @@ def _on_translate_task_done(task: asyncio.Task[None]) -> None:
         sentry_sdk.capture_exception(exc)
 
 
+# Strong references so fire-and-forget tasks cannot be garbage-collected
+# mid-flight (asyncio only holds weak refs to running tasks).
+_TRANSLATE_TASKS: set[asyncio.Task[None]] = set()
+
+
 def schedule_auto_translation(
-    supabase: Client,
     table: str,
     entity_id: UUID | str,
     entity_data: dict,
@@ -390,7 +400,9 @@ def schedule_auto_translation(
     """Fire-and-forget background translation for an entity.
 
     Safe to call from sync or async context — creates a background task
-    with an error callback to prevent silent exception swallowing.
+    with an error callback to prevent silent exception swallowing. Takes no
+    Supabase client on purpose: the task persists via the admin singleton,
+    because any request-scoped client is closed before the task finishes.
     """
     context = TranslationContext(
         simulation_name=simulation_name,
@@ -399,8 +411,10 @@ def schedule_auto_translation(
         entity_name=entity_data.get("name"),
     )
     task = asyncio.create_task(
-        _run_auto_translate(supabase, table, str(entity_id), entity_data, context),
+        _run_auto_translate(table, str(entity_id), entity_data, context),
     )
+    _TRANSLATE_TASKS.add(task)
+    task.add_done_callback(_TRANSLATE_TASKS.discard)
     task.add_done_callback(_on_translate_task_done)
 
 
@@ -424,7 +438,6 @@ async def schedule_entity_translation(
     if not sim:
         return
     schedule_auto_translation(
-        supabase,
         table,
         entity["id"],
         entity,

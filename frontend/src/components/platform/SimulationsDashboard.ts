@@ -24,7 +24,6 @@ import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
 import { VelgToast } from '../shared/Toast.js';
 import { getPlatformPullQuotes, type PullQuote } from './LoreScroll.js';
 import './SimulationCard.js';
-import '../resonance/ResonanceMonitor.js';
 import '../epoch/AcademyEpochCard.js';
 import '../forge/ClearanceApplicationCard.js';
 import '../forge/ClearanceQueue.js';

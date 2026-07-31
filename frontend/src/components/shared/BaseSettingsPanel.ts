@@ -3,6 +3,7 @@ import { LitElement } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { settingsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { SettingCategory, SimulationSetting } from '../../types/index.js';
 import { VelgToast } from './Toast.js';
 
@@ -97,6 +98,7 @@ export abstract class BaseSettingsPanel extends LitElement {
         this._error = response.error?.message ?? msg('Failed to load settings');
       }
     } catch (err) {
+      captureError(err, { source: 'BaseSettingsPanel._loadSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
@@ -144,6 +146,7 @@ export abstract class BaseSettingsPanel extends LitElement {
       VelgToast.success(this.successMessage);
       this.dispatchEvent(new CustomEvent('settings-saved', { bubbles: true, composed: true }));
     } catch (err) {
+      captureError(err, { source: 'BaseSettingsPanel._saveSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
       VelgToast.error(this._error);
     } finally {

@@ -21,6 +21,7 @@ import { msg } from '@lit/localize';
 import type { ReactiveElement } from 'lit';
 import { html, type nothing, type TemplateResult } from 'lit';
 import { state } from 'lit/decorators.js';
+import { captureError } from '../../services/SentryService.js';
 import type { ApiResponse } from '../../types/index.js';
 
 /** Return type for render callbacks — TemplateResult or Lit's `nothing` symbol. */
@@ -119,11 +120,22 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
 
     /* ── Core load orchestrator ────────────── */
 
+    /**
+     * Monotonic sequence for in-flight loads. Rapid triggers (page clicks,
+     * filter changes, simulationId switches) fire overlapping _fetchData
+     * calls that resolve in arbitrary order — without the guard, the last
+     * response to ARRIVE wins over the last one REQUESTED, and a stale page
+     * overwrites the current one. Only the newest load may write state.
+     */
+    private __loadSeq = 0;
+
     protected async _load(): Promise<void> {
+      const seq = ++this.__loadSeq;
       this._loading = true;
       this._error = null;
       try {
         const response = await this._fetchData();
+        if (seq !== this.__loadSeq) return; // superseded by a newer load
         if (response.success && response.data !== undefined) {
           this._data = response.data;
           this._total =
@@ -133,9 +145,13 @@ export function DataLoaderMixin<TBase extends ReactiveElementCtor>(
           this._error = response.error?.message ?? this._getErrorFallback();
         }
       } catch (err) {
+        if (seq !== this.__loadSeq) return; // superseded — newer load owns the UI state
+        captureError(err, { source: 'DataLoaderMixin._load' });
         this._error = err instanceof Error ? err.message : this._getErrorFallback();
       } finally {
-        this._loading = false;
+        if (seq === this.__loadSeq) {
+          this._loading = false;
+        }
       }
     }
 

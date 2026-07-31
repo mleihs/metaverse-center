@@ -95,15 +95,18 @@ class UserProfileService:
     @classmethod
     async def complete_onboarding(
         cls,
-        admin_supabase: Client,
+        supabase: Client,
         user_id: UUID,
     ) -> None:
         """Mark the user's onboarding as completed.
 
-        Uses admin client because user_profiles may require elevated access.
+        Runs on the caller's client: user_profiles has a "Users can update own
+        profile" RLS policy (auth.uid() = id, migration …150337) — the earlier
+        admin-client docstring claim ("may require elevated access") was
+        verified false in the 2026-07 deep audit.
         """
         await (
-            admin_supabase.table("user_profiles")
+            supabase.table("user_profiles")
             .update({"onboarding_completed": True})
             .eq("id", str(user_id))
             .execute()

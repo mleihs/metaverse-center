@@ -33,6 +33,10 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
+# Strong references so fire-and-forget extraction tasks cannot be
+# garbage-collected mid-flight (asyncio only holds weak refs to running tasks).
+_MEMORY_EXTRACT_TASKS: set[asyncio.Task[None]] = set()
+
 # ── Model-aware history limits ────────────────────────────
 # Instead of a static message count, compute the limit from the model's
 # context window.  No tokenizer dependency — uses a 4-chars-per-token
@@ -616,7 +620,12 @@ class ChatAIService:
         user_message: str,
         response_text: str,
     ) -> None:
-        """Background memory extraction — catches all exceptions with timeout."""
+        """Background memory extraction — catches all exceptions with timeout.
+
+        Deliberately passes no client into the task: extraction can run up to
+        30 s after the response is sent, and the request-scoped client held by
+        this service is closed at request teardown (deep-audit P1-1).
+        """
         if not response_text:
             return
 
@@ -624,7 +633,6 @@ class ChatAIService:
             try:
                 await asyncio.wait_for(
                     AgentMemoryService.extract_from_chat(
-                        self._supabase,
                         self._simulation_id,
                         UUID(agent_id),
                         user_message,
@@ -637,7 +645,9 @@ class ChatAIService:
             except Exception:
                 logger.exception("Memory extraction failed for agent %s", agent_id)
 
-        asyncio.create_task(_safe_extract())
+        task = asyncio.create_task(_safe_extract())
+        _MEMORY_EXTRACT_TASKS.add(task)
+        task.add_done_callback(_MEMORY_EXTRACT_TASKS.discard)
 
     # ── Public generation methods ───────────────────────────
 

@@ -23,7 +23,6 @@ from backend.models.heartbeat import (
     AnchorCreate,
     AnchorResponse,
     AttunementCreate,
-    AttunementResponse,
     BureauResponseCreate,
     BureauResponseResponse,
     CascadeRuleResponse,
@@ -31,6 +30,7 @@ from backend.models.heartbeat import (
     HeartbeatEntryResponse,
     HeartbeatOverview,
     NarrativeArcResponse,
+    SubstrateAttunementResponse,
 )
 from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
@@ -230,7 +230,7 @@ async def list_attunements(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("viewer"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse[list[AttunementResponse]]:
+) -> SuccessResponse[list[SubstrateAttunementResponse]]:
     """List attunements for a simulation."""
     data = await AttunementService.list_attunements(supabase, simulation_id)
     return SuccessResponse(data=data)
@@ -243,7 +243,7 @@ async def set_attunement(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse[AttunementResponse]:
+) -> SuccessResponse[SubstrateAttunementResponse]:
     """Set a resonance signature attunement."""
     data = await AttunementService.set_attunement(
         supabase,
@@ -270,7 +270,7 @@ async def remove_attunement(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
-) -> SuccessResponse[AttunementResponse]:
+) -> SuccessResponse[SubstrateAttunementResponse]:
     """Remove an attunement."""
     data = await AttunementService.remove_attunement(supabase, simulation_id, signature)
     await AuditService.safe_log(

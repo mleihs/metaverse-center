@@ -282,14 +282,24 @@ class TestBust:
         assert run["markers"][node] == ["statik", "statik"]
 
         # Dig until the salt hands us a statik — the third one must tear the node.
+        # Every dig lays its own marker on the stack too, so a NON-statik class
+        # can legitimately complete its own triple first (3 classes, 6 digs —
+        # pigeonhole makes that likely): that is a correct bust per
+        # sondierung_bust_rule, just not the scenario under test.
+        counts = {"statik": 2}
         for _ in range(6):
             run = _dig(client, user, run)
             last = run["checkpoint"]["last_sondierung"]
-            if last["marker"] == "statik":
+            marker = last["marker"]
+            counts[marker] = counts.get(marker, 0) + 1
+            if marker == "statik":
                 assert last["bust"] is True, (
                     "two Störungs-markers plus one dug marker of the same class is three"
                 )
                 return
+            if counts[marker] >= 3:
+                assert last["bust"] is True, "three of a kind must tear the node"
+                pytest.skip("the salt completed a non-statik triple before any statik")
             assert last["bust"] is False
         pytest.skip("the salt never handed us a statik in six digs")
 

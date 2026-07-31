@@ -24,7 +24,6 @@ import './components/auth/LoginPanel.js';
 import './components/auth/RegisterView.js';
 import './components/platform/PlatformHeader.js';
 import './components/platform/SimulationsDashboard.js';
-import './components/drift/DriftView.js';
 import './components/layout/SimulationShell.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
@@ -625,7 +624,12 @@ export class VelgApp extends LitElement {
         // Public-first (plan §22.2): the shared Driftkarte topology is the public face,
         // so anon / non-members may browse it. The membership-gated run + quest HUD is
         // the view's own concern; the nav tab is gated on drift_p0_enabled (driftStatus).
-        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'drift', entitySlug),
+        // Lazy on purpose: DriftView pulls Three.js (+UnrealBloomPass, ~145 kB gzip) —
+        // as a static import it sat on every first paint (deep-audit P1-5).
+        enter: async ({ id, entitySlug }) => {
+          if (!(await this._lazy(() => import('./components/drift/DriftView.js')))) return false;
+          return this._enterSimulationRoute(id, 'drift', entitySlug);
+        },
       },
       {
         path: '/simulations/:id/settings',
