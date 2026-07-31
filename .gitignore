@@ -88,3 +88,9 @@ _test_output/
 
 # DRIFT renderer dev harness (local preview only, not part of the Lit component)
 frontend/drift-preview.html
+
+# Prototyping spikes — vendored node_modules, never shipped
+spikes/
+
+# Claude Code session lock
+.claude/scheduled_tasks.lock
