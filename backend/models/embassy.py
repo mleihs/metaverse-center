@@ -57,6 +57,12 @@ class EmbassyResponse(BaseModel):
     created_by_id: UUID | None = None
     created_at: datetime
     updated_at: datetime
+    # Ward/infiltration game state (live columns; added when the public read
+    # surface was typed)
+    ward_strength: float | None = None
+    ward_vector: dict | None = None
+    infiltration_penalty: float | None = None
+    infiltration_penalty_expires_at: datetime | None = None
     building_a: dict | None = None
     building_b: dict | None = None
     simulation_a: dict | None = None
