@@ -32,7 +32,7 @@ SIM_ID = "60000000-0000-0000-0000-000000000001"
 SIM_SLUG = "spengbabs-grease-pit"
 
 LOCAL_URL = "http://127.0.0.1:54321"
-LOCAL_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+LOCAL_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"  # noqa: E501 (local Supabase demo JWT — one indivisible token)
 
 PROD_URL = "https://bffjoupddfjaljqrwqck.supabase.co"
 

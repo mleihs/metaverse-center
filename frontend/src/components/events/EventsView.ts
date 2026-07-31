@@ -66,6 +66,9 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   ];
 
   @property({ type: String }) simulationId = '';
+  /** Deep link from /simulations/:id/events/:eventId — an EVENT id, not a slug (events have
+   *  none). Opens the details panel on that event, fetching it when it is not on this page. */
+  @property({ type: String }) entityId = '';
 
   @state() private _selectedEvent: SimEvent | null = null;
   @state() private _editEvent: SimEvent | null = null;
@@ -75,6 +78,9 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   @state() private _seismographEvents: SimEvent[] = [];
   @state() private _dateFrom: string | null = null;
   @state() private _dateTo: string | null = null;
+  /** The deep link already honoured — so closing the panel does not re-open it on the next
+   *  render, and a second navigation to the SAME event still works after a reload. */
+  private _deepLinked = '';
 
   /* ── DataLoaderMixin contract ────────── */
 
@@ -102,7 +108,38 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
     return msg('An unexpected error occurred');
   }
 
+  /** Open the details panel for a deep-linked event id (the DRIFT Wirkungsbericht's receipt
+   *  links here). Prefer the row already on this page; otherwise fetch the one event.
+   *  Mode is decided at the call site (never in the API layer): a traveller reading the
+   *  receipt of a delivery into a FOREIGN world is not a member of it — that read is public. */
+  private async _checkDeepLink(): Promise<void> {
+    const id = this.entityId;
+    if (!id || this._deepLinked === id) return;
+    this._deepLinked = id;
+
+    const onPage = this._events.find((e) => e.id === id);
+    if (onPage) {
+      this._selectedEvent = onPage;
+      this._showDetails = true;
+      return;
+    }
+    try {
+      const res = await eventsApi.getById(
+        this.simulationId,
+        id,
+        appState.currentSimulationMode.value,
+      );
+      if (res.success && res.data) {
+        this._selectedEvent = res.data;
+        this._showDetails = true;
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgEventsView._checkDeepLink' });
+    }
+  }
+
   protected _onDataLoaded(): void {
+    void this._checkDeepLink();
     const sim = appState.currentSimulation.value;
     if (sim) {
       seoService.setCollectionPage({
@@ -139,6 +176,11 @@ export class VelgEventsView extends PaginatedLoaderMixin(LitElement) {
   protected willUpdate(changed: Map<PropertyKey, unknown>): void {
     if (changed.has('simulationId') && this.simulationId) {
       this._loadSeismographEvents();
+    }
+    // Navigating from one event deep link straight to another (same view instance) must
+    // re-open the panel; _onDataLoaded alone would not fire without a refetch.
+    if (changed.has('entityId') && this.entityId) {
+      void this._checkDeepLink();
     }
     super.willUpdate(changed); // mixin handles pagination reset + _load()
   }

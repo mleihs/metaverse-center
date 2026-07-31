@@ -173,6 +173,40 @@ def test_user_ids(admin_client: Client) -> list[UUID]:
     return user_ids
 
 
+@pytest.fixture(scope="session")
+def user_clients(admin_client: Client, test_user_ids: list[UUID]) -> list[Client]:
+    """4 sync Supabase clients authenticated AS the 4 test users (index-aligned with
+    ``test_user_ids``) — i.e. every request carries that user's JWT, so ``auth.uid()``
+    resolves inside the database.
+
+    This is what makes the PLAYER-class RPCs testable in CI. The DRIFT run/quest RPCs
+    (and the dungeon/DRIFT family generally) open with
+    ``IF (SELECT auth.uid()) IS DISTINCT FROM p_user THEN RAISE 42501`` — a guard that
+    ``admin_client`` (service_role, ``auth.uid() = NULL``) can never pass. Until now that
+    left every player path browser-verified-only (see the header of
+    ``test_travel_failure_scatter.py``); with this fixture they run in the suite.
+
+    The one obstacle was signup's ``email_confirm``: the local auth stack refuses the
+    password grant for an unconfirmed address ("Email not confirmed"). We confirm the
+    address through the service_role admin API — the same thing an operator would do in
+    Studio — and then sign in normally. Session-scoped: four token exchanges, once.
+    """
+    clients: list[Client] = []
+    for i, uid in enumerate(test_user_ids, start=1):
+        creds = {
+            "email": f"gamedb-test-{i}@test.velgarien.dev",
+            "password": "gamedb-test-pass-123",
+        }
+        try:
+            admin_client.auth.admin.update_user_by_id(str(uid), {"email_confirm": True})
+            client = create_client(settings.supabase_url, settings.supabase_anon_key)
+            client.auth.sign_in_with_password(creds)
+        except Exception as e:  # auth stack down / confirmation policy changed
+            pytest.skip(f"Could not authenticate test user {creds['email']}: {e}")
+        clients.append(client)
+    return clients
+
+
 @pytest.fixture()
 def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
     """Factory that creates isolated test epochs with auto-cleanup.
@@ -252,3 +286,63 @@ def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
             admin_client.table("game_epochs").delete().eq("id", str(eid)).execute()
         except Exception:  # noqa: S110
             pass  # Best-effort cleanup
+
+
+# ── DRIFT chart fixtures (the travel suites navigate a real chart) ─────────────
+
+
+def _broadcast_homes(admin_client: Client) -> dict[str, dict]:
+    """The active chart version's broadcast_rand nodes, keyed by stable_key."""
+    versions = (
+        admin_client.table("chart_versions")
+        .select("version").order("version", desc=True).limit(1).execute()
+    )
+    if not versions.data:
+        pytest.skip("no chart version seeded")
+    version = versions.data[0]["version"]
+    nodes = (
+        admin_client.table("drift_chart_nodes")
+        .select("id, stable_key, simulation_id")
+        .eq("chart_version", version)
+        .eq("node_type", "broadcast_rand")
+        .execute()
+    )
+    return {n["stable_key"]: n for n in nodes.data}
+
+
+@pytest.fixture(scope="session")
+def chart_home(admin_client: Client) -> dict:
+    """The traveller's anchor world edge on the active chart (Velgarien's broadcast node)."""
+    homes = _broadcast_homes(admin_client)
+    return homes.get("home-velgarien") or next(iter(homes.values()))
+
+
+@pytest.fixture(scope="session")
+def chart_foreign(admin_client: Client, chart_home: dict) -> dict:
+    """A FOREIGN world edge — the Depesche target and the un-surveyed honor node."""
+    for node in _broadcast_homes(admin_client).values():
+        if node["id"] != chart_home["id"]:
+            return node
+    pytest.skip("chart has only one broadcast home — a foreign dock is required")
+
+
+@pytest.fixture(scope="session")
+def home_neighbor(admin_client: Client, chart_home: dict) -> str:
+    """Any node adjacent to home — the one legal move a collapsing run still has."""
+    versions = (
+        admin_client.table("chart_versions")
+        .select("version").order("version", desc=True).limit(1).execute()
+    )
+    version = versions.data[0]["version"]
+    edges = (
+        admin_client.table("drift_chart_edges")
+        .select("from_node, to_node")
+        .eq("chart_version", version)
+        .execute()
+    )
+    for e in edges.data:
+        if e["from_node"] == chart_home["id"]:
+            return e["to_node"]
+        if e["to_node"] == chart_home["id"]:
+            return e["from_node"]
+    pytest.skip("home node has no edges on the active chart")

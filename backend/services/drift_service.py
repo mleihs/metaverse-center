@@ -27,6 +27,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.models.drift import (
     CargoResponse,
     ChartGenerationResponse,
+    ClearanceExamResponse,
     DockAgentResponse,
     DockLoreResponse,
     DriftChartEdgeResponse,
@@ -34,14 +35,18 @@ from backend.models.drift import (
     DriftChartResponse,
     DriftDockResponse,
     DriftHonorResponse,
+    DriftProfileResponse,
     DriftPublicState,
     DriftTuningResponse,
+    EarningsBlock,
+    EffectCard,
     QuestAcceptResponse,
     QuestDeliverResponse,
     QuestEffectsResponse,
     QuestInstanceResponse,
     QuestOfferResponse,
     QuestStateResponse,
+    TravelLogEntryResponse,
     TravelRunResponse,
 )
 from backend.services.travel.chart_generator import ChartGeneratorService
@@ -53,6 +58,21 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 _P0_GATE_KEY = "drift_p0_enabled"
+
+# The rank ladder in order. W1 opens the first rung only (drift_tuning.clearance_thresholds
+# carries exactly one key); the list is what tells the HUD which rung comes NEXT, and it is
+# the one place a new rank has to be inserted when its exam ships.
+_RANK_LADDER = ["aspirant", "feldkartograph", "vermesser", "grenzgaenger", "kartograph_1k"]
+
+# What the hospitality gate writes, per effect kind (migration 255) → how the HUD reads it.
+# The gate's skip reasons are pass-through strings ("hospitality_geschlossen", …) — the
+# frontend renders them, it does not re-derive them.
+_EFFECT_TARGET_KIND = {
+    "emit_fragment": "self",
+    "emit_echo": "simulation",
+    "spawn_event": "simulation",
+    "inject_agent_memory": "agent",
+}
 
 # SQLSTATE → HTTP error factory for the run-lifecycle RPCs (migration 246).
 #   42501 caller-is-not-owner · P0002 not-found · 22023 bad-state
@@ -82,6 +102,14 @@ class DriftService:
         settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
         if not parse_setting_bool(settings_map.get(_P0_GATE_KEY)):
             raise not_found("DRIFT is not available.")
+
+    # No `assert_fun_core_enabled` twin of the above (removed in W2.6/A). The Fun-Kern gate
+    # is enforced in SQL only — every Fun-Kern RPC re-reads drift_fun_core_enabled
+    # in-transaction and knows what a closed gate means for its own state (refuse to CREATE,
+    # but DRAIN what the Fun-Kern already created). An HTTP pre-check answers 404 before the
+    # RPC runs and therefore silently overrules that distinction; it made the gate-drain in
+    # fn_travel_havarie_resolve unreachable. `drift_p0_enabled` keeps its HTTP gate: it hides
+    # a whole FEATURE, and there is no state behind it that could need draining.
 
     @staticmethod
     async def get_public_state(admin_supabase: Client) -> DriftPublicState:
@@ -150,7 +178,17 @@ class DriftService:
         resp = await (
             supabase.table("drift_tuning")
             .select("setting_key, value")
-            .in_("setting_key", ["window_base", "dz_p0_cap", "bandwidth_class_bb_max"])
+            .in_(
+                "setting_key",
+                [
+                    "window_base",
+                    "dz_p0_cap",
+                    "bandwidth_class_bb_max",
+                    "sondierung_yields",
+                    "funkboje_rate",
+                    "funkboje_node_types",
+                ],
+            )
             .execute()
         )
         values = {row["setting_key"]: row["value"] for row in (resp.data or [])}
@@ -159,6 +197,9 @@ class DriftService:
             window_base=int(values.get("window_base", 8)),
             dz_cap=int(values.get("dz_p0_cap", 20)),
             bandwidth_class_bb_max={str(k): int(v) for k, v in bb_max.items()},
+            sondierung_yields=[int(v) for v in (values.get("sondierung_yields") or [])],
+            funkboje_rate=float(values.get("funkboje_rate", 0.7)),
+            funkboje_node_types=[str(v) for v in (values.get("funkboje_node_types") or [])],
         )
 
     @staticmethod
@@ -253,14 +294,240 @@ class DriftService:
         resp = await (
             supabase.table("travel_runs")
             .select("*")
+            # Owner filter, explicitly — NOT left to RLS. The callers inject
+            # get_effective_supabase, which elevates a platform admin to service_role and
+            # switches RLS off; without this predicate such a caller gets the most recently
+            # opened run of ANY traveller, and every follow-up RPC (WHERE user_id = p_user)
+            # then 404s against it. Defense in depth: the same filter the other reads carry.
             .eq("user_id", str(user_id))
-            .in_("status", ["active", "frozen", "distress"])
+            # 'havarie' is an OPEN run (migration 265): it is stranded, awaiting the
+            # traveller's decision, and it holds the single-active slot. Omitting it here
+            # would show the HUD "no run" while the wreck still blocks fn_travel_run_open.
+            .in_("status", ["active", "frozen", "distress", "havarie"])
             .order("opened_at", desc=True)
             .limit(1)
             .execute()
         )
         rows = resp.data or []
         return TravelRunResponse(**rows[0]) if rows else None
+
+    # ── the Bureau account (M4/M6 — the HUD's ledger strip) ─────────────────────
+
+    @staticmethod
+    async def get_profile(supabase: Client, user_id: UUID) -> DriftProfileResponse | None:
+        """The traveller's account: currencies, rank, rank progress, scars.
+
+        None before the first run (the profile row is created by fn_travel_run_open) — the
+        HUD renders the strip empty rather than inventing a zeroed account that does not
+        exist. Reads are owner-RLS on traveler_profiles + the public drift_tuning.
+        """
+        row = await maybe_single_data(
+            supabase.table("traveler_profiles")
+            .select(
+                "anchor_simulation_id, siegel, vp, clearance_rank, bandwidth_class, "
+                "zerfaserung_count, qualities, unlocked_vectors"
+            )
+            .eq("user_id", str(user_id))
+            .maybe_single()
+        )
+        if not row:
+            return None
+
+        tuning_resp = await (
+            supabase.table("drift_tuning")
+            .select("setting_key, value")
+            .in_("setting_key", ["clearance_thresholds", "clearance_exam_fee"])
+            .execute()
+        )
+        tuning = {r["setting_key"]: r["value"] for r in (tuning_resp.data or [])}
+        thresholds = tuning.get("clearance_thresholds") or {}
+        fees = tuning.get("clearance_exam_fee") or {}
+
+        rank = row["clearance_rank"]
+        next_rank = DriftService._next_rank(rank, thresholds)
+        next_vp = int(thresholds[next_rank]) if next_rank else None
+        next_fee = int(fees.get(next_rank, 0)) if next_rank else None
+
+        vp = int(row["vp"])
+        siegel = int(row["siegel"])
+        # Progress toward the NEXT rung only (0 when the ladder is exhausted — a full bar
+        # would read as "one point from a promotion that does not exist").
+        progress = min(1.0, vp / next_vp) if next_vp else 0.0
+        exam_ready = bool(next_rank and vp >= (next_vp or 0) and siegel >= (next_fee or 0))
+
+        return DriftProfileResponse(
+            siegel=siegel,
+            vp=vp,
+            clearance_rank=rank,
+            bandwidth_class=int(row["bandwidth_class"]),
+            zerfaserung_count=int(row["zerfaserung_count"]),
+            vermessung_lodged=int((row.get("qualities") or {}).get("vermessung_lodged", 0)),
+            anchor_simulation_id=row["anchor_simulation_id"],
+            unlocked_vectors=list(row.get("unlocked_vectors") or []),
+            next_rank=next_rank,
+            next_rank_vp=next_vp,
+            next_rank_fee=next_fee,
+            next_rank_progress=progress,
+            exam_ready=exam_ready,
+        )
+
+    @staticmethod
+    def _next_rank(current: str, thresholds: dict) -> str | None:
+        """The next rung ABOVE `current` that actually has an exam configured.
+
+        A rank with no threshold row is a rank whose exam has not shipped — it must not be
+        dangled in front of the player as a bar they can fill (W1 ships exactly one rung).
+        """
+        try:
+            idx = _RANK_LADDER.index(current)
+        except ValueError:
+            return None
+        for rank in _RANK_LADDER[idx + 1 :]:
+            if rank in thresholds:
+                return rank
+        return None
+
+    @staticmethod
+    async def sit_clearance_exam(
+        supabase: Client, user_id: UUID, rank: str
+    ) -> ClearanceExamResponse:
+        """Sit the Bureau exam for a rank (player-class RPC: VP threshold + Siegel fee)."""
+        try:
+            resp = await supabase.rpc(
+                "fn_clearance_exam", {"p_user": str(user_id), "p_rank": rank}
+            ).execute()
+        except PostgrestAPIError as exc:
+            raise DriftService._rpc_error("fn_clearance_exam", exc) from exc
+        if not resp.data:
+            raise server_error("fn_clearance_exam returned no payload.")
+        return ClearanceExamResponse(**resp.data)
+
+    # ── effect cards (the honest verdict of the hospitality gate) ────────────────
+
+    @staticmethod
+    async def _build_effect_cards(
+        supabase: Client,
+        instance_id: UUID,
+        effects: QuestEffectsResponse,
+        slots: dict | None = None,
+    ) -> list[EffectCard]:
+        """Turn the gate's applied/skipped lists into per-effect cards with real targets.
+
+        P0 only ever COUNTED these lists (DriftView.ts:477 → "3 Wirkungen"), so the one
+        thing the traveller crossed the Drift for — evidence that a world changed — was
+        invisible. Here each entry becomes a card that names its target and links to the
+        receipt: the events the delivery wrote carry `metadata.quest_instance_id`, so the
+        exact event id is resolvable without the RPC having to return it (and therefore
+        without changing what the gate-closed RPC returns — the P0 parity contract holds).
+
+        Filtered effects become cards too, carrying the gate's own reason. A world that
+        refuses is a world that answered.
+        """
+        entries = [(e, "applied") for e in effects.applied] + [
+            (e, "filtered") for e in effects.skipped
+        ]
+        if not entries:
+            return []
+
+        # The hospitality gate's SKIP entries carry only {kind, reason} — the target is
+        # dropped (migration 255). A filtered card would therefore read "Unbekanntes Ziel",
+        # which is precisely the wrong thing to say: the whole point of the card is that a
+        # NAMED world refused you. For a deliver Depesche every effect targets the instance's
+        # resolved slots, so those are the truthful fallback (browser-verified).
+        slots = slots or {}
+        fallback_sim = slots.get("target_sim")
+        fallback_agent = slots.get("target_agent")
+
+        def target_sim_of(entry: dict) -> str | None:
+            return entry.get("target_sim") or (
+                fallback_sim if entry.get("kind") != "emit_fragment" else None
+            )
+
+        def target_agent_of(entry: dict) -> str | None:
+            if entry.get("target_agent"):
+                return entry["target_agent"]
+            return fallback_agent if entry.get("kind") == "inject_agent_memory" else None
+
+        sim_ids = {str(s) for e, _ in entries if (s := target_sim_of(e))}
+        agent_ids = {str(a) for e, _ in entries if (a := target_agent_of(e))}
+
+        sims: dict[str, dict] = {}
+        if sim_ids:
+            sims_resp = await (
+                supabase.table("simulations")
+                .select("id, name, slug")
+                .in_("id", sorted(sim_ids))
+                .execute()
+            )
+            sims = {r["id"]: r for r in (sims_resp.data or [])}
+
+        agents: dict[str, dict] = {}
+        if agent_ids:
+            # active_agents: the public-read view — a foreign world's Träger resolves even
+            # when the traveller is not a member of it (public-first).
+            agents_resp = await (
+                supabase.table("active_agents")
+                .select("id, name, slug")
+                .in_("id", sorted(agent_ids))
+                .execute()
+            )
+            agents = {r["id"]: r for r in (agents_resp.data or [])}
+
+        # The receipts: events this delivery wrote, keyed by effect kind (emit_echo →
+        # travel_echo, spawn_event → travel_dispatch — the gate stamps `kind` in metadata).
+        #
+        # active_events, NOT events: `events_select` gates the base table on
+        # user_has_simulation_access, and a traveller is by definition NOT a member of the
+        # foreign world they just delivered to — the receipt would be invisible in exactly
+        # the case it matters most (browser-verified: the applied Echo card came back with
+        # no link). active_events is the public-read view (the active_agents precedent);
+        # public-first is the rule for every read on a foreign world.
+        events_resp = await (
+            supabase.table("active_events")
+            .select("id, metadata")
+            .contains("metadata", {"quest_instance_id": str(instance_id)})
+            .execute()
+        )
+        receipts: dict[str, str] = {}
+        for row in events_resp.data or []:
+            kind = (row.get("metadata") or {}).get("kind")
+            if kind and kind not in receipts:
+                receipts[kind] = row["id"]
+
+        cards: list[EffectCard] = []
+        for entry, status in entries:
+            kind = str(entry.get("kind") or "unknown")
+            target_kind = _EFFECT_TARGET_KIND.get(kind, "none")
+            sim_id = target_sim_of(entry)
+            agent_id = target_agent_of(entry)
+            sim = sims.get(str(sim_id)) if sim_id else None
+            agent = agents.get(str(agent_id)) if agent_id else None
+
+            if target_kind == "self":
+                label = "Eigenes Journal"
+            elif target_kind == "agent":
+                label = agent["name"] if agent else "Unbekannter Träger"
+            elif sim:
+                label = sim["name"]
+            else:
+                label = "Unbekanntes Ziel"
+
+            cards.append(
+                EffectCard(
+                    kind=kind,
+                    status=status,  # type: ignore[arg-type]  (Literal, values are fixed above)
+                    target_kind=target_kind,  # type: ignore[arg-type]
+                    target_label=label,
+                    simulation_id=sim_id,
+                    simulation_slug=sim.get("slug") if sim else None,
+                    agent_id=agent_id,
+                    agent_slug=agent.get("slug") if agent else None,
+                    event_id=receipts.get(kind) if status == "applied" else None,
+                    hospitality=entry.get("hospitality"),
+                    reason=entry.get("reason") if status == "filtered" else None,
+                )
+            )
+        return cards
 
     # ── quest reads (owner-RLS; offers computed, no writes) ─────────────────────
 
@@ -442,6 +709,116 @@ class DriftService:
         )
 
     @staticmethod
+    async def resolve_havarie(
+        supabase: Client,
+        user_id: UUID,
+        run_id: UUID,
+        run_version: int,
+        choice: str,
+        jettison_cargo_ids: list[UUID] | None = None,
+    ) -> TravelRunResponse:
+        """Resolve a Havarie: the traveller's decision at the failure floor (migration 265).
+
+        Returns the run as it stands AFTER the choice — active again (notabwurf / notruf /
+        ueberziehen), banked (rueckruf) or unravelled (zerfaserung, or a TTL-expired wreck
+        that the Drift decided for). The RPC's `expired` flag rides the same jsonb; it is
+        the run row that matters to the HUD, and the run row tells the story either way.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_travel_havarie_resolve",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_choice": choice,
+                "p_jettison_cargo_ids": [str(c) for c in jettison_cargo_ids]
+                if jettison_cargo_ids
+                else None,
+            },
+        )
+
+    @staticmethod
+    async def resolve_signal(
+        supabase: Client,
+        user_id: UUID,
+        run_id: UUID,
+        run_version: int,
+        option_key: str,
+    ) -> TravelRunResponse:
+        """Answer a pending Störung/Begegnung (M1, migration 267).
+
+        Returns the run AFTER the answer: active again with `last_signal` set, or in a
+        Havarie if the outcome took the last of the hull (a Störung is allowed to have
+        teeth). The RPC pays the option's cost whatever the roll says, rolls the check
+        from the salted seed, and validates the option against the TEMPLATE — never
+        against the copy the client can see.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_signal_resolve",
+            {
+                "p_user": str(user_id),
+                "p_run": str(run_id),
+                "p_run_version": run_version,
+                "p_option_key": option_key,
+            },
+        )
+
+    @staticmethod
+    async def sondieren(
+        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
+    ) -> TravelRunResponse:
+        """Dig the node the run is standing on (M2, migration 268).
+
+        Costs a Takt, pays a rising yield, and lays an open marker on the node. The third
+        marker of one class tears it: the loose yield dug there is forfeit (never the
+        banked reserve). The returned run carries `checkpoint.last_sondierung` — the
+        reveal the HUD plays.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_sondieren",
+            {"p_user": str(user_id), "p_run": str(run_id), "p_run_version": run_version},
+        )
+
+    @staticmethod
+    async def bank_haul(
+        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
+    ) -> TravelRunResponse:
+        """Transmit the loose haul from a dock (Funkboje, migration 268).
+
+        70 % of it becomes safe from everything that follows — a Havarie, a Resonanzriss,
+        even a Zerfaserung. Refused at the anchor world, where the Entladung pays in full.
+        """
+        return await DriftService._call_run_rpc(
+            supabase,
+            "fn_funkboje_bank",
+            {"p_user": str(user_id), "p_run": str(run_id), "p_run_version": run_version},
+        )
+
+    @staticmethod
+    async def get_logbook(
+        supabase: Client, user_id: UUID, *, limit: int = 50
+    ) -> list[TravelLogEntryResponse]:
+        """The traveller's logbook (R12) — newest first, ACROSS runs.
+
+        Deliberately not run-scoped: the logbook is the career, not the journey. It is
+        what makes coming back after a week free — three lines and you know where you
+        were and what you learned. RLS (travel_log_entries_owner_select) is what keeps it
+        the traveller's own; the user-JWT client is the enforcement, not the filter.
+        """
+        resp = await (
+            supabase.table("travel_log_entries")
+            .select("*")
+            .eq("user_id", str(user_id))
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        return [TravelLogEntryResponse(**row) for row in (resp.data or [])]
+
+    @staticmethod
     async def accept_quest(
         supabase: Client,
         user_id: UUID,
@@ -472,7 +849,14 @@ class DriftService:
     async def deliver_quest(
         supabase: Client, user_id: UUID, run_id: UUID, run_version: int, instance_id: UUID
     ) -> QuestDeliverResponse:
-        """Deliver a Depesche at the target edge: fires the effects through the gate (CAS)."""
+        """Deliver a Depesche at the target edge: fires the effects through the gate (CAS),
+        pays the traveller (Fun-Kern), and returns the honest per-effect breakdown.
+
+        `earnings` is absent while the Fun-Kern gate is closed — the RPC then returns the
+        exact P0 payload and this maps it to None (no second gate read needed here: the
+        presence of the key IS the gate's answer, and it comes from the same transaction
+        that decided it).
+        """
         data = await DriftService._call_quest_rpc(
             supabase,
             "fn_quest_advance",
@@ -483,10 +867,17 @@ class DriftService:
                 "p_instance": str(instance_id),
             },
         )
+        effects = QuestEffectsResponse(**data["effects"])
+        cards = await DriftService._build_effect_cards(
+            supabase, instance_id, effects, (data["instance"] or {}).get("slots")
+        )
+        earnings_raw = data.get("earnings")
         return QuestDeliverResponse(
             run=TravelRunResponse(**data["run"]),
             instance=QuestInstanceResponse(**data["instance"]),
-            effects=QuestEffectsResponse(**data["effects"]),
+            effects=effects,
+            cards=cards,
+            earnings=EarningsBlock(**earnings_raw) if earnings_raw else None,
         )
 
     # ── internal ────────────────────────────────────────────────────────────────
@@ -528,6 +919,12 @@ class DriftService:
         # PostgREST's 40001 retry) → 409 Conflict: the client refetches + retries.
         if message == "RUN_STALE":
             return conflict(message)
+        # P0001 is also the DRIFT "you cannot do that YET" code (VP_TOO_LOW / SIEGEL_TOO_LOW,
+        # migration 264): a refused precondition, not a server fault. Without this it would
+        # fall through to a 500 and tell the traveller the Bureau is broken when the truth is
+        # that they are 12 VP short.
+        if code == "P0001":
+            return bad_request(message)
         factory = _RPC_ERROR_FACTORIES.get(code)
         if factory is None:
             logger.warning("DRIFT %s raised unmapped SQLSTATE %s: %s", rpc_name, code, message)

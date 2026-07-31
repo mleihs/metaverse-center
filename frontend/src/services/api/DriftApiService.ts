@@ -1,7 +1,11 @@
 import type {
   DriftChart,
+  DriftClearanceExam,
   DriftDock,
+  DriftHavarieChoice,
   DriftHonor,
+  DriftLogEntry,
+  DriftProfile,
   DriftPublicState,
   DriftQuestAcceptResult,
   DriftQuestDeliverResult,
@@ -36,6 +40,65 @@ export class DriftApiService extends BaseApiService {
   /** HUD gauge scalars (window/Dissonanz cap/Bandbreite max) from drift_tuning. */
   getTuning(): Promise<ApiResponse<DriftTuning>> {
     return this.get('/drift/tuning');
+  }
+
+  /** The traveller's Bureau account (Siegel, VP, rank + progress, scars); null before the
+   *  first run. Not gated on the Fun-Kern — with the gate closed it simply reads zeroes. */
+  getProfile(): Promise<ApiResponse<DriftProfile | null>> {
+    return this.get('/drift/profile');
+  }
+
+  /** Sit the Bureau clearance exam (VP threshold + Siegel fee → promotion). */
+  sitClearanceExam(rank: string): Promise<ApiResponse<DriftClearanceExam>> {
+    return this.post('/drift/clearance-exam', { rank });
+  }
+
+  /** Decide a Havarie: jettison, call for rescue, overstay, recall, or unravel. Returns the
+   *  run AFTER the choice — active again, banked, or abandoned. `jettisonCargoIds` belongs
+   *  to `notabwurf` only; the server validates both the choice against the options the
+   *  Havarie actually offered and every id against the run's own manifest. */
+  resolveHavarie(
+    runId: string,
+    runVersion: number,
+    choice: DriftHavarieChoice,
+    jettisonCargoIds?: string[],
+  ): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/havarie/resolve`, {
+      run_version: runVersion,
+      choice,
+      jettison_cargo_ids: jettisonCargoIds ?? null,
+    });
+  }
+
+  /** Answer the pending Störung/Begegnung (M1, migration 267). Returns the run AFTER the
+   *  answer: active again with `last_signal` set, or in a Havarie if the outcome took the
+   *  last of the hull. The option is validated against the TEMPLATE server-side — the copy
+   *  in the checkpoint is what the panel RENDERS, never what the server obeys. */
+  resolveSignal(
+    runId: string,
+    runVersion: number,
+    optionKey: string,
+  ): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/signal/resolve`, {
+      run_version: runVersion,
+      option_key: optionKey,
+    });
+  }
+
+  /** Dig the node the run is standing on (M2, migration 268): one Takt, a rising yield, an
+   *  open marker. The third marker of one class tears the node. */
+  sondieren(runId: string, runVersion: number): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/sondieren`, { run_version: runVersion });
+  }
+
+  /** Funkboje: transmit 70 % of the loose haul from a dock, safe from everything after. */
+  bankHaul(runId: string, runVersion: number): Promise<ApiResponse<TravelRun>> {
+    return this.post(`/drift/run/${runId}/bank`, { run_version: runVersion });
+  }
+
+  /** The traveller's logbook, newest first, ACROSS runs — the "resuming is free" anchor. */
+  getLogbook(): Promise<ApiResponse<DriftLogEntry[]>> {
+    return this.get('/drift/logbook');
   }
 
   /** A world's identity for the dock panel (name + lore voice + a few Träger). */
