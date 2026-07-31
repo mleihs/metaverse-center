@@ -33,7 +33,9 @@ WORKDIR /app
 # Install curl for healthcheck + pinned deps (Docker layer cache)
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY backend/requirements.txt ./backend/
-RUN pip install --no-cache-dir -r backend/requirements.txt
+# --require-hashes: requirements.txt is a uv-compiled hash lock generated from
+# pyproject.toml (single source of truth) — a tampered or unhashed dep aborts the build.
+RUN pip install --no-cache-dir --require-hashes -r backend/requirements.txt
 
 # Copy app source (changes frequently, but deps are already cached)
 COPY pyproject.toml ./
