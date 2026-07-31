@@ -29,6 +29,7 @@ import {
   parseAndExecute,
 } from '../../utils/terminal-commands.js';
 import { formatFeedEntry } from '../../utils/terminal-formatters.js';
+import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import { terminalAnimations, terminalTokens } from '../shared/terminal-theme-styles.js';
 import './TerminalQuickActions.js';
 
@@ -513,7 +514,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
 
   // ── Feed Polling ─────────────────────────────────────────────────────────
 
-  private _feedInterval: ReturnType<typeof setInterval> | null = null;
+  private _stopFeedPoll: StopPoll | null = null;
   private _freshLineIds = new Set<string>();
   /** Track heartbeat entry IDs already shown to prevent duplicates. */
   private _seenFeedEntryIds = new Set<string>();
@@ -751,14 +752,13 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
   // ── Feed Polling ─────────────────────────────────────────────────────────
 
   private _startFeedPolling(): void {
-    this._feedInterval = setInterval(() => this._pollFeed(), FEED_POLL_INTERVAL_MS);
+    this._stopFeedPolling();
+    this._stopFeedPoll = startVisibilityPoll(() => void this._pollFeed(), FEED_POLL_INTERVAL_MS);
   }
 
   private _stopFeedPolling(): void {
-    if (this._feedInterval) {
-      clearInterval(this._feedInterval);
-      this._feedInterval = null;
-    }
+    this._stopFeedPoll?.();
+    this._stopFeedPoll = null;
   }
 
   private async _pollFeed(): Promise<void> {
