@@ -20,6 +20,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { type Group, Vector2 } from 'three';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import type { LinkObject, NodeObject } from 'three-forcegraph';
+import { captureError } from '../../services/SentryService.js';
 import { SCORE_DIMENSION_COLORS } from './map-data.js';
 import {
   animateNodes,
@@ -356,6 +357,7 @@ export class VelgMapGraph3D extends LitElement {
       const composer = graph.postProcessingComposer();
       composer.addPass(bloomPass);
     } catch (_e) {
+      captureError(_e, { source: 'VelgMapGraph3D._initGraph' });
       // Bloom may fail on some WebGL contexts — proceed without it
     }
 
@@ -364,6 +366,7 @@ export class VelgMapGraph3D extends LitElement {
       const starfield = createStarfield();
       graph.scene().add(starfield);
     } catch (_e) {
+      captureError(_e, { source: 'VelgMapGraph3D._initGraph' });
       // Non-critical
     }
 

@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Simulation, SimulationTheme } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -167,6 +168,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
         }
       }
     } catch (err) {
+      captureError(err, { source: 'VelgGeneralSettingsPanel._loadSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
@@ -225,6 +227,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
       VelgToast.success(msg('General settings saved successfully.'));
       this.dispatchEvent(new CustomEvent('settings-saved', { bubbles: true, composed: true }));
     } catch (err) {
+      captureError(err, { source: 'VelgGeneralSettingsPanel._handleSave' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
       VelgToast.error(this._error);
     } finally {
@@ -278,6 +281,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
       VelgToast.success(msg('Simulation deleted.'));
       navigate('/');
     } catch (err) {
+      captureError(err, { source: 'VelgGeneralSettingsPanel._handleDeleteSimulation' });
       VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred'));
     } finally {
       this._deleting = false;

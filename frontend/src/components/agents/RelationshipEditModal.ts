@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { relationshipsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentRelationship } from '../../types/index.js';
 import '../shared/BaseModal.js';
 import { formStyles } from '../shared/form-styles.js';
@@ -239,6 +240,7 @@ export class VelgRelationshipEditModal extends LitElement {
         this._apiError = response.error?.message ?? msg('An unknown error occurred');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgRelationshipEditModal._handleSave' });
       this._apiError = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._saving = false;

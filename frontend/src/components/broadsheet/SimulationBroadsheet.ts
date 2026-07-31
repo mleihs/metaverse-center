@@ -18,6 +18,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { broadsheetApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { ApiResponse, Broadsheet, BroadsheetArticle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
@@ -446,6 +447,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         VelgToast.error(detail);
       }
     } catch (err) {
+      captureError(err, { source: 'VelgSimulationBroadsheet._generate' });
       const detail = err instanceof Error ? err.message : msg('Failed to compile broadsheet.');
       this._error = detail;
       VelgToast.error(detail);

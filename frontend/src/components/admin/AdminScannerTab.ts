@@ -1193,6 +1193,7 @@ export class VelgAdminScannerTab extends LitElement {
         this._error = resp.error?.message ?? msg('Failed to load scanner dashboard');
       }
     } catch (err) {
+      captureError(err, { source: 'AdminScannerTab._loadDashboard' });
       this._error = err instanceof Error ? err.message : msg('Failed to load');
     } finally {
       this._loading = false;

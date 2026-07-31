@@ -192,6 +192,7 @@ class ForgeStateManager {
         this.error.value = resp.error?.message ?? 'Failed to load draft';
       }
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.loadDraft' });
       this.error.value = err instanceof Error ? err.message : 'Unknown error';
     } finally {
       this.isLoading.value = false;
@@ -266,6 +267,7 @@ class ForgeStateManager {
     try {
       await forgeApi.updateDraft(this.draft.value.id, data);
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager._flushUpdate' });
       this.error.value = err instanceof Error ? err.message : 'Failed to save draft';
     }
   }
@@ -297,6 +299,7 @@ class ForgeStateManager {
       }
       await this.loadDraft(draftId);
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.startResearch' });
       this.isRecovering.value = true;
       const recovered = await this._tryRecoverResearch(draftId, anchorsBefore);
       this.isRecovering.value = false;
@@ -351,6 +354,7 @@ class ForgeStateManager {
         }
       }
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager._generateGeography' });
       this.isRecovering.value = true;
       const recovered = await this._tryRecoverChunk(draftId, 'geography', snapshot);
       this.isRecovering.value = false;
@@ -457,6 +461,7 @@ class ForgeStateManager {
       await this.loadDraft(draftId);
       this._syncStagingAfterGeneration(entityType);
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager._generateEntitiesIncremental' });
       this.error.value = err instanceof Error ? err.message : 'Generation failed';
     } finally {
       if (this.generationStartedAt.value) {
@@ -535,6 +540,7 @@ class ForgeStateManager {
       this.error.value = resp.error?.message ?? 'Theme generation failed';
       return null;
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.generateTheme' });
       this.error.value = err instanceof Error ? err.message : 'Theme generation failed';
       return null;
     } finally {
@@ -621,6 +627,7 @@ class ForgeStateManager {
       this.error.value = resp.error?.message ?? 'Purchase failed';
       return null;
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.purchaseBundle' });
       this.error.value = err instanceof Error ? err.message : 'Purchase failed';
       return null;
     } finally {
@@ -753,6 +760,7 @@ class ForgeStateManager {
       this.error.value = resp.error?.message ?? 'Feature purchase failed';
       return null;
     } catch (err) {
+      captureError(err, { source: 'ForgeStateManager.purchaseFeature' });
       this.error.value = err instanceof Error ? err.message : 'Feature purchase failed';
       return null;
     }
