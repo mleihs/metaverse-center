@@ -7,6 +7,7 @@ from backend.dependencies import get_admin_supabase, get_current_user, get_effec
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
 from backend.models.user import DashboardData, MembershipInfo, UserWithMemberships
+from backend.services.audit_service import AuditService
 from backend.services.member_service import MemberService
 from backend.services.user_dashboard_service import UserDashboardService
 from backend.services.user_profile_service import UserProfileService
@@ -88,14 +89,22 @@ async def update_notification_preferences(
         user.id,
         body.model_dump(),
     )
+    await AuditService.safe_log(
+        supabase, None, user.id,
+        "notification_preferences", user.id, "update",
+    )
     return SuccessResponse(data=result)
 
 
 @router.patch("/me/onboarding")
 async def complete_onboarding(
     user: Annotated[CurrentUser, Depends(get_current_user)],
-    admin: Annotated[Client, Depends(get_admin_supabase)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse:
     """Mark the current user's onboarding as completed."""
-    await UserProfileService.complete_onboarding(admin, user.id)
+    await UserProfileService.complete_onboarding(supabase, user.id)
+    await AuditService.safe_log(
+        supabase, None, user.id,
+        "user_profiles", user.id, "complete_onboarding",
+    )
     return SuccessResponse(data={"onboarding_completed": True})

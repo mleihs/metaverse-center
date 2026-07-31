@@ -161,6 +161,7 @@ async def assign_agent(
 ) -> SuccessResponse[BuildingAgentResponse]:
     """Assign an agent to a building."""
     relation = await _service.assign_agent(supabase, simulation_id, building_id, agent_id, relation_type)
+    await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building_id, "assign_agent")
     return SuccessResponse(data=relation)
 
 
@@ -175,6 +176,7 @@ async def unassign_agent(
 ) -> SuccessResponse[MessageResponse]:
     """Remove an agent from a building."""
     await _service.unassign_agent(supabase, simulation_id, building_id, agent_id)
+    await AuditService.safe_log(supabase, simulation_id, user.id, "buildings", building_id, "unassign_agent")
     return SuccessResponse(data=MessageResponse(message="Agent unassigned from building."))
 
 
@@ -212,6 +214,9 @@ async def set_profession_requirement(
             "min_qualification_level": min_qualification_level,
             "is_mandatory": is_mandatory,
         },
+    )
+    await AuditService.safe_log(
+        supabase, simulation_id, user.id, "buildings", building_id, "set_profession_requirement",
     )
     return SuccessResponse(data=req)
 

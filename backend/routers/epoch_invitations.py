@@ -108,4 +108,5 @@ async def regenerate_lore(
 ) -> SuccessResponse[dict]:
     """Regenerate the AI-generated lore for epoch invitations."""
     lore_text = await EpochInvitationService.regenerate_lore(supabase, epoch_id)
+    await _audit(supabase, user.id, str(epoch_id), "regenerate_lore")
     return SuccessResponse(data={"lore_text": lore_text})

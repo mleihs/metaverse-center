@@ -17,9 +17,9 @@ import httpx
 import pytest
 
 from backend.models.journal import (
-    AttunementResponse,
     ConstellationResponse,
     FragmentResponse,
+    JournalAttunementResponse,
 )
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
@@ -251,10 +251,10 @@ _VALID_INSIGHT_JSON = (
 )
 
 
-def _mercy_attunement() -> AttunementResponse:
+def _mercy_attunement() -> JournalAttunementResponse:
     """Starter Mercy attunement as AttunementService.evaluate would
     return it for an archetype-resonance match."""
-    return AttunementResponse(
+    return JournalAttunementResponse(
         id=uuid4(),
         slug="einstimmung_gnade",
         name_de="Einstimmung der Gnade",

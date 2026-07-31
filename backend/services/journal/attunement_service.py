@@ -39,7 +39,7 @@ from uuid import UUID
 
 from backend.models.journal import (
     AttunementCatalogEntry,
-    AttunementResponse,
+    JournalAttunementResponse,
     UserAttunementResponse,
 )
 from backend.utils.responses import extract_list
@@ -48,8 +48,8 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 
-def _attunement_from_row(row: dict) -> AttunementResponse:
-    return AttunementResponse(
+def _attunement_from_row(row: dict) -> JournalAttunementResponse:
+    return JournalAttunementResponse(
         id=row["id"],
         slug=row["slug"],
         name_de=row["name_de"],
@@ -82,7 +82,7 @@ class AttunementService:
     # ── Catalog reads ──────────────────────────────────────────────────
 
     @classmethod
-    async def list_catalog(cls, supabase: Client) -> list[AttunementResponse]:
+    async def list_catalog(cls, supabase: Client) -> list[JournalAttunementResponse]:
         """Return every enabled attunement in catalog order (seeded_at).
 
         Explicit ``.eq('enabled', True)`` is defense-in-depth against
@@ -170,7 +170,7 @@ class AttunementService:
     @classmethod
     async def evaluate(
         cls, supabase: Client, resonance_type: str
-    ) -> AttunementResponse | None:
+    ) -> JournalAttunementResponse | None:
         """Return the attunement that unlocks on crystallizing a
         constellation of the given resonance type, or ``None`` if no
         starter attunement matches.
