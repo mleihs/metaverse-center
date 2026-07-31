@@ -21,6 +21,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.models.combat import AgentCombatState
 from backend.models.resonance_dungeon import (
+    BIG_FIVE_DIMENSIONS,
     DistributeConfirmResponse,
     DungeonInstance,
     LootAssignResponse,
@@ -274,8 +275,6 @@ class DungeonDistributionService:
         dimension: str | None = None,
         user_id: UUID,
     ) -> LootAssignResponse:
-        from backend.models.resonance_dungeon import BIG_FIVE_DIMENSIONS
-
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
         if instance.phase != "distributing":
             raise bad_request("Not in distribution phase")

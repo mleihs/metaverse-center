@@ -16,6 +16,9 @@ from uuid import UUID
 
 from fastapi import HTTPException
 
+from backend.services.platform_settings_service import PlatformSettingsService
+from backend.services.settings_service import SettingsService
+from backend.services.simulation_service import SimulationService
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -293,10 +296,6 @@ class GameMechanicsService:
         Combines platform setting, simulation list, health MVs, and per-sim
         settings into a single response dict for the admin panel.
         """
-        from backend.services.platform_settings_service import PlatformSettingsService
-        from backend.services.settings_service import SettingsService
-        from backend.services.simulation_service import SimulationService
-
         # 1. Global setting
         try:
             row = await PlatformSettingsService.get(

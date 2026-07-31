@@ -188,8 +188,6 @@ class InstagramContentService:
         image_url = candidate.get("image_url") or candidate.get("portrait_image_url")
         # Lore entries store image_slug, not full URL — resolve it
         if not image_url and content_type == "lore" and candidate.get("image_slug"):
-            from backend.config import settings
-
             image_url = (
                 f"{settings.supabase_url}/storage/v1/object/public/"
                 f"simulation.assets/{simulation_slug}/{candidate['image_slug']}.avif"

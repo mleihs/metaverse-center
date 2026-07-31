@@ -367,8 +367,6 @@ class OpsLedgerService:
             )
             return 0
 
-        from backend.services.circuit_breaker_service import circuit_breaker
-
         rows = extract_list(resp)
         now = datetime.now(UTC)
         loaded = 0

@@ -20,12 +20,11 @@ from __future__ import annotations
 import random
 
 from backend.models.resonance_dungeon import EncounterTemplate
+from backend.services.dungeon_content_service import get_encounter_by_id_cached, get_encounter_registry
 
 
 def get_encounter_by_id(encounter_id: str) -> EncounterTemplate | None:
     """Look up an encounter template by ID (any archetype)."""
-    from backend.services.dungeon_content_service import get_encounter_by_id_cached
-
     return get_encounter_by_id_cached(encounter_id)
 
 
@@ -43,8 +42,6 @@ def select_encounter(
     If all matching encounters are exhausted, resets and allows repeats.
     Returns None if no matching encounter exists.
     """
-    from backend.services.dungeon_content_service import get_encounter_registry
-
     encounter_pool = get_encounter_registry().get(archetype, [])
     candidates = [
         e
