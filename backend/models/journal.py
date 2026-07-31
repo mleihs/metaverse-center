@@ -88,7 +88,7 @@ class ConstellationResponse(BaseModel):
 # ── Attunement (catalog + unlock) ────────────────────────────────────────
 
 
-class AttunementResponse(BaseModel):
+class JournalAttunementResponse(BaseModel):
     """A journal attunement entry (catalog shape)."""
 
     id: UUID
@@ -151,7 +151,7 @@ class CrystallizeResult(BaseModel):
     """
 
     constellation: ConstellationResponse
-    newly_unlocked_attunement: AttunementResponse | None = None
+    newly_unlocked_attunement: JournalAttunementResponse | None = None
 
 
 # ── Palimpsest (P4) ──────────────────────────────────────────────────────

@@ -24,7 +24,7 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 
-from backend.models.journal import AttunementResponse, CrystallizeResult, FragmentResponse
+from backend.models.journal import CrystallizeResult, FragmentResponse, JournalAttunementResponse
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import (
     BudgetContext,
@@ -297,7 +297,7 @@ class InsightService:
         # (rare: admin client auth issue) is logged but does not fail
         # the crystallize — the user got their insight, and a
         # subsequent crystallize will re-attempt unlock idempotently.
-        newly_unlocked: AttunementResponse | None = None
+        newly_unlocked: JournalAttunementResponse | None = None
         if candidate is not None:
             try:
                 newly = await AttunementService.unlock(
