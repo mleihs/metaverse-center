@@ -1298,6 +1298,7 @@ export class VelgAdminInstagramTab extends LitElement {
         this._stories = storiesResp.data;
       }
     } catch (err) {
+      captureError(err, { source: 'AdminInstagramTab._loadAll' });
       this._error = err instanceof Error ? err.message : msg('Failed to load Instagram data');
     } finally {
       this._loading = false;

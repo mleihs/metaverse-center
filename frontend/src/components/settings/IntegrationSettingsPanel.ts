@@ -3,6 +3,7 @@ import { css, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { settingsApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import type { TopicSlug } from '../how-to-play/htp-topic-data.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -200,6 +201,7 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
         this._error = response.error?.message ?? msg('Failed to load integration settings');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgIntegrationSettingsPanel._loadSettings' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
@@ -267,6 +269,7 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
       VelgToast.success(msg(str`${section.title} settings saved.`));
       this.dispatchEvent(new CustomEvent('settings-saved', { bubbles: true, composed: true }));
     } catch (err) {
+      captureError(err, { source: 'VelgIntegrationSettingsPanel._handleSaveSection' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
       VelgToast.error(this._error);
     } finally {

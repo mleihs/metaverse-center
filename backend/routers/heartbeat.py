@@ -346,9 +346,10 @@ async def join_anchor(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[AnchorResponse]:
-    """Join an existing anchor."""
-    data = await AnchorService.join_anchor(supabase, anchor_id, simulation_id, user.id)
+    """Join an existing anchor (atomic RPC via service-role client, migration 271)."""
+    data = await AnchorService.join_anchor(admin, anchor_id, simulation_id, user.id)
     await AuditService.safe_log(
         supabase,
         simulation_id,
@@ -367,9 +368,10 @@ async def leave_anchor(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[AnchorResponse]:
-    """Leave an anchor."""
-    data = await AnchorService.leave_anchor(supabase, anchor_id, simulation_id)
+    """Leave an anchor (atomic RPC via service-role client, migration 271)."""
+    data = await AnchorService.leave_anchor(admin, anchor_id, simulation_id)
     await AuditService.safe_log(
         supabase,
         simulation_id,

@@ -46,10 +46,16 @@ jobs:
       - name: Install pip-audit
         run: pip install pip-audit
 
+      - name: Audit shipped set (what the Docker image installs)
+        # The lock is complete (uv-compiled from pyproject), so --no-deps audits
+        # exactly the pins prod runs — the set the deep audit (P1-4) found was
+        # never scanned before.
+        run: pip-audit --desc --no-deps -r backend/requirements.txt
+
       - name: Install backend dependencies
         run: pip install -e ".[dev]"
 
-      - name: Run pip-audit
+      - name: Run pip-audit (dev/CI environment)
         run: pip-audit --desc --skip-editable
 
   backend-lint-security:

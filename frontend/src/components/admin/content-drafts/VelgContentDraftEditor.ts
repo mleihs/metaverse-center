@@ -822,6 +822,7 @@ export class VelgContentDraftEditor extends LitElement {
     try {
       parsed = JSON.parse(this._textareaValue);
     } catch (err) {
+      captureError(err, { source: 'VelgContentDraftEditor._commitTextareaIfValid' });
       this._parseError = err instanceof Error ? err.message : msg('Invalid JSON.');
       return false;
     }

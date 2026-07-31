@@ -18,6 +18,7 @@ instead, NOT the instance — geometry lives at the Template.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from uuid import UUID
@@ -143,9 +144,12 @@ class ForgeMapService:
                 buildings=len(buildings),
             )
 
-            # 3. Build geometry (pure Python, shapely)
+            # 3. Build geometry (pure Python, shapely — CPU-bound voronoi/
+            # street build, part of a documented ~30 s operation: off the
+            # event loop, P1-6)
             generator = _PRESET_REGISTRY[resolved_preset]
-            payload = generator(
+            payload = await asyncio.to_thread(
+                generator,
                 seed=resolved_seed,
                 cities=cities,
                 zones=zones,

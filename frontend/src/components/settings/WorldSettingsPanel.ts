@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { taxonomiesApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import type { SimulationTaxonomy, TaxonomyType } from '../../types/index.js';
@@ -359,6 +360,7 @@ export class VelgWorldSettingsPanel extends LitElement {
         this._error = response.error?.message ?? msg('Failed to load taxonomies');
       }
     } catch (err) {
+      captureError(err, { source: 'VelgWorldSettingsPanel._loadTaxonomies' });
       this._error = err instanceof Error ? err.message : msg('An unknown error occurred');
     } finally {
       this._loading = false;
@@ -418,6 +420,7 @@ export class VelgWorldSettingsPanel extends LitElement {
         VelgToast.error(response.error?.message ?? msg('Failed to add taxonomy value.'));
       }
     } catch (err) {
+      captureError(err, { source: 'VelgWorldSettingsPanel._handleAddTaxonomy' });
       VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred.'));
     } finally {
       this._addingSaving = false;
@@ -440,6 +443,7 @@ export class VelgWorldSettingsPanel extends LitElement {
         VelgToast.error(response.error?.message ?? msg('Failed to update taxonomy.'));
       }
     } catch (err) {
+      captureError(err, { source: 'VelgWorldSettingsPanel._handleToggleActive' });
       VelgToast.error(err instanceof Error ? err.message : msg('An unknown error occurred.'));
     }
   }

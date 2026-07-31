@@ -1756,6 +1756,7 @@ export async function parseAndExecute(input: string): Promise<TerminalLine[]> {
       }
     }
   } catch (err) {
+    captureError(err, { source: 'terminal-commands.parseAndExecute' });
     const message = err instanceof Error ? err.message : msg('Command failed.');
     output.push(systemLine(`[ERROR] ${message}`));
   } finally {

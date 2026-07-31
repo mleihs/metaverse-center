@@ -20,6 +20,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { appState } from '../../services/AppStateManager.js';
 import { heartbeatApi } from '../../services/api/index.js';
+import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { TerminalLine } from '../../types/terminal.js';
 import {
@@ -614,6 +615,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
           this.requestUpdate();
         }, 1300);
       } catch (err) {
+        captureError(err, { source: 'VelgBureauTerminal._handleKeyDown' });
         console.error('[BureauTerminal] Command error:', err);
         const { systemLine: sysLine } = await import('../../utils/terminal-formatters.js');
         terminalState.appendOutput([
@@ -686,6 +688,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         this.requestUpdate();
       }, 1300);
     } catch (err) {
+      captureError(err, { source: 'VelgBureauTerminal._handleQuickAction' });
       // Surface errors visibly in terminal
       console.error('[BureauTerminal] Quick action error:', err);
       const { systemLine: sysLine } = await import('../../utils/terminal-formatters.js');
@@ -832,6 +835,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         this._seenFeedNarratives = new Set(arr.slice(arr.length - 100));
       }
     } catch (err) {
+      captureError(err, { source: 'VelgBureauTerminal._pollFeed' });
       // Network errors from setInterval-driven polling are non-critical.
       // Log for debugging but don't surface to the user — retry on next interval.
       console.debug('[BureauTerminal] Feed poll failed, will retry:', err);
