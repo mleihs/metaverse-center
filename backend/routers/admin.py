@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from backend.config import settings
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_ADMIN_MUTATION, limiter
-from backend.middleware.seo import _sim_meta_cache
+from backend.middleware.seo import rebuild_seo_caches
 from backend.models.admin import (
     AdminMembershipResponse,
     AdminSimulationListItem,
@@ -46,7 +46,7 @@ from backend.services.admin_user_service import AdminUserService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.ai_utils import safe_background
 from backend.services.audit_service import AuditService
-from backend.services.cache_config import invalidate as invalidate_cache_config
+from backend.services.cache_config import load_ttls_from_db
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
 from backend.services.dungeon.showcase_image_service import ARCHETYPE_VISUALS, generate_and_upload_showcase
@@ -183,7 +183,7 @@ async def update_setting(
 
     # Invalidate relevant caches when cache TTLs change
     if key.startswith("cache_"):
-        _invalidate_caches(key)
+        await _invalidate_caches(key)
 
     # Invalidate API key cache when sensitive keys change
     if is_sensitive_key(key):
@@ -680,15 +680,19 @@ async def impersonate_user(
     return SuccessResponse(data={"hashed_token": hashed_token, "email": user.email})
 
 
-def _invalidate_caches(key: str) -> None:
-    """Clear relevant in-process caches when settings change."""
-    # Invalidate the global TTL config so next access reads fresh values
-    invalidate_cache_config()
+async def _invalidate_caches(key: str) -> None:
+    """Reload TTL config from the DB and rebuild dependent caches when settings change.
+
+    The reload must happen BEFORE the rebuilds — TTLCache freezes its ttl at
+    construction, so the rebuild functions read ``get_ttl()`` and need it to
+    reflect the value just written.
+    """
+    await load_ttls_from_db()
 
     if key == "cache_map_data_ttl":
         ConnectionService.invalidate_map_cache()
     elif key == "cache_seo_metadata_ttl":
-        _sim_meta_cache.clear()
+        rebuild_seo_caches()
 
 
 # ── AI Usage Analytics ─────────────────────────────────────────────────
