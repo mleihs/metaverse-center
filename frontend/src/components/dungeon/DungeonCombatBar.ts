@@ -22,7 +22,7 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type {
@@ -262,6 +262,42 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .ability__cd {
         font-size: 8px;
         opacity: 0.5;
+      }
+
+      /* -- Compact intent-grouped layout (opt-in, graphical view) --
+         Turns the flat ability wall into Strike / Aid / Guard clusters with
+         small colour-coded labels so each agent's options read at a glance. */
+      :host([compact]) .agent__abilities {
+        align-items: flex-start;
+        gap: 6px 18px;
+      }
+      .agroup {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .agroup__label {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        flex-shrink: 0;
+        color: var(--_phosphor-dim);
+      }
+      .agroup--strike .agroup__label {
+        color: color-mix(in srgb, var(--color-danger) 72%, var(--_phosphor-dim));
+      }
+      .agroup--aid .agroup__label {
+        color: color-mix(in srgb, var(--color-success) 72%, var(--_phosphor-dim));
+      }
+      .agroup--guard .agroup__label {
+        color: color-mix(in srgb, var(--color-info) 72%, var(--_phosphor-dim));
+      }
+      .agroup__items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
       }
 
       /* -- Target Picker -- */
@@ -732,6 +768,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     `,
   ];
 
+  /** Compact layout: group each agent's abilities into labelled intent clusters
+   *  (Strike / Aid / Guard) instead of one flat wall of buttons. Opt-in — set by
+   *  the graphical view; the terminal view leaves it off and is unchanged. */
+  @property({ type: Boolean, reflect: true }) compact = false;
+
   /** Agent ID currently awaiting target selection. */
   @state() private _targetingAgentId: string | null = null;
 
@@ -896,9 +937,13 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
           }
           <span class="agent__condition">${getConditionLabel(agent.condition)}</span>
           <div class="agent__abilities" role="radiogroup" aria-label=${msg('Abilities')}>
-            ${agent.available_abilities.map((ability) =>
-              this._renderAbility(agent, ability, selection?.ability_id ?? null, enemies),
-            )}
+            ${
+              this.compact
+                ? this._renderAbilityGroups(agent, selection?.ability_id ?? null, enemies)
+                : agent.available_abilities.map((ability) =>
+                    this._renderAbility(agent, ability, selection?.ability_id ?? null, enemies),
+                  )
+            }
           </div>
         </div>
         ${isTargeting ? this._renderTargetPicker(agent, enemies) : nothing}
@@ -944,6 +989,48 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         }
       </button>
     `;
+  }
+
+  /**
+   * Compact layout: split an agent's abilities into intent clusters by target
+   * type (Strike = enemy-targeting, Aid = ally-targeting, Guard = self) and
+   * render each as a small labelled group. Turns one flat wall of ~16 buttons
+   * into three scannable clusters. Data-driven off `ability.targets` — no
+   * hardcoded ability lists.
+   */
+  private _renderAbilityGroups(
+    agent: AgentCombatStateClient,
+    selectedId: string | null,
+    enemies: EnemyCombatStateClient[],
+  ) {
+    const strike: AbilityOption[] = [];
+    const aid: AbilityOption[] = [];
+    const guard: AbilityOption[] = [];
+    for (const ability of agent.available_abilities) {
+      if (ability.targets === 'single_enemy' || ability.targets === 'all_enemies') {
+        strike.push(ability);
+      } else if (ability.targets === 'single_ally' || ability.targets === 'all_allies') {
+        aid.push(ability);
+      } else {
+        guard.push(ability);
+      }
+    }
+    const groups = [
+      { key: 'strike', label: msg('Strike'), items: strike },
+      { key: 'aid', label: msg('Aid'), items: aid },
+      { key: 'guard', label: msg('Guard'), items: guard },
+    ].filter((g) => g.items.length > 0);
+
+    return groups.map(
+      (g) => html`
+        <div class="agroup agroup--${g.key}">
+          <span class="agroup__label" aria-hidden="true">${g.label}</span>
+          <div class="agroup__items">
+            ${g.items.map((ability) => this._renderAbility(agent, ability, selectedId, enemies))}
+          </div>
+        </div>
+      `,
+    );
   }
 
   private _renderTargetPicker(agent: AgentCombatStateClient, enemies: EnemyCombatStateClient[]) {

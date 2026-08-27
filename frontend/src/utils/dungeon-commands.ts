@@ -301,6 +301,14 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
 
     // Room entry formatting
     const room = result.state.rooms.find((r) => r.index === result.state.current_room);
+
+    // Publish room narrative for the graphical scene (no terminal buffer there).
+    dungeonState.publishRoomNarrative({
+      banter: result.banter ? localized(result.banter, 'text') || null : null,
+      barometer: result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
+      roomType: room?.room_type ?? '',
+      depth: result.state.depth,
+    });
     if (room) {
       // SFX: boss reveal vs. normal room enter
       if (room.room_type === 'boss') {
@@ -965,6 +973,10 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
 
     // Round resolved
     if (resp.data.round_result) {
+      // Publish for the graphical combat-FX host (second consumer of the state).
+      // round_result lives on the submit response, not on the state, so
+      // applyState() above never carried it — the FX host reads it from here.
+      dungeonState.publishRoundResult(resp.data.round_result);
       const partyNames = dungeonState.party.value.map((a) => a.agent_name);
       // SFX: play dominant combat sound from round events
       _playCombatRoundSfx(resp.data.round_result.events, new Set(partyNames));
