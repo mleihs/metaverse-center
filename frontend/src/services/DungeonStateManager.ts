@@ -16,6 +16,7 @@ import type {
   ArchetypeState,
   AvailableDungeonResponse,
   CombatAction,
+  CombatRoundResult,
   CombatStateClient,
   CombatSubmission,
   DungeonClientState,
@@ -42,10 +43,31 @@ import { terminalState } from './TerminalStateManager.js';
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = 'dungeon_active_run';
+// View-mode preference (terminal vs graphical). Persisted separately from run
+// state and deliberately NOT touched by applyState()/clear() — the chosen view
+// is a UI preference that must survive run start, run end, wipe, and recovery.
+const VIEW_MODE_STORAGE_KEY = 'dungeon_view_mode';
 // 250ms tick — 4 updates/sec is visually smooth for the CSS-transitioned fill bar.
 // Tradeoff: auto-submit may fire up to 250ms after server deadline. The backend
 // grants a grace period (see combat_submit timeout_tolerance_ms), so this is safe.
 const TIMER_TICK_MS = 250;
+
+// ── Types ────────────────────────────────────────────────────────────────
+
+/** Which rendering of the dungeon the player is using. */
+export type DungeonViewMode = 'terminal' | 'graphical';
+
+/** Room-entry narrative surfaced to the graphical scene (no terminal buffer). */
+export interface RoomNarrative {
+  /** Localized archetype banter for the entered room. */
+  banter: string | null;
+  /** Localized resource-barometer line (e.g. rising-water warning). */
+  barometer: string | null;
+  /** Room type of the entered room ('combat' | 'boss' | 'rest' | …). */
+  roomType: string;
+  /** Dungeon depth after the move. */
+  depth: number;
+}
 
 // ── State Manager ──────────────────────────────────────────────────────────
 
@@ -101,6 +123,22 @@ class DungeonStateManager {
   /** Encounter choices for the current room. Set from move response, cleared on phase change. */
   readonly encounterChoices = signal<EncounterChoiceClient[]>([]);
 
+  /** Last room-entry narrative (banter + barometer), published at the move site.
+   *  Client-only: like CombatRoundResult.events, this lives on the move response
+   *  and is discarded by applyState(). The graphical view (which has no terminal
+   *  buffer) reads it for its banter overlay. Null until the first move. */
+  readonly lastRoomNarrative = signal<RoomNarrative | null>(null);
+
+  /** Last resolved combat round, published at the two submit-resolution sites
+   *  (manual submit in dungeon-commands + auto-submit on timer expiry). Like
+   *  lastRoomNarrative this lives on the CombatSubmitResponse — NOT on the
+   *  DungeonClientState — so applyState() never sees it and would discard it.
+   *  The graphical view's PixiJS combat-FX host (a second consumer) subscribes
+   *  to this signal and plays per-event juice; the terminal view ignores it.
+   *  A fresh object is published per round, so reference identity dedupes
+   *  replays. Null until the first resolved round. */
+  readonly lastRoundResult = signal<CombatRoundResult | null>(null);
+
   // ── Combat Planning (client-only, ephemeral) ───────────────────────────
 
   /** Selected combat actions keyed by agent_id. Cleared on phase change. */
@@ -113,6 +151,13 @@ class DungeonStateManager {
 
   /** Whether the SVG map panel is expanded (default: collapsed for terminal-first layout). */
   readonly mapExpanded = signal(false);
+
+  /** Which dungeon rendering is active. Default 'terminal'. Persisted to
+   *  localStorage; never reset by applyState()/clear() so the preference
+   *  survives across runs. The graphical view is a second, additive consumer
+   *  of the same server-authoritative state — switching modes changes nothing
+   *  about the run itself. */
+  readonly viewMode = signal<DungeonViewMode>(this._getPersistedViewMode());
 
   // ── Timer ──────────────────────────────────────────────────────────────
 
@@ -189,6 +234,31 @@ class DungeonStateManager {
     const maxDepth = Math.max(...this.rooms.value.map((r) => r.depth), 1);
     return state.depth / maxDepth;
   });
+
+  // ── Room Narrative (client-only publication) ───────────────────────────
+
+  /** Publish the room-entry narrative for the graphical scene. Called at the
+   *  move resolution site (utils/dungeon-commands.ts) after applyState(). */
+  publishRoomNarrative(narrative: RoomNarrative): void {
+    this.lastRoomNarrative.value = narrative;
+  }
+
+  /** Publish a resolved combat round for the graphical combat-FX host. Called
+   *  at the two submit-resolution sites after applyState() (applyState lives on
+   *  the state object and would otherwise drop round_result). */
+  publishRoundResult(result: CombatRoundResult): void {
+    this.lastRoundResult.value = result;
+  }
+
+  // ── View Mode ──────────────────────────────────────────────────────────
+
+  /** Switch the active dungeon rendering and persist the preference. */
+  setViewMode(mode: DungeonViewMode): void {
+    if (this.viewMode.value === mode) return;
+    this.viewMode.value = mode;
+    this._persistViewMode(mode);
+    analyticsService.trackEvent('dungeon_view_mode_changed', { mode });
+  }
 
   // ── Lifecycle Methods ─────────────────────────────────────────────────
 
@@ -275,6 +345,8 @@ class DungeonStateManager {
     this.clientState.value = null;
     this.runId.value = null;
     this.selectedActions.value = new Map();
+    this.lastRoomNarrative.value = null;
+    this.lastRoundResult.value = null;
     this.error.value = null;
     this.loading.value = false;
     this.combatSubmitting.value = false;
@@ -496,6 +568,10 @@ class DungeonStateManager {
         // resolution results stay visible instead of being pushed off
         // screen by 40+ lines of ability descriptions.
         if (resp.data.round_result) {
+          // Publish for the graphical combat-FX host (second consumer). Safe on
+          // every terminal outcome too: on completed/wipe the dungeon view
+          // unmounts before any FX could replay, and clear() nulls this anyway.
+          this.publishRoundResult(resp.data.round_result);
           const partyNames = this.party.value.map((a) => a.agent_name);
           const lines = [
             combatSystemLine('[AUTO] Timer expired. Actions submitted.'),
@@ -586,6 +662,25 @@ class DungeonStateManager {
       localStorage.removeItem(STORAGE_KEY);
     } catch (err) {
       captureError(err, { source: 'DungeonStateManager._clearPersistedRunId' });
+    }
+  }
+
+  // ── localStorage Persistence (viewMode) ───────────────────────────────
+
+  private _getPersistedViewMode(): DungeonViewMode {
+    try {
+      return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'graphical' ? 'graphical' : 'terminal';
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._getPersistedViewMode' });
+      return 'terminal';
+    }
+  }
+
+  private _persistViewMode(mode: DungeonViewMode): void {
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch (err) {
+      captureError(err, { source: 'DungeonStateManager._persistViewMode' });
     }
   }
 }

@@ -76,10 +76,20 @@ export const mapNodeStyles = css`
     transition: stroke-width 150ms, opacity 150ms;
   }
 
-  /* Fill (inner background) */
+  /* Fill (inner background) — lifted a touch off pure screen-bg so the disc
+     separates from the backdrop (it used to vanish against dark scenes). */
   .node__fill {
-    fill: var(--_screen-bg);
+    fill: color-mix(in srgb, var(--_phosphor) 7%, var(--_screen-bg));
     stroke: none;
+  }
+
+  /* "You are here" beacon — a static halo ring behind the current node. Reads
+     clearly even under reduced motion (the breathing glow is motion-only). */
+  .node__beacon {
+    fill: none;
+    stroke: var(--_phosphor);
+    stroke-width: 1.5;
+    opacity: 0.55;
   }
 
   /* Icon container */
@@ -92,6 +102,11 @@ export const mapNodeStyles = css`
   .node--current .node__ring {
     stroke-width: 3;
   }
+  /* Tinted disc so the current room glows from within — a reduced-motion-safe
+     "you are here" cue independent of the breathing animation. */
+  .node--current .node__fill {
+    fill: color-mix(in srgb, var(--_phosphor) 16%, var(--_screen-bg));
+  }
 
   /* ── State: Adjacent (clickable) ── */
   .node--adjacent {
@@ -102,11 +117,12 @@ export const mapNodeStyles = css`
   }
 
   /* ── State: Cleared ── */
+  /* Visited rooms stay legible (was 0.65 → faded into the backdrop). */
   .node--cleared {
-    opacity: 0.65;
+    opacity: 0.8;
   }
   .node--cleared .node__ring {
-    stroke-width: 1;
+    stroke-width: 1.5;
   }
 
   /* ── State: Fog of war ── */
@@ -155,6 +171,12 @@ export const mapNodeStyles = css`
     /* Current room: breathing glow */
     .node--current .node__ring {
       animation: map-node-pulse 2s ease-in-out infinite;
+    }
+
+    /* Current room beacon: gentle breathing opacity (static fallback handled
+       by the base .node__beacon rule for reduced motion). */
+    .node--current .node__beacon {
+      animation: map-node-beacon 2.4s ease-in-out infinite;
     }
 
     /* Boss room: red danger pulse */
@@ -270,6 +292,11 @@ export const mapNodeStyles = css`
     50% { opacity: 0.25; }
   }
 
+  @keyframes map-node-beacon {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+
   @keyframes map-sparkle-twinkle {
     0%, 100% { opacity: 0; transform: scale(0); }
     50% { opacity: 1; transform: scale(1); }
@@ -358,6 +385,9 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
       @keydown=${handleKeydown}
     >
       <title>${room.revealed ? getRoomTypeLabel(room.room_type) : msg('Unknown')}</title>
+
+      <!-- "You are here" beacon halo (behind the disc) -->
+      ${current ? svg`<circle r=${RING_R + 7} class="node__beacon" aria-hidden="true" />` : nothing}
 
       <!-- Inner fill -->
       <circle r=${FILL_R} class="node__fill" />

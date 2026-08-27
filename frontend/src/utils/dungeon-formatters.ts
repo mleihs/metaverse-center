@@ -40,7 +40,7 @@ import {
   isShadowState,
   isTowerState,
 } from '../types/dungeon.js';
-import type { Agent, AptitudeSet } from '../types/index.js';
+import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import { localized } from './locale-fields.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
@@ -1623,6 +1623,28 @@ export function formatAvailableDungeons(dungeons: AvailableDungeonResponse[]): T
 
 // ── Party Picker ─────────────────────────────────────────────────────────────
 
+/** Baseline aptitudes for generalist agents with no explicit aptitude rows. */
+const GENERALIST_APTITUDES: AptitudeSet = {
+  spy: 6,
+  guardian: 6,
+  saboteur: 6,
+  propagandist: 6,
+  infiltrator: 6,
+  assassin: 6,
+};
+
+/**
+ * Top-N aptitudes (default 3) by level, descending. Generalists with no
+ * explicit aptitudes fall back to a flat baseline. Shared by the terminal
+ * agent picker and the graphical lobby picker so both display identically.
+ */
+export function topAptitudes(apts: AptitudeSet | undefined, n = 3): Array<[OperativeType, number]> {
+  return (Object.entries(apts ?? GENERALIST_APTITUDES) as Array<[OperativeType, number]>)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, n);
+}
+
 /**
  * Format an agent picker list for terminal display.
  * Shows numbered agents with top aptitudes for party selection.
@@ -1649,25 +1671,9 @@ export function formatAgentPicker(
     const agent = agents[i];
     const apts = aptitudeMap.get(agent.id);
 
-    // Build aptitude string: top 3 by level
-    // Generalist agents without explicit aptitudes default to 6 across the board
-    const effectiveApts = apts ?? {
-      spy: 6,
-      guardian: 6,
-      saboteur: 6,
-      propagandist: 6,
-      infiltrator: 6,
-      assassin: 6,
-    };
-    const sorted = Object.entries(effectiveApts)
-      .filter(([, v]) => v > 0)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 3);
-    let aptStr = sorted
-      .map(
-        ([k, v]) =>
-          `${OPERATIVE_LABEL[k as import('../types/index.js').OperativeType] ?? k.toUpperCase()} ${v}`,
-      )
+    // Build aptitude string: top 3 by level (shared with the graphical picker).
+    let aptStr = topAptitudes(apts)
+      .map(([k, v]) => `${OPERATIVE_LABEL[k] ?? k.toUpperCase()} ${v}`)
       .join(' | ');
     if (!aptStr) aptStr = msg('generalist');
 

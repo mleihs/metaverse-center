@@ -1199,7 +1199,7 @@ export class VelgApp extends LitElement {
         content = html`<velg-terminal-view .simulationId=${resolvedId}></velg-terminal-view>`;
         break;
       case 'dungeon':
-        content = html`<velg-dungeon-terminal-view .simulationId=${resolvedId}></velg-dungeon-terminal-view>`;
+        content = html`<velg-dungeon-view .simulationId=${resolvedId}></velg-dungeon-view>`;
         break;
       case 'drift':
         content = html`<velg-drift-view .anchorSimulationId=${resolvedId}></velg-drift-view>`;
