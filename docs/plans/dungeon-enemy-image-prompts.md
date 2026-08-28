@@ -7,16 +7,21 @@
 1. **Zuerst pro Archetyp EIN Referenzbild** aus dem Stil-Block erzeugen (Gegner deiner Wahl aus der Gruppe).
 2. Danach die restlichen Gegner desselben Archetyps **mit dem Referenzbild als Bildreferenz** erzeugen — sonst driftet der Stil über 42 Prompts auseinander.
 3. Export als PNG, benannt exakt nach der `id` in der Klammer (z. B. `shadow_wisp.png`).
-4. Alles in EINEN Ordner; ich baue das Ingest-Skript (Freistellen → AVIF q80 ≤1024px → Storage → YAML → Migration).
+4. **Kein lesbarer Text im Bild.** Das Spiel ist zweisprachig (en/de) — eingebackene englische
+   Schrift waere auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt waere.
+5. Alles in EINEN Ordner; ich baue das Ingest-Skript (Freistellen → AVIF q80 ≤1024px → Storage → YAML → Migration).
 
 ## Technischer Block — an JEDEN Prompt anhängen
 
 ```
 Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin.
+Exactly ONE creature and nothing else: no detached limbs, no floating fragments, no debris clouds, and no leftover shapes carried over from any reference image.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
 No cast shadow on the background, no ground plane, no floor contact shadow — the subject must be cleanly separable.
 Do not let any magenta light spill onto the subject; keep rim light neutral or in the palette below.
 No text, no logo, no watermark, no border, no frame.
+This overrides the subject description: if the subject is described with numbers, ledgers, market data or writing, render those as illegible abstract marks — the impression of data, never readable characters.
+Keep luminous elements dense and opaque; no large translucent veils or glowing ribbons, they do not survive being cut out.
 Painterly realism, muted and grimy, high contrast between lit and unlit areas. Not glossy, not cartoon, not cel-shaded, not chrome.
 ```
 
@@ -83,7 +88,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: Tremor Broker. A nervous figure wreathed in scrolling numbers. It doesn't fight – it recites. Market figures, compound rates, the precise mathematics of structures that can't hold.
+Subject: Tremor Broker. A gaunt, nervous figure of cracked concrete, wreathed in ribbons of pale light that carry the impression of columns of figures without a single legible character. It does not fight. It recites.
 Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
 ```
 
@@ -107,7 +112,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: Debt Shade. It speaks in promises that were never kept. Each round it grows, fed by the compound interest of unresolved obligations. It lies about its intentions – not from malice, but because the ledger demands it.
+Subject: Debt Shade. A swelling figure of promises never kept, bound in torn paper that has gone blank and illegible with age. It grows with every obligation left unresolved.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -115,7 +120,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: Remnant of Commerce. What remains when a trading floor collapses. It moves through the ruin with proprietary efficiency, summoning lesser brokers from the rubble. Its market crash ability strips all pretense of stability.
+Subject: Remnant of Commerce. What remains when a trading floor collapses — a broad authority of shattered stone and bent rebar, moving through the ruin with proprietary efficiency, lesser shapes rising from the rubble behind it.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
