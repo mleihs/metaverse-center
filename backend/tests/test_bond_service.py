@@ -55,14 +55,23 @@ def _mock_supabase(
 
 
 class TestTrackAttention:
+    """fn_increment_attention is SECURITY DEFINER with EXECUTE revoked from
+    ``authenticated`` (migration 219). The RPC must therefore travel on the
+    service-role client while the settings read stays RLS-enforced on the user
+    client — these tests pass two DISTINCT mocks so a regression to the user
+    client fails loudly instead of silently 403-ing in production."""
+
     async def test_returns_bond_from_rpc(self):
         bond_row = {"id": str(MOCK_BOND), "attention_score": 3, "status": "forming"}
-        sb = _mock_supabase(rpc_data=[bond_row])
+        sb = _mock_supabase()
+        admin = _mock_supabase(rpc_data=[bond_row])
 
-        result = await BondService.track_attention(sb, MOCK_USER, MOCK_AGENT, MOCK_SIM)
+        result = await BondService.track_attention(
+            sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+        )
 
         assert result["id"] == str(MOCK_BOND)
-        sb.rpc.assert_called_once_with(
+        admin.rpc.assert_called_once_with(
             "fn_increment_attention",
             {
                 "p_user_id": str(MOCK_USER),
@@ -71,23 +80,45 @@ class TestTrackAttention:
             },
         )
 
+    async def test_rpc_never_travels_on_the_user_client(self):
+        """Regression guard for the prod incident: routing this RPC through the
+        user-JWT client yields 'permission denied for function
+        fn_increment_attention' for every non-platform-admin."""
+        bond_row = {"id": str(MOCK_BOND), "attention_score": 1, "status": "forming"}
+        sb = _mock_supabase()
+        admin = _mock_supabase(rpc_data=[bond_row])
+
+        await BondService.track_attention(
+            sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+        )
+
+        sb.rpc.assert_not_called()
+        # ...while the settings read still goes through the RLS-enforced client.
+        sb.table.assert_called_with("simulation_settings")
+
     async def test_raises_not_found_on_empty_response(self):
-        sb = _mock_supabase(rpc_data=[])
+        sb = _mock_supabase()
+        admin = _mock_supabase(rpc_data=[])
 
         with pytest.raises(HTTPException) as exc_info:
-            await BondService.track_attention(sb, MOCK_USER, MOCK_AGENT, MOCK_SIM)
+            await BondService.track_attention(
+                sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+            )
         assert exc_info.value.status_code == 404
 
     async def test_translates_agent_not_in_sim_error(self):
-        sb = MagicMock()
+        sb = _mock_supabase()
+        admin = MagicMock()
         rpc_chain = MagicMock()
         rpc_chain.execute = AsyncMock(
             side_effect=Exception("Agent does not belong to simulation"),
         )
-        sb.rpc.return_value = rpc_chain
+        admin.rpc.return_value = rpc_chain
 
         with pytest.raises(HTTPException) as exc_info:
-            await BondService.track_attention(sb, MOCK_USER, MOCK_AGENT, MOCK_SIM)
+            await BondService.track_attention(
+                sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+            )
         assert exc_info.value.status_code == 400
         assert "does not belong" in exc_info.value.detail
 
