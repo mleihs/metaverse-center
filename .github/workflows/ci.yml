@@ -65,6 +65,17 @@ jobs:
         run: bash frontend/scripts/lint-bureau-panel-frame-last.sh
         working-directory: .
 
+      - name: Aptitude lint (no client-side baseline literals)
+        run: bash frontend/scripts/lint-no-aptitude-baseline.sh
+        working-directory: .
+
+      # Guards the guards: a lint script whose grep target does not exist under
+      # the caller's cwd prints PASS instead of failing. Six frontend gates were
+      # silent no-ops in this very job until 2026-08-28.
+      - name: Lint-gate anchoring (guards must not depend on cwd)
+        run: bash scripts/lint-lint-scripts-anchored.sh
+        working-directory: .
+
       - name: Backend lint (GenerationService._generate privacy)
         run: bash scripts/lint-no-private-generate.sh
         working-directory: .

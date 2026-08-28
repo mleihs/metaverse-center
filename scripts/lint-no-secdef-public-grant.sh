@@ -29,6 +29,14 @@
 # Run locally:  PGHOST=127.0.0.1 PGPORT=54322 bash scripts/lint-no-secdef-public-grant.sh
 set -euo pipefail
 
+# Anchor all paths to the repo root, so the gate greps the same tree no matter
+# which directory it is invoked from. A relative target that misses turns the
+# `|| true` guard into a green no-op pass. Resolve SCRIPT_DIR BEFORE the cd —
+# BASH_SOURCE may be relative and would die with the old cwd.
+# Enforced by scripts/lint-lint-scripts-anchored.sh.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 PGHOST="${PGHOST:-localhost}"
 PGPORT="${PGPORT:-54322}"
 PGUSER="${PGUSER:-postgres}"

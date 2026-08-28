@@ -24,8 +24,17 @@
 
 set -euo pipefail
 
+# Anchor all paths to the frontend root. CI and `npm run lint:full` invoke this
+# script from the REPO root while a developer runs it from `frontend/`; a
+# relative target that is right for one is silently empty for the other, and the
+# `2>/dev/null || true` guards turn that into a green no-op pass. Resolve
+# SCRIPT_DIR BEFORE the cd — BASH_SOURCE may be relative and would die with the
+# old cwd. Enforced by scripts/lint-lint-scripts-anchored.sh.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 VIOLATIONS=0
-SRC_DIR="frontend/src"
+SRC_DIR="src"
 
 # --- Check 1: Direct pushState() calls ---
 # Match actual function calls: `window.history.pushState(` — the opening
@@ -34,7 +43,7 @@ SRC_DIR="frontend/src"
 PUSHSTATE=$(grep -rnE 'window\.history\.pushState\s*\(' \
   --include='*.ts' \
   "$SRC_DIR" 2>/dev/null | \
-  grep -v '^frontend/src/utils/navigation\.ts:' || true)
+  grep -v '^src/utils/navigation\.ts:' || true)
 
 if [ -n "$PUSHSTATE" ]; then
   echo "ERROR: Direct window.history.pushState() outside the navigation helper:"
@@ -50,7 +59,7 @@ fi
 EVENT=$(grep -rnE "new CustomEvent\(['\"]navigate['\"]" \
   --include='*.ts' \
   "$SRC_DIR" 2>/dev/null | \
-  grep -v '^frontend/src/utils/navigation\.ts:' || true)
+  grep -v '^src/utils/navigation\.ts:' || true)
 
 if [ -n "$EVENT" ]; then
   echo "ERROR: Manual 'navigate' CustomEvent dispatch outside the navigation helper:"

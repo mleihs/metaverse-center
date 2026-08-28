@@ -23,8 +23,13 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
+# Anchor all paths to the repo root, so the gate greps the same tree no matter
+# which directory it is invoked from. A relative target that misses turns the
+# `|| true` guard into a green no-op pass. Resolve SCRIPT_DIR BEFORE the cd —
+# BASH_SOURCE may be relative and would die with the old cwd.
+# Enforced by scripts/lint-lint-scripts-anchored.sh.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 FAIL=0
 

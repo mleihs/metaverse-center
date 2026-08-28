@@ -8,9 +8,16 @@
 
 set -euo pipefail
 
-# Support running from project root or frontend/
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-TOKENS_FILE="$SCRIPT_DIR/../src/styles/tokens/_colors.css"
+# Anchor all paths to the frontend root. CI and `npm run lint:full` invoke this
+# script from the REPO root while a developer runs it from `frontend/`; a
+# relative target that is right for one is silently empty for the other, and the
+# `2>/dev/null || true` guards turn that into a green no-op pass. Resolve
+# SCRIPT_DIR BEFORE the cd — BASH_SOURCE may be relative and would die with the
+# old cwd. Enforced by scripts/lint-lint-scripts-anchored.sh.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+TOKENS_FILE="src/styles/tokens/_colors.css"
 
 if [ ! -f "$TOKENS_FILE" ]; then
   echo "ERROR: $TOKENS_FILE not found."

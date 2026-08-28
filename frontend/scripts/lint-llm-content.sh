@@ -9,7 +9,15 @@
 # Exit 0 = clean, Exit 1 = violations found.
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
+
+# Anchor all paths to the frontend root. CI and `npm run lint:full` invoke this
+# script from the REPO root while a developer runs it from `frontend/`; a
+# relative target that is right for one is silently empty for the other, and the
+# `2>/dev/null || true` guards turn that into a green no-op pass. Resolve
+# SCRIPT_DIR BEFORE the cd — BASH_SOURCE may be relative and would die with the
+# old cwd. Enforced by scripts/lint-lint-scripts-anchored.sh.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 VIOLATIONS=0
 SRC_DIR="src"
