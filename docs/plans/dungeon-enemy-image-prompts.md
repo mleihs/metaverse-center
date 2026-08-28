@@ -4,20 +4,20 @@
 
 ## Arbeitsweise
 
-1. **Zuerst pro Archetyp EIN Referenzbild** aus dem Stil-Block erzeugen (Gegner deiner Wahl aus der Gruppe).
-2. Danach die restlichen Gegner desselben Archetyps **mit dem Referenzbild als Bildreferenz** erzeugen — sonst
-   driftet der Stil über 42 Prompts auseinander. **Aber:** sobald zwei Kreaturen einander zu ähneln beginnen
-   (gleiche Haltung, gleiche Requisiten), die Referenz für den nächsten Durchlauf weglassen. Die Referenz
-   hält die Palette zusammen und zieht gleichzeitig die Motive aufeinander zu — beides passiert immer.
-3. **Ab der vierten Kreatur einer Gruppe reicht das Weglassen der Referenz nicht mehr.** Dann muss die
-   Motivzeile ausdrücklich benennen, was die Kreatur NICHT ist — und zwar mit den Merkmalen ihrer
-   Geschwister. Tower kollabierte über 6→8→10 auf Kuppel/Bänder/Hand-vor-Gesicht, Prometheus über
-   24→25→27 auf halb geöffnete Panzergestalt mit Zahnrad und Halbschädel. Beide Male half erst die
-   namentliche Abgrenzung („no dome", „no armour, no ribcage, no skull").
-3. Export als PNG, benannt exakt nach der `id` in der Klammer (z. B. `shadow_wisp.png`).
-4. **Kein lesbarer Text im Bild.** Das Spiel ist zweisprachig (en/de) — eingebackene englische
-   Schrift waere auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt waere.
-5. Alles in EINEN Ordner; ich baue das Ingest-Skript (Freistellen → AVIF q80 ≤1024px → Storage → YAML → Migration).
+1. **KEINE Referenzbilder.** Jeder Prompt läuft für sich allein.
+   Belegt: die beiden Gruppen mit Referenz sind kollabiert – Tower (6→8→10: dieselbe Kuppel,
+   dieselben Bänder, dieselbe Hand-vor-Gesicht-Haltung) und Prometheus (24/25/27: dieselbe halb
+   geöffnete Panzergestalt). Awakening entstand ohne Referenz und ist mit 0,7–0,8× Sättigung und
+   0,6–0,8× Helligkeit die geschlossenste Gruppe der Produktion. **Ein präziser Stilblock hält
+   die Gruppe besser zusammen als ein Referenzbild** – und er erzwingt keine Motivgleichheit.
+2. Export als PNG, benannt exakt nach der `id` in der Klammer (z. B. `shadow_wisp.png`).
+3. **Kein lesbarer Text im Bild.** Das Spiel ist zweisprachig (en/de) – eingebackene englische
+   Schrift wäre auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt wäre.
+4. Alles in EINEN Ordner; das Ingest-Skript übernimmt Freistellen → AVIF q80 ≤1024 px →
+   Supabase Storage → YAML-Patch → Migration.
+5. Prüfung vor dem Commit immer mit `scripts/key_dungeon_enemy_art.py … --check` – die Metrik
+   prüft die Kante, nicht die Komposition. Fremdkörper und Hintergrundschleier fallen nur in der
+   Sichtprobe auf schwarzem Grund auf.
 
 ## ⚠️ Lore ist nicht Bildbeschreibung
 
