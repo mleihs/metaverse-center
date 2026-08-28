@@ -3,7 +3,7 @@ enemies:
 - id: tower_tremor_broker
   name_en: Tremor Broker
   name_de: Bebenmakler
-  image_path: dungeon-enemies/tower_tremor_broker-384.avif
+  image_path: dungeon-enemies/tower_tremor_broker-768.avif
   condition_threshold: 1
   stress_resistance: 80
   threat_level: minion
@@ -34,7 +34,7 @@ enemies:
 - id: tower_foundation_worm
   name_en: Foundation Worm
   name_de: Grundwurm
-  image_path: dungeon-enemies/tower_foundation_worm-384.avif
+  image_path: dungeon-enemies/tower_foundation_worm-768.avif
   condition_threshold: 2
   stress_resistance: 0
   threat_level: minion
@@ -64,7 +64,7 @@ enemies:
 - id: tower_crown_keeper
   name_en: The Crowned
   name_de: Der Gekrönte
-  image_path: dungeon-enemies/tower_crown_keeper-384.avif
+  image_path: dungeon-enemies/tower_crown_keeper-768.avif
   condition_threshold: 2
   stress_resistance: 250
   threat_level: standard
@@ -99,7 +99,7 @@ enemies:
 - id: tower_debt_shade
   name_en: Debt Shade
   name_de: Schuldgespenst
-  image_path: dungeon-enemies/tower_debt_shade-384.avif
+  image_path: dungeon-enemies/tower_debt_shade-768.avif
   condition_threshold: 1
   stress_resistance: 300
   threat_level: standard
@@ -136,7 +136,7 @@ enemies:
 - id: tower_remnant_commerce
   name_en: Remnant of Commerce
   name_de: Relikt des Handels
-  image_path: dungeon-enemies/tower_remnant_commerce-384.avif
+  image_path: dungeon-enemies/tower_remnant_commerce-768.avif
   condition_threshold: 5
   stress_resistance: 400
   threat_level: elite

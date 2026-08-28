@@ -3,7 +3,7 @@ enemies:
 - id: prometheus_spark_wisp
   name_en: Spark Wisp
   name_de: Funkenglimmer
-  image_path: dungeon-enemies/prometheus_spark_wisp-384.avif
+  image_path: dungeon-enemies/prometheus_spark_wisp-768.avif
   condition_threshold: 1
   stress_resistance: 20
   threat_level: minion
@@ -33,7 +33,7 @@ enemies:
 - id: prometheus_alloy_sentinel
   name_en: Alloy Sentinel
   name_de: Legierungswächter
-  image_path: dungeon-enemies/prometheus_alloy_sentinel-384.avif
+  image_path: dungeon-enemies/prometheus_alloy_sentinel-768.avif
   condition_threshold: 3
   stress_resistance: 100
   threat_level: standard
@@ -66,7 +66,7 @@ enemies:
 - id: prometheus_slag_golem
   name_en: Slag Golem
   name_de: Schlackengolem
-  image_path: dungeon-enemies/prometheus_slag_golem-384.avif
+  image_path: dungeon-enemies/prometheus_slag_golem-768.avif
   condition_threshold: 3
   stress_resistance: 200
   threat_level: standard
@@ -100,7 +100,7 @@ enemies:
 - id: prometheus_crucible_drake
   name_en: Crucible Drake
   name_de: Tiegeldrache
-  image_path: dungeon-enemies/prometheus_crucible_drake-384.avif
+  image_path: dungeon-enemies/prometheus_crucible_drake-768.avif
   condition_threshold: 2
   stress_resistance: 50
   threat_level: standard
@@ -132,7 +132,7 @@ enemies:
 - id: prometheus_automaton_shard
   name_en: Automaton Shard
   name_de: Automatensplitter
-  image_path: dungeon-enemies/prometheus_automaton_shard-384.avif
+  image_path: dungeon-enemies/prometheus_automaton_shard-768.avif
   condition_threshold: 2
   stress_resistance: 0
   threat_level: standard
@@ -164,7 +164,7 @@ enemies:
 - id: prometheus_forge_wraith
   name_en: Forge Wraith
   name_de: Schmiedewraith
-  image_path: dungeon-enemies/prometheus_forge_wraith-384.avif
+  image_path: dungeon-enemies/prometheus_forge_wraith-768.avif
   condition_threshold: 4
   stress_resistance: 120
   threat_level: elite
@@ -204,7 +204,7 @@ enemies:
 - id: prometheus_workshop_guardian
   name_en: Workshop Guardian
   name_de: Werkstattwächter
-  image_path: dungeon-enemies/prometheus_workshop_guardian-384.avif
+  image_path: dungeon-enemies/prometheus_workshop_guardian-768.avif
   condition_threshold: 5
   stress_resistance: 150
   threat_level: elite
@@ -240,7 +240,7 @@ enemies:
 - id: prometheus_the_prototype
   name_en: The Prototype
   name_de: Der Prototyp
-  image_path: dungeon-enemies/prometheus_the_prototype-384.avif
+  image_path: dungeon-enemies/prometheus_the_prototype-768.avif
   condition_threshold: 6
   stress_resistance: 200
   threat_level: boss

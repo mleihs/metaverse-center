@@ -3,7 +3,7 @@ enemies:
 - id: entropy_rust_phantom
   name_en: Rust Phantom
   name_de: Rostphantom
-  image_path: dungeon-enemies/entropy_rust_phantom-384.avif
+  image_path: dungeon-enemies/entropy_rust_phantom-768.avif
   condition_threshold: 1
   stress_resistance: 30
   threat_level: minion
@@ -36,7 +36,7 @@ enemies:
 - id: entropy_fade_echo
   name_en: Fade Echo
   name_de: Verblassecho
-  image_path: dungeon-enemies/entropy_fade_echo-384.avif
+  image_path: dungeon-enemies/entropy_fade_echo-768.avif
   condition_threshold: 2
   stress_resistance: 150
   threat_level: standard
@@ -69,7 +69,7 @@ enemies:
 - id: entropy_dissolution_swarm
   name_en: Dissolution Swarm
   name_de: Auflösungsschwarm
-  image_path: dungeon-enemies/entropy_dissolution_swarm-384.avif
+  image_path: dungeon-enemies/entropy_dissolution_swarm-768.avif
   condition_threshold: 3
   stress_resistance: 50
   threat_level: standard
@@ -105,7 +105,7 @@ enemies:
 - id: entropy_warden
   name_en: Entropy Warden
   name_de: Entropiewächter
-  image_path: dungeon-enemies/entropy_warden-384.avif
+  image_path: dungeon-enemies/entropy_warden-768.avif
   condition_threshold: 5
   stress_resistance: 300
   threat_level: elite

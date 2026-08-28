@@ -782,9 +782,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          SILHOUETTE as the fallback for a creature with no art or whose art
          failed to load. Both stand on the same floor pool and carry the same
          condition colour, so a band mixing the two still reads as one scene. */
+      /* The band stretches across its whole grid row, which is a definite 1fr
+         track. That definiteness is what lets the creatures size themselves as
+         a FRACTION OF THE BAND (see FOE_GEOMETRY) instead of guessing from
+         viewport width. */
       .scene__enemies {
         grid-area: foes;
-        align-self: end;
+        align-self: stretch;
+        min-height: 0;
         z-index: 2;
         pointer-events: none;
         display: flex;
@@ -794,22 +799,40 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         padding: 0 16px;
       }
       .foe {
+        height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-end;
         gap: 5px;
+        min-width: 0;
         animation: foe-loom var(--duration-entrance, 350ms) var(--ease-dramatic, ease) both;
         animation-delay: calc(var(--i, 0) * 90ms);
       }
+      /* Height from the band; width from the creature. The art is mass-cropped,
+         so each cutout carries its own proportions and the box follows the
+         image — no per-creature data in CSS. --_foe-chrome reserves the intent
+         chip and the name below the figure so a boss cannot push them out of
+         the band. */
       .foe__figure {
+        --_foe-chrome: 34px;
         position: relative;
         display: flex;
         justify-content: center;
         align-items: flex-end;
-        width: var(--_foe-w);
-        height: var(--_foe-h);
+        flex: 0 0 auto;
+        height: clamp(
+          44px,
+          calc(var(--_foe-scale, 1) * (100% - var(--_foe-chrome))),
+          320px
+        );
         animation: foe-sway 5.4s var(--ease-in-out, ease-in-out) infinite;
         animation-delay: calc(var(--i, 0) * -700ms);
+      }
+      /* The silhouette fallback has no intrinsic size — its polygon needs a box,
+         so the tier's aspect ratio supplies one. */
+      .foe__figure--silhouette {
+        aspect-ratio: var(--_foe-ratio, 0.62);
       }
       /* Published creature art. A leaf element, so the filter here never
          creates a containing block for the HUD's fixed-position overlays (same
@@ -825,15 +848,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          survives in the drop-shadow, the floor pool and the name, which is
          where the eye picks it up in a band this small. */
       .foe__art {
-        position: absolute;
-        inset: 0;
-        width: 100%;
+        display: block;
         height: 100%;
-        object-fit: contain;
-        object-position: bottom center;
+        width: auto;
+        max-width: 22vw;
         filter: saturate(calc(1 - var(--_wear, 0) * 0.72))
           brightness(calc(1 - var(--_wear, 0) * 0.32))
-          drop-shadow(0 0 10px color-mix(in srgb, var(--_cond) 34%, transparent));
+          drop-shadow(0 0 calc(var(--_foe-glow, 0.8) * 20px) color-mix(in srgb, var(--_cond) 34%, transparent));
         transition: filter var(--duration-slow, 300ms) var(--ease-out, ease-out);
       }
 
@@ -849,7 +870,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           color-mix(in srgb, var(--_cond) 26%, var(--color-surface)) 60%,
           color-mix(in srgb, var(--_cond) 48%, transparent)
         );
-        filter: drop-shadow(0 0 11px color-mix(in srgb, var(--_cond) 38%, transparent));
+        filter: drop-shadow(0 0 calc(var(--_foe-glow, 0.8) * 22px) color-mix(in srgb, var(--_cond) 38%, transparent));
       }
       /* Paired eye-glow — the one warm signal on an otherwise unlit mass. */
       .foe__eyes {
@@ -876,12 +897,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         animation: foe-glare 3.2s var(--ease-in-out, ease-in-out) infinite;
       }
       /* Floor pool, mirroring the party's ground anchor. */
+      /* Percentages of the figure box, so the pool grows with the creature
+         instead of staying a fixed 18px smudge under a 300px boss. */
       .foe__pool {
         position: absolute;
         left: 50%;
-        bottom: -9px;
+        bottom: -6%;
         width: 150%;
-        height: 18px;
+        height: 14%;
         transform: translateX(-50%);
         border-radius: 50%;
         background: radial-gradient(
@@ -897,7 +920,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         display: flex;
         align-items: center;
         gap: 3px;
-        max-width: 108px;
+        max-width: 132px;
         padding: 1px 4px;
         border: 1px solid color-mix(in srgb, var(--_intent) 55%, transparent);
         background: color-mix(in srgb, var(--_intent) 14%, var(--color-surface));
@@ -915,7 +938,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         white-space: nowrap;
       }
       .foe__name {
-        max-width: 96px;
+        max-width: 124px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -2032,7 +2055,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           return html`
             <div
               class="foe ${dead ? 'foe--dead' : ''}"
-              style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-w:${geom.w};--_foe-h:${geom.h};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
+              style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-scale:${geom.scale};--_foe-glow:${geom.scale};--_foe-ratio:${geom.ratio};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
             >
               ${
                 action
@@ -2042,7 +2065,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                     </div>`
                   : nothing
               }
-              <div class="foe__figure">
+              <div class="foe__figure ${showArt ? '' : 'foe__figure--silhouette'}">
                 ${
                   showArt
                     ? html`<img
@@ -2351,29 +2374,57 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
  *  `shape` and `eyeTop` belong to the SILHOUETTE path only — the fallback for a
  *  creature with no published art, or whose art failed to load. Creature art
  *  brings its own outline and its own face. */
-const FOE_GEOMETRY: Record<string, { w: string; h: string; shape: string; eyeTop: string }> = {
+/**
+ * How large a creature stands in the band, by threat tier.
+ *
+ * `scale` is a FRACTION OF THE ENEMY BAND's height, not an absolute size. The
+ * first version of this table was written for clip-path silhouettes, where an
+ * abstract shape still reads at 30 px, and used viewport-width clamps
+ * (`clamp(52px, 6vw, 76px)`). When the silhouettes were replaced by keyed
+ * photographic art the sizes were carried over unchanged — so two minions stood
+ * in the band at roughly 30 x 50 px, unreadable below 2x magnification, with a
+ * condition halo as large as the creature and about 85 % of the band empty.
+ *
+ * Viewport width was the wrong reference to begin with: it says nothing about
+ * how tall the stage actually is. Scaling against the band means a creature
+ * keeps its proportion to the scene on any display, and the band fills.
+ *
+ * `ratio` (width / height) applies to the SILHOUETTE fallback only, which needs
+ * an explicit box for its polygon. The published art carries its own aspect
+ * ratio — the cutouts are mass-cropped, so a wisp is narrow and a warden broad
+ * — and the figure box takes its width from the image.
+ *
+ * If these fractions grow, `SCENE_EDGE` in scripts/ingest_dungeon_enemy_art.py
+ * must grow with them: the published rendition is sized for the largest a
+ * creature is ever drawn. The size is part of the stored path, so the coupling
+ * is visible rather than implied.
+ */
+const FOE_GEOMETRY: Record<
+  string,
+  { scale: number; ratio: number; shape: string; eyeTop: string }
+> = {
   minion: {
-    w: 'clamp(22px, 2.6vw, 32px)',
-    h: 'clamp(38px, 4.6vw, 54px)',
+    scale: 0.56,
+    ratio: 0.6,
     shape: 'polygon(50% 0%, 72% 26%, 66% 100%, 34% 100%, 28% 26%)',
     eyeTop: '22%',
   },
   standard: {
-    w: 'clamp(30px, 3.4vw, 42px)',
-    h: 'clamp(50px, 6vw, 70px)',
+    scale: 0.72,
+    ratio: 0.62,
     shape: 'polygon(50% 0%, 74% 18%, 80% 52%, 70% 100%, 30% 100%, 20% 52%, 26% 18%)',
     eyeTop: '17%',
   },
   elite: {
-    w: 'clamp(38px, 4.2vw, 52px)',
-    h: 'clamp(62px, 7.4vw, 88px)',
+    scale: 0.86,
+    ratio: 0.6,
     shape:
       'polygon(50% 0%, 66% 10%, 88% 30%, 78% 56%, 72% 100%, 28% 100%, 22% 56%, 12% 30%, 34% 10%)',
     eyeTop: '14%',
   },
   boss: {
-    w: 'clamp(52px, 6vw, 76px)',
-    h: 'clamp(78px, 9.2vw, 112px)',
+    scale: 1,
+    ratio: 0.68,
     shape:
       'polygon(50% 4%, 62% 10%, 78% 0%, 74% 20%, 96% 34%, 84% 58%, 78% 100%, 22% 100%, 16% 58%, 4% 34%, 26% 20%, 22% 0%, 38% 10%)',
     eyeTop: '15%',
