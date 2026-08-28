@@ -42,6 +42,7 @@ import {
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
+import type { AptitudeIndex } from './aptitudes.js';
 import { localized } from './locale-fields.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
 import {
@@ -1623,23 +1624,20 @@ export function formatAvailableDungeons(dungeons: AvailableDungeonResponse[]): T
 
 // ── Party Picker ─────────────────────────────────────────────────────────────
 
-/** Baseline aptitudes for generalist agents with no explicit aptitude rows. */
-const GENERALIST_APTITUDES: AptitudeSet = {
-  spy: 6,
-  guardian: 6,
-  saboteur: 6,
-  propagandist: 6,
-  infiltrator: 6,
-  assassin: 6,
-};
-
 /**
- * Top-N aptitudes (default 3) by level, descending. Generalists with no
- * explicit aptitudes fall back to a flat baseline. Shared by the terminal
- * agent picker and the graphical lobby picker so both display identically.
+ * Top-N aptitudes (default 3) by level, descending. Shared by the terminal agent
+ * picker and the graphical lobby picker so both display identically.
+ *
+ * An agent the server reported nothing for yields an EMPTY list — deliberately.
+ * This function used to substitute a flat "generalist" baseline of its own,
+ * which rendered as a measurement and hid the fact that no aptitudes existed;
+ * the party-composition warning, reading the same absence without a fallback,
+ * then contradicted the chips on screen. Baseline values now come from the
+ * server marked as such (see utils/aptitudes.ts), and "no data" stays visible.
  */
 export function topAptitudes(apts: AptitudeSet | undefined, n = 3): Array<[OperativeType, number]> {
-  return (Object.entries(apts ?? GENERALIST_APTITUDES) as Array<[OperativeType, number]>)
+  if (!apts) return [];
+  return (Object.entries(apts) as Array<[OperativeType, number]>)
     .filter(([, v]) => v > 0)
     .sort(([, a], [, b]) => b - a)
     .slice(0, n);
@@ -1651,7 +1649,7 @@ export function topAptitudes(apts: AptitudeSet | undefined, n = 3): Array<[Opera
  */
 export function formatAgentPicker(
   agents: Agent[],
-  aptitudeMap: Map<string, AptitudeSet>,
+  aptitudes: AptitudeIndex,
   archetype: string,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
@@ -1667,15 +1665,19 @@ export function formatAgentPicker(
   );
   lines.push(systemLine(''));
 
+  const aptitudeMap = aptitudes.levels;
   for (let i = 0; i < agents.length; i++) {
     const agent = agents[i];
     const apts = aptitudeMap.get(agent.id);
 
     // Build aptitude string: top 3 by level (shared with the graphical picker).
+    // A baseline set is labelled as such — it is what combat will use, but it
+    // was never assigned to this agent and must not read like a measurement.
     let aptStr = topAptitudes(apts)
       .map(([k, v]) => `${OPERATIVE_LABEL[k] ?? k.toUpperCase()} ${v}`)
       .join(' | ');
-    if (!aptStr) aptStr = msg('generalist');
+    if (!aptStr) aptStr = msg('no aptitude data');
+    else if (aptitudes.baselineAgentIds.has(agent.id)) aptStr += `  (${msg('baseline')})`;
 
     const num = String(i + 1).padStart(2, ' ');
     lines.push(responseLine(`  ${num}. ${agent.name.padEnd(20)} ${aptStr}`));

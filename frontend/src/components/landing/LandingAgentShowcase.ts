@@ -16,11 +16,12 @@ import { customElement, state } from 'lit/decorators.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { captureError } from '../../services/SentryService.js';
-import type { Agent, AgentAptitude, AptitudeSet, Simulation } from '../../types/index.js';
+import type { Agent, AptitudeSet, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../agents/AgentCard.js';
+import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 
 interface ShowcaseAgent {
   agent: Agent;
@@ -505,24 +506,12 @@ export class VelgLandingAgentShowcase extends LitElement {
           if (!agentResp.success || !Array.isArray(agentResp.data)) return;
 
           const agents = agentResp.data as Agent[];
-          const aptitudes =
-            aptResp.success && Array.isArray(aptResp.data) ? (aptResp.data as AgentAptitude[]) : [];
-
-          // Build aptitude sets per agent
-          const aptMap = new Map<string, Record<string, number>>();
-          for (const apt of aptitudes) {
-            let entry = aptMap.get(apt.agent_id);
-            if (!entry) {
-              entry = {};
-              aptMap.set(apt.agent_id, entry);
-            }
-            entry[apt.operative_type] = apt.aptitude_level;
-          }
+          const aptMap = buildAptitudeIndex(aptResp.success ? aptResp.data : null).levels;
 
           // Score: portrait (+3), ambassador (+2), character text (+1)
           const scored = agents.map((agent) => ({
             agent,
-            aptitudes: (aptMap.get(agent.id) ?? null) as AptitudeSet | null,
+            aptitudes: aptMap.get(agent.id) ?? null,
             simulation: sim,
             score:
               (agent.portrait_image_url ? 3 : 0) +

@@ -204,14 +204,22 @@ export interface AgentProfession {
   profession_label?: string;
 }
 
+/**
+ * One *effective* aptitude value. Assigned rows carry their DB identity and
+ * `is_default: false`; an agent with no assigned aptitudes gets the backend's
+ * budget-neutral baseline with `is_default: true` and no identity. Callers must
+ * never invent a baseline of their own – the server's numbers are the ones
+ * combat resolves with.
+ */
 export interface AgentAptitude {
-  id: UUID;
+  id: UUID | null;
   agent_id: UUID;
   simulation_id: UUID;
   operative_type: OperativeType;
   aptitude_level: number;
-  created_at: string;
-  updated_at: string;
+  is_default: boolean;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export type AptitudeSet = Record<OperativeType, number>;

@@ -25,6 +25,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
+from backend.models.aptitude import DEFAULT_APTITUDE_LEVEL, OPERATIVE_TYPES
 from backend.models.resonance_dungeon import (
     AgentCombatState,
     ArchetypeActionResponse,
@@ -190,13 +191,18 @@ class DungeonEngineService:
         for agent_data in party_data:
             aptitudes_raw = agent_data.get("aptitudes", {})
             aptitudes = {k: int(v) for k, v in aptitudes_raw.items()} if aptitudes_raw else {}
-            if not aptitudes:
-                # Agents must have at least one aptitude school for combat abilities.
-                # DB can return null/empty for aptitudes — assign viable defaults.
-                aptitudes = {"spy": 3, "guardian": 2}
-                logger.warning(
-                    "Agent %s has no aptitudes, assigning defaults",
+            # Agents must have at least one aptitude school for combat abilities.
+            # Fill from the shared baseline (models.aptitude.DEFAULT_APTITUDE_LEVEL) —
+            # the same numbers the aptitude endpoints report as `is_default`, so the
+            # picker shows what combat will actually roll with. A partial set keeps
+            # its assigned values and is completed, never replaced.
+            missing = [op for op in OPERATIVE_TYPES if op not in aptitudes]
+            if missing:
+                aptitudes.update(dict.fromkeys(missing, DEFAULT_APTITUDE_LEVEL))
+                logger.info(
+                    "Agent %s has no assigned aptitude for %s; using the baseline",
                     agent_data.get("name", agent_data["id"]),
+                    ", ".join(missing),
                     extra={"agent_id": agent_data["id"], "archetype": archetype},
                 )
 

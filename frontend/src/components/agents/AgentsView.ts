@@ -9,13 +9,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyAgentDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
-import type {
-  Agent,
-  AgentAptitude,
-  ApiResponse,
-  AptitudeSet,
-  OperativeType,
-} from '../../types/index.js';
+import type { Agent, ApiResponse, AptitudeSet } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { updateUrl } from '../../utils/navigation.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -35,6 +29,7 @@ import './AgentCard.js';
 import './AgentEditModal.js';
 import './AgentDetailsPanel.js';
 import './VelgRecruitmentOffice.js';
+import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 
 @localized()
 @customElement('velg-agents-view')
@@ -179,7 +174,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
   @state() private _editAgent: Agent | null = null;
   @state() private _showEditModal = false;
   @state() private _showDetails = false;
-  @state() private _aptitudeMap: Map<string, AptitudeSet> = new Map();
+  @state() private _aptitudeMap: ReadonlyMap<string, AptitudeSet> = new Map();
 
   private _disposeImageTracking?: () => void;
 
@@ -320,22 +315,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
         appState.currentSimulationMode.value,
       );
       if (response.success && response.data) {
-        const map = new Map<string, AptitudeSet>();
-        for (const row of response.data as AgentAptitude[]) {
-          if (!map.has(row.agent_id)) {
-            map.set(row.agent_id, {
-              spy: 6,
-              guardian: 6,
-              saboteur: 6,
-              propagandist: 6,
-              infiltrator: 6,
-              assassin: 6,
-            });
-          }
-          const set = map.get(row.agent_id);
-          if (set) set[row.operative_type as OperativeType] = row.aptitude_level;
-        }
-        this._aptitudeMap = map;
+        this._aptitudeMap = buildAptitudeIndex(response.data).levels;
       }
     } catch (err) {
       captureError(err, { source: 'VelgAgentsView._loadAllAptitudes' });

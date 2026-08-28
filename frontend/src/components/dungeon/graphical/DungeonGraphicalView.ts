@@ -1247,6 +1247,18 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         color: var(--_phosphor-dim);
         border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
       }
+      /* Baseline values: the numbers combat will use, but never assigned to this
+         agent. Dashed and dimmed so they cannot be mistaken for a measurement. */
+      .apt-chip--baseline {
+        border-style: dashed;
+        color: color-mix(in srgb, var(--_phosphor-dim) 70%, transparent);
+      }
+      .apt-chip--unknown {
+        border-style: dashed;
+        border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+        color: var(--color-warning);
+        text-transform: uppercase;
+      }
       .picker-card__check {
         display: inline-flex;
         align-items: center;
@@ -2180,7 +2192,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   }
 
   private _renderPickerRoster(agents: Agent[]) {
-    const aptMap = dungeonState.pickerAptitudes.value;
+    const aptitudes = dungeonState.pickerAptitudes.value;
     return html`
       <div class="picker-grid" role="group" aria-label=${msg('Select party members')}>
         ${agents.map((agent) => {
@@ -2203,7 +2215,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
               ></velg-avatar>
               <span class="picker-card__body">
                 <span class="picker-card__name">${agent.name}</span>
-                <span class="picker-card__apts">${this._renderAptChips(aptMap.get(agent.id))}</span>
+                <span class="picker-card__apts">
+                  ${this._renderAptChips(
+                    aptitudes.levels.get(agent.id),
+                    aptitudes.baselineAgentIds.has(agent.id),
+                  )}
+                </span>
               </span>
               <span class="picker-card__check" aria-hidden="true">
                 ${selected ? icons.checkCircle(14) : nothing}
@@ -2215,12 +2232,31 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     `;
   }
 
-  /** Top-3 aptitudes as compact chips (shared computation with the terminal
-   *  picker formatter via topAptitudes — generalists fall back to a baseline). */
-  private _renderAptChips(apts: AptitudeSet | undefined) {
-    return topAptitudes(apts).map(
-      ([k, v]) => html`<span class="apt-chip">${OPERATIVE_LABEL[k] ?? k.toUpperCase()} ${v}</span>`,
-    );
+  /**
+   * Top-3 aptitudes as compact chips (shared computation with the terminal
+   * picker formatter via topAptitudes).
+   *
+   * Three distinct states, none of them faked: assigned values, the server's
+   * baseline marked as baseline, and genuinely absent data. The chips and the
+   * composition warning below them read the same AptitudeIndex, so they can no
+   * longer disagree.
+   */
+  private _renderAptChips(apts: AptitudeSet | undefined, isBaseline: boolean) {
+    const top = topAptitudes(apts);
+    if (top.length === 0) {
+      return html`<span class="apt-chip apt-chip--unknown">${msg('No aptitude data')}</span>`;
+    }
+    return [
+      ...top.map(
+        ([k, v]) =>
+          html`<span class="apt-chip ${isBaseline ? 'apt-chip--baseline' : ''}"
+            >${OPERATIVE_LABEL[k] ?? k.toUpperCase()} ${v}</span
+          >`,
+      ),
+      isBaseline
+        ? html`<span class="apt-chip apt-chip--unknown" title=${msg('No aptitudes assigned – showing the baseline combat uses')}>${msg('baseline')}</span>`
+        : nothing,
+    ];
   }
 }
 

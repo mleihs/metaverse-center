@@ -2,16 +2,7 @@ import { msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { AptitudeSet, OperativeType } from '../../types/index.js';
-import { OPERATIVE_COLORS } from '../../utils/operative-constants.js';
-
-const OPERATIVE_TYPES: OperativeType[] = [
-  'spy',
-  'guardian',
-  'saboteur',
-  'propagandist',
-  'infiltrator',
-  'assassin',
-];
+import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
 
 function getOperativeLabel(type: OperativeType): string {
   const labels: Record<OperativeType, () => string> = {
@@ -31,14 +22,12 @@ const APTITUDE_BUDGET = 36;
 
 @customElement('velg-aptitude-bars')
 export class VelgAptitudeBars extends LitElement {
-  @property({ type: Object }) aptitudes: AptitudeSet = {
-    spy: 6,
-    guardian: 6,
-    saboteur: 6,
-    propagandist: 6,
-    infiltrator: 6,
-    assassin: 6,
-  };
+  /**
+   * Levels to render. Null means "not loaded / none known" and renders nothing —
+   * the component does not substitute a baseline of its own. Baseline values are
+   * the server's to supply and the caller's to label (see utils/aptitudes.ts).
+   */
+  @property({ type: Object }) aptitudes: AptitudeSet | null = null;
 
   @property({ type: Boolean }) editable = false;
   @property({ type: String }) size: 'sm' | 'md' | 'lg' = 'md';
@@ -233,10 +222,12 @@ export class VelgAptitudeBars extends LitElement {
   `;
 
   private _getSpent(): number {
+    if (!this.aptitudes) return 0;
     return Object.values(this.aptitudes).reduce((sum, v) => sum + v, 0);
   }
 
   private _handleSliderChange(type: OperativeType, e: Event) {
+    if (!this.aptitudes) return;
     const target = e.target as HTMLInputElement;
     const newValue = Number.parseInt(target.value, 10);
     const oldValue = this.aptitudes[type];
@@ -262,13 +253,15 @@ export class VelgAptitudeBars extends LitElement {
   }
 
   render() {
+    const aptitudes = this.aptitudes;
+    if (!aptitudes) return nothing;
     const spent = this._getSpent();
     const remaining = APTITUDE_BUDGET - spent;
 
     return html`
       <div class="aptitude-bars">
         ${OPERATIVE_TYPES.map((type, i) => {
-          const level = this.aptitudes[type] ?? 6;
+          const level = aptitudes[type];
           const pct = ((level - APTITUDE_MIN) / (APTITUDE_MAX - APTITUDE_MIN)) * 100;
           const color = OPERATIVE_COLORS[type];
           const isDimmed = this.highlight && this.highlight !== type;

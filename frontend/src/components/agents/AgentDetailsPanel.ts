@@ -50,6 +50,7 @@ import './AgentMoodPanel.js';
 import './RelationshipCard.js';
 import './RelationshipEditModal.js';
 import './VelgIntelCard.js';
+import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 
 @localized()
 @customElement('velg-agent-details-panel')
@@ -805,19 +806,10 @@ export class VelgAgentDetailsPanel extends LitElement {
         this.agent.id,
         appState.currentSimulationMode.value,
       );
+      // The endpoint returns all six effective levels (assigned or the server
+      // baseline), so there is nothing left to fill in here.
       if (response.success && response.data) {
-        const set: AptitudeSet = {
-          spy: 6,
-          guardian: 6,
-          saboteur: 6,
-          propagandist: 6,
-          infiltrator: 6,
-          assassin: 6,
-        };
-        for (const row of response.data) {
-          set[row.operative_type as OperativeType] = row.aptitude_level;
-        }
-        this._aptitudes = set;
+        this._aptitudes = buildAptitudeIndex(response.data).levels.get(this.agent.id) ?? null;
       }
     } catch (err) {
       captureError(err, { source: 'AgentDetailsPanel._loadAptitudes' });

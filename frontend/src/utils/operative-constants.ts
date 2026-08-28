@@ -8,6 +8,16 @@
  */
 import type { OperativeType } from '../types/index.js';
 
+/** Canonical operative-type order. Mirrors OPERATIVE_TYPES in backend/models/aptitude.py. */
+export const OPERATIVE_TYPES = [
+  'spy',
+  'guardian',
+  'saboteur',
+  'propagandist',
+  'infiltrator',
+  'assassin',
+] as const satisfies readonly OperativeType[];
+
 /** Display colors per operative type (hex). */
 export const OPERATIVE_COLORS: Record<OperativeType, string> = {
   spy: '#64748b',

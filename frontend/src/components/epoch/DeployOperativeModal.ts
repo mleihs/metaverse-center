@@ -26,7 +26,6 @@ import {
 import { captureError } from '../../services/SentryService.js';
 import type {
   Agent,
-  AgentAptitude,
   AptitudeSet,
   Building,
   Embassy,
@@ -44,6 +43,7 @@ import '../shared/VelgGameCard.js';
 import './MissionCard.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgAptitudeBars.js';
+import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 import { VelgToast } from '../shared/Toast.js';
 import { deployOperativeStyles } from './deploy-operative-styles.js';
 
@@ -134,7 +134,7 @@ export class VelgDeployOperativeModal extends LitElement {
   @state() private _agents: Agent[] = [];
   @state() private _selectedAgentId = '';
   @state() private _hoveredAgentId = '';
-  @state() private _aptitudeMap: Map<string, AptitudeSet> = new Map();
+  @state() private _aptitudeMap: ReadonlyMap<string, AptitudeSet> = new Map();
 
   // Mission
   @state() private _selectedType: OperativeType | '' = '';
@@ -224,22 +224,7 @@ export class VelgDeployOperativeModal extends LitElement {
       }
 
       if (aptResp.success && aptResp.data) {
-        const map = new Map<string, AptitudeSet>();
-        for (const row of aptResp.data as AgentAptitude[]) {
-          if (!map.has(row.agent_id)) {
-            map.set(row.agent_id, {
-              spy: 6,
-              guardian: 6,
-              saboteur: 6,
-              propagandist: 6,
-              infiltrator: 6,
-              assassin: 6,
-            });
-          }
-          const set = map.get(row.agent_id);
-          if (set) set[row.operative_type as OperativeType] = row.aptitude_level;
-        }
-        this._aptitudeMap = map;
+        this._aptitudeMap = buildAptitudeIndex(aptResp.data).levels;
       }
     } catch (err) {
       captureError(err, { source: 'DeployOperativeModal._loadAgents' });
