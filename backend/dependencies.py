@@ -4,6 +4,7 @@ import time
 from typing import Annotated
 from uuid import UUID
 
+import anyio.to_thread
 import jwt as pyjwt
 from cachetools import TTLCache
 from fastapi import Depends, Header, HTTPException, Path, Query, status
@@ -34,20 +35,80 @@ ROLE_HIERARCHY: dict[str, int] = {
     "owner": 3,
 }
 
-# Cached JWKS client and TTL
+# ── JWKS client ───────────────────────────────────────────────────────────────
+# Re-fetch the key set at most once an hour. Supabase rotates signing keys very
+# rarely, and every fetch is a hard dependency on a third-party endpoint being
+# reachable *right now*.
+_JWKS_TTL = 3600
+# A JWKS fetch that takes longer than this is broken, not slow. PyJWT's default
+# is 30s, which is far outside any request budget: it is long enough to trip the
+# container healthcheck and get the whole app pulled out of the load balancer.
+_JWKS_TIMEOUT_SECONDS = 5.0
+
+
+class _ResilientJWKClient(PyJWKClient):
+    """JWKS client that keeps serving the last good key set when the endpoint is down.
+
+    PyJWKClient caches the key set for ``lifespan`` seconds and then *must*
+    fetch: on expiry ``get_jwk_set`` calls ``fetch_data``, and a connection
+    error there propagates. There is no stale-while-error path, so an
+    unreachable JWKS endpoint invalidates every authenticated request in the
+    system within one cache lifetime — regardless of how long the keys would
+    still have been valid.
+
+    Serving a stale key set during an upstream outage is not a security
+    trade-off. JWKS keys are public, and an *older* key set can only fail to
+    verify newer tokens; it cannot verify a forgery. The alternative — logging
+    every user out because a third party is unreachable — is strictly worse.
+
+    Incident 2026-08-28: Supabase's /auth/v1/.well-known/jwks.json stopped
+    responding (TLS established, no bytes) while every other endpoint on the
+    same host answered in ~100ms. metaverse.center returned 503 platform-wide.
+    """
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+        self._last_good: dict | None = None
+        self._last_good_at: float = 0.0
+
+    def fetch_data(self) -> dict:
+        try:
+            data = super().fetch_data()
+        except pyjwt.PyJWKClientConnectionError:
+            if self._last_good is None:
+                raise
+            logger.warning(
+                "JWKS endpoint unreachable — verifying against the last known key set (age %.0fs)",
+                time.monotonic() - self._last_good_at,
+            )
+            return self._last_good
+        self._last_good = data
+        self._last_good_at = time.monotonic()
+        return data
+
+
 _jwks_client: PyJWKClient | None = None
-_jwks_fetched_at: float = 0
-_JWKS_TTL = 3600  # Re-fetch JWKS keys after 1 hour
 
 
 def _get_jwks_client() -> PyJWKClient:
-    """Get or create a JWKS client with TTL-based cache invalidation."""
-    global _jwks_client, _jwks_fetched_at  # noqa: PLW0603
-    now = time.monotonic()
-    if _jwks_client is None or (now - _jwks_fetched_at) >= _JWKS_TTL:
+    """Return the process-wide JWKS client, building it on first use.
+
+    Built ONCE. The previous version recreated the client every hour, which
+    threw away its key cache and turned a routine TTL expiry into a mandatory
+    network round trip — and, while the endpoint was down, into a hard failure.
+    TTL handling belongs to the client (``lifespan``), which keeps the cached
+    key set instead of discarding it.
+    """
+    global _jwks_client  # noqa: PLW0603
+    if _jwks_client is None:
         url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
-        _jwks_client = PyJWKClient(url, headers={"apikey": settings.supabase_anon_key})
-        _jwks_fetched_at = now
+        _jwks_client = _ResilientJWKClient(
+            url,
+            headers={"apikey": settings.supabase_anon_key},
+            lifespan=_JWKS_TTL,
+            cache_keys=True,
+            timeout=_JWKS_TIMEOUT_SECONDS,
+        )
         logger.info("Initialized JWKS client from %s", url)
     return _jwks_client
 
@@ -105,7 +166,15 @@ async def get_current_user(
     token = authorization.removeprefix("Bearer ").strip()
 
     try:
-        payload = _decode_jwt(token)
+        # Offloaded to a worker thread: PyJWKClient fetches the key set with a
+        # BLOCKING urllib call. Awaiting it on the event loop lets one slow JWKS
+        # response stall the entire single-worker ASGI process — including
+        # /api/v1/health and every anonymous route. On 2026-08-28 that turned an
+        # upstream Supabase hiccup into a platform-wide 503: the healthcheck
+        # timed out, the container went unhealthy, and the proxy had no backend
+        # left to route to. Signature verification itself is CPU work and
+        # belongs off the loop for the same reason.
+        payload = await anyio.to_thread.run_sync(_decode_jwt, token)
     except pyjwt.PyJWTError as e:
         logger.warning("JWT decode failed: %s", e)
         raise HTTPException(
