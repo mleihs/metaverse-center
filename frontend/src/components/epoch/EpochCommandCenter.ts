@@ -24,7 +24,6 @@ import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type {
   Agent,
-  AgentAptitude,
   AptitudeSet,
   BattleLogEntry,
   Epoch,
@@ -32,7 +31,6 @@ import type {
   EpochTeam,
   LeaderboardEntry,
   OperativeMission,
-  OperativeType,
 } from '../../types/index.js';
 import { computePhaseCycles, computeTotalCycles } from '../../utils/epoch.js';
 import { icons } from '../../utils/icons.js';
@@ -59,6 +57,7 @@ import './DraftRosterPanel.js';
 import './WarRoomPanel.js';
 import './EpochResultsView.js';
 import '../terminal/EpochTerminalView.js';
+import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 
 type TabId =
   | 'overview'
@@ -1409,7 +1408,7 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _showBotPanel = false;
   @state() private _showDraftPanel = false;
   @state() private _draftAgents: Agent[] = [];
-  @state() private _draftAptitudeMap: Map<string, AptitudeSet> = new Map();
+  @state() private _draftAptitudeMap: ReadonlyMap<string, AptitudeSet> = new Map();
   @state() private _zones: Array<{ id: string; name: string; security_level: string }> = [];
   @state() private _actionLoading = false;
   @state() private _commsEpoch: Epoch | null = null;
@@ -2362,22 +2361,7 @@ export class VelgEpochCommandCenter extends LitElement {
       }
 
       if (aptResp.success && aptResp.data) {
-        const map = new Map<string, AptitudeSet>();
-        for (const row of aptResp.data as AgentAptitude[]) {
-          if (!map.has(row.agent_id)) {
-            map.set(row.agent_id, {
-              spy: 6,
-              guardian: 6,
-              saboteur: 6,
-              propagandist: 6,
-              infiltrator: 6,
-              assassin: 6,
-            });
-          }
-          const set = map.get(row.agent_id);
-          if (set) set[row.operative_type as OperativeType] = row.aptitude_level;
-        }
-        this._draftAptitudeMap = map;
+        this._draftAptitudeMap = buildAptitudeIndex(aptResp.data).levels;
       }
 
       this._showDraftPanel = true;

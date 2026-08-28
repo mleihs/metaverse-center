@@ -25,7 +25,9 @@ import type {
   PhaseTimer,
   RoomNodeClient,
 } from '../types/dungeon.js';
-import type { Agent, AptitudeSet } from '../types/index.js';
+import type { Agent } from '../types/index.js';
+import type { AptitudeIndex } from '../utils/aptitudes.js';
+import { buildAptitudeIndex } from '../utils/aptitudes.js';
 import {
   formatCombatResolution,
   formatDungeonComplete,
@@ -110,8 +112,8 @@ class DungeonStateManager {
   /** Agents available for party selection (cached after first fetch). */
   readonly pickerAgents = signal<Agent[]>([]);
 
-  /** Aptitude map for picker agents: agent_id → {spy: N, guardian: N, ...}. */
-  readonly pickerAptitudes = signal<Map<string, AptitudeSet>>(new Map());
+  /** Effective aptitudes for picker agents (levels + which of them are baseline). */
+  readonly pickerAptitudes = signal<AptitudeIndex>(buildAptitudeIndex(null));
 
   /** Archetype stored after showing the agent picker — lets the user type
    *  `dungeon 1 2 3` (agent indices) without re-specifying the archetype.
@@ -352,7 +354,7 @@ class DungeonStateManager {
     this.combatSubmitting.value = false;
     this.encounterChoices.value = [];
     this.pickerAgents.value = [];
-    this.pickerAptitudes.value = new Map();
+    this.pickerAptitudes.value = buildAptitudeIndex(null);
     this.pendingArchetypeForPicker.value = null;
     this._stopTimer();
     this._clearPersistedRunId();
@@ -475,15 +477,16 @@ class DungeonStateManager {
       }
       this.pickerAgents.value = agentsResp.data ?? [];
 
-      if (aptResp.success && aptResp.data) {
-        const aptMap = new Map<string, AptitudeSet>();
-        for (const apt of aptResp.data) {
-          const existing = aptMap.get(apt.agent_id) ?? ({} as AptitudeSet);
-          existing[apt.operative_type] = apt.aptitude_level;
-          aptMap.set(apt.agent_id, existing);
-        }
-        this.pickerAptitudes.value = aptMap;
+      // A failed aptitude fetch must not pass unnoticed: the picker would then
+      // show every agent as "unknown" with no hint why. It stays usable either
+      // way — party selection does not depend on aptitudes.
+      if (!aptResp.success) {
+        captureError(new Error(aptResp.error?.message ?? 'Failed to load aptitudes'), {
+          source: 'DungeonStateManager.loadPickerAgents',
+          simulationId,
+        });
       }
+      this.pickerAptitudes.value = buildAptitudeIndex(aptResp.success ? aptResp.data : null);
     } catch (err) {
       this.error.value = err instanceof Error ? err.message : 'Failed to load agents';
       captureError(err, { source: 'DungeonStateManager.loadPickerAgents', simulationId });

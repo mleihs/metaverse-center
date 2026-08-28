@@ -18,6 +18,17 @@ APTITUDE_BUDGET = 36
 APTITUDE_MIN = 3
 APTITUDE_MAX = 9
 
+# The budget spread evenly across all six operative types (36 / 6 = 6). This is
+# the ONE baseline for an agent that has no rows in `agent_aptitudes` — a
+# neutral, budget-valid generalist. Every reader resolves the missing case
+# through here; nobody invents their own number. (Before this constant existed
+# the same question had four different answers: the flat 6 in
+# AptitudeService.get_aptitude_for_operative, a flat 6 in the frontend's
+# GENERALIST_APTITUDES, and a non-budget-valid {spy: 3, guardian: 2} inside
+# dungeon run creation — which quietly crippled dungeon combat in every
+# simulation the Forge ever generated.)
+DEFAULT_APTITUDE_LEVEL = APTITUDE_BUDGET // len(OPERATIVE_TYPES)
+
 
 class AptitudeSet(BaseModel):
     """Batch aptitude assignment — one level per operative type, budget = 36."""
@@ -42,15 +53,26 @@ class AptitudeSet(BaseModel):
 
 
 class AptitudeResponse(BaseModel):
-    """Single aptitude row response."""
+    """One *effective* aptitude value for an agent.
 
-    id: UUID
+    Rows that exist in `agent_aptitudes` carry their DB identity and
+    `is_default=False`. An agent with no assigned aptitudes yields synthetic
+    rows at `DEFAULT_APTITUDE_LEVEL`, marked `is_default=True`.
+
+    Synthesizing here rather than at each call site is deliberate: the values a
+    client shows and the values combat resolves with are then the same numbers
+    from the same place, and a UI can tell an assigned score from a baseline one
+    instead of painting a plausible-looking measurement over missing data.
+    """
+
+    id: UUID | None = None
     agent_id: UUID
     simulation_id: UUID
     operative_type: str
     aptitude_level: int
-    created_at: datetime
-    updated_at: datetime
+    is_default: bool = False
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class DraftRequest(BaseModel):

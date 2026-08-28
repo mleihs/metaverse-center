@@ -17,8 +17,9 @@ import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse, DungeonRunCreate } from '../types/dungeon.js';
-import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
+import type { Agent, OperativeType } from '../types/index.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
+import type { AptitudeIndex } from './aptitudes.js';
 import {
   formatAgentPicker,
   formatAvailableDungeons,
@@ -125,14 +126,10 @@ export function resolveEntryArgs(
  * Pure + shared between the terminal entry flow ("dungeon <archetype> auto")
  * and the graphical lobby picker's Auto-select, so both rank identically.
  */
-export function autoPickPartyIds(
-  agents: Agent[],
-  aptitudeMap: Map<string, AptitudeSet>,
-  count = 3,
-): string[] {
+export function autoPickPartyIds(agents: Agent[], aptitudes: AptitudeIndex, count = 3): string[] {
   return agents
     .map((a) => {
-      const apts = aptitudeMap.get(a.id);
+      const apts = aptitudes.levels.get(a.id);
       const total = apts ? Object.values(apts).reduce((s, v) => s + v, 0) : 0;
       return { id: a.id, score: total };
     })
@@ -202,7 +199,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
     return [errorLine(msg('Failed to load agents. Try again.'))];
   }
   const agents = dungeonState.pickerAgents.value;
-  const aptMap = dungeonState.pickerAptitudes.value;
+  const aptitudes = dungeonState.pickerAptitudes.value;
 
   if (agents.length < 2) {
     return [
@@ -213,13 +210,13 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   // No selection args → show picker, store pending archetype
   if (selectionArgs.length === 0) {
     dungeonState.pendingArchetypeForPicker.value = resolvedArchetype;
-    return formatAgentPicker(agents, aptMap, resolvedArchetype);
+    return formatAgentPicker(agents, aptitudes, resolvedArchetype);
   }
 
   // "auto" → smart-pick top 3 by aggregate aptitude score
   if (selectionArgs[0] === 'auto') {
     dungeonState.pendingArchetypeForPicker.value = null;
-    const partyIds = autoPickPartyIds(agents, aptMap);
+    const partyIds = autoPickPartyIds(agents, aptitudes);
     return startDungeonRun(sid, {
       archetype: selectedDungeon.archetype as DungeonRunCreate['archetype'],
       party_agent_ids: partyIds,
@@ -235,7 +232,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
     dungeonState.pendingArchetypeForPicker.value = resolvedArchetype;
     return [
       errorLine(msg('Select 2\u20134 agents by number.')),
-      ...formatAgentPicker(agents, aptMap, resolvedArchetype),
+      ...formatAgentPicker(agents, aptitudes, resolvedArchetype),
     ];
   }
   if (indices.length > 4) {
@@ -251,7 +248,7 @@ export async function handleDungeonEnter(ctx: CommandContext): Promise<TerminalL
   dungeonState.pendingArchetypeForPicker.value = null;
 
   // Party composition warning — non-blocking, informational only
-  const warning = checkPartyComposition(selectedDungeon.archetype, partyIds, aptMap);
+  const warning = checkPartyComposition(selectedDungeon.archetype, partyIds, aptitudes);
   const warningLines = warning ? [hintLine(`⚠ ${partyCompositionWarningText(warning)}`)] : [];
 
   const runResult = await startDungeonRun(sid, {
@@ -281,14 +278,14 @@ export interface PartyCompositionWarning {
 export function checkPartyComposition(
   archetype: string,
   partyIds: string[],
-  aptMap: Map<string, AptitudeSet>,
+  aptitudes: AptitudeIndex,
 ): PartyCompositionWarning | null {
   const criticalApt = ARCHETYPE_CRITICAL_APTITUDE[archetype];
   if (!criticalApt) return null;
 
   const MIN_THRESHOLD = 4;
   const hasCoverage = partyIds.some((id) => {
-    const apts = aptMap.get(id);
+    const apts = aptitudes.levels.get(id);
     return apts && ((apts as Record<string, number>)[criticalApt] ?? 0) >= MIN_THRESHOLD;
   });
   if (hasCoverage) return null;
