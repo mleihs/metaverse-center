@@ -36,7 +36,7 @@ Drei wiederkehrende Fallen, die dabei entschärft wurden:
 ## Technischer Block — an JEDEN Prompt anhängen
 
 ```
-Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin. The creature itself must be clearly TALLER THAN WIDE, roughly two units tall for every one across — it is rendered into an upright portrait slot in the game, so a low or horizontal body is squashed into an unreadable smear.
+Full body, single subject, centred, vertical 3:4 framing. The WHOLE creature is inside the frame from its topmost point down to the ground it stands on, with clear empty background below it — never cropped at the hip, the knee or the ankle, never a bust or a half-figure. The creature itself must be clearly TALLER THAN WIDE, roughly two units tall for every one across — it is rendered into an upright portrait slot in the game, so a low or horizontal body is squashed into an unreadable smear.
 Exactly ONE creature and nothing else. The creature is a SINGLE CONNECTED OBJECT — if the subject describes a doubled or twinned body, the two halves are fused into one solid mass sharing a single base, never two separate figures standing apart. Nothing floats beside it, behind it or below it — no broken-off pieces, no chips, no shards, no sparks, no embers, no dust motes, not even small ones, and no leftover shapes carried over from any reference image.
 If the creature carries a weapon or tool: exactly ONE of it, held in its hand, and complete — the whole object inside the frame with clear space around it. Never a second overlapping or crossing weapon.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
@@ -424,7 +424,7 @@ Scale: monumental — fills the frame, carrying far more mass than anything else
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Faction Informer. A small, hunched figure of tarnished grey metal, hands clasped tightly at its chest, shoulders drawn up around a head that is bowed and turned sharply away as if avoiding being seen. Its face is a smooth blank oval. Nothing is worn on its body and nothing is carried.
+Subject: Faction Informer. A small, hunched figure of tarnished grey metal standing on both feet, seen head to toe: short stubby legs, a stooped back, shoulders drawn up around a head that is bowed and turned sharply away as if avoiding being seen, and both hands clasped tightly at its chest. Its face is a smooth blank oval. Nothing is worn on its body and nothing is carried.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
