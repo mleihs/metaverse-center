@@ -334,16 +334,23 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       lines.push(...formatCombatPlanning(result.state.party));
     }
 
+    // The CHOICES are published independently of the prose. Both surfaces offer
+    // them as actions — the graphical HUD as buttons, the terminal as numbered
+    // options — and an encounter that arrived without its description text
+    // would still be playable. Tying the actions to the presence of prose would
+    // make a content gap into a dead end.
+    if (result.choices?.length) {
+      dungeonState.encounterChoices.value = result.choices;
+    }
+
     // Threshold toll room — sparse, literary rendering. The prose itself comes
     // from the shared description; only the choice list is terminal-specific.
     if (description?.isThreshold && result.choices && description.encounter) {
-      dungeonState.encounterChoices.value = result.choices;
       lines.push(...formatThresholdEntry(description.encounter, result.choices));
     }
 
     // Encounter / treasure / rest choices (any room with interactive choices)
     else if (result.choices && description?.encounter) {
-      dungeonState.encounterChoices.value = result.choices;
       lines.push(
         ...formatEncounterChoices(description.encounter, result.choices, result.state.party),
       );
