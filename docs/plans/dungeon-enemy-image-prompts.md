@@ -222,7 +222,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
-Subject: Dissolution Swarm. A dense, cohesive swarm of grey grit and crumbled masonry, packed tightly into one roughly upright body — solid enough to read as a single mass, not a thin cloud, its outline crumbling away at the edges.
+Subject: Dissolution Swarm. A dense swarm of grey grit and crumbled masonry, packed tightly into one roughly upright body, solid and opaque throughout, its outline eroding away at the edges.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -255,7 +255,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Alloy Sentinel. Forged from an alloy that does not appear in any periodic table. It stands where the workshop needs it to stand. It does not question this.
+Subject: Alloy Sentinel. A tall, narrow sentinel cast in one piece from a dull unfamiliar alloy — smooth plated limbs, a featureless helm-like head with no face and no seams. It stands squarely at rest, arms at its sides, waiting to be needed.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -263,7 +263,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Slag Golem. The residue of failed experiments, accumulated and compacted until it gained mass, then purpose. It does not hate the party. It is simply in the way.
+Subject: Slag Golem. A heavy, lopsided body accreted from cooled slag and discarded castings — lumpen, pitted and fused together without design, dull black-grey throughout. It stands square and immovable, blocking the way.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -271,7 +271,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Crucible Drake. A construct of molten flux and crystallized heat. It was a crucible once. Now it moves. The fire inside it has opinions.
+Subject: Crucible Drake. A long, low four-legged construct built from a cracked crucible: a barrel-like body of blackened fired clay bound in iron hoops, split along one side to show a deep banked glow far inside. Head low, moving forward on short heavy legs.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -279,7 +279,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Automaton Shard. A fragment of something larger that was never completed. Or that completed itself in ways its designer did not intend. It moves with the precision of a blueprint and the malice of a splinter.
+Subject: Automaton Shard. A single broken piece of a much larger machine, still moving — an incomplete assembly of jointed blackened iron plates and one articulated limb, sharp-edged where it snapped away from whatever it belonged to.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -287,7 +287,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Forge Wraith. Smoke and metal in the shape of a craftsman. It works at an invisible anvil, hammering things that are not there. When it notices the party, it does not stop working. It incorporates them.
+Subject: Forge Wraith. The figure of a craftsman rendered in blackened iron and hard-packed soot, dense and solid throughout rather than vaporous — hunched, one arm raised mid-hammer-stroke, striking nothing.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -295,7 +295,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Workshop Guardian. It was built to protect the workshop. It has been doing this for longer than the workshop has existed. Its loyalty is not to the current configuration – it is to the IDEA of the workshop.
+Subject: Workshop Guardian. A broad, heavy warden of blackened iron plate, built like an upright door — thick shoulders, a narrow horizontal slit where a face would be, both hands closed around a long tool held across the body.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -303,7 +303,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: The Prototype. It was supposed to be the masterwork. The culmination. The thing the workshop has been building toward since the first spark was struck. It is not finished. It does not know this. It functions with the absolute confidence of an unfinished thing that believes it is complete.
+Subject: The Prototype. A monumental unfinished figure of blackened iron with dull ember-lit seams: one side finished and armoured, the other still bare scaffolding and open structure with whole parts simply absent. It stands at full height with total composure, unaware that it is incomplete.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
