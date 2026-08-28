@@ -558,7 +558,16 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
 
   private _renderGrid() {
     return html`
-      <span class="view__count">${msg(str`${this._total} Agent${this._total !== 1 ? 's' : ''}`)}</span>
+      <span class="view__count">
+        ${
+          // Two complete messages, not a suffix concatenated into one. A
+          // conditional inside msg(str`…`) hands the translator a sentence with
+          // an opaque fragment: the German target for `{0} Agent{1}` could only
+          // be `{0} Agent{1}en`, which rendered as "8 AGENTSEN". Plural forms
+          // are grammar and belong to the i18n layer.
+          this._total === 1 ? msg('1 Agent') : msg(str`${this._total} Agents`)
+        }
+      </span>
       ${this._renderLineup()}
       <div class="entity-grid">
         ${this._agents.map(
