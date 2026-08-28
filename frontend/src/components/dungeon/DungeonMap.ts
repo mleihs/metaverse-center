@@ -29,7 +29,6 @@ import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import { captureError } from '../../services/SentryService.js';
 import { ARCHETYPE_DELUGE, isDelugeState, type RoomNodeClient } from '../../types/dungeon.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
@@ -63,9 +62,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
    *  remounting it, e.g. expanding the graphical-view rail) dumps the player at
    *  the entrance instead of their position on a deep run. */
   private _initialScrollDone = false;
-  /** Index of the previously selected room, to detect a fresh selection and
-   *  scroll its detail panel (with the Move-Here button) into view. */
-  private _previousSelectedIndex: number | null = null;
 
   static styles = [
     terminalTokens,
@@ -126,14 +122,33 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
        * is theme-aware (adapts to light/dark) and uses overlay mode on macOS
        * (only appears on scroll, hides when idle). Explicit scrollbar-color
        * forces a permanent visible scrollbar even when content doesn't overflow. */
+      /* Two rows: the map scrolls, the detail panel does not.
+         They used to share ONE scroll container, and that is the whole of
+         findings C-1/C-4 in the remediation plan. Selecting a room appended the
+         panel BELOW a map taller than the rail, so reaching the "Move here"
+         button meant scrolling the current room out of the picture — and no
+         scroll position could show both. A scroll-into-view routine then
+         chased the panel, which is why the map appeared to jump away.
+         A row cannot be scrolled out from under its sibling. */
       .map-content {
-        overflow-y: auto;
-        overflow-x: hidden;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        overflow: hidden;
         padding: 4px 8px;
         border-top: 1px solid
           color-mix(in srgb, var(--_border) 20%, transparent);
         background: color-mix(in srgb, var(--_screen-bg) 95%, transparent);
         position: relative;
+      }
+
+      /* The ONE scroll container of this component. The graphical rail used to
+         add a second one on the host; a wheel event over a map that happened to
+         fit found neither and bubbled to the page (C-4). */
+      .map-scroll {
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
       }
 
       /* Non-persistent mode: capped height */
@@ -168,7 +183,14 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       :host([persistent]) .map-content {
         max-height: none;
         height: 100%;
+        min-height: 0;
         border-top: none;
+      }
+      /* The rail hands the component its height; without this the host is
+         content-sized and the grid's 1fr track has nothing to divide. */
+      :host([persistent]) {
+        min-height: 0;
+        height: 100%;
       }
 
       /* ── Empty ── */
@@ -339,43 +361,6 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
       if (currentNodeEl) this._initialScrollDone = true;
       requestAnimationFrame(() => this._centreCurrentRoom());
     }
-
-    // On a fresh room selection, bring its detail panel (Move-Here button) into
-    // view — it renders below the DAG, which can be taller than the viewport.
-    const selIdx = this._selectedRoom?.index ?? null;
-    if (selIdx !== null && selIdx !== this._previousSelectedIndex) {
-      void this._scrollRoomPanelIntoView();
-    }
-    this._previousSelectedIndex = selIdx;
-  }
-
-  /** Scroll the selected room's detail panel into view within the map's own
-   *  scroll container (container-relative — never moves the page). The panel is
-   *  a separate custom element; await its render so its height is measurable
-   *  before computing the scroll delta. */
-  private async _scrollRoomPanelIntoView(): Promise<void> {
-    const container = this.renderRoot?.querySelector('.map-content') as HTMLElement | null;
-    const panel = this.renderRoot?.querySelector('velg-dungeon-room-panel') as
-      | (HTMLElement & { updateComplete?: Promise<unknown> })
-      | null;
-    if (!container || !panel) return;
-    try {
-      if (panel.updateComplete) await panel.updateComplete;
-    } catch (err) {
-      captureError(err, { source: 'VelgDungeonMap._scrollRoomPanelIntoView' });
-    }
-    const cRect = container.getBoundingClientRect();
-    const pRect = panel.getBoundingClientRect();
-    // Clamp the target to the actual viewport — the dungeon view can extend
-    // below the fold, so the container's own bottom may be off-screen; aligning
-    // to it would leave the Move-Here button below the viewport.
-    const visibleBottom = Math.min(cRect.bottom, window.innerHeight);
-    const visibleTop = Math.max(cRect.top, 0);
-    if (pRect.bottom <= visibleBottom && pRect.top >= visibleTop) return;
-    // Instant (not smooth): selecting a room re-renders the map (the panel is
-    // appended), which cancels an in-flight smooth scroll animation — the jump
-    // would silently no-op. An instant scroll lands reliably.
-    container.scrollBy({ top: pRect.bottom - visibleBottom + 8, behavior: 'auto' });
   }
 
   /** Centre the current-room node within the map's own scroll container.
@@ -383,7 +368,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
    *  which bubbles to every scrollable ancestor (it would scroll the whole
    *  page — e.g. the graphical-view rail lives in a scrollable document). */
   private _centreCurrentRoom(): void {
-    const container = this.renderRoot?.querySelector('.map-content') as HTMLElement | null;
+    const container = this.renderRoot?.querySelector('.map-scroll') as HTMLElement | null;
     const node = this.renderRoot?.querySelector('.node--current') as HTMLElement | null;
     if (!container || !node) return;
     const cRect = container.getBoundingClientRect();
@@ -510,19 +495,21 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     return html`
       ${heading}
       <div class="map-content" id="dungeon-map-content">
-        <svg
-          viewBox="0 0 ${layout.width} ${layout.height}"
-          class="map-svg"
-          role="img"
-          aria-label=${msg('Dungeon map')}
-          preserveAspectRatio="xMidYMin meet"
-        >
-          ${this._renderDefs()}
-          ${depthLines}
-          ${edgesGroup}
-          ${ripples}
-          ${nodesGroup}
-        </svg>
+        <div class="map-scroll">
+          <svg
+            viewBox="0 0 ${layout.width} ${layout.height}"
+            class="map-svg"
+            role="img"
+            aria-label=${msg('Dungeon map')}
+            preserveAspectRatio="xMidYMin meet"
+          >
+            ${this._renderDefs()}
+            ${depthLines}
+            ${edgesGroup}
+            ${ripples}
+            ${nodesGroup}
+          </svg>
+        </div>
 
         ${this._renderRoomPanel(adjacentSet)}
       </div>
