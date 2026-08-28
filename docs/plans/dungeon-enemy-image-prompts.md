@@ -368,13 +368,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+> Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 
 
 ### Echo Fragment  (`awakening_echo_fragment`) — minion
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 Subject: Echo Fragment. A small, squat upright shell of pale grey stone, hollowed out — its front is an empty concave hollow where a body would have been pressed in and lifted away. A second identical shell has grown out of its left side, offset by a hand's width and fused to it along the whole shoulder, so the two form ONE solid double-bodied object with a single base. Both halves opaque stone.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -382,7 +382,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Déjà-vu Phantom  (`awakening_deja_vu_phantom`) — standard
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 Subject: Deja-vu Phantom. One upright figure of pale grey stone caught mid-stride, with a second identical figure grown directly out of its own back — half a step behind, slightly turned, fused to it along the spine and shoulder so the two share one body and one pair of feet. Solid opaque stone throughout, taller than wide.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -390,7 +390,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Consciousness Leech  (`awakening_consciousness_leech`) — standard
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 Subject: Consciousness Leech. A tall, unnaturally thin upright figure of pale grey stone, narrow as a post and stretched far past human proportion, arms hanging past its knees. Its head is a smooth eyeless cone tapering to a blunt point — no face, no mouth, no expression whatsoever. It leans forward as it advances. One clean unbroken surface throughout.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -398,7 +398,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Repressed Sentinel  (`awakening_repressed_sentinel`) — elite
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 Subject: Repressed Sentinel. A tall, broad guardian of pale grey stone standing squarely with both arms crossed low over its body, blocking the way. Its head is a plain featureless block. Its whole front surface is worn smooth and blank, as if rubbed down over centuries; the back and sides are still rough and unfinished.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -406,7 +406,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Repressed  (`awakening_the_repressed`) — boss
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
 Subject: The Repressed. A monumental figure of pale grey stone kneeling upright and filling the frame, its head lowered into both raised hands so the face is completely hidden. It is built tall and narrow rather than sprawling — knees together, elbows tucked in, the whole mass rising vertically. The stone is smooth and blank wherever the hands touch it and deeply cracked everywhere else.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
