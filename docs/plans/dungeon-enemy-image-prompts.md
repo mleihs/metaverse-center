@@ -40,6 +40,9 @@ No text, no logo, no watermark, no border, no frame.
 This overrides the subject description: if the subject is described with numbers, ledgers, market data or writing, render those as illegible abstract marks — the impression of data, never readable characters.
 Keep luminous elements dense and opaque; no large translucent veils or glowing ribbons, they do not survive being cut out.
 Painterly realism, muted and grimy, high contrast between lit and unlit areas. Not glossy, not cartoon, not cel-shaded, not chrome.
+Matte surfaces throughout — no wet sheen, no specular highlights, no glistening. This overrides any wetness implied by the subject: even flesh and slime are rendered dry and dust-dulled.
+Heavily desaturated: closer to grey than to full colour, as if seen through dirty air. Never bright, never candy-coloured, never vivid.
+No marks resembling writing anywhere on the creature's skin or surface — no glyphs, no script, no tally marks, no tattoos.
 ```
 
 
@@ -154,7 +157,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Nutrient Weaver. A small drifting lattice of pale capillary tissue, fleshy and dense rather than see-through, gathered into one compact hanging mass. Glistening droplets bead at the tips of its filaments. It reaches outward as though offering something.
+Subject: Nutrient Weaver. A small drifting lattice of pale capillary tissue, fleshy and dense rather than see-through, gathered into one compact hanging mass. Dull, dry beads hang at the tips of its filaments. It reaches outward as though offering something.
 Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
 ```
 
@@ -162,7 +165,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Tether Vine. A root system that has learned to walk — thick knotted vines of wet, warm-looking tissue gathered into one upright body, a single limb lifted and reaching forward, the rest trailing behind it like something only half surfaced.
+Subject: Tether Vine. A root system that has learned to walk — thick knotted vines of dry, leathery tissue gathered into one upright body, a single limb lifted and reaching forward, the rest trailing behind it like something only half surfaced.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
