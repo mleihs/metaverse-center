@@ -5,7 +5,10 @@
 ## Arbeitsweise
 
 1. **Zuerst pro Archetyp EIN Referenzbild** aus dem Stil-Block erzeugen (Gegner deiner Wahl aus der Gruppe).
-2. Danach die restlichen Gegner desselben Archetyps **mit dem Referenzbild als Bildreferenz** erzeugen — sonst driftet der Stil über 42 Prompts auseinander.
+2. Danach die restlichen Gegner desselben Archetyps **mit dem Referenzbild als Bildreferenz** erzeugen — sonst
+   driftet der Stil über 42 Prompts auseinander. **Aber:** sobald zwei Kreaturen einander zu ähneln beginnen
+   (gleiche Haltung, gleiche Requisiten), die Referenz für den nächsten Durchlauf weglassen. Die Referenz
+   hält die Palette zusammen und zieht gleichzeitig die Motive aufeinander zu — beides passiert immer.
 3. Export als PNG, benannt exakt nach der `id` in der Klammer (z. B. `shadow_wisp.png`).
 4. **Kein lesbarer Text im Bild.** Das Spiel ist zweisprachig (en/de) — eingebackene englische
    Schrift waere auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt waere.
@@ -104,7 +107,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: The Crowned. It wears the crown of a structure that believed it would last forever. The crown is cracked. The keeper does not acknowledge this.
+Subject: The Crowned. A bare, upright figure of cracked concrete wearing a heavy crown — a ring of broken concrete points fused to the skull, split by one deep fracture. It stands squared and unbowed, arms at its sides, face impassive: it does not acknowledge that the crown is broken. No paper, no ribbons, no banners, nothing wrapped around the body.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
