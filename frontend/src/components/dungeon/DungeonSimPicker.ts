@@ -22,6 +22,7 @@ import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import '../shared/BaseModal.js';
+import { resonanceMagnitudeLabel } from '../../utils/dungeon-formatters.js';
 
 // ── Per-simulation availability state ────────────────────────────────────────
 
@@ -316,11 +317,15 @@ export class VelgDungeonSimPicker extends LitElement {
     switch (sim.status) {
       case 'loading':
         return html`<div class="sim-card__meta">${msg('Checking availability...')}</div>`;
-      case 'available':
+      case 'available': {
+        // Magnitude only when a resonance produced one — an admin-unlocked
+        // archetype has none, and a substituted figure would read as a reading.
+        const magnitude = sim.dungeonData ? resonanceMagnitudeLabel(sim.dungeonData) : null;
         return html`<div class="sim-card__meta">
-          ${msg('Magnitude')}: ${sim.dungeonData?.effective_magnitude.toFixed(1)} \u00b7
+          ${magnitude ? html`${magnitude} \u00b7 ` : nothing}
           ${msg('Difficulty')}: ${sim.dungeonData?.suggested_difficulty}
         </div>`;
+      }
       case 'unavailable':
         return html`<div class="sim-card__meta">${sim.reason}</div>`;
       default:

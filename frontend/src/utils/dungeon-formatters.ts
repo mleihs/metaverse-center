@@ -1479,6 +1479,27 @@ export function formatDungeonHelp(): TerminalLine[] {
 
 // ── Available Dungeons ───────────────────────────────────────────────────────
 
+/**
+ * The lobby's magnitude line, or null when there is no resonance to report.
+ *
+ * Three surfaces list available dungeons (the terminal command, the terminal
+ * lobby cards, the graphical lobby cards) and all three must answer "what does
+ * this entry say about its own origin" the same way. An archetype that an admin
+ * unlocked has no resonance behind it: `effective_magnitude` is null, and the
+ * honest rendering is to omit the figure and say why the entry is there. The
+ * response model used to default the figure to 0.5, so an override-mode lobby
+ * showed five identical cards claiming a measurement that was never taken.
+ */
+export function resonanceMagnitudeLabel(dungeon: AvailableDungeonResponse): string | null {
+  if (dungeon.effective_magnitude === null) return null;
+  return `${msg('Magnitude')}: ${dungeon.effective_magnitude.toFixed(1)}`;
+}
+
+/** Why an entry is in the lobby when no resonance put it there. */
+export function adminUnlockedLabel(): string {
+  return msg('Unlocked by the Bureau');
+}
+
 export function formatAvailableDungeons(dungeons: AvailableDungeonResponse[]): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
