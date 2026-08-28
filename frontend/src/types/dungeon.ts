@@ -397,6 +397,15 @@ export interface EnemyCombatStateClient {
   threat_level: string;
   is_alive: boolean;
   telegraphed_action: TelegraphedAction | null;
+  /**
+   * Bucket-relative path of the creature's scene art inside `simulation.assets`
+   * (e.g. `dungeon-enemies/shadow_wisp-384.avif`), or null when the creature has
+   * no art — the graphical view then draws its clip-path silhouette instead.
+   * Compose the absolute URL with `dungeonEnemyArtUrl()` from
+   * `utils/dungeon-enemy-art.ts`; the backend deliberately ships a path so the
+   * same content-pack seed works against local, CI and production storage.
+   */
+  image_path: string | null;
 }
 
 /** Enemy's telegraphed intent (Into the Breach style). */

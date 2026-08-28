@@ -107,6 +107,10 @@ def _enemy_row(archetype: str, tmpl: EnemyTemplate, idx: int) -> dict[str, SqlVa
         "description_de": DollarQuoted(tmpl.description_de),
         "ambient_text_en": TextArray(list(tmpl.ambient_text_en)),
         "ambient_text_de": TextArray(list(tmpl.ambient_text_de)),
+        # Bucket-relative scene-art path, NULL for a creature that has none —
+        # the graphical view falls back to its silhouette on NULL, so an
+        # unillustrated enemy must emit NULL and not an empty string.
+        "image_path": optional_text(tmpl.image_path),
         "sort_order": Numeric(idx),
     }
 

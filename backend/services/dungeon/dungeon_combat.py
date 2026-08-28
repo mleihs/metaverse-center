@@ -90,6 +90,7 @@ def spawn_enemies(
                     threat_level=template.threat_level,
                     stress_resistance=template.stress_resistance,
                     evasion=template.evasion,
+                    image_path=template.image_path,
                 )
             )
 

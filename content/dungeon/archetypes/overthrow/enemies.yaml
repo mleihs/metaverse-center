@@ -3,6 +3,7 @@ enemies:
 - id: overthrow_faction_informer
   name_en: Faction Informer
   name_de: Fraktionsspitzel
+  image_path: dungeon-enemies/overthrow_faction_informer-384.avif
   condition_threshold: 1
   stress_resistance: 25
   threat_level: minion
@@ -37,6 +38,7 @@ enemies:
 - id: overthrow_propaganda_agent
   name_en: Propaganda Agent
   name_de: Propagandaagent
+  image_path: dungeon-enemies/overthrow_propaganda_agent-384.avif
   condition_threshold: 2
   stress_resistance: 70
   threat_level: standard
@@ -72,6 +74,7 @@ enemies:
 - id: overthrow_regime_enforcer
   name_en: Regime Enforcer
   name_de: Regimevollstrecker
+  image_path: dungeon-enemies/overthrow_regime_enforcer-384.avif
   condition_threshold: 2
   stress_resistance: 60
   threat_level: standard
@@ -107,6 +110,7 @@ enemies:
 - id: overthrow_grand_inquisitor
   name_en: Grand Inquisitor
   name_de: Großinquisitor
+  image_path: dungeon-enemies/overthrow_grand_inquisitor-384.avif
   condition_threshold: 4
   stress_resistance: 100
   threat_level: elite
@@ -143,6 +147,7 @@ enemies:
 - id: overthrow_the_pretender
   name_en: The Pretender
   name_de: Der Prätendent
+  image_path: dungeon-enemies/overthrow_the_pretender-384.avif
   condition_threshold: 6
   stress_resistance: 120
   threat_level: boss

@@ -440,8 +440,11 @@ const ENEMY_ITEM: JSONSchema7 = {
     threat_level: {
       type: 'string',
       description:
-        'Informational tier. Drives music, UI accent, and whether the enemy counts toward boss-kill achievements.',
-      enum: ['standard', 'elite', 'boss'],
+        'Informational tier. Drives music, UI accent, the size of the figure in the graphical scene band, and whether the enemy counts toward boss-kill achievements.',
+      // All four tiers of the ThreatLevel literal (backend/models/combat.py) and
+      // of the dungeon_enemy_templates CHECK constraint. 'minion' was missing
+      // here, so the ten pack creatures that carry it failed draft validation.
+      enum: ['minion', 'standard', 'elite', 'boss'],
       default: 'standard',
     },
     attack_aptitude: {
@@ -519,6 +522,12 @@ const ENEMY_ITEM: JSONSchema7 = {
       description: 'German variant of ambient_text_en.',
       items: { type: 'string' },
       default: [],
+    },
+    image_path: {
+      type: 'string',
+      description:
+        "Bucket-relative path of the creature's scene art inside simulation.assets, e.g. 'dungeon-enemies/shadow_wisp-384.avif'. Published by scripts/ingest_dungeon_enemy_art.py from the master in assets/dungeon-enemies/. Omit it and the graphical view draws the clip-path silhouette instead – that is the supported state for a creature whose art does not exist yet, not an error. A path, never a URL: the same seed runs against local, CI and production storage.",
+      pattern: '^dungeon-enemies/[a-z0-9_]+-\\d+\\.avif$',
     },
   },
 };

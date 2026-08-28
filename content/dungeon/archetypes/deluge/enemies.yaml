@@ -3,6 +3,7 @@ enemies:
 - id: deluge_riptide_tendril
   name_en: Riptide Tendril
   name_de: Sogranke
+  image_path: dungeon-enemies/deluge_riptide_tendril-384.avif
   condition_threshold: 1
   stress_resistance: 20
   threat_level: minion
@@ -35,6 +36,7 @@ enemies:
 - id: deluge_pressure_surge
   name_en: Pressure Surge
   name_de: Druckwelle
+  image_path: dungeon-enemies/deluge_pressure_surge-384.avif
   condition_threshold: 2
   stress_resistance: 100
   threat_level: standard
@@ -68,6 +70,7 @@ enemies:
 - id: deluge_silt_revenant
   name_en: Silt Revenant
   name_de: Schlickwiedergänger
+  image_path: dungeon-enemies/deluge_silt_revenant-384.avif
   condition_threshold: 3
   stress_resistance: 60
   threat_level: standard
@@ -103,6 +106,7 @@ enemies:
 - id: deluge_undertow_warden
   name_en: Undertow Warden
   name_de: Sogwächter
+  image_path: dungeon-enemies/deluge_undertow_warden-384.avif
   condition_threshold: 4
   stress_resistance: 200
   threat_level: elite
@@ -138,6 +142,7 @@ enemies:
 - id: deluge_the_current
   name_en: The Current
   name_de: Die Strömung
+  image_path: dungeon-enemies/deluge_the_current-384.avif
   condition_threshold: 6
   stress_resistance: 350
   threat_level: boss

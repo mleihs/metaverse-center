@@ -117,6 +117,15 @@ under `supabase/migrations/` for the format).
    encounter per archetype.
 4. Choices with `check_aptitude` must provide a `partial_narrative_en` —
    a skill check can resolve to partial, and the player must see prose.
+5. Enemy `image_path`, when present, is a bucket-relative
+   `dungeon-enemies/<enemy_id>-<size>.avif` path naming its own creature.
+   A host here would bake one environment into the seed migration; a
+   mismatched id hands two creatures the same face, and the wrong image
+   loads perfectly so nothing downstream notices. A creature with NO
+   `image_path` is fine — the graphical view draws a silhouette — but it is
+   reported as a warning, because a half-illustrated band looks deliberate.
+   Publishing the images themselves:
+   `scripts/ingest_dungeon_enemy_art.py`.
 
 ## Migration notes
 

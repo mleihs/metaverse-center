@@ -481,6 +481,10 @@ class EnemyCombatStateClient(BaseModel):
     threat_level: str
     is_alive: bool = True
     telegraphed_action: TelegraphedAction | None = None
+    image_path: str | None = None
+    """Bucket-relative scene-art path, or None → client renders the silhouette.
+    Safe to expose: the art is public content, unlike the exact step counts this
+    DTO deliberately abstracts into ``condition_display``."""
 
 
 class PhaseTimer(BaseModel):
@@ -821,6 +825,17 @@ class EnemyTemplate(BaseModel):
     description_de: str = ""
     ambient_text_en: list[str] = Field(default_factory=list)
     ambient_text_de: list[str] = Field(default_factory=list)
+    image_path: str | None = None
+    """Bucket-relative object path of the creature's scene art inside
+    ``simulation.assets`` (e.g. ``dungeon-enemies/shadow_wisp-384.avif``), or
+    None for a creature that has no art yet — the graphical view then falls back
+    to its clip-path silhouette.
+
+    A *path*, not a URL: this value travels through a checked-in seed migration
+    that runs against local Supabase (``127.0.0.1:54321``) as well as
+    production, so it must not carry a host. Every consumer already composes the
+    storage base itself (``frontend/src/utils/dungeon-backdrop-data.ts``).
+    """
 
 
 class LootItem(BaseModel):

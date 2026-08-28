@@ -46,6 +46,7 @@ import type {
 } from '../../../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../../../types/index.js';
 import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
+import { dungeonEnemyArtUrl } from '../../../utils/dungeon-enemy-art.js';
 import {
   autoPickPartyIds,
   checkPartyComposition,
@@ -763,11 +764,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          owns the lower band; the combat-FX layer already assumes exactly this
          split ("damage to enemies in the upper band").
 
-         No portrait art exists for enemies yet (rollout Phase 3a), so the
-         SILHOUETTE carries the identity: clip-path outline and mass scale with
-         threat_level, which means a boss reads as a boss before a single label
-         is parsed. When generated art lands, swap .foe__body for an <img> and
-         the whole band keeps working. */
+         Two representations share one figure box (FOE_GEOMETRY sizes it by
+         threat_level either way, so a boss reads as a boss before a single
+         label is parsed): the published creature ART, and the clip-path
+         SILHOUETTE as the fallback for a creature with no art or whose art
+         failed to load. Both stand on the same floor pool and carry the same
+         condition colour, so a band mixing the two still reads as one scene. */
       .scene__enemies {
         position: absolute;
         left: 0;
@@ -799,7 +801,33 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         animation: foe-sway 5.4s var(--ease-in-out, ease-in-out) infinite;
         animation-delay: calc(var(--i, 0) * -700ms);
       }
-      /* The silhouette itself — a leaf element, so the drop-shadow here never
+      /* Published creature art. A leaf element, so the filter here never
+         creates a containing block for the HUD's fixed-position overlays (same
+         reasoning as .scene__art-img above).
+
+         object-fit contain plus a bottom object-position stands the creature ON
+         the floor whatever its aspect ratio — the cutouts are mass-cropped, so a
+         wisp is narrow and a warden broad, and only the baseline is shared.
+
+         Condition reads through WEAR rather than through colour: art cannot be
+         recoloured the way a silhouette can without turning into a stain, so a
+         hurt creature loses saturation and light instead. The condition tint
+         survives in the drop-shadow, the floor pool and the name, which is
+         where the eye picks it up in a band this small. */
+      .foe__art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: bottom center;
+        filter: saturate(calc(1 - var(--_wear, 0) * 0.72))
+          brightness(calc(1 - var(--_wear, 0) * 0.32))
+          drop-shadow(0 0 10px color-mix(in srgb, var(--_cond) 34%, transparent));
+        transition: filter var(--duration-slow, 300ms) var(--ease-out, ease-out);
+      }
+
+      /* The silhouette fallback — a leaf element, so the drop-shadow here never
          creates a containing block for the HUD's fixed-position overlays. */
       .foe__body {
         position: absolute;
@@ -899,6 +927,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       .foe--dead .foe__eyes {
         animation: none;
         opacity: 0;
+      }
+      /* A downed creature stops being a target for the eye. The defeated wear
+         value already drains it; grayscale takes the last of the colour so the
+         living hostiles keep the band's attention. */
+      .foe--dead .foe__art {
+        filter: grayscale(1) brightness(0.62);
       }
 
       /* Critical edge alarm — pulsing inset ring at high pressure. */
@@ -1420,6 +1454,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         }
       }
 
+      /* The enemy band arrived after this block was written and was never
+         added to it: foe-sway, foe-glare and foe-intent-pulse all run without
+         end, which is precisely the motion this query exists to stop. */
       @media (prefers-reduced-motion: reduce) {
         .scene__plane,
         .scene__alarm,
@@ -1427,6 +1464,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         .scene__backdrop,
         .scene__motes,
         .scene__art-img,
+        .foe,
+        .foe__figure,
+        .foe__eyes,
+        .foe__intent,
+        .foe__art,
         .op,
         .op__figure {
           animation: none !important;
@@ -1448,6 +1490,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
    *  etc.) → fall back to the CSS-only chamber for that URL. Keyed by URL so a
    *  new archetype's backdrop is retried. */
   @state() private _failedBackdrop: string | null = null;
+
+  /** Art URLs that failed to load, so the creature falls back to its silhouette
+   *  instead of leaving a broken box in the band. A Set rather than the
+   *  backdrop's single slot: a fight holds up to four distinct creatures, and
+   *  one missing asset must not blank the others. Replaced, never mutated —
+   *  Lit compares by reference. */
+  @state() private _failedEnemyArt: ReadonlySet<string> = new Set();
   /** Archetype whose party is being assembled in the graphical picker. Null =
    *  show the archetype grid; non-null = show the agent picker. This replaces
    *  the terminal-only agent picker so a run can start entirely from the
@@ -1738,6 +1787,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                     decoding="async"
                     @error=${() => {
                       this._failedBackdrop = backdropUrl;
+                      captureError(new Error(`Dungeon backdrop failed to load: ${backdropUrl}`), {
+                        source: 'VelgDungeonGraphicalView._renderScene',
+                      });
                     }}
                   />
                 </div>`
@@ -1867,6 +1919,19 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     `;
   }
 
+  /** Retire one creature's art after a failed load and fall back to its
+   *  silhouette. Observed once per URL, not once per render: the Set already
+   *  suppresses the repeat, and a declared-but-unreachable asset is a real
+   *  content/storage mismatch (the pack claims a path the bucket does not
+   *  serve) that should not disappear silently. */
+  private _markEnemyArtFailed(url: string) {
+    if (this._failedEnemyArt.has(url)) return;
+    this._failedEnemyArt = new Set([...this._failedEnemyArt, url]);
+    captureError(new Error(`Enemy scene art failed to load: ${url}`), {
+      source: 'VelgDungeonGraphicalView._markEnemyArtFailed',
+    });
+  }
+
   /** In-scene hostile band. Enemy data exists ONLY inside dungeonState.combat
    *  (neither RoomNodeClient nor the state manager carries room occupants), so
    *  this band is necessarily combat-scoped — showing hostiles on room entry
@@ -1884,16 +1949,18 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       <div class="scene__enemies" aria-hidden="true">
         ${combat.enemies.map((enemy, i) => {
           const geom = FOE_GEOMETRY[enemy.threat_level] ?? FOE_GEOMETRY.standard;
-          const cond = FOE_CONDITION[enemy.condition_display] ?? 'var(--color-danger)';
+          const cond = FOE_CONDITION[enemy.condition_display] ?? FOE_CONDITION_FALLBACK;
           const dead = !enemy.is_alive;
           const action = dead ? null : enemy.telegraphed_action;
           const intent = action
             ? (FOE_INTENT[action.threat_level] ?? 'var(--color-warning)')
             : 'var(--color-warning)';
+          const artUrl = dungeonEnemyArtUrl(enemy.image_path);
+          const showArt = artUrl !== null && !this._failedEnemyArt.has(artUrl);
           return html`
             <div
               class="foe ${dead ? 'foe--dead' : ''}"
-              style="--i:${i};--_cond:${cond};--_intent:${intent};--_foe-w:${geom.w};--_foe-h:${geom.h};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
+              style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-w:${geom.w};--_foe-h:${geom.h};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
             >
               ${
                 action
@@ -1904,8 +1971,20 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   : nothing
               }
               <div class="foe__figure">
-                <div class="foe__body"></div>
-                <div class="foe__eyes"></div>
+                ${
+                  showArt
+                    ? html`<img
+                      class="foe__art"
+                      src=${artUrl}
+                      alt=""
+                      decoding="async"
+                      @error=${() => this._markEnemyArtFailed(artUrl)}
+                    />`
+                    : html`
+                      <div class="foe__body"></div>
+                      <div class="foe__eyes"></div>
+                    `
+                }
                 <div class="foe__pool"></div>
               </div>
               <span class="foe__name">
@@ -2125,13 +2204,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   }
 }
 
-/** Condition → halo color for in-scene party figures (mirrors the side-panel
- *  CONDITION_COLOR map in DungeonPartyPanel). */
-/** Silhouette geometry per enemy threat tier (minion | standard | elite | boss
- *  — the EnemyInstance scale, NOT the TelegraphedAction low/medium/high/critical
- *  scale). Enemies carry no portrait art yet, so outline and mass are the only
- *  identity the player gets: a minion is a narrow wisp, a boss a broad horned
- *  mass roughly three times its area. */
+/** Figure geometry per enemy threat tier (minion | standard | elite | boss —
+ *  the EnemyInstance scale, NOT the TelegraphedAction low/medium/high/critical
+ *  scale). `w`/`h` size the figure box for BOTH representations, so a boss
+ *  looms over a minion whether it is drawn as art or as an outline.
+ *
+ *  `shape` and `eyeTop` belong to the SILHOUETTE path only — the fallback for a
+ *  creature with no published art, or whose art failed to load. Creature art
+ *  brings its own outline and its own face. */
 const FOE_GEOMETRY: Record<string, { w: string; h: string; shape: string; eyeTop: string }> = {
   minion: {
     w: 'clamp(22px, 2.6vw, 32px)',
@@ -2161,14 +2241,33 @@ const FOE_GEOMETRY: Record<string, { w: string; h: string; shape: string; eyeTop
   },
 };
 
-/** Enemy condition -> silhouette tint. Intensity reads as remaining menace:
- *  a healthy hostile burns danger-red, a spent one greys out. */
-const FOE_CONDITION: Record<string, string> = {
-  healthy: 'var(--color-danger)',
-  damaged: 'var(--color-warning)',
-  critical: 'var(--color-primary)',
-  defeated: 'var(--color-text-muted)',
+/** Enemy condition -> how the creature reads in the band.
+ *
+ *  `tint` is remaining menace: a fresh hostile burns danger-red, a spent one
+ *  greys out. It colours the silhouette, the floor pool and the name.
+ *
+ *  `wear` is the same scale as a 0..1 scalar, driving the desaturation and
+ *  dimming of the ART variant — a photograph cannot be recoloured the way a
+ *  silhouette can, so it loses blood instead. One table feeds both, so the two
+ *  representations can never disagree about how hurt a creature looks.
+ *
+ *  All SIX states the backend emits are listed. `EnemyInstance.condition_display`
+ *  (backend/models/combat.py) buckets the remaining/max ratio into healthy >0.8,
+ *  scratched >0.6, damaged >0.4, wounded >0.2, critical, defeated — the previous
+ *  four-entry map silently dropped `scratched` and `wounded` through its
+ *  fallback, so a creature at 70 % and at 30 % both looked untouched. */
+const FOE_CONDITION: Record<string, { tint: string; wear: number }> = {
+  healthy: { tint: 'var(--color-danger)', wear: 0 },
+  scratched: { tint: 'var(--color-danger)', wear: 0.14 },
+  damaged: { tint: 'var(--color-warning)', wear: 0.34 },
+  wounded: { tint: 'var(--color-warning)', wear: 0.54 },
+  critical: { tint: 'var(--color-primary)', wear: 0.74 },
+  defeated: { tint: 'var(--color-text-muted)', wear: 1 },
 };
+
+/** Unknown condition string: treat as unhurt rather than as debris, so a future
+ *  backend state degrades into "menacing" instead of into "already dead". */
+const FOE_CONDITION_FALLBACK = FOE_CONDITION.healthy;
 
 /** TelegraphedAction threat scale -> intent-marker colour. */
 const FOE_INTENT: Record<string, string> = {
@@ -2178,6 +2277,8 @@ const FOE_INTENT: Record<string, string> = {
   critical: 'var(--color-danger)',
 };
 
+/** Condition → halo color for in-scene party figures (mirrors the side-panel
+ *  CONDITION_COLOR map in DungeonPartyPanel). */
 const CONDITION_RING: Record<Condition, string> = {
   operational: 'var(--color-success)',
   stressed: 'var(--color-warning)',
