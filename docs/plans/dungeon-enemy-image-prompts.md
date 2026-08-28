@@ -60,7 +60,7 @@ No marks resembling writing anywhere on the creature's skin or surface — no gl
 ```
 A creature from The Shadow, a dungeon of the psyche. Encroaching gloom. Cold desaturated blues and charcoal, a single sickly amber light source raking from below. Edges dissolve into grain; nothing is fully seen.
 Subject: Shadow Wisp. A flickering presence at the edge of perception. It doesn't attack the body – it erodes certainty.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Shadow Tendril  (`shadow_tendril`) — minion
@@ -68,7 +68,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 ```
 A creature from The Shadow, a dungeon of the psyche. Encroaching gloom. Cold desaturated blues and charcoal, a single sickly amber light source raking from below. Edges dissolve into grain; nothing is fully seen.
 Subject: Shadow Tendril. A black appendage reaching from the walls. Patient. Methodical.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Echo of Violence  (`shadow_echo_violence`) — standard
@@ -109,7 +109,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
 Subject: Tremor Broker. A gaunt, nervous figure of cracked concrete, wreathed in ribbons of pale light that carry the impression of columns of figures without a single legible character. It does not fight. It recites.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Foundation Worm  (`tower_foundation_worm`) — minion
@@ -117,7 +117,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
 Subject: Foundation Worm. Patient. Eyeless. It navigates by stress fractures in the load-bearing walls, widening them with each pass. The building groans where it has been.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### The Crowned  (`tower_crown_keeper`) — standard
@@ -158,7 +158,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
 Subject: Nutrient Weaver. A small drifting lattice of pale capillary tissue, fleshy and dense rather than see-through, gathered into one compact hanging mass. Dull, dry beads hang at the tips of its filaments. It reaches outward as though offering something.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Tether Vine  (`mother_tether_vine`) — standard
@@ -207,7 +207,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
 Subject: Rust Phantom. A hollow, half-eaten figure of corroded metal, thin as a shell, its edges eaten away into lace. It stands still rather than advancing.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Fade Echo  (`entropy_fade_echo`) — standard
@@ -248,7 +248,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
 Subject: Spark Wisp. A single small ember-creature: a knot of forge-hot glowing slag with thin trailing filaments, dense and opaque at its core, hovering.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Alloy Sentinel  (`prometheus_alloy_sentinel`) — standard
@@ -321,7 +321,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
 Subject: Riptide Tendril. A current given form. It does not strike – it pulls. The direction is always down, always toward deeper water.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Pressure Surge  (`deluge_pressure_surge`) — standard
@@ -370,7 +370,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
 Subject: Echo Fragment. A memory of a memory. It does not have content – it has the shape where content was. {agent} recognizes the absence, not the thing.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Déjà-vu Phantom  (`awakening_deja_vu_phantom`) — standard
@@ -419,7 +419,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
 Subject: Faction Informer. Havel's greengrocer made operative. The informer does not believe — the informer performs. The sign in the window says what the faction requires. Behind the counter, the informer reports who does not display theirs.
-Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
+Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
 ### Propaganda Agent  (`overthrow_propaganda_agent`) — standard
