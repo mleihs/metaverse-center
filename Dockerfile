@@ -9,10 +9,13 @@ ARG SENTRY_RELEASE
 ARG SENTRY_AUTH_TOKEN
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
-# Coolify injects the deployed commit as SOURCE_COMMIT. Deriving the build's
-# identity from it means the identity cannot drift from what is actually
-# running — nobody has to remember to bump a release string, and there is no
-# release string to go stale. An explicit SENTRY_RELEASE (e.g. from CI) wins.
+# MEASURED, 2026-08-28: Coolify does NOT pass SOURCE_COMMIT as a build arg. Its
+# docker build line carries four COOLIFY_* variables plus the app's VITE_* ones
+# and nothing else, so these two ENV lines resolve to empty on a Coolify deploy.
+# They are kept for a build that DOES supply the values (CI); the deploy path
+# gets its identity at runtime instead — the server stamps it into the SPA shell
+# (backend/utils/spa_document.py), which is also what makes the backend and the
+# frontend report the same release. Do not re-derive this dead end.
 ARG SOURCE_COMMIT=""
 # Vite reads ENV (not ARG) at build time — export all VITE_* for inlining
 ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
@@ -20,9 +23,8 @@ ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
 ENV VITE_GA4_MEASUREMENT_ID=${VITE_GA4_MEASUREMENT_ID}
 ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 ENV VITE_SENTRY_RELEASE=${SENTRY_RELEASE:-$SOURCE_COMMIT}
-# The alpha build strip shows the running commit. Without this it read
-# "unknown": vite.config falls back to `git rev-parse`, and the build context
-# carries no .git.
+# Only populated when the builder supplies SOURCE_COMMIT (see above). On a
+# Coolify deploy the alpha build strip reads the runtime stamp instead.
 ENV VITE_GIT_SHA=${SOURCE_COMMIT}
 # This is the only build that ships to users. It opts into the build-env
 # contract in frontend/vite.config.ts (assertDeployEnv), so a deployment that
