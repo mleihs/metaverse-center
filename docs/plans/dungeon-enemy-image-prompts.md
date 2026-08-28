@@ -350,7 +350,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
-Subject: Undertow Warden. A tall, heavy figure built entirely of compacted silt, sunken timber and knotted weed, far larger than a person, broad through the shoulders, arms long and hanging. Waterlogged planks and iron fittings are embedded in the mass like ribs in clay. Solid throughout, matte, not water.
+Subject: Undertow Warden. A tall, heavy figure built entirely of compacted silt, sunken timber and knotted weed, far larger than a person, broad through the shoulders, arms long and hanging. Waterlogged planks and iron fittings are embedded in the mass like ribs in clay. Solid throughout, not water.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
