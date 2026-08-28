@@ -290,7 +290,7 @@ const ENCOUNTER_ITEM: JSONSchema7 = {
     room_type: {
       type: 'string',
       description:
-        'Room category. Typical values: combat, skill_check, rest, shrine, merchant, archetype-specific (e.g. "forge" for Prometheus, "flooded" for Deluge).',
+        'Room category. The six values in use across all eight packs: combat, elite, boss, encounter, rest, treasure. Deliberately not an enum — the backend models this as a free string, so an archetype may introduce its own kind. Note the pack validator requires every archetype to carry at least one boss, one rest and one treasure room; an invented category simply never spawns.',
     },
     min_depth: {
       type: 'integer',
