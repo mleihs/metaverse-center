@@ -417,13 +417,13 @@ Scale: monumental — fills the frame, carrying far more mass than anything else
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+> Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 
 
 ### Faction Informer  (`overthrow_faction_informer`) — minion
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Faction Informer. A small, hunched figure of tarnished grey metal, hands clasped tightly at its chest, shoulders drawn up around a head that is bowed and turned sharply away as if avoiding being seen. Its face is a smooth blank oval. Nothing is worn on its body and nothing is carried.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -431,15 +431,15 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Propaganda Agent  (`overthrow_propaganda_agent`) — standard
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Propaganda Agent. An upright, narrow figure of tarnished grey metal with one arm raised high in a rhetorical gesture, palm open, and the other arm swept wide. Its head is thrown back and its jaw hangs open far wider than a jaw should, a deep smooth funnel of a mouth. The body is thin and stretched.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+Subject: Propaganda Agent. A tall, thin, stretched figure of tarnished metal standing upright with one arm raised straight above its head in a rhetorical gesture, palm open, and the other hand pressed flat to its own chest. Both arms stay close to the body so the whole shape is a narrow vertical column. Its head is thrown back and its jaw hangs open far wider than a jaw should — a deep smooth funnel of a mouth aimed upward.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
 ### Regime Enforcer  (`overthrow_regime_enforcer`) — standard
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Regime Enforcer. A heavy, thick-set figure of tarnished grey metal, massively built through the chest and shoulders but still standing clearly taller than it is wide, with a neckless head sunk between enormous shoulders and both fists hanging at its sides. Its face is a plain riveted plate with a single narrow horizontal slit.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -447,15 +447,15 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Grand Inquisitor  (`overthrow_grand_inquisitor`) — elite
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Grand Inquisitor. A tall, gaunt figure of tarnished grey metal in a long stiff floor-length robe of the same metal, hands folded calmly in front, head slightly inclined as if listening. Its face is a serene smooth mask with closed eyes. Elongated and still, taller than any other figure here.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+Subject: Grand Inquisitor. A very tall, gaunt figure of tarnished metal in a long stiff floor-length robe of the same metal, falling in straight narrow folds to the ground so the whole body reads as one slender vertical shaft. Hands folded calmly in front at the waist, head slightly inclined as if listening. Its face is a serene smooth mask with closed eyes. Utterly still.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
 ### The Pretender  (`overthrow_the_pretender`) — boss
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished pewter and bruised grey-violet, dim and deeply shadowed, lit from one side only — desaturated toward dark GREY, never toward white or bright silver, never polished, never gleaming. The fracture of this archetype runs THROUGH the body as offset seams and displaced planes in one solid mass, never as shards breaking away from it. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: The Pretender. A monumental figure of tarnished grey metal filling the frame: magnificent above the waist — broad shouldered, upright, a great sweep of folded metal wings held close behind it — and degraded below, where the legs have fused into one thick serpentine tail that coils upward into a tall vertical column beneath it rather than spreading out across the ground. Its face is a beautiful blank mask tilted slightly upward.
 Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
