@@ -12,7 +12,7 @@
  * the barometer line and the room-type ambient for the terminal, while
  * `dungeon-commands` separately decided when to show `encounter_description`.
  * The graphical view, having no terminal buffer, was handed a hand-picked
- * subset — banter and barometer — through `publishRoomNarrative`. Everything
+ * subset — banter and barometer — through the state manager. Everything
  * outside that subset was invisible in graphical mode: 129 encounter templates
  * with bilingual prose, every anchor object, every room-type ambient line.
  * Written content that reaches one of two surfaces is the most expensive kind

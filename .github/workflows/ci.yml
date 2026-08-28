@@ -69,6 +69,10 @@ jobs:
         run: bash frontend/scripts/lint-no-aptitude-baseline.sh
         working-directory: .
 
+      - name: i18n lint (no conditionals inside message templates)
+        run: bash frontend/scripts/lint-no-ternary-in-msg.sh
+        working-directory: .
+
       # Guards the guards: a lint script whose grep target does not exist under
       # the caller's cwd prints PASS instead of failing. Six frontend gates were
       # silent no-ops in this very job until 2026-08-28.

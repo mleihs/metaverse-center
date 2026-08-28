@@ -174,31 +174,46 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
       }
 
       /* ── Gauge Bars ── */
+      /* One shared column grid for all three bars. The label column is
+         max-content, so it is exactly as wide as the LONGEST label in whatever
+         language is active — and the tracks line up because every row measures
+         against the same column.
+
+         Each row used to be its own flexbox with a min-width of 32px on the
+         label. That budget was set by the English abbreviations ("Cond", "Str",
+         "Mood"); German translates them to full words ("Stimmung"), which no
+         fixed width can hold — the label was clipped to "STIMMUN". Widening the
+         number, or shipping German abbreviations, would only move the problem
+         to the next locale. Sizing to content removes the assumption.
+
+         subgrid rather than display:contents on the row: the row keeps its
+         box, so its role="progressbar", its aria-* attributes and the
+         .bar-row--mood display:none rule in compact mode all keep working. */
       .bars {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
+        display: grid;
+        /* label: exactly the longest label. track: keeps at least 40px so a
+           long value can never squeeze the bar away. value: its own content,
+           but shrinkable to the ellipsis when the card is narrow. */
+        grid-template-columns: max-content minmax(40px, 1fr) minmax(0, max-content);
+        gap: 3px 4px;
       }
 
       .bar-row {
-        display: flex;
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
         align-items: center;
-        gap: 4px;
       }
 
       .bar-label {
-        min-width: 32px;
-        width: max-content;
         font-family: var(--_mono);
         font-size: 8px;
         text-transform: uppercase;
         letter-spacing: 0.3px;
         color: var(--_phosphor-dim);
-        flex-shrink: 0;
       }
 
       .bar-track {
-        flex: 1;
         height: 6px;
         background: color-mix(in srgb, var(--_screen-bg) 60%, var(--_border));
         border: 1px solid color-mix(in srgb, var(--_border) 30%, transparent);
@@ -221,12 +236,11 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
       }
 
       .bar-value {
-        min-width: 80px;
+        min-width: 0;
         font-family: var(--_mono);
         font-size: 8px;
         color: var(--_phosphor-dim);
         text-align: right;
-        flex-shrink: 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

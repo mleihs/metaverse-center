@@ -1060,10 +1060,15 @@ export class VelgAgentDetailsPanel extends LitElement {
             this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount,
           )
         : 0;
+    // Same rule as the agent count: the plural form is grammar, so each case is
+    // its own complete message. `${n === 1 ? 'ally' : 'allies'}` interpolated an
+    // English literal that no translation could reach.
     const relText =
-      relCount > 0
-        ? msg(str`${relCount} ${relCount === 1 ? 'ally' : 'allies'} (avg ${avgIntensity}/10)`)
-        : msg('No relationships');
+      relCount === 0
+        ? msg('No relationships')
+        : relCount === 1
+          ? msg(str`1 ally (avg ${avgIntensity}/10)`)
+          : msg(str`${relCount} allies (avg ${avgIntensity}/10)`);
 
     // Natural language: professions
     const profs = this.agent.professions ?? [];
