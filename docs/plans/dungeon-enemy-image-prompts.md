@@ -120,7 +120,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: Remnant of Commerce. What remains when a trading floor collapses — a broad authority of shattered stone and bent rebar, moving through the ruin with proprietary efficiency, lesser shapes rising from the rubble behind it.
+Subject: Remnant of Commerce. What remains when a structure's authority collapses — a broad, heavy figure of shattered stone and bent rebar, moving through the ruin with cold efficiency, lesser shapes of the same stone rising from the rubble behind it. Nothing modern, no machinery, no devices.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
