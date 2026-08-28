@@ -46,7 +46,7 @@ No text, no logo, no watermark, no border, no frame.
 This overrides the subject description: if the subject is described with numbers, ledgers, market data or writing, render those as illegible abstract marks — the impression of data, never readable characters.
 Keep luminous elements dense and opaque; no large translucent veils or glowing ribbons, they do not survive being cut out.
 Painterly realism, muted and grimy, high contrast between lit and unlit areas. Not glossy, not cartoon, not cel-shaded, not chrome.
-Matte surfaces throughout — no wet sheen, no specular highlights, no glistening. This overrides any wetness implied by the subject: even flesh and slime are rendered dry and dust-dulled.
+Matte surfaces by default — no wet sheen, no specular highlights, no glistening; even flesh and slime are rendered dry and dust-dulled. This applies UNLESS the archetype style block above explicitly permits a sheen. In every case the outer edge of the silhouette stays dark and matte: never a bright rim of light running along the outline.
 Heavily desaturated: closer to grey than to full colour, as if seen through dirty air. Never bright, never candy-coloured, never vivid.
 No marks resembling writing anywhere on the creature's skin or surface — no glyphs, no script, no tally marks, no tattoos.
 ```
@@ -319,13 +319,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+> Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 
 
 ### Riptide Tendril  (`deluge_riptide_tendril`) — minion
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: Riptide Tendril. A long rope of packed river-silt and matted weed, thick as a thigh, coiling upward from a heavy knotted base — solid mud and fibre throughout, not water. It leans forward and downward, as if hauling something with it. Small stones and shells are set into its surface like grit in a cast.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -333,7 +333,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Pressure Surge  (`deluge_pressure_surge`) — standard
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: Pressure Surge. A wide bank of compacted silt and gravel lying along the ground, twice as wide as it is tall and hugging the floor for its whole length — a heavy sediment ridge caught mid-topple, its front face smoothed flat by what it has been pushing and its back sloping away into loose gravel. It has no stem, no coil, no upright column and nothing rising from it: the whole body stays low and horizontal.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -341,7 +341,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Silt Revenant  (`deluge_silt_revenant`) — standard
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: Silt Revenant. A person-shaped body caked entirely in dried river-silt, standing upright — the human proportions still readable underneath, the surface cracked and flaking like a dried mudflat. Mineral crust and small shells have grown across its chest and shoulders. Head bowed slightly.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -349,7 +349,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Undertow Warden  (`deluge_undertow_warden`) — elite
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: Undertow Warden. A tall, heavy figure built entirely of compacted silt, sunken timber and knotted weed, far larger than a person, broad through the shoulders, arms long and hanging. Waterlogged planks and iron fittings are embedded in the mass like ribs in clay. Solid throughout, matte, not water.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -357,7 +357,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Current  (`deluge_the_current`) — boss
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: The Current. A monumental figure of packed silt and drowned debris, filling the frame — a vast rounded mass shouldering forward, with dozens of small drowned objects set into its surface like bones in mud: chair legs, shutters, iron hooks. No face; the front is one smooth blunt slope. Solid earth throughout, never water.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
