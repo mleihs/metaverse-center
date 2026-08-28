@@ -10,7 +10,6 @@ import { msg } from '@lit/localize';
 
 import type {
   AgentCombatStateClient,
-  AnchorText,
   ArchetypeState,
   AvailableDungeonResponse,
   CombatRoundResult,
@@ -43,6 +42,8 @@ import {
 import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
 import type { TerminalLine } from '../types/terminal.js';
 import type { AptitudeIndex } from './aptitudes.js';
+import type { RoomDescription } from './dungeon-room-text.js';
+import { getAmbient } from './dungeon-room-text.js';
 import { localized } from './locale-fields.js';
 import { OPERATIVE_LABEL } from './operative-constants.js';
 import {
@@ -75,79 +76,6 @@ const ROOM_SYMBOLS: Record<string, string> = {
 
 /** Unicode markers for loot tiers: ◆ minor, ★ major, ✦ legendary. */
 export const LOOT_TIER_MARKERS: Record<number, string> = { 1: '\u25C6', 2: '\u2605', 3: '\u2726' };
-
-// ── Archetype Ambient Texts (data-driven, no code-branching) ────────────────
-// Each archetype defines its own scout, boss, rest, and treasure flavor text.
-// IMPORTANT: msg() must be called at render time, not module scope (i18n gotcha).
-// Using functions that return msg() ensures correct locale resolution.
-
-interface AmbientTexts {
-  scout: string;
-  boss: string;
-  rest: string;
-  treasure: string;
-}
-
-type AmbientFactory = () => AmbientTexts;
-
-const ARCHETYPE_AMBIENT_FACTORIES: Record<string, AmbientFactory> = {
-  [ARCHETYPE_SHADOW]: () => ({
-    scout: msg('probes the surrounding darkness'),
-    boss: msg('The darkness is thicker here. Absolute. Intentional.'),
-    rest: msg('A fragile pocket of stillness in the darkness.'),
-    treasure: msg('Something glints in the shadow.'),
-  }),
-  [ARCHETYPE_TOWER]: () => ({
-    scout: msg('surveys the structural layout'),
-    boss: msg('The structure shudders. The load-bearing walls are screaming.'),
-    rest: msg('A reinforced alcove. The ceiling holds, for now.'),
-    treasure: msg('Assets, abandoned in the collapse.'),
-  }),
-  [ARCHETYPE_ENTROPY]: () => ({
-    scout: msg('examines the dissolving patterns'),
-    boss: msg('The dissolution accelerates. What remains is not enough.'),
-    rest: msg('A pocket of coherence in the decay.'),
-    treasure: msg('Something crystallized before it could dissolve.'),
-  }),
-  [ARCHETYPE_MOTHER]: () => ({
-    scout: msg('searches through the suffocating warmth'),
-    boss: msg('The embrace tightens. There is no leaving without a wound.'),
-    rest: msg('A room that feels like childhood. Almost too safe.'),
-    treasure: msg('A gift, left where you would find it. Deliberate.'),
-  }),
-  [ARCHETYPE_PROMETHEUS]: () => ({
-    scout: msg('traces the pathways of stolen knowledge'),
-    boss: msg('The light here burns. Knowledge has a cost.'),
-    rest: msg('A cooling chamber. The forge rests, briefly.'),
-    treasure: msg('An insight, crystallized into form.'),
-  }),
-  [ARCHETYPE_DELUGE]: () => ({
-    scout: msg('reads the current ahead'),
-    boss: msg('The water rises. The final chamber is submerged.'),
-    rest: msg('An air pocket. The flood pauses, not retreats.'),
-    treasure: msg('Salvage, caught in the debris field.'),
-  }),
-  [ARCHETYPE_AWAKENING]: () => ({
-    scout: msg('extends awareness through the layers'),
-    boss: msg('Every layer of consciousness converges. The dreamer stirs.'),
-    rest: msg('A lucid interval. The boundaries hold, temporarily.'),
-    treasure: msg('A fragment of clarity, solid enough to hold.'),
-  }),
-  [ARCHETYPE_OVERTHROW]: () => ({
-    scout: msg('surveys the transparent corridors'),
-    boss: msg('The mirrors intensify. Every reflection is a verdict.'),
-    rest: msg('A room where the cameras have been covered.'),
-    treasure: msg('Files left exposed. Someone wanted these found.'),
-  }),
-};
-
-/** Get ambient text for an archetype, falling back to Shadow defaults.
- *  msg() is called at invocation time (not module scope) for correct i18n. */
-function getAmbient(archetype: string): AmbientTexts {
-  const factory =
-    ARCHETYPE_AMBIENT_FACTORIES[archetype] ?? ARCHETYPE_AMBIENT_FACTORIES[ARCHETYPE_SHADOW];
-  return factory();
-}
 
 // ── Archetype Display Names ─────────────────────────────────────────────────
 
@@ -669,39 +597,38 @@ export function formatDungeonMap(state: DungeonClientState): TerminalLine[] {
 
 // ── Room Entry ───────────────────────────────────────────────────────────────
 
+/**
+ * Render a room description as terminal output.
+ *
+ * The prose comes from {@link describeRoom} and is identical in both surfaces.
+ * `archetypeState` is passed separately and stays here on purpose: the ASCII
+ * gauge is a *terminal* rendering of a number, not part of the room's prose —
+ * the graphical scene renders the same number as a meter bar.
+ */
 export function formatRoomEntry(
-  room: RoomNodeClient,
-  banterText: string | null,
+  description: RoomDescription,
   archetypeState: ArchetypeState,
-  anchorTexts?: AnchorText[] | null,
-  barometerText?: string | null,
-  archetype?: string,
 ): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
-  // Banter first (agent personality reaction)
-  if (banterText) {
+  // Banter first (an agent reacting before the room is described)
+  if (description.banter) {
     lines.push(responseLine(''));
-    lines.push(responseLine(banterText));
+    lines.push(responseLine(description.banter));
   }
 
   // Room header
   lines.push(responseLine(''));
   lines.push(
     systemLine(
-      `\u2550\u2550\u2550 ${msg('DEPTH')} ${room.depth} \u2013 ${msg('ROOM')} ${room.index} \u2550\u2550\u2550`,
+      `\u2550\u2550\u2550 ${msg('DEPTH')} ${description.depth} \u2013 ${msg('ROOM')} ${description.roomIndex} \u2550\u2550\u2550`,
     ),
   );
 
   // Anchor object text (environmental narrative — part of the room)
-  if (anchorTexts && anchorTexts.length > 0) {
-    for (const anchor of anchorTexts) {
-      const text = localized(anchor, 'text');
-      if (text) {
-        lines.push(responseLine(''));
-        lines.push(responseLine(text));
-      }
-    }
+  for (const anchor of description.anchors) {
+    lines.push(responseLine(''));
+    lines.push(responseLine(anchor));
   }
 
   // Archetype-specific state gauge (all 8 archetypes via centralized helper)
@@ -711,55 +638,17 @@ export function formatRoomEntry(
   }
 
   // Barometer text (archetype state → prose narrative, after the numeric bar)
-  if (barometerText) {
-    lines.push(responseLine(barometerText));
+  if (description.barometer) {
+    lines.push(responseLine(description.barometer));
   }
 
-  // Room type header
-  switch (room.room_type) {
-    case 'combat':
-      lines.push(systemLine(`[${msg('COMBAT ENCOUNTER')}]`));
-      break;
-    case 'elite':
-      lines.push(systemLine(`[${msg('ELITE ENCOUNTER')}]`));
-      break;
-    case 'encounter':
-      lines.push(systemLine(`[${msg('ENCOUNTER')}]`));
-      break;
-    case 'rest': {
-      const amb = getAmbient(archetype ?? '');
-      lines.push(systemLine(`[${msg('REST SITE')}]`));
-      lines.push(responseLine(amb.rest));
-      lines.push(hintLine(msg('Use "rest" to recover stress. Risk of ambush.')));
-      break;
-    }
-    case 'treasure': {
-      const amb = getAmbient(archetype ?? '');
-      lines.push(systemLine(`[${msg('TREASURE')}]`));
-      lines.push(responseLine(amb.treasure));
-      break;
-    }
-    case 'boss': {
-      const amb = getAmbient(archetype ?? '');
-      lines.push(systemLine(`[${msg('BOSS CHAMBER')}]`));
-      lines.push(responseLine(amb.boss));
-      break;
-    }
-    case 'exit':
-      lines.push(systemLine(`[${msg('EXIT')}]`));
-      lines.push(hintLine(msg('Use "retreat" to leave with partial loot.')));
-      break;
-    case 'threshold':
-      lines.push(systemLine(`[${msg('THRESHOLD')}]`));
-      break;
-    case 'entrance':
-      lines.push(systemLine(`[${msg('ENTRANCE')}]`));
-      lines.push(
-        hintLine(msg('Type "map" to view the dungeon layout, "move <number>" to advance.')),
-      );
-      break;
-    default:
-      lines.push(systemLine(`[${room.room_type.toUpperCase()}]`));
+  // Room type header, ambient prose and operating hint
+  lines.push(systemLine(`[${description.typeLabel}]`));
+  if (description.ambient) {
+    lines.push(responseLine(description.ambient));
+  }
+  if (description.hint) {
+    lines.push(hintLine(description.hint));
   }
 
   return lines;

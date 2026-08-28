@@ -447,6 +447,33 @@ export class VelgDungeonCombatFx extends LitElement {
     this._schedule.sort((a, b) => a.at - b.at);
   }
 
+  /**
+   * Vertical centre of a scene band, in canvas pixels.
+   *
+   * Measured from the layout rather than assumed. The scene declares its bands
+   * with `data-fx-band`; this host reads that declaration. The previous version
+   * hard-coded 0.32 / 0.7 of the canvas height, which only ever approximated
+   * the band positions and stopped matching entirely once the scene became a
+   * grid of named rows — damage numbers would have drifted off the figures they
+   * belong to, on desktop and mobile differently.
+   *
+   * The fractions survive as a fallback for the one case where measuring cannot
+   * work: a band with no members is not in the DOM (no enemies out of combat).
+   */
+  private _bandY(band: 'party' | 'foes', canvasHeight: number): number {
+    const el = this.parentElement?.querySelector<HTMLElement>(`[data-fx-band="${band}"]`);
+    if (el) {
+      const host = this.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
+      if (host.height > 0 && rect.height > 0) {
+        const centre = rect.top + rect.height / 2 - host.top;
+        // Clamp: a band scrolled partly out of the host must still paint inside it.
+        return Math.min(Math.max(centre, 0), host.height) * (canvasHeight / host.height);
+      }
+    }
+    return (band === 'party' ? 0.7 : 0.32) * canvasHeight;
+  }
+
   /** Resolve one CombatEvent into juice: number + burst + (maybe) shake. */
   private _playEvent(event: CombatEvent, partyNames: Set<string>): void {
     const app = this._app;
@@ -454,8 +481,9 @@ export class VelgDungeonCombatFx extends LitElement {
     const w = app.screen.width;
     const h = app.screen.height;
     const targetIsParty = partyNames.has(event.target);
-    // Zonal positioning: party band low, enemy band high; jittered horizontally.
-    const y = (targetIsParty ? 0.7 : 0.32) * h;
+    // Zonal positioning: the number lands on the band it belongs to, jittered
+    // horizontally so a multi-hit round does not stack.
+    const y = this._bandY(targetIsParty ? 'party' : 'foes', h);
     const x = w * 0.5 + (Math.random() - 0.5) * w * 0.46;
 
     const heal = event.stress < 0;
