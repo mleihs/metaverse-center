@@ -293,7 +293,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Forge Wraith. A lean, stooped craftsman of blackened iron and hard-packed soot, back curved low over an invisible anvil, dense and solid throughout rather than vaporous. It wears no armour: no plate, no pauldrons, no helm — the surface is rough worked metal and soot, uniform all over, with no open side, no ribcage, no gearwork and no skull. One hammer raised mid-stroke, striking nothing; the other hand is empty and open.
+Subject: Forge Wraith. A lean, stooped smith cast in ONE CONTINUOUS PIECE of soot-caked hammered iron — a single smooth unbroken surface running from its plain rounded featureless head to its bare feet, like a figure poured from a single mould and never finished. Back curved low over an invisible anvil, shoulders narrow, limbs thin and wiry. One hammer raised mid-stroke, striking nothing; the other hand empty and open.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
