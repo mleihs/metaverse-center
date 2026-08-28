@@ -69,6 +69,12 @@ screenshots/
 *.jpeg
 !docs/screenshots/*.png
 
+# Dungeon enemy art: the generated raws stay local (42 files, ~141 MB — they would
+# more than double the repo). Only the keyed AVIFs are tracked; those are what the
+# ingest uploads to Supabase Storage anyway. Zuordnung Datei -> Gegner-id:
+# docs/plans/dungeon-enemy-asset-manifest.md
+assets/dungeon-enemies/raw/
+
 # Temporary snapshot files
 *-snapshot.md
 *-snapshot.yml
