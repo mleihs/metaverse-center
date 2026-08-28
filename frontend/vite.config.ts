@@ -5,7 +5,10 @@ import { defineConfig, loadEnv } from 'vite';
 // Build-time metadata. Fails open — a missing git binary (e.g. Docker build
 // without .git) collapses to "unknown" rather than aborting the build.
 function resolveGitSha(envSha: string | undefined): string {
-  if (envSha) return envSha;
+  // Truncated here rather than at the caller: the deployment supplies a full
+  // 40-char SHA (Coolify's SOURCE_COMMIT), and every consumer of VITE_GIT_SHA
+  // wants the short form.
+  if (envSha) return envSha.trim().slice(0, 7);
   try {
     return execSync('git rev-parse --short=7 HEAD', { encoding: 'utf-8' }).trim();
   } catch {
