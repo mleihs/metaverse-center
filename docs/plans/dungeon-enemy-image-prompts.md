@@ -334,7 +334,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: Pressure Surge. A low, broad slab of compacted silt and gravel, wider than it is tall, shaped like the leading edge of something that has been shoving furniture ahead of it — dense packed sediment, blunt at the front, trailing into a heavy tail behind. Solid earth, not water.
+Subject: Pressure Surge. A wide bank of compacted silt and gravel lying along the ground, twice as wide as it is tall and hugging the floor for its whole length — a heavy sediment ridge caught mid-topple, its front face smoothed flat by what it has been pushing and its back sloping away into loose gravel. It has no stem, no coil, no upright column and nothing rising from it: the whole body stays low and horizontal.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
