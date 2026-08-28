@@ -9,6 +9,11 @@
    driftet der Stil über 42 Prompts auseinander. **Aber:** sobald zwei Kreaturen einander zu ähneln beginnen
    (gleiche Haltung, gleiche Requisiten), die Referenz für den nächsten Durchlauf weglassen. Die Referenz
    hält die Palette zusammen und zieht gleichzeitig die Motive aufeinander zu — beides passiert immer.
+3. **Ab der vierten Kreatur einer Gruppe reicht das Weglassen der Referenz nicht mehr.** Dann muss die
+   Motivzeile ausdrücklich benennen, was die Kreatur NICHT ist — und zwar mit den Merkmalen ihrer
+   Geschwister. Tower kollabierte über 6→8→10 auf Kuppel/Bänder/Hand-vor-Gesicht, Prometheus über
+   24→25→27 auf halb geöffnete Panzergestalt mit Zahnrad und Halbschädel. Beide Male half erst die
+   namentliche Abgrenzung („no dome", „no armour, no ribcage, no skull").
 3. Export als PNG, benannt exakt nach der `id` in der Klammer (z. B. `shadow_wisp.png`).
 4. **Kein lesbarer Text im Bild.** Das Spiel ist zweisprachig (en/de) — eingebackene englische
    Schrift waere auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt waere.
@@ -280,7 +285,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Automaton Shard. An incomplete machine that walks — a compact assembly of jointed blackened iron plates and one articulated limb, its upper edge a clean hard break where the rest of it is simply missing. One connected object, whole in itself.
+Subject: Automaton Shard. NOT a humanoid figure: it has no torso, no head, no shoulders and no pair of legs. It is a knot of jointed blackened iron plates and gearwork about the size of a large dog, balanced and walking on a single heavy articulated limb, its upper edge one clean hard break where the rest of the machine is simply missing. Wear no armour plating, show no ribcage, no skull, no exposed mechanical skeleton. One connected object, whole in itself.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -288,7 +293,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Forge Wraith. The figure of a craftsman rendered in blackened iron and hard-packed soot, dense and solid throughout rather than vaporous — hunched, one arm raised mid-hammer-stroke, striking nothing. It carries ONE hammer and nothing else: the other hand is empty and open, no tongs, no second tool.
+Subject: Forge Wraith. A lean, stooped craftsman of blackened iron and hard-packed soot, back curved low over an invisible anvil, dense and solid throughout rather than vaporous. It wears no armour: no plate, no pauldrons, no helm — the surface is rough worked metal and soot, uniform all over, with no open side, no ribcage, no gearwork and no skull. One hammer raised mid-stroke, striking nothing; the other hand is empty and open.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
