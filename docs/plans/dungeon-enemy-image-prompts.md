@@ -326,7 +326,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: Riptide Tendril. A current given form. It does not strike – it pulls. The direction is always down, always toward deeper water.
+Subject: Riptide Tendril. A long rope of packed river-silt and matted weed, thick as a thigh, coiling upward from a heavy knotted base — solid mud and fibre throughout, not water. It leans forward and downward, as if hauling something with it. Small stones and shells are set into its surface like grit in a cast.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
@@ -334,7 +334,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: Pressure Surge. The water's memory of what it once displaced. It arrives as a wall – not tall, not dramatic, but dense. The kind of force that moves furniture and doesn't notice.
+Subject: Pressure Surge. A low, broad slab of compacted silt and gravel, wider than it is tall, shaped like the leading edge of something that has been shoving furniture ahead of it — dense packed sediment, blunt at the front, trailing into a heavy tail behind. Solid earth, not water.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -342,7 +342,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: Silt Revenant. It emerged from the sediment when the water reached this level. A shape made of what the flood deposited – silt, mineral, the residue of dissolved rooms. It does not speak. It broadcasts the sound of water in enclosed spaces.
+Subject: Silt Revenant. A person-shaped body caked entirely in dried river-silt, standing upright — the human proportions still readable underneath, the surface cracked and flaking like a dried mudflat. Mineral crust and small shells have grown across its chest and shoulders. Head bowed slightly.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -350,7 +350,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: Undertow Warden. The water's enforcer. Not an entity that lives in water – an entity that IS water, given mass and purpose. It does not guard a door. It guards a depth.
+Subject: Undertow Warden. A tall, heavy figure built entirely of compacted silt, sunken timber and knotted weed, far larger than a person, broad through the shoulders, arms long and hanging. Waterlogged planks and iron fittings are embedded in the mass like ribs in clay. Solid throughout, matte, not water.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -358,7 +358,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
-Subject: The Current. Not an enemy. A direction. The Current is the flood's final argument: that everything flows downward, that every barrier is temporary, that what the water claims, the water keeps. It does not attack. It arrives.
+Subject: The Current. A monumental figure of packed silt and drowned debris, filling the frame — a vast rounded mass shouldering forward, with dozens of small drowned objects set into its surface like bones in mud: chair legs, shutters, iron hooks. No face; the front is one smooth blunt slope. Solid earth throughout, never water.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
@@ -375,7 +375,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Echo Fragment. A memory of a memory. It does not have content – it has the shape where content was. {agent} recognizes the absence, not the thing.
+Subject: Echo Fragment. A small, squat torso-and-head shape of pale grey stone, hollowed out — the front face of it is an empty concave shell where a body would have been, as though something was pressed into it and lifted away. Its outline is doubled once, offset a hand's width to one side, both outlines solid and opaque.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
@@ -383,7 +383,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Déjà-vu Phantom. It is not here for the first time. It has always been in this room, waiting for the party to arrive again. Its movements are half a second ahead of expectation – as if the party remembers fighting it before the fight has begun.
+Subject: Deja-vu Phantom. An upright figure of pale grey stone standing mid-stride, and immediately behind it the SAME figure again, offset by a step and slightly turned, as if it had already taken the stride once. Both bodies solid and opaque, overlapping at the shoulder, sharing one base.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -391,7 +391,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Consciousness Leech. Watts was right about this one. It functions perfectly without self-awareness – a philosophical zombie made operational. It does not think. It processes. And it is faster than anything that pauses to reflect.
+Subject: Consciousness Leech. A lean, long-limbed quadruped of pale grey stone, low to the ground, head smooth and eyeless and tapering to a blunt point — no face, no mouth, no expression at all. It moves fast and level, shoulders high, all four limbs beneath it. One clean unbroken surface throughout.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -399,7 +399,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Repressed Sentinel. The sentinel guards the threshold between conscious and unconscious. Ishiguro's mist made guardian – it exists to ensure the buried stays buried. It does not hate the party. It pities their need to know.
+Subject: Repressed Sentinel. A tall, broad guardian of pale grey stone standing squarely with both arms crossed low over its body, blocking the way. Its head is a plain featureless block. Its whole front surface is worn smooth and blank, as if rubbed down over centuries; the back and sides are still rough and unfinished.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -407,7 +407,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: The Repressed. A memory so painful it was buried by consensus. Not by one agent – by all of them simultaneously. It is not a monster. It is the truth that was too heavy to carry and too important to destroy. Jung's encounter with the Self, Tarkovsky's Room: it grants your true desire, not your stated one.
+Subject: The Repressed. A monumental seated figure of pale grey stone, hunched and enormous, its head lowered into both raised hands so the face is completely hidden. The stone is smooth and blank everywhere the hands touch and deeply cracked everywhere else. It fills the frame and does not move.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
@@ -424,7 +424,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Faction Informer. Havel's greengrocer made operative. The informer does not believe — the informer performs. The sign in the window says what the faction requires. Behind the counter, the informer reports who does not display theirs.
+Subject: Faction Informer. A small, hunched figure of tarnished grey metal, hands clasped tightly at its chest, shoulders drawn up around a head that is bowed and turned away. Its face is a smooth blank oval. A single flat rectangular plate hangs at its chest on a cord, entirely blank and unmarked.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
@@ -432,7 +432,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Propaganda Agent. Orwell's Squealer on two legs. The agent does not lie — the agent renders the concept of lying meaningless. Yesterday's alliance was always today's betrayal. The records have been updated. The records were always thus.
+Subject: Propaganda Agent. An upright, narrow figure of tarnished grey metal with one arm raised high in a rhetorical gesture, palm open, and the other arm swept wide. Its head is thrown back and its jaw hangs open far wider than a jaw should, a deep smooth funnel of a mouth. The body is thin and stretched.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -440,7 +440,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Regime Enforcer. The muscle behind the rhetoric. The enforcer does not care which faction gives the order — only that the order exists. Arendt's ideal subject: one for whom the distinction between fact and fiction has ceased to matter.
+Subject: Regime Enforcer. A squat, extremely broad figure of tarnished grey metal, almost as wide as it is tall, with a thick neckless head sunk between enormous shoulders and both fists hanging heavy at its sides. Its face is a plain riveted plate with a single narrow horizontal slit.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -448,7 +448,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Grand Inquisitor. Dostoevsky's three powers made flesh: miracle, mystery, authority. The Inquisitor does not punish dissent — the Inquisitor explains why dissent was always agreement, misunderstood. The confession is not extracted. It is assisted.
+Subject: Grand Inquisitor. A tall, gaunt figure of tarnished grey metal in a long stiff floor-length robe of the same metal, hands folded calmly in front, head slightly inclined as if listening. Its face is a serene smooth mask with closed eyes. Elongated and still, taller than any other figure here.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -456,7 +456,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: The Pretender. Milton's Satan made sovereign. The Pretender began as a rebel — magnificent, defiant, charismatic. Power degraded the vision. Phase 1: Book I archangel, addressing armies with impossible eloquence. Phase 2: Book IV, 'squat like a toad,' truth exposed. Phase 3: Book X, permanently serpentine. The Pretender quotes everyone. Especially you.
+Subject: The Pretender. A monumental figure of tarnished grey metal, filling the frame: magnificent from the waist up — broad shouldered, upright, a great sweep of folded metal wings behind it — and degraded below, where the legs have fused into one thick coiled serpentine tail resting in heavy loops. Its face is a beautiful blank mask tilted slightly upward.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
