@@ -3,7 +3,7 @@ enemies:
 - id: shadow_wisp
   name_en: Shadow Wisp
   name_de: Schattenglimmer
-  image_path: dungeon-enemies/shadow_wisp-384.avif
+  image_path: dungeon-enemies/shadow_wisp-768.avif
   condition_threshold: 1
   stress_resistance: 50
   threat_level: minion
@@ -34,7 +34,7 @@ enemies:
 - id: shadow_tendril
   name_en: Shadow Tendril
   name_de: Schattenfaden
-  image_path: dungeon-enemies/shadow_tendril-384.avif
+  image_path: dungeon-enemies/shadow_tendril-768.avif
   condition_threshold: 2
   stress_resistance: 0
   threat_level: minion
@@ -61,7 +61,7 @@ enemies:
 - id: shadow_echo_violence
   name_en: Echo of Violence
   name_de: Gewaltecho
-  image_path: dungeon-enemies/shadow_echo_violence-384.avif
+  image_path: dungeon-enemies/shadow_echo_violence-768.avif
   condition_threshold: 2
   stress_resistance: 200
   threat_level: standard
@@ -94,7 +94,7 @@ enemies:
 - id: shadow_paranoia_shade
   name_en: Paranoia Shade
   name_de: Paranoiaschatten
-  image_path: dungeon-enemies/shadow_paranoia_shade-384.avif
+  image_path: dungeon-enemies/shadow_paranoia_shade-768.avif
   condition_threshold: 1
   stress_resistance: 300
   threat_level: standard
@@ -127,7 +127,7 @@ enemies:
 - id: shadow_remnant
   name_en: The Remnant
   name_de: Der Überrest
-  image_path: dungeon-enemies/shadow_remnant-384.avif
+  image_path: dungeon-enemies/shadow_remnant-768.avif
   condition_threshold: 5
   stress_resistance: 400
   threat_level: elite

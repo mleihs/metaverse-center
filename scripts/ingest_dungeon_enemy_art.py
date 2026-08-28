@@ -8,21 +8,36 @@ the repo, 3.5 MB total). This script derives the rendition the game actually
 loads and puts it in the bucket.
 
 WHY A SEPARATE, SMALLER RENDITION
-The masters are 1024 px on their long edge. The scene band draws a creature at
-`clamp(78px, 9.2vw, 112px)` tall (FOE_GEOMETRY.boss in DungeonGraphicalView) —
-112 CSS px at the very most, whatever the viewport. Even at DPR 3 that is 336
-device pixels, so a 384 px rendition still carries ~14 % headroom and every
-lower-DPR display far more. Shipping the master instead would mean ~84 KB per
-creature and up to four creatures on screen: a third of a megabyte to paint
-figures the size of a thumbnail. The master stays in the repo as the archive
-and as the source for any future surface that needs the resolution.
+The masters are 1024 px on their long edge. The scene never draws a creature at
+that size, so the published rendition is cut to the largest the band can ever
+show. The master stays in the repo as the archive and as the source for any
+future surface that needs the resolution.
 
-    112 CSS px (FOE_GEOMETRY.boss max) x DPR 3 = 336 device px  <=  384
+    THE ARITHMETIC (redo it whenever FOE_GEOMETRY changes)
 
-If the band ever grows, redo that arithmetic, change SCENE_EDGE, re-run this
-script and regenerate the seed migration — the size is part of the stored path
-(`...-384.avif`), so a stale rendition cannot silently linger behind a
-still-correct-looking path.
+    A creature's height is a fraction of the enemy band, capped by the clamp
+    ceiling in `.foe__figure`: 320 CSS px for a boss (FOE_GEOMETRY.boss has
+    scale 1.0). That ceiling is the worst case on any display.
+
+        320 CSS px x DPR 2 = 640 device px   <=  768   (headroom ~17 %)
+        320 CSS px x DPR 3 = 960 device px   >   768
+
+    DPR 3 is phone territory, and on a phone the stage — and therefore the band
+    the fraction is taken from — is a few hundred pixels tall, so a creature
+    there lands far below the 320 px ceiling: 768 covers DPR 3 up to 256 CSS px,
+    which no phone band reaches. 768 it is.
+
+    The previous value was 384, derived the same way from the ORIGINAL geometry
+    (`clamp(78px, 9.2vw, 112px)`, 112 x DPR 3 = 336). That geometry had been
+    written for clip-path silhouettes and was carried over unchanged when the
+    art landed, which is why the creatures stood in the band at thumbnail size.
+    Both the geometry and this number were corrected together — they are one
+    decision, and they are not allowed to drift apart.
+
+If the band grows again, redo the arithmetic, change SCENE_EDGE, update
+`image_path` in the packs, re-run this script and regenerate the seed
+migration — the size is part of the stored path (`...-768.avif`), so a stale
+rendition cannot silently linger behind a still-correct-looking path.
 
 THE PACK DRIVES THE WORKLIST, NOT THE DIRECTORY
 Every destination path comes from `EnemyTemplate.image_path` in the content
@@ -64,7 +79,7 @@ from backend.services.content_packs.loader import DEFAULT_PACK_ROOT, load_packs
 BUCKET = "simulation.assets"
 #: Longest edge of the published rendition. See the arithmetic in the module
 #: docstring before changing this — it is mirrored in the stored path suffix.
-SCENE_EDGE = 384
+SCENE_EDGE = 768
 #: Matches key_dungeon_enemy_art.py and generate_dungeon_detail_images.py.
 AVIF_QUALITY = 80
 #: Where key_dungeon_enemy_art.py leaves the 1024 px masters.
