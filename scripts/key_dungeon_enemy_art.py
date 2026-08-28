@@ -65,6 +65,42 @@ AVIF_QUALITY = 80
 MIN_BLOB_SHARE = 0.20
 #: Alpha above which a pixel counts as solid body when grouping blobs.
 BLOB_ALPHA = 12
+#: Pixels reachable from the frame border through "not clearly subject" territory
+#: are background, whatever their colour. A washed-out or gradient background
+#: leaves pixels whose magenta-excess dips to the alpha floor, so the colour key
+#: alone keeps them as a haze (Undertow Warden came back with the top of frame
+#: lightened to 0.657 purity against 0.94 in the clean area, and a violet halo
+#: survived above its head). The framing rule guarantees a margin, so the creature
+#: never touches the border and can never be eaten by this pass.
+BORDER_SUBJECT_ALPHA = 200
+
+
+def strip_border_background(alpha: np.ndarray) -> float:
+    """Flood the frame border inward through everything that is not solidly
+    subject, and zero it. Returns the extra share of the frame removed."""
+    h, w = alpha.shape
+    soft = alpha < BORDER_SUBJECT_ALPHA
+    seen = np.zeros((h, w), bool)
+    stack = []
+    for x in range(w):
+        for y in (0, h - 1):
+            if soft[y, x] and not seen[y, x]:
+                seen[y, x] = True
+                stack.append((y, x))
+    for y in range(h):
+        for x in (0, w - 1):
+            if soft[y, x] and not seen[y, x]:
+                seen[y, x] = True
+                stack.append((y, x))
+    while stack:
+        y, x = stack.pop()
+        for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+            if 0 <= ny < h and 0 <= nx < w and soft[ny, nx] and not seen[ny, nx]:
+                seen[ny, nx] = True
+                stack.append((ny, nx))
+    removed = float((seen & (alpha > 0)).sum()) / alpha.size
+    alpha[seen] = 0.0
+    return removed * 100
 
 
 def drop_stray_blobs(alpha: np.ndarray) -> tuple[np.ndarray, list[float]]:
@@ -162,6 +198,7 @@ def process(src: Path, dst_dir: Path, *, check: bool) -> dict:
     im, stats = key_and_despill(src)
 
     alpha = np.asarray(im.getchannel("A"), dtype=np.float32)
+    stats["border_cleared"] = strip_border_background(alpha)
     alpha, dropped = drop_stray_blobs(alpha)
     stats["dropped_blobs"] = dropped
     im.putalpha(Image.fromarray(alpha.astype(np.uint8), "L"))
@@ -212,6 +249,8 @@ def main() -> int:
             worst = 1.0
             continue
         flag = "  <-- pruefen" if s["residual_magenta"] > 0.12 else ""
+        if s.get("border_cleared", 0.0) > 0.05:
+            print(f"  {'':28} {'':>10}  Hintergrund-Schleier entfernt: {s['border_cleared']:.2f}% des Bildes")
         for share in s.get("dropped_blobs", []):
             print(f"  {'':28} {'':>10}  Fremdkoerper entfernt: {share * 100:.1f}% der Hauptmasse")
         worst = max(worst, s["residual_magenta"])
