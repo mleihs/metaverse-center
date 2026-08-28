@@ -12,6 +12,16 @@ Identitaet nicht selbst. Sie ist damit rekonstruierbar, falls ein Original noch
 gebraucht wird.
 
 Prompts: `dungeon-enemy-image-prompts.md` · Freisteller: `scripts/key_dungeon_enemy_art.py`
+· Ingest: `scripts/ingest_dungeon_enemy_art.py`
+
+**Angeschlossen seit 2026-08-28** (Rollout-Phase 3a, siehe
+`graphical-dungeon-rollout.md`). Jeder Gegner trägt in seiner `enemies.yaml` ein
+`image_path`; die Kette YAML → Validator → Seed-Migration → DTO → Szene steht.
+Publiziert wird **nicht** der 1024-px-Master, sondern eine daraus abgeleitete
+384-px-Rendition (`{id}-384.avif`, zusammen 893 KB statt 3543 KB): das
+Gegner-Band zeichnet eine Kreatur höchstens 112 CSS-px hoch, bei DPR 3 also 336
+Gerätepixel. Der Master bleibt im Repo als Archiv und als Quelle für jede
+spätere Oberfläche, die mehr Auflösung braucht.
 
 ## Zuordnung
 
@@ -109,3 +119,28 @@ cp <neue-datei>.jpeg assets/dungeon-enemies/raw/<gegner-id>.jpeg
 ```
 Zur Sichtkontrolle vorher `--check` anhaengen — das schreibt PNG-Proofs auf den
 Szenengrund `#0a0a0a` statt AVIFs.
+
+## Ins Spiel bringen
+
+Ein ersetztes Bild braucht nur den Upload — der Pfad in der YAML aendert sich
+nicht:
+
+```bash
+.venv/bin/python scripts/ingest_dungeon_enemy_art.py --dry-run   # Groessen pruefen
+.venv/bin/python scripts/ingest_dungeon_enemy_art.py             # lokal
+.venv/bin/python scripts/ingest_dungeon_enemy_art.py --production
+```
+
+Das Skript liest jedes Ziel aus dem Content-Pack, nie aus dem Verzeichnis, und
+liest nach dem Upload jedes Objekt zurueck. Ein **neuer** Gegner braucht
+zusaetzlich die Zeile `image_path: dungeon-enemies/<id>-384.avif` in seiner
+`enemies.yaml` und danach:
+
+```bash
+.venv/bin/python scripts/validate_content_packs.py --strict
+.venv/bin/python -m backend.services.content_packs.generate_migration \
+    --output supabase/migrations/{stamp}_{N}_dungeon_content_from_packs.sql
+```
+
+⚠ Niemals direkt in die DB schreiben — die Seed-Migration ist TRUNCATE +
+re-insert (A1.5).

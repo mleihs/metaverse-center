@@ -45,14 +45,70 @@ Velgarien hat bereits ein ~80% fertiges, server-autoritatives Dungeon-Frontend (
 
 Kann als **unabhängiger Backend-Strang parallel früh** starten (Bildgenerierung braucht Zeit).
 
-### 3a. Enemy-Bilder (A1.5-konforme Kette — Reihenfolge zwingend)
-1. **Modell-Feld zuerst** (StrictModel-Gate): `EnemyTemplate` (`backend/models/resonance_dungeon.py:801-823`) += `image_url: str|None=None` (+ optional `visual_description: str|None=None` als Prompt-Seed in YAML). `EnemyTemplate` ist **zugleich** Pack-Schema UND Runtime-Modell (`content_packs/schemas.py:186`) → ein Add deckt beides.
-2. **Migration (neu, nicht 170 editieren):** `supabase/migrations/{date}_259_dungeon_enemy_image_url.sql` → `ALTER TABLE dungeon_enemy_templates ADD COLUMN IF NOT EXISTS image_url TEXT;`. Bestehende `_public_read`-RLS deckt die Spalte; **kein** Grant/RPC/SECDEF-Change.
-3. **Generator:** `content_packs/table_specs.py:76-102` `ENEMY_TEMPLATES.columns += "image_url"`; `content_packs/row_builders.py:88-111` `_enemy_row` += `"image_url": optional_text(tmpl.image_url)`.
-4. **Validator:** `scripts/validate_content_packs.py` neue **Warn-Level**-Coverage-Prüfung (alle Enemies haben `image_url`), wie die partial-narrative-Prüfung.
-5. **content_service: KEINE Änderung** (`select("*")` + `EnemyTemplate(**row)`, `dungeon_content_service.py:101-106`).
-6. **DTO-Kette (2 Hops):** `EnemyInstance` (`backend/models/combat.py:62-95`) += `image_url`, gesetzt im Spawn (`dungeon/dungeon_combat.py:83-95`); Client-DTO-Bau in `dungeon_checkpoint_service.py:308-318` += `image_url=e.image_url`; `EnemyCombatStateClient` (`resonance_dungeon.py:474-483`) += `image_url`; Frontend-Typ `types/dungeon.ts:391-400` += `image_url: string|null`.
-7. **Generierungs-Script:** `scripts/generate_dungeon_enemy_images.py` (Muster `generate_dungeon_detail_images.py`). Iteriert YAML-Roster via `content_packs.loader.load_packs()`; Prompt aus `visual_description`+`description_en`+Archetyp-Palette; **Modell `flux-2-pro`** ($0.031, ~19 Enemies ≈ $0.59 einmalig, archetyp-global). Output `simulation.assets/dungeon-enemies/{slug}/{enemy_id}.avif` (AVIF q80 ≤1024px). **Write-back NUR via YAML → validate → generate_migration → migrate** — NIEMALS direkt DB (A1.5; TRUNCATE+re-insert würde Direkt-Edit löschen).
+### 3a. Enemy-Bilder — GEBAUT (2026-08-28)
+
+Die Kette steht. Die 42 Kreaturen stehen als freigestellte Bilder im
+`.scene__enemies`-Band statt als clip-path-Silhouetten; die Silhouette ist
+weiterhin der Fallback und wird nicht abgeschaltet.
+
+**Drei Abweichungen vom ursprünglichen Entwurf, jeweils begründet:**
+
+1. **`image_path` statt `image_url`.** Der Wert ist ein bucket-relativer
+   Objektpfad (`dungeon-enemies/shadow_wisp-384.avif`), keine URL. Er reist in
+   einer eingecheckten Seed-Migration, die gegen lokales Supabase
+   (`127.0.0.1:54321`), gegen CI **und** gegen Prod läuft — eine
+   vollqualifizierte URL würde die Prod-Projekt-Ref in alle drei backen. Die
+   Storage-Basis setzt das Frontend, wie bei den Backdrops auch
+   (`utils/dungeon-enemy-art.ts`, Muster `dungeon-backdrop-data.ts`).
+2. **Kein Replicate-Generierungsskript.** Die Bilder entstanden in der
+   Gemini-App (Consumer-Abo, kein API-Key) auf Magenta-Grund und wurden mit
+   `scripts/key_dungeon_enemy_art.py` freigestellt. Prompts und Zuordnung:
+   `dungeon-enemy-image-prompts.md`, `dungeon-enemy-asset-manifest.md`.
+3. **Zwei Auflösungen statt einer.** Die 1024-px-Master liegen im Repo
+   (`assets/dungeon-enemies/`, 3,5 MB) als Archiv. Publiziert wird eine
+   384-px-Rendition: das Band zeichnet einen Gegner höchstens 112 CSS-px hoch
+   (`FOE_GEOMETRY.boss`), bei DPR 3 also 336 Gerätepixel. 893 KB statt 3543 KB,
+   ohne je sichtbar zu werden. Die Rechnung steht im Kopf des Ingest-Skripts.
+
+**Was wo liegt:**
+1. **Modell:** `EnemyTemplate.image_path` (`backend/models/resonance_dungeon.py`)
+   — zugleich Pack-Schema und Runtime-Modell, ein Add deckt beides.
+2. **Migration:** `272_dungeon_enemy_image_path.sql` (nullable, ohne Backfill;
+   NULL = Silhouette). Muss **vor** der Seed-Migration laufen — die
+   Zeitstempel-Benennung erzwingt das.
+3. **Generator:** `table_specs.ENEMY_TEMPLATES.columns += "image_path"`,
+   `row_builders._enemy_row` += `optional_text(tmpl.image_path)`.
+4. **Validator:** `_check_enemy_art_paths` (harter Verstoß: Pfad muss
+   bucket-relativ sein und die id der eigenen Kreatur tragen — ein
+   Copy-Paste-Fehler gäbe zwei Kreaturen dasselbe Gesicht, und das falsche Bild
+   lädt fehlerfrei) plus `_check_enemy_art_coverage` (Warnung: Kreatur ohne
+   Bild). Beide in `scripts/validate_content_packs.py`, CI-Schritt `content-packs`.
+5. **content_service:** unverändert (`select("*")` + `EnemyTemplate(**row)`).
+6. **DTO-Kette:** `EnemyInstance.image_path` (im Spawn aus dem Template kopiert,
+   `dungeon/dungeon_combat.py`) → `EnemyCombatStateClient.image_path`
+   (`dungeon_checkpoint_service.py`) → `types/dungeon.ts`. Alte Checkpoints
+   deserialisieren mit `None` und zeigen die Silhouette.
+7. **Ingest:** `scripts/ingest_dungeon_enemy_art.py` — leitet die Rendition aus
+   dem Master ab und lädt sie hoch. Die Arbeitsliste kommt aus dem **Pack**, nie
+   aus einem Verzeichnis-Listing: das hochgeladene Objekt ist damit per
+   Konstruktion das, auf das die DB zeigt. Schreibt nichts in die DB (A1.5).
+8. **Seed:** `273_dungeon_content_from_packs.sql`, aus dem Pack generiert.
+   Gegen den vorherigen Pack-Stand unterscheidet er sich in genau 42 Zeilen,
+   dort ausschließlich `NULL` → Pfad (nachgemessen).
+9. **Frontend:** `utils/dungeon-enemy-art.ts` (reiner Pfad→URL-Lookup) und
+   `DungeonGraphicalView` (`.foe__art` statt `.foe__body`, Ladefehler fällt pro
+   URL einmal auf die Silhouette zurück und wird über `captureError` beobachtet).
+
+**Zwei Vorschäden dabei mitgefixt:** `FOE_CONDITION` kannte nur 4 der 6
+Zustände, die `EnemyInstance.condition_display` liefert — `scratched` und
+`wounded` fielen auf den Healthy-Ton zurück, ein angeschlagener Gegner sah aus
+wie ein unversehrter. Und die Gegner-Animationen (`foe-sway`, `foe-glare`,
+`foe-intent-pulse`, alle endlos) fehlten im `prefers-reduced-motion`-Block, der
+aus der Zeit vor dem Gegner-Band stammt.
+
+**Offen:** Der Storage-Upload selbst ist noch nicht gelaufen (lokal wie Prod) —
+bis dahin greift überall die Silhouette. Nacharbeit an einzelnen Bildern siehe
+`dungeon-enemy-asset-manifest.md`, nicht blockierend.
 
 ### 3b. Raum-Backdrops (KEIN Backend-Change)
 - `RoomNode` hat keine x/y-Identität → **Granularität: archetype × depth-band (3–4 Bänder)**. ~8×4 = 32 Bilder, `flux-2-pro`, `simulation.assets/dungeon-backdrops/{slug}-{band}.avif`.
@@ -93,11 +149,11 @@ Kann als **unabhängiger Backend-Strang parallel früh** starten (Bildgenerierun
 - **Switch:** Browser — Toggle terminal↔graphical, Terminal-View unverändert funktional, Recovery (`tryRecover`) in beiden.
 - **Scene:** pro Archetyp grafisch betreten, Environment-FX skaliert mit echtem Meter (gegen `DungeonHeader`-Werte gegenprüfen).
 - **Juice:** echte Combat-Runde → Schadenszahlen/Partikel/Flourish aus `round_result.events`; reduced-motion-Pfad; WebGL-offline → HUD spielbar.
-- **Enemy-Bilder:** `validate_content_packs.py` grün; Migration applied; `image_url` erreicht Client-DTO; Bild rendert. `ruff` + `tsc` + alle lint-Gates (color-tokens, no-empty-catch, no-cast-unknown, llm-content) grün.
+- **Enemy-Bilder:** `validate_content_packs.py` grün ✔; `image_path` erreicht Client-DTO ✔ (`test_dungeon_enemy_art.py`); `ruff` + `tsc` + Biome + alle Lint-Gates grün ✔. **Offen:** Migration applied + Storage-Upload + Bild rendert im Browser.
 - Browser-Verifikation via MCP pro Phase.
 
 ## Compliance-Flags (geprüft)
-- **A1.5:** Enemy-`image_url` nur via YAML→Migration, nie Direkt-DB. ✔
+- **A1.5:** Enemy-`image_path` nur via YAML→Migration, nie Direkt-DB. ✔ Das Ingest-Skript fasst die DB nicht an.
 - **SECDEF/Grants:** kein neuer RPC, nur additive Spalte mit bestehender public-read-RLS → 257/258-Lockdown nicht berührt. ✔
 - **Lint-Gates:** forced-dark-Pragma, icons.ts, kein transform/filter auf Layout-Containern, @localized()/msg(), captureError, prefers-reduced-motion. ✔
 

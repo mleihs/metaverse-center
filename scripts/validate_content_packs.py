@@ -12,6 +12,10 @@ Pydantic schema-validation alone cannot catch:
     least one boss, rest, and treasure encounter (Deluge ships two rest
     + two treasure because of its deeper layout; strict "exactly one"
     was loosened in A1.3e).
+  - Enemy art paths: an `image_path` must be a bucket-relative object
+    path naming its own creature. A creature with no art is fine (the
+    graphical view draws a silhouette); a creature pointing at another
+    creature's picture is not, and nothing downstream would notice.
   - Choice integrity (advisory): a choice with `check_aptitude` should
     have `partial_narrative_en` because the check can resolve to
     partial. Warning-level; promoted to failure via --strict.
@@ -31,6 +35,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -78,7 +83,9 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     violations.extend(_check_global_id_uniqueness(result))
     violations.extend(_check_spawn_fk_integrity(result))
     violations.extend(_check_archetype_completeness(result))
+    violations.extend(_check_enemy_art_paths(result))
     warnings.extend(_check_choice_narrative_coverage(result))
+    warnings.extend(_check_enemy_art_coverage(result))
 
     return violations, warnings
 
@@ -209,6 +216,50 @@ def _check_archetype_completeness(result: PackLoadResult) -> list[str]:
     return violations
 
 
+#: Shape of `EnemyTemplate.image_path`. Bucket-relative (a host here would bake
+#: one environment into the seed migration, which also runs against local
+#: Supabase and CI), and carrying the creature's own id.
+#:
+#: The rendition size is left open on purpose: the pack states WHICH creature an
+#: image shows, not how many pixels the renderer wants. Which sizes actually
+#: exist is the publishing pipeline's business — `scripts/ingest_dungeon_enemy_art.py`
+#: refuses a path whose rendition it cannot produce.
+ENEMY_ART_PATH = re.compile(r"dungeon-enemies/(?P<enemy_id>[a-z0-9_]+)-\d+\.avif")
+
+
+def _check_enemy_art_paths(result: PackLoadResult) -> list[str]:
+    """Every declared creature image is well-formed and belongs to its creature.
+
+    A creature WITHOUT art is not a violation: `image_path` is optional and the
+    graphical scene falls back to a clip-path silhouette, which is how a creature
+    authored ahead of its artwork is meant to look.
+
+    The failure this catches is the silent one. Every path is a copy of the
+    creature's own id, so a copy-paste while authoring a new enemy hands two
+    creatures the same face — and nothing downstream can tell, because the
+    wrong image loads perfectly.
+    """
+    violations: list[str] = []
+    for archetype in sorted(result.enemies):
+        for enemy_id, tmpl in sorted(result.enemies[archetype].items()):
+            if tmpl.image_path is None:
+                continue
+            match = ENEMY_ART_PATH.fullmatch(tmpl.image_path)
+            if match is None:
+                violations.append(
+                    f"enemy '{enemy_id}' ({archetype}) has image_path "
+                    f"'{tmpl.image_path}', which is not a bucket-relative "
+                    f"'dungeon-enemies/<enemy_id>-<size>.avif' path"
+                )
+            elif match.group("enemy_id") != enemy_id:
+                violations.append(
+                    f"enemy '{enemy_id}' ({archetype}) points at "
+                    f"'{tmpl.image_path}' — that is "
+                    f"'{match.group('enemy_id')}'s artwork"
+                )
+    return violations
+
+
 def _check_choice_narrative_coverage(result: PackLoadResult) -> list[str]:
     violations: list[str] = []
     for archetype, encounters in result.encounters.items():
@@ -220,6 +271,25 @@ def _check_choice_narrative_coverage(result: PackLoadResult) -> list[str]:
                         f"check_aptitude='{choice.check_aptitude}' but no partial_narrative_en"
                     )
     return violations
+
+
+def _check_enemy_art_coverage(result: PackLoadResult) -> list[str]:
+    """Creatures with no scene art. Advisory, not a violation.
+
+    The graphical view draws a clip-path silhouette for these, so the game is
+    correct without art and content work never blocks on an image existing. But
+    a creature authored today and forgotten tomorrow is how the band ends up
+    half-illustrated, and nothing else surfaces it — the silhouette looks
+    deliberate. All 42 creatures carried art when this check was written, so
+    anything listed here is new and unillustrated.
+    """
+    return [
+        f"enemy '{enemy_id}' ({archetype}) has no image_path — "
+        f"it will render as a silhouette in the graphical view"
+        for archetype in sorted(result.enemies)
+        for enemy_id, tmpl in sorted(result.enemies[archetype].items())
+        if tmpl.image_path is None
+    ]
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────

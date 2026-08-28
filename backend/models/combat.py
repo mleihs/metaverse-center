@@ -73,6 +73,16 @@ class EnemyInstance(BaseModel):
     evasion: int
     is_alive: bool = True
     active_effects: list[str] = Field(default_factory=list)
+    image_path: str | None = None
+    """Scene-art path copied from the template at spawn — see
+    ``EnemyTemplate.image_path``.
+
+    Denormalized like ``name_en`` / ``threat_level`` above rather than looked up
+    from the registry at render time, so a combat checkpoint stays a complete,
+    self-describing snapshot of the encounter. Runs checkpointed before this
+    field existed deserialize with None and render the silhouette, which is the
+    same fallback an unillustrated creature gets.
+    """
 
     @property
     def condition_display(self) -> str:

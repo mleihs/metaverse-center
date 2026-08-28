@@ -3,6 +3,7 @@ enemies:
 - id: awakening_echo_fragment
   name_en: Echo Fragment
   name_de: Echofragment
+  image_path: dungeon-enemies/awakening_echo_fragment-384.avif
   condition_threshold: 1
   stress_resistance: 30
   threat_level: minion
@@ -35,6 +36,7 @@ enemies:
 - id: awakening_deja_vu_phantom
   name_en: Déjà-vu Phantom
   name_de: Déjà-vu-Phantom
+  image_path: dungeon-enemies/awakening_deja_vu_phantom-384.avif
   condition_threshold: 2
   stress_resistance: 80
   threat_level: standard
@@ -70,6 +72,7 @@ enemies:
 - id: awakening_consciousness_leech
   name_en: Consciousness Leech
   name_de: Bewusstseinsegel
+  image_path: dungeon-enemies/awakening_consciousness_leech-384.avif
   condition_threshold: 2
   stress_resistance: 60
   threat_level: standard
@@ -105,6 +108,7 @@ enemies:
 - id: awakening_repressed_sentinel
   name_en: Repressed Sentinel
   name_de: Verdrängungs­wächter
+  image_path: dungeon-enemies/awakening_repressed_sentinel-384.avif
   condition_threshold: 4
   stress_resistance: 100
   threat_level: elite
@@ -141,6 +145,7 @@ enemies:
 - id: awakening_the_repressed
   name_en: The Repressed
   name_de: Das Verdrängte
+  image_path: dungeon-enemies/awakening_the_repressed-384.avif
   condition_threshold: 6
   stress_resistance: 120
   threat_level: boss

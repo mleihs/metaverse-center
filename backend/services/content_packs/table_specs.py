@@ -96,6 +96,7 @@ ENEMY_TEMPLATES = TableSpec(
         "description_de",
         "ambient_text_en",
         "ambient_text_de",
+        "image_path",
         "sort_order",
     ),
     conflict_on=("id",),

@@ -314,6 +314,7 @@ class DungeonCheckpointService:
                         condition_display=e.condition_display,
                         threat_level=e.threat_level,
                         is_alive=e.is_alive,
+                        image_path=e.image_path,
                     )
                     for e in instance.combat.enemies
                 ],
