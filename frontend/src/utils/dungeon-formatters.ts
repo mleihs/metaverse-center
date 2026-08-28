@@ -281,6 +281,41 @@ export function getConditionLabel(condition: string): string {
 }
 
 /** i18n-aware enemy condition label for UI components. */
+/** What a creature IS, said once for every surface that has to say it. */
+export interface EnemyFacts {
+  /** Screen-reader sentence: name, tier, condition, and the telegraphed blow. */
+  spoken: string;
+  /** The same facts as a compact visible line under the figure. */
+  line: string;
+}
+
+/**
+ * Describe one enemy: tier, condition, and what it is about to do.
+ *
+ * The graphical enemy band and the terminal's enemy panel show the same
+ * creatures. Before this, the band was `aria-hidden` decoration and the panel
+ * carried every fact, which is why the band could be built without a single
+ * label — and why making it interactive risks two lists that drift. One
+ * description, rendered twice.
+ */
+export function describeEnemy(enemy: EnemyCombatStateClient, displayName: string): EnemyFacts {
+  const tier = enemy.threat_level.toUpperCase();
+  const condition = enemy.is_alive
+    ? getEnemyConditionLabel(enemy.condition_display)
+    : msg('defeated');
+  const action = enemy.is_alive ? enemy.telegraphed_action : null;
+  const intent = action
+    ? `${action.intent}${action.target ? ` \u2192 ${action.target}` : ''}`
+    : null;
+
+  const parts = [tier, condition];
+  if (intent) parts.push(intent);
+  return {
+    spoken: `${displayName} \u2013 ${parts.join(' \u00b7 ')}`,
+    line: parts.join(' \u00b7 '),
+  };
+}
+
 export function getEnemyConditionLabel(condition: string): string {
   const labels: Record<string, () => string> = {
     healthy: () => msg('healthy'),

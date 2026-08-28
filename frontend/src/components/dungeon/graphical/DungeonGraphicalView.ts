@@ -57,6 +57,8 @@ import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeo
 import {
   adminUnlockedLabel,
   buildEnemyDisplayNames,
+  describeEnemy,
+  type EnemyFacts,
   getArchetypeDisplayName,
   resonanceMagnitudeLabel,
   topAptitudes,
@@ -68,6 +70,7 @@ import { initializeTerminalZones } from '../../../utils/terminal-initialization.
 import { getInitials } from '../../../utils/text.js';
 import { VelgToast } from '../../shared/Toast.js';
 import '../../shared/EmptyState.js';
+import '../../shared/Lightbox.js';
 import '../../shared/LoadingState.js';
 import '../../shared/VelgAvatar.js';
 import {
@@ -898,6 +901,50 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         background-repeat: no-repeat;
         animation: foe-glare 3.2s var(--ease-in-out, ease-in-out) infinite;
       }
+      /* The creature's hit area. The BAND stays pointer-events:none so the
+         stage below keeps receiving events; only this button takes them back.
+         It carries the creature's whole description as its accessible name —
+         the band is the enemy list in graphical mode, so the semantics live
+         here rather than in a second list beside it. */
+      .foe__probe {
+        position: absolute;
+        inset: 0;
+        pointer-events: auto;
+        padding: 0;
+        border: 1px solid transparent;
+        background: none;
+        cursor: zoom-in;
+        transition: border-color var(--transition-fast, 100ms ease);
+      }
+      .foe__probe:disabled {
+        cursor: default;
+      }
+      .foe__probe:hover:not(:disabled),
+      .foe__probe:focus-visible {
+        border-color: color-mix(in srgb, var(--_cond) 70%, transparent);
+      }
+      .foe__probe:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      /* Tier, condition and the telegraphed blow — the facts the side panel
+         used to carry. Held back until the creature is hovered or focused so
+         the band stays a stage rather than a table. */
+      .foe__facts {
+        max-width: 150px;
+        font-family: var(--_mono);
+        font-size: 8px;
+        letter-spacing: 0.4px;
+        text-align: center;
+        color: var(--_phosphor-dim);
+        opacity: 0;
+        transition: opacity var(--transition-fast, 100ms ease);
+      }
+      .foe:hover .foe__facts,
+      .foe:focus-within .foe__facts {
+        opacity: 1;
+      }
+
       /* Floor pool, mirroring the party's ground anchor. */
       /* Percentages of the figure box, so the pool grows with the creature
          instead of staying a fixed 18px smudge under a 300px boss. */
@@ -1638,6 +1685,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         .foe__eyes,
         .foe__intent,
         .foe__art,
+        .foe__probe,
+        .foe__facts,
         .op,
         .op__figure,
         .lobby-card,
@@ -1668,6 +1717,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
    *  one missing asset must not blank the others. Replaced, never mutated —
    *  Lit compares by reference. */
   @state() private _failedEnemyArt: ReadonlySet<string> = new Set();
+  /** Creature currently enlarged from the band, or null. */
+  @state() private _enemyArtLightbox: { url: string; facts: EnemyFacts } | null = null;
   /** Archetype whose party is being assembled in the graphical picker. Null =
    *  show the archetype grid; non-null = show the agent picker. This replaces
    *  the terminal-only agent picker so a run can start entirely from the
@@ -1935,11 +1986,6 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         ${this._renderRail()}
 
         <div class="dungeon-hud__main" role="main" aria-label=${msg('Dungeon scene')}>
-          ${
-            inCombat
-              ? html`<div class="scene-enemies"><velg-dungeon-enemy-panel></velg-dungeon-enemy-panel></div>`
-              : nothing
-          }
           <div
             class="scene"
             data-tier=${env.tier}
@@ -1988,6 +2034,15 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             ${this._renderChamberText(description)}
           </div>
         </div>
+
+        <velg-lightbox
+          .src=${this._enemyArtLightbox?.url ?? null}
+          .alt=${this._enemyArtLightbox?.facts.spoken ?? ''}
+          .caption=${this._enemyArtLightbox?.facts.spoken ?? ''}
+          @lightbox-close=${() => {
+            this._enemyArtLightbox = null;
+          }}
+        ></velg-lightbox>
 
         <div class="dungeon-hud__party" role="complementary" aria-label=${msg('Party status')}>
           <velg-dungeon-party-panel></velg-dungeon-party-panel>
@@ -2104,7 +2159,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const displayNames = buildEnemyDisplayNames(combat.enemies);
 
     return html`
-      <div class="scene__enemies" data-fx-band="foes" aria-hidden="true">
+      <div
+        class="scene__enemies"
+        data-fx-band="foes"
+        role="list"
+        aria-label=${msg('Hostiles')}
+      >
         ${combat.enemies.map((enemy, i) => {
           const geom = FOE_GEOMETRY[enemy.threat_level] ?? FOE_GEOMETRY.standard;
           const cond = FOE_CONDITION[enemy.condition_display] ?? FOE_CONDITION_FALLBACK;
@@ -2115,14 +2175,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             : 'var(--color-warning)';
           const artUrl = dungeonEnemyArtUrl(enemy.image_path);
           const showArt = artUrl !== null && !this._failedEnemyArt.has(artUrl);
+          const displayName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
+          const facts = describeEnemy(enemy, displayName);
           return html`
             <div
               class="foe ${dead ? 'foe--dead' : ''}"
+              role="listitem"
               style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-scale:${geom.scale};--_foe-glow:${geom.scale};--_foe-ratio:${geom.ratio};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
             >
               ${
                 action
-                  ? html`<div class="foe__intent">
+                  ? html`<div class="foe__intent" aria-hidden="true">
                       ${icons.alertTriangle(8)}
                       <span class="foe__intent-text">${action.intent}</span>
                     </div>`
@@ -2144,10 +2207,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                     `
                 }
                 <div class="foe__pool"></div>
+                <button
+                  class="foe__probe"
+                  type="button"
+                  ?disabled=${!showArt}
+                  aria-label=${facts.spoken}
+                  title=${facts.spoken}
+                  @click=${() => showArt && artUrl && this._openEnemyArt(artUrl, facts)}
+                ></button>
               </div>
-              <span class="foe__name">
-                ${displayNames.get(enemy.instance_id) ?? ''}
-              </span>
+              <span class="foe__name" aria-hidden="true">${displayName}</span>
+              <span class="foe__facts" aria-hidden="true">${facts.line}</span>
             </div>
           `;
         })}
@@ -2379,6 +2449,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         })}
       </div>
     `;
+  }
+
+  /** Enlarge one creature. The band is the enemy list in graphical mode, so
+   *  "look closer" belongs to it — and the caption carries the same facts the
+   *  figure announces, from the same description. */
+  private _openEnemyArt(url: string, facts: EnemyFacts): void {
+    this._enemyArtLightbox = { url, facts };
   }
 
   /**
