@@ -32,7 +32,7 @@ Drei wiederkehrende Fallen, die dabei entschärft wurden:
 
 ```
 Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin.
-Exactly ONE creature and nothing else: no detached limbs, no floating fragments, no debris clouds, and no leftover shapes carried over from any reference image.
+Exactly ONE creature and nothing else. The creature is a SINGLE CONNECTED OBJECT: nothing floats beside it, behind it or below it — no broken-off pieces, no chips, no shards, no sparks, no embers, no dust motes, not even small ones, and no leftover shapes carried over from any reference image.
 If the creature carries a weapon or tool: exactly ONE of it, held in its hand, and complete — the whole object inside the frame with clear space around it. Never a second overlapping or crossing weapon.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
 No cast shadow on the background, no ground plane, no floor contact shadow — the subject must be cleanly separable.
@@ -280,7 +280,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Automaton Shard. A single broken piece of a much larger machine, still moving — an incomplete assembly of jointed blackened iron plates and one articulated limb, sharp-edged where it snapped away from whatever it belonged to.
+Subject: Automaton Shard. An incomplete machine that walks — a compact assembly of jointed blackened iron plates and one articulated limb, its upper edge a clean hard break where the rest of it is simply missing. One connected object, whole in itself.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -288,7 +288,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Forge Wraith. The figure of a craftsman rendered in blackened iron and hard-packed soot, dense and solid throughout rather than vaporous — hunched, one arm raised mid-hammer-stroke, striking nothing.
+Subject: Forge Wraith. The figure of a craftsman rendered in blackened iron and hard-packed soot, dense and solid throughout rather than vaporous — hunched, one arm raised mid-hammer-stroke, striking nothing. It carries ONE hammer and nothing else: the other hand is empty and open, no tongs, no second tool.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
