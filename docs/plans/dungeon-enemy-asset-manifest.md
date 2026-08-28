@@ -1,9 +1,15 @@
 # Gegner-Assets — Manifest und Nacharbeits-Liste
 
-**42 von 42 Kreaturen erzeugt.** Rohdateien liegen in `~/Dev/Buchhaltung/`
-und heissen alle `Gemini_Generated_Image_*` — diese Tabelle ist die einzige Bruecke
-zwischen Datei und Kreatur, erzeugt per MD5-Abgleich. **Vor dem Ingest einmal**
-**umbenennen** (Skript unten), danach traegt jede Datei ihre Identitaet selbst.
+**42 von 42 Kreaturen erzeugt.** Die Rohdateien liegen im Projekt unter
+`assets/dungeon-enemies/raw/<id>.jpeg` — **ungetrackt** (141 MB, siehe `.gitignore`).
+Die freigestellten Assets liegen als `assets/dungeon-enemies/<id>.avif` und sind
+**im Repo** (3,5 MB gesamt); das ist auch, was der Ingest nach Supabase Storage laedt.
+
+Die Tabelle unten dokumentiert, aus welcher Gemini-Rohdatei jede Kreatur stammt. Die
+Zuordnung wurde per MD5-Abgleich erzeugt, nicht aus dem Gedaechtnis — die
+Gemini-Exporte heissen alle `Gemini_Generated_Image_<zufall>` und tragen ihre
+Identitaet nicht selbst. Sie ist damit rekonstruierbar, falls ein Original noch
+gebraucht wird.
 
 Prompts: `dungeon-enemy-image-prompts.md` · Freisteller: `scripts/key_dungeon_enemy_art.py`
 
@@ -95,50 +101,11 @@ ohne Referenzbild.
 (Rest-Magenta 0,037). Das liegt unter der Warnschwelle 0,12 und ist auf dem Szenengrund
 unsichtbar.
 
-## Umbenennen vor dem Ingest
+## Neu erzeugte Bilder einsortieren
 
 ```bash
-mkdir -p ~/Dev/Buchhaltung/dungeon
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_flyh52flyh52flyh.jpeg" "$HOME/Dev/Buchhaltung/dungeon/awakening_consciousness_leech.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_obi1o3obi1o3obi1.jpeg" "$HOME/Dev/Buchhaltung/dungeon/awakening_deja_vu_phantom.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_f0m61xf0m61xf0m6.jpeg" "$HOME/Dev/Buchhaltung/dungeon/awakening_echo_fragment.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_skkcy2skkcy2skkc.jpeg" "$HOME/Dev/Buchhaltung/dungeon/awakening_repressed_sentinel.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_cp1wwacp1wwacp1w.jpeg" "$HOME/Dev/Buchhaltung/dungeon/awakening_the_repressed.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_afdcaiafdcaiafdc.jpeg" "$HOME/Dev/Buchhaltung/dungeon/deluge_pressure_surge.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_sds292sds292sds2.jpeg" "$HOME/Dev/Buchhaltung/dungeon/deluge_riptide_tendril.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_6kfitb6kfitb6kfi.jpeg" "$HOME/Dev/Buchhaltung/dungeon/deluge_silt_revenant.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_mf85o0mf85o0mf85.jpeg" "$HOME/Dev/Buchhaltung/dungeon/deluge_the_current.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_bztd93bztd93bztd.jpeg" "$HOME/Dev/Buchhaltung/dungeon/deluge_undertow_warden.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_7wv50n7wv50n7wv5.jpeg" "$HOME/Dev/Buchhaltung/dungeon/entropy_dissolution_swarm.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_ep649yep649yep64.jpeg" "$HOME/Dev/Buchhaltung/dungeon/entropy_fade_echo.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_6bjnc26bjnc26bjn.jpeg" "$HOME/Dev/Buchhaltung/dungeon/entropy_rust_phantom.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_p14u2kp14u2kp14u.jpeg" "$HOME/Dev/Buchhaltung/dungeon/entropy_warden.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_dgfguzdgfguzdgfg.jpeg" "$HOME/Dev/Buchhaltung/dungeon/mother_host_warden.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_blxfo2blxfo2blxf.jpeg" "$HOME/Dev/Buchhaltung/dungeon/mother_living_altar.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_zcx009zcx009zcx0.jpeg" "$HOME/Dev/Buchhaltung/dungeon/mother_nutrient_weaver.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_wyu3zmwyu3zmwyu3.jpeg" "$HOME/Dev/Buchhaltung/dungeon/mother_spore_matron.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_pfnsegpfnsegpfns.jpeg" "$HOME/Dev/Buchhaltung/dungeon/mother_tether_vine.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_tei8s6tei8s6tei8.jpeg" "$HOME/Dev/Buchhaltung/dungeon/overthrow_faction_informer.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_7kx9n07kx9n07kx9.jpeg" "$HOME/Dev/Buchhaltung/dungeon/overthrow_grand_inquisitor.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_syuiilsyuiilsyui.jpeg" "$HOME/Dev/Buchhaltung/dungeon/overthrow_propaganda_agent.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_m56dt2m56dt2m56d.jpeg" "$HOME/Dev/Buchhaltung/dungeon/overthrow_regime_enforcer.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_u0im3uu0im3uu0im.jpeg" "$HOME/Dev/Buchhaltung/dungeon/overthrow_the_pretender.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_g3j202g3j202g3j2 (1).jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_alloy_sentinel.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_531y53531y53531y.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_automaton_shard.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_hwau7ehwau7ehwau.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_crucible_drake.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_uh9mo0uh9mo0uh9m.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_forge_wraith.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_rysb1srysb1srysb.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_slag_golem.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_44v4ur44v4ur44v4.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_spark_wisp.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_71zhiq71zhiq71zh.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_the_prototype.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_hluvilhluvilhluv.jpeg" "$HOME/Dev/Buchhaltung/dungeon/prometheus_workshop_guardian.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_nv78rjnv78rjnv78.jpeg" "$HOME/Dev/Buchhaltung/dungeon/shadow_echo_violence.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_aeolviaeolviaeol.jpeg" "$HOME/Dev/Buchhaltung/dungeon/shadow_paranoia_shade.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_g8ivxg8ivxg8ivxg.jpeg" "$HOME/Dev/Buchhaltung/dungeon/shadow_remnant.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_fxcgg7fxcgg7fxcg.jpeg" "$HOME/Dev/Buchhaltung/dungeon/shadow_tendril.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_h9w1vyh9w1vyh9w1.jpeg" "$HOME/Dev/Buchhaltung/dungeon/shadow_wisp.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_yb3kf5yb3kf5yb3k.jpeg" "$HOME/Dev/Buchhaltung/dungeon/tower_crown_keeper.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_ck42l6ck42l6ck42.jpeg" "$HOME/Dev/Buchhaltung/dungeon/tower_debt_shade.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_f9lyunf9lyunf9ly.jpeg" "$HOME/Dev/Buchhaltung/dungeon/tower_foundation_worm.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_5pd17f5pd17f5pd1.jpeg" "$HOME/Dev/Buchhaltung/dungeon/tower_remnant_commerce.jpeg"
-cp "$HOME/Dev/Buchhaltung/Gemini_Generated_Image_2gf78a2gf78a2gf7.jpeg" "$HOME/Dev/Buchhaltung/dungeon/tower_tremor_broker.jpeg"
+cp <neue-datei>.jpeg assets/dungeon-enemies/raw/<gegner-id>.jpeg
+.venv/bin/python scripts/key_dungeon_enemy_art.py assets/dungeon-enemies/raw assets/dungeon-enemies
 ```
+Zur Sichtkontrolle vorher `--check` anhaengen — das schreibt PNG-Proofs auf den
+Szenengrund `#0a0a0a` statt AVIFs.
