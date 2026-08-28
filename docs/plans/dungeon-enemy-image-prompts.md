@@ -14,6 +14,20 @@
    Schrift waere auch dann ein Lokalisierungsfehler, wenn sie fehlerfrei gesetzt waere.
 5. Alles in EINEN Ordner; ich baue das Ingest-Skript (Freistellen → AVIF q80 ≤1024px → Storage → YAML → Migration).
 
+## ⚠️ Lore ist nicht Bildbeschreibung
+
+Die `description_en` in den YAMLs ist **Spielprosa in zweiter Person** („Your instruments confirm…"),
+kein Bildbriefing. Bei Shadow und Tower war sie zufällig visuell; ab The Devouring Mother wird sie
+literarisch und abstrakt. Die Motivzeilen unten sind deshalb daraus **abgeleitete Bildbeschreibungen** –
+Bedeutung identisch, aber malbar. Die YAML bleibt unangetastet, sie ist In-Game-Text.
+
+Drei wiederkehrende Fallen, die dabei entschärft wurden:
+- **Architektur-Metaphern** („dust in a cathedral", „grown into the walls") erzeugen Gebäude statt
+  Kreaturen. Zweimal passiert (Krone → Kuppel). Bauwerk immer explizit ausschließen.
+- **Transluzente Motive** („cloud of particles", „translucent lattice") überleben das Freistellen nicht.
+  Immer zu einer dichten, zusammenhängenden Masse verdichten.
+- **Platzhalter** wie `{agent}` aus der Spiel-Engine gehören nicht in einen Bildprompt.
+
 ## Technischer Block — an JEDEN Prompt anhängen
 
 ```
@@ -140,7 +154,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Nutrient Weaver. A lattice of translucent tissue, suspended in the air like a web spun from capillaries. It drifts toward {agent} – not threatening, but offering. Something glistens at the tips of its filaments. Nutrients, your instruments confirm. It wants to feed you.
+Subject: Nutrient Weaver. A small drifting lattice of pale capillary tissue, fleshy and dense rather than see-through, gathered into one compact hanging mass. Glistening droplets bead at the tips of its filaments. It reaches outward as though offering something.
 Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
 ```
 
@@ -148,7 +162,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Tether Vine. A root system that has learned to walk. It moves through the floor like something swimming through still water – surfacing, reaching, submerging. The tissue is warm to the touch. Your instruments advise against touching it.
+Subject: Tether Vine. A root system that has learned to walk — thick knotted vines of wet, warm-looking tissue gathered into one upright body, a single limb lifted and reaching forward, the rest trailing behind it like something only half surfaced.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -156,7 +170,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Spore Matron. Something between a flower and a lung. It breathes, and its breath carries spores that catch the light like dust in a cathedral. The spores smell of honey and warm soil. Your instruments read them as parasitic vectors. Your body reads them as nourishment.
+Subject: Spore Matron. Something between a flower and a lung: a swollen, breathing body of pale ribbed tissue, petals of flesh opening around one dark central vent. A fine haze of spores clings close against its surface.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -164,7 +178,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: Host Warden. It was a person once. The proportions remember – two arms, two legs, a head. But the tissue has grown over and through and around until the person is only a scaffold for something larger, something that moves with the patient rhythm of a heartbeat. It opens its arms. Not to attack. To welcome. The embrace is the attack.
+Subject: Host Warden. It was a person once and the proportions still remember it — two arms, two legs, a head. Fibrous tissue has grown over and through the body until the person is only a scaffold for something larger. It stands with both arms opened wide, offering an embrace.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -172,7 +186,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
-Subject: The Living Altar. What was once a Host Warden has become something larger. It has grown into the walls, the floor, the ceiling – a figure embedded in architecture, arms open, face calm, the tissue around it pulsing with the rhythm of something that has been waiting for millennia. The Living Altar does not guard the dungeon. It is the dungeon. The embrace it offers is permanent. The warmth is absolute.
+Subject: The Living Altar. A vast swollen body of fused tissue and bone, far larger than a person, seated and immobile, both arms opened wide, the face calm and upturned. Slabs of broken stone are embedded IN its flesh like a shell it has absorbed. Show the creature alone and complete — no walls, no floor, no ceiling, no room, no architecture around it.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
@@ -189,7 +203,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
-Subject: Rust Phantom. A shape that was something once. Now it is mostly the color of rust and the sound of metal thinning. It does not approach – it persists.
+Subject: Rust Phantom. A hollow, half-eaten figure of corroded metal, thin as a shell, its edges eaten away into lace. It stands still rather than advancing.
 Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
 ```
 
@@ -197,7 +211,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
-Subject: Fade Echo. A sound that is almost a voice. A shape that is almost a figure. It repeats something that was once important. The repetition has worn the meaning away.
+Subject: Fade Echo. A figure worn almost featureless, like a statue left too long in the rain — the shape of a person still readable but the surface smoothed and blurred away, doubled faintly along one edge as if caught repeating itself.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -205,7 +219,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
-Subject: Dissolution Swarm. A cloud of particles that were once a wall, a floor, a ceiling. Now they are nothing in particular, and they move with the purposelessness of dust in a closed room.
+Subject: Dissolution Swarm. A dense, cohesive swarm of grey grit and crumbled masonry, packed tightly into one roughly upright body — solid enough to read as a single mass, not a thin cloud, its outline crumbling away at the edges.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -213,7 +227,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
-Subject: Entropy Warden. It was a guardian once. The armor remembers. The purpose does not. It stands where it has always stood, performing the motions of protection over nothing. When it notices you, the motions do not change. You have simply become part of what it protects. Or what it dissolves. There is no longer a difference.
+Subject: Entropy Warden. A tall armoured guardian whose plate has corroded into lace and hangs loose on a frame that is mostly gone. It holds a formal guard posture, weapon raised over nothing.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
@@ -230,7 +244,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
-Subject: Spark Wisp. A spark that refused to go out. It orbits the party like a hypothesis testing itself.
+Subject: Spark Wisp. A single small ember-creature: a knot of forge-hot glowing slag with thin trailing filaments, dense and opaque at its core, hovering.
 Scale: small and slight — reads as a fragment of a thing rather than a whole creature, roughly knee-to-waist height.
 ```
 
