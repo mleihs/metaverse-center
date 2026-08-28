@@ -42,12 +42,49 @@ MAG_FLOOR = 0.12
 MAG_RAMP = 0.34
 #: How much of the magenta excess survives despill (0 = clamp hard to green).
 DESPILL_KEEP = 0.25
-#: Alpha below this is treated as background when finding the crop box.
-CROP_ALPHA = 12
+#: Fraction of total alpha mass the crop box must contain. Driving the box off a
+#: bare alpha threshold lets a stray light haze or a few dust motes drag it
+#: sideways, which pushes the creature off-centre in the scene band. Cropping to
+#: the box that holds this share of the actual ink keeps thin outliers out while
+#: preserving genuinely wispy silhouettes (The Shadow's smoke edges carry real
+#: mass, a lens haze does not).
+CROP_MASS = 0.995
+#: Margin added back around the mass box, as a fraction of its longer side.
+CROP_MARGIN = 0.02
 #: Longest edge of the emitted asset.
 MAX_EDGE = 1024
 #: AVIF quality, matching scripts/generate_dungeon_detail_images.py.
 AVIF_QUALITY = 80
+
+
+def mass_bbox(alpha: np.ndarray) -> tuple[int, int, int, int] | None:
+    """Smallest box holding CROP_MASS of the alpha mass, plus a small margin.
+
+    Rows and columns are trimmed from whichever end currently contributes least,
+    so a faint one-sided haze is dropped while a dense smoke edge is kept.
+    """
+    total = float(alpha.sum())
+    if total <= 0:
+        return None
+
+    def span(profile: np.ndarray, limit: int) -> tuple[int, int]:
+        lo, hi, budget = 0, len(profile) - 1, total * (1.0 - CROP_MASS) / 2.0
+        acc_lo = acc_hi = 0.0
+        while lo < hi and acc_lo + profile[lo] <= budget:
+            acc_lo += profile[lo]
+            lo += 1
+        while hi > lo and acc_hi + profile[hi] <= budget:
+            acc_hi += profile[hi]
+            hi -= 1
+        pad = int(round(max(limit, 1) * CROP_MARGIN))
+        return max(0, lo - pad), min(limit, hi + 1 + pad)
+
+    h, w = alpha.shape
+    x0, x1 = span(alpha.sum(axis=0), w)
+    y0, y1 = span(alpha.sum(axis=1), h)
+    if x1 <= x0 or y1 <= y0:
+        return None
+    return x0, y0, x1, y1
 
 
 def key_and_despill(path: Path) -> tuple[Image.Image, dict]:
@@ -79,7 +116,7 @@ def key_and_despill(path: Path) -> tuple[Image.Image, dict]:
 def process(src: Path, dst_dir: Path, *, check: bool) -> dict:
     im, stats = key_and_despill(src)
 
-    box = im.getchannel("A").point(lambda v: 255 if v > CROP_ALPHA else 0).getbbox()
+    box = mass_bbox(np.asarray(im.getchannel("A"), dtype=np.float32))
     if box is None:
         raise ValueError(f"{src.name}: nothing survived the key — is the background magenta?")
     im = im.crop(box)
