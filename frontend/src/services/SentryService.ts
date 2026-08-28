@@ -9,7 +9,31 @@
 import * as Sentry from '@sentry/browser';
 
 const DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
-const RELEASE = import.meta.env.VITE_SENTRY_RELEASE as string | undefined;
+
+/**
+ * Release identifier for this build.
+ *
+ * Preferred source is the `velg-release` meta tag the SERVER stamps into the
+ * SPA shell (backend/utils/spa_document.py). The deployment target injects the
+ * deployed commit into the container at runtime and does NOT pass it as a
+ * Docker build arg, so a build-time constant cannot know it — and a
+ * hand-maintained release variable would lie from the first deploy someone
+ * forgot to bump it. Reading the stamp also makes the frontend release equal to
+ * the backend release by construction rather than by two configurations
+ * agreeing.
+ *
+ * `VITE_SENTRY_RELEASE` remains the fallback for builds served without the
+ * stamp (a static host, a CI-built preview).
+ */
+function resolveRelease(): string | undefined {
+  const stamped = document
+    .querySelector('meta[name="velg-release"]')
+    ?.getAttribute('content')
+    ?.trim();
+  return stamped || (import.meta.env.VITE_SENTRY_RELEASE as string | undefined);
+}
+
+const RELEASE = resolveRelease();
 
 let _initialized = false;
 

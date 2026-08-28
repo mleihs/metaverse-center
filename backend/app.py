@@ -3,7 +3,6 @@ from backend.logging_config import setup_logging
 setup_logging()
 
 import logging
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -40,11 +39,14 @@ def _ops_before_send(event: dict, hint: dict) -> dict | None:
     return sentry_rule_cache.apply_rules(event, hint)
 
 
+from backend.utils import build_identity
+from backend.utils.spa_document import load_spa_document
+
 if app_settings.sentry_dsn and app_settings.environment not in ("development", "test"):
     sentry_sdk.init(
         dsn=app_settings.sentry_dsn,
         environment=app_settings.sentry_environment,
-        release=os.environ.get("SENTRY_RELEASE"),
+        release=build_identity.RELEASE or None,
         traces_sample_rate=app_settings.sentry_traces_sample_rate,
         send_default_pii=False,  # GDPR safe
         enable_tracing=True,
@@ -430,7 +432,9 @@ if _static_dir.is_dir():
     app.mount("/assets", StaticFiles(directory=_static_dir / "assets"), name="static-assets")
 
     @app.get("/{full_path:path}", response_model=None)
-    async def serve_spa(request: Request, full_path: str) -> FileResponse | HTMLResponse | RedirectResponse:
+    async def serve_spa(
+        request: Request, full_path: str
+    ) -> FileResponse | HTMLResponse | JSONResponse | RedirectResponse:
         """Serve SPA index.html for all non-API, non-asset routes."""
         if full_path.startswith("api/"):
             return JSONResponse(status_code=404, content={"success": False, "message": "API route not found"})
@@ -454,7 +458,13 @@ if _static_dir.is_dir():
                     content=enriched,
                     headers={"Cache-Control": "public, max-age=3600, stale-while-revalidate=86400"},
                 )
-        return FileResponse(
-            _static_dir / "index.html",
+        # Served from memory, not from disk: the shell carries the build-identity
+        # stamp (see utils/spa_document) and is requested on every navigation
+        # that is not a static asset.
+        document = load_spa_document(_static_dir / "index.html")
+        if document is None:
+            return JSONResponse(status_code=404, content={"success": False, "message": "SPA shell not found"})
+        return HTMLResponse(
+            content=document,
             headers={"Cache-Control": "no-cache, must-revalidate"},
         )

@@ -13,6 +13,7 @@ from backend.seo.registry import (
     build_view_content,
 )
 from backend.services.cache_config import get_ttl
+from backend.utils.spa_document import load_spa_document
 from supabase import Client, create_client
 
 logger = logging.getLogger(__name__)
@@ -72,8 +73,6 @@ _CRAWLER_RE = re.compile(
 _SIM_UUID_RE = re.compile(r"^/simulations/([a-f0-9-]{36})/(\w+)(?:/([a-f0-9-]{36}))?$")
 # Regex to extract simulation slug, view, and optional entity slug/UUID from URL path
 _SIM_SLUG_RE = re.compile(r"^/simulations/([a-z0-9][a-z0-9-]*)/(\w+)(?:/([a-z0-9][a-z0-9-]*))?$")
-# Cache the raw index.html contents (read once per process)
-_index_html_cache: str | None = None
 
 # TTL cache for simulation metadata lookups (slug/UUID → sim data).
 # Constructed with the import-time TTL; rebuild_seo_caches() replaces both
@@ -315,17 +314,16 @@ _PLATFORM_META.update(build_archetype_platform_meta())
 
 async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None:
     """Return enriched HTML with dynamic meta tags for crawlers, or None to fall through."""
-    global _index_html_cache  # noqa: PLW0603
+    # Same document the SPA path serves — build identity already stamped in, so
+    # a crawler-rendered page reports the same release as an interactive one.
+    document = load_spa_document(index_path)
+    if document is None:
+        return None
 
     # Platform-level routes (static meta, no DB query)
     platform_meta = _PLATFORM_META.get(url_path)
     if platform_meta:
-        if _index_html_cache is None:
-            try:
-                _index_html_cache = index_path.read_text(encoding="utf-8")
-            except FileNotFoundError:
-                return None
-        return _inject_meta(_index_html_cache, **platform_meta)
+        return _inject_meta(document, **platform_meta)
 
     # Try UUID path first, then slug path
     uuid_match = _SIM_UUID_RE.match(url_path)
@@ -340,13 +338,6 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     entity_id_or_slug = match.group(3) if match.lastindex and match.lastindex >= 3 else None  # type: ignore[union-attr]
     view_label = _view_label(view)
     is_uuid = uuid_match is not None
-
-    # Read and cache index.html
-    if _index_html_cache is None:
-        try:
-            _index_html_cache = index_path.read_text(encoding="utf-8")
-        except FileNotFoundError:
-            return None
 
     # Fetch simulation data (with TTL cache)
     cache_key = f"{'uuid' if is_uuid else 'slug'}:{id_or_slug}"
@@ -420,7 +411,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     breadcrumb_json = _build_breadcrumb_json(sim_name, slug, view, view_label)
 
     enriched = _inject_meta(
-        _index_html_cache,
+        document,
         title=title, description=description, canonical=canonical,
         og_image=og_image, og_image_alt=og_image_alt, og_type=og_type,
         extra_jsonld=breadcrumb_json,
