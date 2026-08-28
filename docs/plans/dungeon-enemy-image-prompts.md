@@ -107,7 +107,7 @@ Scale: small and slight — reads as a fragment of a thing rather than a whole c
 
 ```
 A creature from The Tower, a dungeon of the psyche. Structural collapse. Fractured concrete grey and rust-orange, hard diagonal light, hairline cracks and falling dust in the air.
-Subject: The Crowned. A bare, upright figure of cracked concrete wearing a heavy crown — a ring of broken concrete points fused to the skull, split by one deep fracture. It stands squared and unbowed, arms at its sides, face impassive: it does not acknowledge that the crown is broken. No paper, no ribbons, no banners, nothing wrapped around the body.
+Subject: The Crowned. A bare, upright figure of cracked concrete with an ordinary head and a blank, impassive face, wearing a heavy crown — a ring of broken concrete points fused to the skull, split by one deep fracture. It stands squared and unbowed, arms hanging at its sides, hands open and empty: it does not acknowledge that the crown is broken. The crown is a crown, not a building — no dome, no architecture on or for the head. No paper, no ribbons, no banners, nothing wrapped around the body, nothing held in the hands.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
