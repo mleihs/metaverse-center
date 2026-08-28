@@ -97,18 +97,28 @@ class BondService:
         user_id: UUID,
         agent_id: UUID,
         simulation_id: UUID,
+        *,
+        admin_supabase: Client,
     ) -> dict:
         """Increment attention score via atomic RPC.
 
         Creates a 'forming' bond if none exists. Idempotent for active bonds.
         No-op if bonds are disabled for this simulation.
+
+        ``fn_increment_attention`` is SECURITY DEFINER and migration 219 revokes
+        EXECUTE from ``authenticated`` — so the RPC must go through the
+        service-role client or every non-platform-admin gets
+        "permission denied for function fn_increment_attention" (ADR-006).
+        This is behaviourally neutral: a SECURITY DEFINER function already runs
+        as its owner, and the router validated membership before we get here.
+        The settings read stays on the user client so RLS keeps applying to it.
         """
         settings = await _load_bond_settings(supabase, simulation_id)
         if not settings["enabled"]:
             return {"status": "disabled", "attention_score": 0}
 
         try:
-            resp = await supabase.rpc(
+            resp = await admin_supabase.rpc(
                 "fn_increment_attention",
                 {
                     "p_user_id": str(user_id),
