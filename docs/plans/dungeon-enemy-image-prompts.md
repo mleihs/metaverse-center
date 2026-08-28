@@ -285,7 +285,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
-Subject: Automaton Shard. NOT a humanoid figure: it has no torso, no head, no shoulders and no pair of legs. It is a knot of jointed blackened iron plates and gearwork about the size of a large dog, balanced and walking on a single heavy articulated limb, its upper edge one clean hard break where the rest of the machine is simply missing. Wear no armour plating, show no ribcage, no skull, no exposed mechanical skeleton. One connected object, whole in itself.
+Subject: Automaton Shard. A single enormous mechanical ARM, torn from a far larger machine and still working. It crawls on its own fingers like a crab, knuckles pressed to the ground, the severed shoulder end reared up behind it and ending in one clean hard break. Blackened iron plates over exposed gearwork, a single ember burning deep in the elbow joint. About the size of a large dog. This creature is an arm and nothing more.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
