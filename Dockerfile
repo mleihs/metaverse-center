@@ -9,12 +9,21 @@ ARG SENTRY_RELEASE
 ARG SENTRY_AUTH_TOKEN
 ARG SENTRY_ORG
 ARG SENTRY_PROJECT
+# Coolify injects the deployed commit as SOURCE_COMMIT. Deriving the build's
+# identity from it means the identity cannot drift from what is actually
+# running — nobody has to remember to bump a release string, and there is no
+# release string to go stale. An explicit SENTRY_RELEASE (e.g. from CI) wins.
+ARG SOURCE_COMMIT=""
 # Vite reads ENV (not ARG) at build time — export all VITE_* for inlining
 ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
 ENV VITE_GA4_MEASUREMENT_ID=${VITE_GA4_MEASUREMENT_ID}
 ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
-ENV VITE_SENTRY_RELEASE=${SENTRY_RELEASE}
+ENV VITE_SENTRY_RELEASE=${SENTRY_RELEASE:-$SOURCE_COMMIT}
+# The alpha build strip shows the running commit. Without this it read
+# "unknown": vite.config falls back to `git rev-parse`, and the build context
+# carries no .git.
+ENV VITE_GIT_SHA=${SOURCE_COMMIT}
 # This is the only build that ships to users. It opts into the build-env
 # contract in frontend/vite.config.ts (assertDeployEnv), so a deployment that
 # forgets a build-critical VITE_* variable fails here instead of silently
@@ -52,8 +61,10 @@ COPY --from=frontend-build /app/static/dist ./static/dist
 # Ensure appuser owns app files
 RUN chown -R appuser:appuser /app
 
+# Same derivation as stage 1, so backend and frontend events land on ONE release.
 ARG SENTRY_RELEASE
-ENV SENTRY_RELEASE=${SENTRY_RELEASE}
+ARG SOURCE_COMMIT=""
+ENV SENTRY_RELEASE=${SENTRY_RELEASE:-$SOURCE_COMMIT}
 
 USER appuser
 
