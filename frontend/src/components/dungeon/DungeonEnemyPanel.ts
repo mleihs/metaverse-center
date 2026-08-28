@@ -28,11 +28,21 @@ import { terminalComponentTokens, terminalTokens } from '../shared/terminal-them
 import '../shared/VelgBadge.js';
 
 /** Threat level to VelgBadge variant. */
+/** Enemy tier -> badge variant.
+ *
+ *  Two different fields in this domain are both called `threat_level` and they
+ *  do NOT share a scale:
+ *    - EnemyCombatStateClient.threat_level : minion | standard | elite | boss
+ *    - TelegraphedAction.threat_level      : low | medium | high | critical
+ *
+ *  This map is indexed with the ENEMY tier. It previously held the action scale,
+ *  so every lookup missed and fell back to 'default' — the threat colour-coding
+ *  never rendered, and `isBoss` (compared against 'critical') was never true. */
 const THREAT_BADGE: Record<string, string> = {
-  low: 'info',
-  medium: 'warning',
-  high: 'danger',
-  critical: 'danger',
+  minion: 'default',
+  standard: 'info',
+  elite: 'warning',
+  boss: 'danger',
 };
 
 @localized()
@@ -378,7 +388,7 @@ export class VelgDungeonEnemyPanel extends SignalWatcher(LitElement) {
   private _renderEnemy(enemy: EnemyCombatStateClient, displayNames: Map<string, string>) {
     const variant = THREAT_BADGE[enemy.threat_level] ?? 'default';
     const isDead = !enemy.is_alive;
-    const isBoss = enemy.threat_level === 'critical';
+    const isBoss = enemy.threat_level === 'boss';
     const cond = enemy.condition_display;
     const displayName = displayNames.get(enemy.instance_id) ?? enemy.name_en;
 
