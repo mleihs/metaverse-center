@@ -150,13 +150,13 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+> Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 
 
 ### Nutrient Weaver  (`mother_nutrient_weaver`) — minion
 
 ```
-A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: Nutrient Weaver. A small drifting lattice of pale capillary tissue, fleshy and dense rather than see-through, gathered into one compact hanging mass. Dull, dry beads hang at the tips of its filaments. It reaches outward as though offering something.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -164,7 +164,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Tether Vine  (`mother_tether_vine`) — standard
 
 ```
-A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: Tether Vine. A root system that has learned to walk — thick knotted vines of dry, leathery tissue gathered into one upright body, a single limb lifted and reaching forward, the rest trailing behind it like something only half surfaced.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -172,7 +172,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Spore Matron  (`mother_spore_matron`) — standard
 
 ```
-A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: Spore Matron. Something between a flower and a lung: a swollen, breathing body of pale ribbed tissue, petals of flesh opening around one dark central vent. A fine haze of spores clings close against its surface.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -180,7 +180,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Host Warden  (`mother_host_warden`) — elite
 
 ```
-A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: Host Warden. It was a person once and the proportions still remember it — two arms, two legs, a head. Fibrous tissue has grown over and through the body until the person is only a scaffold for something larger. It stands with both arms opened wide, offering an embrace.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -188,7 +188,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Living Altar  (`mother_living_altar`) — boss
 
 ```
-A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth. Fleshy ochre and dried-blood crimson, soft enveloping light, organic folds and umbilical filaments.
+A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: The Living Altar. A vast swollen body of fused tissue and bone, far larger than a person, seated and immobile, both arms opened wide, the face calm and upturned. Slabs of broken stone are embedded IN its flesh like a shell it has absorbed. Show the creature alone and complete — no walls, no floor, no ceiling, no room, no architecture around it.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
@@ -199,13 +199,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
+> Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
 
 
 ### Rust Phantom  (`entropy_rust_phantom`) — minion
 
 ```
-A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
+A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
 Subject: Rust Phantom. A hollow, half-eaten figure of corroded metal, thin as a shell, its edges eaten away into lace. It stands still rather than advancing.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -213,7 +213,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Fade Echo  (`entropy_fade_echo`) — standard
 
 ```
-A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
+A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
 Subject: Fade Echo. A figure worn almost featureless, like a statue left too long in the rain — the shape of a person still readable but the surface smoothed and blurred away, doubled faintly along one edge as if caught repeating itself.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -221,7 +221,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Dissolution Swarm  (`entropy_dissolution_swarm`) — standard
 
 ```
-A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
+A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
 Subject: Dissolution Swarm. A dense, cohesive swarm of grey grit and crumbled masonry, packed tightly into one roughly upright body — solid enough to read as a single mass, not a thin cloud, its outline crumbling away at the edges.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -229,7 +229,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Entropy Warden  (`entropy_warden`) — elite
 
 ```
-A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and mould-green, flat diffuse light, surfaces powdering and crumbling at the silhouette edge.
+A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
 Subject: Entropy Warden. A tall armoured guardian whose plate has corroded into lace and hangs loose on a frame that is mostly gone. It holds a formal guard posture, weapon raised over nothing.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -240,13 +240,13 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+> Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 
 
 ### Spark Wisp  (`prometheus_spark_wisp`) — minion
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Spark Wisp. A single small ember-creature: a knot of forge-hot glowing slag with thin trailing filaments, dense and opaque at its core, hovering.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -254,7 +254,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Alloy Sentinel  (`prometheus_alloy_sentinel`) — standard
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Alloy Sentinel. Forged from an alloy that does not appear in any periodic table. It stands where the workshop needs it to stand. It does not question this.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -262,7 +262,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Slag Golem  (`prometheus_slag_golem`) — standard
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Slag Golem. The residue of failed experiments, accumulated and compacted until it gained mass, then purpose. It does not hate the party. It is simply in the way.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -270,7 +270,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Crucible Drake  (`prometheus_crucible_drake`) — standard
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Crucible Drake. A construct of molten flux and crystallized heat. It was a crucible once. Now it moves. The fire inside it has opinions.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -278,7 +278,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Automaton Shard  (`prometheus_automaton_shard`) — standard
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Automaton Shard. A fragment of something larger that was never completed. Or that completed itself in ways its designer did not intend. It moves with the precision of a blueprint and the malice of a splinter.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -286,7 +286,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Forge Wraith  (`prometheus_forge_wraith`) — elite
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Forge Wraith. Smoke and metal in the shape of a craftsman. It works at an invisible anvil, hammering things that are not there. When it notices the party, it does not stop working. It incorporates them.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -294,7 +294,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### Workshop Guardian  (`prometheus_workshop_guardian`) — elite
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: Workshop Guardian. It was built to protect the workshop. It has been doing this for longer than the workshop has existed. Its loyalty is not to the current configuration – it is to the IDEA of the workshop.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -302,7 +302,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Prototype  (`prometheus_the_prototype`) — boss
 
 ```
-A creature from The Prometheus, a dungeon of the psyche. Forge heat. Ember orange and blackened iron, intense low key-light from a furnace off-frame, sparks and heat shimmer.
+A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: The Prototype. It was supposed to be the masterwork. The culmination. The thing the workshop has been building toward since the first spark was struck. It is not finished. It does not know this. It functions with the absolute confidence of an unfinished thing that believes it is complete.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
@@ -313,13 +313,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+> Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 
 
 ### Riptide Tendril  (`deluge_riptide_tendril`) — minion
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 Subject: Riptide Tendril. A current given form. It does not strike – it pulls. The direction is always down, always toward deeper water.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -327,7 +327,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Pressure Surge  (`deluge_pressure_surge`) — standard
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 Subject: Pressure Surge. The water's memory of what it once displaced. It arrives as a wall – not tall, not dramatic, but dense. The kind of force that moves furniture and doesn't notice.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -335,7 +335,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Silt Revenant  (`deluge_silt_revenant`) — standard
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 Subject: Silt Revenant. It emerged from the sediment when the water reached this level. A shape made of what the flood deposited – silt, mineral, the residue of dissolved rooms. It does not speak. It broadcasts the sound of water in enclosed spaces.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -343,7 +343,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Undertow Warden  (`deluge_undertow_warden`) — elite
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 Subject: Undertow Warden. The water's enforcer. Not an entity that lives in water – an entity that IS water, given mass and purpose. It does not guard a door. It guards a depth.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -351,7 +351,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Current  (`deluge_the_current`) — boss
 
 ```
-A creature from The Deluge, a dungeon of the psyche. Drowning. Deep teal and silt-brown, refracted caustic light from above, waterlogged surfaces and suspended particulate.
+A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are sodden but rendered matte and dull — no sheen, no sparkle, no wet highlights.
 Subject: The Current. Not an enemy. A direction. The Current is the flood's final argument: that everything flows downward, that every barrier is temporary, that what the water claims, the water keeps. It does not attack. It arrives.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
@@ -362,13 +362,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+> Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 
 
 ### Echo Fragment  (`awakening_echo_fragment`) — minion
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 Subject: Echo Fragment. A memory of a memory. It does not have content – it has the shape where content was. {agent} recognizes the absence, not the thing.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -376,7 +376,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Déjà-vu Phantom  (`awakening_deja_vu_phantom`) — standard
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 Subject: Déjà-vu Phantom. It is not here for the first time. It has always been in this room, waiting for the party to arrive again. Its movements are half a second ahead of expectation – as if the party remembers fighting it before the fight has begun.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -384,7 +384,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Consciousness Leech  (`awakening_consciousness_leech`) — standard
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 Subject: Consciousness Leech. Watts was right about this one. It functions perfectly without self-awareness – a philosophical zombie made operational. It does not think. It processes. And it is faster than anything that pauses to reflect.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -392,7 +392,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Repressed Sentinel  (`awakening_repressed_sentinel`) — elite
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 Subject: Repressed Sentinel. The sentinel guards the threshold between conscious and unconscious. Ishiguro's mist made guardian – it exists to ensure the buried stays buried. It does not hate the party. It pities their need to know.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -400,7 +400,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Repressed  (`awakening_the_repressed`) — boss
 
 ```
-A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed lilac and pale gold, doubled exposure edges, a faint second outline offset from the first.
+A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
 Subject: The Repressed. A memory so painful it was buried by consensus. Not by one agent – by all of them simultaneously. It is not a monster. It is the truth that was too heavy to carry and too important to destroy. Jung's encounter with the Self, Tarkovsky's Room: it grants your true desire, not your stated one.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
@@ -411,13 +411,13 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 **Stil-Block (in jeden Prompt dieser Gruppe):**
 
-> Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+> Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 
 
 ### Faction Informer  (`overthrow_faction_informer`) — minion
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Faction Informer. Havel's greengrocer made operative. The informer does not believe — the informer performs. The sign in the window says what the faction requires. Behind the counter, the informer reports who does not display theirs.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
@@ -425,7 +425,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 ### Propaganda Agent  (`overthrow_propaganda_agent`) — standard
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Propaganda Agent. Orwell's Squealer on two legs. The agent does not lie — the agent renders the concept of lying meaningless. Yesterday's alliance was always today's betrayal. The records have been updated. The records were always thus.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -433,7 +433,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Regime Enforcer  (`overthrow_regime_enforcer`) — standard
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Regime Enforcer. The muscle behind the rhetoric. The enforcer does not care which faction gives the order — only that the order exists. Arendt's ideal subject: one for whom the distinction between fact and fiction has ceased to matter.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
@@ -441,7 +441,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 ### Grand Inquisitor  (`overthrow_grand_inquisitor`) — elite
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: Grand Inquisitor. Dostoevsky's three powers made flesh: miracle, mystery, authority. The Inquisitor does not punish dissent — the Inquisitor explains why dissent was always agreement, misunderstood. The confession is not extracted. It is assisted.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
@@ -449,7 +449,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ### The Pretender  (`overthrow_the_pretender`) — boss
 
 ```
-A creature from The Overthrow, a dungeon of the psyche. Fracture. Mirror-silver and bruised violet, hard specular highlights, the form broken into offset shards.
+A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: The Pretender. Milton's Satan made sovereign. The Pretender began as a rebel — magnificent, defiant, charismatic. Power degraded the vision. Phase 1: Book I archangel, addressing armies with impossible eloquence. Phase 2: Book IV, 'squat like a toad,' truth exposed. Phase 3: Book X, permanently serpentine. The Pretender quotes everyone. Especially you.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
