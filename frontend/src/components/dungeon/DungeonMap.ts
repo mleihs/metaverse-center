@@ -151,8 +151,13 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         overscroll-behavior: contain;
       }
 
-      /* Non-persistent mode: capped height */
-      :host(:not([persistent])) .map-content {
+      /* Non-persistent mode (the terminal view's collapsible map): the cap sits
+         on the SCROLL row, not on the grid container. Capping the container
+         would make the 1fr track's size depend on max-height resolving against
+         an auto-height grid — correct per spec, but a subtlety this layout does
+         not need. Capping the row is unambiguous: the map scrolls within 320px
+         and the detail panel keeps its own row below, at its natural height. */
+      :host(:not([persistent])) .map-scroll {
         max-height: 320px;
       }
 
@@ -241,7 +246,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
       /* ── Mobile ── */
       @media (max-width: 767px) {
-        :host(:not([persistent])) .map-content {
+        :host(:not([persistent])) .map-scroll {
           max-height: 240px;
         }
       }
