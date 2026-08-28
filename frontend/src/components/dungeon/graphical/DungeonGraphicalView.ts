@@ -231,15 +231,16 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
       /* ── Map rail internals ── */
       /* Override the map component's own :host{flex-shrink:0} so it fills the
-         rail and scrolls internally (its .map-content has overflow-y:auto). */
+         rail. The rail does NOT scroll: the map component owns exactly one
+         scroll container (.map-scroll, around the DAG) and its room panel sits
+         in a second, non-scrolling row. Two nested scrollers used to stack here
+         — the host and .map-content — and a wheel event over a map that
+         happened to fit found neither, so it bubbled to the page and moved the
+         document instead of the map (remediation plan C-4). */
       .dungeon-hud__rail velg-dungeon-map {
         flex: 1 1 0;
         min-height: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        /* Keep rail scrolling self-contained — don't bubble to the page once the
-           map reaches its scroll limit (the document is slightly scrollable). */
-        overscroll-behavior: contain;
+        overflow: hidden;
       }
       .rail-header {
         flex: none;
