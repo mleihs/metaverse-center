@@ -196,7 +196,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
 Subject: The Living Altar. A vast swollen body of fused tissue and bone, far larger than a person, seated and immobile, both arms opened wide, the face calm and upturned. Slabs of broken stone are embedded IN its flesh like a shell it has absorbed. Show the creature alone and complete — no walls, no floor, no ceiling, no room, no architecture around it.
-Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
+Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
 
 ---
@@ -310,7 +310,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Prometheus, a dungeon of the psyche. Forge heat seen through soot. Blackened iron with a deep, smothered ember glow — dull and banked, never bright orange, never neon. Low key-light from a furnace off-frame, everything else in shadow.
 Subject: The Prototype. A monumental unfinished figure of blackened iron with dull ember-lit seams: one side finished and armoured, the other still bare scaffolding and open structure with whole parts simply absent. It stands at full height with total composure, unaware that it is incomplete.
-Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
+Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
 
 ---
@@ -359,7 +359,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
 Subject: The Current. A monumental figure of packed silt and drowned debris, filling the frame — a vast rounded mass shouldering forward, with dozens of small drowned objects set into its surface like bones in mud: chair legs, shutters, iron hooks. No face; the front is one smooth blunt slope. Solid earth throughout, never water.
-Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
+Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
 
 ---
@@ -407,8 +407,8 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
-Subject: The Repressed. A monumental figure of mid-grey stone kneeling upright and filling the frame, its head lowered into both raised hands so the face is completely hidden. It is built tall and narrow rather than sprawling — knees together, elbows tucked in, the whole mass rising vertically. The stone is smooth and blank wherever the hands touch it and deeply cracked everywhere else.
-Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
+Subject: The Repressed. An enormous kneeling figure of mid-grey stone, upright on its knees and filling the frame, both hands raised and pressed flat over its face so nothing of the face can be seen. Its human build stays fully readable — heavy shoulders, thick arms, a bowed back, knees together on the ground — but it is stacked vertically rather than sprawling: elbows tucked in against the body, the whole mass rising in a tall column. The stone is worn glass-smooth under the palms and deeply cracked everywhere else. This is a body, never a boulder.
+Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
 
 ---
@@ -457,7 +457,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
 Subject: The Pretender. A monumental figure of tarnished grey metal filling the frame: magnificent above the waist — broad shouldered, upright, a great sweep of folded metal wings held close behind it — and degraded below, where the legs have fused into one thick serpentine tail that coils upward into a tall vertical column beneath it rather than spreading out across the ground. Its face is a beautiful blank mask tilted slightly upward.
-Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
+Scale: monumental — fills the frame, carrying far more mass than anything else in this dungeon, unmistakably its authority. Let the subject description decide the build; do not add horns, crowns or broad shoulders unless it asks for them.
 ```
 
 ---
