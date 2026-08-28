@@ -40,9 +40,26 @@ function writeAck(version: string): void {
   }
 }
 
+/**
+ * Short commit of the running build.
+ *
+ * Same precedence as the Sentry release: the server stamps the deployed commit
+ * into the SPA shell (`velg-commit`), because the deployment target injects it
+ * into the container at runtime and not as a Docker build arg. Without the
+ * stamp the build strip read "unknown" on every deployed build — vite.config's
+ * fallback is `git rev-parse`, and the Docker build context carries no .git.
+ */
+function resolveCommit(): string {
+  const stamped = document
+    .querySelector('meta[name="velg-commit"]')
+    ?.getAttribute('content')
+    ?.trim();
+  return stamped || import.meta.env.VITE_GIT_SHA || 'unknown';
+}
+
 class AlphaStatusService {
   readonly isAlphaBuild: boolean = import.meta.env.VITE_IS_ALPHA === 'true';
-  readonly gitSha: string = import.meta.env.VITE_GIT_SHA || 'unknown';
+  readonly gitSha: string = resolveCommit();
   readonly buildDate: string = import.meta.env.VITE_BUILD_DATE || '';
 
   readonly firstContactEnabled = signal<boolean>(false);
