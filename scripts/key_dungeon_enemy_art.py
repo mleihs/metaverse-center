@@ -55,6 +55,12 @@ CROP_MARGIN = 0.02
 MAX_EDGE = 1024
 #: AVIF quality, matching scripts/generate_dungeon_detail_images.py.
 AVIF_QUALITY = 80
+#: Only the largest connected blob is kept. Every creature is briefed as "a SINGLE
+#: CONNECTED OBJECT", and the one legitimate two-part case — the Awakening doubled
+#: bodies — is explicitly fused, so it forms ONE component anyway. A 20% threshold
+#: proved too timid: Consciousness Leech came back with a debris blob at 22.9% of
+#: the body, which survived and stood in the scene as a grey lump. Anything dropped
+#: at or above REPORT_BLOB_SHARE is reported, so nothing vanishes unseen.
 #: A detached blob smaller than this share of the largest one is dropped. Every
 #: creature is briefed as "exactly ONE creature, a single connected object", but
 #: generators still hand back stray debris beside the figure (Automaton Shard came
@@ -62,7 +68,9 @@ AVIF_QUALITY = 80
 #: lands in the scene as a grey lump, and — because the crop box is mass-based —
 #: shoves the creature off-centre in the enemy band. A genuinely two-part design
 #: stays intact at this threshold; anything dropped is reported, never silent.
-MIN_BLOB_SHARE = 0.20
+MIN_BLOB_SHARE = 1.00
+#: Removals at or above this share are printed.
+REPORT_BLOB_SHARE = 0.01
 #: Alpha above which a pixel counts as solid body when grouping blobs.
 BLOB_ALPHA = 12
 #: Pixels reachable from the frame border through "not clearly subject" territory
@@ -132,7 +140,7 @@ def drop_stray_blobs(alpha: np.ndarray) -> tuple[np.ndarray, list[float]]:
     for idx, size in enumerate(sizes, start=1):
         share = size / biggest
         if share < MIN_BLOB_SHARE:
-            if share > 0.01:  # only worth reporting; specks stay quiet
+            if share >= REPORT_BLOB_SHARE:  # specks stay quiet
                 dropped.append(share)
             out[label == idx] = 0.0
     return out, dropped

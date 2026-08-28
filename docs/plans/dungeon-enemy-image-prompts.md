@@ -399,7 +399,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Mid-grey and dull grey-gold stone, dim and deeply shadowed, lit from one side only — desaturated toward GREY, never toward white, never brightly lit, never marble-pale. The doubling of this archetype is always a second solid BODY grown out of the first, never a glow or a light outline around the silhouette.
-Subject: Repressed Sentinel. A tall, broad guardian of mid-grey stone standing squarely with both arms crossed low over its body, blocking the way. Its head is a plain featureless block. Its whole front surface is worn smooth and blank, as if rubbed down over centuries; the back and sides are still rough and unfinished.
+Subject: Repressed Sentinel. A tall, broad stone guardian standing squarely and blocking the way, its human silhouette fully readable: a head on a thick neck, wide shoulders, two heavy arms crossed low over the chest, two legs planted apart. The face has no features, and the front of the body is worn glass-smooth as if rubbed down over centuries, while the back and sides stay rough and unfinished — but the FIGURE is never lost: this is a body, never a boulder, never a slab, never a standing stone.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
