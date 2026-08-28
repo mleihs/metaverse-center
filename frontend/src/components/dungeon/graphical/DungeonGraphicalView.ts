@@ -80,6 +80,7 @@ import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
 import './DungeonCombatFx.js';
+import type { RoomDescription } from '../../../utils/dungeon-room-text.js';
 
 /** localStorage key for the map-rail collapsed preference (client-only UI
  *  state, like the view-mode key — never reset by applyState()/clear()). */
@@ -337,15 +338,29 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       /* ── Scene (the stage). NO filter/transform here — that would create a
          containing block and break embedded position:fixed panels. All
          environment FX live on the .scene__backdrop LEAF and its children. ── */
+      /* Zones, declared once. The scene used to stack four absolutely
+         positioned layers at percentage offsets and let a bottom-anchored
+         narrative box grow upward into them: the text cut through the party's
+         name labels, and no combination of offsets could avoid it because the
+         box height depends on the prose. Rows cannot overlap, so the collision
+         class is gone rather than each instance being nudged out of the way.
+
+         The atmosphere planes (art, backdrop, floor, motes, alarm, FX canvas)
+         stay position:absolute — they are full-bleed backgrounds and overlays,
+         not content, and must span every row. */
       .scene {
         position: relative;
         flex: 1;
         min-height: 220px;
         overflow: hidden;
         border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          'readout'
+          'foes'
+          'party'
+          'text';
         --_p: var(--_pressure, 0);
       }
 
@@ -631,10 +646,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          a floor light-pool + contact shadow. Reads as a figure standing in the
          room, not a UI chip pasted on the backdrop. */
       .scene__party {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 21%;
+        grid-area: party;
         z-index: 2;
         pointer-events: none;
         display: flex;
@@ -771,10 +783,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          failed to load. Both stand on the same floor pool and carry the same
          condition colour, so a band mixing the two still reads as one scene. */
       .scene__enemies {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 19%;
+        grid-area: foes;
+        align-self: end;
         z-index: 2;
         pointer-events: none;
         display: flex;
@@ -987,9 +997,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
       /* ── Foreground content ── */
       .scene__readout {
-        position: absolute;
-        top: 10px;
-        left: 12px;
+        grid-area: readout;
+        justify-self: start;
+        margin: 10px 0 0 12px;
         z-index: 4;
         display: flex;
         flex-direction: column;
@@ -1017,33 +1027,76 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         background: var(--color-danger);
       }
 
-      .scene__banter {
-        position: relative;
+      /* ── Chamber text: the room's own row, so it can never grow into the
+         party figures. Bounded height with its own scroll — a long encounter
+         must not push the stage out of the frame. ── */
+      .chamber {
+        grid-area: text;
         z-index: 4;
-        margin: 0 12px 12px;
+        margin: 10px 12px 12px;
         padding: 12px 14px;
-        max-width: 60ch;
+        max-width: 68ch;
+        max-height: min(38vh, 260px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
         border-left: 3px solid var(--_fx-accent);
-        background: color-mix(in srgb, var(--color-surface) 78%, transparent);
-        font-family: var(--font-bureau, var(--font-prose, serif));
-        font-size: 14px;
-        line-height: 1.55;
-        color: var(--color-text-primary);
+        background: color-mix(in srgb, var(--color-surface) 82%, transparent);
         animation: banter-rise var(--duration-entrance, 350ms) var(--ease-dramatic, ease);
       }
-      .scene__banter-barometer {
-        display: block;
+      .chamber p {
+        margin: 0;
+      }
+      .chamber > * + * {
         margin-top: 8px;
+      }
+      /* The room describing itself — the establishing voice. */
+      .chamber__ambient,
+      .chamber__anchor {
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--color-text-secondary);
+      }
+      .chamber__anchor {
+        padding-left: 10px;
+        border-left: 1px solid color-mix(in srgb, var(--_border) 60%, transparent);
+      }
+      /* The situation. Carries the choices rendered in the action bar, so it is
+         the one paragraph the player must actually read. */
+      .chamber__encounter {
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--color-text-primary);
+      }
+      .chamber__encounter p + p {
+        margin-top: 8px;
+      }
+      /* A Threshold toll is written sparser in the terminal; the scene answers
+         that with air and a centred measure rather than ASCII indentation. */
+      .chamber__encounter--threshold {
+        padding: 4px 0 4px 12px;
+        border-left: 2px solid var(--_fx-accent);
+        font-style: italic;
+        letter-spacing: 0.2px;
+      }
+      /* An operative reacting — a voice, not narration. */
+      .chamber__banter {
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--color-text-primary);
+        opacity: 0.92;
+      }
+      .chamber__barometer {
         font-family: var(--_mono);
         font-size: 11px;
         letter-spacing: 0.5px;
         color: var(--_phosphor-dim);
       }
-      .scene__banter-empty {
-        position: relative;
-        z-index: 4;
-        margin: 0 12px 12px;
-        padding: 12px 14px;
+      .chamber--empty {
+        border-left-color: color-mix(in srgb, var(--_border) 60%, transparent);
+        background: none;
         font-family: var(--_mono);
         font-size: 12px;
         color: var(--_phosphor-dim);
@@ -1492,7 +1545,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       @media (prefers-reduced-motion: reduce) {
         .scene__plane,
         .scene__alarm,
-        .scene__banter,
+        .chamber,
         .scene__backdrop,
         .scene__motes,
         .scene__art-img,
@@ -1778,7 +1831,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const archetype = dungeonState.clientState.value?.archetype ?? '';
     const env = resolveDungeonEnvironment(archetype, dungeonState.archetypeState.value);
     const inCombat = dungeonState.isInCombat.value;
-    const narrative = dungeonState.lastRoomNarrative.value;
+    const description = dungeonState.lastRoomDescription.value;
     const meterLabel = meterLabelFor(env.fxProfile);
     const accent = ACCENT_BY_FX[env.fxProfile];
     const backdropUrl = dungeonBackdropUrl(archetype);
@@ -1846,20 +1899,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
               </div>
             </div>
 
-            ${
-              narrative?.banter
-                ? html`<div class="scene__banter" role="status" aria-live="polite">
-                  ${narrative.banter}
-                  ${
-                    narrative.barometer
-                      ? html`<span class="scene__banter-barometer">${narrative.barometer}</span>`
-                      : nothing
-                  }
-                </div>`
-                : html`<div class="scene__banter-empty">
-                  ${msg('The chamber waits. Choose your next move.')}
-                </div>`
-            }
+            ${this._renderChamberText(description)}
           </div>
         </div>
 
@@ -1924,7 +1964,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const party = dungeonState.party.value;
     if (party.length === 0) return nothing;
     return html`
-      <div class="scene__party" aria-hidden="true">
+      <div class="scene__party" data-fx-band="party" aria-hidden="true">
         ${party.map((agent: AgentCombatStateClient, i: number) => {
           const portrait = agent.portrait_url;
           return html`
@@ -1978,7 +2018,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const displayNames = buildEnemyDisplayNames(combat.enemies);
 
     return html`
-      <div class="scene__enemies" aria-hidden="true">
+      <div class="scene__enemies" data-fx-band="foes" aria-hidden="true">
         ${combat.enemies.map((enemy, i) => {
           const geom = FOE_GEOMETRY[enemy.threat_level] ?? FOE_GEOMETRY.standard;
           const cond = FOE_CONDITION[enemy.condition_display] ?? FOE_CONDITION_FALLBACK;
@@ -2228,6 +2268,49 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             </button>
           `;
         })}
+      </div>
+    `;
+  }
+
+  /**
+   * The chamber's prose, in the scene.
+   *
+   * Renders the WHOLE room description the shared selector produced — the same
+   * object, in the same reading order, that the terminal turns into lines.
+   * Until now this box showed banter and a barometer line only, so 129
+   * encounter templates, every anchor object and every room-type ambient line
+   * were written for a surface that never displayed them.
+   *
+   * The parts are typographically distinct because they speak with different
+   * voices: the room describes itself (ambient, anchors), the situation
+   * confronts the party (encounter — the one whose choices appear as buttons in
+   * the action bar below), an operative reacts (banter), and the meter reports
+   * (barometer). Same content as the terminal, different register.
+   */
+  private _renderChamberText(description: RoomDescription | null) {
+    const waiting = html`<div class="chamber chamber--empty">
+      ${msg('The chamber waits. Choose your next move.')}
+    </div>`;
+    if (!description) return waiting;
+
+    const { ambient, anchors, encounter, banter, barometer, isThreshold } = description;
+    if (!ambient && anchors.length === 0 && !encounter && !banter && !barometer) return waiting;
+
+    return html`
+      <div class="chamber" role="status" aria-live="polite">
+        ${ambient ? html`<p class="chamber__ambient">${ambient}</p>` : nothing}
+        ${anchors.map((text) => html`<p class="chamber__anchor">${text}</p>`)}
+        ${
+          encounter
+            ? html`<div
+              class="chamber__encounter ${isThreshold ? 'chamber__encounter--threshold' : ''}"
+            >
+              ${encounter.split('\n').map((para) => html`<p>${para}</p>`)}
+            </div>`
+            : nothing
+        }
+        ${banter ? html`<p class="chamber__banter">${banter}</p>` : nothing}
+        ${barometer ? html`<p class="chamber__barometer">${barometer}</p>` : nothing}
       </div>
     `;
   }

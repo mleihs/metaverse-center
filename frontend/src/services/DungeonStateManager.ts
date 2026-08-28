@@ -34,6 +34,7 @@ import {
   formatLootDrop,
   formatPartyWipe,
 } from '../utils/dungeon-formatters.js';
+import type { RoomDescription } from '../utils/dungeon-room-text.js';
 import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { analyticsService } from './AnalyticsService.js';
 import { appState } from './AppStateManager.js';
@@ -58,18 +59,6 @@ const TIMER_TICK_MS = 250;
 
 /** Which rendering of the dungeon the player is using. */
 export type DungeonViewMode = 'terminal' | 'graphical';
-
-/** Room-entry narrative surfaced to the graphical scene (no terminal buffer). */
-export interface RoomNarrative {
-  /** Localized archetype banter for the entered room. */
-  banter: string | null;
-  /** Localized resource-barometer line (e.g. rising-water warning). */
-  barometer: string | null;
-  /** Room type of the entered room ('combat' | 'boss' | 'rest' | …). */
-  roomType: string;
-  /** Dungeon depth after the move. */
-  depth: number;
-}
 
 // ── State Manager ──────────────────────────────────────────────────────────
 
@@ -125,15 +114,20 @@ class DungeonStateManager {
   /** Encounter choices for the current room. Set from move response, cleared on phase change. */
   readonly encounterChoices = signal<EncounterChoiceClient[]>([]);
 
-  /** Last room-entry narrative (banter + barometer), published at the move site.
-   *  Client-only: like CombatRoundResult.events, this lives on the move response
-   *  and is discarded by applyState(). The graphical view (which has no terminal
-   *  buffer) reads it for its banter overlay. Null until the first move. */
-  readonly lastRoomNarrative = signal<RoomNarrative | null>(null);
+  /** The prose belonging to the room the party is standing in, as derived by
+   *  the shared selector (utils/dungeon-room-text.ts). Client-only: most of it
+   *  lives on the move response and is discarded by applyState(). The graphical
+   *  view — which has no terminal buffer — renders this into the scene.
+   *
+   *  It carries the WHOLE description, not a selection. The previous version
+   *  published banter and barometer only, which is why encounter prose and
+   *  anchor objects never reached the graphical mode at all. Null until the
+   *  first move or `look`. */
+  readonly lastRoomDescription = signal<RoomDescription | null>(null);
 
   /** Last resolved combat round, published at the two submit-resolution sites
    *  (manual submit in dungeon-commands + auto-submit on timer expiry). Like
-   *  lastRoomNarrative this lives on the CombatSubmitResponse — NOT on the
+   *  lastRoomDescription this lives on the CombatSubmitResponse — NOT on the
    *  DungeonClientState — so applyState() never sees it and would discard it.
    *  The graphical view's PixiJS combat-FX host (a second consumer) subscribes
    *  to this signal and plays per-event juice; the terminal view ignores it.
@@ -239,10 +233,10 @@ class DungeonStateManager {
 
   // ── Room Narrative (client-only publication) ───────────────────────────
 
-  /** Publish the room-entry narrative for the graphical scene. Called at the
-   *  move resolution site (utils/dungeon-commands.ts) after applyState(). */
-  publishRoomNarrative(narrative: RoomNarrative): void {
-    this.lastRoomNarrative.value = narrative;
+  /** Publish the current room's description for the graphical scene. Called at
+   *  the move resolution site and by `look` (utils/dungeon-commands.ts). */
+  publishRoomDescription(description: RoomDescription): void {
+    this.lastRoomDescription.value = description;
   }
 
   /** Publish a resolved combat round for the graphical combat-FX host. Called
@@ -347,7 +341,7 @@ class DungeonStateManager {
     this.clientState.value = null;
     this.runId.value = null;
     this.selectedActions.value = new Map();
-    this.lastRoomNarrative.value = null;
+    this.lastRoomDescription.value = null;
     this.lastRoundResult.value = null;
     this.error.value = null;
     this.loading.value = false;

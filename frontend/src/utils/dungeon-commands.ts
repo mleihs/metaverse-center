@@ -48,6 +48,7 @@ import {
   formatSkillCheckResult,
   formatThresholdEntry,
 } from './dungeon-formatters.js';
+import { describeRoom } from './dungeon-room-text.js';
 import { fuzzyName, resolveToken } from './fuzzy-search.js';
 import { localized, localizedArray } from './locale-fields.js';
 import {
@@ -302,30 +303,23 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     // Room entry formatting
     const room = result.state.rooms.find((r) => r.index === result.state.current_room);
 
-    // Publish room narrative for the graphical scene (no terminal buffer there).
-    dungeonState.publishRoomNarrative({
-      banter: result.banter ? localized(result.banter, 'text') || null : null,
-      barometer: result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
-      roomType: room?.room_type ?? '',
-      depth: result.state.depth,
-    });
-    if (room) {
+    // ONE derivation of the room's prose, consumed by both surfaces: the
+    // terminal renders it as lines below, the graphical scene reads the very
+    // same object off `lastRoomDescription`. Publishing a hand-picked subset
+    // here is what made encounter prose and anchor objects invisible in
+    // graphical mode (remediation plan A-3).
+    const description = room ? describeRoom(room, result.state, result) : null;
+    if (description) {
+      dungeonState.publishRoomDescription(description);
+    }
+    if (room && description) {
       // SFX: boss reveal vs. normal room enter
       if (room.room_type === 'boss') {
         dungeonAudio.play('boss-reveal');
       } else {
         dungeonAudio.play('room-enter');
       }
-      lines.push(
-        ...formatRoomEntry(
-          room,
-          result.banter ? localized(result.banter, 'text') || null : null,
-          result.state.archetype_state,
-          result.anchor_texts ?? null,
-          result.barometer_text ? localized(result.barometer_text, 'text') || null : null,
-          result.state.archetype,
-        ),
-      );
+      lines.push(...formatRoomEntry(description, result.state.archetype_state));
     }
 
     // Debris deposited by the current (Deluge)
@@ -340,23 +334,22 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
       lines.push(...formatCombatPlanning(result.state.party));
     }
 
-    // Threshold toll room — sparse, literary rendering
-    if (result.threshold && result.choices) {
+    // Threshold toll room — sparse, literary rendering. The prose itself comes
+    // from the shared description; only the choice list is terminal-specific.
+    if (description?.isThreshold && result.choices && description.encounter) {
       dungeonState.encounterChoices.value = result.choices;
-      const thresholdDesc = localized(result, 'description');
-      lines.push(...formatThresholdEntry(thresholdDesc, result.choices));
+      lines.push(...formatThresholdEntry(description.encounter, result.choices));
     }
 
     // Encounter / treasure / rest choices (any room with interactive choices)
-    else {
-      const encounterDesc = localized(result, 'description');
-      if (result.choices && encounterDesc) {
-        dungeonState.encounterChoices.value = result.choices;
-        lines.push(...formatEncounterChoices(encounterDesc, result.choices, result.state.party));
-      } else if (result.encounter === false) {
-        // No matching encounter template found — room auto-cleared
-        lines.push(responseLine(msg('The room is empty. Whatever was here has moved on.')));
-      }
+    else if (result.choices && description?.encounter) {
+      dungeonState.encounterChoices.value = result.choices;
+      lines.push(
+        ...formatEncounterChoices(description.encounter, result.choices, result.state.party),
+      );
+    } else if (result.encounter === false) {
+      // No matching encounter template found — room auto-cleared
+      lines.push(responseLine(msg('The room is empty. Whatever was here has moved on.')));
     }
 
     // Treasure (auto-loot, no choices)
@@ -408,16 +401,20 @@ function handleDungeonLook(): TerminalLine[] {
   const room = dungeonState.currentRoom.value;
   if (!room) return [errorLine(msg('Current room unknown.'))];
 
-  const lines = formatRoomEntry(room, null, state.archetype_state, null, null, state.archetype);
+  // Same derivation as on entry, minus the texts that only exist at the moment
+  // of arrival (banter, anchor prose). `look` must not invent them.
+  const description = describeRoom(room, state);
+  dungeonState.publishRoomDescription(description);
+  const lines = formatRoomEntry(description, state.archetype_state);
 
   // Re-display encounter/threshold choices
   const choices = dungeonState.encounterChoices.value;
-  if (state.phase === 'threshold' && choices.length > 0) {
-    const desc = localized(state, 'encounter_description');
-    lines.push(...formatThresholdEntry(desc, choices));
-  } else if ((state.phase === 'encounter' || state.phase === 'rest') && choices.length > 0) {
-    const desc = localized(state, 'encounter_description');
-    lines.push(...formatEncounterChoices(desc, choices, state.party));
+  if (description.encounter && choices.length > 0) {
+    lines.push(
+      ...(description.isThreshold
+        ? formatThresholdEntry(description.encounter, choices)
+        : formatEncounterChoices(description.encounter, choices, state.party)),
+    );
   }
 
   return lines;
