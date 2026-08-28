@@ -53,7 +53,11 @@ import {
   startDungeonRun,
 } from '../../../utils/dungeon-entry-flow.js';
 import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeon-environment.js';
-import { getArchetypeDisplayName, topAptitudes } from '../../../utils/dungeon-formatters.js';
+import {
+  buildEnemyDisplayNames,
+  getArchetypeDisplayName,
+  topAptitudes,
+} from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
 import { OPERATIVE_LABEL } from '../../../utils/operative-constants.js';
 import { parseAndExecute } from '../../../utils/terminal-commands.js';
@@ -753,6 +757,150 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         opacity: 0.4;
       }
 
+      /* In-scene hostiles — the mirror of the party band. They stand DEEPER in
+         the chamber (upper band, smaller footprint = further from the eye), so
+         the stage reads front-to-back instead of as one flat row. The party
+         owns the lower band; the combat-FX layer already assumes exactly this
+         split ("damage to enemies in the upper band").
+
+         No portrait art exists for enemies yet (rollout Phase 3a), so the
+         SILHOUETTE carries the identity: clip-path outline and mass scale with
+         threat_level, which means a boss reads as a boss before a single label
+         is parsed. When generated art lands, swap .foe__body for an <img> and
+         the whole band keeps working. */
+      .scene__enemies {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 19%;
+        z-index: 2;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: clamp(14px, 4vw, 46px);
+        padding: 0 16px;
+      }
+      .foe {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        animation: foe-loom var(--duration-entrance, 350ms) var(--ease-dramatic, ease) both;
+        animation-delay: calc(var(--i, 0) * 90ms);
+      }
+      .foe__figure {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        width: var(--_foe-w);
+        height: var(--_foe-h);
+        animation: foe-sway 5.4s var(--ease-in-out, ease-in-out) infinite;
+        animation-delay: calc(var(--i, 0) * -700ms);
+      }
+      /* The silhouette itself — a leaf element, so the drop-shadow here never
+         creates a containing block for the HUD's fixed-position overlays. */
+      .foe__body {
+        position: absolute;
+        inset: 0;
+        clip-path: var(--_foe-shape);
+        background: linear-gradient(
+          to top,
+          color-mix(in srgb, var(--_cond) 66%, var(--color-surface)),
+          color-mix(in srgb, var(--_cond) 26%, var(--color-surface)) 60%,
+          color-mix(in srgb, var(--_cond) 48%, transparent)
+        );
+        filter: drop-shadow(0 0 11px color-mix(in srgb, var(--_cond) 38%, transparent));
+      }
+      /* Paired eye-glow — the one warm signal on an otherwise unlit mass. */
+      .foe__eyes {
+        position: absolute;
+        top: var(--_foe-eye-top, 16%);
+        left: 50%;
+        width: 56%;
+        height: 12%;
+        transform: translateX(-50%);
+        background:
+          radial-gradient(
+            closest-side,
+            color-mix(in srgb, var(--_cond) 92%, var(--color-text-primary)),
+            transparent
+          ),
+          radial-gradient(
+            closest-side,
+            color-mix(in srgb, var(--_cond) 92%, var(--color-text-primary)),
+            transparent
+          );
+        background-size: 34% 100%, 34% 100%;
+        background-position: 12% 50%, 88% 50%;
+        background-repeat: no-repeat;
+        animation: foe-glare 3.2s var(--ease-in-out, ease-in-out) infinite;
+      }
+      /* Floor pool, mirroring the party's ground anchor. */
+      .foe__pool {
+        position: absolute;
+        left: 50%;
+        bottom: -9px;
+        width: 150%;
+        height: 18px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: radial-gradient(
+          closest-side,
+          color-mix(in srgb, var(--_cond) 24%, transparent),
+          transparent 72%
+        );
+      }
+      /* Telegraphed intent — Into the Breach's core promise: you see the blow
+         before it lands. Colour comes from the ACTION's own threat scale
+         (low/medium/high/critical), never from the enemy's tier. */
+      .foe__intent {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        max-width: 108px;
+        padding: 1px 4px;
+        border: 1px solid color-mix(in srgb, var(--_intent) 55%, transparent);
+        background: color-mix(in srgb, var(--_intent) 14%, var(--color-surface));
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--_intent) 45%, var(--color-text-primary));
+        animation: foe-intent-pulse 1.8s var(--ease-in-out, ease-in-out) infinite;
+      }
+      .foe__intent-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .foe__name {
+        max-width: 96px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--_cond) 40%, var(--color-text-secondary));
+        text-shadow: 0 1px 2px var(--color-surface);
+      }
+      /* Defeated: the figure drops out of the fight and stops drawing the eye. */
+      .foe--dead {
+        opacity: 0.28;
+      }
+      .foe--dead .foe__figure {
+        animation: foe-fall 520ms var(--ease-slam, ease-in) both;
+      }
+      .foe--dead .foe__eyes {
+        animation: none;
+        opacity: 0;
+      }
+
       /* Critical edge alarm — pulsing inset ring at high pressure. */
       .scene__alarm {
         position: absolute;
@@ -1207,6 +1355,51 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             0 -110px;
         }
       }
+      @keyframes foe-loom {
+        from {
+          opacity: 0;
+          transform: translateY(-10px) scale(0.94);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @keyframes foe-sway {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-3px);
+        }
+      }
+      @keyframes foe-glare {
+        0%,
+        100% {
+          opacity: 0.55;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes foe-intent-pulse {
+        0%,
+        100% {
+          opacity: 0.72;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes foe-fall {
+        from {
+          transform: translateY(0) rotate(0deg);
+        }
+        to {
+          transform: translateY(12px) rotate(-7deg);
+        }
+      }
       @keyframes token-rise {
         from {
           opacity: 0;
@@ -1553,6 +1746,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   <div class="scene__motes" aria-hidden="true"></div>
                 `
             }
+            ${this._renderEnemies()}
             ${this._renderParty()}
             <div class="scene__alarm" aria-hidden="true"></div>
 
@@ -1666,6 +1860,57 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                 <div class="op__pool"></div>
               </div>
               <span class="op__name">${agent.agent_name}</span>
+            </div>
+          `;
+        })}
+      </div>
+    `;
+  }
+
+  /** In-scene hostile band. Enemy data exists ONLY inside dungeonState.combat
+   *  (neither RoomNodeClient nor the state manager carries room occupants), so
+   *  this band is necessarily combat-scoped — showing hostiles on room entry
+   *  would need a backend DTO change first. Zero game logic: every value here
+   *  is server-resolved. */
+  private _renderEnemies() {
+    const combat = dungeonState.combat.value;
+    if (!combat || combat.enemies.length === 0) return nothing;
+
+    // Reuse the panel's naming so a duplicate pair reads as "Wisp A" / "Wisp B"
+    // in BOTH surfaces instead of drifting apart.
+    const displayNames = buildEnemyDisplayNames(combat.enemies);
+
+    return html`
+      <div class="scene__enemies" aria-hidden="true">
+        ${combat.enemies.map((enemy, i) => {
+          const geom = FOE_GEOMETRY[enemy.threat_level] ?? FOE_GEOMETRY.standard;
+          const cond = FOE_CONDITION[enemy.condition_display] ?? 'var(--color-danger)';
+          const dead = !enemy.is_alive;
+          const action = dead ? null : enemy.telegraphed_action;
+          const intent = action
+            ? (FOE_INTENT[action.threat_level] ?? 'var(--color-warning)')
+            : 'var(--color-warning)';
+          return html`
+            <div
+              class="foe ${dead ? 'foe--dead' : ''}"
+              style="--i:${i};--_cond:${cond};--_intent:${intent};--_foe-w:${geom.w};--_foe-h:${geom.h};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
+            >
+              ${
+                action
+                  ? html`<div class="foe__intent">
+                      ${icons.alertTriangle(8)}
+                      <span class="foe__intent-text">${action.intent}</span>
+                    </div>`
+                  : nothing
+              }
+              <div class="foe__figure">
+                <div class="foe__body"></div>
+                <div class="foe__eyes"></div>
+                <div class="foe__pool"></div>
+              </div>
+              <span class="foe__name">
+                ${displayNames.get(enemy.instance_id) ?? ''}
+              </span>
             </div>
           `;
         })}
@@ -1882,6 +2127,57 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
 /** Condition → halo color for in-scene party figures (mirrors the side-panel
  *  CONDITION_COLOR map in DungeonPartyPanel). */
+/** Silhouette geometry per enemy threat tier (minion | standard | elite | boss
+ *  — the EnemyInstance scale, NOT the TelegraphedAction low/medium/high/critical
+ *  scale). Enemies carry no portrait art yet, so outline and mass are the only
+ *  identity the player gets: a minion is a narrow wisp, a boss a broad horned
+ *  mass roughly three times its area. */
+const FOE_GEOMETRY: Record<string, { w: string; h: string; shape: string; eyeTop: string }> = {
+  minion: {
+    w: 'clamp(22px, 2.6vw, 32px)',
+    h: 'clamp(38px, 4.6vw, 54px)',
+    shape: 'polygon(50% 0%, 72% 26%, 66% 100%, 34% 100%, 28% 26%)',
+    eyeTop: '22%',
+  },
+  standard: {
+    w: 'clamp(30px, 3.4vw, 42px)',
+    h: 'clamp(50px, 6vw, 70px)',
+    shape: 'polygon(50% 0%, 74% 18%, 80% 52%, 70% 100%, 30% 100%, 20% 52%, 26% 18%)',
+    eyeTop: '17%',
+  },
+  elite: {
+    w: 'clamp(38px, 4.2vw, 52px)',
+    h: 'clamp(62px, 7.4vw, 88px)',
+    shape:
+      'polygon(50% 0%, 66% 10%, 88% 30%, 78% 56%, 72% 100%, 28% 100%, 22% 56%, 12% 30%, 34% 10%)',
+    eyeTop: '14%',
+  },
+  boss: {
+    w: 'clamp(52px, 6vw, 76px)',
+    h: 'clamp(78px, 9.2vw, 112px)',
+    shape:
+      'polygon(50% 4%, 62% 10%, 78% 0%, 74% 20%, 96% 34%, 84% 58%, 78% 100%, 22% 100%, 16% 58%, 4% 34%, 26% 20%, 22% 0%, 38% 10%)',
+    eyeTop: '15%',
+  },
+};
+
+/** Enemy condition -> silhouette tint. Intensity reads as remaining menace:
+ *  a healthy hostile burns danger-red, a spent one greys out. */
+const FOE_CONDITION: Record<string, string> = {
+  healthy: 'var(--color-danger)',
+  damaged: 'var(--color-warning)',
+  critical: 'var(--color-primary)',
+  defeated: 'var(--color-text-muted)',
+};
+
+/** TelegraphedAction threat scale -> intent-marker colour. */
+const FOE_INTENT: Record<string, string> = {
+  low: 'var(--color-info)',
+  medium: 'var(--color-warning)',
+  high: 'var(--color-danger)',
+  critical: 'var(--color-danger)',
+};
+
 const CONDITION_RING: Record<Condition, string> = {
   operational: 'var(--color-success)',
   stressed: 'var(--color-warning)',
