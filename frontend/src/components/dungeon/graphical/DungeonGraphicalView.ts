@@ -964,6 +964,26 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         width: 100%;
         height: 100%;
       }
+      /* Degradation notice: the FX renderer refused to start (no WebGL2, or a
+         CSP that blocks Pixi's shader compilation). The round still resolves —
+         but the player must be told the layer is missing rather than mistaking
+         a dead renderer for a quiet round. */
+      velg-dungeon-combat-fx .fx-degraded {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        margin: 0;
+        max-width: min(280px, 60%);
+        padding: 4px 8px;
+        border: 1px solid color-mix(in srgb, var(--color-warning) 45%, transparent);
+        background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+        color: var(--color-warning);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 9px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        line-height: 1.4;
+      }
 
       /* ── Foreground content ── */
       .scene__readout {

@@ -37,8 +37,8 @@
 
 import { localized, msg } from '@lit/localize';
 import { effect } from '@preact/signals-core';
-import { html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { html, LitElement, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import type { Application, Container } from 'pixi.js';
 
 import { dungeonState } from '../../../services/DungeonStateManager.js';
@@ -162,6 +162,13 @@ export class VelgDungeonCombatFx extends LitElement {
   private _reducedMotion = false;
 
   private _ready = false;
+  /**
+   * Renderer setup failed for good. Degrading to "no FX" is the right answer —
+   * the HUD stays fully playable — but it must not be *silent*: a dead FX layer
+   * is indistinguishable from a quiet round, which is exactly how the
+   * unsafe-eval abort survived unnoticed on production (remediation plan §A-1).
+   */
+  @state() private _degraded = false;
   private _initPromise: Promise<void> | null = null;
   private _disposeEffect: (() => void) | null = null;
   private _resizeObserver: ResizeObserver | null = null;
@@ -200,7 +207,9 @@ export class VelgDungeonCombatFx extends LitElement {
   }
 
   private async _ensurePixi(): Promise<void> {
-    if (this._ready) return;
+    // Neither a CSP nor a missing WebGL2 context heals mid-session; retrying per
+    // round would only repeat the same report every time a blow lands.
+    if (this._ready || this._degraded) return;
     if (this._initPromise) return this._initPromise;
     this._initPromise = this._initPixi();
     try {
@@ -215,7 +224,16 @@ export class VelgDungeonCombatFx extends LitElement {
     if (!canvas) return;
 
     try {
-      const PIXI = await import('pixi.js');
+      // `pixi.js/unsafe-eval` MUST be loaded before Application.init(). Pixi v8
+      // compiles its shader/UBO/uniform sync routines with `new Function()`;
+      // production serves a CSP without `unsafe-eval`, so init() aborts with
+      // "Current environment does not allow unsafe-eval" and the entire FX
+      // layer stays dead — invisible in dev, where Vite serves no such CSP.
+      // The module patches Pixi's prototypes onto the same instances the barrel
+      // exports (ESM dedupe) and installs eval-free polyfills instead.
+      // Loaded unconditionally, not behind a capability probe: one code path
+      // that dev and production both exercise is the point of the fix.
+      const [PIXI] = await Promise.all([import('pixi.js'), import('pixi.js/unsafe-eval')]);
       // Disconnected during the async import — abort before touching WebGL.
       if (!this.isConnected) return;
 
@@ -251,6 +269,7 @@ export class VelgDungeonCombatFx extends LitElement {
       // WebGL2 unavailable / context creation failed — degrade to no FX.
       captureError(err, { source: 'VelgDungeonCombatFx._initPixi' });
       this._ready = false;
+      this._degraded = true;
     }
   }
 
@@ -665,7 +684,14 @@ export class VelgDungeonCombatFx extends LitElement {
   }
 
   protected render() {
-    return html`<canvas class="fx-canvas" aria-hidden="true"></canvas>`;
+    return html`<canvas class="fx-canvas" aria-hidden="true"></canvas>
+      ${
+        this._degraded
+          ? html`<p class="fx-degraded" role="status">
+            ${msg('Combat effects unavailable – the round resolved without them.')}
+          </p>`
+          : nothing
+      }`;
   }
 }
 
