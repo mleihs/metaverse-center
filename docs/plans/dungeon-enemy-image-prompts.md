@@ -37,7 +37,7 @@ Drei wiederkehrende Fallen, die dabei entschärft wurden:
 
 ```
 Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin. The creature itself must be clearly TALLER THAN WIDE, roughly two units tall for every one across — it is rendered into an upright portrait slot in the game, so a low or horizontal body is squashed into an unreadable smear.
-Exactly ONE creature and nothing else. The creature is a SINGLE CONNECTED OBJECT: nothing floats beside it, behind it or below it — no broken-off pieces, no chips, no shards, no sparks, no embers, no dust motes, not even small ones, and no leftover shapes carried over from any reference image.
+Exactly ONE creature and nothing else. The creature is a SINGLE CONNECTED OBJECT — if the subject describes a doubled or twinned body, the two halves are fused into one solid mass sharing a single base, never two separate figures standing apart. Nothing floats beside it, behind it or below it — no broken-off pieces, no chips, no shards, no sparks, no embers, no dust motes, not even small ones, and no leftover shapes carried over from any reference image.
 If the creature carries a weapon or tool: exactly ONE of it, held in its hand, and complete — the whole object inside the frame with clear space around it. Never a second overlapping or crossing weapon.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
 No cast shadow on the background, no ground plane, no floor contact shadow — the subject must be cleanly separable.
@@ -375,7 +375,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Echo Fragment. A small, squat torso-and-head shape of pale grey stone, hollowed out — the front face of it is an empty concave shell where a body would have been, as though something was pressed into it and lifted away. Its outline is doubled once, offset a hand's width to one side, both outlines solid and opaque.
+Subject: Echo Fragment. A small, squat upright shell of pale grey stone, hollowed out — its front is an empty concave hollow where a body would have been pressed in and lifted away. A second identical shell has grown out of its left side, offset by a hand's width and fused to it along the whole shoulder, so the two form ONE solid double-bodied object with a single base. Both halves opaque stone.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
@@ -383,7 +383,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Deja-vu Phantom. An upright figure of pale grey stone standing mid-stride, and immediately behind it the SAME figure again, offset by a step and slightly turned, as if it had already taken the stride once. Both bodies solid and opaque, overlapping at the shoulder, sharing one base.
+Subject: Deja-vu Phantom. One upright figure of pale grey stone caught mid-stride, with a second identical figure grown directly out of its own back — half a step behind, slightly turned, fused to it along the spine and shoulder so the two share one body and one pair of feet. Solid opaque stone throughout, taller than wide.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -391,7 +391,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: Consciousness Leech. A lean, long-limbed quadruped of pale grey stone, low to the ground, head smooth and eyeless and tapering to a blunt point — no face, no mouth, no expression at all. It moves fast and level, shoulders high, all four limbs beneath it. One clean unbroken surface throughout.
+Subject: Consciousness Leech. A tall, unnaturally thin upright figure of pale grey stone, narrow as a post and stretched far past human proportion, arms hanging past its knees. Its head is a smooth eyeless cone tapering to a blunt point — no face, no mouth, no expression whatsoever. It leans forward as it advances. One clean unbroken surface throughout.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -407,7 +407,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Awakening, a dungeon of the psyche. Deja-vu. Washed-out lilac and dull grey-gold, nearly monochrome, all colour bled thin. Doubled exposure edges, a faint second outline offset from the first.
-Subject: The Repressed. A monumental seated figure of pale grey stone, hunched and enormous, its head lowered into both raised hands so the face is completely hidden. The stone is smooth and blank everywhere the hands touch and deeply cracked everywhere else. It fills the frame and does not move.
+Subject: The Repressed. A monumental figure of pale grey stone kneeling upright and filling the frame, its head lowered into both raised hands so the face is completely hidden. It is built tall and narrow rather than sprawling — knees together, elbows tucked in, the whole mass rising vertically. The stone is smooth and blank wherever the hands touch it and deeply cracked everywhere else.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
@@ -424,7 +424,7 @@ Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably 
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Faction Informer. A small, hunched figure of tarnished grey metal, hands clasped tightly at its chest, shoulders drawn up around a head that is bowed and turned away. Its face is a smooth blank oval. A single flat rectangular plate hangs at its chest on a cord, entirely blank and unmarked.
+Subject: Faction Informer. A small, hunched figure of tarnished grey metal, hands clasped tightly at its chest, shoulders drawn up around a head that is bowed and turned sharply away as if avoiding being seen. Its face is a smooth blank oval. Nothing is worn on its body and nothing is carried.
 Scale: a MINION — squat, stunted and incomplete in its proportions, closer to a fragment than to a whole creature. Never a heroic or imposing physique; it should look small even with nothing beside it for comparison.
 ```
 
@@ -440,7 +440,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: Regime Enforcer. A squat, extremely broad figure of tarnished grey metal, almost as wide as it is tall, with a thick neckless head sunk between enormous shoulders and both fists hanging heavy at its sides. Its face is a plain riveted plate with a single narrow horizontal slit.
+Subject: Regime Enforcer. A heavy, thick-set figure of tarnished grey metal, massively built through the chest and shoulders but still standing clearly taller than it is wide, with a neckless head sunk between enormous shoulders and both fists hanging at its sides. Its face is a plain riveted plate with a single narrow horizontal slit.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
@@ -456,7 +456,7 @@ Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a
 
 ```
 A creature from The Overthrow, a dungeon of the psyche. Fracture. Dull tarnished silver and bruised grey-violet, heavily desaturated. The form broken into offset shards. Tarnished and matte throughout — no mirror shine, no specular glare, no chrome.
-Subject: The Pretender. A monumental figure of tarnished grey metal, filling the frame: magnificent from the waist up — broad shouldered, upright, a great sweep of folded metal wings behind it — and degraded below, where the legs have fused into one thick coiled serpentine tail resting in heavy loops. Its face is a beautiful blank mask tilted slightly upward.
+Subject: The Pretender. A monumental figure of tarnished grey metal filling the frame: magnificent above the waist — broad shouldered, upright, a great sweep of folded metal wings held close behind it — and degraded below, where the legs have fused into one thick serpentine tail that coils upward into a tall vertical column beneath it rather than spreading out across the ground. Its face is a beautiful blank mask tilted slightly upward.
 Scale: monumental — fills the frame, broad-shouldered or horned, unmistakably the authority of this dungeon.
 ```
 
