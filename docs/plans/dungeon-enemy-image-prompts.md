@@ -36,7 +36,7 @@ Drei wiederkehrende Fallen, die dabei entschärft wurden:
 ## Technischer Block — an JEDEN Prompt anhängen
 
 ```
-Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin.
+Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin. The creature itself must be clearly TALLER THAN WIDE, roughly two units tall for every one across — it is rendered into an upright portrait slot in the game, so a low or horizontal body is squashed into an unreadable smear.
 Exactly ONE creature and nothing else. The creature is a SINGLE CONNECTED OBJECT: nothing floats beside it, behind it or below it — no broken-off pieces, no chips, no shards, no sparks, no embers, no dust motes, not even small ones, and no leftover shapes carried over from any reference image.
 If the creature carries a weapon or tool: exactly ONE of it, held in its hand, and complete — the whole object inside the frame with clear space around it. Never a second overlapping or crossing weapon.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
@@ -334,7 +334,7 @@ Scale: a MINION — squat, stunted and incomplete in its proportions, closer to 
 
 ```
 A creature from The Deluge, a dungeon of the psyche. Drowning. Deep greyed teal and silt-brown, heavily desaturated, dim light filtering from far above. Surfaces are genuinely WET and this archetype permits a sheen: soft broad reflections on silt, waterlogged timber and iron, the dull gleam of something just hauled out of a river. Keep every highlight soft and broad — never small hard sparkles, never a bright rim along the outer edge of the silhouette.
-Subject: Pressure Surge. A wide bank of compacted silt and gravel lying along the ground, twice as wide as it is tall and hugging the floor for its whole length — a heavy sediment ridge caught mid-topple, its front face smoothed flat by what it has been pushing and its back sloping away into loose gravel. It has no stem, no coil, no upright column and nothing rising from it: the whole body stays low and horizontal.
+Subject: Pressure Surge. A rearing wall of compacted silt and gravel, standing tall and leaning forward over the viewer, curling at the top like a breaker caught the instant before it falls. Its front face is smooth and blunt where it has been shoving things ahead of it; its crest is heavy with gravel and splintered boards on the point of coming down. A solid slab of earth, broad and flat across the front, not a rope and not a coil.
 Scale: human-scaled, upright, the baseline threat of this place.
 ```
 
