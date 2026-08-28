@@ -375,10 +375,17 @@ class AvailableDungeonResponse(BaseModel):
 
     archetype: str
     signature: str
+    # The three resonance figures are None together with resonance_id: an
+    # admin-unlocked archetype has no resonance behind it, and there is no
+    # measurement to report. They used to default to 0.5, so an override-mode
+    # lobby showed "Magnitude 0.5" on every card — a plausible number standing
+    # in for an absent one, the same defect the aptitude baseline had.
     resonance_id: UUID | None = None  # None when admin-overridden (no resonance)
-    magnitude: float = 0.5
-    susceptibility: float = 0.5
-    effective_magnitude: float = 0.5
+    magnitude: float | None = None
+    susceptibility: float | None = None
+    effective_magnitude: float | None = None
+    # Difficulty and depth stay non-null: they are the parameters the run will
+    # actually use, whether they came from resonance or from the override.
     suggested_difficulty: int = Field(default=3, ge=1, le=5)
     suggested_depth: int = Field(default=5, ge=3, le=7)
     last_run_at: datetime | None = None

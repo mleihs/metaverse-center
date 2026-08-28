@@ -26,7 +26,11 @@ import { dungeonState } from '../../services/DungeonStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { terminalState } from '../../services/TerminalStateManager.js';
 import type { AvailableDungeonResponse } from '../../types/dungeon.js';
-import { getArchetypeDisplayName } from '../../utils/dungeon-formatters.js';
+import {
+  adminUnlockedLabel,
+  getArchetypeDisplayName,
+  resonanceMagnitudeLabel,
+} from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 import { parseAndExecute } from '../../utils/terminal-commands.js';
 import { systemLine } from '../../utils/terminal-formatters.js';
@@ -764,7 +768,13 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
             >
               <span class="lobby-dungeon__name">${getArchetypeDisplayName(d.archetype)}</span>
               <span class="lobby-dungeon__meta">
-                <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
+                ${
+                  // No resonance behind an admin-unlocked archetype: name the
+                  // reason instead of printing a figure nobody measured.
+                  resonanceMagnitudeLabel(d)
+                    ? html`<span>${resonanceMagnitudeLabel(d)}</span>`
+                    : html`<span class="lobby-dungeon__origin">${adminUnlockedLabel()}</span>`
+                }
                 <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>
                 <span>${msg('Depth')}: ${d.suggested_depth + 1}</span>
                 ${

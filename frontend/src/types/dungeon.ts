@@ -706,10 +706,14 @@ export interface RetreatResponse {
 export interface AvailableDungeonResponse {
   archetype: string;
   signature: string;
+  /** Null together with the three figures below: an admin-unlocked archetype
+   *  has no resonance behind it, so there is no measurement to report. Render
+   *  the absence; never substitute a plausible number for it. */
   resonance_id: UUID | null;
-  magnitude: number;
-  susceptibility: number;
-  effective_magnitude: number;
+  magnitude: number | null;
+  susceptibility: number | null;
+  effective_magnitude: number | null;
+  /** Always present — the parameters the run will actually use. */
   suggested_difficulty: number;
   suggested_depth: number;
   last_run_at: string | null;

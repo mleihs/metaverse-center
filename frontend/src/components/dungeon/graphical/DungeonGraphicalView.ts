@@ -55,8 +55,10 @@ import {
 } from '../../../utils/dungeon-entry-flow.js';
 import { type FxProfile, resolveDungeonEnvironment } from '../../../utils/dungeon-environment.js';
 import {
+  adminUnlockedLabel,
   buildEnemyDisplayNames,
   getArchetypeDisplayName,
+  resonanceMagnitudeLabel,
   topAptitudes,
 } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
@@ -1153,14 +1155,72 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 12px;
       }
+      /* The card is a stage, not a row: the archetype's establishing shot fills
+         it, a scrim from the bottom keeps the text legible over any image, and
+         name + facts sit in front. Without the art the cards were five
+         indistinguishable rectangles whose only difference was a name — and in
+         override mode not even the numbers differed. */
       .lobby-card {
+        position: relative;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end;
         gap: 6px;
+        min-height: 132px;
         padding: 14px;
+        overflow: hidden;
         border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
         background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
         box-shadow: var(--shadow-sm);
+      }
+      /* A leaf <img>, so the filter never creates a containing block for the
+         HUD's fixed-position overlays (same reasoning as .scene__art-img). */
+      .lobby-card__art {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        opacity: 0.42;
+        filter: saturate(0.72) contrast(1.05);
+        transition:
+          opacity var(--transition-normal, 200ms ease),
+          filter var(--transition-normal, 200ms ease);
+      }
+      /* The scrim lives on the card, not on the image: it must also darken the
+         plain background when a card has no art. */
+      .lobby-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          to top,
+          var(--color-surface) 4%,
+          color-mix(in srgb, var(--color-surface) 72%, transparent) 46%,
+          color-mix(in srgb, var(--color-surface) 22%, transparent)
+        );
+      }
+      .lobby-card__name,
+      .lobby-card__meta {
+        position: relative;
+        z-index: 1;
+      }
+      .lobby-card--available:hover .lobby-card__art,
+      .lobby-card--available:focus-visible .lobby-card__art {
+        opacity: 0.6;
+        filter: saturate(0.95) contrast(1.05);
+      }
+      /* Why this archetype is listed when no resonance put it there. Dashed and
+         in the warning tone, like every other "this is not a measurement"
+         marker in the dungeon UI. */
+      .lobby-card__origin {
+        padding: 0 5px;
+        border: 1px dashed color-mix(in srgb, var(--color-warning) 40%, transparent);
+        color: var(--color-warning);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .lobby-card--available {
         cursor: pointer;
@@ -1181,6 +1241,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       }
       .lobby-card__name {
         font-family: var(--font-brutalist, var(--_mono));
+        text-shadow: 0 1px 3px var(--color-surface);
         font-weight: 700;
         font-size: 13px;
         text-transform: uppercase;
@@ -1578,7 +1639,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         .foe__intent,
         .foe__art,
         .op,
-        .op__figure {
+        .op__figure,
+        .lobby-card,
+        .lobby-card__art {
           animation: none !important;
           transition: none !important;
         }
@@ -2127,8 +2190,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   private _renderAvailableGrid(dungeons: AvailableDungeonResponse[]) {
     return html`
       <div class="lobby-grid" role="list" aria-label=${msg('Available dungeons')}>
-        ${dungeons.map(
-          (d) => html`
+        ${dungeons.map((d) => {
+          const artUrl = dungeonBackdropUrl(d.archetype);
+          const magnitude = resonanceMagnitudeLabel(d);
+          return html`
             <div
               class="lobby-card ${
                 d.available ? 'lobby-card--available' : 'lobby-card--unavailable'
@@ -2148,15 +2213,36 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                 }
               }}
             >
+              ${
+                // The archetype's own establishing shot — the same image the
+                // landing page and the detail view already use, and the one the
+                // scene paints behind the run. Without it the five cards were
+                // indistinguishable rectangles over 500 px of empty space,
+                // differing in nothing but a name.
+                artUrl
+                  ? html`<img
+                    class="lobby-card__art"
+                    src=${artUrl}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    aria-hidden="true"
+                  />`
+                  : nothing
+              }
               <span class="lobby-card__name">${getArchetypeDisplayName(d.archetype)}</span>
               <span class="lobby-card__meta">
-                <span>${msg('Magnitude')}: ${d.effective_magnitude.toFixed(1)}</span>
+                ${
+                  magnitude
+                    ? html`<span>${magnitude}</span>`
+                    : html`<span class="lobby-card__origin">${adminUnlockedLabel()}</span>`
+                }
                 <span>${msg('Difficulty')}: ${d.suggested_difficulty}</span>
                 <span>${msg('Depth')}: ${d.suggested_depth + 1}</span>
               </span>
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }
