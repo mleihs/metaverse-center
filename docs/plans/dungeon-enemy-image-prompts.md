@@ -181,7 +181,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Devouring Mother, a dungeon of the psyche. Parasitic warmth, drained of colour. Dull greyed ochre and dried blackened blood — flesh muted almost to stone, never pink, never fresh, never appetising. Soft enveloping light, matte throughout, no sheen. Organic folds and umbilical filaments.
-Subject: Host Warden. It was a person once and the proportions still remember it — two arms, two legs, a head. Fibrous tissue has grown over and through the body until the person is only a scaffold for something larger. It stands with both arms opened wide, offering an embrace.
+Subject: Host Warden. It was a person once and the proportions still remember it — two arms, two legs, and an ordinary human head with a blank, slack face. No flower, no bloom, no petals, nothing botanical where the head should be. Fibrous tissue has grown over and through the body until the person is only a scaffold for something larger. Both arms are raised and opened symmetrically, palms forward, in a wide welcoming embrace — the gesture is the whole point of the figure.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
