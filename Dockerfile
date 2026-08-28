@@ -15,6 +15,11 @@ ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
 ENV VITE_GA4_MEASUREMENT_ID=${VITE_GA4_MEASUREMENT_ID}
 ENV VITE_SENTRY_DSN=${VITE_SENTRY_DSN}
 ENV VITE_SENTRY_RELEASE=${SENTRY_RELEASE}
+# This is the only build that ships to users. It opts into the build-env
+# contract in frontend/vite.config.ts (assertDeployEnv), so a deployment that
+# forgets a build-critical VITE_* variable fails here instead of silently
+# shipping a bundle with the feature compiled out.
+ENV VELG_REQUIRE_BUILD_ENV=true
 
 WORKDIR /app/frontend
 COPY frontend/package*.json ./

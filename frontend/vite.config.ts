@@ -13,10 +13,43 @@ function resolveGitSha(envSha: string | undefined): string {
   }
 }
 
+/**
+ * Variables the deployed bundle cannot do without. Vite inlines them at build
+ * time, so a missing one is not an error anywhere — it is a silently absent
+ * feature in the shipped JavaScript. `VITE_SENTRY_DSN` is the worst case of
+ * that class: without it every `captureError()` in the codebase writes to the
+ * browser console and nowhere else, which is how a dead Pixi FX layer survived
+ * months on production unnoticed (remediation plan §A-1/§A-2).
+ *
+ * Checked only when the build declares itself a deployment build via
+ * `VELG_REQUIRE_BUILD_ENV=true` (set by the Dockerfile's frontend stage — the
+ * only build that ships to users). Local `npm run build` and CI stay usable
+ * without production secrets.
+ */
+const REQUIRED_DEPLOY_ENV = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_ANON_KEY', 'VITE_SENTRY_DSN'] as const;
+
+function assertDeployEnv(env: Record<string, string>): void {
+  if (env.VELG_REQUIRE_BUILD_ENV !== 'true') return;
+
+  const missing: string[] = REQUIRED_DEPLOY_ENV.filter((key) => !env[key]);
+  // Source maps are uploaded under a release name; without it the uploaded
+  // maps cannot be matched to the running bundle and stack traces stay minified.
+  if (env.SENTRY_AUTH_TOKEN && !env.VITE_SENTRY_RELEASE) missing.push('VITE_SENTRY_RELEASE');
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[build-env] Deployment build is missing required variable(s): ${missing.join(', ')}.\n` +
+        'Set them on the deployment target (Coolify → Environment Variables, "Build Variable" enabled)\n' +
+        'and pass them as Docker build args. See docs/guides/sentry-cicd-integration.md.',
+    );
+  }
+}
+
 export default defineConfig(({ mode }) => {
   // Mirrors the existing envDir: '..' — .env files live at project root,
   // not inside frontend/. loadEnv respects that hierarchy, process.env does not.
   const env = loadEnv(mode, '..', '');
+  assertDeployEnv(env);
   const isAlpha = env.VITE_IS_ALPHA === 'true';
   const gitSha = resolveGitSha(env.VITE_GIT_SHA);
   const buildDate = new Date().toISOString().slice(0, 10);
