@@ -33,6 +33,7 @@ Drei wiederkehrende Fallen, die dabei entschärft wurden:
 ```
 Full body, single subject, centred, vertical 3:4 framing, complete figure inside the frame with a small margin.
 Exactly ONE creature and nothing else: no detached limbs, no floating fragments, no debris clouds, and no leftover shapes carried over from any reference image.
+If the creature carries a weapon or tool: exactly ONE of it, held in its hand, and complete — the whole object inside the frame with clear space around it. Never a second overlapping or crossing weapon.
 Flat pure magenta background, hex #FF00FF, absolutely uniform, no gradient, no vignette.
 No cast shadow on the background, no ground plane, no floor contact shadow — the subject must be cleanly separable.
 Do not let any magenta light spill onto the subject; keep rim light neutral or in the palette below.
@@ -230,7 +231,7 @@ Scale: human-scaled, upright, the baseline threat of this place.
 
 ```
 A creature from The Entropy, a dungeon of the psyche. Decay. Bleached bone-white and dull mould-green, both heavily greyed and nearly colourless. Flat diffuse light, no highlights anywhere. Surfaces powdering and crumbling at the silhouette edge.
-Subject: Entropy Warden. A tall armoured guardian whose plate has corroded into lace and hangs loose on a frame that is mostly gone. It holds a formal guard posture, weapon raised over nothing.
+Subject: Entropy Warden. A tall guardian whose armour has corroded into lace and hangs loose on a frame that is mostly gone. A corroded closed helm is still in place on its shoulders — it has a head, not an empty collar. It stands in a formal guard posture and holds a single short polearm upright against one shoulder, the whole weapon well inside the frame.
 Scale: taller and heavier than a person, asymmetric, visibly more dangerous at a glance.
 ```
 
