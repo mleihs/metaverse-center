@@ -13,6 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 
 from backend.dependencies import (
+    get_admin_supabase,
     get_current_user,
     get_effective_supabase,
     require_simulation_member,
@@ -79,6 +80,7 @@ async def track_attention(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _member: Annotated[str, Depends(require_simulation_member("viewer"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[dict]:
     """Track that the user viewed an agent's detail page.
 
@@ -86,6 +88,7 @@ async def track_attention(
     """
     data = await BondService.track_attention(
         supabase, user.id, body.agent_id, simulation_id,
+        admin_supabase=admin_supabase,
     )
     await AuditService.safe_log(
         supabase, simulation_id, user.id,
