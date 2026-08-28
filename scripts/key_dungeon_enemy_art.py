@@ -55,6 +55,51 @@ CROP_MARGIN = 0.02
 MAX_EDGE = 1024
 #: AVIF quality, matching scripts/generate_dungeon_detail_images.py.
 AVIF_QUALITY = 80
+#: A detached blob smaller than this share of the largest one is dropped. Every
+#: creature is briefed as "exactly ONE creature, a single connected object", but
+#: generators still hand back stray debris beside the figure (Automaton Shard came
+#: back with a 7.3%% chunk floating at its left). Such a piece survives the key,
+#: lands in the scene as a grey lump, and — because the crop box is mass-based —
+#: shoves the creature off-centre in the enemy band. A genuinely two-part design
+#: stays intact at this threshold; anything dropped is reported, never silent.
+MIN_BLOB_SHARE = 0.20
+#: Alpha above which a pixel counts as solid body when grouping blobs.
+BLOB_ALPHA = 12
+
+
+def drop_stray_blobs(alpha: np.ndarray) -> tuple[np.ndarray, list[float]]:
+    """Zero out detached blobs below MIN_BLOB_SHARE of the largest. Returns the
+    cleaned alpha and the shares that were removed (for reporting)."""
+    solid = alpha > BLOB_ALPHA
+    if not solid.any():
+        return alpha, []
+
+    h, w = solid.shape
+    label = np.zeros((h, w), np.int32)
+    sizes: list[int] = []
+    for sy in range(h):
+        for sx in np.nonzero(solid[sy] & (label[sy] == 0))[0]:
+            sizes.append(0)
+            stack = [(sy, int(sx))]
+            label[sy, sx] = len(sizes)
+            while stack:
+                y, x = stack.pop()
+                sizes[-1] += 1
+                for ny, nx in ((y + 1, x), (y - 1, x), (y, x + 1), (y, x - 1)):
+                    if 0 <= ny < h and 0 <= nx < w and solid[ny, nx] and not label[ny, nx]:
+                        label[ny, nx] = len(sizes)
+                        stack.append((ny, nx))
+
+    biggest = max(sizes)
+    dropped = []
+    out = alpha.copy()
+    for idx, size in enumerate(sizes, start=1):
+        share = size / biggest
+        if share < MIN_BLOB_SHARE:
+            if share > 0.01:  # only worth reporting; specks stay quiet
+                dropped.append(share)
+            out[label == idx] = 0.0
+    return out, dropped
 
 
 def mass_bbox(alpha: np.ndarray) -> tuple[int, int, int, int] | None:
@@ -116,6 +161,11 @@ def key_and_despill(path: Path) -> tuple[Image.Image, dict]:
 def process(src: Path, dst_dir: Path, *, check: bool) -> dict:
     im, stats = key_and_despill(src)
 
+    alpha = np.asarray(im.getchannel("A"), dtype=np.float32)
+    alpha, dropped = drop_stray_blobs(alpha)
+    stats["dropped_blobs"] = dropped
+    im.putalpha(Image.fromarray(alpha.astype(np.uint8), "L"))
+
     box = mass_bbox(np.asarray(im.getchannel("A"), dtype=np.float32))
     if box is None:
         raise ValueError(f"{src.name}: nothing survived the key — is the background magenta?")
@@ -162,6 +212,8 @@ def main() -> int:
             worst = 1.0
             continue
         flag = "  <-- pruefen" if s["residual_magenta"] > 0.12 else ""
+        for share in s.get("dropped_blobs", []):
+            print(f"  {'':28} {'':>10}  Fremdkoerper entfernt: {share * 100:.1f}% der Hauptmasse")
         worst = max(worst, s["residual_magenta"])
         print(
             f"  {src.stem:28} {s['size']:>10}  "
