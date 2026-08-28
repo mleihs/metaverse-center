@@ -9,6 +9,55 @@ Dieses Dokument ist der Anker für die Sanierung nach einem Context-Clear.
 
 ---
 
+## Stand der Abarbeitung (2026-08-28, abends)
+
+**15 von 17 Befunden erledigt**, alle gepusht und auf Produktiv deployt
+(`d1bd676` … `5f0445c`). Der Rest ist bewusst offen:
+
+| Befund | Stand | Commit |
+|---|---|---|
+| A-1 Pixi/unsafe-eval | erledigt | `2460587` |
+| A-2 Sentry-DSN | erledigt, DSN im Prod-Bundle verifiziert | `d1bd676`, `82c3298` |
+| A-3 Raumbeschreibungen | erledigt | `ee54815` |
+| B-1 Picker-Porträts | **kein Portraitfehler** — siehe unten | (mit B-2) |
+| B-2 Aptituden-Widerspruch | erledigt | `aa696c1` |
+| B-3 Punkt 1 (Betrieb) | **offen — Entscheidung des Auftraggebers** | — |
+| B-3 Punkt 2 (Gestaltung) | erledigt | `e6dc21e` |
+| C-1 Rail-Scroll | erledigt | `48301d1` |
+| C-2 abgeschnittener Knoten | **offen — braucht Messung** | — |
+| C-3 Szenen-Überlagerungen | erledigt | `ee54815` |
+| C-4 Mausrad | erledigt | `48301d1` |
+| C-5 Gegner-Maßstab | erledigt, inkl. SCENE_EDGE 384→768 | `2c52b0c` |
+| C-6 Gegner-Interaktion | erledigt | `ba03009` |
+| D-1 „8 AGENTSEN" | erledigt | `9968a1e` |
+| D-2 englische Strings | erledigt — sie *waren* in `msg()` | `5f0445c` |
+| D-3 „STIMMUN" | erledigt | `9968a1e` |
+
+**B-1 hat sich anders aufgelöst als vermutet.** Die Feldnamen-Divergenz
+`portrait_image_url` / `portrait_url` ist keine: `fn_get_party_combat_state`
+aliast dieselbe Spalte (`'portrait_url', a.portrait_image_url`). Nachgemessen
+haben alle acht Porträt-URLs der Simulation HTTP 200 geliefert und die Storage-
+Objekte existieren. Die leeren Kästchen der „Aufstellungsübersicht" kamen aus
+B-2: `hasAptitudes = this._aptitudeMap.size > 0` war false, weil die Simulation
+keine Aptituden-Zeilen hat — also rendert die Karte weder Balken noch Rolle.
+
+**Drei Funde außerhalb der Liste, alle behoben:**
+
+1. **Sechs Lint-Gates liefen in CI ins Leere und meldeten trotzdem PASS**
+   (`a866b5f`). Mit Sonde nachgewiesen. Alle elf verankert, Meta-Gate ergänzt.
+2. **Produktions-Totalausfall während der Arbeit** (`63368bd`): Supabase'
+   JWKS-Endpunkt hing, und ein blockierender Fetch im Event-Loop machte daraus
+   ein plattformweites 503.
+3. **Coolify reicht `SOURCE_COMMIT` nicht als Build-Arg** (`82c3298`), weshalb
+   die Release-Zuordnung aus A-2 über den Laufzeitkanal läuft: der Server
+   stempelt sie in die SPA-Hülle.
+
+**Was noch aussteht:** die optische Bestätigung. A-1, A-3, C-1, C-3, C-5, C-6
+und D-3 sind gebaut und getestet, aber nicht im Browser gesehen — das braucht
+eine **angemeldete** Sitzung im grafischen Modus.
+
+---
+
 ## Ausgangslage (Stand beim Schreiben)
 
 - `main` = `702d336`, gepusht. Prod läuft auf `702d336` (`running:healthy`).
