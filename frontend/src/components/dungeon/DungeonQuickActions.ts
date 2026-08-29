@@ -147,8 +147,12 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         padding: 7px 9px;
         text-align: left;
         background: transparent;
-        border: 1px solid color-mix(in srgb, var(--_border) 70%, transparent);
-        border-left: 3px solid var(--_phosphor-dim);
+        /* Der Zustand der Option (offen / ueberfahren / ausser Reichweite)
+           faerbt den ganzen Rahmen. Vorher lag er als 3-px-Platte an der linken
+           Kante — und der Zweck von Paket C war, dass eine gesperrte Karte
+           optisch von einer offenen unterscheidbar bleibt. Sie ist es weiterhin
+           dreifach: Rahmen, opacity, und der Anforderungswert in Rot und fett. */
+        border: 1px solid var(--_phosphor-dim);
         color: var(--_phosphor-dim);
         font-family: var(--_mono);
         cursor: pointer;
@@ -159,8 +163,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       }
       .choice:hover:not(:disabled) {
         color: var(--_phosphor);
-        border-color: var(--_phosphor-dim);
-        border-left-color: var(--_phosphor);
+        border-color: var(--_phosphor);
         background: color-mix(in srgb, var(--_phosphor) 6%, transparent);
       }
       .choice:focus-visible {
@@ -169,7 +172,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       }
       .choice:disabled {
         cursor: not-allowed;
-        border-left-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
+        border-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
         opacity: 0.72;
       }
       .choice__label {

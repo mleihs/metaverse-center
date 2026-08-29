@@ -19,8 +19,10 @@ export class VelgTerminalPreview extends LitElement {
     .preview {
       position: relative;
       padding: var(--space-4);
+      /* Der Bernsteinakzent umrandet die Vorschau, statt als Platte an einer
+         Kante zu stehen. */
       background: var(--color-surface-sunken, #0a0a0a);
-      border-left: 2px solid var(--color-accent-amber, #f59e0b);
+      border: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, var(--color-border));
       overflow: hidden;
     }
 

@@ -32,9 +32,12 @@ export class VelgAuthorCard extends LitElement {
         border-color: var(--_accent-border);
       }
 
+      /* Betonung, nicht Kategorie: die primaere Autorenkarte hebt sich jetzt
+         ueber Rahmenfarbe und den brutalistischen Versatzschatten ab — das
+         Mittel, das dieses Designsystem dafuer ohnehin fuehrt. */
       :host([primary]) .card {
-        border-left: 2px solid var(--_accent);
-        padding-left: calc(var(--space-5, 20px) - 1px);
+        border-color: color-mix(in oklch, var(--_accent) 55%, transparent);
+        box-shadow: var(--shadow-sm);
       }
 
       .name {

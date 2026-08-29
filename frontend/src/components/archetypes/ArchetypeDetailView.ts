@@ -719,8 +719,10 @@ export class VelgArchetypeDetail extends LitElement {
         opacity: 0.75;
         max-width: 60ch;
         margin-bottom: var(--space-8, 32px);
+        /* Zitatlinie fuer den Lore-Vorspann, neutral. Der Text selbst steht
+           bereits in der Akzentfarbe (siehe color weiter oben). */
         padding-left: var(--space-5, 20px);
-        border-left: 2px solid var(--_accent-border);
+        border-left: 1px solid var(--color-border);
       }
 
       .lore-intro__body {

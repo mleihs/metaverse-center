@@ -687,13 +687,14 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       outline-offset: -2px;
     }
 
+    /* Die empfohlene Mission hebt sich ueber ihren Rahmen ab, nicht ueber
+       eine Platte an der Kante. */
     .mission-card--primary {
-      border-left: 3px solid var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
     }
 
     .mission-card--primary:hover {
-      border-color: var(--color-warning-border);
-      border-left-color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
       box-shadow: 0 2px 12px var(--color-primary-bg);
     }
 
