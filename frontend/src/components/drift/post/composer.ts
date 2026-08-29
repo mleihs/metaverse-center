@@ -56,21 +56,36 @@ const GradeShader = {
       col.g = texture2D(tDiffuse, uv).g;
       col.b = texture2D(tDiffuse, uv - dir * ca).b;
 
-      // Redaction blocks (Doppelt band and up)
+      // Redaction blocks (Doppelt band and up).
+      //
+      // 0.85 blacked a cell out completely, and a cell is big enough to swallow a node —
+      // so at high Dissonanz the board hid the very thing a move is aimed at. The Bureau
+      // redacting the chart is the point (concept 6.3), a board that cannot be read is
+      // not: 0.62 still reads unmistakably as a censor bar while the node, its ring and
+      // the corridor stay visible through it.
       if (diss > 0.5) {
         vec2 cell = floor(uv * vec2(14.0, 30.0));
         float k = hash21(cell + floor(uTime * 2.0) * 17.0);
         float gate = step(0.994 - (diss - 0.5) * 0.02, k);
-        col *= 1.0 - gate * 0.85;
+        col *= 1.0 - gate * 0.62;
       }
 
       // Scanlines (CRT-lite always on, ramping with dissonance)
       float scan = sin(gl_FragCoord.y * 3.14159) * 0.5 + 0.5;
       col *= 1.0 - (0.025 + 0.09 * diss) * scan;
 
-      // Grain
-      col += (hash21(uv * uResolution + vec2(uTime * 61.0, uTime * 83.0)) - 0.5)
-           * (0.016 + 0.07 * diss);
+      // Grain.
+      //
+      // The hash input must stay SMALL. hash21 opens with fract(p * vec2(123.34, 456.21)),
+      // so feeding it uv * uResolution — up to ~2704 on a retina board — lands the
+      // multiply around 3.3e5, where a float32's ulp is ~0.03. fract() of that has almost
+      // no fractional detail left, neighbouring pixels collapse onto the same value, and
+      // the "noise" degenerates into a regular pattern: the thin vertical stripes that
+      // stood over the whole board. Scaling the fragment coordinate down and wrapping it
+      // into [0,1) first keeps the hash inside the range it is accurate in, while 0.013
+      // per pixel still decorrelates neighbours completely.
+      vec2 grainUv = fract(gl_FragCoord.xy * 0.013 + vec2(uTime * 0.61, uTime * 0.83));
+      col += (hash21(grainUv) - 0.5) * (0.016 + 0.07 * diss);
 
       // Vignette
       float v = length(vUv - 0.5);
