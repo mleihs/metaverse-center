@@ -103,6 +103,10 @@ jobs:
         run: bash scripts/lint-no-content-in-python.sh
         working-directory: .
 
+      - name: Backend lint (no unreachable guard after .single())
+        run: bash scripts/lint-no-dead-single-guard.sh
+        working-directory: .
+
   lint-backend:
     name: Lint Backend
     # Enforces the FULL ruff ruleset declared in pyproject.toml (E,F,W,I,N,UP,S,B,A,
