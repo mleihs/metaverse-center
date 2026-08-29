@@ -175,7 +175,12 @@ class EpochResponse(BaseModel):
     id: UUID
     name: str
     description: str | None = None
-    created_by_id: UUID
+    # Nullable in the schema: system-created epochs (academy) have no creator.
+    # Typed `UUID` until 2026-08-29, which made GET /epochs/active return 500
+    # for everyone as soon as one such row existed -- return annotations are the
+    # response model here, so a NULL is a ResponseValidationError, never a null
+    # in the payload. AdminApiService already declared it `string | null`.
+    created_by_id: UUID | None = None
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     current_cycle: int
@@ -303,8 +308,8 @@ OperativeType = Literal["spy", "saboteur", "propagandist", "assassin", "guardian
 class ResonanceOpType(StrEnum):
     """Resonance Operation types for substrate exploitation during epochs."""
 
-    SURGE_RIDING = "surge_riding"      # Aligned operative bonus (+0.08), risk: double pressure on own zones
-    SUBSTRATE_TAP = "substrate_tap"    # Steal 1 RP from target's resonance events. Costs 2 RP.
+    SURGE_RIDING = "surge_riding"  # Aligned operative bonus (+0.08), risk: double pressure on own zones
+    SUBSTRATE_TAP = "substrate_tap"  # Steal 1 RP from target's resonance events. Costs 2 RP.
 
 
 class OperativeDeploy(BaseModel):
