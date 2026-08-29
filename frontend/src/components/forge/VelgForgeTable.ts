@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -13,15 +13,18 @@ import { t } from '../../utils/locale-fields.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
+  forgeConsoleTypeTokens,
   forgeFieldStyles,
   forgeInfoBubbleStyles,
   forgeSectionStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import { agentCardView, buildingCardView, emptySlotLabel } from './forge-card-data.js';
 import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
-import { fanRotation, renderInfoBubble } from './forge-utils.js';
+import { fanGeometry, fanTransform, renderInfoBubble } from './forge-utils.js';
 
+import './VelgForgeActionBar.js';
 import '../shared/VelgGameCard.js';
 import '../shared/VelgSidePanel.js';
 import './VelgForgeScanOverlay.js';
@@ -34,6 +37,7 @@ import './VelgForgeScanOverlay.js';
 @customElement('velg-forge-table')
 export class VelgForgeTable extends LitElement {
   static styles = [
+    forgeConsoleTypeTokens,
     forgeButtonStyles,
     forgeBackButtonStyles,
     forgeFieldStyles,
@@ -43,14 +47,6 @@ export class VelgForgeTable extends LitElement {
     css`
       :host {
         display: block;
-      }
-
-      /* ── Navigation Bar ──────────────────── */
-
-      .table-nav {
-        display: flex;
-        justify-content: flex-start;
-        margin-bottom: var(--space-6);
       }
 
       /* ── Command Console (3-panel grid) ─── */
@@ -178,105 +174,132 @@ export class VelgForgeTable extends LitElement {
         color: var(--color-text-tertiary);
       }
 
+      /* Line-flanked seal, not a rubber stamp: it settles in by opening its
+         letterspacing rather than slamming down at 1.8x scale. */
       .command-panel__stamp {
-        font-family: var(--font-brutalist);
-        font-weight: 900;
-        font-size: var(--text-sm);
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: var(--color-success);
-        text-align: center;
-        padding-top: var(--space-2);
-        animation: stamp-slam 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-      }
-
-      @keyframes stamp-slam {
-        0% { transform: scale(1.8); opacity: 0; }
-        40% { transform: scale(0.9); opacity: 1; }
-        70% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-
-      /* ── Advance Button Section ────────── */
-
-      .command-console__advance {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: var(--space-3);
-        margin-bottom: var(--space-8);
+        gap: var(--space-2);
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold, 700);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-widest, 0.1em);
+        color: var(--color-success);
+        padding-top: var(--space-2);
+        animation: seal-in var(--duration-entrance, 350ms) var(--ease-settle, ease-out) both;
       }
 
-      .command-console__advance--bottom {
-        margin-top: var(--space-8);
+      .command-panel__stamp::before,
+      .command-panel__stamp::after {
+        content: '';
+        flex: 1;
+        height: var(--border-width-thin);
+        background: color-mix(in srgb, var(--color-success) 45%, transparent);
       }
 
-      .command-console__advance .btn--next {
-        min-width: 280px;
-        padding: var(--space-3) var(--space-6);
-        font-size: var(--text-sm);
-        text-align: center;
-        position: relative;
+      @keyframes seal-in {
+        from { opacity: 0; letter-spacing: 0.02em; }
+        to   { opacity: 1; letter-spacing: var(--tracking-widest, 0.1em); }
+      }
+
+      /* ── Armed re-run (destructive confirm) ───── */
+
+      .command-panel--armed {
+        border-color: var(--color-danger);
+        background: var(--color-danger-bg);
+      }
+
+      .command-panel--armed .command-panel__division {
+        color: var(--color-danger);
+      }
+
+      .command-panel__warning {
+        margin: 0;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-readout);
+        line-height: 1.5;
+        color: var(--color-danger);
+      }
+
+      .command-panel__action--confirm {
+        border-color: var(--color-danger);
+        color: var(--color-danger);
+      }
+
+      .command-panel__action--confirm:hover:not(:disabled) {
+        background: var(--color-danger);
+        border-color: var(--color-danger);
+        color: var(--color-text-inverse);
+        box-shadow: none;
+      }
+
+      .command-panel__cancel {
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-widest, 0.1em);
+        color: var(--color-text-tertiary);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+      }
+
+      .command-panel__cancel:hover {
+        color: var(--color-text-primary);
+      }
+
+      /* ── Inline progress (in the panel that was clicked) ───── */
+
+      .command-panel__progress {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+
+      .command-panel__progress-track {
+        flex: 1;
+        height: var(--space-0-5);
+        background: var(--color-border-light);
         overflow: hidden;
       }
 
-      .command-console__advance .btn--next:not(:disabled) {
-        animation: advance-entrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
-                   advance-beacon 2.5s ease-in-out 0.6s infinite;
-        border-color: var(--color-success);
-        color: var(--color-success);
+      .command-panel__progress-fill {
+        height: 100%;
+        background: var(--color-success);
+        transition: width var(--transition-slow, 300ms);
       }
 
-      .command-console__advance .btn--next:not(:disabled)::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          90deg,
-          transparent 0%,
-          rgba(74 222 128 / 0.12) 40%,
-          rgba(74 222 128 / 0.2) 50%,
-          rgba(74 222 128 / 0.12) 60%,
-          transparent 100%
-        );
-        transform: translateX(-100%);
-        animation: advance-shimmer 4s ease-in-out 1.2s infinite;
-        pointer-events: none;
+      .command-panel__progress-fill--indeterminate {
+        width: 35%;
+        animation: progress-sweep 1.4s ease-in-out infinite;
       }
 
-      .command-console__advance .btn--next:not(:disabled):hover {
-        box-shadow: 0 0 24px rgba(74 222 128 / 0.35), 0 0 6px rgba(74 222 128 / 0.5);
-        transform: translateY(-2px);
-        animation: advance-entrance 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-        transition: box-shadow 0.2s ease, transform 0.2s ease;
+      @keyframes progress-sweep {
+        0%   { transform: translateX(-100%); }
+        100% { transform: translateX(300%); }
       }
 
-      .command-console__advance .btn--next:not(:disabled):hover::after {
-        animation: advance-shimmer 2.5s ease-in-out infinite;
-      }
-
-      @keyframes advance-entrance {
-        0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
-        70%  { opacity: 1; transform: translateY(-2px) scale(1.01); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-      }
-
-      @keyframes advance-beacon {
-        0%, 100% { box-shadow: 0 0 8px rgba(74 222 128 / 0.15), 0 0 2px rgba(74 222 128 / 0.3); }
-        50%      { box-shadow: 0 0 16px rgba(74 222 128 / 0.3), 0 0 4px rgba(74 222 128 / 0.5), 0 0 40px rgba(74 222 128 / 0.08); }
-      }
-
-      @keyframes advance-shimmer {
-        0%, 65% { transform: translateX(-100%); }
-        100%    { transform: translateX(100%); }
-      }
-
-      .advance-hint {
+      .command-panel__progress-label {
         font-family: var(--font-mono, monospace);
-        font-size: 11px;
-        color: var(--color-icon);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        font-size: var(--_forge-label);
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--color-success);
+        white-space: nowrap;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .command-panel__stamp {
+          animation: none;
+        }
+        .command-panel__progress-fill--indeterminate {
+          animation: none;
+          width: 100%;
+          opacity: 0.5;
+        }
       }
 
       /* ── On-load attention pulse ────────── */
@@ -320,16 +343,6 @@ export class VelgForgeTable extends LitElement {
           animation: none;
         }
         .command-panel__stamp {
-          animation: none;
-        }
-        .command-console__advance .btn--next:not(:disabled) {
-          animation: none;
-          box-shadow: 0 0 8px rgba(74 222 128 / 0.2);
-        }
-        .command-console__advance .btn--next:not(:disabled)::after {
-          display: none;
-        }
-        .command-console__advance .btn--next:not(:disabled):hover {
           animation: none;
         }
         .command-console--entering .command-panel {
@@ -441,12 +454,48 @@ export class VelgForgeTable extends LitElement {
         transform: scale(1.02);
       }
 
-      .deploy-slot__placeholder {
+      /* ── Card back (a slot nothing has been dealt into) ───── */
+
+      .card-back {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-sunken);
+        border: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+        overflow: hidden;
+      }
+
+      .card-back__weave {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent 0 5px,
+          color-mix(in srgb, var(--color-border) 45%, transparent) 5px 6px
+        );
+        opacity: 0.55;
+      }
+
+      /* A 45-degree lozenge, the same gem shape the fronts carry. */
+      .card-back__sigil {
+        width: var(--space-9);
+        height: var(--space-9);
+        transform: rotate(45deg);
+        border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+        background: var(--color-surface);
+        position: relative;
+      }
+
+      .card-back__index {
+        position: absolute;
+        bottom: var(--space-2);
+        right: var(--space-2);
         font-family: var(--font-mono, monospace);
-        font-size: 11px;
+        font-size: var(--_forge-label);
+        letter-spacing: var(--tracking-widest, 0.1em);
         color: var(--color-text-tertiary);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
       }
 
       /* Slam animation on card placement */
@@ -619,26 +668,33 @@ export class VelgForgeTable extends LitElement {
         color: var(--color-icon);
       }
 
+      /* No perspective property here: it would make this row a containing
+         block for fixed-position descendants, and each card already brings
+         its own perspective wrapper. */
       .staging-hand {
         display: flex;
         justify-content: center;
         align-items: flex-end;
         gap: 0;
         padding: var(--space-6) 0 var(--space-4);
-        perspective: 800px;
         min-height: 360px;
       }
 
-      .staging-card {
-        cursor: grab;
-        margin-left: -20px;
-        transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-        transform-origin: bottom center;
-        position: relative;
+      /* Last resort when even small cards at maximum overlap will not fit:
+         the hand scrolls in its own track instead of pushing the page sideways. */
+      .staging-hand--scrolling {
+        justify-content: flex-start;
+        overflow-x: auto;
+        scrollbar-width: thin;
       }
 
-      .staging-card:first-child {
-        margin-left: 0;
+      /* The horizontal offset is set per card from the measured fan geometry. */
+      .staging-card {
+        cursor: grab;
+        transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        transform-origin: bottom center;
+        position: relative;
+        flex: 0 0 auto;
       }
 
       .staging-card:hover {
@@ -857,6 +913,18 @@ export class VelgForgeTable extends LitElement {
   @state() private _slamSlot: number | null = null;
   @state() private _dragOverSlot: number | null = null;
   @state() private _dealingIndex: number | null = null;
+  /**
+   * Which division has its destructive re-run armed, if any.
+   *
+   * Re-running a division does not add to what is there — it wipes the division
+   * and starts over (`ForgeStateManager._generateEntitiesIncremental` clears the
+   * entity list before the first request). One slot, so arming a second panel
+   * disarms the first.
+   */
+  @state() private _armedPanel: 'geography' | 'agents' | 'buildings' | null = null;
+  /** Width available to the staging fan, in px. Fed by a ResizeObserver. */
+  @state() private _handWidth = 0;
+  private _handObserver: ResizeObserver | null = null;
   @state() private _generationProgress: {
     entityType: 'agents' | 'buildings';
     current: number;
@@ -919,20 +987,31 @@ export class VelgForgeTable extends LitElement {
   disconnectedCallback() {
     for (const dispose of this._disposeEffects) dispose();
     this._disposeEffects = [];
+    this._handObserver?.disconnect();
+    this._handObserver = null;
+    // Leaving the phase disarms any pending overwrite.
+    this._armedPanel = null;
     super.disconnectedCallback();
   }
 
   protected firstUpdated() {
-    // Scroll to command console and play attention-grabbing pulse
+    // Draw the eye to the console with its own entrance rather than by moving
+    // the page under the reader; the phase change already put them at the top.
     requestAnimationFrame(() => {
-      const console = this.renderRoot.querySelector('.command-console');
-      if (!console) return;
-      console.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      console.classList.add('command-console--entering');
+      const consolePanel = this.renderRoot.querySelector('.command-console');
+      if (!consolePanel) return;
+      consolePanel.classList.add('command-console--entering');
       setTimeout(() => {
-        console.classList.remove('command-console--entering');
+        consolePanel.classList.remove('command-console--entering');
       }, 3000);
     });
+
+    // The fan needs the width it actually has, not the width of the window.
+    this._handObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - this._handWidth) > 1) this._handWidth = width;
+    });
+    this._handObserver.observe(this);
   }
 
   private get _geographyPhases(): string[] {
@@ -1097,23 +1176,44 @@ export class VelgForgeTable extends LitElement {
     ];
   }
 
+  /**
+   * How many drafted entities a re-run of `type` would destroy.
+   *
+   * Everything the division has produced is lost, not just the cards still
+   * waiting in the staging hand: the roster on the table was written by the same
+   * run and is cleared with it.
+   */
+  private _discardCount(type: 'agents' | 'buildings' | 'geography'): number {
+    if (type === 'agents') return this._draft?.agents.length ?? 0;
+    if (type === 'buildings') return this._draft?.buildings.length ?? 0;
+    const zones = (this._draft?.geography as { zones?: unknown[] } | undefined)?.zones;
+    return zones?.length ?? 0;
+  }
+
+  /**
+   * Entry point for every division button.
+   *
+   * A first run goes straight through. A re-run is destructive, so it arms
+   * instead of firing and the second click confirms.
+   */
+  private _requestChunk(type: 'agents' | 'buildings' | 'geography', isComplete: boolean) {
+    if (!isComplete) {
+      this._armedPanel = null;
+      this._generateChunk(type);
+      return;
+    }
+
+    if (this._armedPanel !== type) {
+      this._armedPanel = type;
+      return;
+    }
+
+    this._armedPanel = null;
+    this._generateChunk(type);
+  }
+
   private async _generateChunk(type: 'agents' | 'buildings' | 'geography') {
-    const sectionSel =
-      type === 'geography'
-        ? '.section--geography'
-        : type === 'agents'
-          ? '.section--agents'
-          : '.section--buildings';
-
-    // Scroll to the target section first, then start generation
     this._generatingChunk = type;
-    await this.updateComplete;
-    requestAnimationFrame(() => {
-      this.renderRoot
-        .querySelector(sectionSel)
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-
     await forgeStateManager.generateChunk(type);
     this._generatingChunk = null;
 
@@ -1122,28 +1222,24 @@ export class VelgForgeTable extends LitElement {
         ? msg('Signal recovered – blueprints retrieved from Bureau archives')
         : msg('Blueprint expanded successfully.');
       VelgToast.success(toastMsg);
-      // Scroll to reveal the generated content
-      await this.updateComplete;
-      requestAnimationFrame(() => {
-        this.renderRoot
-          .querySelector(sectionSel)
-          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
     } else {
       VelgToast.error(msg('Failed to generate blueprint chunk.'));
     }
   }
 
-  private _acceptAgent(index: number) {
-    this._slamSlot = index;
+  /**
+   * Move one card from the staging hand onto the table.
+   *
+   * The slam lands on the slot the card takes, so structures animate their own
+   * field rather than the operative slot with the same ordinal.
+   */
+  private _acceptEntity(kind: 'agent' | 'building', index: number) {
+    const slotBase = kind === 'agent' ? 0 : 100;
+    this._slamSlot = slotBase + index;
     setTimeout(() => {
       this._slamSlot = null;
     }, 500);
-    forgeStateManager.acceptEntity('agent', index);
-  }
-
-  private _acceptBuilding(index: number) {
-    forgeStateManager.acceptEntity('building', index);
+    forgeStateManager.acceptEntity(kind, index);
   }
 
   private _handleDragStart(e: DragEvent, type: 'agent' | 'building', index: number) {
@@ -1216,10 +1312,6 @@ export class VelgForgeTable extends LitElement {
     forgeStateManager.updateDraft({ current_phase: 'darkroom' });
   }
 
-  private _fanRotation(index: number, total: number): string {
-    return fanRotation(index, total, 10, 6);
-  }
-
   protected render() {
     if (!this._draft) return nothing;
 
@@ -1265,14 +1357,9 @@ export class VelgForgeTable extends LitElement {
           : nothing
       }
 
-      <div class="table-nav">
-        <button class="btn btn--back" @click=${this._handleBack}>
-          &larr; ${msg('Return to Astrolabe')}
-        </button>
-      </div>
-
       <div class="command-console">
         ${this._renderCommandPanel({
+          type: 'geography',
           division: msg('Cartographic Division'),
           description: msg(
             'Survey dimensional topology and chart transit corridors from your seed vision.',
@@ -1289,9 +1376,9 @@ export class VelgForgeTable extends LitElement {
           isComplete: hasGeo,
           isActive: this._generatingChunk === 'geography',
           isGenerating: this._isGenerating,
-          handler: () => this._generateChunk('geography'),
         })}
         ${this._renderCommandPanel({
+          type: 'agents',
           division: msg('Personnel Bureau'),
           description: msg(
             'Recruit operative candidates – AI-generated characters with names, professions, and backstories.',
@@ -1306,9 +1393,9 @@ export class VelgForgeTable extends LitElement {
           isComplete: hasAgents,
           isActive: this._generatingChunk === 'agents',
           isGenerating: this._isGenerating,
-          handler: () => this._generateChunk('agents'),
         })}
         ${this._renderCommandPanel({
+          type: 'buildings',
           division: msg('Infrastructure Corps'),
           description: msg("Engineer structural blueprints for the simulation's key locations."),
           actionLabel: msg('Draft Blueprints'),
@@ -1319,15 +1406,7 @@ export class VelgForgeTable extends LitElement {
           isComplete: hasBuildings,
           isActive: this._generatingChunk === 'buildings',
           isGenerating: this._isGenerating,
-          handler: () => this._generateChunk('buildings'),
         })}
-      </div>
-
-      <div class="command-console__advance">
-        <button class="btn btn--next" ?disabled=${!allComplete} @click=${this._handleNext}>
-          ${msg('Calibrate Darkroom')} &rarr;
-        </button>
-        ${!allComplete ? html`<span class="advance-hint">${msg('Complete all three divisions to advance')}</span>` : nothing}
       </div>
 
       <!-- Cartographic Survey -->
@@ -1407,83 +1486,13 @@ export class VelgForgeTable extends LitElement {
       <div class="deployment-section section--agents">
         <h2 class="section-title">${msg('Operative Roster')}</h2>
 
-        <div class="deployment-field">
-          ${Array.from({ length: genConfig.agent_count }, (_, i) => {
-            const agent = agents[i];
-            const isFilled = !!agent;
-            return html`
-              <div
-                class="deploy-slot ${isFilled ? 'deploy-slot--filled' : ''} ${this._slamSlot === i ? 'deploy-slot--slam' : ''} ${this._dragOverSlot === i ? 'deploy-slot--drag-over' : ''}"
-                @dragover=${(e: DragEvent) => this._handleDragOver(e, i)}
-                @dragleave=${this._handleDragLeave}
-                @drop=${(e: DragEvent) => this._handleDrop(e, i)}
-              >
-                ${
-                  isFilled
-                    ? html`
-                    <velg-game-card
-                      .name=${agent.name}
-                      .subtitle=${t(agent, 'primary_profession')}
-                      .description=${t(agent, 'background')}
-                      .imageUrl=${this._agentImages[i] ?? ''}
-                      .rarity=${'common'}
-                      theme="brutalist"
-                      size="md"
-                      show-actions
-                      @card-click=${() => this._openCardEdit('agent', i)}
-                      @card-edit=${() => this._openCardEdit('agent', i)}
-                      @card-delete=${() => this._removeAgent(i)}
-                    ></velg-game-card>
-                  `
-                    : html`<span class="deploy-slot__placeholder">${i + 1}</span>`
-                }
-              </div>
-            `;
-          })}
-        </div>
+        ${this._renderDeploymentField('agent')}
 
         ${this._renderCounterPips(agents.length, genConfig.agent_count, msg('Agents Drafted'), agentsFailed)}
 
         ${agentsFailed ? this._renderGenerationFailed('agents') : nothing}
 
-        ${
-          this._stagedAgents.length > 0
-            ? html`
-          <div class="staging-section">
-            <div class="staging-label">
-              ${msg('Staging Hand')} –
-              <span class="staging-hint">${msg('Click \u2713 to deploy or \u270E to edit')}</span>
-            </div>
-            <div class="staging-hand">
-              ${this._stagedAgents.map(
-                (a, i) => html`
-                <div
-                  class="staging-card ${this._dealingIndex === i ? 'staging-card--dealing' : ''}"
-                  style="transform: ${this._fanRotation(i, this._stagedAgents.length)}; animation-delay: ${i * 100}ms"
-                  draggable="true"
-                  @dragstart=${(e: DragEvent) => this._handleDragStart(e, 'agent', i)}
-                >
-                  <velg-game-card
-                    .name=${a.name}
-                    .subtitle=${t(a, 'primary_profession')}
-                    .description=${t(a, 'background')}
-                    .imageUrl=${this._agentImages[i % this._agentImages.length] ?? ''}
-                    .rarity=${'common'}
-                    theme="brutalist"
-                    size="md"
-                  ></velg-game-card>
-                  <div class="staging-card__actions">
-                    <button class="staging-action" @click=${() => this._acceptAgent(i)} title=${msg('Accept')} aria-label=${msg('Accept agent')}>&#10003;</button>
-                    <button class="staging-action staging-action--reject" @click=${() => this._openCardEdit('agent', i)} title=${msg('Edit')} aria-label=${msg('Edit agent')}>&#9998;</button>
-                  </div>
-                </div>
-              `,
-              )}
-            </div>
-          </div>
-        `
-            : nothing
-        }
+        ${this._renderStagingHand('agent')}
 
         ${
           this._generatingChunk === 'agents'
@@ -1507,83 +1516,13 @@ export class VelgForgeTable extends LitElement {
       <div class="deployment-section section--buildings">
         <h2 class="section-title">${msg('Architectural Footprint')}</h2>
 
-        <div class="deployment-field">
-          ${Array.from({ length: genConfig.building_count }, (_, i) => {
-            const building = buildings[i];
-            const isFilled = !!building;
-            return html`
-              <div
-                class="deploy-slot ${isFilled ? 'deploy-slot--filled' : ''}"
-                @dragover=${(e: DragEvent) => this._handleDragOver(e, 100 + i)}
-                @dragleave=${this._handleDragLeave}
-                @drop=${(e: DragEvent) => this._handleDrop(e, 100 + i)}
-              >
-                ${
-                  isFilled
-                    ? html`
-                    <velg-game-card
-                      .name=${building.name}
-                      .subtitle=${t(building, 'building_type')}
-                      .description=${t(building, 'description')}
-                      .imageUrl=${this._buildingImages[i] ?? ''}
-                      .rarity=${'common'}
-                      theme="brutalist"
-                      size="md"
-                      show-actions
-                      @card-click=${() => this._openCardEdit('building', i)}
-                      @card-edit=${() => this._openCardEdit('building', i)}
-                      @card-delete=${() => this._removeBuilding(i)}
-                    ></velg-game-card>
-                  `
-                    : html`<span class="deploy-slot__placeholder">${i + 1}</span>`
-                }
-              </div>
-            `;
-          })}
-        </div>
+        ${this._renderDeploymentField('building')}
 
         ${this._renderCounterPips(buildings.length, genConfig.building_count, msg('Buildings Drafted'), buildingsFailed)}
 
         ${buildingsFailed ? this._renderGenerationFailed('buildings') : nothing}
 
-        ${
-          this._stagedBuildings.length > 0
-            ? html`
-          <div class="staging-section">
-            <div class="staging-label">
-              ${msg('Staging Hand')} –
-              <span class="staging-hint">${msg('Click \u2713 to deploy or \u270E to edit')}</span>
-            </div>
-            <div class="staging-hand">
-              ${this._stagedBuildings.map(
-                (b, i) => html`
-                <div
-                  class="staging-card"
-                  style="transform: ${this._fanRotation(i, this._stagedBuildings.length)}"
-                  draggable="true"
-                  @dragstart=${(e: DragEvent) => this._handleDragStart(e, 'building', i)}
-                >
-                  <velg-game-card
-                    .name=${b.name}
-                    .subtitle=${t(b, 'building_type')}
-                    .description=${t(b, 'description')}
-                    .imageUrl=${this._buildingImages[i % this._buildingImages.length] ?? ''}
-                    .rarity=${'common'}
-                    theme="brutalist"
-                    size="md"
-                  ></velg-game-card>
-                  <div class="staging-card__actions">
-                    <button class="staging-action" @click=${() => this._acceptBuilding(i)} title=${msg('Accept')} aria-label=${msg('Accept building')}>&#10003;</button>
-                    <button class="staging-action staging-action--reject" @click=${() => this._openCardEdit('building', i)} title=${msg('Edit')} aria-label=${msg('Edit building')}>&#9998;</button>
-                  </div>
-                </div>
-              `,
-              )}
-            </div>
-          </div>
-        `
-            : nothing
-        }
+        ${this._renderStagingHand('building')}
 
         ${
           this._generatingChunk === 'buildings'
@@ -1603,25 +1542,35 @@ export class VelgForgeTable extends LitElement {
         }
       </div>
 
-      <!-- Bottom advance button (duplicates top) -->
-      <div class="command-console__advance command-console__advance--bottom">
-        <button class="btn btn--next" ?disabled=${!allComplete} @click=${this._handleNext}>
-          ${msg('Calibrate Darkroom')} &rarr;
-        </button>
-        ${!allComplete ? html`<span class="advance-hint">${msg('Complete all three divisions to advance')}</span>` : nothing}
-      </div>
+      <velg-forge-action-bar
+        back-label=${msg('Return to Astrolabe')}
+        next-label=${msg('Calibrate Darkroom')}
+        ?next-disabled=${!allComplete}
+        hint=${msg('Complete all three divisions to advance')}
+        .readiness=${[
+          {
+            label: msg('districts'),
+            done: geo?.zones?.length ?? 0,
+            total: genConfig.zone_count,
+          },
+          { label: msg('operatives'), done: agents.length, total: genConfig.agent_count },
+          { label: msg('structures'), done: buildings.length, total: genConfig.building_count },
+        ]}
+        @forge-back=${this._handleBack}
+        @forge-next=${this._handleNext}
+      ></velg-forge-action-bar>
 
       ${this._renderDossierPanel()}
     `;
   }
 
-  private _removeAgent(index: number) {
-    const agents = [...(this._draft?.agents ?? [])];
-    agents.splice(index, 1);
-    forgeStateManager.updateDraft({ agents });
-  }
-
-  private _removeBuilding(index: number) {
+  private _removeEntity(kind: 'agent' | 'building', index: number) {
+    if (kind === 'agent') {
+      const agents = [...(this._draft?.agents ?? [])];
+      agents.splice(index, 1);
+      forgeStateManager.updateDraft({ agents });
+      return;
+    }
     const buildings = [...(this._draft?.buildings ?? [])];
     buildings.splice(index, 1);
     forgeStateManager.updateDraft({ buildings });
@@ -1634,7 +1583,168 @@ export class VelgForgeTable extends LitElement {
     return this._draft.buildings[index] ?? null;
   }
 
+  /** The drafted entities of one kind, in table order. */
+  private _entities(kind: 'agent' | 'building'): (ForgeAgentDraft | ForgeBuildingDraft)[] {
+    return kind === 'agent' ? (this._draft?.agents ?? []) : (this._draft?.buildings ?? []);
+  }
+
+  /** Placeholder artwork for one kind, indexed as the table lays it out. */
+  private _artwork(kind: 'agent' | 'building'): string[] {
+    return kind === 'agent' ? this._agentImages : this._buildingImages;
+  }
+
+  /** Map one drafted entity onto the card, by kind. */
+  private _cardView(kind: 'agent' | 'building', item: ForgeAgentDraft | ForgeBuildingDraft) {
+    return kind === 'agent'
+      ? agentCardView(item as ForgeAgentDraft)
+      : buildingCardView(item as ForgeBuildingDraft);
+  }
+
+  /**
+   * The back of a card, for a slot nothing has been dealt into yet.
+   *
+   * An empty slot used to be a dashed box with a bare ordinal in it, which read
+   * as a layout gap rather than as a place a card belongs. A back reads as part
+   * of the deck.
+   */
+  private _renderCardBack(index: number, kind: 'agent' | 'building') {
+    return html`
+      <div class="card-back" aria-label=${emptySlotLabel(index, kind)}>
+        <div class="card-back__weave" aria-hidden="true"></div>
+        <div class="card-back__sigil" aria-hidden="true"></div>
+        <span class="card-back__index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
+      </div>
+    `;
+  }
+
+  /**
+   * The committed roster for one kind — one slot per configured entity.
+   *
+   * Agents and structures render through the same method. They were two blocks
+   * of near-identical markup that had already drifted: the structure slots never
+   * got the slam or drag-over classes, and never passed `type`, so every
+   * structure was drawn with the agent anatomy.
+   */
+  private _renderDeploymentField(kind: 'agent' | 'building') {
+    const cfg = forgeStateManager.generationConfig.value;
+    const total = kind === 'agent' ? cfg.agent_count : cfg.building_count;
+    const items = this._entities(kind);
+    const art = this._artwork(kind);
+    // Structures address slots from 100 up so one pair of drag signals can
+    // serve both fields without agent slot 3 lighting up for structure slot 3.
+    const slotBase = kind === 'agent' ? 0 : 100;
+
+    return html`
+      <div class="deployment-field">
+        ${Array.from({ length: total }, (_, i) => {
+          const item = items[i];
+          const slot = slotBase + i;
+          const classes = [
+            'deploy-slot',
+            item ? 'deploy-slot--filled' : '',
+            this._slamSlot === slot ? 'deploy-slot--slam' : '',
+            this._dragOverSlot === slot ? 'deploy-slot--drag-over' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+
+          return html`
+            <div
+              class="${classes}"
+              @dragover=${(e: DragEvent) => this._handleDragOver(e, slot)}
+              @dragleave=${this._handleDragLeave}
+              @drop=${(e: DragEvent) => this._handleDrop(e, slot)}
+            >
+              ${item ? this._renderEntityCard(kind, item, i, art[i] ?? '', 'md', true) : this._renderCardBack(i, kind)}
+            </div>
+          `;
+        })}
+      </div>
+    `;
+  }
+
+  /** One `<velg-game-card>`, fed from the draft rather than from guesses. */
+  private _renderEntityCard(
+    kind: 'agent' | 'building',
+    item: ForgeAgentDraft | ForgeBuildingDraft,
+    index: number,
+    imageUrl: string,
+    size: 'sm' | 'md',
+    withActions: boolean,
+  ) {
+    const view = this._cardView(kind, item);
+    return html`
+      <velg-game-card
+        .type=${view.type}
+        .name=${view.name}
+        .subtitle=${view.subtitle}
+        .description=${view.description}
+        .badges=${view.badges}
+        .rarity=${view.rarity}
+        .conditionDots=${view.conditionDots}
+        .imageUrl=${imageUrl}
+        size=${size}
+        ?show-actions=${withActions}
+        @card-click=${() => this._openCardEdit(kind, index)}
+        @card-edit=${() => this._openCardEdit(kind, index)}
+        @card-delete=${() => this._removeEntity(kind, index)}
+      ></velg-game-card>
+    `;
+  }
+
+  /**
+   * The staging hand — cards generated but not yet reviewed.
+   *
+   * The fan geometry is measured, not assumed; see {@link fanGeometry}.
+   */
+  private _renderStagingHand(kind: 'agent' | 'building') {
+    const staged: (ForgeAgentDraft | ForgeBuildingDraft)[] =
+      kind === 'agent' ? this._stagedAgents : this._stagedBuildings;
+    if (staged.length === 0) return nothing;
+
+    const art = this._artwork(kind);
+    const geo = fanGeometry(staged.length, this._handWidth);
+    const acceptLabel = kind === 'agent' ? msg('Accept agent') : msg('Accept building');
+    const editLabel = kind === 'agent' ? msg('Edit agent') : msg('Edit building');
+
+    return html`
+      <div class="staging-section">
+        <div class="staging-label">
+          ${msg('Staging Hand')} –
+          <span class="staging-hint">${msg('Click ✓ to deploy or ✎ to edit')}</span>
+        </div>
+        <div class="staging-hand ${geo.overflows ? 'staging-hand--scrolling' : ''}">
+          ${staged.map(
+            (item, i) => html`
+            <div
+              class="staging-card ${this._dealingIndex === i ? 'staging-card--dealing' : ''}"
+              style="transform: ${fanTransform(i, staged.length, geo)}; margin-left: ${i === 0 ? 0 : -geo.overlap}px; animation-delay: ${i * 100}ms"
+              draggable="true"
+              @dragstart=${(e: DragEvent) => this._handleDragStart(e, kind, i)}
+            >
+              ${this._renderEntityCard(kind, item, i, art[i % Math.max(1, art.length)] ?? '', geo.size, false)}
+              <div class="staging-card__actions">
+                <button class="staging-action" @click=${() => this._acceptEntity(kind, i)} title=${msg('Accept')} aria-label=${acceptLabel}>&#10003;</button>
+                <button class="staging-action staging-action--reject" @click=${() => this._openCardEdit(kind, i)} title=${msg('Edit')} aria-label=${editLabel}>&#9998;</button>
+              </div>
+            </div>
+          `,
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  /** Label under an armed division, naming exactly what the confirm will destroy. */
+  private _discardWarning(type: 'agents' | 'buildings' | 'geography'): string {
+    const count = this._discardCount(type);
+    if (type === 'agents') return msg(str`Discards ${count} drafted operatives.`);
+    if (type === 'buildings') return msg(str`Discards ${count} drafted structures.`);
+    return msg(str`Replaces the survey of ${count} districts.`);
+  }
+
   private _renderCommandPanel(opts: {
+    type: 'geography' | 'agents' | 'buildings';
     division: string;
     description: string;
     actionLabel: string;
@@ -1645,21 +1755,21 @@ export class VelgForgeTable extends LitElement {
     isComplete: boolean;
     isActive: boolean;
     isGenerating: boolean;
-    handler: () => void;
   }) {
+    const isArmed = this._armedPanel === opts.type;
     const cls = [
       'command-panel',
       opts.isActive ? 'command-panel--active' : '',
-      opts.isComplete && !opts.isActive ? 'command-panel--complete' : '',
+      opts.isComplete && !opts.isActive && !isArmed ? 'command-panel--complete' : '',
+      isArmed ? 'command-panel--armed' : '',
     ]
       .filter(Boolean)
       .join(' ');
 
-    const buttonLabel = opts.isActive
-      ? msg('Generating...')
-      : opts.isComplete
-        ? opts.regenLabel
-        : opts.actionLabel;
+    let buttonLabel = opts.actionLabel;
+    if (opts.isActive) buttonLabel = msg('Generating...');
+    else if (isArmed) buttonLabel = msg('Overwrite \u2013 confirm');
+    else if (opts.isComplete) buttonLabel = opts.regenLabel;
 
     return html`
       <div class="${cls}">
@@ -1668,19 +1778,98 @@ export class VelgForgeTable extends LitElement {
           ${renderInfoBubble(opts.infoText, opts.infoExample)}
         </div>
         <p class="command-panel__desc">${opts.description}</p>
+
+        ${
+          isArmed
+            ? html`
+          <p class="command-panel__warning" role="alert">
+            <span aria-hidden="true">\u26a0</span> ${this._discardWarning(opts.type)}
+          </p>
+        `
+            : nothing
+        }
+
         <button
-          class="command-panel__action"
+          class="command-panel__action ${isArmed ? 'command-panel__action--confirm' : ''}"
           ?disabled=${opts.isGenerating}
-          @click=${opts.handler}
+          aria-describedby=${isArmed ? `arm-warning-${opts.type}` : nothing}
+          @click=${() => this._requestChunk(opts.type, opts.isComplete)}
         >
           ${buttonLabel}
         </button>
+
         ${
-          opts.isComplete && !opts.isActive
+          isArmed
+            ? html`
+          <button
+            class="command-panel__cancel"
+            @click=${() => {
+              this._armedPanel = null;
+            }}
+          >${msg('Keep what is drafted')}</button>
+        `
+            : nothing
+        }
+
+        ${opts.isActive ? this._renderPanelProgress(opts.type) : nothing}
+
+        ${
+          opts.isComplete && !opts.isActive && !isArmed
             ? html`<div class="command-panel__stamp">\u2713 ${opts.stampLabel}</div>`
             : nothing
         }
       </div>
+    `;
+  }
+
+  /**
+   * Progress for a running division, inside the panel that started it.
+   *
+   * It used to render as a separate box below all three divisions, so the
+   * feedback for a click in the third panel appeared somewhere the eye was not.
+   */
+  private _renderPanelProgress(type: 'geography' | 'agents' | 'buildings') {
+    const progress = this._generationProgress;
+    const matches = progress && progress.entityType === type;
+    const current = matches ? progress.current + 1 : 0;
+    const total = matches ? progress.total : 0;
+    const pct = matches && total > 0 ? Math.round((current / total) * 100) : null;
+
+    return html`
+      <div class="command-panel__progress" role="status">
+        <div class="command-panel__progress-track">
+          <div
+            class="command-panel__progress-fill ${pct === null ? 'command-panel__progress-fill--indeterminate' : ''}"
+            style=${pct === null ? '' : `width: ${pct}%`}
+          ></div>
+        </div>
+        <span class="command-panel__progress-label">
+          ${pct === null ? msg('Working...') : msg(str`${current} of ${total}`)}
+        </span>
+      </div>
+    `;
+  }
+
+  /** The large read-only card at the head of the dossier panel. */
+  private _renderDossierPreview(
+    kind: 'agent' | 'building',
+    entity: ForgeAgentDraft | ForgeBuildingDraft,
+    index: number,
+  ) {
+    const view = this._cardView(kind, entity);
+    return html`
+      <velg-game-card
+        .type=${view.type}
+        .name=${view.name}
+        .subtitle=${view.subtitle}
+        .description=${view.description}
+        .badges=${view.badges}
+        .rarity=${view.rarity}
+        .conditionDots=${view.conditionDots}
+        .imageUrl=${this._artwork(kind)[index] ?? ''}
+        size="lg"
+        .interactive=${false}
+      ></velg-game-card>
     `;
   }
 
@@ -1701,15 +1890,7 @@ export class VelgForgeTable extends LitElement {
             ? html`
           <div slot="content" class="dossier-panel">
             <div class="dossier-panel__preview">
-              <velg-game-card
-                .name=${entity.name}
-                .subtitle=${isAgent ? t(entity as ForgeAgentDraft, 'primary_profession') : t(entity as ForgeBuildingDraft, 'building_type')}
-                .imageUrl=${isAgent ? (this._agentImages[editing.index] ?? '') : (this._buildingImages[editing.index] ?? '')}
-                .rarity=${'common'}
-                theme="brutalist"
-                size="lg"
-                .interactive=${false}
-              ></velg-game-card>
+              ${this._renderDossierPreview(editing.type, entity, editing.index)}
             </div>
 
             <span class="dossier-panel__section-label">${msg('Details')}</span>

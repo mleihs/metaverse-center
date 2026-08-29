@@ -9,8 +9,11 @@ import type {
   LorePhaseProgress,
 } from '../../services/api/ForgeApiService.js';
 import { forgeApi } from '../../services/api/ForgeApiService.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
+import { humanizeEnum } from '../../utils/text.js';
+import { cardThemeStyle } from './forge-card-data.js';
 
 import '../shared/VelgGameCard.js';
 
@@ -1185,6 +1188,16 @@ export class VelgForgeCeremony extends LitElement {
       100% { inset: -20px; opacity: 0; }
     }
 
+    .ceremony__enter-note {
+      max-width: 46ch;
+      margin: var(--space-3) auto 0;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      line-height: 1.6;
+      text-align: center;
+      color: var(--color-text-tertiary);
+    }
+
     .ceremony__enter-btn:hover {
       background: var(--color-accent-amber-hover);
       border-color: var(--color-accent-amber-hover);
@@ -1846,11 +1859,13 @@ export class VelgForgeCeremony extends LitElement {
       name: a.name,
       subtitle: t(a, 'primary_profession'),
       imageUrl: agentImageMap.get(a.name) ?? '',
+      kind: 'agent' as const,
     }));
     const buildingCards = this.buildings.map((b) => ({
       name: b.name,
-      subtitle: t(b, 'building_type'),
+      subtitle: humanizeEnum(t(b, 'building_type')),
       imageUrl: buildingImageMap.get(b.name) ?? '',
+      kind: 'building' as const,
     }));
 
     const vw = window.innerWidth;
@@ -1864,7 +1879,13 @@ export class VelgForgeCeremony extends LitElement {
         ? Math.round((this._progress.completed / this._progress.total) * 100)
         : 0;
 
-    type CardData = { name: string; subtitle: string; imageUrl: string };
+    type CardData = {
+      name: string;
+      subtitle: string;
+      imageUrl: string;
+      kind: 'agent' | 'building';
+    };
+    const cardTheme = cardThemeStyle(forgeStateManager.draft.value?.theme_config ?? {});
 
     const renderFanCard = (
       c: CardData,
@@ -1890,10 +1911,11 @@ export class VelgForgeCeremony extends LitElement {
           style="--card-rot: ${rotDeg}deg; --card-dip: ${arcDip}px; --card-deal-delay: ${dealDelay}ms; margin-left: ${overlap}px; animation-delay: ${dealDelay}ms"
         >
           <velg-game-card
+            style=${cardTheme}
+            .type=${c.kind}
             .name=${c.name}
             .subtitle=${c.subtitle}
             .rarity=${'common'}
-            theme="brutalist"
             size=${layout.size}
             image-url=${c.imageUrl}
           ></velg-game-card>
@@ -2106,20 +2128,28 @@ export class VelgForgeCeremony extends LitElement {
             : nothing
         }
 
-        <!-- Stage 5: Enter button -->
+        <!--
+          Stage 5: Enter.
+
+          The door used to stay locked until the last portrait had rendered,
+          which meant three to five minutes in front of a disabled button for a
+          world that was already complete and browsable — while the ignition
+          screen had just promised the images would develop in the background.
+          The Shard exists the moment it ignites, so the button opens it; the
+          line underneath says what is still arriving.
+        -->
         <div class="ceremony__enter ${this._readyFlash ? 'ceremony__enter--ready' : ''}">
+          <button class="ceremony__enter-btn" @click=${this._handleEnter}>
+            ${msg('Enter New Shard')} &ensp; &rarr;
+          </button>
           ${
-            this._readyFlash
+            this._progress && !this._progress.done
               ? html`
-              <button class="ceremony__enter-btn" @click=${this._handleEnter}>
-                ${msg('Enter New Shard')} &ensp; &rarr;
-              </button>
-            `
-              : html`
-              <button class="ceremony__enter-btn ceremony__enter-btn--waiting" disabled>
-                ${msg('Materializing Assets')} &ensp; &hellip;
-              </button>
-            `
+            <p class="ceremony__enter-note">
+              ${msg('Portraits and banner keep developing in the background – the world is ready to walk into now.')}
+            </p>
+          `
+              : nothing
           }
         </div>
       </div>

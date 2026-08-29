@@ -3,21 +3,25 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
-import { t } from '../../utils/locale-fields.js';
+
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
+  forgeConsoleTypeTokens,
   forgeFieldStyles,
   forgeInfoBubbleStyles,
   forgeRangeStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import { agentCardView, cardThemeStyle } from './forge-card-data.js';
+import { getOperativeSet } from './forge-placeholders.js';
 import { renderInfoBubble } from './forge-utils.js';
 
 import '../shared/VelgFontPicker.js';
 import '../shared/VelgGameCard.js';
 import '../shared/VelgStyleReferenceUpload.js';
+import './VelgForgeActionBar.js';
 import './VelgForgeScanOverlay.js';
 
 /**
@@ -28,6 +32,7 @@ import './VelgForgeScanOverlay.js';
 @customElement('velg-forge-darkroom')
 export class VelgForgeDarkroom extends LitElement {
   static styles = [
+    forgeConsoleTypeTokens,
     forgeButtonStyles,
     forgeBackButtonStyles,
     forgeFieldStyles,
@@ -222,6 +227,34 @@ export class VelgForgeDarkroom extends LitElement {
         }
       }
 
+      /* ── Advanced disclosure ───────────────── */
+
+      .advanced {
+        border-top: 1px dashed var(--color-border);
+        padding-top: var(--space-3);
+      }
+
+      .advanced__summary {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-readout);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-tertiary);
+        cursor: pointer;
+      }
+
+      .advanced__summary:hover {
+        color: var(--color-text-primary);
+      }
+
+      .advanced[open] .advanced__summary {
+        margin-bottom: var(--space-4);
+      }
+
+      .advanced .range-field + .range-field {
+        margin-top: var(--space-4);
+      }
+
       /* ── Preview Pane ────────────────────── */
 
       .preview-pane {
@@ -232,6 +265,14 @@ export class VelgForgeDarkroom extends LitElement {
         gap: var(--space-6);
         padding: var(--space-6);
         position: relative;
+      }
+
+      .preview-cards__note {
+        margin: var(--space-2) 0 0;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        line-height: 1.5;
+        color: var(--color-text-tertiary);
       }
 
       .preview-pane__title {
@@ -336,13 +377,21 @@ export class VelgForgeDarkroom extends LitElement {
   @state() private _stylePromptBuilding = '';
   @state() private _stylePromptBanner = '';
   @state() private _stylePromptLore = '';
-  @state() private _guidanceScale = 7.5;
+  /** Flux default from `PLATFORM_DEFAULT_PARAMS.flux_guidance`; see _QUALITY_PRESETS. */
+  @state() private _guidanceScale = 3.5;
   @state() private _inferenceSteps = 28;
   @state() private _styleRefPortrait = '';
   @state() private _styleRefBuilding = '';
   @state() private _styleRefPortraitLoading = false;
   @state() private _styleRefBuildingLoading = false;
   private _disposeEffects: (() => void)[] = [];
+
+  /** Placeholder artwork for the preview card, drawn from the same set as phase II. */
+  private get _previewPortrait(): string {
+    const draft = forgeStateManager.draft.value;
+    if (!draft) return '';
+    return getOperativeSet(1, draft.seed_prompt ?? draft.id)[0] ?? '';
+  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -370,7 +419,7 @@ export class VelgForgeDarkroom extends LitElement {
           (settings?.image_style_prompt_lore as string) ||
           (tc.image_style_prompt_lore as string) ||
           '';
-        this._guidanceScale = (settings?.image_guidance_scale as number) ?? 7.5;
+        this._guidanceScale = (settings?.image_guidance_scale as number) ?? 3.5;
         this._inferenceSteps = (settings?.image_num_inference_steps as number) ?? 28;
         this._styleRefPortrait = (settings?.image_style_ref_portrait as string) || '';
         this._styleRefBuilding = (settings?.image_style_ref_building as string) || '';
@@ -540,6 +589,121 @@ export class VelgForgeDarkroom extends LitElement {
     `;
   }
 
+  /**
+   * Named quality settings in place of raw diffusion parameters.
+   *
+   * Guidance and step count are internals of the sampler, not decisions a
+   * worldbuilder can make: the old sliders offered guidance up to 20 when the
+   * backend clamps flux at 10, and started at 7.5 — a Stable Diffusion default
+   * that the Darkroom then wrote into `ai_settings`, overriding the flux
+   * default of 3.5 that every image on this platform is actually generated
+   * with (`model_resolver.py`). The presets sit inside the range flux uses, and
+   * "Balanced" is that real default.
+   */
+  private static readonly _QUALITY_PRESETS: {
+    id: string;
+    label: () => string;
+    hint: () => string;
+    guidance: number;
+    steps: number;
+  }[] = [
+    {
+      id: 'fast',
+      label: () => msg('Fast'),
+      hint: () => msg('Looser reading of the prompt, quickest to develop'),
+      guidance: 2.5,
+      steps: 18,
+    },
+    {
+      id: 'balanced',
+      label: () => msg('Balanced'),
+      hint: () => msg('The house setting'),
+      guidance: 3.5,
+      steps: 28,
+    },
+    {
+      id: 'maximum',
+      label: () => msg('Maximum'),
+      hint: () => msg('Closest to the prompt, slowest to develop'),
+      guidance: 6,
+      steps: 42,
+    },
+  ];
+
+  private _applyPreset(guidance: number, steps: number) {
+    this._guidanceScale = guidance;
+    this._inferenceSteps = steps;
+    this._updateSettings();
+  }
+
+  private _renderQualityPresets() {
+    const presets = VelgForgeDarkroom._QUALITY_PRESETS;
+    const active = presets.find(
+      (p) => p.guidance === this._guidanceScale && p.steps === this._inferenceSteps,
+    );
+
+    return html`
+      <div class="chip-group">
+        <span class="chip-group__label">
+          ${msg('Image Quality')}
+          ${this._renderInfoBubble(
+            msg(
+              'How closely the image generator follows your style prompts, and how long it spends on each image.',
+            ),
+            msg('Balanced suits almost every world. Maximum is worth it for a showcase Shard.'),
+          )}
+        </span>
+        <div class="chip-group__row" role="radiogroup" aria-label=${msg('Image Quality')}>
+          ${presets.map(
+            (p) => html`
+            <button
+              type="button"
+              class="chip"
+              role="radio"
+              aria-checked=${active?.id === p.id ? 'true' : 'false'}
+              aria-pressed=${active?.id === p.id ? 'true' : 'false'}
+              title=${p.hint()}
+              @click=${() => this._applyPreset(p.guidance, p.steps)}
+            >${p.label()}</button>
+          `,
+          )}
+        </div>
+      </div>
+
+      <details class="advanced">
+        <summary class="advanced__summary">${msg('Advanced')}</summary>
+
+        <div class="range-field">
+          <div class="range-field__header">
+            <label class="range-field__label">${msg('Guidance')}</label>
+            <span class="range-field__readout">${this._guidanceScale}</span>
+          </div>
+          <input type="range" min="1" max="10" step="0.5"
+            .value=${String(this._guidanceScale)}
+            @input=${(e: Event) => {
+              this._guidanceScale = Number.parseFloat((e.target as HTMLInputElement).value);
+              this._updateSettings();
+            }}
+          />
+        </div>
+
+        <div class="range-field">
+          <div class="range-field__header">
+            <label class="range-field__label">${msg('Steps')}</label>
+            <span class="range-field__readout">${this._inferenceSteps}</span>
+          </div>
+          <input type="range" min="15" max="50" step="1"
+            .value=${String(this._inferenceSteps)}
+            @input=${(e: Event) => {
+              this._inferenceSteps = Number.parseInt((e.target as HTMLInputElement).value, 10);
+              this._updateSettings();
+            }}
+          />
+        </div>
+      </details>
+    `;
+  }
+
   private _handleBack() {
     forgeStateManager.updateDraft({ current_phase: 'drafting' });
   }
@@ -691,15 +855,27 @@ export class VelgForgeDarkroom extends LitElement {
             firstAgent
               ? html`
             <div class="preview-cards">
-              <velg-game-card
-                .name=${firstAgent.name}
-                .subtitle=${t(firstAgent, 'primary_profession')}
-                .description=${t(firstAgent, 'character')}
-                .rarity=${'rare'}
-                theme="brutalist"
-                size="md"
-              ></velg-game-card>
+              ${(() => {
+                const view = agentCardView(firstAgent);
+                return html`
+                  <velg-game-card
+                    style=${cardThemeStyle(tc)}
+                    .type=${view.type}
+                    .name=${view.name}
+                    .subtitle=${view.subtitle}
+                    .description=${view.description}
+                    .badges=${view.badges}
+                    .rarity=${view.rarity}
+                    .imageUrl=${this._previewPortrait}
+                    size="md"
+                    .interactive=${false}
+                  ></velg-game-card>
+                `;
+              })()}
             </div>
+            <p class="preview-cards__note">
+              ${msg('This is the card as phase II will draw it, with the values above applied.')}
+            </p>
           `
               : nothing
           }
@@ -711,49 +887,7 @@ export class VelgForgeDarkroom extends LitElement {
             <span class="controls__title">${msg('Image Generation Parameters')}</span>
           </div>
 
-          <div class="range-field">
-            <div class="range-field__header">
-              <label class="range-field__label">
-                ${msg('Guidance Scale')}
-                ${this._renderInfoBubble(
-                  msg(
-                    'How strictly the AI follows the prompt. Higher = more literal. Lower = more creative.',
-                  ),
-                  msg('7.5 is the default. Try 12 for photorealistic, 4 for dreamlike.'),
-                )}
-              </label>
-              <span class="range-field__readout">${this._guidanceScale}</span>
-            </div>
-            <input type="range" min="1" max="20" step="0.5"
-              .value=${String(this._guidanceScale)}
-              @input=${(e: Event) => {
-                this._guidanceScale = Number.parseFloat((e.target as HTMLInputElement).value);
-                this._updateSettings();
-              }}
-            />
-          </div>
-
-          <div class="range-field">
-            <div class="range-field__header">
-              <label class="range-field__label">
-                ${msg('Inference Steps')}
-                ${this._renderInfoBubble(
-                  msg(
-                    'Number of denoising iterations. More steps = more detail but slower generation.',
-                  ),
-                  msg('28 is a good balance. 50 for maximum quality.'),
-                )}
-              </label>
-              <span class="range-field__readout">${this._inferenceSteps}</span>
-            </div>
-            <input type="range" min="15" max="50" step="1"
-              .value=${String(this._inferenceSteps)}
-              @input=${(e: Event) => {
-                this._inferenceSteps = Number.parseInt((e.target as HTMLInputElement).value, 10);
-                this._updateSettings();
-              }}
-            />
-          </div>
+          ${this._renderQualityPresets()}
 
           <div style="display:flex;flex-direction:column;gap:var(--space-3)">
             <label class="field__label">
@@ -858,15 +992,19 @@ export class VelgForgeDarkroom extends LitElement {
           </div>
         </div>
 
-        <!-- Footer -->
-        <div class="darkroom__footer" style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);flex-wrap:wrap">
-          <button class="btn btn--back" @click=${this._handleBack}>
-            &larr; ${msg('Return to Table')}
-          </button>
-          <button class="btn btn--launch" @click=${this._handleIgnite}>
-            ${msg('Ignite Materialization')} &ensp; &rarr;
-          </button>
-        </div>
+        <velg-forge-action-bar
+          back-label=${msg('Return to Table')}
+          next-label=${msg('Ignite Materialization')}
+          .readiness=${[
+            {
+              label: msg('palette set'),
+              done: Object.keys(tc).length > 0 ? 1 : 0,
+              total: 1,
+            },
+          ]}
+          @forge-back=${this._handleBack}
+          @forge-next=${this._handleIgnite}
+        ></velg-forge-action-bar>
       </div>
     `;
   }
