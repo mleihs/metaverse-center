@@ -25,7 +25,12 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
-import type { DungeonPhase } from '../../types/dungeon.js';
+import {
+  ARCHETYPE_AWAKENING,
+  ARCHETYPE_DELUGE,
+  ARCHETYPE_OVERTHROW,
+  type DungeonPhase,
+} from '../../types/dungeon.js';
 import { type ChoiceDescriptor, describeChoices } from '../../utils/dungeon-encounter-choices.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import {
@@ -214,6 +219,29 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         }
       }
 
+      /* Salvage is addressed per room, so it reads as one labelled group of
+         room numbers rather than a row of identical verbs. */
+      .salvage {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding-left: 8px;
+        border-left: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+      }
+      .salvage__label {
+        font-family: var(--_mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--_phosphor-dim);
+      }
+      .salvage__room {
+        min-width: 26px;
+        padding: 5px 7px;
+        font-variant-numeric: tabular-nums;
+      }
+
       /* ── Hold button terminal theming ── */
       velg-hold-button {
         --hold-btn-fill: var(--color-danger-bg, color-mix(in srgb, var(--color-danger) 20%, transparent));
@@ -268,6 +296,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
    */
   private _renderStandingActions() {
     return html`
+      ${this._renderArchetypeActions()}
       <div class="actions__standing">
         <button class="action-btn" @click=${() => this._dispatch('status')}>
           ${msg('Status')}
@@ -277,6 +306,96 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         </button>
         ${this._renderRetreatButton()}
       </div>
+    `;
+  }
+
+  /**
+   * The archetype's own verb — the one lever that lowers its gauge.
+   *
+   * `seal` (Deluge), `ground` (Awakening) and `rally` (Overthrow) had ZERO
+   * occurrences in the button surface: a terminal player could type them, a
+   * graphical player could not reach them at all, so three of eight archetypes
+   * were only half playable there. Nothing new is decided here — the buttons
+   * dispatch the same verbs through the same `terminal-command` path.
+   *
+   * Cooldowns are NOT anticipated client-side. The server owns them (it answers
+   * with `cooldown_until_room`) and the run state carries no current-cooldown
+   * field, so guessing would either grey out a usable lever or promise one that
+   * is spent. Its refusal is now visible — the chronicle records it and a toast
+   * says it — which is the honest authority rather than a second, weaker one.
+   */
+  private _renderArchetypeActions() {
+    const archetype = dungeonState.clientState.value?.archetype;
+    if (!archetype) return nothing;
+
+    if (archetype === ARCHETYPE_DELUGE) {
+      return html`
+        <button
+          class="action-btn action-btn--primary"
+          title=${msg('Send a Guardian to seal a breach. Costs stress, then goes on cooldown.')}
+          @click=${() => this._dispatch('seal')}
+        >
+          ${msg('Seal Breach')}
+        </button>
+        ${this._renderSalvageButtons()}
+      `;
+    }
+    if (archetype === ARCHETYPE_AWAKENING) {
+      return html`
+        <button
+          class="action-btn action-btn--primary"
+          title=${msg('Anchor the party in the waking layer. Costs stress, then goes on cooldown.')}
+          @click=${() => this._dispatch('ground')}
+        >
+          ${msg('Ground')}
+        </button>
+      `;
+    }
+    if (archetype === ARCHETYPE_OVERTHROW) {
+      return html`
+        <button
+          class="action-btn action-btn--primary"
+          title=${msg('Send a Propagandist to hold the faction together. Costs stress, then goes on cooldown.')}
+          @click=${() => this._dispatch('rally')}
+        >
+          ${msg('Rally')}
+        </button>
+      `;
+    }
+    return nothing;
+  }
+
+  /**
+   * Salvage needs a room, so it needs one control per room.
+   *
+   * The terminal answers "salvage <room_index>" and tells the player to read
+   * the map for numbers. A graphical player has no line to type into, so the
+   * rooms are enumerated instead — the ones already cleared and left behind,
+   * which is what there is to recover from. No eligibility rule is invented
+   * here beyond that: if the server declines a particular room, it says so and
+   * the chronicle shows the answer.
+   */
+  private _renderSalvageButtons() {
+    const salvageable = dungeonState.rooms.value.filter(
+      (room) => room.revealed && room.cleared && !room.current,
+    );
+    if (salvageable.length === 0) return nothing;
+
+    return html`
+      <span class="salvage">
+        <span class="salvage__label">${msg('Salvage')}</span>
+        ${salvageable.map(
+          (room) => html`
+            <button
+              class="action-btn salvage__room"
+              title=${`${msg('Salvage')} ${getRoomTypeLabel(room.room_type, room.index)}`}
+              @click=${() => this._dispatch(`salvage ${room.index}`)}
+            >
+              ${room.index}
+            </button>
+          `,
+        )}
+      </span>
     `;
   }
 

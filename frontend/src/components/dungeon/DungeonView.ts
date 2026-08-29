@@ -41,6 +41,11 @@ export class VelgDungeonView extends SignalWatcher(LitElement) {
         display: contents;
       }
 
+      /* Terminal only. The graphical view puts the toggle in the flow of its
+         own header instead — as a fixed overlay it sat on top of the first
+         operative in the party column, which is exactly the spot a player
+         reads while deciding. The terminal's layout is left untouched (this
+         wrapper's standing contract), so there the overlay stays. */
       .view-toggle {
         position: fixed;
         top: calc(var(--header-height, 60px) + var(--sim-nav-height, 48px) + 8px);
@@ -102,9 +107,13 @@ export class VelgDungeonView extends SignalWatcher(LitElement) {
               .simulationId=${this.simulationId}
             ></velg-dungeon-terminal-view>`
       }
-      <div class="view-toggle">
-        <velg-dungeon-view-toggle></velg-dungeon-view-toggle>
-      </div>
+      ${
+        graphical
+          ? nothing
+          : html`<div class="view-toggle">
+            <velg-dungeon-view-toggle></velg-dungeon-view-toggle>
+          </div>`
+      }
     `;
   }
 }

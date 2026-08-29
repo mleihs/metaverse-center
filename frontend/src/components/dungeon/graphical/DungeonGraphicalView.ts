@@ -86,6 +86,7 @@ import '../DungeonHeader.js';
 import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
+import '../DungeonViewToggle.js';
 import './DungeonChronicle.js';
 import './DungeonCombatFx.js';
 import type { RoomDescription } from '../../../utils/dungeon-room-text.js';
@@ -198,9 +199,23 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       .dungeon-hud--rail-collapsed {
         grid-template-columns: 40px 1fr 340px;
       }
+      /* The view toggle rides in the header row rather than floating over the
+         HUD: as a fixed overlay it covered the first operative in the party
+         column. Header content takes the width it needs, the toggle the rest. */
       .dungeon-hud__header {
         grid-column: 1 / -1;
         grid-row: 1;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .dungeon-hud__header velg-dungeon-header {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .gview-toggle {
+        flex: none;
+        padding: 6px 4px 0 0;
       }
       .dungeon-hud__rail {
         grid-column: 1;
@@ -1340,6 +1355,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         min-height: 0;
         gap: 12px;
       }
+      /* The lobby has no HUD header, so the toggle sits on the title line. */
+      .lobby-titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
       .lobby-info__title {
         font-family: var(--font-brutalist, var(--_mono));
         font-weight: 700;
@@ -1347,7 +1370,6 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         text-transform: uppercase;
         letter-spacing: 1.5px;
         color: var(--_phosphor);
-        margin-bottom: 8px;
       }
       .lobby-grid {
         display: grid;
@@ -2311,6 +2333,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       >
         <div class="dungeon-hud__header" role="banner" aria-label=${msg('Dungeon status')}>
           <velg-dungeon-header></velg-dungeon-header>
+          <div class="gview-toggle">
+            <velg-dungeon-view-toggle></velg-dungeon-view-toggle>
+          </div>
         </div>
 
         ${this._renderRail()}
@@ -2636,7 +2661,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     return html`
       <div class="dungeon-lobby">
         <div>
-          <div class="lobby-info__title">${msg('Resonance Dungeons')}</div>
+          <div class="lobby-titlebar">
+            <div class="lobby-info__title">${msg('Resonance Dungeons')}</div>
+            <velg-dungeon-view-toggle></velg-dungeon-view-toggle>
+          </div>
           ${
             loading
               ? html`<velg-loading-state message=${msg('Scanning resonance frequencies...')}></velg-loading-state>`
