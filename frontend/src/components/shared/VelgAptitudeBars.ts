@@ -2,19 +2,11 @@ import { msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { AptitudeSet, OperativeType } from '../../types/index.js';
-import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
-
-function getOperativeLabel(type: OperativeType): string {
-  const labels: Record<OperativeType, () => string> = {
-    spy: () => msg('Spy'),
-    guardian: () => msg('Guardian'),
-    saboteur: () => msg('Saboteur'),
-    propagandist: () => msg('Propagandist'),
-    infiltrator: () => msg('Infiltrator'),
-    assassin: () => msg('Assassin'),
-  };
-  return labels[type]();
-}
+import {
+  OPERATIVE_COLORS,
+  OPERATIVE_TYPES,
+  operativeName,
+} from '../../utils/operative-constants.js';
 
 const APTITUDE_MIN = 3;
 const APTITUDE_MAX = 9;
@@ -272,7 +264,7 @@ export class VelgAptitudeBars extends LitElement {
               class="bar-row ${isDimmed ? 'dimmed' : ''} ${isHighlighted ? 'highlighted' : ''}"
               style="--bar-color: ${color}; animation-delay: ${i * 40}ms"
             >
-              <span class="label">${getOperativeLabel(type)}</span>
+              <span class="label">${operativeName(type)}</span>
               ${
                 this.editable
                   ? html`
@@ -284,7 +276,7 @@ export class VelgAptitudeBars extends LitElement {
                         .value="${String(level)}"
                         @input="${(e: Event) => this._handleSliderChange(type, e)}"
                         style="--slider-color: ${color}"
-                        aria-label="${getOperativeLabel(type)} ${msg('aptitude')}"
+                        aria-label="${operativeName(type)} ${msg('aptitude')}"
                       />
                     </div>
                   `

@@ -6,6 +6,8 @@
  * The API endpoint GET /api/v1/public/operative-types returns the
  * same data dynamically if needed.
  */
+import { msg } from '@lit/localize';
+
 import type { OperativeType } from '../types/index.js';
 
 /** Canonical operative-type order. Mirrors OPERATIVE_TYPES in backend/models/aptitude.py. */
@@ -48,15 +50,29 @@ export const OPERATIVE_LABEL: Record<OperativeType, string> = {
   assassin: 'ASN',
 };
 
-/** Full names for tooltips and accessibility. */
-export const OPERATIVE_FULL: Record<OperativeType, string> = {
-  spy: 'Spy',
-  guardian: 'Guardian',
-  saboteur: 'Saboteur',
-  propagandist: 'Propagandist',
-  infiltrator: 'Infiltrator',
-  assassin: 'Assassin',
-};
+/**
+ * Full, localized operative name — for tooltips, labels and accessibility.
+ *
+ * A FUNCTION, not a constant map: `msg()` at module scope resolves before the
+ * locale is loaded and freezes the English string (the repo's standing i18n
+ * gotcha). That is exactly what the previous `OPERATIVE_FULL` constant did — it
+ * held English literals, and the German party panel showed "Saboteur",
+ * "Propagandist", "Guardian" in its tooltips while a second, correctly
+ * localized copy of the same six names lived in VelgAptitudeBars. One name per
+ * operative type, resolved at render time; the two abbreviation tables above
+ * stay, because they serve two different width budgets, not two vocabularies.
+ */
+export function operativeName(type: OperativeType): string {
+  const names: Record<OperativeType, () => string> = {
+    spy: () => msg('Spy'),
+    guardian: () => msg('Guardian'),
+    saboteur: () => msg('Saboteur'),
+    propagandist: () => msg('Propagandist'),
+    infiltrator: () => msg('Infiltrator'),
+    assassin: () => msg('Assassin'),
+  };
+  return names[type]();
+}
 
 /** RP cost per operative type. */
 export const OPERATIVE_RP_COSTS: Record<OperativeType, number> = {
