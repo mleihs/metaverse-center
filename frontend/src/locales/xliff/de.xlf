@@ -28482,6 +28482,22 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Save and leave</source>
   <target>Speichern und verlassen</target>
 </trans-unit>
+<trans-unit id="s39551fd13c157096">
+  <source>The authentication terminal is unreachable. Try again shortly.</source>
+  <target>Das Authentifizierungsterminal ist nicht erreichbar. Versuche es gleich noch einmal.</target>
+</trans-unit>
+<trans-unit id="s9988222a8ac00ba1">
+  <source>Shortest Cycle</source>
+  <target>Kürzester Zyklus</target>
+</trans-unit>
+<trans-unit id="s589ccc8765fab468">
+  <source>The deadline caps how long a cycle runs; this caps how short. Everyone signalling ready early brings the deadline forward to this point instead of ending the cycle at once.</source>
+  <target>Die Frist deckelt, wie lang ein Zyklus läuft – dies deckelt, wie kurz. Melden alle früh Bereitschaft, wandert die Frist auf diesen Punkt vor, statt den Zyklus sofort zu beenden.</target>
+</trans-unit>
+<trans-unit id="s212cbd3286b52e20">
+  <source>No floor</source>
+  <target>Ohne Untergrenze</target>
+</trans-unit>
 
 </body>
 </file>
