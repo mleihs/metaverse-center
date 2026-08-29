@@ -107,15 +107,17 @@ class OperativeMissionService:
                     raise bad_request("Betrayal is disabled in this epoch.")
 
         # Validate agent belongs to simulation
-        agent = await (
+        # maybe_single: this guard also enforces the simulation scope, and with
+        # `.single()` an agent from another simulation was answered with a 500
+        # rather than the rejection written here.
+        agent_row = await maybe_single_data(
             supabase.table("agents")
             .select("id, simulation_id, name")
             .eq("id", str(body.agent_id))
             .eq("simulation_id", str(simulation_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not agent.data:
+        if not agent_row:
             raise not_found(detail="Agent not found in this simulation.")
 
         # Check agent isn't already deployed
@@ -224,7 +226,7 @@ class OperativeMissionService:
         # Build context from data already available in this method
         # Agent name already fetched at line 172 (validation query)
         context = {
-            "agent_name": agent.data.get("name"),
+            "agent_name": agent_row.get("name"),
             "target_sim_name": None,
             "target_zone_name": None,
         }

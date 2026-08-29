@@ -347,14 +347,14 @@ class EpochParticipationService:
             raise bad_request("Can only add bots during lobby phase.")
 
         # Verify bot exists
-        bot_resp = await (
+        # maybe_single: `.single()` raises on 0 rows, so this 404 never ran.
+        bot_row = await maybe_single_data(
             supabase.table("bot_players")
             .select("id, name, personality")
             .eq("id", str(bot_player_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not bot_resp.data:
+        if not bot_row:
             raise not_found(detail="Bot player not found.")
 
         # Check simulation not already in epoch
@@ -401,7 +401,7 @@ class EpochParticipationService:
         for agent in agents:
             agent["aptitudes"] = apt_map.get(agent["id"], {})
 
-        drafted_ids = auto_draft(bot_resp.data["personality"], agents, max_agents)
+        drafted_ids = auto_draft(bot_row["personality"], agents, max_agents)
 
         resp = await (
             supabase.table("epoch_participants")
@@ -435,17 +435,17 @@ class EpochParticipationService:
         if epoch["status"] != "lobby":
             raise bad_request("Can only remove bots during lobby phase.")
 
-        p_resp = await (
+        # maybe_single: `.single()` raises on 0 rows, so this 404 never ran.
+        p_row = await maybe_single_data(
             supabase.table("epoch_participants")
             .select("id, is_bot")
             .eq("id", str(participant_id))
             .eq("epoch_id", str(epoch_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not p_resp.data:
+        if not p_row:
             raise not_found(detail="Participant not found.")
-        if not p_resp.data.get("is_bot"):
+        if not p_row.get("is_bot"):
             raise bad_request("This participant is not a bot.")
 
         resp = await (

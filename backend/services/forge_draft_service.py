@@ -114,17 +114,20 @@ class ForgeDraftService:
         draft_id: UUID,
     ) -> dict:
         """Get a single draft by ID."""
-        response = await (
+        # maybe_single, not single: `.single()` raises PGRST116 ("Cannot coerce
+        # the result to a single JSON object") when nothing matches, so the
+        # not_found below was unreachable and a stale draft id — a deleted
+        # draft, an old tab — surfaced as a 500 instead of a 404.
+        data = await maybe_single_data(
             supabase.table("forge_drafts")
             .select("*")
             .eq("id", str(draft_id))
             .eq("user_id", str(user_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not response.data:
+        if not data:
             raise not_found("forge_draft", draft_id)
-        return response.data
+        return data
 
     @staticmethod
     async def get_latest_completed_source(supabase: Client) -> dict | None:

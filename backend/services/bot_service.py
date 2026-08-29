@@ -94,17 +94,19 @@ class BotService:
     ) -> dict:
         """Execute decisions for a single bot participant."""
         # Re-fetch participant to get fresh RP (after grant)
-        fresh_p = await (
+        # maybe_single: with `.single()` a participant that vanished mid-cycle
+        # raised out of this method instead of returning the failure result
+        # below, taking the whole bot turn down with it.
+        fresh_p = await maybe_single_data(
             admin_supabase.table("epoch_participants")
             .select("*, bot_players(*)")
             .eq("id", participant["id"])
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not fresh_p.data:
+        if not fresh_p:
             return {"participant_id": participant["id"], "success": False, "error": "Not found"}
 
-        participant = fresh_p.data
+        participant = fresh_p
         bot_player = participant.get("bot_players") or participant.get("bot_player") or {}
         participant["bot_player"] = bot_player
 
