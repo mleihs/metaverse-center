@@ -13,15 +13,15 @@ import sentry_sdk
 from fastapi import HTTPException
 from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
-from pydantic_ai.models.openai import OpenAIChatModel
-from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.models.openrouter import OpenRouterModel
+from pydantic_ai.providers.openrouter import OpenRouterProvider
 
 from backend.config import settings
 from backend.services.budget_enforcement_service import (
     BudgetEnforcementService,
     BudgetExceededError,
 )
-from backend.services.platform_model_config import get_platform_model
+from backend.services.platform_model_config import get_platform_model, get_platform_reasoning
 from backend.utils.errors import bad_gateway, payment_required, service_unavailable, too_many_requests
 from supabase import AsyncClient as Client
 
@@ -81,7 +81,7 @@ def get_openrouter_model(
     api_key: str | None = None,
     *,
     model_id: str,
-) -> OpenAIChatModel:
+) -> OpenRouterModel:
     """Return a Pydantic AI model configured for OpenRouter.
 
     Parameters
@@ -98,12 +98,18 @@ def get_openrouter_model(
         model can only be chosen through the configured chain
         (``get_platform_model`` -> platform_settings -> Admin > Models), never by
         a literal that quietly rots.
+
+    It returns ``OpenRouterModel``, not the generic ``OpenAIChatModel`` pointed
+    at OpenRouter's base URL. Both speak the same wire protocol, but only the
+    native class carries ``OpenRouterModelSettings`` -- and with it
+    ``openrouter_reasoning``, the one lever that decides whether a thinking
+    model spends ``max_tokens`` on thought or on the answer (see
+    ``REASONING_DEFAULTS``). Routing that through ``extra_body`` on the generic
+    class is a dead end: the OpenAI-derived models overwrite colliding keys
+    they build themselves.
     """
-    provider = OpenAIProvider(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=api_key or settings.openrouter_api_key,
-    )
-    return OpenAIChatModel(
+    provider = OpenRouterProvider(api_key=api_key or settings.openrouter_api_key)
+    return OpenRouterModel(
         model_id,
         provider=provider,
     )
@@ -156,6 +162,14 @@ async def run_ai(
     ms.setdefault("timeout", PYDANTIC_AI_TIMEOUTS.get(purpose))
     ms.setdefault("max_tokens", PYDANTIC_AI_MAX_TOKENS.get(purpose))
 
+    # Reasoning tokens are spent from `max_tokens` and billed as output, so the
+    # thinking level is not independent of the budget above it — it decides how
+    # much of that budget ever reaches the answer. Resolved per purpose from
+    # platform_settings (Admin > Models), never hardcoded at the call site.
+    reasoning = get_platform_reasoning(purpose)
+    if reasoning is not None:
+        ms.setdefault("openrouter_reasoning", reasoning)
+
     timeout_s = ms.get("timeout")
     max_tokens = ms.get("max_tokens")
 
@@ -163,7 +177,15 @@ async def run_ai(
     if output_type is not None:
         kwargs["output_type"] = output_type
 
-    logger.info("AI call started", extra={"purpose": purpose, "timeout_s": timeout_s, "max_tokens": max_tokens})
+    logger.info(
+        "AI call started",
+        extra={
+            "purpose": purpose,
+            "timeout_s": timeout_s,
+            "max_tokens": max_tokens,
+            "reasoning": ms.get("openrouter_reasoning"),
+        },
+    )
     t0 = time.monotonic()
 
     # ── Layer 1: backoff-retry on same model ────────────────────────

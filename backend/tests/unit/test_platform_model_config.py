@@ -7,7 +7,9 @@ import pytest
 from backend.services import platform_model_config
 from backend.services.platform_model_config import (
     HARDCODED_DEFAULTS,
+    REASONING_DEFAULTS,
     get_platform_model,
+    get_platform_reasoning,
     invalidate,
 )
 from backend.tests.conftest import make_chain_mock
@@ -253,3 +255,54 @@ class TestPurposeMapping:
         with _patch_env("production"):
             for purpose in ("agent_description", "chat_response", "event_generation", "anything"):
                 assert get_platform_model(purpose) == "x/default"
+
+
+# ── Reasoning effort per purpose ────────────────────────────────────────
+
+
+class TestGetPlatformReasoning:
+    """`reasoning_<purpose>` decides how much of max_tokens reaches the answer.
+
+    OpenRouter spends reasoning tokens from inside `max_tokens` and bills them
+    as output, so a wrong value here is not a preference — it is the difference
+    between a complete entity and a 502. See migration 279.
+    """
+
+    def test_off_suppresses_thinking(self):
+        platform_model_config._cache = {"reasoning_entity": "off"}
+        assert get_platform_reasoning("entity") == {"enabled": False}
+
+    def test_auto_sends_nothing(self):
+        """`auto` must be None, not `{}` — an empty dict is still a payload."""
+        platform_model_config._cache = {"reasoning_entity": "auto"}
+        assert get_platform_reasoning("entity") is None
+
+    @pytest.mark.parametrize("level", ["minimal", "low", "medium", "high", "xhigh"])
+    def test_named_levels_pass_through_as_effort(self, level):
+        platform_model_config._cache = {"reasoning_lore": level}
+        assert get_platform_reasoning("lore") == {"effort": level}
+
+    def test_value_is_case_insensitive(self):
+        platform_model_config._cache = {"reasoning_entity": "OFF"}
+        assert get_platform_reasoning("entity") == {"enabled": False}
+
+    def test_unknown_value_degrades_to_model_default(self):
+        """A typo must not break the call — it falls back to today's behaviour."""
+        platform_model_config._cache = {"reasoning_entity": "aggressive"}
+        assert get_platform_reasoning("entity") is None
+
+    def test_cold_cache_uses_the_shipped_default(self):
+        platform_model_config._cache = {}
+        assert get_platform_reasoning("entity") == {"enabled": False}
+        assert get_platform_reasoning("anchors") is None
+
+    def test_unconfigured_purpose_leaves_the_model_alone(self):
+        """`theme`, `translation`, ... carry no key and must send nothing."""
+        platform_model_config._cache = {}
+        assert get_platform_reasoning("theme") is None
+
+    def test_db_value_overrides_the_shipped_default(self):
+        """The whole point of the setting: admin edit beats code."""
+        assert REASONING_DEFAULTS["reasoning_entity"] == "off"
+        platform_model_config._cache = {"reasoning_entity": "high"}
+        assert get_platform_reasoning("entity") == {"effort": "high"}

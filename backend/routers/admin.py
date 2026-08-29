@@ -189,8 +189,11 @@ async def update_setting(
     if is_sensitive_key(key):
         invalidate_api_key_cache()
 
-    # Invalidate model config cache when model settings change
-    if key.startswith("model_"):
+    # Invalidate model config cache when model settings change. `reasoning_*`
+    # lives in the same cache as `model_*` (platform_model_config), so it has to
+    # clear on the same edit — without this the admin saves a reasoning level
+    # and watches nothing happen until the 5-minute TTL lapses.
+    if key.startswith(("model_", "reasoning_")):
         invalidate_model_config()
 
     # Invalidate research domain cache when domain settings change

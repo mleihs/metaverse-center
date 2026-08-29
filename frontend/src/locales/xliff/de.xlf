@@ -1716,7 +1716,7 @@
 </trans-unit>
 <trans-unit id="sd02a9432614df2f5">
   <source><x id="0" equiv-text="${section.title}"/> settings saved.</source>
-  <target>Einstellungen gespeichert.<x id="0" equiv-text="${section.title}"/> Einstellungen gespeichert.</target>
+  <target><x id="0" equiv-text="${section.title}"/> Einstellungen gespeichert.</target>
 </trans-unit>
 <trans-unit id="s33994aa90c1bad30">
   <source>Values are encrypted at rest</source>
@@ -12329,9 +12329,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s8e3832db39515540">
   <source>Empty value for <x id="0" equiv-text="${key}"/>.</source>
 <target>Leerer Wert für <x id="0" equiv-text="${key}"/>.</target></trans-unit>
-<trans-unit id="sf709890a750ffc64">
-  <source><x id="0" equiv-text="${successCount}"/> model settings saved.</source>
-<target><x id="0" equiv-text="${successCount}"/> Modell-Einstellungen gespeichert.</target></trans-unit>
 <trans-unit id="s7eedfc1b72e36c97">
   <source>Loading model settings...</source>
 <target>Modell-Einstellungen werden geladen...</target></trans-unit>
@@ -28508,9 +28505,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Erstvermessung – bereits beansprucht</source>
 <target>Erstvermessung – bereits beansprucht</target>
 </trans-unit>
-<trans-unit id="s3eb44fd5c0ee5a75">
-  <source>DRIFT-Navigationskarte – der frequenzgeschichtete Bleed</source>
-</trans-unit>
 <trans-unit id="s9f6cef4383e24f2a">
   <source>Erstvermessung</source>
 <target>Erstvermessung</target>
@@ -28535,9 +28529,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>1 Stich</source>
 <target>1 Stich</target>
 </trans-unit>
-<trans-unit id="s935629b098a76bd4">
-  <source>Verankere dich in einer Heimatwelt, bevor du aufbrichst.</source>
-</trans-unit>
 <trans-unit id="s053212bb7aff604b">
   <source>Zwischenraum <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(a)}"/> – <x id="2" equiv-text="${worldName(b)}"/></source>
 <target>Zwischenraum <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(a)}"/> – <x id="2" equiv-text="${worldName(b)}"/></target>
@@ -28545,21 +28536,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s08c1a512d5cbefb8">
   <source>Vorfeld <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(slug)}"/></source>
 <target>Vorfeld <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(slug)}"/></target>
-</trans-unit>
-<trans-unit id="sf4f9c0caf0ca749f">
-  <source>Die Driftkarte wird eingestimmt…</source>
-</trans-unit>
-<trans-unit id="s035e2d44303ce9f2">
-  <source>Die Driftkarte ist nicht erreichbar.</source>
-</trans-unit>
-<trans-unit id="s28347005fcbb204d">
-  <source>Keine Fahrt im Drift</source>
-</trans-unit>
-<trans-unit id="sfb40c52a72bc0e95">
-  <source>Brich an deinem Heimat-Broadcast auf, dann klick einen erhellten Knoten an, um den Bleed zu queren.</source>
-</trans-unit>
-<trans-unit id="s35d1e6ce0f36ba4c">
-  <source>Du liest die gemeinsame Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.</source>
 </trans-unit>
 
 <trans-unit id="sf9c6f0843095c063">
@@ -28583,6 +28559,69 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s6e07f19f6fda058e">
   <source>Anchor to a home simulation before you set out.</source>
 <target>Verankere dich in einer Heimat-Simulation, bevor du aufbrichst.</target></trans-unit>
+<trans-unit id="s97f5e90e90f2d56e">
+  <source>off – no thinking</source>
+<target>aus – kein Denken</target></trans-unit>
+<trans-unit id="s90c4f4dec9937c7f">
+  <source>auto – model decides</source>
+<target>automatisch – das Modell entscheidet</target></trans-unit>
+<trans-unit id="s4317c0a74a05be35">
+  <source><x id="0" equiv-text="${id}"/> – <x id="1" equiv-text="${share ?? ''}"/> of the budget</source>
+<target><x id="0" equiv-text="${id}"/> – <x id="1" equiv-text="${share ?? ''}"/> des Budgets</target></trans-unit>
+<trans-unit id="s824c1f19f69a7334">
+  <source>Single entity</source>
+<target>Einzelne Entität</target></trans-unit>
+<trans-unit id="sf149683ca0fee3fe">
+  <source>One agent or building, bilingual</source>
+<target>Ein Agent oder Gebäude, zweisprachig</target></trans-unit>
+<trans-unit id="sb4d960899962e14b">
+  <source>Batch generation</source>
+<target>Stapelerzeugung</target></trans-unit>
+<trans-unit id="s5d1da579b94dccc1">
+  <source>Geography, agents and buildings at once</source>
+<target>Geografie, Agenten und Gebäude auf einmal</target></trans-unit>
+<trans-unit id="s51ae407563500486">
+  <source>Lore Scroll</source>
+<target>Lore-Schriftrolle</target></trans-unit>
+<trans-unit id="s5b26a9e77d6bf83f">
+  <source>5–7 sections of founding lore</source>
+<target>5–7 Abschnitte Gründungslore</target></trans-unit>
+<trans-unit id="sd4b47caa8ae240b3">
+  <source>Classified dossier</source>
+<target>Geheimdossier</target></trans-unit>
+<trans-unit id="s2337b4ffaedf7100">
+  <source>6 sections, around 9,000 words</source>
+<target>6 Abschnitte, rund 9.000 Wörter</target></trans-unit>
+<trans-unit id="s11fb26d4ae439ed0">
+  <source>Philosophical anchors</source>
+<target>Philosophische Anker</target></trans-unit>
+<trans-unit id="se283c4f0ea203e45">
+  <source>Three grounded angles from the research</source>
+<target>Drei belegte Blickwinkel aus der Recherche</target></trans-unit>
+<trans-unit id="se5ff14aa76a65c93">
+  <source>Measured on production: left to the model, deepseek-v4-pro spent 3016 of the 3072 available tokens thinking and produced no answer at all – 3 of 4 attempts failed after 50 to 115 seconds, billed in full. Set to "off" this purpose produces complete objects on every attempt in about 31 seconds. Raise it only together with the token budget.</source>
+<target>Auf Produktion gemessen: sich selbst überlassen, verbrauchte deepseek-v4-pro 3016 der 3072 verfügbaren Tokens im Nachdenken und lieferte überhaupt keine Antwort – 3 von 4 Versuchen scheiterten nach 50 bis 115 Sekunden, in voller Höhe abgerechnet. Auf »aus« gestellt liefert dieser Zweck bei jedem Versuch vollständige Objekte in etwa 31 Sekunden. Nur zusammen mit dem Token-Budget anheben.</target></trans-unit>
+<trans-unit id="s88a153af13f01917">
+  <source>Batch generation writes several entities in one response, so the same budget arithmetic applies as for a single entity, only more so. Kept at "off" until a measurement says otherwise.</source>
+<target>Die Stapelerzeugung schreibt mehrere Entitäten in eine Antwort, es gilt also dieselbe Budgetrechnung wie bei einer einzelnen, nur verschärft. Bleibt auf »aus«, bis eine Messung etwas anderes sagt.</target></trans-unit>
+<trans-unit id="sc0e608a16e8c2579">
+  <source>Measured: "off" and "auto" both succeed, but "off" returns more sections, runs about 40 percent faster and costs half as much. Thinking earns nothing here that the prose does not already carry.</source>
+<target>Gemessen: »aus« und »automatisch« gelingen beide, aber »aus« liefert mehr Abschnitte, läuft rund 40 Prozent schneller und kostet die Hälfte. Das Denken bringt hier nichts, was die Prosa nicht ohnehin trägt.</target></trans-unit>
+<trans-unit id="sf5d264eccac09d55">
+  <source>The longest output in the pipeline: around 9,000 words against a 16,384 token budget, which leaves little room to think even before an effort level is set. Left on "auto" because the measurement was inconclusive – most runs hit an upstream provider error unrelated to thinking.</source>
+<target>Die längste Ausgabe der ganzen Kette: rund 9.000 Wörter gegen ein Budget von 16.384 Tokens, was schon vor jeder Denkstufe wenig Raum zum Nachdenken lässt. Bleibt auf »automatisch«, weil die Messung ohne Ergebnis blieb – die meisten Läufe liefen in einen Anbieterfehler, der mit dem Denken nichts zu tun hatte.</target></trans-unit>
+<trans-unit id="s78bc0477fe866239">
+  <source>The one purpose where thinking demonstrably earns its budget: the run that produced correctly dated, checkable citations was a thinking run. Change this only with a measurement in hand.</source>
+<target>Der eine Zweck, bei dem sich das Denken nachweislich lohnt: Der Lauf, der korrekt datierte, überprüfbare Belege hervorbrachte, war ein Denklauf. Nur mit einer Messung in der Hand ändern.</target></trans-unit>
+<trans-unit id="s3656701705f06c69">
+  <source>Default: <x id="0" equiv-text="${defaultVal}"/> · leaves <x id="1" equiv-text="${level.share}"/> of the budget for thinking</source>
+<target><x id="0" equiv-text="${defaultVal}"/> · lässt <x id="1" equiv-text="${level.share}"/> des Budgets zum Denken</target></trans-unit>
+<trans-unit id="s7fcfbea200a656aa">
+  <source>Reasoning Effort per Purpose</source>
+<target>Denkstufe je Zweck</target></trans-unit>
+<trans-unit id="sba2d8e5a93d3e850">
+  <source>Reasoning tokens are spent from the same budget as the answer and are billed as output. The level below decides how much of a purpose’s token budget is left once the model has finished thinking.</source>
+<target>Reasoning-Tokens werden aus demselben Budget bezahlt wie die Antwort und als Ausgabe abgerechnet. Die Stufe unten entscheidet, wie viel vom Token-Budget eines Zwecks übrig bleibt, wenn das Modell mit dem Denken fertig ist.</target></trans-unit>
 </body>
 </file>
 </xliff>
