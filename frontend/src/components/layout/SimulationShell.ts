@@ -47,6 +47,23 @@ function getTabLabel(path: string): string {
   return labels[path]?.() ?? path.charAt(0).toUpperCase() + path.slice(1);
 }
 
+/**
+ * Views that own the whole viewport and must not be followed by the marketing
+ * footer.
+ *
+ * Measured, not assumed: on the dungeon route the document scrolled by exactly
+ * 133px, and velg-platform-footer is exactly 133px tall. The HUD already sizes
+ * itself to the viewport minus its measured header offset, so the footer was
+ * the entire overshoot — every dungeon session began on a page that scrolled
+ * for no reason a player could see, and a wheel event that missed the map moved
+ * the document instead.
+ *
+ * Chat was already excluded for the same reason, as a bare inequality. Naming
+ * the set says WHY the exclusion exists, so the next full-height view is one
+ * word rather than another !==.
+ */
+const FULL_HEIGHT_VIEWS: ReadonlySet<string> = new Set(['chat', 'dungeon']);
+
 @localized()
 @customElement('velg-simulation-shell')
 export class VelgSimulationShell extends SignalWatcher(LitElement) {
@@ -1120,7 +1137,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       `
           : nothing
       }
-      ${this.view !== 'chat' ? html`<velg-platform-footer></velg-platform-footer>` : nothing}
+      ${FULL_HEIGHT_VIEWS.has(this.view) ? nothing : html`<velg-platform-footer></velg-platform-footer>`}
     `;
   }
 
