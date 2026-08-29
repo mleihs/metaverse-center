@@ -138,6 +138,109 @@ class TestHavarieOpens:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
 
+    def test_a_wreck_on_the_home_dock_is_offered_the_rueckruf(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """Kohärenz 0 ON the traveller's own broadcast: the recall joins the catalogue.
+
+        fn_travel_move already treats arriving home as safety for the WINDOW cause — an
+        expired permit at the home node does not collapse the run at all. The Kohärenz
+        branch never got that rule, so the identical arrival was graded two different ways:
+        limp home and the hull gives out on the doorstep, and the only ways out were notruf
+        (half the haul plus a 10-Siegel debt) and zerfaserung (everything), while the
+        Entladung standing right there pays in full. 278 offers `rueckruf` (70 %) instead of
+        suppressing the Havarie, so the scene still happens (F4: never without a choice and
+        never without text) — it just stops pricing "arrived, but wrecked" like "salvaged
+        out of nowhere".
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, True)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            run = _open_run(client, user, chart_home["simulation_id"])
+            home_node = run["position_node_id"]
+
+            # Out one hop with room to spare, then home again on an empty tank: the return
+            # move pays Notfrequenz, the hull gives out, and it strands ON the home node.
+            #
+            # The outbound hop draws a signal like any other move, and an interactive one
+            # parks the run (SIGNAL_PENDING) so the return move cannot happen. The draw is
+            # salted per run, so it is not something the test can wish away — it clears the
+            # scene the way the rest of the suite does, by writing the run row directly.
+            # What is under test is the Havarie catalogue at home, not the draw.
+            run = client.rpc(
+                "fn_travel_move",
+                {"p_user": str(user), "p_run": run["id"],
+                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+            ).execute().data
+            assert run["status"] == "active", "the outbound hop must not already strand it"
+            checkpoint = {k: v for k, v in run["checkpoint"].items() if k != "pending_signal"}
+            admin_client.table("travel_runs").update(
+                {"kohaerenz": 1, "bandbreite": 0, "checkpoint": checkpoint}
+            ).eq("id", run["id"]).execute()
+            run = _run_row(admin_client, run["id"])
+            run = client.rpc(
+                "fn_travel_move",
+                {"p_user": str(user), "p_run": run["id"],
+                 "p_run_version": run["run_version"], "p_to_node": home_node},
+            ).execute().data
+
+            assert run["status"] == "havarie", "arriving broken is still a Havarie"
+            assert run["position_node_id"] == home_node
+            hav = run["checkpoint"]["havarie"]
+            assert hav["cause"] == "kohaerenz"
+            assert hav["at_home"] is True, (
+                "the payload must read the node the run strands ON — it is built inside the "
+                "same UPDATE that sets position_node_id, so a plain row lookup would see "
+                "the node it LEFT (the W2.6/E snapshot trap)"
+            )
+            assert hav["options"] == ["rueckruf", "notruf", "zerfaserung"], (
+                "the recall leads: it is the best of the three at home, and the panel "
+                "renders the catalogue in order"
+            )
+
+            # And it must actually be takeable — the option list is validated server-side.
+            settled = client.rpc(
+                "fn_travel_havarie_resolve",
+                {"p_user": str(user), "p_run": run["id"],
+                 "p_run_version": run["run_version"], "p_choice": "rueckruf"},
+            ).execute().data
+            assert settled["status"] == "completed", "an orderly recall closes the run"
+        finally:
+            _set_gate(admin_client, False)
+            _reset_traveler(admin_client, user)
+
+    def test_a_wreck_away_from_home_is_not_offered_the_rueckruf(
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+    ):
+        """The other half of 278: the recall is a HOME privilege, not a new default.
+
+        This is the case the first attempt at the fix got wrong. drift_havarie_payload runs
+        inside the UPDATE that moves the run, so reading position_node_id straight off the
+        row yields the node the traveller is LEAVING — and a run stranding one hop out was
+        handed the home catalogue.
+        """
+        user, client = test_user_ids[0], user_clients[0]
+        _reset_traveler(admin_client, user)
+        _set_gate(admin_client, True)
+        _seed_profile(admin_client, user, chart_home["simulation_id"])
+        try:
+            run = _strand(admin_client, client, user, chart_home, home_neighbor)
+
+            assert run["status"] == "havarie", "the floor gives way on the way out"
+            assert run["position_node_id"] == home_neighbor, "stranded one hop from home"
+            hav = run["checkpoint"]["havarie"]
+            assert hav["at_home"] is False
+            assert "rueckruf" not in hav["options"], (
+                "leaving home is not arriving home — the catalogue must not follow the "
+                "node the run departed from"
+            )
+            assert hav["options"] == ["notruf", "zerfaserung"]
+        finally:
+            _set_gate(admin_client, False)
+            _reset_traveler(admin_client, user)
+
     def test_gate_off_still_snaps_exactly_as_p0(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
@@ -700,14 +803,39 @@ class TestHavarieRescueHatches:
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
     ):
         """fn_drift_emergency_return (246) only knew 'active' and 'distress' — so the one
-        status an operator most needs to rescue someone out of was invisible to the rescue."""
+        status an operator most needs to rescue someone out of was invisible to the rescue.
+
+        ⚠️ This is the one test in the suite that reaches BEYOND its own fixtures.
+        `fn_drift_emergency_return()` takes no arguments and repatriates EVERY open run in
+        the database — which is exactly right in production (it is the kill switch: one
+        call brings the whole Drift home) and exactly wrong for a test sharing a database.
+        It has already cost real time: during a browser playtest it silently reset a
+        concurrent session's run to `{"emergency_return": true}` mid-expedition, and the
+        resulting "bug" took a while to trace back to this line. The function is not the
+        defect — the caller is. So the test takes a snapshot of every OTHER open run and
+        puts them back in the finally block.
+        """
         user, client = test_user_ids[0], user_clients[0]
         _reset_traveler(admin_client, user)
         _set_gate(admin_client, True)
         _seed_profile(admin_client, user, chart_home["simulation_id"])
+        bystanders: list[dict] = []
         try:
             wreck = _strand(admin_client, client, user, chart_home, home_neighbor)
             assert wreck["status"] == "havarie"
+
+            # Everything the sweep is about to touch that is NOT ours.
+            bystanders = [
+                row
+                for row in (
+                    admin_client.table("travel_runs")
+                    .select("id, status, position_node_id, checkpoint, run_version")
+                    .in_("status", ["active", "frozen", "distress", "havarie"])
+                    .execute()
+                ).data
+                or []
+                if row["id"] != wreck["id"]
+            ]
 
             admin_client.rpc("fn_drift_emergency_return", {}).execute()
 
@@ -719,5 +847,16 @@ class TestHavarieRescueHatches:
                 "the checkpoint is reset, so no stale wreck panel greets the rescued traveller"
             )
         finally:
+            # Put the bystanders back exactly as they were. Restoring run_version too, so a
+            # client still holding a CAS token is not left staring at a spurious RUN_STALE.
+            for row in bystanders:
+                admin_client.table("travel_runs").update(
+                    {
+                        "status": row["status"],
+                        "position_node_id": row["position_node_id"],
+                        "checkpoint": row["checkpoint"],
+                        "run_version": row["run_version"],
+                    }
+                ).eq("id", row["id"]).execute()
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
