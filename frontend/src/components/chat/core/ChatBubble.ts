@@ -140,9 +140,10 @@ export class ChatBubble extends LitElement {
       opacity: 0.7;
     }
 
-    /* Blockquote — accent bar */
+    /* Zitatlinie, neutral. Ein Blockzitat ist Typografie — die Linie ist das
+       aelteste Mittel dafuer und darf bleiben; die Akzentfarbe daran nicht. */
     .bubble--assistant blockquote {
-      border-left: 3px solid var(--_accent, var(--color-primary));
+      border-left: 1px solid var(--color-border);
       padding-left: var(--space-3);
       margin: var(--space-2) 0;
       color: var(--color-text-secondary);

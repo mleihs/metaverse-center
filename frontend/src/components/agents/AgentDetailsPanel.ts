@@ -425,7 +425,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
       padding: var(--space-1-5) var(--space-2);
-      border-left: var(--border-width-default) solid var(--color-warning);
+      /* Doppelung: der Kasten steht bereits auf einer Warntoenung. */
       background: color-mix(in srgb, var(--color-warning) 4%, transparent);
       line-height: 1.4;
     }

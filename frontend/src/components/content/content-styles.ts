@@ -361,7 +361,9 @@ export const contentStyles = css`
   blockquote {
     margin: var(--space-6) 0;
     padding: var(--space-4) var(--space-6);
-    border-left: 3px solid var(--color-warning);
+    /* Zitatlinie, neutral. Der getoente Hintergrund traegt die Auszeichnung
+       ohnehin schon — und ein Zitat ist keine Warnung. */
+    border-left: 1px solid var(--color-border);
     background: color-mix(in srgb, var(--color-warning) 4%, var(--color-surface));
     font-style: italic;
     color: var(--color-text-tertiary);
