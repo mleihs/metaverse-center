@@ -398,6 +398,30 @@ class DungeonMovementService:
         instance = await DungeonCheckpointService.get_instance(run_id, admin_supabase, require_player=user_id)
 
         if instance.phase not in ("encounter", "rest", "threshold"):
+            # A rejected action left no trace anywhere: `bad_request` only builds an
+            # HTTPException, FastAPI answers it silently, and Sentry's integration does not
+            # report handled 4xx. The client deliberately does not capture server refusals
+            # either — a refused move is the game answering, not a defect.
+            #
+            # That reasoning holds for a TYPED command. It does not hold here. Every path
+            # that reaches this endpoint is a control the interface offered, so a rejection
+            # means the interface vouched for an action the engine would not accept — most
+            # often a second click landing while the first request is still in flight, with
+            # the client's phase not yet updated. Invisible by construction, and identical
+            # in appearance to a legitimate refusal, which is why it survived.
+            #
+            # One warning line with the run, the phase and the action type is enough to
+            # find it. Not an exception: from the engine's side this IS a correctly
+            # refused request.
+            logger.warning(
+                "Action rejected — run is not in an encounter phase",
+                extra=log_extra(
+                    instance,
+                    phase=instance.phase,
+                    action_type=action.action_type,
+                    choice_id=action.choice_id,
+                ),
+            )
             raise bad_request("Not in encounter phase")
 
         current_room = instance.rooms[instance.current_room]

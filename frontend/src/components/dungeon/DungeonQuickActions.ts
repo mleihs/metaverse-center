@@ -25,6 +25,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
+import { terminalState } from '../../services/TerminalStateManager.js';
 import {
   ARCHETYPE_AWAKENING,
   ARCHETYPE_DELUGE,
@@ -79,6 +80,20 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     css`
       :host {
         display: block;
+      }
+
+      /* While a command is running the toolbar stops accepting clicks and says
+         so. The hard guard is in _dispatch — this is the part the player can
+         see, so a click that does nothing does not read as a broken button.
+         Pointer-events alone would not be enough (a focused button still fires
+         on Enter), which is exactly why the guard is not a CSS rule. */
+      .actions[aria-busy='true'] button,
+      .actions[aria-busy='true'] velg-hold-button {
+        opacity: 0.45;
+        pointer-events: none;
+      }
+      .actions[aria-busy='true'] {
+        cursor: progress;
       }
 
       /* The standing group sits apart from the phase actions: a separator and
@@ -255,7 +270,31 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     `,
   ];
 
+  /**
+   * Send a command, unless one is already running.
+   *
+   * THE GUARD IS HERE, at the single seam every control in this component
+   * dispatches through, and not on the individual buttons. A player who clicks
+   * an encounter option twice used to send the second request while the first
+   * was still open: the engine had already resolved the encounter and moved the
+   * phase on, the client had not yet applied the new state, so the button was
+   * still live and the server answered "Not in encounter phase". Reported from
+   * an actual session, three times in the same second.
+   *
+   * It is not specific to encounters. Every phase-changing control has the same
+   * shape, and the engine has a distinct refusal waiting for each of them:
+   *
+   *   move      "Cannot move in phase: …" / "Room is not adjacent to current room"
+   *   interact  "Not in encounter phase"
+   *   rest      "Not at a rest site"
+   *   salvage   "Cannot salvage in phase: …" / "Room already salvaged"
+   *   seal/ground/rally   "… on cooldown (N rooms remaining)"
+   *
+   * Guarding each button would have left the next one to be written unguarded.
+   * Guarding the seam cannot be forgotten.
+   */
   private _dispatch(command: string): void {
+    if (this._busy) return;
     this.dispatchEvent(
       new CustomEvent('terminal-command', {
         detail: command,
@@ -265,6 +304,18 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     );
   }
 
+  /**
+   * True while a dungeon command is running.
+   *
+   * Both flags, because they are set at different depths and neither alone
+   * covers the window: `dungeonState.loading` is held across the whole verb by
+   * the command dispatcher, `terminalState.isLoading` across the surrounding
+   * view call. A gap in either would be a gap in the guard.
+   */
+  private get _busy(): boolean {
+    return dungeonState.loading.value || terminalState.isLoading.value;
+  }
+
   protected render() {
     const phase = dungeonState.phase.value;
     if (!phase) return nothing;
@@ -272,7 +323,12 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     // Two groups: what this phase offers, and what is always true of a run.
     const ended = phase === 'completed' || phase === 'retreated' || phase === 'wiped';
     return html`
-      <div class="actions" role="toolbar" aria-label=${msg('Dungeon actions')}>
+      <div
+        class="actions"
+        role="toolbar"
+        aria-label=${msg('Dungeon actions')}
+        aria-busy=${this._busy ? 'true' : 'false'}
+      >
         ${this._renderPhaseButtons(phase)}
         ${ended ? nothing : this._renderStandingActions()}
       </div>
