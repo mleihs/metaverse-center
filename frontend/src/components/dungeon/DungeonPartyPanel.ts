@@ -392,9 +392,12 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         .card-header__aptitude {
           font-size: 10px;
         }
+        /* Font size only — never a width. The label column sizes itself to the
+           longest label of the active language (see .bars). A fixed width here
+           is what clipped "STIMMUNG" to "STIMMUN" on wide screens, and it
+           survived the first repair because it hides in a media query. */
         .bar-label {
           font-size: 9px;
-          width: 36px;
         }
         .bar-track {
           height: 7px;
@@ -428,7 +431,6 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         }
         .bar-label {
           font-size: 10px;
-          width: 40px;
         }
         .bar-track {
           height: 8px;
