@@ -1202,28 +1202,78 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
       /* ── Chamber text: the room's own row, so it can never grow into the
          party figures. Bounded height with its own scroll — a long encounter
-         must not push the stage out of the frame. ── */
+         must not push the stage out of the frame.
+
+         A LETTERBOX BAND, not a plate. The previous version was a box with a
+         3px accent stripe down its left edge and a 68ch max-width on the BOX,
+         which cut a hard vertical edge across the stage at about 62% width — a
+         rectangle sitting on the picture. The band now spans the full stage and
+         fades upward into it; 68ch moved inward to bound the TEXT MEASURE,
+         which is what the number was ever about. The accent stripe is gone: a
+         coloured bar down the left of a panel is the one gesture that marks an
+         interface as machine-assembled, and it was doing no work here that the
+         gradient does not do better. ── */
       .chamber {
         grid-area: text;
         z-index: 4;
         min-height: 0;
-        margin: 10px 12px 12px;
-        padding: 12px 14px;
-        max-width: 68ch;
+        padding: 16px 16px 14px;
         max-height: min(38vh, 260px);
         overflow-y: auto;
         overscroll-behavior: contain;
-        border-left: 3px solid var(--_fx-accent);
-        background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+        background: linear-gradient(
+          to top,
+          color-mix(in srgb, var(--color-surface) 95%, transparent) 0%,
+          color-mix(in srgb, var(--color-surface) 88%, transparent) 45%,
+          color-mix(in srgb, var(--color-surface) 55%, transparent) 80%,
+          transparent 100%
+        );
         animation: banter-rise var(--duration-entrance, 350ms) var(--ease-dramatic, ease);
       }
       .chamber p {
         margin: 0;
       }
-      .chamber > * + * {
-        margin-top: 8px;
+      /* The text measure. 68ch of prose, centred on the stage — the band is
+         full width, the reading is not. */
+      .chamber__measure {
+        max-width: 68ch;
+        margin: 0 auto;
       }
-      /* The room describing itself — the establishing voice. */
+      .chamber__measure > * + * {
+        margin-top: 9px;
+      }
+      /* ── Three roles, not five treatments ──
+         VOICE   an operative reacting. Serif, italic, full strength.
+         PLACE   where you are, what is in it, what is happening. Serif; the
+                 situation is the emphatic member of the role.
+         READING the archetype's pressure, in words. Tied to the meter above by
+                 COLOUR, no longer by monospace: monospace means "system
+                 output" in this design system, and this is prose.
+         Before, five paragraphs carried five different treatments with no key a
+         player could learn. ── */
+
+      /* VOICE */
+      .chamber__banter {
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 13.5px;
+        font-style: italic;
+        line-height: 1.5;
+        color: var(--color-text-primary);
+      }
+
+      /* PLACE */
+      /* The room's mark is the one brutalist element in the band — the
+         terminal has always printed "REST SITE" / "BOSS CHAMBER" and the scene
+         never did, so a graphical player could not tell a treasure room from an
+         ordinary one without reading for clues. */
+      .chamber__mark {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        color: color-mix(in srgb, var(--_fx-accent) 75%, var(--color-text-muted));
+      }
       .chamber__ambient,
       .chamber__anchor {
         font-family: var(--font-bureau, var(--font-prose, serif));
@@ -1231,45 +1281,45 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         line-height: 1.55;
         color: var(--color-text-secondary);
       }
+      /* Objects belong to the room: one indented group, without the hairline
+         rule that used to repeat the accent-stripe gesture. */
       .chamber__anchor {
-        padding-left: 10px;
-        border-left: 1px solid color-mix(in srgb, var(--_border) 60%, transparent);
+        padding-left: 1.4em;
+        color: var(--color-text-muted);
       }
-      /* The situation. Carries the choices rendered in the action bar, so it is
-         the one paragraph the player must actually read. */
+      /* The situation. It carries the choices in the action bar, so it is the
+         one paragraph a player must actually read — and it is set to be found
+         without counting paragraphs. */
       .chamber__encounter {
         font-family: var(--font-bureau, var(--font-prose, serif));
-        font-size: 15px;
+        font-size: 15.5px;
         line-height: 1.6;
         color: var(--color-text-primary);
+        padding-top: 9px;
+        border-top: 1px solid color-mix(in srgb, var(--_border) 45%, transparent);
       }
       .chamber__encounter p + p {
         margin-top: 8px;
       }
       /* A Threshold toll is written sparser in the terminal; the scene answers
-         that with air and a centred measure rather than ASCII indentation. */
+         with air and a narrower measure, not with another coloured rule. */
       .chamber__encounter--threshold {
-        padding: 4px 0 4px 12px;
-        border-left: 2px solid var(--_fx-accent);
+        max-width: 46ch;
+        margin: 0 auto;
+        padding: 12px 0 4px;
+        border-top-color: color-mix(in srgb, var(--_fx-accent) 45%, transparent);
         font-style: italic;
         letter-spacing: 0.2px;
+        text-align: center;
       }
-      /* An operative reacting — a voice, not narration. */
-      .chamber__banter {
-        font-family: var(--font-bureau, var(--font-prose, serif));
-        font-size: 13px;
-        line-height: 1.5;
-        color: var(--color-text-primary);
-        opacity: 0.92;
-      }
+      /* READING */
       .chamber__barometer {
-        font-family: var(--_mono);
-        font-size: 11px;
-        letter-spacing: 0.5px;
-        color: var(--_phosphor-dim);
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 12px;
+        letter-spacing: 0.3px;
+        color: color-mix(in srgb, var(--_fx-accent) 62%, var(--color-text-secondary));
       }
       .chamber--empty {
-        border-left-color: color-mix(in srgb, var(--_border) 60%, transparent);
         background: none;
         font-family: var(--_mono);
         font-size: 12px;
@@ -2838,24 +2888,33 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     </div>`;
     if (!description) return waiting;
 
-    const { ambient, anchors, encounter, banter, barometer, isThreshold } = description;
+    const { ambient, anchors, encounter, banter, barometer, isThreshold, typeLabel } = description;
     if (!ambient && anchors.length === 0 && !encounter && !banter && !barometer) return waiting;
 
+    // NARRATIVE ORDER, not the order the data arrives in. Someone walking into
+    // a room hears their companion react, registers what kind of place it is,
+    // sees it, sees what is in it, and only then faces the situation. The
+    // previous order opened with two grey paragraphs of scenery and put the
+    // operative's remark — the only human voice in the frame — last, below the
+    // very situation it was reacting to.
     return html`
       <div class="chamber" role="status" aria-live="polite">
-        ${ambient ? html`<p class="chamber__ambient">${ambient}</p>` : nothing}
-        ${anchors.map((text) => html`<p class="chamber__anchor">${text}</p>`)}
-        ${
-          encounter
-            ? html`<div
-              class="chamber__encounter ${isThreshold ? 'chamber__encounter--threshold' : ''}"
-            >
-              ${encounter.split('\n').map((para) => html`<p>${para}</p>`)}
-            </div>`
-            : nothing
-        }
-        ${banter ? html`<p class="chamber__banter">${banter}</p>` : nothing}
-        ${barometer ? html`<p class="chamber__barometer">${barometer}</p>` : nothing}
+        <div class="chamber__measure">
+          ${banter ? html`<p class="chamber__banter">${banter}</p>` : nothing}
+          ${typeLabel ? html`<p class="chamber__mark">${typeLabel}</p>` : nothing}
+          ${ambient ? html`<p class="chamber__ambient">${ambient}</p>` : nothing}
+          ${anchors.map((text) => html`<p class="chamber__anchor">${text}</p>`)}
+          ${
+            encounter
+              ? html`<div
+                class="chamber__encounter ${isThreshold ? 'chamber__encounter--threshold' : ''}"
+              >
+                ${encounter.split('\n').map((para) => html`<p>${para}</p>`)}
+              </div>`
+              : nothing
+          }
+          ${barometer ? html`<p class="chamber__barometer">${barometer}</p>` : nothing}
+        </div>
       </div>
     `;
   }

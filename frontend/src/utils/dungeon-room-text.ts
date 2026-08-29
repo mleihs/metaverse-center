@@ -205,6 +205,40 @@ function anchorProse(anchorTexts: AnchorText[] | null | undefined): string[] {
 }
 
 /**
+ * Keep what only arrival could know.
+ *
+ * `describeRoom` without a move response cannot produce banter, anchor prose or
+ * the barometer line — they exist only in the moment the party walks in, and
+ * inventing them would be worse than omitting them. But `look` calls exactly
+ * that impoverished form and used to PUBLISH it, overwriting the good
+ * description with one where the agent had said nothing and the objects in the
+ * room had vanished. From the player's side: the room described itself on
+ * entry, and then, the moment they resolved its encounter or asked to look
+ * again, most of that description disappeared.
+ *
+ * So a re-describe of the SAME room merges rather than replaces: the fields
+ * only arrival can fill are carried over, everything else is taken fresh. On a
+ * room change nothing is carried — the previous room's objects have no business
+ * in this one.
+ *
+ * `encounter` is deliberately NOT carried. It is recoverable from run state,
+ * and after the party resolves the situation the fresh null is the truth: the
+ * prose stays, the choices go.
+ */
+export function mergeRoomDescription(
+  prev: RoomDescription | null,
+  next: RoomDescription,
+): RoomDescription {
+  if (!prev || prev.roomIndex !== next.roomIndex || prev.depth !== next.depth) return next;
+  return {
+    ...next,
+    banter: next.banter ?? prev.banter,
+    anchors: next.anchors.length > 0 ? next.anchors : prev.anchors,
+    barometer: next.barometer ?? prev.barometer,
+  };
+}
+
+/**
  * Describe the room the party is standing in.
  *
  * `move` is the response that carried the party here: it holds the texts that
@@ -234,6 +268,14 @@ export function describeRoom(
       : localized(state, 'encounter_description') || null;
   }
 
+  // The specific beats the general. A rest site in The Entropy carries the
+  // room-type ambient "A pocket of coherence in the decay."; its encounter
+  // template opens with "A pocket of slower decay." Printed together they read
+  // as a stutter — the same observation twice, in slightly different words,
+  // and the player learns to skip both. The encounter line is written for THIS
+  // situation, so it wins; the ambient returns once the situation is resolved.
+  const ambient = encounter ? null : roomTypeAmbient(room.room_type, state.archetype);
+
   return {
     depth: room.depth,
     roomIndex: room.index,
@@ -242,7 +284,7 @@ export function describeRoom(
     banter: move?.banter ? localized(move.banter, 'text') || null : null,
     anchors: anchorProse(move?.anchor_texts),
     barometer: move?.barometer_text ? localized(move.barometer_text, 'text') || null : null,
-    ambient: roomTypeAmbient(room.room_type, state.archetype),
+    ambient,
     encounter,
     isThreshold: move ? !!move.threshold : state.phase === 'threshold',
     hint: roomTypeHint(room.room_type),

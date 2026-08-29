@@ -20,7 +20,7 @@ import type {
   MoveToRoomResponse,
   RoomNodeClient,
 } from '../src/types/dungeon.js';
-import { describeRoom } from '../src/utils/dungeon-room-text.js';
+import { describeRoom, mergeRoomDescription } from '../src/utils/dungeon-room-text.js';
 
 function room(overrides: Partial<RoomNodeClient> = {}): RoomNodeClient {
   return {
@@ -181,5 +181,116 @@ describe('describeRoom — room type', () => {
     const d = describeRoom(room({ depth: 2, index: 3 }), state({ depth: 5 }));
     expect(d.depth).toBe(2);
     expect(d.roomIndex).toBe(3);
+  });
+});
+
+describe('describeRoom — the specific beats the general', () => {
+  // The stutter this closes, observed in The Entropy: a rest site printed the
+  // room-type ambient "A pocket of coherence in the decay." immediately above
+  // its encounter prose "A pocket of slower decay." Two sentences, one
+  // observation, and a player who learns to skip both.
+  it('drops the room-type ambient while an encounter is present', () => {
+    const move: MoveToRoomResponse = {
+      banter: null,
+      anchor_texts: null,
+      barometer_text: null,
+      description_en: 'A pocket of slower decay.',
+      description_de: 'Eine Tasche langsameren Zerfalls.',
+      choices: [CHOICE],
+      state: state(),
+    } as MoveToRoomResponse;
+
+    const d = describeRoom(room({ room_type: 'rest' }), state({ archetype: 'The Entropy' }), move);
+
+    expect(d.encounter).toBe('A pocket of slower decay.');
+    expect(d.ambient).toBeNull();
+  });
+
+  it('keeps the ambient when the room presents no situation', () => {
+    const d = describeRoom(room({ room_type: 'rest' }), state({ archetype: 'The Entropy' }));
+
+    expect(d.encounter).toBeNull();
+    expect(d.ambient).toBe('A pocket of coherence in the decay.');
+  });
+
+  it('lets the ambient return once the situation is resolved', () => {
+    // After the encounter, run state carries no choices — the general line is
+    // all that is left to say about the room, so it comes back.
+    const resolved = state({
+      archetype: 'The Entropy',
+      phase: 'room_clear',
+      encounter_choices: [],
+    });
+    const d = describeRoom(room({ room_type: 'rest' }), resolved);
+
+    expect(d.ambient).toBe('A pocket of coherence in the decay.');
+  });
+});
+
+describe('mergeRoomDescription — the description survives a second look', () => {
+  // The bug: `look` re-derives from run state, which cannot know banter, anchor
+  // prose or the barometer. Publishing that impoverished object overwrote the
+  // good one, so the room went quiet the moment a player looked twice or
+  // resolved its encounter.
+  const arrival: MoveToRoomResponse = {
+    banter: { text_en: 'Aranea goes still.', text_de: 'Aranea erstarrt.' },
+    anchor_texts: [{ text_en: 'A chair, facing the wall.', text_de: 'Ein Stuhl zur Wand.' }],
+    barometer_text: { text_en: 'The dark presses closer.', text_de: 'Das Dunkel rueckt naeher.' },
+    description_en: 'Something breathes in the corner.',
+    description_de: 'Etwas atmet in der Ecke.',
+    choices: [CHOICE],
+    state: state(),
+  } as MoveToRoomResponse;
+
+  it('carries the arrival-only prose through a look at the same room', () => {
+    const entered = describeRoom(room(), state(), arrival);
+    const looked = describeRoom(room(), state({ phase: 'encounter', encounter_choices: [CHOICE] }));
+
+    const merged = mergeRoomDescription(entered, looked);
+
+    expect(merged.banter).toBe('Aranea goes still.');
+    expect(merged.anchors).toEqual(['A chair, facing the wall.']);
+    expect(merged.barometer).toBe('The dark presses closer.');
+  });
+
+  it('lets the encounter go when the party has resolved it', () => {
+    // Not an arrival-only field: it is recoverable from state, and the fresh
+    // null is the truth. The prose stays, the choices go.
+    const entered = describeRoom(room(), state(), arrival);
+    const afterwards = describeRoom(room(), state({ phase: 'room_clear', encounter_choices: [] }));
+
+    const merged = mergeRoomDescription(entered, afterwards);
+
+    expect(merged.encounter).toBeNull();
+    expect(merged.banter).toBe('Aranea goes still.');
+    expect(merged.anchors).toHaveLength(1);
+  });
+
+  it('carries nothing into a different room', () => {
+    const entered = describeRoom(room({ index: 3 }), state(), arrival);
+    const nextRoom = describeRoom(room({ index: 7, depth: 3 }), state({ current_room: 7 }));
+
+    const merged = mergeRoomDescription(entered, nextRoom);
+
+    expect(merged.banter).toBeNull();
+    expect(merged.anchors).toEqual([]);
+    expect(merged.barometer).toBeNull();
+  });
+
+  it('does not overwrite fresh arrival prose with older prose', () => {
+    // Re-entering the same room index at a new depth is a different room.
+    const first = describeRoom(room({ index: 3, depth: 2 }), state(), arrival);
+    const second: MoveToRoomResponse = {
+      ...arrival,
+      banter: { text_en: 'Kesh swears under his breath.', text_de: 'Kesh flucht leise.' },
+    };
+    const entered = describeRoom(room({ index: 3, depth: 2 }), state(), second);
+
+    expect(mergeRoomDescription(first, entered).banter).toBe('Kesh swears under his breath.');
+  });
+
+  it('takes the new description when there is no standing one', () => {
+    const fresh = describeRoom(room(), state());
+    expect(mergeRoomDescription(null, fresh)).toBe(fresh);
   });
 });
