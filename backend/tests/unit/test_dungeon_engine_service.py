@@ -25,6 +25,7 @@ Mock strategy:
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -344,6 +345,48 @@ class TestBuildClientState:
         assert state.rooms[1].room_type == "combat"
         assert state.rooms[2].room_type == "?"  # revealed but not scouted
         assert state.rooms[3].room_type == "?"  # neither revealed nor scouted
+
+    def test_combat_keeps_the_encounter_prose(self):
+        """The situation stands while the party is fighting it.
+
+        The encounter description used to be built for `threshold`/`encounter`/
+        `rest` only, so it vanished the instant combat began — the 129 authored
+        encounter templates went silent exactly when the situation they describe
+        was happening, and a page reload mid-fight left the graphical scene with
+        nothing to say about the room. Choices stay absent: they were consumed
+        when the party entered the fight.
+        """
+        rooms = _make_rooms()
+        rooms[1].revealed = True
+        rooms[1].scouted = True
+        rooms[1].encounter_template_id = "enc-test"
+        instance = _make_instance(rooms=rooms, current_room=1, phase="combat_planning")
+
+        # The content cache is not loaded in unit tests; patch the lookup seam.
+        stub = SimpleNamespace(
+            description_en="Something ambushes you from the seam.",
+            description_de="Etwas ueberfaellt euch aus der Naht.",
+        )
+        with patch(
+            "backend.services.dungeon_checkpoint_service.get_encounter_by_id",
+            return_value=stub,
+        ):
+            state = DungeonCheckpointService.build_client_state(instance)
+
+        assert state.encounter_description_en == "Something ambushes you from the seam."
+        assert state.encounter_choices is None, "the choices were consumed on entry"
+
+    def test_combat_without_an_encounter_template_stays_silent(self):
+        """A plain combat room has no template — it must not invent prose."""
+        rooms = _make_rooms()
+        rooms[1].revealed = True
+        rooms[1].scouted = True
+        rooms[1].encounter_template_id = None
+        instance = _make_instance(rooms=rooms, current_room=1, phase="combat_planning")
+
+        state = DungeonCheckpointService.build_client_state(instance)
+
+        assert state.encounter_description_en is None
 
     def test_unrevealed_rooms_have_empty_connections(self):
         rooms = _make_rooms()
