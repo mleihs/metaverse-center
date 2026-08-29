@@ -42,6 +42,7 @@ import {
 import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
 import type { TerminalLine, TerminalLineMeta } from '../types/terminal.js';
 import type { AptitudeIndex } from './aptitudes.js';
+import { describeChoices } from './dungeon-encounter-choices.js';
 import type { RoomDescription } from './dungeon-room-text.js';
 import { getAmbient } from './dungeon-room-text.js';
 import { localized } from './locale-fields.js';
@@ -951,36 +952,26 @@ export function formatEncounterChoices(
   }
   lines.push(responseLine(''));
 
-  // Choices
-  for (let i = 0; i < choices.length; i++) {
-    const choice = choices[i];
-    lines.push(systemLine(`[${i + 1}] ${localized(choice, 'label')}`));
+  // What each option demands and who would attempt it is decided ONCE, in
+  // `describeChoices`, and rendered here as lines. The graphical HUD reads the
+  // same descriptors and draws buttons from them — before that split, the
+  // requirement and the volunteer existed only in this function, so a
+  // graphical player chose between bare labels.
+  const described = describeChoices(choices, party);
 
-    // Aptitude requirements
-    if (choice.requires_aptitude) {
-      for (const [apt, level] of Object.entries(choice.requires_aptitude)) {
-        lines.push(
-          responseLine(
-            `    ${msg('Requires')}: ${apt.charAt(0).toUpperCase() + apt.slice(1)} ${level}`,
-          ),
-        );
-      }
+  for (const choice of described) {
+    lines.push(systemLine(`[${choice.index}] ${choice.label}`));
+
+    for (const req of choice.requirements) {
+      lines.push(responseLine(`    ${msg('Requires')}: ${req.label} ${req.level}`));
     }
 
-    // Check info — which agent can do it best?
-    if (choice.check_aptitude) {
-      const bestAgent = _findBestAgent(party, choice.check_aptitude);
-      if (bestAgent) {
-        const aptLevel = bestAgent.aptitudes[choice.check_aptitude] ?? 0;
-        lines.push(
-          responseLine(
-            `    ${bestAgent.agent_name} ${msg('volunteers')} (${choice.check_aptitude} ${aptLevel})`,
-          ),
-        );
-      }
+    if (choice.volunteer) {
+      const v = choice.volunteer;
+      lines.push(responseLine(`    ${v.name} ${msg('volunteers')} (${v.aptitude} ${v.level})`));
     }
 
-    if (i < choices.length - 1) {
+    if (choice.index < described.length) {
       lines.push(responseLine(''));
     }
   }
@@ -1769,21 +1760,4 @@ export function formatDebrisFound(debris: LootItem): TerminalLine[] {
 function _enemyConditionBar(display: string): string {
   const hpPct = getEnemyHpPercent(display);
   return progressBar(Math.round(hpPct / 10), 10, 8);
-}
-
-function _findBestAgent(
-  party: AgentCombatStateClient[],
-  aptitude: string,
-): AgentCombatStateClient | null {
-  let best: AgentCombatStateClient | null = null;
-  let bestLevel = -1;
-  for (const agent of party) {
-    if (agent.condition === 'captured') continue;
-    const level = agent.aptitudes[aptitude] ?? 0;
-    if (level > bestLevel) {
-      bestLevel = level;
-      best = agent;
-    }
-  }
-  return best;
 }
