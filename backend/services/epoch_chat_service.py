@@ -1,6 +1,7 @@
 """Service layer for epoch chat message operations."""
 
 import logging
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import sentry_sdk
@@ -140,7 +141,11 @@ class EpochChatService:
         """
         # Validate epoch is in an active phase
         epoch_resp = await (
-            supabase.table("game_epochs").select("id, status, config").eq("id", str(epoch_id)).limit(1).execute()
+            supabase.table("game_epochs")
+            .select("id, status, config, cycle_started_at, cycle_deadline_at")
+            .eq("id", str(epoch_id))
+            .limit(1)
+            .execute()
         )
         if not epoch_resp.data:
             raise not_found(detail="Epoch not found.")
@@ -202,6 +207,24 @@ class EpochChatService:
             )
 
             if all_humans_ready:
+                # The floor under a cycle (config.min_cycle_minutes). Everyone
+                # being ready says the cycle CAN end, not that it may end now:
+                # four quick clicks would otherwise burn a cycle in seconds.
+                earliest = EpochChatService._earliest_resolve_at(epoch_row, config)
+                if earliest is not None:
+                    # Pull the deadline forward to the floor rather than
+                    # resolving. The sweep and the eager timer already know how
+                    # to end a cycle at a deadline — reuse them instead of
+                    # inventing a second path that could disagree.
+                    await EpochChatService._bring_deadline_forward(admin_supabase, epoch_id, earliest)
+                    result["auto_resolve_pending"] = True
+                    result["resolves_at"] = earliest.isoformat()
+                    logger.info(
+                        "All ready before the cycle floor — deadline pulled forward",
+                        extra={"epoch_id": str(epoch_id), "resolves_at": earliest.isoformat()},
+                    )
+                    return result
+
                 try:
                     epoch_data = await EpochService.resolve_cycle_full(supabase, epoch_id, admin_supabase)
                     result["auto_resolved"] = True
@@ -212,6 +235,52 @@ class EpochChatService:
                     result["auto_resolve_error"] = True
 
         return result
+
+    @staticmethod
+    def _earliest_resolve_at(epoch_row: dict, config: dict) -> datetime | None:
+        """The moment this cycle may end, or None when it may end now.
+
+        None means "no floor applies": the feature is off (0), the epoch predates
+        it, or the floor has already elapsed. A malformed or absent
+        `cycle_started_at` also reads as None — a floor we cannot compute must
+        not be able to stall a cycle.
+        """
+        minutes = config.get("min_cycle_minutes", 0) or 0
+        if minutes <= 0:
+            return None
+
+        started_raw = epoch_row.get("cycle_started_at")
+        if not started_raw:
+            return None
+        try:
+            started = datetime.fromisoformat(str(started_raw).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            return None
+        if started.tzinfo is None:
+            started = started.replace(tzinfo=UTC)
+
+        earliest = started + timedelta(minutes=minutes)
+        return earliest if earliest > datetime.now(UTC) else None
+
+    @staticmethod
+    async def _bring_deadline_forward(admin: Client, epoch_id: UUID, deadline_at: datetime) -> None:
+        """Move the cycle deadline earlier, never later.
+
+        Called when every human is ready before the floor has elapsed. Guarded
+        so a long floor on a short deadline cannot EXTEND a cycle.
+        """
+        from backend.services.epoch_cycle_scheduler import EpochCycleScheduler
+
+        await (
+            admin.table("game_epochs")
+            .update({"cycle_deadline_at": deadline_at.isoformat()})
+            .eq("id", str(epoch_id))
+            # Only when the standing deadline is LATER than the floor: a long
+            # floor on a short deadline must not extend the cycle.
+            .gte("cycle_deadline_at", deadline_at.isoformat())
+            .execute()
+        )
+        await EpochCycleScheduler.schedule_eager_timer(str(epoch_id), deadline_at)
 
     @staticmethod
     async def _enrich_sender_name(supabase: Client, message: dict) -> dict:

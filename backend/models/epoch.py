@@ -86,6 +86,20 @@ class EpochConfig(BaseModel):
     cycle_deadline_minutes: int = Field(480, ge=15, le=2880)
     require_action_for_ready: bool = False
 
+    # The floor under a cycle. Without it, four quick ready-clicks resolve a
+    # cycle in seconds and an "8-hour cycle" becomes whatever the fastest four
+    # players agree on — the deadline caps how LONG a cycle may run and nothing
+    # capped how SHORT.
+    #
+    # It does not block resolution, which would strand a cycle nobody can end.
+    # When everyone is ready early the deadline is pulled FORWARD to the
+    # earliest legal moment instead, and the existing deadline machinery
+    # (sweep + eager timer) resolves it there. One mechanism, not two.
+    #
+    # 0 disables the floor, which is what every epoch created before this field
+    # existed carries — their behaviour is unchanged.
+    min_cycle_minutes: int = Field(0, ge=0, le=1440)
+
     # ── AFK Handling ──────────────────────────────────────────
     afk_penalty_enabled: bool = False
     afk_rp_penalty: int = Field(2, ge=0, le=10)
@@ -520,6 +534,14 @@ class PassCycleResponse(BaseModel):
     auto_resolved: bool = False
     auto_resolve_error: bool = False
     new_cycle: int | None = None
+    # Everyone is ready, but the cycle floor (config.min_cycle_minutes) has not
+    # elapsed. The deadline has been pulled forward to `resolves_at` and the
+    # normal deadline machinery will end the cycle there. Declared here because
+    # return annotations ARE the response model in this project: a field the
+    # service returns and the model omits is silently stripped, which is how
+    # `new_cycle` once made the cycle overlay animate "Cycle 0" forever.
+    auto_resolve_pending: bool = False
+    resolves_at: datetime | None = None
 
 
 class TeamActionResponse(BaseModel):
