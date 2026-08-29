@@ -13,7 +13,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
-import { cardThemeStyle } from './forge-card-data.js';
+import { cardFrameFromTheme, cardThemeStyle } from './forge-card-data.js';
 
 import '../shared/VelgGameCard.js';
 
@@ -1885,7 +1885,9 @@ export class VelgForgeCeremony extends LitElement {
       imageUrl: string;
       kind: 'agent' | 'building';
     };
-    const cardTheme = cardThemeStyle(forgeStateManager.draft.value?.theme_config ?? {});
+    const ceremonyTheme = forgeStateManager.draft.value?.theme_config ?? {};
+    const cardTheme = cardThemeStyle(ceremonyTheme);
+    const cardFrame = cardFrameFromTheme(ceremonyTheme);
 
     const renderFanCard = (
       c: CardData,
@@ -1912,6 +1914,7 @@ export class VelgForgeCeremony extends LitElement {
         >
           <velg-game-card
             style=${cardTheme}
+            .frame=${cardFrame}
             .type=${c.kind}
             .name=${c.name}
             .subtitle=${c.subtitle}

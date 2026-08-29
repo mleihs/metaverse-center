@@ -25,6 +25,7 @@
  */
 import { msg, str } from '@lit/localize';
 import type { ForgeAgentDraft, ForgeBuildingDraft } from '../../services/api/ForgeApiService.js';
+import { cardFrameFromConfig } from '../../services/card-frame.js';
 import { conditionDots, conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
@@ -128,6 +129,17 @@ export function cardThemeStyle(theme: Record<string, string>): string {
     .map(([name, value]) => `${name}: ${value}`)
     .join('; ');
 }
+
+/**
+ * The frame a Forge draft's theme describes.
+ *
+ * The Forge renders cards for a world that is not themed yet: the Darkroom
+ * edits `theme_config` locally on a debounce, and the ignition screen shows a
+ * simulation that does not exist. Both hand the card the frame directly instead
+ * of waiting for `ThemeService` to publish one. Same mapping as the runtime
+ * path, so a preview cannot disagree with the world it previews.
+ */
+export const cardFrameFromTheme = cardFrameFromConfig;
 
 /** Accessible label for an empty deployment slot, numbered as it is on screen. */
 export function emptySlotLabel(index: number, type: CardType): string {

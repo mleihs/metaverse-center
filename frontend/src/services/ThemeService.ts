@@ -13,6 +13,7 @@
  */
 
 import { settingsApi } from './api/index.js';
+import { activeCardFrame, cardFrameFromConfig } from './card-frame.js';
 import type { ThemePresetName } from './theme-presets.js';
 import { THEME_PRESETS } from './theme-presets.js';
 
@@ -295,6 +296,10 @@ class ThemeService {
         tokensApplied.push(token);
       }
     }
+
+    // 3b. Publish the card frame treatment. Not a token mapping: each value
+    // names a construction the card assembles, not a value it interpolates.
+    activeCardFrame.value = cardFrameFromConfig(config);
 
     // 4. Bridge hover_effect setting to CSS custom properties
     const hoverEffect = config.hover_effect ?? 'translate';

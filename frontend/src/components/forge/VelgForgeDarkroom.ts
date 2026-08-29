@@ -14,7 +14,7 @@ import {
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { agentCardView, cardThemeStyle } from './forge-card-data.js';
+import { agentCardView, cardFrameFromTheme, cardThemeStyle } from './forge-card-data.js';
 import { getOperativeSet } from './forge-placeholders.js';
 import { renderInfoBubble } from './forge-utils.js';
 
@@ -860,6 +860,7 @@ export class VelgForgeDarkroom extends LitElement {
                 return html`
                   <velg-game-card
                     style=${cardThemeStyle(tc)}
+                    .frame=${cardFrameFromTheme(tc)}
                     .type=${view.type}
                     .name=${view.name}
                     .subtitle=${view.subtitle}
