@@ -162,46 +162,35 @@ gefüllt — `lobby-card__art` existiert.)
 
 ---
 
-## Beim Durchspielen gefunden, NICHT hier behoben
+## Beim Durchspielen beobachtet — und wieder verworfen
 
-### Die Archetyp-Kulisse ist unsichtbar (Entropy geprüft, vermutlich alle acht)
+### Die „unsichtbare Kulisse" war ein Messfehler
 
-`dungeon-entropy.avif` ist geladen (1920×1065, `complete`, `opacity: 1`, kein
-zusätzlicher Filter) und auf dem Bildschirm trotzdem **nicht zu sehen**: die
-Bühne zeigt eine flache grüne Fläche. Phase 3a hat die Kulissen ausgeliefert;
-sichtbar sind sie nicht.
+Mehrere Screenshots zeigten die Bühne als flache grüne Fläche, obwohl
+`dungeon-entropy.avif` geladen war (1920×1065, `complete`, `opacity: 1`, kein
+zusätzlicher Filter). Ich habe daraus einen Stapelfehler abgeleitet, drei
+Kandidaten gebaut und alle drei wieder zurückgenommen, weil keiner nach dem
+Neuladen hielt.
 
-**Ursache, spezifikationsgenau.** `.scene__backdrop` ist positioniert *mit*
-`z-index`, also ein Stacking Context, also eine **isolierte Gruppe**.
-`mix-blend-mode` darin mischt gegen den Inhalt DIESER Gruppe, nicht durch sie
-hindurch auf das, was darunter liegt. Der Decay-Plane (`overlay`) und die
-Scanlines (`multiply`) mischen sich folglich mit einer leeren Gruppe und liefern
-ein deckendes Ergebnis zurück, das der `z-index`-Gleichstand zwischen
-`.scene__art` und `.scene__backdrop` (beide 0) über das Foto legt.
+**Die tatsächliche Ursache lag in der Messung.** Der automatisierte Browser-Tab
+lief die ganze Zeit mit `document.visibilityState === "hidden"` — nachgeprüft,
+und die WakeLock-Meldung im Protokoll („The requesting page is not visible")
+sagte es von Anfang an. Chrome komponiert verborgene Tabs nicht; ein Screenshot
+liefert dann den letzten komponierten Frame. Gemischte Ebenen
+(`mix-blend-mode`) sind genau die Art Inhalt, die dabei zurückbleibt. Sobald
+eine Handlung ein Re-Render auslöste (`look`), stand das Bild da.
 
-**Gemessen, jeweils auf Produktion:**
+**Konsequenz:** kein belegter Fehler. Was bleibt, ist eine Lehre über das
+Vorgehen — jede Laufzeit-Mutation im Inspektor ließ das Bild „erscheinen", weil
+sie einen neuen Frame erzwang, nicht weil sie etwas reparierte. Vier Kandidaten,
+vier falsche Grün.
 
-| Eingriff | Laufzeit-Mutation | nach Neuladen |
-|---|---|---|
-| `mix-blend-mode` → `normal` / `soft-light` / `screen` | Bild erscheint | **weiter platt** |
-| `.scene__backdrop` über das Foto, Basis-Verlauf entfernt | Bild erscheint | **weiter platt** |
-| `.scene__art { z-index: 1 }` | Bild erscheint | **weiter platt** |
-| `.scene__plane { display: none }` | Bild erscheint | (nicht geprüft) |
-
-**Die Falle:** jede Laufzeit-Mutation lässt das Bild erscheinen, keine davon
-hält beim ersten Paint. Wer im DevTools-Inspektor probiert, bekommt also für
-jeden Kandidaten ein falsches Grün. Nur ein vollständiges Neuladen zählt.
-
-**Vorschlag für den eigenen Vorgang:** die Atmosphäre aus `.scene__backdrop`
-herausziehen und als Geschwister von `.scene__art` unter ein
-`isolation: isolate` auf `.scene` legen — dann mischen die Planes mit dem FOTO
-statt mit einer leeren Gruppe. Das ändert das Aussehen aller acht
-Archetyp-Bühnen und gehört mit Augen auf jede einzelne geprüft, nicht blind
-ans Ende einer anderen Arbeit.
-
-Drei Kandidaten wurden gebaut und wieder **zurückgenommen**, weil keiner die
-Gegenprobe nach dem Neuladen bestand. Der Stand entspricht dem, was auf
-Produktion läuft.
+**Falls es doch jemanden juckt:** vor jeder weiteren Arbeit an dieser Stelle
+`document.visibilityState` prüfen und mit einem SICHTBAREN Fenster gegenprüfen.
+Erst wenn es dort platt bleibt, ist es ein Fehler. Der Verdacht wäre dann, dass
+`.scene__backdrop` als positionierter Kasten mit `z-index` eine isolierte Gruppe
+bildet und `mix-blend-mode` darin gegen den Inhalt dieser Gruppe mischt statt
+gegen das Foto darunter.
 
 ---
 
