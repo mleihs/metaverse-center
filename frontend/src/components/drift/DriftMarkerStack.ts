@@ -36,6 +36,28 @@ const MARKER_TONE: Record<DriftMarkerClass, string> = {
   echo: 'var(--color-epoch-influence)',
 };
 
+/** A marker class as the traveller reads it. The chip used to carry the raw enum
+ *  (`title="statik"`) and a bare initial, so the stack — the whole tell for how close the
+ *  node is to tearing — could only be counted, never read. */
+function markerLabel(marker: DriftMarkerClass): string {
+  switch (marker) {
+    case 'resonanz':
+      return msg('Resonanz');
+    case 'statik':
+      return msg('Statik');
+    case 'echo':
+      return msg('Echo');
+    default:
+      return marker;
+  }
+}
+
+/** The single glyph on the chip — taken from the TRANSLATED name, so it stays the initial
+ *  of the word the player actually sees. */
+function markerInitial(marker: DriftMarkerClass): string {
+  return markerLabel(marker).charAt(0).toUpperCase();
+}
+
 @localized()
 @customElement('velg-drift-marker-stack')
 export class VelgDriftMarkerStack extends LitElement {
@@ -322,7 +344,9 @@ export class VelgDriftMarkerStack extends LitElement {
       <div class="site ${this.rissig ? 'site--rissig' : ''}">
         <p class="site__label">
           <span>${this.rissig ? msg('Grabung · rissig') : msg('Grabung')}</span>
-          <span class="site__digs">${msg(str`${this.digs} Stiche`)}</span>
+          <span class="site__digs"
+            >${this.digs === 1 ? msg('1 Stich') : msg(str`${this.digs} Stiche`)}</span
+          >
         </p>
 
         <div class="stack" aria-live="polite">
@@ -341,8 +365,10 @@ export class VelgDriftMarkerStack extends LitElement {
                     html`<span
                       class="marker ${atRisk === marker ? 'marker--warn' : ''}"
                       style="--_tone:${MARKER_TONE[marker]}; --i:${i}"
-                      title=${marker}
-                      >${marker.charAt(0).toUpperCase()}</span
+                      title=${markerLabel(marker)}
+                      role="img"
+                      aria-label=${markerLabel(marker)}
+                      >${markerInitial(marker)}</span
                     >`,
                   ),
                 )

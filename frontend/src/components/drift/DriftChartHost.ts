@@ -474,7 +474,16 @@ export class VelgDriftChartHost extends LitElement {
     `;
   }
 
-  /** Project an overlay layer (labels or seals) to screen space; cull off-viewport. */
+  /** Project an overlay layer (labels or seals) to screen space; cull off-viewport.
+   *
+   * The screen point is written as `--x`/`--y`, which the stylesheet composes into each
+   * chip's `transform` — NOT as `left`/`top`. This runs on every animation frame, and
+   * left/top would re-lay-out and re-RASTERISE the chip each time: the text is redrawn
+   * 60-120x a second while the WebGL canvas composites underneath, and the two do not
+   * always reach the screen together. That mismatch is exactly what the board showed —
+   * chips appearing for a frame as bare dark rectangles, flashing over the canvas. A
+   * transform translates a layer that was rasterised once, so the glyphs travel with
+   * their chip and there is nothing left to tear. */
   private _projectLayer(
     items: { el: HTMLElement; x: number; y: number }[],
     wrap: HTMLElement,
@@ -487,8 +496,8 @@ export class VelgDriftChartHost extends LitElement {
       const onscreen = s.x >= -80 && s.x <= w + 80 && s.y >= -40 && s.y <= h + 120;
       item.el.style.display = onscreen ? 'block' : 'none';
       if (onscreen) {
-        item.el.style.left = `${s.x}px`;
-        item.el.style.top = `${s.y}px`;
+        item.el.style.setProperty('--x', `${s.x}px`);
+        item.el.style.setProperty('--y', `${s.y}px`);
       }
     }
   }
@@ -811,7 +820,7 @@ export class VelgDriftChartHost extends LitElement {
         <div
           class="drift-chart__viewport"
           role="img"
-          aria-label=${msg('DRIFT navigation chart – the frequency-layered Bleed')}
+          aria-label=${msg('DRIFT-Navigationskarte – der frequenzgeschichtete Bleed')}
         >
           <canvas
             class="drift-chart__canvas"

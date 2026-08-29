@@ -42,7 +42,7 @@ velg-drift-chart {
 
 /* ── World-name labels (broadcast_rand homes) ───────────────────────────────
    HTML chips over the canvas, anchored centred-above each home node and
-   re-projected every frame in JS (left/top). Declassified-chart annotation:
+   re-projected every frame in JS (--x/--y, composited transform). Declassified-chart annotation:
    tracked Courier on a near-black chip with a thin border + a connector tick
    down to the node glyph. The traveller's current world takes the amber accent.
    pointer-events: none so the canvas keeps every pan/zoom/pick gesture. */
@@ -56,9 +56,18 @@ velg-drift-chart {
 
 .drift-chart__label {
   position: absolute;
-  /* left/top are the node's screen point (set per frame); lift the chip
-     centred above it, leaving room for the connector tick. */
-  transform: translate(-50%, calc(-100% - var(--space-2)));
+  top: 0;
+  left: 0;
+  /* --x/--y are the node's screen point (set per frame); the second translate lifts the
+     chip centred above it, leaving room for the connector tick.
+
+     The projection is a TRANSFORM, never left/top. A chip moved by left/top is re-laid
+     out and RE-RASTERISED every animation frame — its text is redrawn 60-120x a second
+     while the WebGL canvas composites underneath, and the two do not land together: the
+     chip's background reaches the screen for a frame without its glyphs, which is what
+     produced the black rectangles flashing over the board. A transform moves an already
+     rasterised layer on the compositor, so the text is drawn once and simply travels. */
+  transform: translate(var(--x, 0), var(--y, 0)) translate(-50%, calc(-100% - var(--space-2)));
   padding: var(--space-0-5) var(--space-2);
   max-width: 22ch;
   overflow: hidden;
@@ -132,13 +141,17 @@ velg-drift-chart {
   z-index: var(--z-raised);
 }
 
-/* Positioning box — left/top are the node's screen point (set per frame); the
-   transform plants the medallion to the node's right, vertically centred. */
+/* Positioning box — --x/--y are the node's screen point (set per frame); the rest of the
+   transform plants the medallion to the node's right, vertically centred. Projected by
+   transform rather than left/top for the same reason as the labels above. */
 .drift-chart__seal {
   position: absolute;
+  top: 0;
+  left: 0;
   /* --seal-scale (set per frame from the zoom) makes the medallion shrink/grow with the
      map instead of staying a fixed-size pin; the stamp animation lives on the inner. */
-  transform: translate(var(--space-3), -50%) scale(var(--seal-scale, 1));
+  transform: translate(var(--x, 0), var(--y, 0)) translate(var(--space-3), -50%)
+    scale(var(--seal-scale, 1));
   display: block;
   pointer-events: none;
 }
