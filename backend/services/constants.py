@@ -36,6 +36,12 @@ SECURITY_TIER_ORDER: list[str] = [
     "fortress",
 ]
 
+# ── Scoring constants (mirrors of SQL, for docs + test assertions) ──────
+# The authoritative implementation is fn_compute_cycle_scores (migration 127,
+# refreshed in 187). These Python copies exist so the numbers are greppable
+# from application code and assertable in tests — they are NOT read by any
+# runtime scoring path. Change the migration first, then mirror it here.
+
 # Score value for successful missions
 MISSION_SCORE_VALUES: dict[str, int] = {
     "spy": 3,
@@ -49,9 +55,7 @@ MISSION_SCORE_VALUES: dict[str, int] = {
 DETECTION_PENALTY = 3
 
 # Guardian overcome bonus: +2 military per guardian when attacker succeeds
-# against a guardian-protected target (capped at +4). Actual logic in SQL
-# fn_compute_cycle_scores (migration 187). Python constants for documentation
-# and test assertions only.
+# against a guardian-protected target (capped at +4).
 GUARDIAN_OVERCOME_BONUS = 2
 GUARDIAN_OVERCOME_CAP = 4
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+from backend.models.epoch import total_cycles_for
 from backend.models.user import ActiveEpochParticipation, DashboardData, MembershipInfo
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -77,7 +78,7 @@ class UserDashboardService:
             config = epoch.get("config") or {}
             duration_days = config.get("duration_days", 14)
             cycle_hours = config.get("cycle_hours", 8)
-            total_cycles = (duration_days * 24) // cycle_hours if cycle_hours else 0
+            total_cycles = total_cycles_for(duration_days, cycle_hours)
             rp_cap = config.get("rp_cap", 30)
 
             participations.append(

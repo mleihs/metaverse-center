@@ -19,6 +19,7 @@ import type {
   OperativeMission,
   ResultsSummary,
   Sitrep,
+  TeamActionResult,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
@@ -143,11 +144,15 @@ export class EpochsApiService extends BaseApiService {
     return this.post(`/epochs/${epochId}/teams?simulation_id=${simulationId}`, { name });
   }
 
-  joinTeam(epochId: string, teamId: string, simulationId: string): Promise<ApiResponse<void>> {
+  joinTeam(
+    epochId: string,
+    teamId: string,
+    simulationId: string,
+  ): Promise<ApiResponse<TeamActionResult>> {
     return this.post(`/epochs/${epochId}/teams/${teamId}/join?simulation_id=${simulationId}`);
   }
 
-  leaveTeam(epochId: string, simulationId: string): Promise<ApiResponse<void>> {
+  leaveTeam(epochId: string, simulationId: string): Promise<ApiResponse<TeamActionResult>> {
     return this.post(`/epochs/${epochId}/teams/leave?simulation_id=${simulationId}`);
   }
 
@@ -285,8 +290,15 @@ export class EpochsApiService extends BaseApiService {
     return this.get(`/epochs/${epochId}/scores/simulations/${simulationId}`);
   }
 
-  getResultsSummary(epochId: string): Promise<ApiResponse<ResultsSummary>> {
-    return this.get(`/epochs/${epochId}/results-summary`);
+  /** See `listEpochs` for the mode convention. Results are only served for
+   *  completed epochs, so the public route exposes the same declassified data. */
+  getResultsSummary(
+    epochId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<ResultsSummary>> {
+    return mode === 'public'
+      ? this.getPublic(`/epochs/${epochId}/results-summary`)
+      : this.get(`/epochs/${epochId}/results-summary`);
   }
 
   getIntelDossiers(epochId: string, simulationId: string): Promise<ApiResponse<IntelDossier[]>> {

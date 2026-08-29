@@ -3,7 +3,7 @@
  * REST endpoints for message persistence (catch-up) — live messages come via Realtime.
  */
 
-import type { ApiResponse, EpochChatMessage } from '../../types/index.js';
+import type { ApiResponse, CycleReadyState, EpochChatMessage } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 export class EpochChatApiServiceImpl extends BaseApiService {
@@ -40,14 +40,18 @@ export class EpochChatApiServiceImpl extends BaseApiService {
     return this.get(`/epochs/${epochId}/chat/team/${teamId}`, queryParams);
   }
 
-  setReady(epochId: string, simulationId: string, ready: boolean): Promise<ApiResponse<unknown>> {
+  setReady(
+    epochId: string,
+    simulationId: string,
+    ready: boolean,
+  ): Promise<ApiResponse<CycleReadyState>> {
     return this.post(`/epochs/${epochId}/ready`, {
       simulation_id: simulationId,
       ready,
     });
   }
 
-  passCycle(epochId: string, simulationId: string): Promise<ApiResponse<{ passed: boolean }>> {
+  passCycle(epochId: string, simulationId: string): Promise<ApiResponse<CycleReadyState>> {
     return this.post(`/epochs/${epochId}/pass-cycle?simulation_id=${simulationId}`, {});
   }
 }

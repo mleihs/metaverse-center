@@ -1,8 +1,8 @@
 ---
 title: "Epoch Gameplay Guide"
 id: epoch-gameplay-guide
-version: "1.0"
-date: 2026-03-09
+version: "1.1"
+date: 2026-08-29
 lang: en
 type: guide
 status: active
@@ -41,10 +41,21 @@ LOBBY --> FOUNDATION --> COMPETITION --> RECKONING --> COMPLETED
 | **Lobby** | Open join (any user + any simulation). Draft agents into your roster. Form teams. Add bots. |
 | **Foundation** | "Nebelkrieg" -- spy + guardian deployment only. Zone fortification (+1 security for 5 cycles). Early intel gathering. +50% RP bonus. |
 | **Competition** | All six operative types unlocked. Full warfare. Cycles resolve on a configurable timer. |
-| **Reckoning** | Final scoring round. Diminished RP. Last-chance operations. |
+| **Reckoning** | Final cycles. Alliances are sealed -- no new proposals are accepted. Existing alliances still pay upkeep and can still break. |
 | **Completed** | Fog of war lifts. DECLASSIFIED results screen. Game instances archived. |
 
-Each cycle, players receive Resource Points (RP) to spend on operative deployments. When all participants signal readiness (or the cycle timer expires), the cycle resolves: operations succeed or fail, scores update, and a new cycle begins.
+Each cycle, players receive Resource Points (RP) to spend on operative deployments. When the cycle resolves, operations succeed or fail, scores update, and a new cycle begins.
+
+### How a cycle ends
+
+The epoch creator picks this when creating the epoch, and it does not change afterwards:
+
+| Mode | Behaviour |
+|:-----|:----------|
+| **Ready or Deadline** (default for new epochs) | The cycle resolves the moment every human player has signalled ready -- or automatically when the deadline expires, whichever comes first. Two options ride along: *Require Action Before Ready* forces each player to deploy, fortify, or explicitly **Pass** before they may signal ready, and *Absence Penalties* docks RP from players who miss a cycle, escalating with each consecutive absence until an AI takes over their seat. |
+| **All Players Ready** | The cycle waits indefinitely for every human player. No deadline, no absence handling -- one player who stops responding stalls every remaining cycle. Suitable for a group that plays in the same room, or for solo academy runs. |
+
+Epochs created before 2026-08-29 all run in **All Players Ready** mode: the creation wizard did not offer the choice, so they fell back to it.
 
 ---
 
@@ -200,6 +211,8 @@ Coordinate your targets to avoid tension spikes. The alliance panel displays the
 ### Composite Score
 
 The final ranking uses a **composite score** calculated from all five dimensions with configurable weights. The epoch creator can adjust dimension weights to emphasize different strategic priorities.
+
+Each dimension is normalised per cycle so the best performer scores 100 and everyone else lands proportionally below. The composite is that cycle's weighted sum -- a **snapshot, not a running total**. Your standing therefore reflects where you are at the end, not the sum of everything you did along the way, and no phase is worth "more points" than another.
 
 ### Leaderboard Features
 

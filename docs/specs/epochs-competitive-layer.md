@@ -215,7 +215,9 @@ LOBBY ──→ FOUNDATION ──→ COMPETITION ──→ RECKONING ──→ C
 1. **Lobby** — Epoch created, simulations join, teams form, players draft their agent roster. No game mechanics active.
 2. **Foundation ("Nebelkrieg")** — +50% RP income. Build infrastructure, staff buildings, establish embassies. Spies and guardians allowed (Migration 048: was guardian-only). Zone fortification available (2 RP, +1 security tier, lasts 5 competition cycles). No offensive operatives (saboteur, propagandist, assassin, infiltrator).
 3. **Competition** — Full mechanics. All 6 operative types available. Allianz-Beitritt nur via Proposal (einstimmige Abstimmung). Scores snapshot each cycle.
-4. **Reckoning** — Bleed permeability doubled, thresholds reduced by 2, cascade depth +1. Dramatic escalation.
+4. **Reckoning** — Alliance proposals are refused (`AllianceService.create_proposal`): the map of who stands with whom is frozen for the final cycles. Existing alliances still pay upkeep and can still dissolve through tension or betrayal.
+
+   > **Correction (2026-08-29).** This section previously read "Bleed permeability doubled, thresholds reduced by 2, cascade depth +1." No such coupling between epoch phase and the bleed/game-mechanics subsystem was ever implemented, and the UI's matching promise of "double points" was removed with it. A per-cycle score multiplier cannot affect standings as scoring works today: `composite_score` is a **snapshot of the most recent cycle**, not a sum across cycles, so scaling any single cycle scales every participant equally. Giving Reckoning more mechanical weight requires deciding first whether scoring becomes cumulative — a design decision, not a missing implementation.
 5. **Completed** — Final scores computed, winner declared, operatives recalled.
 
 ### Resonance Points (RP)
@@ -432,17 +434,31 @@ type EpochStatus = 'lobby' | 'foundation' | 'competition' | 'reckoning' | 'compl
 type OperativeType = 'spy' | 'saboteur' | 'propagandist' | 'assassin' | 'guardian' | 'infiltrator';
 
 interface EpochConfig {
-  duration_days: number;     // 3-60
+  duration_days: number;     // 1-60
   cycle_hours: number;       // 2-24
   rp_per_cycle: number;      // 5-25
   rp_cap: number;            // 15-75
-  foundation_pct: number;    // 10-30
-  reckoning_pct: number;     // 10-25
+  // Absolute cycle counts. The percentage form (foundation_pct / reckoning_pct)
+  // is legacy: fn_advance_epoch_cycle still reads it for epochs created before
+  // the switch, but nothing writes it any more.
+  foundation_cycles: number; // 1-12
+  reckoning_cycles: number;  // 2-16
   max_team_size: number;     // 2-8
   max_agents_per_player: number;  // 4-8, default 6
   allow_betrayal: boolean;
   score_weights: EpochScoreWeights;
-  referee_mode: boolean;
+
+  // How a cycle ends. 'manual' waits for every human to signal ready;
+  // 'activity_gated' additionally resolves at the deadline. Both are
+  // implemented; the three further variations sketched in
+  // epoch-auto-resolve-team-pvp.md are not, and are no longer accepted values.
+  auto_resolve_mode: 'manual' | 'activity_gated';   // default 'manual'
+  cycle_deadline_minutes: number;   // 15-2880, default 480
+  require_action_for_ready: boolean;
+  afk_penalty_enabled: boolean;
+
+  // Invariant, enforced by EpochConfig.validate_phase_budget:
+  //   foundation_cycles + reckoning_cycles < (duration_days * 24) / cycle_hours
 }
 
 interface Epoch {

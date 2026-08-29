@@ -4,7 +4,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
-from backend.models.epoch import DEFAULT_EPOCH_CONFIG
+from backend.models.epoch import DEFAULT_EPOCH_CONFIG, total_cycles_for
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from backend.utils.errors import bad_request, server_error
@@ -93,8 +93,11 @@ class EpochLifecycleService:
 
         config = {**DEFAULT_CONFIG, **epoch.get("config", {})}
 
-        # Validate phase cycles don't overlap
-        total_cycles = (config["duration_days"] * 24) // config["cycle_hours"]
+        # Validate phase cycles don't overlap. EpochConfig.validate_phase_budget
+        # catches this at creation time now, but epochs created before that
+        # validator existed carry raw JSONB that never passed through the model,
+        # so the check stays as the last line of defence before cloning.
+        total_cycles = total_cycles_for(config["duration_days"], config["cycle_hours"])
         f_cycles = config.get("foundation_cycles", 4)
         r_cycles = config.get("reckoning_cycles", 8)
         if f_cycles + r_cycles >= total_cycles:
@@ -103,6 +106,11 @@ class EpochLifecycleService:
                 f"must be less than total cycles ({total_cycles}).",
             )
 
+        # `ends_at` is a projection, not a deadline: an epoch ends when
+        # current_cycle reaches total_cycles (fn_advance_epoch_cycle), not when
+        # this timestamp passes. It holds only if cycles actually resolve on
+        # schedule, which is why nothing reads it back — it exists for display
+        # and for the Event schema.org markup on the public epoch page.
         duration = timedelta(days=config["duration_days"])
         now = datetime.now(UTC)
 

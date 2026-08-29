@@ -33,6 +33,7 @@ from backend.models.epoch import (
     LeaderboardEntry,
     OperativeTypeInfo,
     ParticipantResponse,
+    ResultsSummaryResponse,
     TeamResponse,
 )
 from backend.models.event import EventResponse
@@ -944,6 +945,25 @@ async def get_standings_public(
 ) -> SuccessResponse[list[LeaderboardEntry]]:
     """Get final standings for a completed epoch (public)."""
     data = await ScoringService.get_final_standings(supabase, epoch_id, admin_supabase=admin_supabase)
+    return SuccessResponse(data=data)
+
+
+@router.get("/epochs/{epoch_id}/results-summary")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_results_summary_public(
+    request: Request,
+    epoch_id: UUID,
+    supabase: Annotated[Client, Depends(get_anon_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[ResultsSummaryResponse]:
+    """Comprehensive results for a completed epoch (public spectator view).
+
+    The service refuses anything that is not `completed`, so fog of war has
+    already lifted for every row this returns — the same declassified data the
+    member route serves. Without this route a signed-out visitor opening a
+    finished epoch hit a 403, which the public-first rule forbids.
+    """
+    data = await ScoringService.get_results_summary(supabase, epoch_id, admin_supabase=admin_supabase)
     return SuccessResponse(data=data)
 
 

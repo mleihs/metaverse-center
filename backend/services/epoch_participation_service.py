@@ -6,7 +6,7 @@ from uuid import UUID
 
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.bot_personality import auto_draft
-from backend.utils.db import resolve_epoch_sim_names
+from backend.utils.db import maybe_single_data, resolve_epoch_sim_names
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
@@ -183,9 +183,14 @@ class EpochParticipationService:
             if not agent_resp.data:
                 raise bad_request(f"Agent {aid} not found in simulation {simulation_id}.")
 
-        # Update participant row
+        # Update participant row.
+        # SECDEF privileged write: service_role only (ADR-006 / migration 275).
+        # `drafted_agent_ids` decides which agents exist as operatives for the
+        # whole epoch — the roster is validated above and then written by the
+        # server, never by the player's own client.
+        admin = await get_admin_supabase_client()
         resp = await (
-            supabase.table("epoch_participants")
+            admin.table("epoch_participants")
             .update(
                 {
                     "drafted_agent_ids": [str(a) for a in agent_ids],
@@ -225,29 +230,25 @@ class EpochParticipationService:
         if epoch["status"] not in ("lobby", "foundation", "competition"):
             raise bad_request("Alliances can only be formed during lobby, foundation, or competition phase.")
 
-        resp = await (
-            supabase.table("epoch_teams")
-            .insert(
-                {
-                    "epoch_id": str(epoch_id),
-                    "name": name,
-                    "created_by_simulation_id": str(simulation_id),
-                }
-            )
-            .execute()
-        )
-        team = resp.data[0] if resp.data else {}
+        # Atomic team creation + creator auto-join (fn_create_team_atomic,
+        # migration 275). Previously an INSERT followed by a separate UPDATE:
+        # a failure in between stranded an alliance with no members. Also a
+        # SECDEF privileged write — epoch_teams is service_role-only.
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
+            "fn_create_team_atomic",
+            {
+                "p_epoch_id": str(epoch_id),
+                "p_simulation_id": str(simulation_id),
+                "p_name": name,
+            },
+        ).execute()
 
-        # Auto-join creator to team
-        if team:
-            await (
-                supabase.table("epoch_participants")
-                .update({"team_id": team["id"]})
-                .eq("epoch_id", str(epoch_id))
-                .eq("simulation_id", str(simulation_id))
-                .execute()
-            )
-
+        team = resp.data or {}
+        if team.get("error_code") == "participant_not_found":
+            raise bad_request("You must join the epoch before forming an alliance.")
+        if not team.get("id"):
+            raise server_error("Failed to create alliance.")
         return team
 
     @classmethod
@@ -290,16 +291,20 @@ class EpochParticipationService:
         if resp.data is False:
             raise bad_request(f"Team is full (max {config['max_team_size']} members).")
 
-        # Fetch updated participant for response
-        updated = await (
+        # Fetch updated participant for response. The router answers with
+        # TeamActionResponse, which requires the discriminating `action` field —
+        # without it FastAPI rejected the response and returned 500 *after* the
+        # join had already committed.
+        updated = await maybe_single_data(
             supabase.table("epoch_participants")
-            .select("*")
+            .select("simulation_id, team_id")
             .eq("epoch_id", str(epoch_id))
             .eq("simulation_id", str(simulation_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        return updated.data if updated.data else {}
+        if not updated:
+            raise not_found(detail="Participant not found in this epoch.")
+        return {**updated, "action": "join"}
 
     @classmethod
     async def leave_team(
@@ -308,15 +313,21 @@ class EpochParticipationService:
         epoch_id: UUID,
         simulation_id: UUID,
     ) -> dict:
-        """Leave current team."""
-        resp = await (
-            supabase.table("epoch_participants")
-            .update({"team_id": None})
-            .eq("epoch_id", str(epoch_id))
-            .eq("simulation_id", str(simulation_id))
-            .execute()
-        )
-        return resp.data[0] if resp.data else {}
+        """Leave current team.
+
+        Returns TeamActionResponse shape (see join_team for why `action` matters).
+        """
+        # SECDEF privileged write: team_id is no longer writable by
+        # `authenticated` (migration 275) — a direct PATCH would have let a
+        # player slip into a full team past fn_join_team_checked's size gate.
+        admin = await get_admin_supabase_client()
+        resp = await admin.rpc(
+            "fn_leave_team",
+            {"p_epoch_id": str(epoch_id), "p_simulation_id": str(simulation_id)},
+        ).execute()
+        if not resp.data:
+            raise not_found(detail="Participant not found in this epoch.")
+        return {"simulation_id": simulation_id, "team_id": None, "action": "leave"}
 
     # ── Bot Participants ────────────────────────────────────
 
@@ -437,4 +448,8 @@ class EpochParticipationService:
         if not p_resp.data.get("is_bot"):
             raise bad_request("This participant is not a bot.")
 
-        await supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()
+        resp = await (
+            supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()
+        )
+        if not resp.data:
+            raise server_error("Failed to remove bot participant.")

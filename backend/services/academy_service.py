@@ -18,7 +18,10 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# Academy sprint preset configuration
+# Academy sprint preset configuration.
+# Deliberately leaves auto_resolve_mode at the "manual" default: an academy
+# epoch has exactly one human, so "all humans ready" resolves the moment they
+# click ready. A deadline would only add time pressure to a training run.
 ACADEMY_SPRINT_CONFIG: dict = {
     "duration_days": 3,
     "cycle_hours": 4,
