@@ -348,7 +348,6 @@ export const htpStyles = css`
   .op-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
-    border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
     flex-direction: column;
@@ -440,10 +439,12 @@ export const htpStyles = css`
     margin: var(--space-6) 0;
   }
 
+  /* Kein Kantenbalken: jede Karte traegt ihr Kategorieabzeichen
+     (tactic-card__badge--opener und Geschwister) in genau dieser Farbe, mit
+     Schrift UND Rahmen, siehe weiter unten. */
   .tactic-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
-    border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
     flex-direction: column;
@@ -453,11 +454,6 @@ export const htpStyles = css`
     animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
   }
 
-  .tactic-card--opener   { border-left-color: var(--color-success); }
-  .tactic-card--timing   { border-left-color: var(--color-warning); }
-  .tactic-card--economy  { border-left-color: var(--color-info); }
-  .tactic-card--counter  { border-left-color: var(--color-danger); }
-  .tactic-card--preset   { border-left-color: var(--color-text-muted); }
 
   .tactic-card__header {
     display: flex;
@@ -594,17 +590,15 @@ export const htpStyles = css`
 
   /* ═══ CALLOUT BOXES ══════════════════════════════ */
 
+  /* Kein Kantenbalken: die callout--tip/warn/danger/info-Regeln faerben die
+     Etikettzeile (callout__label) ohnehin schon in derselben Farbe, siehe
+     weiter unten. Der Balken war die Doppelung, das Wort ist das Original. */
   .callout {
-    border-left: 4px solid;
     padding: var(--space-4);
     margin: var(--space-4) 0;
     background: rgba(255 255 255 / 0.02);
   }
 
-  .callout--tip    { border-left-color: var(--color-success); }
-  .callout--warn   { border-left-color: var(--color-warning); }
-  .callout--danger { border-left-color: var(--color-danger); }
-  .callout--info   { border-left-color: var(--color-info); }
 
   .callout__label {
     font-family: var(--font-brutalist);
@@ -916,7 +910,6 @@ export const htpStyles = css`
   .vector-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
-    border-left: 4px solid;
     padding: var(--space-4);
     display: flex;
     flex-direction: column;
@@ -960,7 +953,6 @@ export const htpStyles = css`
   .dim-block {
     background: var(--color-surface);
     border: 1px solid var(--color-border-light);
-    border-left: 4px solid;
     padding: var(--space-4);
     margin-bottom: var(--space-3);
   }
