@@ -852,7 +852,7 @@ export class VelgDriftChartHost extends LitElement {
         <div
           class="drift-chart__viewport"
           role="img"
-          aria-label=${msg('DRIFT-Navigationskarte – der frequenzgeschichtete Bleed')}
+          aria-label=${msg('DRIFT navigation chart – the frequency-layered Bleed')}
         >
           <canvas
             class="drift-chart__canvas"
