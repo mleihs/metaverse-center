@@ -30,7 +30,17 @@ export const OPERATIVE_COLORS: Record<OperativeType, string> = {
   assassin: '#dc2626',
 };
 
-/** Single-letter abbreviations for ultra-compact displays (party panel cards). */
+/**
+ * Single-letter abbreviations for ultra-compact displays.
+ *
+ * CAUTION — this table is not decipherable on its own, and that is inherent,
+ * not a wording bug: six names share four initials, so `S` went to Spy and
+ * Saboteur was pushed onto `B`, Assassin onto `A` against Guardian's `G`. A row
+ * of six reads `A9 G9 P6 B5 S4 I3`, which no player can decode without a
+ * legend. Prefer `aptitudeCode()` (three letters) wherever a few extra pixels
+ * exist; reach for this table only when the budget is genuinely one glyph, and
+ * then pair it with a visible legend or a per-item label.
+ */
 export const OPERATIVE_SHORT: Record<OperativeType, string> = {
   spy: 'S',
   guardian: 'G',
@@ -72,6 +82,36 @@ export function operativeName(type: OperativeType): string {
     assassin: () => msg('Assassin'),
   };
   return names[type]();
+}
+
+// ── Server-sent aptitude keys ───────────────────────────────────────────────
+//
+// Aptitude maps arrive from the API keyed by school name (`{"spy": 8, ...}`),
+// and the wire format does not promise those six keys: a content pack can name
+// a school the client has never heard of, and an older client meets a newer
+// server on every deploy. Call sites answered this with a scattering of
+// `?? key.toUpperCase()` fallbacks — four of them, each slightly different —
+// while the one call that mattered most had none: `operativeName()` indexes a
+// record of THUNKS, so an unknown key evaluates `undefined()` and throws inside
+// a render, taking the whole panel down rather than one chip.
+//
+// The three helpers below are the single answer. They are deliberately typed
+// `string` in, `string` out: the widening is the point, and a caller that
+// already holds a proven `OperativeType` should keep using the tables directly.
+
+/** Narrow a server-sent aptitude key to a known operative type. */
+export function isOperativeType(key: string): key is OperativeType {
+  return (OPERATIVE_TYPES as readonly string[]).includes(key);
+}
+
+/** Three-letter code for a server-sent aptitude key (`spy` → `SPY`). */
+export function aptitudeCode(key: string): string {
+  return OPERATIVE_LABEL[key as OperativeType] ?? key.slice(0, 3).toUpperCase();
+}
+
+/** Full localized name for a server-sent aptitude key, unknown keys included. */
+export function aptitudeDisplayName(key: string): string {
+  return isOperativeType(key) ? operativeName(key) : key.toUpperCase();
 }
 
 /** RP cost per operative type. */

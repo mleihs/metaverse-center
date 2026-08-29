@@ -575,8 +575,10 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     // Get fresh room data from state (selected room may have changed state)
     const freshRoom = dungeonState.rooms.value.find((r) => r.index === this._selectedRoom?.index);
     if (!freshRoom?.revealed) {
-      // Don't mutate state during render — willUpdate handles cleanup.
-      // Return nothing for this render cycle; next willUpdate will clear.
+      // Defensive only: `_handleNodeClick` selects revealed rooms exclusively
+      // and revealing is monotonic, so this is the room having vanished from
+      // the list entirely. Clearing the selection here would be a state
+      // mutation during render (a re-render loop); `willUpdate` owns that.
       return nothing;
     }
 
@@ -588,6 +590,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         .room=${freshRoom}
         .adjacent=${isAdjacent}
         .current=${isCurrent}
+        .currentIndex=${dungeonState.currentRoom.value?.index ?? null}
         style="margin: 8px auto; max-width: 220px;"
         @room-deselect=${this._handleNodeDeselect}
       ></velg-dungeon-room-panel>
@@ -600,22 +603,29 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
     dungeonState.mapExpanded.value = !dungeonState.mapExpanded.value;
   }
 
+  /**
+   * Select a node, or deselect it if it was already the selected one.
+   *
+   * Only revealed rooms can be selected, and that is the whole rule. There used
+   * to be a second branch beneath this one that selected UNREVEALED rooms when
+   * they were adjacent, "to still show the panel (limited info)". It could
+   * never run: the set it tested is built from `dungeonState.adjacentRooms`,
+   * which itself filters on `r.revealed`, so the condition was constantly
+   * false. Had it ever fired it would have been worse than dead — the panel
+   * returns `nothing` for an unrevealed room, and `willUpdate` only clears a
+   * selection when the room leaves the list entirely, so the run would have
+   * carried a selected node with no panel behind it.
+   *
+   * Unrevealed nodes are correctly inert everywhere else too: no `.node--adjacent`
+   * class, so no pointer cursor, no hover glow and no tabindex. Nothing was
+   * lost by removing the branch; a promise the code could not keep was.
+   */
   private _handleNodeClick(room: RoomNodeClient): void {
-    // Toggle: clicking the same room deselects
     if (this._selectedRoom?.index === room.index) {
       this._selectedRoom = null;
       return;
     }
-
-    // Revealed rooms: show detail panel
     if (room.revealed) {
-      this._selectedRoom = room;
-      return;
-    }
-
-    // Unrevealed adjacent rooms: still show panel (limited info)
-    const adjacentSet = new Set(dungeonState.adjacentRooms.value.map((r) => r.index));
-    if (adjacentSet.has(room.index)) {
       this._selectedRoom = room;
     }
   }

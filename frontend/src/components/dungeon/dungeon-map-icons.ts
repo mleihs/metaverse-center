@@ -7,8 +7,11 @@
  * Pattern: Pure data (like ROOM_SYMBOLS in dungeon-formatters.ts).
  */
 
+import { msg } from '@lit/localize';
 import type { SVGTemplateResult } from 'lit';
 
+import type { RoomNodeClient } from '../../types/dungeon.js';
+import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 
 /** Room type → color CSS variable (all reference design tokens). */
@@ -45,6 +48,31 @@ export const ROOM_ICON: Record<string, (size: number) => SVGTemplateResult> = {
 
 /** Fallback icon for unrevealed / unknown room types. */
 export const ROOM_ICON_UNKNOWN = icons.mapUnknown;
+
+/**
+ * Display label for a room node, honouring BOTH stages of the fog.
+ *
+ * The server fogs in two independent steps (`build_client_state` in
+ * `dungeon_checkpoint_service.py`): `revealed` says the room is visible on the
+ * map at all, and a separate `scouted` flag decides whether the real type is
+ * sent or the placeholder `"?"`. So a room can be perfectly visible, reachable
+ * and clickable while its type is still unknown.
+ *
+ * `getRoomTypeLabel` only knows the first stage. Handed `"?"` with no fallback
+ * index it returns the bare `"?"`, which is what reached the map's aria label
+ * as "? room 4" and the detail panel's heading as "? #4". Both call sites live
+ * in this module's two consumers, so the answer belongs here, next to the icon
+ * table that already resolves the same placeholder to ROOM_ICON_UNKNOWN.
+ *
+ * Returns the TYPE word alone ("Combat", "Unscouted"), not a noun phrase: the
+ * three call sites each supply their own frame — "… room 4" for the map's aria
+ * label, "… #4" for the panel heading, the bare word for the SVG tooltip.
+ */
+export function roomNodeLabel(room: RoomNodeClient): string {
+  if (!room.revealed) return msg('Unknown');
+  if (room.room_type === '?') return msg('Unscouted');
+  return getRoomTypeLabel(room.room_type);
+}
 
 /**
  * Resolve the room color for a given room state.
