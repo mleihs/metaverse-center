@@ -33,7 +33,9 @@ function agent(
     agent_id: `id-${name}`,
     agent_name: name,
     portrait_url: `https://example.test/${name}.png`,
-    condition: 'healthy',
+    // 'operational' is the server's word. 'healthy' belongs to the ENEMY
+    // condition scale and was never a value an agent could carry.
+    condition: 'operational',
     stress: 0,
     stress_threshold: 'normal',
     mood: 0,

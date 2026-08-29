@@ -39,7 +39,12 @@ describe('describeEnemy', () => {
     // room for the verb only. It must not be lost when the panel goes away.
     const facts = describeEnemy(
       enemy({
-        telegraphed_action: { intent: 'Winds up', target: 'Aranea', threat_level: 'high' },
+        telegraphed_action: {
+          enemy_name: 'Rust Phantom A',
+          intent: 'Winds up',
+          target: 'Aranea',
+          threat_level: 'high',
+        },
       }),
       'Rust Phantom A',
     );
@@ -56,7 +61,12 @@ describe('describeEnemy', () => {
     const facts = describeEnemy(
       enemy({
         is_alive: false,
-        telegraphed_action: { intent: 'Winds up', target: 'Aranea', threat_level: 'high' },
+        telegraphed_action: {
+          enemy_name: 'Rust Phantom A',
+          intent: 'Winds up',
+          target: 'Aranea',
+          threat_level: 'high',
+        },
       }),
       'Rust Phantom A',
     );
