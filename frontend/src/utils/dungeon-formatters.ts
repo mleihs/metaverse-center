@@ -552,6 +552,33 @@ const PROTOCOL_BRIEFINGS: Record<string, ProtocolBriefing> = {
   },
 };
 
+/**
+ * The archetype's briefing as DATA, for surfaces that are not a terminal.
+ *
+ * The five lobby cards carried a name and three numbers that were identical on
+ * every one of them ("Difficulty 3", "Depth 6", "Unlocked by the Bureau") — no
+ * basis for choosing between them, although the distinguishing text has existed
+ * in PROTOCOL_BRIEFINGS all along and the terminal has been printing it under
+ * `protocol` since the first archetype shipped.
+ *
+ * `intro` is a string ARRAY because the terminal wraps it by hand at its own
+ * column width; a caller that lays out its own text joins the parts.
+ */
+export function getArchetypeBriefing(archetype: string): {
+  title: string;
+  intro: string[];
+  bullets: string[];
+  outro: string;
+} {
+  const briefing = PROTOCOL_BRIEFINGS[archetype] ?? PROTOCOL_BRIEFINGS[ARCHETYPE_SHADOW];
+  return {
+    title: briefing.title(),
+    intro: briefing.intro(),
+    bullets: briefing.bullets(),
+    outro: briefing.outro(),
+  };
+}
+
 /** Generate archetype-specific protocol briefing. Data-driven: 8 entries, 1 renderer. */
 export function formatArchetypeBriefing(archetype: string): TerminalLine[] {
   const briefing = PROTOCOL_BRIEFINGS[archetype] ?? PROTOCOL_BRIEFINGS[ARCHETYPE_SHADOW];

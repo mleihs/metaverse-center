@@ -1,5 +1,5 @@
-import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { getInitials } from '../../utils/text.js';
 
@@ -137,8 +137,28 @@ export class VelgAvatar extends LitElement {
     ></div>`;
   }
 
+  /**
+   * A src that fails to load. Cleared so render() falls through to the
+   * initials — a broken <img> otherwise paints the browser's own placeholder,
+   * which on a dark surface is the brightest thing on screen and means nothing.
+   *
+   * Not reported to Sentry: a missing portrait is a content gap, not a defect,
+   * and a roster page would send one event per agent. The visible fallback IS
+   * the handling.
+   */
+  @state() private _srcFailed = false;
+
+  protected willUpdate(changed: PropertyValues): void {
+    // A new URL deserves its own attempt.
+    if (changed.has('src')) this._srcFailed = false;
+  }
+
+  private _handleImgError(): void {
+    this._srcFailed = true;
+  }
+
   protected render() {
-    if (this.src) {
+    if (this.src && !this._srcFailed) {
       return html`
         <div class="avatar-wrap">
           ${this._renderMoodRing()}
@@ -148,6 +168,7 @@ export class VelgAvatar extends LitElement {
               src=${this.src}
               alt=${this.altText || this.name}
               loading="lazy"
+              @error=${this._handleImgError}
               @click=${this.clickable ? this._handleClick : nothing}
             />
           </div>
