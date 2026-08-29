@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+from backend.services.prompt_contracts import audit_template, get_contract
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -20,6 +21,44 @@ class PromptTemplateService:
     """
 
     table_name = "prompt_templates"
+
+    @staticmethod
+    def _validate_against_contract(template_type: str | None, data: dict) -> None:
+        """Reject a hand-written template that names variables no code supplies.
+
+        The AI write path (Forge phase A.6) *repairs* its output instead — there
+        is nobody to tell. Here there is: an admin typing ``{agent_title}`` into
+        the editor gets the list of placeholders the renderer would drop, and the
+        list of names it does fill, rather than a template that quietly ships an
+        invented number to an image model.
+
+        Types the code never renders (``embassy_pair_generation``, the scanner
+        prompts) have no contract and are left alone — no declaration, no
+        authority to judge.
+        """
+        contract = get_contract(template_type or "")
+        if contract is None:
+            return
+
+        offenders: dict[str, list[str]] = {}
+        for field_name in ("prompt_content", "system_prompt"):
+            text = data.get(field_name)
+            if not text:
+                continue
+            audit = audit_template(str(text), contract)
+            problems = sorted(audit.unknown | audit.mustache)
+            if problems:
+                offenders[field_name] = problems
+
+        if not offenders:
+            return
+
+        detail = "; ".join(f"{field}: {', '.join(names)}" for field, names in sorted(offenders.items()))
+        allowed = ", ".join(sorted(contract.variables))
+        raise bad_request(
+            f"Template '{template_type}' uses placeholders no code supplies ({detail}). "
+            f"Write them as {{name}}, not {{{{name}}}}, and use only: {allowed}."
+        )
 
     @classmethod
     async def list_templates(
@@ -98,6 +137,8 @@ class PromptTemplateService:
         data: dict,
     ) -> dict:
         """Create a new prompt template for a simulation."""
+        cls._validate_against_contract(data.get("template_type"), data)
+
         insert_data = {
             **data,
             "simulation_id": str(simulation_id),
@@ -121,6 +162,14 @@ class PromptTemplateService:
         """Update a prompt template."""
         if not data:
             raise bad_request("No fields to update.")
+
+        # An update may change only the text, so the type comes from the stored
+        # row unless the caller is changing it.
+        template_type = data.get("template_type")
+        if template_type is None:
+            existing = await cls.get(supabase, template_id)
+            template_type = existing.get("template_type")
+        cls._validate_against_contract(template_type, data)
 
         response = await (
             supabase.table(cls.table_name)

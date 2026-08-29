@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import logging
-import re
 from dataclasses import dataclass
 from uuid import UUID
 
+import sentry_sdk
+
+from backend.services.prompt_contracts import (
+    PromptContract,
+    get_contract,
+    render_template,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -89,19 +95,19 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "covering {period_start} to {period_end}. "
         "Events: {event_summary}. Echoes: {echo_summary}. "
         "Battle dispatches: {battle_summary}. Reactions: {reaction_summary}. "
-        'Return JSON: {{"title": "...", "headline": "...", "content": "..."}}'
+        'Return JSON: {"title": "...", "headline": "...", "content": "..."}'
     ),
     "memory_extraction": (
         "Analyze this conversation between a user and {agent_name} in {simulation_name}. "
         "User: {user_message}. {agent_name}: {agent_response}. "
         "Extract 0-2 key observations. "
-        'Return JSON: {{"observations": [{{"content": "...", "importance": 1-10}}]}}'
+        'Return JSON: {"observations": [{"content": "...", "importance": 1-10}]}'
     ),
     "memory_reflection": (
         "You are {agent_name} in {simulation_name}. "
         "Review your recent observations: {observations_text}. "
         "Synthesize 1-3 higher-level reflections. "
-        'Return JSON: {{"reflections": [{{"content": "...", "importance": 1-10}}]}}'
+        'Return JSON: {"reflections": [{"content": "...", "importance": 1-10}]}'
     ),
     "chat_system_prompt": (
         "You are {agent_name}, a character in {simulation_name}. "
@@ -156,6 +162,20 @@ class ResolvedPrompt:
     max_tokens: int
     negative_prompt: str | None
     source: str  # Where this was resolved from
+
+    @property
+    def is_simulation_owned(self) -> bool:
+        """True when this template came from the simulation's own rows.
+
+        Only those get the platform frame appended: a platform template already
+        carries its guarantees inline, and the hardcoded fallback is ours.
+        """
+        return self.source.startswith("simulation")
+
+    @property
+    def contract(self) -> PromptContract | None:
+        """The declared contract for this template type, if the code renders it."""
+        return get_contract(self.template_type)
 
 
 class PromptResolver:
@@ -305,24 +325,81 @@ class PromptResolver:
         return f"\n\nIMPORTANT: Always respond in {locale_name}."
 
     def fill_template(self, template: ResolvedPrompt, variables: dict[str, str]) -> str:
-        """Fill a template with variables using Python str.format_map."""
-        try:
-            return template.prompt_content.format_map(variables)
-        except KeyError as e:
+        """Fill a template's user prompt and append the platform frame.
+
+        The frame is what a simulation-owned template may not edit away:
+        composition and subject count for an image, the JSON shape for the
+        chronicle, staying in character for chat. Phase A.6 replaced templates
+        that carried those guarantees with templates that did not, which is how
+        one portrait came back as two people in one frame.
+        """
+        rendered = self._render(
+            template.prompt_content,
+            variables,
+            template,
+            field_name="prompt_content",
+        )
+
+        contract = template.contract
+        if contract and contract.frame and template.is_simulation_owned:
+            return f"{rendered}\n\n{contract.frame}"
+        return rendered
+
+    def fill_system_prompt(self, template: ResolvedPrompt, variables: dict[str, str]) -> str:
+        """Fill a template's system prompt with the same variables.
+
+        The system prompt is part of the template and names variables like any
+        other half of it — the platform ``chronicle_generation`` row opens with
+        "You are the editor-in-chief of {simulation_name}'s newspaper". Until
+        this method existed nothing substituted it, so that literal brace went
+        to the model on every chronicle edition.
+        """
+        if not template.system_prompt:
+            return ""
+        return self._render(
+            template.system_prompt,
+            variables,
+            template,
+            field_name="system_prompt",
+        )
+
+    def _render(
+        self,
+        text: str,
+        variables: dict[str, str],
+        template: ResolvedPrompt,
+        *,
+        field_name: str,
+    ) -> str:
+        """Render one field of a template and report what the template got wrong.
+
+        A declared variable without a value renders empty and is silent — several
+        are conditional at their call site. An *undeclared* placeholder is a
+        defect: it means the stored template names something no code supplies,
+        and leaving it standing is how ``{leserlichkeit_level}`` reached a
+        rendered portrait as an invented number. Both defect classes are logged
+        and reported to Sentry with the simulation in scope.
+        """
+        result = render_template(text, variables, template.contract)
+        defects = result.audit.defects
+        if defects:
+            readable = {defect.value: sorted(names) for defect, names in defects.items()}
             logger.warning(
-                "Missing variable %s in template '%s'",
-                e,
+                "Prompt template '%s' (%s, %s) violates its contract: %s",
                 template.template_type,
+                template.source,
+                field_name,
+                readable,
             )
-            # Use a permissive formatter that leaves missing vars as-is
-            return _safe_format(template.prompt_content, variables)
-
-
-def _safe_format(template: str, variables: dict[str, str]) -> str:
-    """Format a string, leaving unknown variables as {name}."""
-
-    def replace(match: re.Match) -> str:
-        key = match.group(1)
-        return variables.get(key, match.group(0))
-
-    return re.sub(r"\{(\w+)\}", replace, template)
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "PromptResolver")
+                scope.set_tag("template_type", template.template_type)
+                scope.set_tag("template_source", template.source)
+                if self._simulation_id:
+                    scope.set_tag("simulation_id", str(self._simulation_id))
+                scope.set_context("prompt_contract", {"field": field_name, **readable})
+                sentry_sdk.capture_message(
+                    f"Prompt template '{template.template_type}' violates its contract",
+                    level="warning",
+                )
+        return result.text
