@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { TerminalLine, TerminalCommand } from '../src/types/terminal.js';
-import type { Zone, ZoneStability } from '../src/types/index.js';
+import type { Zone } from '../src/types/index.js';
 import {
   systemLine,
   errorLine,

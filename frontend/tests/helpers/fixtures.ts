@@ -26,6 +26,7 @@ export function createSimulation(overrides: Partial<Simulation> = {}): Simulatio
     description: 'A test simulation',
     theme: 'dystopian',
     status: 'active',
+    simulation_type: 'template',
     content_locale: 'de',
     additional_locales: ['en'],
     owner_id: '00000000-0000-0000-0000-000000000002',
@@ -41,6 +42,7 @@ export function createAgent(overrides: Partial<Agent> = {}): Agent {
   return {
     id: crypto.randomUUID(),
     simulation_id: '00000000-0000-0000-0000-000000000001',
+    slug: 'test-agent',
     name: 'Test Agent',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -54,6 +56,7 @@ export function createBuilding(overrides: Partial<Building> = {}): Building {
   return {
     id: crypto.randomUUID(),
     simulation_id: '00000000-0000-0000-0000-000000000001',
+    slug: 'test-building',
     name: 'Test Building',
     building_type: 'residential',
     population_capacity: 100,
@@ -74,6 +77,7 @@ export function createEvent(overrides: Partial<Event> = {}): Event {
     data_source: 'manual',
     impact_level: 5,
     tags: ['test'],
+    event_status: 'active',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,
@@ -236,6 +240,7 @@ export function createEmbassy(overrides: Partial<Embassy> = {}): Embassy {
     building_a: {
       id: '00000000-0000-0000-0000-000000000030',
       simulation_id: '00000000-0000-0000-0000-000000000001',
+      slug: 'embassy-of-velgarien',
       name: 'Embassy of Velgarien',
       building_type: 'government',
       population_capacity: 50,
@@ -245,6 +250,7 @@ export function createEmbassy(overrides: Partial<Embassy> = {}): Embassy {
     building_b: {
       id: '00000000-0000-0000-0000-000000000031',
       simulation_id: '00000000-0000-0000-0000-000000000003',
+      slug: 'station-null-liaison-office',
       name: 'Station Null Liaison Office',
       building_type: 'government',
       population_capacity: 30,
@@ -258,6 +264,7 @@ export function createEmbassy(overrides: Partial<Embassy> = {}): Embassy {
       description: 'A dark dystopian world',
       theme: 'dystopian',
       status: 'active',
+      simulation_type: 'template',
       content_locale: 'de',
       additional_locales: ['en'],
       owner_id: '00000000-0000-0000-0000-000000000002',
@@ -271,6 +278,7 @@ export function createEmbassy(overrides: Partial<Embassy> = {}): Embassy {
       description: 'A deep space horror station',
       theme: 'scifi',
       status: 'active',
+      simulation_type: 'template',
       content_locale: 'de',
       additional_locales: ['en'],
       owner_id: '00000000-0000-0000-0000-000000000002',

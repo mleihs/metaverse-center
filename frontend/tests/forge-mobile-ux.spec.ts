@@ -48,44 +48,6 @@ async function loginAsDev(page: Page) {
   }
 }
 
-async function getShadowComputedStyle(
-  page: Page,
-  hostSelector: string,
-  innerSelector: string,
-  property: string,
-): Promise<string> {
-  return page.evaluate(
-    ({ host, inner, prop }) => {
-      const hostEl = document.querySelector(host);
-      if (!hostEl?.shadowRoot) return 'HOST_NOT_FOUND';
-      const el = hostEl.shadowRoot.querySelector(inner);
-      if (!el) return 'ELEMENT_NOT_FOUND';
-      return window.getComputedStyle(el).getPropertyValue(prop);
-    },
-    { host: hostSelector, inner: innerSelector, prop: property },
-  );
-}
-
-async function getShadowElementRect(
-  page: Page,
-  hostSelector: string,
-  innerSelector: string,
-): Promise<{ width: number; height: number } | null> {
-  return page.evaluate(
-    ({ host, inner }) => {
-      const hostEl = document.querySelector(host);
-      if (!hostEl?.shadowRoot) return null;
-      const el = hostEl.shadowRoot.querySelector(inner);
-      if (!el) return null;
-      const rect = el.getBoundingClientRect();
-      return { width: rect.width, height: rect.height };
-    },
-    { host: hostSelector, inner: innerSelector },
-  );
-}
-
-// ── Test: viewport-fit=cover meta tag ────────────
-
 test.describe('Phase 1A: viewport-fit=cover', () => {
   test('index.html has viewport-fit=cover', async ({ page }) => {
     await page.goto(BASE);
@@ -108,7 +70,7 @@ test.describe('Phase 1B: 16px input fonts on mobile', () => {
 
       // Check that our shared forge field styles would resolve 16px at this viewport
       // We inject a test element using the forge field class
-      const fontSize = await page.evaluate((w) => {
+      const fontSize = await page.evaluate(() => {
         // Check if a media query for max-width: 768px would match
         return window.matchMedia(`(max-width: 768px)`).matches
           ? '16px-rule-active'
@@ -211,7 +173,6 @@ test.describe('Phase 2C: GPU performance hints', () => {
     await page.goto(BASE);
 
     // Verify the CSS source contains our GPU hint declarations
-    const pageContent = await page.content();
 
     // Check that the forge ceremony component source includes will-change
     // Since it's shadow DOM, we check the JS source

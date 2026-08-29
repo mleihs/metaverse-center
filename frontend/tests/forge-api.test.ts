@@ -81,7 +81,6 @@ class TestableBaseApiService {
   }
 
   getPublic<T>(path: string, params?: Record<string, string>) {
-    const noAuthHeaders = { 'Content-Type': 'application/json' };
     return this.request<T>('GET', `/public${path}`, undefined, params);
   }
 

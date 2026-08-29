@@ -30,7 +30,7 @@ const SIM: Simulation = {
   name: 'Velgarien',
   slug: 'velgarien',
   description: 'A shadow-haunted world.',
-  theme: 'brutalist',
+  theme: 'dystopian',
   status: 'active',
   simulation_type: 'game_instance',
   content_locale: 'en',
