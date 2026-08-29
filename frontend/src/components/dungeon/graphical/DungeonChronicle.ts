@@ -40,8 +40,9 @@ import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { terminalState } from '../../../services/TerminalStateManager.js';
-import type { TerminalLine } from '../../../types/terminal.js';
+import type { TerminalLine, TerminalLineMeta } from '../../../types/terminal.js';
 import { icons } from '../../../utils/icons.js';
+import { a11yStyles } from '../../shared/a11y-styles.js';
 
 /** Distance from the bottom (px) still counted as "following the stream". */
 const STICK_THRESHOLD_PX = 40;
@@ -87,6 +88,7 @@ function toBeats(lines: TerminalLine[]): Beat[] {
 @customElement('velg-dungeon-chronicle')
 export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
   static styles = [
+    a11yStyles,
     css`
       :host {
         /* Tier 3 — the HUD's amber phosphor, plus the two status roles the
@@ -266,6 +268,168 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
         letter-spacing: var(--tracking-wide, 0.025em);
       }
 
+      /* ── The check: the roll a decision actually turned on ──
+         The terminal prints five lines to say this ("[INFILTRATOR CHECK –
+         Modifier: +40]", "Rolling... 94 (+40) = 100", a bar, "Result: 100 –
+         SUCCESS"). Those numbers ride along the header line as structured data,
+         so this draws them instead of re-reading the prose. Baldur's Gate 3's
+         order is the one that reads: the raw die first, then the modifier
+         arriving to change it, then the sum, then the verdict. */
+      .check {
+        margin: var(--space-1, 4px) 0 var(--space-1-5, 6px);
+        padding: var(--space-2, 8px);
+        border: 1px solid color-mix(in srgb, var(--_outcome, var(--_phosphor)) 42%, transparent);
+        border-left-width: 3px;
+        background: color-mix(in srgb, var(--_outcome, var(--_phosphor)) 6%, transparent);
+      }
+      .check__apt {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 9px;
+        font-weight: var(--font-bold, 700);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--_phosphor-dim);
+      }
+      .check__math {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1-5, 6px);
+        margin-top: var(--space-1, 4px);
+        font-family: var(--_mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .check__die {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        padding: 3px 6px;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 55%, transparent);
+        font-size: 15px;
+        font-weight: var(--font-bold, 700);
+        line-height: 1.1;
+        color: var(--_phosphor);
+      }
+      .check__mod {
+        font-size: 11px;
+        font-weight: var(--font-semibold, 600);
+        color: var(--_text-dim);
+      }
+      .check__mod--up {
+        color: var(--_success);
+      }
+      .check__mod--down {
+        color: var(--_danger);
+      }
+      .check__sum {
+        margin-left: auto;
+        font-size: 15px;
+        font-weight: var(--font-bold, 700);
+        color: var(--_outcome, var(--_phosphor));
+      }
+      /* The same 0..100 magnitude the terminal draws as an ASCII bar. */
+      .check__track {
+        position: relative;
+        height: 3px;
+        margin-top: var(--space-1-5, 6px);
+        background: color-mix(in srgb, var(--_border) 80%, transparent);
+        overflow: hidden;
+      }
+      .check__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: var(--_roll-pct, 0%);
+        background: var(--_outcome, var(--_phosphor));
+      }
+      .check__verdict {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-2, 8px);
+        margin-top: var(--space-1-5, 6px);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: var(--font-bold, 700);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--_outcome, var(--_phosphor));
+      }
+      .check__odds {
+        font-family: var(--_mono);
+        font-size: 9px;
+        font-weight: var(--font-normal, 400);
+        letter-spacing: var(--tracking-normal, 0);
+        text-transform: none;
+        color: var(--_text-dim);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* The sequence: die, then the modifier arriving, then the sum, then the
+         verdict. Delays only — no layout jump, so a slow frame cannot leave a
+         gap where a number will be. */
+      @media (prefers-reduced-motion: no-preference) {
+        .check__die {
+          animation: check-drop 220ms var(--ease-slam, ease-out) both;
+        }
+        .check__mod {
+          animation: check-arrive 240ms var(--ease-settle, ease-out) 200ms both;
+        }
+        .check__sum {
+          animation: check-land 220ms var(--ease-slam, ease-out) 420ms both;
+        }
+        .check__fill {
+          animation: check-sweep 420ms var(--ease-out, ease-out) 420ms both;
+        }
+        .check__verdict {
+          animation: check-verdict 260ms var(--ease-settle, ease-out) 620ms both;
+        }
+        @keyframes check-drop {
+          from {
+            opacity: 0;
+            transform: translateY(-5px) scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+        @keyframes check-arrive {
+          from {
+            opacity: 0;
+            transform: translateX(10px);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+        @keyframes check-land {
+          from {
+            opacity: 0;
+            transform: scale(1.25);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+        @keyframes check-sweep {
+          from {
+            width: 0%;
+          }
+        }
+        @keyframes check-verdict {
+          from {
+            opacity: 0;
+            transform: translateY(3px);
+          }
+          to {
+            opacity: 1;
+            transform: none;
+          }
+        }
+      }
+
       /* ── "Jump to latest": only offered when the player has scrolled away
            and the stream has moved on without them. ── */
       .chron__jump {
@@ -428,7 +592,53 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
   }
 
   private _renderEntry(line: TerminalLine) {
+    // The check widget says what the five text lines say. Draw it once, drop
+    // the lines it replaces — the terminal keeps printing all five unchanged.
+    if (line.meta?.kind === 'skill-check-part') return nothing;
+    if (line.meta?.kind === 'skill-check') return this._renderCheck(line.meta);
     return html`<div class="entry entry--${line.type}">${line.content}</div>`;
+  }
+
+  private _renderCheck(check: Extract<TerminalLineMeta, { kind: 'skill-check' }>) {
+    const verdict =
+      check.result === 'success'
+        ? msg('Success')
+        : check.result === 'partial'
+          ? msg('Partial success')
+          : msg('Failure');
+    // Colour is the verdict. `--_outcome` drives the frame, the sum, the track
+    // and the band together, so the whole block reads as one answer.
+    const outcome =
+      check.result === 'success'
+        ? 'var(--_success)'
+        : check.result === 'partial'
+          ? 'var(--color-warning)'
+          : 'var(--_danger)';
+    const signed = check.adjustment >= 0 ? `+${check.adjustment}` : `${check.adjustment}`;
+    const modClass =
+      check.adjustment > 0 ? 'check__mod--up' : check.adjustment < 0 ? 'check__mod--down' : '';
+
+    return html`
+      <div class="check" style="--_outcome:${outcome};--_roll-pct:${check.effectiveRoll}%">
+        <span class="visually-hidden">
+          ${check.aptitude} ${check.level}: ${check.roll} ${signed} = ${check.effectiveRoll}.
+          ${verdict}.
+        </span>
+        <div aria-hidden="true">
+          <div class="check__apt">${check.aptitude} ${check.level}</div>
+          <div class="check__math">
+            <span class="check__die">${check.roll}</span>
+            <span class="check__mod ${modClass}">${signed}</span>
+            <span class="check__sum">${check.effectiveRoll}</span>
+          </div>
+          <div class="check__track"><div class="check__fill"></div></div>
+          <div class="check__verdict">
+            <span>${verdict}</span>
+            <span class="check__odds">${check.chance}%</span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 }
 
