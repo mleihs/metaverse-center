@@ -76,6 +76,29 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         display: block;
       }
 
+      /* The standing group sits apart from the phase actions: a separator and
+         auto margin push it to the trailing edge, so "what can I do here" and
+         "what is always available" never read as one undifferentiated row. */
+      .actions__standing {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        padding-left: 10px;
+        border-left: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+      }
+      @media (max-width: 640px) {
+        .actions__standing {
+          margin-left: 0;
+          padding-left: 0;
+          border-left: none;
+          width: 100%;
+          padding-top: 6px;
+          border-top: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+        }
+      }
+
       /* Room-type risk colors are set via --_btn-color / --_btn-border / --_btn-weight
          custom properties on each button's style attribute (see _renderMoveButtons).
          This avoids !important overrides against the shared terminalActionStyles. */
@@ -107,9 +130,41 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
     const phase = dungeonState.phase.value;
     if (!phase) return nothing;
 
+    // Two groups: what this phase offers, and what is always true of a run.
+    const ended = phase === 'completed' || phase === 'retreated' || phase === 'wiped';
     return html`
       <div class="actions" role="toolbar" aria-label=${msg('Dungeon actions')}>
         ${this._renderPhaseButtons(phase)}
+        ${ended ? nothing : this._renderStandingActions()}
+      </div>
+    `;
+  }
+
+  /**
+   * Actions that do not belong to a phase: describe the run, or leave it.
+   *
+   * They used to live inside the phase switch and appeared in `exploring` only.
+   * Every other playable phase — room_clear after a won fight, encounter,
+   * threshold, rest, treasure — offered no Status, no Protocol and above all no
+   * Retreat. In the terminal a player could still type the command; the
+   * graphical mode has no buffer to type into, so the action was simply
+   * unavailable there. Leaving with the loot you have is precisely the decision
+   * a battered party wants after clearing a room, and it was the one the screen
+   * would not let them make.
+   *
+   * The server has never restricted it: `retreat` carries no phase check and
+   * cancels a running combat timer on its way out.
+   */
+  private _renderStandingActions() {
+    return html`
+      <div class="actions__standing">
+        <button class="action-btn" @click=${() => this._dispatch('status')}>
+          ${msg('Status')}
+        </button>
+        <button class="action-btn" @click=${() => this._dispatch('protocol')}>
+          ${msg('Protocol')}
+        </button>
+        ${this._renderRetreatButton()}
       </div>
     `;
   }
@@ -127,13 +182,6 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           <button class="action-btn" @click=${() => this._dispatch('look')}>
             ${msg('Look')}
           </button>
-          <button class="action-btn" @click=${() => this._dispatch('status')}>
-            ${msg('Status')}
-          </button>
-          <button class="action-btn" @click=${() => this._dispatch('protocol')}>
-            ${msg('Protocol')}
-          </button>
-          ${this._renderRetreatButton()}
         `;
 
       case 'room_clear':
@@ -187,9 +235,6 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         return html`
           <button class="action-btn" @click=${() => this._dispatch('look')}>
             ${msg('Look')}
-          </button>
-          <button class="action-btn" @click=${() => this._dispatch('status')}>
-            ${msg('Status')}
           </button>
         `;
     }
