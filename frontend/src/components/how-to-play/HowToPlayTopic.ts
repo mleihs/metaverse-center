@@ -163,12 +163,11 @@ export class VelgHowToPlayTopic extends LitElement {
       background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: var(--border-width-thick) solid color-mix(in srgb, var(--color-border) 60%, transparent);
+      /* Der Themenakzent faerbt den ganzen Rahmen; er war vorher als 4px-Platte
+         nur an der linken Kante, waehrend die anderen drei Seiten grau blieben. */
+      border: var(--border-width-thick) solid color-mix(in srgb, var(--_topic-accent) 45%, var(--color-border));
       padding: var(--space-5) var(--space-6);
       margin-bottom: var(--space-10);
-
-      /* Left accent stripe */
-      border-left: 4px solid var(--_topic-accent);
     }
 
     .tldr__eyebrow {
@@ -250,10 +249,8 @@ export class VelgHowToPlayTopic extends LitElement {
       margin: 0 0 var(--space-4);
     }
 
-    .callout--info { border-left: 4px solid var(--color-info); }
-    .callout--tip { border-left: 4px solid var(--color-success); }
-    .callout--warn { border-left: 4px solid var(--color-warning); }
-    .callout--danger { border-left: 4px solid var(--color-danger); }
+    /* Kein Kantenbalken: die vier Regeln weiter unten faerben bereits die
+       Etikettzeile (callout__label) in genau diesen Farben. */
 
     .callout__label {
       font-family: var(--font-brutalist);
