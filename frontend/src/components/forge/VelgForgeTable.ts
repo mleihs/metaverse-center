@@ -64,8 +64,10 @@ export class VelgForgeTable extends LitElement {
 
       .command-panel {
         background: var(--color-surface);
+        /* Der Zustand des Auftrags (bereit / laeuft / fertig) faerbt den
+           ganzen Rahmen; vorher lag er als 3-px-Platte an der linken Kante,
+           und Hover, Puls und Fertigmeldung faerbten alle nur diese Kante. */
         border: 1px solid var(--color-border);
-        border-left: 3px solid var(--color-text-muted);
         padding: var(--space-5) var(--space-4);
         display: flex;
         flex-direction: column;
@@ -76,14 +78,13 @@ export class VelgForgeTable extends LitElement {
       }
 
       .command-panel:hover {
-        border-color: var(--color-text-muted);
-        border-left-color: var(--color-icon);
+        border-color: var(--color-icon);
         background: var(--color-surface);
       }
 
       /* Active (generating) state */
       .command-panel--active {
-        border-left-color: var(--color-success);
+        border-color: var(--color-success);
         animation: panel-pulse 1.5s ease-in-out infinite;
       }
 
@@ -105,13 +106,13 @@ export class VelgForgeTable extends LitElement {
       }
 
       @keyframes panel-pulse {
-        0%, 100% { border-left-color: var(--color-success); }
-        50% { border-left-color: rgba(74 222 128 / 0.4); }
+        0%, 100% { border-color: var(--color-success); }
+        50% { border-color: rgba(74 222 128 / 0.4); }
       }
 
       /* Complete state */
       .command-panel--complete {
-        border-left-color: var(--color-success);
+        border-color: var(--color-success);
         background: rgba(74 222 128 / 0.07);
       }
 

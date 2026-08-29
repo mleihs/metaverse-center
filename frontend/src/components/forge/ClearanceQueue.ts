@@ -113,15 +113,15 @@ export class VelgClearanceQueue extends LitElement {
 
     .request-card {
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-warning);
+      /* Akzent auf dem ganzen Rahmen. */
+      border: 1px solid color-mix(in srgb, var(--color-warning) 50%, var(--color-border));
       padding: var(--space-4);
       margin-bottom: var(--space-3);
       transition: border-color var(--transition-fast);
     }
 
     .request-card:hover {
-      border-left-color: var(--color-accent-amber);
+      border-color: var(--color-accent-amber);
     }
 
     .request-card.exiting {

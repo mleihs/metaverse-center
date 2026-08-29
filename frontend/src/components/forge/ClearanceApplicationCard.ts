@@ -12,11 +12,14 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import './ForgeAccessRequestModal.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 
 @localized()
 @customElement('velg-clearance-card')
 export class VelgClearanceCard extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
     }
@@ -53,7 +56,10 @@ export class VelgClearanceCard extends LitElement {
       position: relative;
       background: var(--color-surface-raised);
       border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-accent-amber);
+      /* Eckwinkel statt Kantenplatte; --before, weil ::after hier die
+         Scanline traegt. */
+      --marker-color: var(--color-accent-amber);
+      --marker-arm: 18px;
       padding: 24px;
       overflow: hidden;
     }
@@ -266,7 +272,8 @@ export class VelgClearanceCard extends LitElement {
     @media (max-width: 560px) {
       .card { padding: 16px; }
     }
-  `;
+  `,
+  ];
 
   @state() private _modalOpen = false;
 
@@ -297,7 +304,7 @@ export class VelgClearanceCard extends LitElement {
 
   private _renderIdle() {
     return html`
-      <div class="card">
+      <div class="card marker-corners--before">
         <div class="header">
           <span class="header__classification">${msg('Clearance Application')}</span>
           <div class="header__divider"></div>
@@ -340,7 +347,7 @@ export class VelgClearanceCard extends LitElement {
 
   private _renderPending() {
     return html`
-      <div class="card">
+      <div class="card marker-corners--before">
         <div class="header">
           <span class="header__classification">${msg('Clearance Application')}</span>
           <div class="header__divider"></div>
