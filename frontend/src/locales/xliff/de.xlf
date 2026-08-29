@@ -28498,6 +28498,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>No floor</source>
   <target>Ohne Untergrenze</target>
 </trans-unit>
+<trans-unit id="s61366f220d6500b5">
+  <source>No further readings for this seed – rewrite it to ask again.</source>
+  <target>Für diesen Seed keine Lesungen mehr – schreib ihn um, um erneut zu fragen.</target>
+</trans-unit>
+<trans-unit id="s61530bd2463d2a74">
+  <source>This replaces all three anchors and clears your choice.</source>
+  <target>Das ersetzt alle drei Anker und verwirft deine Wahl.</target>
+</trans-unit>
+<trans-unit id="sd3e9531b321abb6c">
+  <source>Read again – confirm</source>
+  <target>Erneut lesen – bestätigen</target>
+</trans-unit>
+<trans-unit id="seb5908015872e29b">
+  <source>Read the Astrolabe again</source>
+  <target>Das Astrolabium erneut lesen</target>
+</trans-unit>
+<trans-unit id="s186197298274c00d">
+  <source>Keep these anchors</source>
+  <target>Diese Anker behalten</target>
+</trans-unit>
+<trans-unit id="s9d8f8e4c8da1827a">
+  <source><x id="0" equiv-text="${left}"/> of <x id="1" equiv-text="${VelgForgeAstrolabe._MAX_SCANS}"/> readings left</source>
+  <target>Noch <x id="0" equiv-text="${left}"/> von <x id="1" equiv-text="${VelgForgeAstrolabe._MAX_SCANS}"/> Lesungen</target>
+</trans-unit>
 
 </body>
 </file>
