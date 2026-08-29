@@ -368,7 +368,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
            creatures were clamped to their 44px floor and drew 33px ABOVE the
            scene, invisible. The text can scroll (it has overscroll containment);
            a creature cannot. So the band gets a floor and the prose yields. */
-        grid-template-rows: auto minmax(110px, 1fr) auto minmax(0, auto);
+        grid-template-rows: auto minmax(132px, 1fr) auto minmax(0, auto);
         grid-template-areas:
           'readout'
           'foes'
@@ -800,6 +800,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          a FRACTION OF THE BAND (see FOE_GEOMETRY) instead of guessing from
          viewport width. */
       .scene__enemies {
+        position: relative;
         grid-area: foes;
         align-self: stretch;
         min-height: 0;
@@ -860,15 +861,63 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          hurt creature loses saturation and light instead. The condition tint
          survives in the drop-shadow, the floor pool and the name, which is
          where the eye picks it up in a band this small. */
+      /* Cut-outs on a dark chamber wall need a RIM, not more glow. The creatures
+         are dark by design and the backdrop is darker still, so a soft halo just
+         raised the floor around them; the figures read as smudges. Four tight
+         drop-shadows at the cardinal directions trace the alpha edge — the
+         standard silhouette-separation trick — and only then does the wide
+         condition halo sit behind it. The rim carries the condition tint too,
+         so a hurt creature is outlined in the colour of its state. */
       .foe__art {
         display: block;
         height: 100%;
         width: auto;
         max-width: 22vw;
+        --_rim: color-mix(in srgb, var(--_cond) 62%, var(--color-text-primary));
         filter: saturate(calc(1 - var(--_wear, 0) * 0.72))
-          brightness(calc(1 - var(--_wear, 0) * 0.32))
-          drop-shadow(0 0 calc(var(--_foe-glow, 0.8) * 20px) color-mix(in srgb, var(--_cond) 34%, transparent));
+          brightness(calc(1.08 - var(--_wear, 0) * 0.32))
+          drop-shadow(1px 0 0 var(--_rim)) drop-shadow(-1px 0 0 var(--_rim))
+          drop-shadow(0 1px 0 var(--_rim)) drop-shadow(0 -1px 0 var(--_rim))
+          drop-shadow(0 0 calc(var(--_foe-glow, 0.8) * 16px) color-mix(in srgb, var(--_cond) 40%, transparent));
         transition: filter var(--duration-slow, 300ms) var(--ease-out, ease-out);
+      }
+      /* Elites and bosses earn a heavier rim: rank has to read at a glance, and
+         at band scale a size difference does not. */
+      .foe[data-tier='elite'] .foe__art,
+      .foe[data-tier='boss'] .foe__art {
+        --_rim: color-mix(in srgb, var(--_cond) 82%, var(--color-text-primary));
+      }
+      .foe[data-tier='boss'] .foe__art {
+        filter: saturate(calc(1 - var(--_wear, 0) * 0.72))
+          brightness(calc(1.14 - var(--_wear, 0) * 0.32))
+          drop-shadow(2px 0 0 var(--_rim)) drop-shadow(-2px 0 0 var(--_rim))
+          drop-shadow(0 2px 0 var(--_rim)) drop-shadow(0 -2px 0 var(--_rim))
+          drop-shadow(0 0 26px color-mix(in srgb, var(--_cond) 55%, transparent));
+      }
+      /* The rank mark in front of the name — the only place tier is spelled out. */
+      .foe__rank {
+        margin-right: 3px;
+        color: var(--_cond);
+      }
+      .foe[data-tier='boss'] .foe__name {
+        letter-spacing: 1.6px;
+        color: color-mix(in srgb, var(--_cond) 70%, var(--color-text-primary));
+      }
+      /* A darker pad under the band lifts every creature off the wall without
+         touching the backdrop art itself. */
+      .scene__enemies::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          120% 78% at 50% 84%,
+          color-mix(in srgb, var(--color-surface) 62%, transparent) 0%,
+          transparent 72%
+        );
       }
 
       /* The silhouette fallback — a leaf element, so the drop-shadow here never
@@ -2209,6 +2258,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             <div
               class="foe ${dead ? 'foe--dead' : ''}"
               role="listitem"
+              data-tier=${enemy.threat_level}
               style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-scale:${geom.scale};--_foe-glow:${geom.scale};--_foe-ratio:${geom.ratio};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
             >
               ${
@@ -2244,7 +2294,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   @click=${() => showArt && artUrl && this._openEnemyArt(artUrl, facts)}
                 ></button>
               </div>
-              <span class="foe__name" aria-hidden="true">${displayName}</span>
+              <span class="foe__name" aria-hidden="true">
+                ${
+                  FOE_RANK[enemy.threat_level]
+                    ? html`<span class="foe__rank">${FOE_RANK[enemy.threat_level]}</span>`
+                    : nothing
+                }${displayName}
+              </span>
               <span class="foe__facts" aria-hidden="true">${facts.line}</span>
             </div>
           `;
@@ -2600,6 +2656,22 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
  * creature is ever drawn. The size is part of the stored path, so the coupling
  * is visible rather than implied.
  */
+/**
+ * Rank marks. A creature's threat tier used to be expressed by SIZE alone — and
+ * between a 44px minion and a 55px elite in a cramped band, nobody can see a
+ * difference. Into the Breach's rule applies here: the player must know what is
+ * dangerous BEFORE it acts, and size is not a readable channel at this scale.
+ *
+ * Empty for the two ordinary tiers on purpose: a mark on everything marks
+ * nothing.
+ */
+const FOE_RANK: Record<string, string> = {
+  minion: '',
+  standard: '',
+  elite: '\u25C6',
+  boss: '\u2726',
+};
+
 const FOE_GEOMETRY: Record<
   string,
   { scale: number; ratio: number; shape: string; eyeTop: string }
