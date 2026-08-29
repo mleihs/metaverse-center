@@ -167,7 +167,19 @@ export class VelgLoginView extends LitElement {
     try {
       const { error } = await authService.signIn(this._email, this._password);
       if (error) {
-        this._error = error.message;
+        // Never render the upstream message verbatim. When the auth service
+        // itself is unreachable, supabase-js cannot map the response onto its
+        // error shape and hands back a message of "{}" — which this screen put
+        // in front of the user, in a red box, as their explanation. Worse, it
+        // read as "your credentials are wrong" when nothing had been checked.
+        // A rejected password answers with 400/401; anything else is the
+        // service, not the operative.
+        const status = (error as { status?: number }).status;
+        const rejected = status === 400 || status === 401;
+        this._error = rejected
+          ? msg('Invalid email or password.')
+          : msg('The authentication terminal is unreachable. Try again shortly.');
+        captureError(error, { source: 'LoginView._handleSubmit', status: String(status ?? '') });
       } else {
         navigate('/dashboard');
       }

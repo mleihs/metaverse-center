@@ -119,25 +119,25 @@ def _get_jwks_client() -> PyJWKClient:
 _JWKS_ALGORITHMS = ["ES256", "RS256"]
 
 
-def _decode_jwt(token: str) -> dict:
-    """Decode a JWT — JWKS (asymmetric) in production, shared secret locally.
+# Failures that mean "this key material does not match this token" — a wrong
+# secret, or a token signed with an algorithm this attempt does not allow.
+# Everything else (expired, wrong audience, wrong issuer) is a verdict about
+# the token itself and must not be retried against other key material.
+_KEY_MISMATCH_ERRORS = (pyjwt.DecodeError, pyjwt.InvalidAlgorithmError)
 
-    The verification path is chosen by *environment*, never by the token's own
-    ``alg`` header: the header is attacker-controlled, and branching on it
-    would let a forged HS256 token opt into the shared-secret path in
-    production (deep-audit P1-3). Locally (development/test) Supabase signs
-    HS256 with the shared secret; a config validator guarantees that secret is
-    non-empty wherever this branch can run.
-    """
-    if settings.environment in ("development", "test"):
-        return pyjwt.decode(
-            token,
-            settings.supabase_jwt_secret,
-            algorithms=["HS256"],
-            audience="authenticated",
-        )
 
-    # Production-like environments: JWKS only, issuer pinned to this project.
+def _decode_hs256(token: str) -> dict:
+    """Verify against the shared secret. Never reachable in production."""
+    return pyjwt.decode(
+        token,
+        settings.supabase_jwt_secret,
+        algorithms=["HS256"],
+        audience="authenticated",
+    )
+
+
+def _decode_jwks(token: str) -> dict:
+    """Verify against the project's published key set, issuer pinned."""
     try:
         jwks_client = _get_jwks_client()
         signing_key = jwks_client.get_signing_key_from_jwt(token)
@@ -151,6 +151,42 @@ def _decode_jwt(token: str) -> dict:
         audience="authenticated",
         issuer=f"{settings.supabase_url}/auth/v1",
     )
+
+
+def _decode_jwt(token: str) -> dict:
+    """Decode a JWT — JWKS only in production, both local modes in development.
+
+    The verification path is chosen by *environment*, never by the token's own
+    ``alg`` header: the header is attacker-controlled, and branching on it
+    would let a forged HS256 token opt into the shared-secret path in
+    production (deep-audit P1-3). That property is unchanged — production takes
+    :func:`_decode_jwks` unconditionally, and each attempt below passes its own
+    fixed algorithm allowlist, so no token can ever select how it is verified.
+
+    Development and test accept **both** ways a local Supabase legitimately
+    signs, because there is no longer one answer. This branch used to assume
+    HS256 with the shared secret, which was true when it was written; the
+    Supabase CLI has since moved local projects onto the same asymmetric keys
+    production uses, and a local stack now publishes an ES256 key at
+    ``/auth/v1/.well-known/jwks.json`` and signs with it. Against that, an
+    HS256-only branch rejects every real session the local stack issues — the
+    backend answers 401, the client treats a 401 as "signed out", and signing
+    in appears to do nothing at all.
+
+    Pinning the other single assumption would only move the rot, so both are
+    accepted: the shared secret first (a local HMAC, no network, and what the
+    test suite mints), then the key set (what a running local stack issues).
+    Only a key-material mismatch falls through; an expired or misaddressed
+    token is answered by the first attempt, so its error is not replaced by a
+    misleading "no matching key".
+    """
+    if settings.environment not in ("development", "test"):
+        return _decode_jwks(token)
+
+    try:
+        return _decode_hs256(token)
+    except _KEY_MISMATCH_ERRORS:
+        return _decode_jwks(token)
 
 
 async def get_current_user(
@@ -379,19 +415,20 @@ def require_epoch_creator():
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
     ) -> None:
-        response = await (
+        # maybe_single: `.single()` raises on 0 rows, which turned "no such
+        # epoch" into a 500 before this guard could answer 404.
+        response_data = await maybe_single_data(
             supabase.table("game_epochs")
             .select("created_by_id")
             .eq("id", str(epoch_id))
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not response.data:
+        if not response_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Epoch not found.",
             )
-        if response.data["created_by_id"] != str(user.id):
+        if response_data["created_by_id"] != str(user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Only the epoch creator can perform this action.",
