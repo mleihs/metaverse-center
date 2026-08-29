@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -25,6 +26,7 @@ from backend.services.prompt_contracts import (
     sanitize_template,
     variable_catalogue,
 )
+from backend.services.prompt_service import report_contract_violation
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
@@ -78,38 +80,55 @@ THEME_ARCHITECT_PROMPT = (
 
 @dataclass(frozen=True, slots=True)
 class GeneratedTemplateSpec:
-    """The column values phase A.6 writes alongside a generated template."""
+    """Everything phase A.6 needs to know about one template type it writes.
+
+    The column values AND the shape examples live here together: a second dict
+    keyed by the same template_type would be a place for the two to disagree,
+    and adding a fifth type would then fail with a KeyError instead of simply
+    working.
+    """
 
     prompt_category: str
     template_name: str
     temperature: float
     max_tokens: int
+    system_prompt_example: str
+    prompt_content_example: str
 
 
-# The four template types phase A.6 writes. Keyed by template_type so the
-# generation prompt, the response-shape hint and the row builder all read from
-# one place; the variable contract for each comes from `prompt_contracts`.
+# The template types phase A.6 writes. The generation prompt, the response-shape
+# hint and the row builder all read from here; the variable contract for each
+# comes from `prompt_contracts`. `{sim}` in an example is the simulation name.
 GENERATED_TEMPLATES: dict[str, GeneratedTemplateSpec] = {
-    "portrait_description": GeneratedTemplateSpec("image", "Portrait Description", 0.8, 300),
-    "building_image_description": GeneratedTemplateSpec("image", "Building Image Description", 0.8, 300),
-    "chronicle_generation": GeneratedTemplateSpec("generation", "Chronicle", 0.9, 2000),
-    "chat_system_prompt": GeneratedTemplateSpec("chat", "Chat System Prompt", 0.85, 500),
-}
-
-_SHAPE_EXAMPLES: dict[str, tuple[str, str]] = {
-    "portrait_description": (
+    "portrait_description": GeneratedTemplateSpec(
+        "image",
+        "Portrait Description",
+        0.8,
+        300,
         "You are a [world-specific] portrait specialist...",
         "Describe a portrait of {agent_name}...",
     ),
-    "building_image_description": (
+    "building_image_description": GeneratedTemplateSpec(
+        "image",
+        "Building Image Description",
+        0.8,
+        300,
         "You are a [world-specific] architectural photographer...",
         "Describe an image of {building_name}...",
     ),
-    "chronicle_generation": (
+    "chronicle_generation": GeneratedTemplateSpec(
+        "generation",
+        "Chronicle",
+        0.9,
+        2000,
         "You are the editor of {sim}'s chronicle...",
         "Write edition #{edition_number}...",
     ),
-    "chat_system_prompt": (
+    "chat_system_prompt": GeneratedTemplateSpec(
+        "chat",
+        "Chat System Prompt",
+        0.85,
+        500,
         "You roleplay characters from {sim}...",
         "You are {agent_name}...",
     ),
@@ -118,15 +137,13 @@ _SHAPE_EXAMPLES: dict[str, tuple[str, str]] = {
 
 def _response_shape_hint(sim_name: str) -> str:
     """The JSON shape the model must return, built from GENERATED_TEMPLATES."""
-    blocks = []
-    for ttype in GENERATED_TEMPLATES:
-        system_example, content_example = _SHAPE_EXAMPLES[ttype]
-        blocks.append(
-            f'  "{ttype}": {{\n'
-            f'    "system_prompt": "{system_example.replace("{sim}", sim_name)}",\n'
-            f'    "prompt_content": "{content_example}"\n'
-            f"  }}"
-        )
+    blocks = [
+        f'  "{ttype}": {{\n'
+        f'    "system_prompt": "{spec.system_prompt_example.replace("{sim}", sim_name)}",\n'
+        f'    "prompt_content": "{spec.prompt_content_example}"\n'
+        f"  }}"
+        for ttype, spec in GENERATED_TEMPLATES.items()
+    ]
     return "{\n" + ",\n".join(blocks) + "\n}"
 
 
@@ -454,29 +471,14 @@ class ForgeThemeService:
         invented slot.
         """
         result = sanitize_template(text, contract)
-        if result.changed:
-            logger.warning(
-                "Generated template '%s' (%s) violated its contract: %s",
-                template_type,
-                field_name,
-                {defect.value: sorted(names) for defect, names in result.audit.defects.items()},
-                extra={"simulation_id": str(simulation_id)},
-            )
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "ForgeThemeService")
-                scope.set_tag("template_type", template_type)
-                scope.set_tag("simulation_id", str(simulation_id))
-                scope.set_context(
-                    "prompt_contract",
-                    {
-                        "field": field_name,
-                        **{defect.value: sorted(names) for defect, names in result.audit.defects.items()},
-                    },
-                )
-                sentry_sdk.capture_message(
-                    f"Generated prompt template '{template_type}' violated its contract",
-                    level="warning",
-                )
+        report_contract_violation(
+            template_type=template_type,
+            field_name=field_name,
+            defects=result.audit.defects,
+            service="ForgeThemeService",
+            source="generated",
+            simulation_id=simulation_id,
+        )
         return result
 
     @staticmethod
@@ -499,8 +501,6 @@ class ForgeThemeService:
         ``PromptResolver`` — so a generated template can no longer drop "a SINGLE
         person" or invent a variable nothing fills.
         """
-        import json as _json
-
         # Load simulation + lore context
         sim_resp = await (
             supabase.table("simulations").select("name, description").eq("id", str(simulation_id)).single().execute()
@@ -599,7 +599,7 @@ class ForgeThemeService:
                 text = text[:-3]
             text = text.strip()
 
-            templates = _json.loads(text)
+            templates = json.loads(text)
             if not isinstance(templates, dict):
                 logger.warning("Template generation returned non-dict")
                 return

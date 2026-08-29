@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from enum import StrEnum
 from uuid import UUID
 
 import sentry_sdk
 
 from backend.services.prompt_contracts import (
+    Defect,
     PromptContract,
     get_contract,
     render_template,
@@ -148,6 +150,64 @@ HARDCODED_FALLBACKS: dict[str, str] = {
 }
 
 
+def report_contract_violation(
+    *,
+    template_type: str,
+    field_name: str,
+    defects: dict[Defect, frozenset[str]],
+    service: str,
+    source: str,
+    simulation_id: UUID | None = None,
+) -> None:
+    """Log and report that a stored template disagrees with its contract.
+
+    Shared by the two places that can notice: the renderer, which sees it on
+    every request, and the Forge, which sees it once when a model writes the
+    template. Both used to carry the same eighteen lines.
+    """
+    if not defects:
+        return
+    readable = {defect.value: sorted(names) for defect, names in defects.items()}
+    logger.warning(
+        "Prompt template '%s' (%s, %s) violates its contract: %s",
+        template_type,
+        source,
+        field_name,
+        readable,
+        extra={"simulation_id": str(simulation_id) if simulation_id else None},
+    )
+    with sentry_sdk.push_scope() as scope:
+        scope.set_tag("service", service)
+        scope.set_tag("template_type", template_type)
+        scope.set_tag("template_source", source)
+        if simulation_id:
+            scope.set_tag("simulation_id", str(simulation_id))
+        scope.set_context("prompt_contract", {"field": field_name, **readable})
+        sentry_sdk.capture_message(
+            f"Prompt template '{template_type}' violates its contract",
+            level="warning",
+        )
+
+
+class PromptSource(StrEnum):
+    """Which of the five resolution levels produced a template.
+
+    This is a *decision*, not a caption: `is_simulation_owned` gates the platform
+    frame on it. As a bare display string, renaming a label would have switched
+    the frame off silently — no test, no type error.
+    """
+
+    SIMULATION_LOCALE = "simulation+locale"
+    SIMULATION_DEFAULT_LOCALE = "simulation+default_locale"
+    PLATFORM_LOCALE = "platform+locale"
+    PLATFORM_EN = "platform+en"
+    HARDCODED_FALLBACK = "hardcoded_fallback"
+
+
+# The levels that mean "this world wrote it", and therefore "frame it".
+_SIMULATION_SOURCES = frozenset({PromptSource.SIMULATION_LOCALE, PromptSource.SIMULATION_DEFAULT_LOCALE})
+
+
 @dataclass
 class ResolvedPrompt:
     """A resolved prompt template ready for variable substitution."""
@@ -161,7 +221,7 @@ class ResolvedPrompt:
     temperature: float
     max_tokens: int
     negative_prompt: str | None
-    source: str  # Where this was resolved from
+    source: PromptSource
 
     @property
     def is_simulation_owned(self) -> bool:
@@ -170,7 +230,7 @@ class ResolvedPrompt:
         Only those get the platform frame appended: a platform template already
         carries its guarantees inline, and the hardcoded fallback is ours.
         """
-        return self.source.startswith("simulation")
+        return self.source in _SIMULATION_SOURCES
 
     @property
     def contract(self) -> PromptContract | None:
@@ -233,25 +293,25 @@ class PromptResolver:
         if self._simulation_id:
             template = await self._find_template(self._simulation_id, template_type, locale)
             if template:
-                return self._to_resolved(template, locale, "simulation+locale")
+                return self._to_resolved(template, locale, PromptSource.SIMULATION_LOCALE)
 
             # 2. Simulation + simulation's default locale
             sim_locale = await self._get_simulation_locale()
             if locale != sim_locale:
                 template = await self._find_template(self._simulation_id, template_type, sim_locale)
                 if template:
-                    return self._to_resolved(template, sim_locale, "simulation+default_locale")
+                    return self._to_resolved(template, sim_locale, PromptSource.SIMULATION_DEFAULT_LOCALE)
 
         # 3. Platform default + requested locale
         template = await self._find_template(None, template_type, locale)
         if template:
-            return self._to_resolved(template, locale, "platform+locale")
+            return self._to_resolved(template, locale, PromptSource.PLATFORM_LOCALE)
 
         # 4. Platform default + 'en'
         if locale != "en":
             template = await self._find_template(None, template_type, "en")
             if template:
-                return self._to_resolved(template, "en", "platform+en")
+                return self._to_resolved(template, "en", PromptSource.PLATFORM_EN)
 
         # 5. Hardcoded fallback
         logger.warning(
@@ -274,7 +334,7 @@ class PromptResolver:
             temperature=0.7,
             max_tokens=1024,
             negative_prompt=None,
-            source="hardcoded_fallback",
+            source=PromptSource.HARDCODED_FALLBACK,
         )
 
     async def _find_template(
@@ -303,7 +363,7 @@ class PromptResolver:
         return None
 
     @staticmethod
-    def _to_resolved(template: dict, locale: str, source: str) -> ResolvedPrompt:
+    def _to_resolved(template: dict, locale: str, source: PromptSource) -> ResolvedPrompt:
         """Convert a DB row to a ResolvedPrompt."""
         return ResolvedPrompt(
             template_type=template["template_type"],
@@ -381,25 +441,12 @@ class PromptResolver:
         and reported to Sentry with the simulation in scope.
         """
         result = render_template(text, variables, template.contract)
-        defects = result.audit.defects
-        if defects:
-            readable = {defect.value: sorted(names) for defect, names in defects.items()}
-            logger.warning(
-                "Prompt template '%s' (%s, %s) violates its contract: %s",
-                template.template_type,
-                template.source,
-                field_name,
-                readable,
-            )
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("service", "PromptResolver")
-                scope.set_tag("template_type", template.template_type)
-                scope.set_tag("template_source", template.source)
-                if self._simulation_id:
-                    scope.set_tag("simulation_id", str(self._simulation_id))
-                scope.set_context("prompt_contract", {"field": field_name, **readable})
-                sentry_sdk.capture_message(
-                    f"Prompt template '{template.template_type}' violates its contract",
-                    level="warning",
-                )
+        report_contract_violation(
+            template_type=template.template_type,
+            field_name=field_name,
+            defects=result.audit.defects,
+            service="PromptResolver",
+            source=str(template.source),
+            simulation_id=self._simulation_id,
+        )
         return result.text

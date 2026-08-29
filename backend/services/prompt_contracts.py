@@ -597,18 +597,27 @@ def sanitize_template(text: str, contract: PromptContract | None) -> SanitizeRes
     pieces.append(original[cursor:])
 
     rebuilt: list[str] = []
+    dropped_previous = False
     for index, piece in enumerate(pieces):
-        if index % 2 == 1:  # a separator: keep it unless its sentence went away
-            if rebuilt and rebuilt[-1] == "":
+        if index % 2 == 1:
+            # A separator follows its sentence. Drop it only when that sentence
+            # was removed — never because the segment happened to be empty. A
+            # blank line produces an empty segment too, and reading the last
+            # rebuilt entry cannot tell the two apart: it ate blank lines out of
+            # every bulleted template and reported `changed` with no defect to
+            # show for it.
+            if dropped_previous:
+                dropped_previous = False
                 continue
             rebuilt.append(piece)
             continue
 
         segment_audit = audit_template(piece, contract)
         if segment_audit.unknown and not segment_audit.known:
-            rebuilt.append("")  # rule 2: the whole sentence goes
+            dropped_previous = True  # rule 2: the whole sentence goes
             continue
 
+        dropped_previous = False
         repaired = _PLACEHOLDER_RE.sub(repair, piece)
         if repaired != piece:
             repaired = _clean_removal_artefacts(repaired)
