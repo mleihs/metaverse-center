@@ -218,6 +218,15 @@ class ForgeThemeService:
         (Phase B). Reads the current style prompts and lore, then asks the
         AI to produce more distinctive, world-specific style prompts that
         capture the simulation's unique atmosphere.
+
+        All four prompts are refined. The banner was left out at first, which
+        looked like a timing constraint and was not: the banner image is
+        rendered in Phase B (``forge_orchestrator_service``), long after this
+        runs, so it can use a refined prompt exactly like the other three. The
+        effect of leaving it out was that the one image a visitor sees first —
+        the world's establishing shot — kept the generic style written in the
+        Darkroom, before any lore existed, while every portrait and plate
+        around it had been rewritten to match the world.
         """
         # Load simulation + lore context
         sim_resp = await (
@@ -262,18 +271,23 @@ class ForgeThemeService:
             f"CURRENT STYLE PROMPTS (too generic — need to be more distinctive):\n"
             f"- Portrait: {current_styles.get('image_style_prompt_portrait', '')}\n"
             f"- Building: {current_styles.get('image_style_prompt_building', '')}\n"
-            f"- Lore: {current_styles.get('image_style_prompt_lore', '')}\n\n"
-            f"TASK: Rewrite these 3 style prompts to be MUCH more distinctive and specific "
+            f"- Lore: {current_styles.get('image_style_prompt_lore', '')}\n"
+            f"- Banner: {current_styles.get('image_style_prompt_banner', '')}\n\n"
+            f"TASK: Rewrite these 4 style prompts to be MUCH more distinctive and specific "
             f"to this world's unique identity. The prompts are appended to AI image generation "
             f"requests (Replicate Flux). They should:\n"
             f"- Evoke a specific visual medium or technique (NOT generic photography)\n"
             f"- Reference unique elements from the lore (materials, lighting, textures)\n"
             f"- Create a visual language that could ONLY belong to this world\n"
             f"- Be technically precise (describe lens, lighting, medium, color grading)\n\n"
-            f"Respond with ONLY the three prompts, one per line, in this format:\n"
+            f"BANNER is the world's establishing shot — a single wide 16:9 landscape, no "
+            f"characters, no text. Keep it a place seen whole, in the same visual language "
+            f"as the other three.\n\n"
+            f"Respond with ONLY the four prompts, one per line, in this format:\n"
             f"PORTRAIT: [prompt]\n"
             f"BUILDING: [prompt]\n"
-            f"LORE: [prompt]"
+            f"LORE: [prompt]\n"
+            f"BANNER: [prompt]"
         )
 
         try:
@@ -302,6 +316,8 @@ class ForgeThemeService:
                     updates["image_style_prompt_building"] = line.split(":", 1)[1].strip().strip('"')
                 elif line.upper().startswith("LORE:"):
                     updates["image_style_prompt_lore"] = line.split(":", 1)[1].strip().strip('"')
+                elif line.upper().startswith("BANNER:"):
+                    updates["image_style_prompt_banner"] = line.split(":", 1)[1].strip().strip('"')
 
             if not updates:
                 logger.warning("Style refinement produced no parseable output")
