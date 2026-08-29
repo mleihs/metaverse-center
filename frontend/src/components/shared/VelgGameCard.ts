@@ -7,10 +7,13 @@
  */
 
 import { localized, msg } from '@lit/localize';
+import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import type { CardFrame } from '../../services/card-frame.js';
+import { activeCardFrame, DEFAULT_CARD_FRAME } from '../../services/card-frame.js';
 import type { AptitudeSet, OperativeType } from '../../types/index.js';
 import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 
@@ -791,11 +794,338 @@ export class VelgGameCard extends LitElement {
     /* ═══════════════════════════════════════════════════
        REDUCED MOTION
        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       PER-SIMULATION FRAME TREATMENTS
+
+       Four orthogonal dimensions, set by the simulation's theme and edited in
+       the Forge Darkroom: texture, nameplate, corners, foil. Every preset in
+       theme-presets.ts has carried these since the card system was specified
+       and the Darkroom has offered all 22 options, but until now nothing read
+       them: THEME_TOKEN_MAP had no entry, so applyConfig skipped them and the
+       card never saw a value.
+
+       They are dimensions rather than five fixed faction skins on purpose: the
+       Darkroom lets any world combine any four, so circuits plus cartouche has
+       to hold up as readily as the presets do.
+
+       Every colour derives from the card frame custom properties, so a
+       treatment carries the world's palette rather than a hardcoded faction
+       hue.
+       ═══════════════════════════════════════════════════ */
+
+    /* ── Texture: layered onto the card's own background ── */
+
+    .card--tex-scanlines {
+      background-image: repeating-linear-gradient(
+        0deg,
+        transparent 0 2px,
+        color-mix(in srgb, var(--card-frame-primary) 14%, transparent) 2px 4px
+      );
+      animation: card-deal var(--duration-entrance, 400ms)
+                   var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards,
+                 tex-drift 2s linear infinite;
+      animation-delay: calc(var(--i, 0) * var(--duration-stagger, 50ms)), 0s;
+    }
+
+    /* Both the legendary glow and the scanline drift live on .card and set the
+       whole animation shorthand, so a legendary card in a scanline world needs
+       the union declared explicitly — otherwise the later rule silently drops
+       the glow. */
+    .card--legendary.card--tex-scanlines {
+      animation: card-deal var(--duration-entrance, 400ms)
+                   var(--ease-spring) forwards,
+                 legendary-glow 3s ease-in-out infinite,
+                 tex-drift 2s linear infinite;
+      animation-delay: calc(var(--i, 0) * var(--duration-stagger, 50ms)), 0s, 0s;
+    }
+
+    @keyframes tex-drift {
+      to { background-position-y: 4px; }
+    }
+
+    .card--tex-circuits {
+      background-image:
+        radial-gradient(circle, color-mix(in srgb, var(--card-frame-primary) 26%, transparent) 1px, transparent 1.5px),
+        linear-gradient(90deg, color-mix(in srgb, var(--card-frame-primary) 10%, transparent) 1px, transparent 1px),
+        linear-gradient(0deg, color-mix(in srgb, var(--card-frame-primary) 7%, transparent) 1px, transparent 1px);
+      background-size: 18px 18px, 18px 18px, 18px 18px;
+    }
+
+    /* Asymmetric on purpose — the growth this evokes is not tiled. */
+    .card--tex-filigree {
+      background-image:
+        radial-gradient(ellipse 55% 28% at 0% 32%, color-mix(in srgb, var(--card-frame-secondary) 12%, transparent), transparent 70%),
+        radial-gradient(ellipse 45% 34% at 100% 68%, color-mix(in srgb, var(--card-frame-secondary) 10%, transparent), transparent 70%),
+        radial-gradient(ellipse 70% 20% at 50% 100%, color-mix(in srgb, var(--card-frame-secondary) 8%, transparent), transparent 75%);
+    }
+
+    .card--tex-rivets {
+      background-image: radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--card-text) 16%, transparent) 1.5px,
+        transparent 2px
+      );
+      background-size: 22px 22px;
+      background-position: 7px 7px;
+    }
+
+    .card--tex-illumination {
+      background-image:
+        repeating-linear-gradient(45deg, transparent 0 7px, color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 7px 8px),
+        radial-gradient(ellipse 90% 40% at 50% 0%, color-mix(in srgb, var(--card-frame-primary) 14%, transparent), transparent 65%);
+    }
+
+    /* ── Nameplate ── */
+
+    .card--plate-terminal .card__name::before {
+      content: '> ';
+      color: var(--card-frame-primary);
+    }
+
+    .card--plate-banner .card__nameplate {
+      text-align: center;
+      border-top: 1px solid color-mix(in srgb, var(--card-frame-secondary) 55%, transparent);
+    }
+
+    .card--plate-banner .card__name {
+      font-family: var(--card-font-body);
+      text-transform: none;
+      font-weight: 600;
+    }
+
+    .card--plate-banner .card__name::before { content: '✧ '; }
+    .card--plate-banner .card__name::after  { content: ' ✧'; }
+
+    .card--plate-banner .card__name-divider {
+      background: none;
+      height: auto;
+      line-height: 1;
+    }
+
+    .card--plate-banner .card__name-divider::before {
+      content: '─── ✦ ───';
+      display: block;
+      text-align: center;
+      font-size: 7px;
+      color: color-mix(in srgb, var(--card-frame-secondary) 70%, transparent);
+    }
+
+    .card--plate-readout .card__nameplate {
+      background: var(--card-bg-deep);
+    }
+
+    .card--plate-readout .card__name {
+      font-family: var(--card-font-mono);
+      letter-spacing: 0.14em;
+    }
+
+    .card--plate-readout .card__name::before { content: '['; opacity: 0.5; }
+    .card--plate-readout .card__name::after  { content: ']'; opacity: 0.5; }
+
+    .card--plate-readout .card__name-divider {
+      width: 100%;
+      background: none;
+      border-top: 1px dashed color-mix(in srgb, var(--card-frame-primary) 55%, transparent);
+    }
+
+    .card--plate-plate .card__nameplate {
+      background: color-mix(in srgb, var(--card-bg-deep) 70%, var(--card-frame-primary));
+      border-top: 1px solid color-mix(in srgb, var(--card-text) 22%, transparent);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--card-text) 14%, transparent);
+    }
+
+    .card--plate-plate .card__name {
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .card--plate-plate .card__name-divider {
+      width: 100%;
+      background: color-mix(in srgb, var(--card-text) 28%, transparent);
+    }
+
+    .card--plate-cartouche .card__nameplate {
+      text-align: center;
+      margin: 0 6px;
+      padding: 5px 8px 3px;
+      border: 1px solid color-mix(in srgb, var(--card-frame-primary) 45%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-bg-deep) 85%, var(--card-frame-primary));
+    }
+
+    .card--plate-cartouche .card__name {
+      font-family: var(--card-font-body);
+      text-transform: none;
+      font-style: italic;
+    }
+
+    .card--plate-cartouche .card__name-divider { display: none; }
+
+    /* ── Corner motifs ──
+       Two diagonally opposite corners rather than four: at card scale a mark in
+       every corner competes with the stat gems, which already occupy the top
+       two. This is the treatment the spec itself describes for the terminal
+       frame. */
+
+    .card__corners {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .card__corners::before,
+    .card__corners::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      opacity: 0.45;
+    }
+
+    .card__corners::before { top: 3px; left: 3px; }
+    .card__corners::after  { bottom: 3px; right: 3px; }
+
+    .card--corner-brackets .card__corners::before {
+      border-top: 1px solid var(--card-frame-primary);
+      border-left: 1px solid var(--card-frame-primary);
+    }
+
+    .card--corner-brackets .card__corners::after {
+      border-bottom: 1px solid var(--card-frame-primary);
+      border-right: 1px solid var(--card-frame-primary);
+    }
+
+    .card--corner-tentacles .card__corners::before {
+      border-top: 1px solid var(--card-frame-secondary);
+      border-left: 1px solid var(--card-frame-secondary);
+      border-top-left-radius: 10px;
+    }
+
+    .card--corner-tentacles .card__corners::after {
+      border-bottom: 1px solid var(--card-frame-secondary);
+      border-right: 1px solid var(--card-frame-secondary);
+      border-bottom-right-radius: 10px;
+    }
+
+    .card--corner-crosshairs .card__corners::before,
+    .card--corner-crosshairs .card__corners::after {
+      background:
+        linear-gradient(var(--card-frame-primary), var(--card-frame-primary)) center / 100% 1px no-repeat,
+        linear-gradient(var(--card-frame-primary), var(--card-frame-primary)) center / 1px 100% no-repeat;
+    }
+
+    .card--corner-bolts .card__corners::before,
+    .card--corner-bolts .card__corners::after {
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-text) 55%, transparent);
+      box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--card-bg-deep) 70%, transparent);
+      opacity: 0.6;
+    }
+
+    .card--corner-floral .card__corners::before,
+    .card--corner-floral .card__corners::after {
+      background: radial-gradient(
+        circle at center,
+        var(--card-frame-primary) 0 1.5px,
+        transparent 2px
+      ) 0 0 / 5px 5px;
+    }
+
+    /* ── Foil (legendary only) ──
+       Each variant differs in hue source, blend mode and motion: the
+       holographic sheet tracks the pointer, the others move on their own. */
+
+    .card--foil-aquatic .card__holo {
+      background: linear-gradient(
+        100deg,
+        transparent 20%,
+        color-mix(in srgb, var(--card-frame-secondary) 45%, transparent) 40%,
+        color-mix(in srgb, var(--card-frame-primary) 30%, transparent) 55%,
+        transparent 75%
+      );
+      background-size: 250% 250%;
+      background-position: 0% 50%;
+      mix-blend-mode: overlay;
+      filter: none;
+      animation: foil-drift 8s linear infinite;
+    }
+
+    .card--foil-phosphor .card__holo {
+      background: linear-gradient(
+        180deg,
+        transparent 35%,
+        color-mix(in srgb, var(--card-frame-primary) 40%, transparent) 50%,
+        transparent 65%
+      );
+      background-size: 100% 220%;
+      mix-blend-mode: screen;
+      filter: none;
+      animation: foil-scan 3s linear infinite;
+    }
+
+    .card--foil-patina .card__holo {
+      background:
+        radial-gradient(ellipse 40% 30% at 25% 30%, color-mix(in srgb, var(--card-frame-secondary) 40%, transparent), transparent 70%),
+        radial-gradient(ellipse 35% 40% at 75% 70%, color-mix(in srgb, var(--card-frame-primary) 30%, transparent), transparent 70%);
+      background-size: 160% 160%;
+      mix-blend-mode: soft-light;
+      filter: none;
+      animation: foil-drift 14s linear infinite;
+    }
+
+    .card--foil-gilded .card__holo {
+      background: linear-gradient(
+        115deg,
+        transparent 30%,
+        color-mix(in srgb, var(--card-frame-primary) 55%, transparent) 48%,
+        color-mix(in srgb, var(--card-text) 35%, transparent) 52%,
+        transparent 70%
+      );
+      background-size: 300% 300%;
+      mix-blend-mode: overlay;
+      filter: none;
+      animation: foil-sweep 5s ease-in-out infinite;
+    }
+
+    @keyframes foil-drift {
+      from { background-position: 0% 50%; }
+      to   { background-position: 200% 50%; }
+    }
+
+    @keyframes foil-scan {
+      from { background-position-y: -110%; }
+      to   { background-position-y: 110%; }
+    }
+
+    @keyframes foil-sweep {
+      0%, 100% { background-position: 0% 50%; }
+      50%      { background-position: 100% 50%; }
+    }
+
+    /* The self-animating foils are their own light source, so they show at rest
+       rather than only under the pointer the way the holographic sheet does. */
+    .card--foil-aquatic.card--legendary .card__holo,
+    .card--foil-phosphor.card--legendary .card__holo,
+    .card--foil-patina.card--legendary .card__holo,
+    .card--foil-gilded.card--legendary .card__holo {
+      opacity: 0.75;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .card {
         animation: none !important;
         opacity: 1;
         transition: none;
+      }
+      /* The scanline texture keeps its pattern, loses only the drift. */
+      .card--tex-scanlines {
+        animation: none !important;
+      }
+      .card__corners {
+        display: block;
       }
       .card__reflection,
       .card__holo {
@@ -812,6 +1142,15 @@ export class VelgGameCard extends LitElement {
   `;
 
   // ── Properties ──
+
+  /**
+   * Frame treatment override.
+   *
+   * Left null, the card wears the frame of the simulation currently themed
+   * (`activeCardFrame`). The Darkroom sets it explicitly so its preview follows
+   * the chips while they are still being edited, before anything is saved.
+   */
+  @property({ type: Object, attribute: false }) frame: CardFrame | null = null;
 
   @property({ reflect: true }) size: CardSize = 'md';
   @property() type: CardType = 'agent';
@@ -840,14 +1179,31 @@ export class VelgGameCard extends LitElement {
   @state() private _mx = 0.5;
   @state() private _my = 0.5;
   @state() private _justRevealed = false;
+  /** Frame of the simulation currently themed; overridden by `frame`. */
+  @state() private _themeFrame: CardFrame = { ...DEFAULT_CARD_FRAME };
 
   private _settleTimer = 0;
   private _revealTimer = 0;
+  private _disposeFrameEffect: (() => void) | null = null;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._disposeFrameEffect = effect(() => {
+      this._themeFrame = activeCardFrame.value;
+    });
+  }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._disposeFrameEffect?.();
+    this._disposeFrameEffect = null;
     window.clearTimeout(this._settleTimer);
     window.clearTimeout(this._revealTimer);
+  }
+
+  /** The frame this card wears right now. */
+  private get _frame(): CardFrame {
+    return this.frame ?? this._themeFrame;
   }
 
   protected willUpdate(changedProperties: Map<PropertyKey, unknown>): void {
@@ -940,8 +1296,13 @@ export class VelgGameCard extends LitElement {
       getComputedStyle(this).getPropertyValue('--card-radius').trim() !== '0px' &&
       getComputedStyle(this).getPropertyValue('--card-radius').trim() !== '0';
 
+    const frame = this._frame;
     const cardClasses = {
       card: true,
+      [`card--tex-${frame.texture}`]: true,
+      [`card--plate-${frame.nameplate}`]: true,
+      [`card--corner-${frame.corners}`]: true,
+      [`card--foil-${frame.foil}`]: true,
       'card--interactive': this.interactive,
       'card--tilting': this._tilting,
       'card--settling': this._settling && !this._tilting,
@@ -977,6 +1338,14 @@ export class VelgGameCard extends LitElement {
         >
           <!-- Light reflection -->
           <div class="card__reflection"></div>
+
+          <!-- Corner motifs. The texture needs no element: it layers onto the
+               card's own background, behind every child, with no stacking. -->
+          ${
+            frame.corners === 'none'
+              ? nothing
+              : html`<div class="card__corners" aria-hidden="true"></div>`
+          }
 
           <!-- Holographic foil (legendary only) -->
           ${isLegendary ? html`<div class="card__holo"></div>` : nothing}

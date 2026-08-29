@@ -224,14 +224,44 @@ die Abweichungen stehen unten mit Begründung.
     rendert bei Sprachwechsel neu. Entwurfsentitäten tragen beide Felder — ein
     Wechsel mitten im Lauf bildet sich von selbst um.
 
-## Nicht umgesetzt (bewusst)
+## Nachgereicht: die Rahmenkette (2026-08-29, zweiter Durchgang)
 
-Die vier `card_frame_*`-Chips im Darkroom (Textur, Namensschild, Ecken, Folie,
-22 Optionen) schreiben Werte, die **niemand liest** — `VelgGameCard` kennt
-keinen davon. Das sind vier Rahmenfamilien in der geteilten Kartenkomponente,
-die jede Karte der App betreffen; das ist ein eigenes Vorhaben, kein Nebenzug
-dieses Redesigns. Die Vorschaukarte spiegelt jetzt Farben, Schriften und Radius
-korrekt — Textur bleibt bis dahin ohne Wirkung.
+Die vier `card_frame_*`-Chips waren **von Ende zu Ende tot**: alle zehn Presets
+in `theme-presets.ts` setzen sie, der Darkroom bot 22 Optionen an — aber
+`THEME_TOKEN_MAP` kannte keinen der Schluessel, also uebersprang `applyConfig`
+sie stillschweigend, und `VelgGameCard` las nie einen Wert. 22 Schalter ohne
+Draht.
+
+Jetzt durchgezogen:
+
+- `services/card-frame.ts` — abhaengigkeitsfreies Modul mit `CardFrame`,
+  `DEFAULT_CARD_FRAME`, dem `activeCardFrame`-Signal und **einer** Abbildung
+  `cardFrameFromConfig()`. Bewusst nicht in `ThemeService`: das laedt ueber die
+  API-Schicht den Supabase-Client beim Import, und `<velg-game-card>` ist die
+  meistgenutzte Komponente der Plattform — sie darf nicht transitiv eine
+  konfigurierte Supabase-Umgebung brauchen, um zu wissen, ob sie Eckwinkel traegt.
+- `ThemeService.applyConfig` veroeffentlicht den Rahmen.
+- `VelgGameCard` liest das Signal per `effect` und traegt vier Klassen
+  (`card--tex-*`, `card--plate-*`, `card--corner-*`, `card--foil-*`).
+- 22 Behandlungen als CSS, alle Farben aus den Karten-Rahmenvariablen abgeleitet
+  (kein Hex): Texturen als Hintergrundebene der Karte selbst (keine
+  Stapelfragen, keine Lesbarkeitskosten ueber dem Text), Ecken als zwei
+  diagonal gegenueberliegende Marken (vier wuerden auf Kartengroesse mit den
+  Stat-Gems konkurrieren, die oben bereits zwei Ecken belegen), Folien mit je
+  eigener Farbquelle, Mischmethode und Bewegung.
+- Forge, Zuendung und Zeremonie uebergeben den Rahmen **direkt** — sie zeigen
+  eine Welt, die noch nicht gethemt ist (Darkroom bearbeitet lokal auf einer
+  Entprellung, die Zuendung zeigt eine Simulation, die es noch nicht gibt).
+  Dieselbe Abbildung wie der Laufzeitpfad, damit eine Vorschau der Welt nicht
+  widersprechen kann.
+
+Ein Konflikt musste explizit aufgeloest werden: Legendary-Leuchten und
+Scanline-Drift setzen beide die `animation`-Kurzschreibweise auf `.card`; ohne
+eine kombinierte Regel haette die spaetere das Leuchten stumm geschluckt.
+
+**Gate dagegen:** `tests/forge-redesign.test.ts` prueft fuer jede der 22
+Optionen, dass eine Regel existiert. Eine ohne CSS ergaenzte Chip-Option waere
+sonst wieder ein stiller No-op — nicht kaputt, nur wirkungslos.
 
 ## Prüfung
 

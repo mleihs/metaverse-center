@@ -17,6 +17,7 @@ import { VelgToast } from '../shared/Toast.js';
 import {
   agentCardView,
   buildingCardView,
+  cardFrameFromTheme,
   cardThemeStyle,
   type ForgeCardView,
 } from './forge-card-data.js';
@@ -314,11 +315,16 @@ export class VelgForgeIgnition extends LitElement {
     const seed = draft.seed_prompt ?? draft.id;
     const agentArt = getOperativeSet(agents.length, seed);
     const buildingArt = getBuildingSet(buildings.length, `${seed}_bld`);
-    const theme = cardThemeStyle(draft.theme_config ?? {});
+    const themeConfig = draft.theme_config ?? {};
+    const theme = cardThemeStyle(themeConfig);
+    // The simulation is not themed until it exists, so the sheet carries the
+    // frame explicitly — this is the last look before the irreversible click.
+    const frame = cardFrameFromTheme(themeConfig);
 
     const card = (view: ForgeCardView, imageUrl: string) => html`
       <velg-game-card
         style=${theme}
+        .frame=${frame}
         .type=${view.type}
         .name=${view.name}
         .subtitle=${view.subtitle}

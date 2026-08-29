@@ -23,11 +23,15 @@
  * world.
  */
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
   agentCardView,
   buildingCardView,
+  cardFrameFromTheme,
 } from '../src/components/forge/forge-card-data.js';
 import {
   estimateDraftingMinutes,
@@ -38,6 +42,12 @@ import type {
   ForgeAgentDraft,
   ForgeBuildingDraft,
 } from '../src/services/api/ForgeApiService.js';
+import {
+  activeCardFrame,
+  cardFrameFromConfig,
+  DEFAULT_CARD_FRAME,
+} from '../src/services/card-frame.js';
+import { THEME_PRESETS } from '../src/services/theme-presets.js';
 import { conditionDots, conditionVariant } from '../src/utils/building-condition.js';
 
 const CONSOLE_WIDTH = 1150;
@@ -202,5 +212,140 @@ describe('estimateDraftingMinutes', () => {
 
   it('never promises less than a minute', () => {
     expect(estimateDraftingMinutes(3, 3, () => 0)).toBe(1);
+  });
+});
+
+/**
+ * The card frame chain, which was dead from end to end.
+ *
+ * All ten presets in `theme-presets.ts` set `card_frame_texture`,
+ * `card_frame_nameplate`, `card_frame_corners` and `card_frame_foil`, and the
+ * Darkroom offers 22 options across them — but `THEME_TOKEN_MAP` had no entry
+ * for any of them, so `applyConfig` skipped them silently and
+ * `<velg-game-card>` never received a value. These tests pin both ends: the
+ * service publishes what the config carries, and the Forge reads the same keys
+ * out of a draft's theme.
+ */
+describe('card frame', () => {
+  it('reads every frame key a theme config carries', () => {
+    expect(
+      cardFrameFromConfig({
+        card_frame_texture: 'circuits',
+        card_frame_nameplate: 'readout',
+        card_frame_corners: 'crosshairs',
+        card_frame_foil: 'phosphor',
+      }),
+    ).toEqual({
+      texture: 'circuits',
+      nameplate: 'readout',
+      corners: 'crosshairs',
+      foil: 'phosphor',
+    });
+  });
+
+  it('falls back per key rather than dropping the whole frame', () => {
+    const frame = cardFrameFromConfig({ card_frame_texture: 'rivets' });
+
+    expect(frame.texture).toBe('rivets');
+    expect(frame.nameplate).toBe(DEFAULT_CARD_FRAME.nameplate);
+    expect(frame.corners).toBe(DEFAULT_CARD_FRAME.corners);
+    expect(frame.foil).toBe(DEFAULT_CARD_FRAME.foil);
+  });
+
+  it('starts every unthemed context on the neutral frame', () => {
+    expect(activeCardFrame.value).toEqual(DEFAULT_CARD_FRAME);
+  });
+
+  it('reads the same keys the Darkroom writes', () => {
+    expect(
+      cardFrameFromTheme({
+        card_frame_texture: 'illumination',
+        card_frame_nameplate: 'cartouche',
+        card_frame_corners: 'floral',
+        card_frame_foil: 'gilded',
+      }),
+    ).toEqual({
+      texture: 'illumination',
+      nameplate: 'cartouche',
+      corners: 'floral',
+      foil: 'gilded',
+    });
+  });
+
+  it('gives an unthemed context the neutral frame', () => {
+    expect(cardFrameFromTheme({})).toEqual(DEFAULT_CARD_FRAME);
+  });
+
+  it('carries every value the presets actually use', () => {
+    // A preset naming a treatment the card has no CSS for would render as an
+    // unstyled class, which is invisible rather than loud — so the values the
+    // presets use are pinned against the sets the Darkroom offers.
+    const offered = {
+      texture: ['none', 'filigree', 'circuits', 'scanlines', 'rivets', 'illumination'],
+      nameplate: ['terminal', 'banner', 'readout', 'plate', 'cartouche'],
+      corners: ['none', 'tentacles', 'brackets', 'crosshairs', 'bolts', 'floral'],
+      foil: ['holographic', 'aquatic', 'phosphor', 'patina', 'gilded'],
+    };
+
+    for (const preset of Object.values(THEME_PRESETS)) {
+      const frame = cardFrameFromTheme(preset as Record<string, string>);
+      expect(offered.texture).toContain(frame.texture);
+      expect(offered.nameplate).toContain(frame.nameplate);
+      expect(offered.corners).toContain(frame.corners);
+      expect(offered.foil).toContain(frame.foil);
+    }
+  });
+});
+
+/**
+ * Every option the Darkroom offers must have a rule that draws it.
+ *
+ * This is the failure mode the whole frame chain was built out of: a value that
+ * reaches the card but has nothing behind it renders as an unstyled class —
+ * silently identical to the neutral frame rather than visibly broken. A chip
+ * added to the Darkroom without CSS would reintroduce exactly that, and no
+ * other test would notice.
+ */
+describe('frame treatments have styles', () => {
+  // Resolved from the Vitest root (frontend/) rather than import.meta.url,
+  // which is not a file URL under the happy-dom environment.
+  const CARD_CSS = readFileSync(
+    resolve(process.cwd(), 'src/components/shared/VelgGameCard.ts'),
+    'utf-8',
+  );
+
+  // The sets the Darkroom renders as chips (VelgForgeDarkroom._renderChipSelector).
+  const OFFERED: Record<string, { prefix: string; values: string[] }> = {
+    texture: {
+      prefix: 'card--tex-',
+      values: ['filigree', 'circuits', 'scanlines', 'rivets', 'illumination'],
+    },
+    nameplate: {
+      prefix: 'card--plate-',
+      values: ['terminal', 'banner', 'readout', 'plate', 'cartouche'],
+    },
+    corners: {
+      prefix: 'card--corner-',
+      values: ['tentacles', 'brackets', 'crosshairs', 'bolts', 'floral'],
+    },
+    foil: {
+      prefix: 'card--foil-',
+      values: ['aquatic', 'phosphor', 'patina', 'gilded'],
+    },
+  };
+
+  for (const [dimension, { prefix, values }] of Object.entries(OFFERED)) {
+    for (const value of values) {
+      it(`draws ${dimension} "${value}"`, () => {
+        expect(CARD_CSS).toContain(`.${prefix}${value}`);
+      });
+    }
+  }
+
+  it('leaves the neutral values without a rule, by design', () => {
+    // `none` and the holographic default are the absence of a treatment: the
+    // card renders nothing extra, so a rule for them would be dead weight.
+    expect(CARD_CSS).not.toContain('.card--tex-none');
+    expect(CARD_CSS).not.toContain('.card--corner-none {');
   });
 });
