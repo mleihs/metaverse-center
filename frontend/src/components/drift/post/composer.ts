@@ -56,19 +56,26 @@ const GradeShader = {
       col.g = texture2D(tDiffuse, uv).g;
       col.b = texture2D(tDiffuse, uv - dir * ca).b;
 
-      // Redaction blocks (Doppelt band and up).
+      // NO REDACTION BLOCKS.
       //
-      // 0.85 blacked a cell out completely, and a cell is big enough to swallow a node —
-      // so at high Dissonanz the board hid the very thing a move is aimed at. The Bureau
-      // redacting the chart is the point (concept 6.3), a board that cannot be read is
-      // not: 0.62 still reads unmistakably as a censor bar while the node, its ring and
-      // the corridor stay visible through it.
-      if (diss > 0.5) {
-        vec2 cell = floor(uv * vec2(14.0, 30.0));
-        float k = hash21(cell + floor(uTime * 2.0) * 17.0);
-        float gate = step(0.994 - (diss - 0.5) * 0.02, k);
-        col *= 1.0 - gate * 0.62;
-      }
+      // There used to be one here: above uDissonance 0.5 a 14x30 grid was rolled twice a
+      // second and a handful of cells were darkened (col *= 1.0 - gate * 0.85), the most
+      // literal reading of the "interface lies" band in concept 6.3 — the Bureau censoring
+      // its own chart.
+      //
+      // It was removed because it covered the board. A cell is roughly 95x27 px on a
+      // desktop chart, which is large enough to swallow a node, its reachable ring and the
+      // corridors around it — and those are the things a move is aimed at. Two attempts to
+      // keep it failed on the same point: raising dz_p0_cap from 20 to 40 (migration 277)
+      // only moved the threshold, since normal play climbs past Dissonanz 20 anyway, and
+      // softening the darkening to 0.62 still left a censor bar over live geometry. Both
+      // were measured on the running board, and both still hid content.
+      //
+      // The dissonance has four other voices in this pass — the tear bands, the chromatic
+      // aberration, the scanlines and the grain — and every one of them distorts the image
+      // without deleting part of it. That is the line: the chart may lie about how steady
+      // it is, never about what is on it. If the redaction is wanted back, it belongs on a
+      // surface that carries no geometry (the HUD frame, the logbook), not on the board.
 
       // Scanlines (CRT-lite always on, ramping with dissonance)
       float scan = sin(gl_FragCoord.y * 3.14159) * 0.5 + 0.5;

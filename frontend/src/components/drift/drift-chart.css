@@ -69,7 +69,12 @@ velg-drift-chart {
      rasterised layer on the compositor, so the text is drawn once and simply travels. */
   transform: translate(var(--x, 0), var(--y, 0)) translate(-50%, calc(-100% - var(--space-2)));
   padding: var(--space-0-5) var(--space-2);
-  max-width: 22ch;
+  /* The cap keeps a very long world name from dominating the board. It was 22ch, and `ch`
+     measures the font's own advance width — it knows nothing about the letter-spacing this
+     chip adds on top, so the box came out narrower than the text it was sized for and
+     clipped names well under 22 characters ("Spengbab's Grease Pit" lost its last four).
+     Adding the tracking back for the same 22 characters makes the cap mean what it says. */
+  max-width: calc(22ch + 22 * var(--tracking-brutalist) + var(--space-4));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -138,7 +143,17 @@ velg-drift-chart {
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  z-index: var(--z-raised);
+  /* One step BELOW the rest of the raised band. The seals come last in the template, so at
+     an equal z-index a medallion planted beside a node painted over the bottom edge of the
+     world label above it (measured: 20x8px into "Cité des Dames"). A world's name is its
+     identity and has to stay whole; a claim medallion is status and is the one that gives
+     way.
+
+     Lowering the seals rather than raising the labels is deliberate: the raised band also
+     holds the Dock panel, and lifting the labels above it made the "Station Null" and
+     "Spengbab's Grease Pit" chips paint straight through that panel's text. The layer that
+     should move is the least important one, not the most visible one. */
+  z-index: calc(var(--z-raised) - 1);
 }
 
 /* Positioning box — --x/--y are the node's screen point (set per frame); the rest of the
@@ -148,12 +163,42 @@ velg-drift-chart {
   position: absolute;
   top: 0;
   left: 0;
-  /* --seal-scale (set per frame from the zoom) makes the medallion shrink/grow with the
-     map instead of staying a fixed-size pin; the stamp animation lives on the inner. */
-  transform: translate(var(--x, 0), var(--y, 0)) translate(var(--space-3), -50%)
-    scale(var(--seal-scale, 1));
+  /* --x/--y is the CLAIMED NODE's screen point; the second translate plants the medallion
+     just to its right so it never covers the node glyph (which is the click target).
+     --seal-scale (set per frame from the zoom) makes the medallion shrink/grow with the
+     map instead of staying a fixed-size pin; the stamp animation lives on the inner.
+
+     The scale is applied BEFORE the offset translate on purpose. In that order the offset
+     scales along with the medallion, so the connector tick below — whose length is the
+     same --space-3 — stays exactly attached to the node at every zoom level. With the
+     scale last, the offset would stay a constant 12px while the tick scaled, and the two
+     would come apart the moment the traveller zoomed. */
+  transform: translate(var(--x, 0), var(--y, 0)) scale(var(--seal-scale, 1))
+    translate(var(--space-3), -50%);
   display: block;
   pointer-events: none;
+}
+
+/* The tick back to the node the claim belongs to.
+   Without it the medallion simply floated. Measured on the live board: a seal sat 22px
+   from its own node and 33px from the NEXT one — a 1:1.5 ratio with nothing connecting it
+   to either, so the eye had no way to tell which node had actually been surveyed, and the
+   medallion read as a loose crosshair parked beside the map. The world labels above solve
+   exactly this with a connector tick down to their node; the seals were the one overlay
+   that never got the same grammar. */
+.drift-chart__seal::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: var(--space-3);
+  height: var(--border-width-thin);
+  background: var(--color-text-muted);
+}
+
+/* The viewer's own claim ties back in amber, matching its medallion. */
+.drift-chart__seal--self::before {
+  background: var(--color-primary);
 }
 
 /* The pressed medallion: presses in like a stamp, carries the hard offset shadow.
@@ -248,6 +293,9 @@ velg-drift-chart {
   position: absolute;
   left: 0;
   top: 0;
+  /* --x/--y per frame, same reason as the labels and seals above: this box is repositioned
+     on every animation frame for as long as the pointer rests on a node. */
+  transform: translate(var(--x, 0), var(--y, 0));
   z-index: var(--z-tooltip);
   width: max-content;
   max-width: 240px;
@@ -351,6 +399,20 @@ velg-drift-chart {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+
+/* The Erstvermessung line — reads out the medallion the board stamps on a surveyed node,
+   which otherwise carried no label anywhere. Another traveller's claim stays muted; the
+   viewer's own takes the amber the matching medallion is drawn in, so the colour on the
+   board and the colour in the dossier say the same thing. */
+.drift-chart__dossier-claim {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.drift-chart__dossier-claim--self {
+  color: var(--color-primary);
 }
 
 @keyframes drift-dossier-in {
