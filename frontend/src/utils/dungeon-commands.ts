@@ -179,9 +179,9 @@ export async function dispatchDungeonCommand(
     const phase = dungeonState.phase.value;
     let numberResult: TerminalLine[] | null = null;
     if (phase === 'encounter' || phase === 'rest' || phase === 'threshold') {
-      numberResult = await handleDungeonInteract({ ...ctx, args: [verb] });
+      numberResult = await _runVerb(() => handleDungeonInteract({ ...ctx, args: [verb] }));
     } else if (phase === 'exploring' || phase === 'room_clear') {
-      numberResult = await handleDungeonMove({ ...ctx, args: [verb] });
+      numberResult = await _runVerb(() => handleDungeonMove({ ...ctx, args: [verb] }));
     }
     if (numberResult !== null) {
       if (numberResult.some((l) => l.type === 'error')) {
@@ -195,7 +195,7 @@ export async function dispatchDungeonCommand(
 
   // Dispatch command and play confirm/error SFX for "quiet" verbs.
   // Commands with dramatic SFX (move, submit, rest, scout, etc.) play their own sounds.
-  const result = await _dispatchVerb(verb, ctx);
+  const result = await _runVerb(() => _dispatchVerb(verb, ctx));
   if (result !== null && result.length > 0) {
     const hasError = result.some((l) => l.type === 'error');
     if (hasError) {
@@ -205,6 +205,35 @@ export async function dispatchDungeonCommand(
     }
   }
   return result;
+}
+
+/**
+ * Hold the busy flag for the whole of one dungeon verb.
+ *
+ * This used to be ten copies of the same three lines — every handler that
+ * talked to the API opened with `dungeonState.loading.value = true` and closed
+ * with a `finally` that cleared it. Ten copies of a flag is ten chances to add
+ * an eleventh handler without one, and that is precisely what went wrong: the
+ * flag was set faithfully everywhere and READ by nobody in the action bar, so
+ * a second click landed while the first request was still in flight. The
+ * client's phase had not been updated yet, the button was still live, and the
+ * engine answered the second request with "Not in encounter phase".
+ *
+ * One seam instead of ten: every verb passes through here, so a new handler is
+ * covered by existing, and the action bar has a single flag to gate on.
+ *
+ * It wraps the WHOLE verb, not just its network call. A purely local verb like
+ * `map` therefore holds the flag for a fraction of a millisecond, which is
+ * correct rather than merely harmless — "a command is running" is the property
+ * the interface needs, and it is not the same property as "a request is open".
+ */
+async function _runVerb(run: () => Promise<TerminalLine[] | null>): Promise<TerminalLine[] | null> {
+  dungeonState.loading.value = true;
+  try {
+    return await run();
+  } finally {
+    dungeonState.loading.value = false;
+  }
 }
 
 /** Internal verb dispatch — extracted so the main dispatcher can inspect the result for SFX. */
@@ -288,7 +317,6 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Cannot reach that room. Move to an adjacent room.'))];
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.moveToRoom(runId, roomIndex);
     if (!resp.success || !resp.data) {
@@ -386,8 +414,6 @@ async function handleDungeonMove(ctx: CommandContext): Promise<TerminalLine[]> {
     captureError(err, { source: 'dungeon-commands.handleDungeonMove' });
     const message = err instanceof Error ? err.message : msg('Move failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -471,7 +497,6 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
     );
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.scout(runId, agent.agent_id);
     if (!resp.success || !resp.data) {
@@ -491,8 +516,6 @@ async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> 
     captureError(err, { source: 'dungeon-commands.handleDungeonScout' });
     const message = err instanceof Error ? err.message : msg('Scout failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -516,7 +539,6 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
 
   if (restAgents.length === 0) return [errorLine(msg('No agents available to rest.'))];
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.rest(runId, restAgents);
     if (!resp.success || !resp.data) {
@@ -539,8 +561,6 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
     captureError(err, { source: 'dungeon-commands.handleDungeonRest' });
     const message = err instanceof Error ? err.message : msg('Rest failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -550,7 +570,6 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
   const runId = dungeonState.runId.value;
   if (!runId) return [errorLine(msg('No active dungeon.'))];
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.retreat(runId);
     if (!resp.success || !resp.data) {
@@ -572,8 +591,6 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
     captureError(err, { source: 'dungeon-commands.handleDungeonRetreat' });
     const message = err instanceof Error ? err.message : msg('Retreat failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -707,7 +724,6 @@ async function handleDungeonConfirm(): Promise<TerminalLine[]> {
     return [errorLine(msg('Not all items assigned. Use "assign" first.'))];
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.confirmDistribution(runId);
     if (!resp.success || !resp.data) {
@@ -726,8 +742,6 @@ async function handleDungeonConfirm(): Promise<TerminalLine[]> {
     captureError(err, { source: 'dungeon-commands.handleDungeonConfirm' });
     const message = err instanceof Error ? err.message : msg('Confirmation failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -768,7 +782,6 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     agentId = candidates[0]?.agent_id;
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.submitAction(runId, {
       action_type: 'encounter_choice',
@@ -840,8 +853,6 @@ async function handleDungeonInteract(ctx: CommandContext): Promise<TerminalLine[
     captureError(err, { source: 'dungeon-commands.handleDungeonInteract' });
     const message = err instanceof Error ? err.message : msg('Interaction failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -1086,7 +1097,6 @@ async function handleDungeonSeal(ctx: CommandContext): Promise<TerminalLine[]> {
     );
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.seal(runId, agent.agent_id);
     if (!resp.success || !resp.data) {
@@ -1104,8 +1114,6 @@ async function handleDungeonSeal(ctx: CommandContext): Promise<TerminalLine[]> {
     captureError(err, { source: 'dungeon-commands.handleDungeonSeal' });
     const message = err instanceof Error ? err.message : msg('Seal Breach failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -1139,7 +1147,6 @@ async function handleDungeonGround(ctx: CommandContext): Promise<TerminalLine[]>
     );
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.ground(runId, agent.agent_id);
     if (!resp.success || !resp.data) {
@@ -1157,8 +1164,6 @@ async function handleDungeonGround(ctx: CommandContext): Promise<TerminalLine[]>
     captureError(err, { source: 'dungeon-commands.handleDungeonGround' });
     const message = err instanceof Error ? err.message : msg('Ground failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -1192,7 +1197,6 @@ async function handleDungeonRally(ctx: CommandContext): Promise<TerminalLine[]> 
     );
   }
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.rally(runId, agent.agent_id);
     if (!resp.success || !resp.data) {
@@ -1210,8 +1214,6 @@ async function handleDungeonRally(ctx: CommandContext): Promise<TerminalLine[]> 
     captureError(err, { source: 'dungeon-commands.handleDungeonRally' });
     const message = err instanceof Error ? err.message : msg('Rally failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
@@ -1246,7 +1248,6 @@ async function handleDungeonSalvage(ctx: CommandContext): Promise<TerminalLine[]
     (a.aptitudes.guardian ?? 0) > (best.aptitudes.guardian ?? 0) ? a : best,
   );
 
-  dungeonState.loading.value = true;
   try {
     const resp = await dungeonApi.salvage(runId, agent.agent_id, roomIndex);
     if (!resp.success || !resp.data) {
@@ -1268,8 +1269,6 @@ async function handleDungeonSalvage(ctx: CommandContext): Promise<TerminalLine[]
     captureError(err, { source: 'dungeon-commands.handleDungeonSalvage' });
     const message = err instanceof Error ? err.message : msg('Salvage failed.');
     return [errorLine(message)];
-  } finally {
-    dungeonState.loading.value = false;
   }
 }
 
