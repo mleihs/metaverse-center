@@ -236,6 +236,20 @@ export class VelgDriftView extends LitElement {
         line-height: var(--leading-snug);
         color: var(--color-text-secondary);
       }
+      /* Aufbruch is the one primary act of the idle panel, so it takes the panel's full
+         width instead of shrinking to its six letters — a 106px button above a 280px
+         control read as two unrelated things stacked (measured). */
+      .hud__cta {
+        width: 100%;
+        justify-content: center;
+      }
+      /* The logbook is a section of its own, not a continuation of the button above it.
+         It sat exactly 1px below Aufbruch: both are flow children of .hud, and neither
+         carried a margin, so the two hard-edged brutalist boxes touched. */
+      .hud velg-drift-logbook {
+        display: block;
+        margin-top: var(--space-5);
+      }
       .hud__stats {
         margin: 0 0 var(--space-3);
         display: grid;
@@ -1273,7 +1287,7 @@ export class VelgDriftView extends LitElement {
   private _open(): void {
     const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
     if (!anchor) {
-      VelgToast.error(msg('Anchor to a home simulation before you set out.'));
+      VelgToast.error(msg('Verankere dich in einer Heimatwelt, bevor du aufbrichst.'));
       return;
     }
     void this._mutate(() => driftApi.openRun(anchor), this._adoptRun, 'VelgDriftView._open');
@@ -1357,19 +1371,54 @@ export class VelgDriftView extends LitElement {
     return message || msg('Der Drift hat das verweigert.');
   }
 
+  /** Where the traveller is standing, as a place — never as a database key.
+   *
+   * This line is the most-read string in the HUD, and it used to print `stable_key`
+   * verbatim: "CORR-VELGARIEN--CITE-DES-DAMES-0". The keys are deliberately machine-shaped
+   * (they are what carries an Erstvermessung claim across a chart regeneration), so they
+   * are exactly the wrong thing to show a player. The chart already carries everything
+   * needed to say it properly: `simulation_name` on every home, and a corridor's key names
+   * the two homes it runs between. */
   private _positionName(): string {
     const id = this._run?.position_node_id;
     const node = id ? this._chart?.nodes.find((n) => n.id === id) : null;
-    return node?.stable_key ?? msg('Ortung läuft');
+    if (!node) return msg('Ortung läuft');
+    if (node.node_type === 'broadcast_rand' && node.simulation_name) return node.simulation_name;
+
+    // slug → display name, taken from the home nodes (`home-<slug>`) of this same chart.
+    const worldName = (slug: string): string => {
+      const home = this._chart?.nodes.find((n) => n.stable_key === `home-${slug}`);
+      return home?.simulation_name ?? slug;
+    };
+
+    // `corr-<slugA>--<slugB>-<i>`: the double hyphen is the separator, so split on it
+    // BEFORE touching the single hyphens inside the slugs themselves.
+    const corridor = /^corr-(.+?)--(.+)-(\d+)$/.exec(node.stable_key);
+    if (corridor) {
+      const [, a, b, i] = corridor;
+      const leg = Number(i) + 1;
+      return msg(str`Zwischenraum ${leg} · ${worldName(a)} – ${worldName(b)}`);
+    }
+
+    // `front-<slug>-<i>`: the raw-Drift approach chain to an unconnected world.
+    const frontier = /^front-(.+)-(\d+)$/.exec(node.stable_key);
+    if (frontier) {
+      const [, slug, i] = frontier;
+      const leg = Number(i) + 1;
+      return msg(str`Vorfeld ${leg} · ${worldName(slug)}`);
+    }
+
+    // Anything else still gets a place-shaped name rather than its key.
+    return node.node_type === 'interstitial' ? msg('Zwischenraum') : msg('Tiefdrift-Kern');
   }
 
   protected render() {
     if (this._loading) {
-      return html`<velg-loading-state .message=${msg('Tuning the Driftkarte…')}></velg-loading-state>`;
+      return html`<velg-loading-state .message=${msg('Die Driftkarte wird eingestimmt…')}></velg-loading-state>`;
     }
     if (this._error) {
       return html`<velg-error-state
-        .message=${msg('The Driftkarte is unreachable.')}
+        .message=${msg('Die Driftkarte ist nicht erreichbar.')}
         show-retry
         @retry=${this._load}
       ></velg-error-state>`;
@@ -1552,7 +1601,7 @@ export class VelgDriftView extends LitElement {
       const isMember = appState.isAuthenticated.value;
       return html`
         <div class="hud" ?inert=${sceneOpen}>
-          <p class="hud__title">${msg('No active drift')}</p>
+          <p class="hud__title">${msg('Keine Fahrt im Drift')}</p>
           ${
             // BETWEEN runs is exactly when the account matters most: the Entladung just paid,
             // and the promotion it unlocked is sat from this strip. The strip used to live in
@@ -1571,16 +1620,20 @@ export class VelgDriftView extends LitElement {
             ${
               isMember
                 ? msg(
-                    'Open a run at your home broadcast, then click a lit node to cross the Bleed.',
+                    'Brich an deinem Heimat-Broadcast auf, dann klick einen erhellten Knoten an, um den Bleed zu queren.',
                   )
                 : msg(
-                    'You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.',
+                    'Du liest die gemeinsame Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.',
                   )
             }
           </p>
           ${
             isMember
-              ? html`<button class="btn btn--primary" ?disabled=${this._busy} @click=${this._open}>
+              ? html`<button
+                  class="btn btn--primary hud__cta"
+                  ?disabled=${this._busy}
+                  @click=${this._open}
+                >
                   ${msg('Aufbruch')}
                 </button>`
               : ''
