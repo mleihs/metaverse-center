@@ -111,8 +111,8 @@ def strip_border_background(alpha: np.ndarray) -> float:
     return removed * 100
 
 
-def drop_stray_blobs(alpha: np.ndarray) -> tuple[np.ndarray, list[float]]:
-    """Zero out detached blobs below MIN_BLOB_SHARE of the largest. Returns the
+def drop_stray_blobs(alpha: np.ndarray, min_share: float = MIN_BLOB_SHARE) -> tuple[np.ndarray, list[float]]:
+    """Zero out detached blobs below min_share of the largest. Returns the
     cleaned alpha and the shares that were removed (for reporting)."""
     solid = alpha > BLOB_ALPHA
     if not solid.any():
@@ -139,7 +139,7 @@ def drop_stray_blobs(alpha: np.ndarray) -> tuple[np.ndarray, list[float]]:
     out = alpha.copy()
     for idx, size in enumerate(sizes, start=1):
         share = size / biggest
-        if share < MIN_BLOB_SHARE:
+        if share < min_share:
             if share >= REPORT_BLOB_SHARE:  # specks stay quiet
                 dropped.append(share)
             out[label == idx] = 0.0
@@ -202,12 +202,12 @@ def key_and_despill(path: Path) -> tuple[Image.Image, dict]:
     return Image.fromarray(np.dstack([out, alpha * 255]).astype(np.uint8), "RGBA"), stats
 
 
-def process(src: Path, dst_dir: Path, *, check: bool) -> dict:
+def process(src: Path, dst_dir: Path, *, check: bool, min_blob_share: float = MIN_BLOB_SHARE) -> dict:
     im, stats = key_and_despill(src)
 
     alpha = np.asarray(im.getchannel("A"), dtype=np.float32)
     stats["border_cleared"] = strip_border_background(alpha)
-    alpha, dropped = drop_stray_blobs(alpha)
+    alpha, dropped = drop_stray_blobs(alpha, min_blob_share)
     stats["dropped_blobs"] = dropped
     im.putalpha(Image.fromarray(alpha.astype(np.uint8), "L"))
 
@@ -239,6 +239,16 @@ def main() -> int:
         action="store_true",
         help="emit PNG proofs composited on the scene ground instead of AVIF assets",
     )
+    ap.add_argument(
+        "--min-blob-share",
+        type=float,
+        default=MIN_BLOB_SHARE,
+        help=(
+            "keep detached components down to this share of the largest "
+            f"(default {MIN_BLOB_SHARE:.2f} = only the largest survives; "
+            "use 0.02 for deliberately multi-part subjects such as the UI pictograms)"
+        ),
+    )
     args = ap.parse_args()
 
     sources = sorted(
@@ -251,7 +261,7 @@ def main() -> int:
     worst = 0.0
     for src in sources:
         try:
-            s = process(src, args.out_dir, check=args.check)
+            s = process(src, args.out_dir, check=args.check, min_blob_share=args.min_blob_share)
         except ValueError as exc:
             print(f"  FAIL  {exc}", file=sys.stderr)
             worst = 1.0

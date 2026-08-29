@@ -990,6 +990,13 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
     const fracture = overthrowState?.fracture ?? null;
     const maxFracture = overthrowState?.max_fracture ?? null;
 
+    // Jede Archetyp-Anzeige zeigt sichtbar nur den Zähler ("29"), weil die
+    // Kopfleiste bis zu sieben davon nebeneinander tragen muss. Der Nenner
+    // stand bisher ausschliesslich im aria-label — sehende Nutzer bekamen also
+    // weniger als Screenreader, und "29" allein sagt nichts. Dieselbe
+    // Beschriftung liegt jetzt auch auf title, damit der Hover sie zeigt.
+    const meterCaption = (label: string, value: number, max: number) => `${label} ${value}/${max}`;
+
     return html`
       <div class="header" role="banner" aria-label=${msg('Dungeon status')}>
         <span class="archetype" style="--_archetype-color: ${archetypeColor}">${getArchetypeDisplayName(state.archetype)}</span>
@@ -1047,7 +1054,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           stability !== null && maxStability !== null
             ? html`
               <span class="sep"></span>
-              <div class="stability" aria-label=${`${msg('Stability')} ${stability}/${maxStability}`}>
+              <div
+                class="stability"
+                aria-label=${meterCaption(msg('Stability'), stability, maxStability)}
+                title=${meterCaption(msg('Stability'), stability, maxStability)}
+              >
                 <span class="stability__icon">${icons.shield(12)}</span>
                 <div
                   class="stability__track"
@@ -1077,7 +1088,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           decay !== null && maxDecay !== null
             ? html`
               <span class="sep"></span>
-              <div class="decay" aria-label=${`${msg('Decay')} ${decay}/${maxDecay}`}>
+              <div
+                class="decay"
+                aria-label=${meterCaption(msg('Decay'), decay, maxDecay)}
+                title=${meterCaption(msg('Decay'), decay, maxDecay)}
+              >
                 <span class="decay__icon">${icons.alertTriangle(12)}</span>
                 <div
                   class="decay__track"
@@ -1109,7 +1124,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           attachment !== null && maxAttachment !== null
             ? html`
               <span class="sep"></span>
-              <div class="attachment" aria-label=${`${msg('Attachment')} ${attachment}/${maxAttachment}`}>
+              <div
+                class="attachment"
+                aria-label=${meterCaption(msg('Attachment'), attachment, maxAttachment)}
+                title=${meterCaption(msg('Attachment'), attachment, maxAttachment)}
+              >
                 <span class="attachment__icon">${icons.heartbeat(12)}</span>
                 <div
                   class="attachment__track"
@@ -1149,7 +1168,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           insight !== null && maxInsight !== null
             ? html`
               <span class="sep"></span>
-              <div class="insight" aria-label=${`${msg('Insight')} ${insight}/${maxInsight}`}>
+              <div
+                class="insight"
+                aria-label=${meterCaption(msg('Insight'), insight, maxInsight)}
+                title=${meterCaption(msg('Insight'), insight, maxInsight)}
+              >
                 <span class="insight__icon">${icons.bolt(12)}</span>
                 <div
                   class="insight__track"
@@ -1207,7 +1230,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           waterLevel !== null && maxWater !== null
             ? html`
               <span class="sep"></span>
-              <div class="water" aria-label=${`${msg('Water level')} ${waterLevel}/${maxWater}`}>
+              <div
+                class="water"
+                aria-label=${meterCaption(msg('Water level'), waterLevel, maxWater)}
+                title=${meterCaption(msg('Water level'), waterLevel, maxWater)}
+              >
                 <span class="water__icon">${icons.droplet(12)}</span>
                 <div
                   class="water__track"
@@ -1250,7 +1277,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           awareness !== null && maxAwareness !== null
             ? html`
               <span class="sep"></span>
-              <div class="awareness" aria-label=${`${msg('Awareness')} ${awareness}/${maxAwareness}`}>
+              <div
+                class="awareness"
+                aria-label=${meterCaption(msg('Awareness'), awareness, maxAwareness)}
+                title=${meterCaption(msg('Awareness'), awareness, maxAwareness)}
+              >
                 <span class="awareness__icon">${icons.archetypeAwakening(12)}</span>
                 <div
                   class="awareness__track"
@@ -1290,7 +1321,11 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
           fracture !== null && maxFracture !== null
             ? html`
               <span class="sep"></span>
-              <div class="fracture" aria-label=${`${msg('Authority Fracture')} ${fracture}/${maxFracture}`}>
+              <div
+                class="fracture"
+                aria-label=${meterCaption(msg('Authority Fracture'), fracture, maxFracture)}
+                title=${meterCaption(msg('Authority Fracture'), fracture, maxFracture)}
+              >
                 <span class="fracture__icon">${icons.archetypeOverthrow(12)}</span>
                 <div
                   class="fracture__track"

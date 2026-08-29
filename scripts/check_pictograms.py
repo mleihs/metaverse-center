@@ -14,6 +14,31 @@ beide lassen sich am Magenta-Original ablesen, bevor irgendetwas eingebunden ist
               und das Innenleben verschwindet. Bei wycinanki trägt das Negative
               die Bedeutung, also ist das die härtere der beiden Grenzen.
 
+              Die Läufe werden vor dem Median um JPEG-Rauschen bereinigt: an
+              jeder Kante zwischen Form und Magenta liegen Mischpixel, die der
+              Magenta-Test verschluckt, und die erzeugen ein- bis zweipixelige
+              Scheinläufe. Bei einem sparsamen Motiv (Winkel + Klinge) waren das
+              54 % aller Läufe und der Median fiel von 530 px auf 2 px — ein
+              bestandenes Bild wäre durchgefallen. Alles unterhalb von
+              NOISE_RUN_FRACTION der Bildbreite gilt deshalb als Artefakt; ein
+              echter Schnitt ist per Vorgabe ein Sechzehntel breit, also
+              vierzigmal so viel.
+
+              Die Spalte RAUSCHEN meldet, welcher Anteil der Läufe so
+              weggefiltert wurde. Zweistellig ist normal, ein Sprung gegen 100 %
+              heisst, dass die Vorlage kaum echte Schnitte hat und der Median
+              auf wenigen Läufen steht — dann trägt die Zahl nicht.
+
+BEKANNTE LÜCKE: der Aussparungs-Median läuft über ALLE Grund-Läufe innerhalb der
+Bounding-Box, also auch über offene Luft zwischen den Teilen. Ein Motiv, dessen
+eigentliche Schnitte zu Schlitzen zusammengefallen sind, kann deshalb einen guten
+Median haben, wenn drumherum genug Freiraum liegt — beim gestürzten Feldzeichen
+(Fahne mit dem Mast zu einem Dreieck verwachsen, nur zwei Ritzen dazwischen)
+meldete das Skript 5,66 px und der Kontaktbogen zeigte einen massiven Pfeil. Die
+richtige Messung wäre die Dicke der EINGESCHLOSSENEN Löcher; ein Prototyp dafür
+scheiterte an PIL-floodfill und steht aus. Bis dahin gilt: der Kontaktbogen ist
+nicht optional.
+
 Was das Skript NICHT prüft: ob das Motiv das Richtige zeigt. Eine Sichel, die
 technisch perfekt ist und wie ein Vorhängeschloss aussieht, besteht hier —
 und ist trotzdem falsch. Dafür ist das Kontaktbogen-PNG da.
@@ -35,8 +60,13 @@ from PIL import Image
 MAX_INK_SHARE = 0.36
 #: Schmalste Aussparung, umgerechnet auf die Zielgröße. Darunter schließt sie sich.
 MIN_GAP_PX_AT_TARGET = 1.4
-#: Größe, bei der abgenommen wird — die Kampfleiste zeigt 22–28 CSS-px.
+#: Größe, bei der abgenommen wird. Der Ability-Button misst 40 px und zeigt das
+#: Glyph mit 26–28 px; 24 ist die Reserve für Log-Zeilen und Tooltips (WCAG 2.2
+#: SC 2.5.8 setzt 24 px als harte Untergrenze für jedes anklickbare Ziel).
 TARGET_PX = 24
+#: Läufe unterhalb dieses Anteils der Bildbreite sind Kompressionsrauschen an
+#: den Kanten, kein gewollter Schnitt. 1/256 ≈ 8 px bei 2048 px Vorlage.
+NOISE_RUN_FRACTION = 1 / 256
 #: Rand, den das Motiv rundum lassen soll.
 MARGIN_RANGE = (0.06, 0.18)
 
@@ -78,7 +108,11 @@ def measure(path: Path) -> dict:
     if len(xs) == 0:
         return {"name": path.stem, "error": "keine Form gefunden — Magenta-Grund prüfen"}
 
-    gaps = interior_gaps(shape)
+    raw_gaps = interior_gaps(shape)
+    noise_floor = max(2.0, width * NOISE_RUN_FRACTION)
+    gaps = raw_gaps[raw_gaps > noise_floor]
+    if len(gaps) == 0:  # keine Schnitte im Motiv — kein Fehler, nur nichts zu messen
+        gaps = np.array([width])
     gap_px = float(np.median(gaps)) / width * TARGET_PX
     ink = float(shape.mean())
     h, w = shape.shape
@@ -99,6 +133,7 @@ def measure(path: Path) -> dict:
         "ink": ink,
         "gap_px": gap_px,
         "narrow_share": float((gaps < width / 16).mean()),
+        "noise_share": float((raw_gaps <= noise_floor).mean()),
         "margins": margins,
         "problems": problems,
         "shape": shape,
@@ -135,8 +170,15 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=None, help="Kontaktbogen-PNG (Standard: <ordner>/_kontakt.png)")
     args = ap.parse_args()
 
+    suffixes = {".png", ".jpg", ".jpeg", ".webp"}
+    # Der Kontaktbogen darf nie zur Eingabe werden. Der Unterstrich-Filter deckt
+    # nur den Standardnamen ab; ein --out in denselben Ordner rutschte durch und
+    # wurde als 100-%-Deckung gemeldet, was einen Durchlauf still verfaelscht.
+    out = (args.out or args.folder / "_kontakt.png").resolve()
     files = sorted(
-        p for p in args.folder.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"} and not p.name.startswith("_")
+        p
+        for p in args.folder.iterdir()
+        if p.suffix.lower() in suffixes and not p.name.startswith("_") and p.resolve() != out
     )
     if not files:
         print(f"Keine Bilder in {args.folder}")
@@ -144,7 +186,9 @@ def main() -> int:
 
     results = [measure(p) for p in files]
     failed = 0
-    print(f"{'':2} {'Datei':30} {'Deckung':>8} {'Aussparung':>11} {'zu eng':>7}  Befund")
+    print(
+        f"{'':2} {'Datei':30} {'Deckung':>8} {'Aussparung':>11} {'zu eng':>7} {'Rauschen':>9}  Befund"
+    )
     for r in results:
         if "error" in r:
             print(f"{'!!':2} {r['name']:30} {r['error']}")
@@ -154,11 +198,10 @@ def main() -> int:
         if r["problems"]:
             failed += 1
         print(
-            f"{mark:2} {r['name']:30} {r['ink'] * 100:7.0f}% {r['gap_px']:9.2f}px {r['narrow_share'] * 100:6.0f}%  "
-            + "; ".join(r["problems"])
+            f"{mark:2} {r['name']:30} {r['ink'] * 100:7.0f}% {r['gap_px']:9.2f}px "
+            f"{r['narrow_share'] * 100:6.0f}% {r['noise_share'] * 100:8.0f}%  " + "; ".join(r["problems"])
         )
 
-    out = args.out or args.folder / "_kontakt.png"
     contact_sheet(results, out)
     print(f"\n{len(results) - failed}/{len(results)} bestanden. Kontaktbogen: {out}")
     print("Der Kontaktbogen entscheidet den Rest: ein Motiv kann alle Zahlen erfüllen")

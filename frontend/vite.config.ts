@@ -106,8 +106,20 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/api': 'http://localhost:8000',
-        '/storage': 'http://127.0.0.1:54321',
+        // Targets are overridable so a dev box can point the running frontend at
+        // a remote stack without editing this file — which is what people
+        // otherwise do, and then commit by accident. Defaults are the local
+        // stack, so nothing changes unless the vars are set (see .env.local).
+        '/api': {
+          target: env.VITE_DEV_API_PROXY || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: true,
+        },
+        '/storage': {
+          target: env.VITE_DEV_STORAGE_PROXY || 'http://127.0.0.1:54321',
+          changeOrigin: true,
+          secure: true,
+        },
       },
     },
   };

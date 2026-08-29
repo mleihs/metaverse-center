@@ -31,6 +31,8 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
+import type { AbilityIntent } from '../../utils/ability-pictograms.js';
+import { abilityIntent, abilityPictogramUrl } from '../../utils/ability-pictograms.js';
 import { dungeonEnemyArtUrl } from '../../utils/dungeon-enemy-art.js';
 import {
   buildEnemyDisplayNames,
@@ -220,6 +222,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         font-size: 10px;
         font-weight: 600;
         letter-spacing: 0.3px;
+        /* WCAG 2.2 SC 2.5.8 floor for pointer targets. The old 3px padding on
+           10px type gave a 17px tall control, which missed it outright. */
+        min-height: 24px;
         padding: 3px 8px;
         background: transparent;
         color: var(--_phosphor-dim);
@@ -264,6 +269,197 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .ability__cd {
         font-size: 8px;
         opacity: 0.5;
+      }
+
+      /* -- Pictogram tiles (graphical view) --
+         A wycinanki silhouette carried as a CSS mask, so the SHAPE comes from
+         the asset and the COLOUR from the tokens. One file per ability serves
+         all ten theme presets and all three intent colours.
+
+         The name stays VISIBLE under the glyph rather than hiding in a tooltip:
+         icon-only controls are only safe for a handful of universal symbols,
+         and a hover-only label is unreachable on touch. The glyph buys scanning
+         speed, the label buys certainty; the pair costs one line of text.
+
+         --_intent carries the cluster colour. It is redundant reinforcement,
+         never the sole carrier: the cluster already has a text label, every
+         silhouette is distinct, and the name sits under each glyph. Colour
+         speeds up scanning; it decides nothing on its own (WCAG 1.4.1). */
+      .ability--tile {
+        --_intent: var(--_phosphor);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        width: 88px;
+        /* Feste Hoehe, weil nur ein Teil der Faehigkeiten eine Erfolgszeile hat
+           und die Unterkanten einer Zeile sonst ausfransen. */
+        min-height: 74px;
+        justify-content: flex-start;
+        padding: 5px 4px 4px;
+        white-space: normal;
+        position: relative;
+        border-color: color-mix(in srgb, var(--_intent) 26%, transparent);
+        transition:
+          border-color var(--duration-normal, 200ms) var(--ease-out, ease),
+          background var(--duration-normal, 200ms) var(--ease-out, ease);
+        animation: tile-in var(--duration-entrance, 350ms) var(--ease-dramatic, ease-out) backwards;
+        animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
+      }
+
+      /* Compound selectors on purpose: a single-class intent rule ties with the
+         --_intent default above and would lose on source order, which silently
+         kills the colour. The extra class makes the cascade explicit. */
+      .ability--tile.ability--strike {
+        --_intent: var(--color-danger);
+      }
+      .ability--tile.ability--aid {
+        --_intent: var(--color-success);
+      }
+      .ability--tile.ability--guard {
+        --_intent: var(--color-info);
+      }
+
+      .ability__glyph {
+        width: 28px;
+        height: 28px;
+        flex-shrink: 0;
+        background-color: color-mix(in srgb, var(--_intent) 62%, var(--_phosphor-dim));
+        -webkit-mask-image: var(--_mask);
+        mask-image: var(--_mask);
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        transition:
+          background-color var(--duration-normal, 200ms) var(--ease-out, ease),
+          transform var(--duration-normal, 200ms) var(--ease-spring, ease-out);
+      }
+
+      .ability__name {
+        font-size: 9px;
+        line-height: 1.15;
+        letter-spacing: 0.2px;
+        text-align: center;
+        text-transform: uppercase;
+        /* German ability names are single long compounds. Without an explicit
+           break opportunity they do not wrap at all: the word runs straight out
+           of the tile and over its neighbours, and line-clamp never engages
+           because there is only ever one line. */
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        hyphens: auto;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      /* Same datum as in the text variant, hence the same class: the success
+         odds decide the move, so they stay on the face of the tile. */
+      .ability--tile .ability__check {
+        display: block;
+        margin-left: 0;
+        font-size: 8px;
+        line-height: 1.1;
+        max-width: 100%;
+        margin-top: auto;
+        overflow-wrap: anywhere;
+      }
+
+      .ability--tile:hover:not(:disabled) {
+        border-color: color-mix(in srgb, var(--_intent) 70%, transparent);
+        background: color-mix(in srgb, var(--_intent) 7%, transparent);
+      }
+
+      .ability--tile:hover:not(:disabled) .ability__glyph {
+        background-color: var(--_intent);
+        transform: translateY(-1px) scale(1.07);
+      }
+
+      .ability--tile.ability--selected {
+        border-color: var(--_intent);
+        background: color-mix(in srgb, var(--_intent) 14%, transparent);
+        color: var(--_phosphor);
+        box-shadow: 2px 2px 0 color-mix(in srgb, var(--_intent) 45%, transparent);
+      }
+
+      .ability--tile.ability--selected .ability__glyph {
+        background-color: var(--_intent);
+        animation: glyph-commit 260ms var(--ease-slam, cubic-bezier(0.2, 0, 0, 1));
+      }
+
+      @keyframes glyph-commit {
+        0% {
+          transform: scale(0.82);
+        }
+        55% {
+          transform: scale(1.12);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes tile-in {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Cooldown reads as a corner counter plus a drained tile, never as colour
+         alone — the state has to survive a monochrome or colour-blind view. */
+      .ability--tile.ability--cooldown {
+        text-decoration: none;
+        opacity: 0.42;
+      }
+
+      .ability__cd-badge {
+        position: absolute;
+        top: 2px;
+        right: 3px;
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1;
+        padding: 1px 3px;
+        color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_screen-bg) 82%, transparent);
+        border: 1px solid color-mix(in srgb, var(--_phosphor-dim) 60%, transparent);
+      }
+
+      /* Once-per-dungeon: dashed frame plus a struck corner, so the
+         irreversibility is legible without relying on the border style alone. */
+      .ability--tile.ability--ultimate {
+        border-style: dashed;
+      }
+
+      .ability--tile.ability--ultimate::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-top: 9px solid var(--_intent);
+        border-right: 9px solid transparent;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ability--tile,
+        .ability--tile .ability__glyph,
+        .ability--tile.ability--selected .ability__glyph {
+          animation: none;
+          transition: none;
+        }
+        .ability--tile:hover:not(:disabled) .ability__glyph {
+          transform: none;
+        }
       }
 
       /* -- Compact intent-grouped layout (opt-in, graphical view) --
@@ -1202,8 +1398,8 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
             ${
               this.compact
                 ? this._renderAbilityGroups(agent, selection?.ability_id ?? null, enemies)
-                : agent.available_abilities.map((ability) =>
-                    this._renderAbility(agent, ability, selection?.ability_id ?? null, enemies),
+                : agent.available_abilities.map((ability, i) =>
+                    this._renderAbility(agent, ability, selection?.ability_id ?? null, enemies, i),
                   )
             }
           </div>
@@ -1218,12 +1414,21 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     ability: AbilityOption,
     selectedId: string | null,
     enemies: EnemyCombatStateClient[],
+    index = 0,
   ) {
     const isSelected = ability.id === selectedId;
     const onCooldown = ability.cooldown_remaining > 0;
+    const name = localizedValue(ability, 'name');
+    const description = localizedValue(ability, 'description');
+    // Pictogram tiles are the graphical view only. The terminal view stays a
+    // phosphor text list \u2014 that is its whole aesthetic, and a silhouette on a
+    // scanline readout would read as an artefact.
+    const mask = this.compact ? abilityPictogramUrl(ability.id) : null;
+    const intent = abilityIntent(ability.targets);
 
     const classes = [
       'ability',
+      mask ? `ability--tile ability--${intent}` : '',
       isSelected ? 'ability--selected' : '',
       onCooldown ? 'ability--cooldown' : '',
       ability.is_ultimate ? 'ability--ultimate' : '',
@@ -1231,24 +1436,55 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .filter(Boolean)
       .join(' ');
 
+    // The tooltip repeats the name because the visible label is clamped to two
+    // lines; it is never the only place the name appears.
+    const tooltip = ability.check_info
+      ? `${name} \u2013 ${description} (${ability.check_info})`
+      : `${name} \u2013 ${description}`;
+
+    const body = mask
+      ? html`
+          <span class="ability__glyph" style="--_mask: url('${mask}')" aria-hidden="true"></span>
+          <span class="ability__name">${name}</span>
+          ${
+            ability.check_info
+              ? html`<span class="ability__check">${ability.check_info}</span>`
+              : nothing
+          }
+          ${
+            onCooldown
+              ? html`<span class="ability__cd-badge" aria-hidden="true"
+                >${ability.cooldown_remaining}</span
+              >`
+              : nothing
+          }
+        `
+      : html`
+          ${ability.is_ultimate ? '\u2605 ' : ''}${name}${
+            onCooldown
+              ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
+              : nothing
+          }${
+            ability.check_info
+              ? html`<span class="ability__check"> ${ability.check_info}</span>`
+              : nothing
+          }
+        `;
+
     return html`
       <button
         class=${classes}
+        style="--i: ${index}"
         ?disabled=${onCooldown}
         role="radio"
         aria-checked=${isSelected ? 'true' : 'false'}
-        title=${localizedValue(ability, 'description')}
+        aria-label=${
+          onCooldown ? `${name} – ${msg('on cooldown')}: ${ability.cooldown_remaining}` : name
+        }
+        title=${tooltip}
         @click=${() => this._handleAbilityClick(agent, ability, enemies)}
       >
-        ${ability.is_ultimate ? '\u2605 ' : ''}${localizedValue(ability, 'name')}${
-          onCooldown
-            ? html`<span class="ability__cd"> [${ability.cooldown_remaining}]</span>`
-            : nothing
-        }${
-          ability.check_info
-            ? html`<span class="ability__check"> ${ability.check_info}</span>`
-            : nothing
-        }
+        ${body}
       </button>
     `;
   }
@@ -1265,30 +1501,25 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     selectedId: string | null,
     enemies: EnemyCombatStateClient[],
   ) {
-    const strike: AbilityOption[] = [];
-    const aid: AbilityOption[] = [];
-    const guard: AbilityOption[] = [];
+    const buckets: Record<AbilityIntent, AbilityOption[]> = { strike: [], aid: [], guard: [] };
     for (const ability of agent.available_abilities) {
-      if (ability.targets === 'single_enemy' || ability.targets === 'all_enemies') {
-        strike.push(ability);
-      } else if (ability.targets === 'single_ally' || ability.targets === 'all_allies') {
-        aid.push(ability);
-      } else {
-        guard.push(ability);
-      }
+      buckets[abilityIntent(ability.targets)].push(ability);
     }
     const groups = [
-      { key: 'strike', label: msg('Strike'), items: strike },
-      { key: 'aid', label: msg('Aid'), items: aid },
-      { key: 'guard', label: msg('Guard'), items: guard },
+      { key: 'strike', label: msg('Strike'), items: buckets.strike },
+      { key: 'aid', label: msg('Aid'), items: buckets.aid },
+      { key: 'guard', label: msg('Guard'), items: buckets.guard },
     ].filter((g) => g.items.length > 0);
 
+    let staggerIndex = 0;
     return groups.map(
       (g) => html`
         <div class="agroup agroup--${g.key}">
           <span class="agroup__label" aria-hidden="true">${g.label}</span>
           <div class="agroup__items">
-            ${g.items.map((ability) => this._renderAbility(agent, ability, selectedId, enemies))}
+            ${g.items.map((ability) =>
+              this._renderAbility(agent, ability, selectedId, enemies, staggerIndex++),
+            )}
           </div>
         </div>
       `,

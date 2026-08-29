@@ -26,6 +26,12 @@ import { captureError } from './SentryService.js';
 
 const STORAGE_PREFIX = 'bureau_terminal_';
 const MAX_OUTPUT_LINES = 500;
+/**
+ * Ring size of the dungeon chronicle. Shorter than the terminal buffer on
+ * purpose: the chronicle is a glanceable event stream in a 340px column, not a
+ * scrollback. ~120 lines covers several rooms of play.
+ */
+const MAX_NARRATION_LINES = 120;
 const MAX_COMMAND_HISTORY = 100;
 const PERSIST_DEBOUNCE_MS = 500;
 const DEFAULT_OPS_POINTS = 3;
@@ -89,6 +95,37 @@ class TerminalStateManager {
    */
   readonly dungeonClearanceBypass = signal<boolean>(false);
   readonly dungeonClearanceThreshold = signal<number | null>(null);
+  /**
+   * The dungeon chronicle: every line produced while in dungeon mode.
+   *
+   * A DERIVED VIEW of the output buffer, filled at the sink (`appendOutput`)
+   * rather than at any source. That placement is the whole point. The graphical
+   * dungeon runs commands through the same `parseAndExecute` pipeline as the
+   * terminal and got the complete result back – it just had nowhere to render
+   * it, so rolls, results, loot and server errors were invisible there. Feeding
+   * this from the dispatcher instead would have missed exactly the lines that
+   * matter: the echoed command (added by `parseAndExecute`, outside the dungeon
+   * dispatcher) and the run-start banner (`startDungeonRun`, which never enters
+   * it). Every line that reaches the buffer reaches the chronicle, from every
+   * call site that exists or will exist.
+   *
+   * `feed` lines are excluded – realtime heartbeat chatter belongs to the
+   * terminal's world feed, not to the account of this descent.
+   */
+  readonly dungeonNarration = signal<TerminalLine[]>([]);
+
+  /**
+   * Armed while a descent is being recorded.
+   *
+   * Set on entry and cleared only by the NEXT entry – deliberately not when the
+   * run ends. A run's last words (the victory block, the wipe, the loot list)
+   * are produced by the same handler that tears the run down, and reach
+   * `appendOutput` after `clearDungeon()` has already run. Disarming there
+   * would drop precisely the lines a player most wants to read. Nothing renders
+   * the chronicle outside a run, so keeping it armed past the end costs a
+   * bounded buffer and no confusion.
+   */
+  private _narrationArmed = false;
 
   // --- Computed ---
   readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
@@ -288,9 +325,15 @@ class TerminalStateManager {
   initializeDungeon(runId: string, label?: string): void {
     this.dungeonRunId.value = runId;
     this.dungeonLabel.value = label ?? null;
+    // A chronicle belongs to one descent. Clearing on entry also covers the
+    // second run of a session, where the previous run's ending would otherwise
+    // stand above the new run's first room.
+    this.dungeonNarration.value = [];
+    this._narrationArmed = true;
   }
 
-  /** Exit dungeon mode. Called after completion, wipe, or retreat. */
+  /** Exit dungeon mode. Called after completion, wipe, or retreat.
+   *  Leaves the chronicle standing – see `_narrationArmed`. */
   clearDungeon(): void {
     this.dungeonRunId.value = null;
     this.dungeonLabel.value = null;
@@ -298,7 +341,9 @@ class TerminalStateManager {
 
   // ── Output Management ──────────────────────────────────────────────────
 
-  /** Append lines to the terminal output buffer, trimming to MAX_OUTPUT_LINES. */
+  /** Append lines to the terminal output buffer, trimming to MAX_OUTPUT_LINES.
+   *  In dungeon mode the same lines also feed the chronicle – see
+   *  `dungeonNarration` for why the mirror lives here and nowhere else. */
   appendOutput(lines: TerminalLine[]): void {
     const current = this.outputLines.value;
     const combined = [...current, ...lines];
@@ -306,6 +351,17 @@ class TerminalStateManager {
       combined.length > MAX_OUTPUT_LINES
         ? combined.slice(combined.length - MAX_OUTPUT_LINES)
         : combined;
+
+    if (this._narrationArmed) {
+      const narrated = lines.filter((line) => line.type !== 'feed');
+      if (narrated.length > 0) {
+        const merged = [...this.dungeonNarration.value, ...narrated];
+        this.dungeonNarration.value =
+          merged.length > MAX_NARRATION_LINES
+            ? merged.slice(merged.length - MAX_NARRATION_LINES)
+            : merged;
+      }
+    }
   }
 
   /** Append a single line. Convenience wrapper. */
