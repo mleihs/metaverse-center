@@ -121,7 +121,9 @@ export class VelgAchievementGrid extends LitElement {
       align-items: center;
       gap: var(--space-3);
       margin-bottom: var(--space-4);
-      border-left: 3px solid var(--color-primary);
+      /* Kein Kantenbalken an einer Ueberschrift: die Farbe wandert auf das
+         WORT (siehe .category-name darunter), der Einzug bleibt als
+         Gliederung. */
       padding-left: var(--space-3);
     }
     .category-name {
@@ -130,7 +132,7 @@ export class VelgAchievementGrid extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-primary);
+      color: var(--color-primary);
     }
     .category-progress {
       font-family: var(--font-mono);

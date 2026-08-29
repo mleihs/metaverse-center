@@ -193,7 +193,8 @@ export class VelgOpsForecastPanel extends LitElement {
       font-size: var(--text-sm);
       font-style: italic;
       color: var(--color-text-secondary);
-      border-left: 3px solid var(--_accent);
+      /* Zitatlinie fuer den kursiv gesetzten Treiber-Satz, neutral. */
+      border-left: 1px solid var(--color-border);
       padding: var(--space-2) var(--space-3);
       margin-bottom: var(--space-5);
       line-height: var(--leading-relaxed);

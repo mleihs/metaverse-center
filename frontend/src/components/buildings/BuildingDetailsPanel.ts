@@ -278,8 +278,8 @@ export class VelgBuildingDetailsPanel extends LitElement {
       transition: border-color 0.3s ease;
     }
 
+    /* Doppelung: die Zeile ist bereits in Gefahrenfarbe getoent. */
     .panel__factor--bottleneck {
-      border-left-color: var(--color-danger);
       background: color-mix(in srgb, var(--color-danger) 4%, transparent);
     }
 

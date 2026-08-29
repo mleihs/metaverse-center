@@ -805,19 +805,21 @@ export const adminDispatchStyles = css`
     display: flex;
     gap: var(--space-3);
     padding: var(--space-3);
+    /* Der Zustand einer Depesche (Entwurf, geplant, veroeffentlicht, gescheitert,
+       …) faerbt den GANZEN Rahmen. Vorher lag er als 3-px-Platte an der linken
+       Kante, und alle acht Zustaende faerbten nur diese eine Kante. */
     border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-border);
     transition: border-color 0.2s ease;
   }
 
-  .dispatch--draft { border-left-color: var(--color-info); }
-  .dispatch--scheduled { border-left-color: var(--color-warning); }
-  .dispatch--publishing { border-left-color: var(--color-warning); }
-  .dispatch--published { border-left-color: var(--color-success); }
-  .dispatch--failed { border-left-color: var(--color-danger); }
-  .dispatch--rejected { border-left-color: var(--color-danger); }
-  .dispatch--pending { border-left-color: var(--color-info); }
-  .dispatch--skipped { border-left-color: var(--color-text-muted); }
+  .dispatch--draft { border-color: var(--color-info); }
+  .dispatch--scheduled { border-color: var(--color-warning); }
+  .dispatch--publishing { border-color: var(--color-warning); }
+  .dispatch--published { border-color: var(--color-success); }
+  .dispatch--failed { border-color: var(--color-danger); }
+  .dispatch--rejected { border-color: var(--color-danger); }
+  .dispatch--pending { border-color: var(--color-info); }
+  .dispatch--skipped { border-color: var(--color-text-muted); }
 
   .dispatch__thumb {
     width: 64px;
