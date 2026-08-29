@@ -131,11 +131,18 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
          lock (Disco Elysium's convention) — knowing what you cannot do is part
          of knowing where you are. Hiding it would leave a player wondering
          whether the option existed at all. */
+      /* Die Wahlkarten bekommen eine EIGENE Zeile (flex-basis 100%), nicht
+         bloss den Loewenanteil einer geteilten. Mit flex:1 sassen sie und
+         der Look-Knopf in derselben Zeile: sobald die Karten umbrachen, blieb
+         fuer Look nur ein Rest, und er stand als schmale, hohe Saeule daneben.
+         Eine eigene Zeile heisst ausserdem, dass Look mit Status, Protokoll und
+         Rueckzug in eine Reihe faellt — dorthin gehoert er auch, denn er
+         beschreibt den Raum, er waehlt nicht. */
       .choices {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        flex: 1;
+        flex: 1 1 100%;
       }
       .choice {
         display: flex;
@@ -192,6 +199,22 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         flex: none;
         font-weight: 700;
         opacity: 0.6;
+      }
+      /* Die eigene Prosa einer Option, wenn die Vorlage welche traegt.
+         Sie stand bisher nur im title-Attribut — also im Hover-Tooltip, den es
+         auf Touch nicht gibt — und in der Chronik. An einem Schwellenraum sind
+         das die einzigen Worte, die die drei Zoelle unterscheiden: „Blood Toll"
+         allein sagt nichts, „Someone takes one condition step. Known cost."
+         sagt alles. Und die Schwellenwahl ist ausdruecklich unumkehrbar. */
+      .choice__desc {
+        font-size: 10px;
+        line-height: 1.4;
+        color: var(--color-text-secondary);
+        text-transform: none;
+        letter-spacing: 0;
+      }
+      .choice:disabled .choice__desc {
+        opacity: 0.8;
       }
       /* Who steps forward — the single most useful line on the card, because it
          names the aptitude the roll will actually use. */
@@ -461,6 +484,14 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
   private _renderPhaseButtons(phase: DungeonPhase) {
     switch (phase) {
       case 'exploring':
+        // Die Zugmoeglichkeiten gehoeren hierher. Der Server erlaubt `move` in
+        // GENAU DREI Phasen — exploring, room_clear, exit
+        // (dungeon_movement_service.py:196) —, das Frontend bot sie aber nur in
+        // zweien davon an. Am Eingang eines Laufs steht die Phase auf
+        // `exploring`, das Spiel schreibt in die Chronik „move <number> to
+        // advance", und die Aktionsleiste zeigte Scout, Map und Look. Wer
+        // grafisch spielt, kann nichts tippen: der einzige Weg weiter war, zu
+        // bemerken, dass die Knoten der Kartenspalte anklickbar sind.
         return html`
           <button class="action-btn action-btn--tier2" @click=${() => this._dispatch('scout')}>
             ${msg('Scout')}
@@ -471,6 +502,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           <button class="action-btn" @click=${() => this._dispatch('look')}>
             ${msg('Look')}
           </button>
+          ${this._renderMoveButtons()}
         `;
 
       case 'room_clear':
@@ -623,6 +655,11 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
           <span class="choice__index">[${choice.index}]</span>
           <span>${choice.label}</span>
         </span>
+        ${
+          choice.description
+            ? html`<span class="choice__desc">${choice.description}</span>`
+            : nothing
+        }
         ${
           choice.volunteer
             ? html`<span class="choice__volunteer">

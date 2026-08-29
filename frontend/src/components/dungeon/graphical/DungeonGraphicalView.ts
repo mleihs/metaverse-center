@@ -1742,17 +1742,31 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         font-weight: 400;
         letter-spacing: 1px;
       }
+      /* Eine Personalakte, kein Listeneintrag.
+         Die Karte war eine Textzeile mit einem 32-px-Icon davor. Die Portraets
+         dieser Simulation sind 772x1024 gross und liegen im Hochformat vor —
+         sie wurden also auf ein Quadrat beschnitten UND auf ein Zehntel der
+         Kartenflaeche gedraengt. Auf einem Bildschirm, dessen einzige Aufgabe
+         das Auswaehlen von MENSCHEN ist, ist das die falsche Gewichtung:
+         Gesichter sind das, woran man Leute erkennt und auseinanderhaelt.
+         Jetzt fuehrt das Bild, Name und Werte stehen darunter — das Format
+         einer Dossierkarte. Die Rasterbreite faellt von 220px auf 168px, weil
+         die Karte ihre Information nun in der HOEHE traegt: mehr Kandidaten je
+         Reihe, und trotzdem ein Portraet statt eines Daumennagels. */
       .picker-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
         gap: 10px;
         overflow-y: auto;
+        align-content: start;
       }
       .picker-card {
+        position: relative;
         display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 0;
         text-align: left;
         background: color-mix(in srgb, var(--color-surface-raised) 70%, transparent);
         border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
@@ -1778,8 +1792,19 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       }
       .picker-card--selected {
         border-color: var(--_phosphor);
-        border-left-width: 3px;
         background: color-mix(in srgb, var(--_phosphor) 18%, var(--color-surface-raised));
+      }
+      /* Das Portraet fuehrt die Karte und stoesst an ihre Kanten. */
+      .picker-card__avatar {
+        display: block;
+        --avatar-aspect: 3 / 4;
+      }
+      .picker-card--selected .picker-card__avatar {
+        filter: none;
+      }
+      .picker-card:not(.picker-card--selected):not(:hover) .picker-card__avatar {
+        filter: saturate(0.8) brightness(0.9);
+        transition: filter var(--transition-normal, 200ms ease);
       }
       .picker-card:disabled {
         opacity: 0.4;
@@ -1791,6 +1816,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         gap: 4px;
         flex: 1;
         min-width: 0;
+        padding: 8px 9px 9px;
       }
       /* Two lines rather than an ellipsis: six of the eight agents in the test
          simulation were cut ("Chrysanthe the Res…", "Formicastra the Si…"), and
@@ -1829,12 +1855,21 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         color: var(--color-warning);
         text-transform: uppercase;
       }
+      /* Die Auswahlmarke liegt auf dem Bild, nicht neben dem Text: dort sieht
+         man sie beim Ueberfliegen der Gesichter, ohne die Zeile zu lesen. */
       .picker-card__check {
+        position: absolute;
+        top: 6px;
+        right: 6px;
         display: inline-flex;
         align-items: center;
-        color: var(--_phosphor);
-        flex-shrink: 0;
-        width: 14px;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        color: var(--color-surface);
+        background: var(--_phosphor);
+        box-shadow: var(--shadow-xs);
+        pointer-events: none;
       }
       .picker__footer {
         display: flex;
@@ -3002,7 +3037,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             >
               <velg-avatar
                 class="picker-card__avatar"
-                size="sm"
+                size="full"
                 .src=${agent.portrait_image_url ?? ''}
                 .name=${agent.name}
               ></velg-avatar>

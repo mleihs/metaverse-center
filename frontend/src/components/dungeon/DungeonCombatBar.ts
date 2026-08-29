@@ -31,6 +31,7 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
+import { orderAbilities } from '../../utils/ability-order.js';
 import type { AbilityIntent } from '../../utils/ability-pictograms.js';
 import { abilityIntent, abilityPictogramUrl } from '../../utils/ability-pictograms.js';
 import { dungeonEnemyArtUrl } from '../../utils/dungeon-enemy-art.js';
@@ -292,14 +293,18 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         align-items: center;
         gap: 3px;
         width: 88px;
-        /* Feste Hoehe, weil nur ein Teil der Faehigkeiten eine Erfolgszeile hat
-           und die Unterkanten einer Zeile sonst ausfransen. Die Zeile wird
-           inzwischen IMMER gerendert (leer, wenn es keine Quote gibt), sonst
-           blieb unter kurzen Kacheln ein Rest von rund 20px stehen und das
-           Piktogramm klebte sichtbar an der Oberkante. */
-        min-height: 74px;
-        justify-content: flex-start;
-        padding: 5px 4px 4px;
+        /* Feste Hoehe fuer gleiche Unterkanten, Inhalt MITTIG darin.
+           Zwei Anlaeufe, und der erste war falsch: ich hatte die Namenszeile auf
+           zwei Zeilen und die Trefferquote als leere Zeile RESERVIERT, damit die
+           Unterkanten nicht ausfransen. Das machte alle Kacheln gleich hoch —
+           und erzeugte bei einzeiligen Namen (SHIELD, RALLY, EVADE) rund 25px
+           Leere unter dem Wort, sodass das Piktogramm sichtbar an der Oberkante
+           klebte. Ausgefranste Unterkanten gegen kopflastige Kacheln getauscht.
+           Die feste Hoehe allein haelt die Unterkanten schon buendig; der Rest
+           gehoert gleichmaessig ueber UND unter den Inhalt. */
+        min-height: 86px;
+        justify-content: center;
+        padding: 4px;
         white-space: normal;
         position: relative;
         border-color: color-mix(in srgb, var(--_intent) 26%, transparent);
@@ -323,9 +328,24 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         --_intent: var(--color-info);
       }
 
+      /* Das Piktogramm bekommt einen eigenen, gleichmaessig beluefteten Platz.
+         Vorher sass es 5px unter der Oberkante, mit 41px Text darunter: der
+         Block als Ganzes war mittig, das BILD aber im oberen Viertel und
+         sichtbar an die Kante gedrueckt. Jetzt traegt eine Zone fester Hoehe
+         das Glyph mittig, und es ist von 28 auf 34px gewachsen — auf einer
+         88px breiten Kachel ist es das Motiv, nicht ein Aufzaehlungszeichen. */
+      .ability__glyph-zone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 42px;
+        flex: none;
+      }
+
       .ability__glyph {
-        width: 28px;
-        height: 28px;
+        width: 34px;
+        height: 34px;
         flex-shrink: 0;
         background-color: color-mix(in srgb, var(--_intent) 62%, var(--_phosphor-dim));
         -webkit-mask-image: var(--_mask);
@@ -359,26 +379,17 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        /* Two clamped lines, always. A one-word ability would otherwise pull
-           the row beneath it up by a full line and the glyphs of neighbouring
-           tiles would stop sharing a baseline. */
-        min-height: calc(2 * 1.15 * 9px);
       }
 
       /* Same datum as in the text variant, hence the same class: the success
-         odds decide the move, so they stay on the face of the tile.
-         The row is reserved on every tile, empty ones included, and it follows
-         the name in normal flow instead of being pushed to the bottom by an
-         auto top margin. With the old rule a tile WITHOUT a success line had
-         its whole slack collected under the name — 20px of nothing, which read
-         as the pictogram being stuck to the top edge rather than as a footer
-         datum being absent. */
+         odds decide the move, so they stay on the face of the tile. Rendered
+         only when there IS a quote — the tile centres its content, so an absent
+         footer costs no layout and leaves no hole. */
       .ability--tile .ability__check {
         display: block;
         margin-left: 0;
         font-size: 8px;
         line-height: 1.1;
-        min-height: calc(1.1 * 8px);
         max-width: 100%;
         overflow-wrap: anywhere;
       }
@@ -477,18 +488,37 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       /* -- Compact intent-grouped layout (opt-in, graphical view) --
          Turns the flat ability wall into Strike / Aid / Guard clusters with
-         small colour-coded labels so each agent's options read at a glance. */
+         small colour-coded labels so each agent's options read at a glance.
+
+         DREI SPALTEN, NICHT DREI ZEILEN. Als gestapelte Zeilen kostete das
+         Raster die SUMME der drei Gruppenhoehen (rund 300px), und weil eine
+         Gruppe selten die Breite fuellt, standen bei AID gut 65% der Zeile
+         leer. Die Leiste konkurriert mit der Buehne um Hoehe — genug, dass die
+         Party-Spalte im Kampf ausgeblendet werden musste, um Platz zu schaffen.
+         Nebeneinander kostet das Raster nur die Hoehe der HOECHSTEN Gruppe.
+
+         Die Spaltenbreiten stehen proportional zur Anzahl der Kacheln
+         (inline gesetzt, weil nur die Komponente die Zahlen kennt). Gleich
+         breite Drittel waeren schlechter: STRIKE mit acht Faehigkeiten braucht
+         dann drei Zeilen, waehrend AID mit dreien zwei Drittel Luft behaelt.
+         Proportional bricht jede Gruppe auf die GLEICHE Zeilenzahl um —
+         8:3:5 wird zu 4|2|3 Kacheln je Zeile, also zwei Zeilen ueberall. */
       :host([compact]) .agent__abilities {
         align-items: flex-start;
         gap: 6px 18px;
       }
       .agroup {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 7px;
+        min-width: 0;
       }
       .agroup__label {
         font-family: var(--font-brutalist, var(--_mono));
+        /* Steht jetzt neben einer mehrzeiligen Spalte, nicht neben einer
+           einzelnen Reihe: oben ausgerichtet, damit es die Gruppe anschreibt
+           statt in ihrer Mitte zu schweben. */
+        margin-top: 6px;
         font-size: 8px;
         font-weight: 700;
         text-transform: uppercase;
@@ -509,6 +539,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         display: flex;
         flex-wrap: wrap;
         gap: 3px;
+        min-width: 0;
       }
 
       /* -- Target Picker -- */
@@ -923,10 +954,23 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         font-size: 9px;
         color: var(--_phosphor-dim);
       }
+      /* DREI SPALTEN, NICHT DREI ZEILEN.
+         Als gestapelte Zeilen kostete die Konsole die SUMME der drei
+         Gruppenhoehen (gemessen: 3 x 91px = 273px), und weil eine Gruppe selten
+         die Breite fuellt, standen bei Aid mit drei Faehigkeiten gut zwei
+         Drittel der 884px leer. Die Leiste konkurriert mit der Buehne um Hoehe —
+         genug, dass die Party-Spalte im Kampf ausgeblendet werden musste, um
+         Platz zu schaffen. Nebeneinander kostet das Raster nur die Hoehe der
+         HOECHSTEN Gruppe.
+         Die Spaltenbreiten stehen proportional zur Zahl der Kacheln, inline
+         gesetzt, weil nur die Komponente die Zahlen kennt. Gleich breite Drittel
+         waeren schlechter als die alten Zeilen: Strike mit acht Faehigkeiten
+         braeuchte dann drei Zeilen, waehrend Aid mit dreien zwei Drittel Luft
+         behielte. Proportional bricht jede Gruppe auf die GLEICHE Zeilenzahl um. */
       .desk__abilities {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+        display: grid;
+        align-items: start;
+        gap: 5px 14px;
       }
       /* Faces on the target row too: the cutout here is the same one standing in
          the enemy band above. */
@@ -1358,7 +1402,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
           <span class="desk__name">${agent.agent_name}</span>
           <span class="desk__condition">${getConditionLabel(agent.condition)}</span>
         </div>
-        <div class="desk__abilities" role="radiogroup" aria-label=${msg('Abilities')}>
+        <div
+          class="desk__abilities"
+          role="radiogroup"
+          aria-label=${msg('Abilities')}
+          style="grid-template-columns: ${this._abilityColumns(agent)}"
+        >
           ${this._renderAbilityGroups(agent, selection?.ability_id ?? null, enemies)}
         </div>
         ${isTargeting ? this._renderTargetPicker(agent, enemies) : nothing}
@@ -1411,7 +1460,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
             ${
               this.compact
                 ? this._renderAbilityGroups(agent, selection?.ability_id ?? null, enemies)
-                : agent.available_abilities.map((ability, i) =>
+                : orderAbilities(agent.available_abilities, agent.aptitudes).map((ability, i) =>
                     this._renderAbility(agent, ability, selection?.ability_id ?? null, enemies, i),
                   )
             }
@@ -1457,9 +1506,15 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
     const body = mask
       ? html`
-          <span class="ability__glyph" style="--_mask: url('${mask}')" aria-hidden="true"></span>
+          <span class="ability__glyph-zone" aria-hidden="true">
+            <span class="ability__glyph" style="--_mask: url('${mask}')"></span>
+          </span>
           <span class="ability__name">${name}</span>
-          <span class="ability__check">${ability.check_info ?? ''}</span>
+          ${
+            ability.check_info
+              ? html`<span class="ability__check">${ability.check_info}</span>`
+              : nothing
+          }
           ${
             onCooldown
               ? html`<span class="ability__cd-badge" aria-hidden="true"
@@ -1505,20 +1560,65 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
    * into three scannable clusters. Data-driven off `ability.targets` — no
    * hardcoded ability lists.
    */
+  /**
+   * Die Faehigkeiten eines Agenten, geordnet und nach Absicht gebuendelt.
+   *
+   * Eine Ableitung, zwei Verbraucher: das Raster braucht die ANZAHLEN, um
+   * seine Spalten proportional zu setzen, die Darstellung braucht die LISTEN.
+   * Beides zweimal zu berechnen hiesse, zwei Wahrheiten zu pflegen.
+   */
+  private _abilityGroups(agent: AgentCombatStateClient) {
+    // Die Reihenfolge, in der der Server die Faehigkeiten schickt, ist die
+    // Iterationsreihenfolge eines Dictionaries — fuer den Spieler ohne Aussage.
+    // `orderAbilities` gibt ihr eine: einsatzbereit vor abklingend, dann was
+    // dieser Operative am besten kann, universelle zuletzt.
+    const buckets: Record<AbilityIntent, AbilityOption[]> = { strike: [], aid: [], guard: [] };
+    for (const ability of orderAbilities(agent.available_abilities, agent.aptitudes)) {
+      buckets[abilityIntent(ability.targets)].push(ability);
+    }
+    return [
+      { key: 'strike', label: msg('Strike'), items: buckets.strike },
+      { key: 'aid', label: msg('Aid'), items: buckets.aid },
+      { key: 'guard', label: msg('Guard'), items: buckets.guard },
+    ].filter((g) => g.items.length > 0);
+  }
+
+  /**
+   * Spaltenbreiten des Faehigkeitsrasters.
+   *
+   * Nicht proportional zur ZAHL der Kacheln, sondern zur Zahl der KACHEL-
+   * SPALTEN, die eine Gruppe braucht, um in TARGET_TILE_ROWS Zeilen zu passen.
+   *
+   * Der Unterschied ist der ganze Punkt, und der erste Anlauf hatte ihn falsch:
+   * proportional zur Anzahl bekommt jede Gruppe dieselbe FLAECHE, aber die Zahl
+   * der Zeilen haengt an `floor(Breite / Kachelbreite)`. Gemessen bei 884px und
+   * einer Aufteilung 8:3:5 ergab das 421 | 158 | 263 px — und die 158px der
+   * Aid-Gruppe fassen genau EINE Kachel je Zeile, also drei Zeilen. Das Raster
+   * war 264px hoch statt der 273px der alten Zeilen: praktisch nichts gewonnen.
+   *
+   * Mit ceil(n / 2) wird aus 8:3:5 die Aufteilung 4:2:3. Bei denselben 884px
+   * sind das 393 | 196 | 295 px, also 4 | 2 | 3 Kacheln je Zeile und damit
+   * ueberall ZWEI Zeilen — rund 177px statt 273px.
+   *
+   * `fr` statt fester Pixel, damit das Raster mitschrumpft: wird es schmaler,
+   * brechen alle Gruppen gemeinsam auf drei Zeilen um, statt dass eine
+   * ueberlaeuft. Zwei Zeilen sind deshalb ein ZIEL, keine Zusicherung.
+   */
+  private _abilityColumns(agent: AgentCombatStateClient): string {
+    const TARGET_TILE_ROWS = 2;
+    const groups = this._abilityGroups(agent);
+    if (groups.length === 0) return 'none';
+    return groups
+      .map((g) => `${Math.max(1, Math.ceil(g.items.length / TARGET_TILE_ROWS))}fr`)
+      .join(' ');
+  }
+
   private _renderAbilityGroups(
     agent: AgentCombatStateClient,
     selectedId: string | null,
     enemies: EnemyCombatStateClient[],
   ) {
-    const buckets: Record<AbilityIntent, AbilityOption[]> = { strike: [], aid: [], guard: [] };
-    for (const ability of agent.available_abilities) {
-      buckets[abilityIntent(ability.targets)].push(ability);
-    }
-    const groups = [
-      { key: 'strike', label: msg('Strike'), items: buckets.strike },
-      { key: 'aid', label: msg('Aid'), items: buckets.aid },
-      { key: 'guard', label: msg('Guard'), items: buckets.guard },
-    ].filter((g) => g.items.length > 0);
+    const groups = this._abilityGroups(agent);
 
     let staggerIndex = 0;
     return groups.map(
