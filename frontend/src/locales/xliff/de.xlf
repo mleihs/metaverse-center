@@ -4680,10 +4680,6 @@
   <source>Maximum number of simulations in one alliance. Larger teams share diplomatic bonuses but split influence.</source>
 <target>Maximale Anzahl von Simulationen in einer Allianz. Größere Teams teilen sich diplomatische Boni, aber teilen sich den Einfluss.</target>
 </trans-unit>
-<trans-unit id="sc9f15a3b00fae612">
-  <source>When enabled, alliance members can leave and attack former allies. Betrayal incurs a -20% diplomatic penalty and marks the traitor publicly.</source>
-<target>Wenn aktiviert, können Allianzmitglieder ehemalige Verbündete verlassen und angreifen. Verrat zieht einen diplomatischen Nachteil von -20% nach sich und kennzeichnet den Verräter öffentlich.</target>
-</trans-unit>
 <trans-unit id="s1e4409aa6329d0d7">
   <source>Building readiness and zone stability. Rewards maintaining infrastructure and keeping buildings in good condition.</source>
 <target>Gebäudebereitschaft und Zonenstabilität. Belohnt die Instandhaltung der Infrastruktur und die Erhaltung von Gebäuden in gutem Zustand.</target>
@@ -17082,10 +17078,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Each alliance member pays 1 RP per member per cycle. A 3-member alliance costs each member 3 RP/cycle. If your RP reaches 0, upkeep is waived – you will not go into debt.</source>
   <target>Jedes Allianzmitglied zahlt 1 RP pro Mitglied pro Zyklus. Eine 3-Mitglieder-Allianz kostet jedes Mitglied 3 RP/Zyklus. Wenn dein RP 0 erreicht, entfällt der Unterhalt – du gehst nicht in Schulden.</target>
 </trans-unit>
-<trans-unit id="sfdeb6014e97b1c53">
-  <source>Final cycles – double points</source>
-  <target>Letzte Zyklen – doppelte Punkte</target>
-</trans-unit>
 <trans-unit id="s2435dd4a922cb6d8">
   <source>Channel closed – epoch ended</source>
   <target>Kanal geschlossen – Epoch beendet</target>
@@ -20873,10 +20865,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sb27ce1a3df015800">
   <source>TENSE</source>
   <target>ANGESPANNT</target>
-</trans-unit>
-<trans-unit id="s9877a319fac66d50">
-  <source>Str</source>
-  <target>Belastung</target>
 </trans-unit>
 <trans-unit id="sf8b2710d898e366d">
   <source>Active effects</source>
@@ -25573,7 +25561,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>no PR</source>
 <target>kein PR</target></trans-unit>
 <trans-unit id="s087d3407b52accab">
-  <source><x id="0" equiv-text="${Math.round(b.age_days * 24)}"/>h</source>
+  <source><x id="0" equiv-text="${hours}"/>h</source>
 <target><x id="0" equiv-text="${Math.round(b.age_days * 24)}"/>h</target></trans-unit>
 <trans-unit id="se50bb7aee2221dff">
   <source>Delete failed</source>
@@ -28156,6 +28144,206 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sb321b849ef96a43b">
   <source>at least 2</source>
   <target>mindestens 2</target>
+</trans-unit>
+<trans-unit id="s499c1441b9e70c21">
+  <source>on cooldown</source>
+        <target>in Abklingzeit</target>
+</trans-unit>
+<trans-unit id="s888521d50404334b">
+  <source>Out of reach</source>
+        <target>Außer Reichweite</target>
+</trans-unit>
+<trans-unit id="s2e47c5cc74230edb">
+  <source>have</source>
+        <target>vorhanden</target>
+</trans-unit>
+<trans-unit id="s256455776700edda">
+  <source>Chronicle of the descent</source>
+        <target>Chronik des Abstiegs</target>
+</trans-unit>
+<trans-unit id="sfe8b9066fec516bc">
+  <source>Nothing has happened yet. Your actions and their outcomes appear here.</source>
+        <target>Noch ist nichts geschehen. Ihre Handlungen und deren Ausgang erscheinen hier.</target>
+</trans-unit>
+<trans-unit id="sc966d49eebca4286">
+  <source>Latest</source>
+        <target>Neueste</target>
+</trans-unit>
+<trans-unit id="s77db24a5e62dfd49">
+  <source>Partial success</source>
+        <target>Teilerfolg</target>
+</trans-unit>
+<trans-unit id="s7ec022e0389b29f1">
+  <source>Failure</source>
+        <target>Fehlschlag</target>
+</trans-unit>
+<trans-unit id="s8fc216978df9c68b">
+  <source>Party lost</source>
+        <target>Gruppe verloren</target>
+</trans-unit>
+<trans-unit id="sd75bbbbda8dc4dbc">
+  <source>Descent complete</source>
+        <target>Abstieg vollendet</target>
+</trans-unit>
+<trans-unit id="sec95b6611e06299b">
+  <source>Withdrawn</source>
+        <target>Zurückgezogen</target>
+</trans-unit>
+<trans-unit id="s3ab0be579e79c372">
+  <source>No one came back up. What they carried stayed down there with them.</source>
+        <target>Niemand kam wieder herauf. Was sie trugen, blieb mit ihnen dort unten.</target>
+</trans-unit>
+<trans-unit id="s8056ff6ac59ffcff">
+  <source>The resonance is spent. Everything the party carried out is theirs.</source>
+        <target>Die Resonanz ist erschöpft. Alles, was die Gruppe herausgetragen hat, gehört ihr.</target>
+</trans-unit>
+<trans-unit id="sd8282352f1e2b446">
+  <source>The party left early and kept what it had already taken.</source>
+        <target>Die Gruppe ging früher und behielt, was sie bereits genommen hatte.</target>
+</trans-unit>
+<trans-unit id="sead5b21666c2420d">
+  <source>Descent ended</source>
+        <target>Abstieg beendet</target>
+</trans-unit>
+<trans-unit id="s96539d2f8ba425f3">
+  <source>Return to the lobby</source>
+        <target>Zurück zur Auswahl</target>
+</trans-unit>
+<trans-unit id="s7da69ec800f353f1">
+  <source>Final cycles – alliances are sealed</source>
+  <target>Letzte Zyklen – Bündnisse sind versiegelt</target>
+</trans-unit>
+<trans-unit id="sa90cfba4e5edf003">
+  <source>That epoch could not be opened.</source>
+  <target>Diese Epoche liess sich nicht öffnen.</target>
+</trans-unit>
+<trans-unit id="s567aa0369f215bfb">
+  <source><x id="0" equiv-text="${minutes}"/>min</source>
+  <target><x id="0" equiv-text="${minutes}"/>min</target>
+</trans-unit>
+<trans-unit id="s37cec9f3ac548289">
+  <source>Cycle Resolution</source>
+  <target>Rundenabschluss</target>
+</trans-unit>
+<trans-unit id="s8afa0ee1579c5ad1">
+  <source>Decides how a cycle ends. A deadline keeps the epoch moving when someone stops responding – without one, a single absent player can stall every remaining cycle indefinitely.</source>
+  <target>Bestimmt, wie ein Zyklus endet. Eine Frist hält die Epoche in Bewegung, wenn jemand nicht mehr antwortet – ohne sie kann ein einziger abwesender Spieler jeden verbleibenden Zyklus auf unbestimmte Zeit blockieren.</target>
+</trans-unit>
+<trans-unit id="sbac87973dffd7c47">
+  <source>Ready or Deadline</source>
+  <target>Bereit oder Frist</target>
+</trans-unit>
+<trans-unit id="se9fd637958432232">
+  <source>Resolves as soon as everyone is ready, or automatically when the deadline expires.</source>
+  <target>Löst aus, sobald alle bereit sind – oder automatisch, wenn die Frist abläuft.</target>
+</trans-unit>
+<trans-unit id="s627493289aac9389">
+  <source>All Players Ready</source>
+  <target>Alle Spieler bereit</target>
+</trans-unit>
+<trans-unit id="s9c91a852e1581f8e">
+  <source>Waits indefinitely until every human player signals ready. No deadline, no absence handling.</source>
+  <target>Wartet unbegrenzt, bis jeder menschliche Spieler Bereitschaft meldet. Keine Frist, keine Abwesenheitsregelung.</target>
+</trans-unit>
+<trans-unit id="s12c7a49ec7577bf7">
+  <source>Cycle Deadline</source>
+  <target>Zyklusfrist</target>
+</trans-unit>
+<trans-unit id="s6364c96f36be78ee">
+  <source>Cycles are <x id="0" equiv-text="${this._cycleHours}"/>h long – a deadline near that keeps pacing predictable.</source>
+  <target>Zyklen dauern <x id="0" equiv-text="${this._cycleHours}"/>h – eine Frist in dieser Größenordnung hält den Takt vorhersehbar.</target>
+</trans-unit>
+<trans-unit id="s802a8fdb40cafeae">
+  <source>Require Action Before Ready</source>
+  <target>Handlung vor Bereitschaft</target>
+</trans-unit>
+<trans-unit id="s2e9a549db7592f52">
+  <source>Players must deploy, fortify, or explicitly pass before they can signal ready. Prevents empty cycles.</source>
+  <target>Spieler müssen entsenden, befestigen oder ausdrücklich passen, bevor sie Bereitschaft melden können. Verhindert leere Zyklen.</target>
+</trans-unit>
+<trans-unit id="s256e33bb94666af1">
+  <source>Absence Penalties</source>
+  <target>Abwesenheitsstrafen</target>
+</trans-unit>
+<trans-unit id="s94bd6cc680d2c99f">
+  <source>Players who miss a cycle lose RP, escalating with each consecutive absence. After repeated absences an AI assumes control so the epoch keeps moving.</source>
+  <target>Wer einen Zyklus verpasst, verliert RP – steigend mit jeder weiteren Abwesenheit in Folge. Nach wiederholter Abwesenheit übernimmt eine KI, damit die Epoche weiterläuft.</target>
+</trans-unit>
+<trans-unit id="s782d2d1added53d8">
+  <source>Foundation (<x id="0" equiv-text="${this._foundationCycles}"/>) + Reckoning (<x id="1" equiv-text="${this._reckoningCycles}"/>) must stay below the total of <x id="2" equiv-text="${total}"/> cycles. Lengthen the epoch, shorten the cycle interval, or reduce a phase.</source>
+  <target>Fundament (<x id="0" equiv-text="${this._foundationCycles}"/>) + Abrechnung (<x id="1" equiv-text="${this._reckoningCycles}"/>) müssen unter der Gesamtzahl von <x id="2" equiv-text="${total}"/> Zyklen bleiben. Verlängere die Epoche, verkürze das Zyklusintervall oder reduziere eine Phase.</target>
+</trans-unit>
+<trans-unit id="sa02adc310e145c7d">
+  <source>When enabled, alliance members can leave and attack former allies. Betrayal incurs a -25% diplomatic penalty and marks the traitor publicly.</source>
+  <target>Ist dies aktiv, können Allianzmitglieder austreten und ehemalige Verbündete angreifen. Verrat kostet 25% der diplomatischen Wertung und brandmarkt den Verräter öffentlich.</target>
+</trans-unit>
+<trans-unit id="sd13aaf1444dcf9a5">
+  <source>Ready or <x id="0" equiv-text="${this._deadlineLabel(this._cycleDeadlineMinutes)}"/> deadline</source>
+  <target>Bereit oder Frist von <x id="0" equiv-text="${this._deadlineLabel(this._cycleDeadlineMinutes)}"/></target>
+</trans-unit>
+<trans-unit id="s04cfc577d0966089">
+  <source>All players ready</source>
+  <target>Alle Spieler bereit</target>
+</trans-unit>
+<trans-unit id="s7cddad5b98584738">
+  <source>Action Required</source>
+  <target>Handlung erforderlich</target>
+</trans-unit>
+<trans-unit id="scb489a1a173ac3f0">
+  <source>Yes</source>
+  <target>Ja</target>
+</trans-unit>
+<trans-unit id="s09205907b5b56cda">
+  <source>No</source>
+  <target>Nein</target>
+</trans-unit>
+<trans-unit id="s4eb58005e05bd3cd">
+  <source>Unscouted</source>
+        <target>Unerkundet</target>
+</trans-unit>
+<trans-unit id="s1516d818c2399e5e">
+  <source>Send a Guardian to seal a breach. Costs stress, then goes on cooldown.</source>
+        <target>Schickt einen Guardian, um einen Bruch zu versiegeln. Kostet Stress, danach Abklingzeit.</target>
+</trans-unit>
+<trans-unit id="secb95e7e394c56ed">
+  <source>Seal Breach</source>
+        <target>Bruch versiegeln</target>
+</trans-unit>
+<trans-unit id="se723c09f34ff34b0">
+  <source>Anchor the party in the waking layer. Costs stress, then goes on cooldown.</source>
+        <target>Verankert die Gruppe in der wachen Schicht. Kostet Stress, danach Abklingzeit.</target>
+</trans-unit>
+<trans-unit id="s9f71713287fb245e">
+  <source>Ground</source>
+        <target>Erden</target>
+</trans-unit>
+<trans-unit id="s3d519036bf786a9e">
+  <source>Send a Propagandist to hold the faction together. Costs stress, then goes on cooldown.</source>
+        <target>Schickt einen Propagandisten, um die Fraktion zusammenzuhalten. Kostet Stress, danach Abklingzeit.</target>
+</trans-unit>
+<trans-unit id="s003c65781a4bc5b7">
+  <source>Rally</source>
+        <target>Sammeln</target>
+</trans-unit>
+<trans-unit id="sd8afbffba632a66a">
+  <source>Salvage</source>
+        <target>Bergen</target>
+</trans-unit>
+<trans-unit id="s9bce4b866f5ef0de">
+  <source>Your operatives are standing here.</source>
+        <target>Hier stehen Ihre Operativen.</target>
+</trans-unit>
+<trans-unit id="s90c4f8c885efbd35">
+  <source>Not reachable</source>
+        <target>Nicht erreichbar</target>
+</trans-unit>
+<trans-unit id="s1b0fdd984dcbb258">
+  <source>No passage leads to it from where the party stands.</source>
+        <target>Von dort, wo die Gruppe steht, führt kein Gang dorthin.</target>
+</trans-unit>
+<trans-unit id="sfa677c967b501271">
+  <source>No passage leads to it from room #<x id="0" equiv-text="${this.currentIndex}"/>.</source>
+        <target>Von Raum #<x id="0" equiv-text="${this.currentIndex}"/> führt kein Gang dorthin.</target>
 </trans-unit>
 
 </body>
