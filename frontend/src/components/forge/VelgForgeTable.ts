@@ -47,6 +47,16 @@ export class VelgForgeTable extends LitElement {
     css`
       :host {
         display: block;
+
+        /* Captured here, outside .deployment-field, on purpose. That rule
+           re-points the platform surface tokens at a lighter slate so the game
+           cards carry their own palette — and an empty slot sits inside it and
+           inherited the same slate, turning the roster into a row of solid
+           blue panels against a near-black console. An empty slot is an
+           absence, not a card, so it takes the console's colours; these hold
+           the platform values before the override applies. */
+        --_slot-fill: var(--color-surface-sunken);
+        --_slot-line: var(--color-border);
       }
 
       /* ── Command Console (3-panel grid) ─── */
@@ -462,8 +472,8 @@ export class VelgForgeTable extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--color-surface-sunken);
-        border: 1px dashed color-mix(in srgb, var(--color-border) 80%, transparent);
+        background: var(--_slot-fill);
+        border: 1px dashed color-mix(in srgb, var(--_slot-line) 80%, transparent);
         overflow: hidden;
       }
 
@@ -473,7 +483,7 @@ export class VelgForgeTable extends LitElement {
         background: repeating-linear-gradient(
           45deg,
           transparent 0 5px,
-          color-mix(in srgb, var(--color-border) 45%, transparent) 5px 6px
+          color-mix(in srgb, var(--_slot-line) 45%, transparent) 5px 6px
         );
         opacity: 0.55;
       }
@@ -483,8 +493,8 @@ export class VelgForgeTable extends LitElement {
         width: var(--space-9);
         height: var(--space-9);
         transform: rotate(45deg);
-        border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
-        background: var(--color-surface);
+        border: 1px solid color-mix(in srgb, var(--_slot-line) 90%, transparent);
+        background: color-mix(in srgb, var(--_slot-line) 18%, transparent);
         position: relative;
       }
 
@@ -992,6 +1002,20 @@ export class VelgForgeTable extends LitElement {
     // Leaving the phase disarms any pending overwrite.
     this._armedPanel = null;
     super.disconnectedCallback();
+  }
+
+  protected updated() {
+    // The observer watches the host, which is the only element guaranteed to
+    // exist when it is set up — but the fan's track is narrower than the host
+    // by the section padding, and fitting against the host width is optimistic
+    // by exactly that much. Once the track is on screen it measures itself.
+    // Safe against a loop: the track is a flex row that fills its parent, so
+    // its width does not depend on the geometry derived from it.
+    const hand = this.renderRoot.querySelector('.staging-hand');
+    if (hand) {
+      const width = hand.clientWidth;
+      if (width > 0 && Math.abs(width - this._handWidth) > 1) this._handWidth = width;
+    }
   }
 
   protected firstUpdated() {
