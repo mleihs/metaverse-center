@@ -79,7 +79,8 @@ def ai_error_to_http(exc: ModelHTTPError) -> HTTPException:
 
 def get_openrouter_model(
     api_key: str | None = None,
-    model_id: str = "anthropic/claude-sonnet-4-6",
+    *,
+    model_id: str,
 ) -> OpenAIChatModel:
     """Return a Pydantic AI model configured for OpenRouter.
 
@@ -88,7 +89,15 @@ def get_openrouter_model(
     api_key:
         Optional user-provided BYOK key. Falls back to the platform key.
     model_id:
-        OpenRouter model identifier. Defaults to Claude Sonnet 4.6.
+        OpenRouter model identifier. REQUIRED, and keyword-only.
+
+        It used to default to ``"anthropic/claude-sonnet-4-6"`` — an id the
+        catalogue never had (it spells it ``claude-sonnet-4.6``, with a dot), so
+        any caller that had relied on the default would have failed outright.
+        Every caller already passes this explicitly; making it required means a
+        model can only be chosen through the configured chain
+        (``get_platform_model`` -> platform_settings -> Admin > Models), never by
+        a literal that quietly rots.
     """
     provider = OpenAIProvider(
         base_url="https://openrouter.ai/api/v1",
