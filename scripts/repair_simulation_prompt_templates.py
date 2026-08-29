@@ -13,17 +13,23 @@ invented placeholders and 16 are written in the wrong syntax.
 
 What this does to a row whose ``template_type`` has a contract:
 
-* ``{{name}}`` -> ``{name}``      when the code supplies ``name``;
-* ``{name}`` / ``{{name}}`` -> "" when it does not. Only the placeholder token
-  is removed; the prose around it is left byte-identical, because deciding that
-  a now-dangling sentence should also go is guesswork — read the diff instead;
+* ``{{name}}`` -> ``{name}`` when the code supplies ``name``;
+* a sentence that names an undeclared variable **and no declared one** is
+  removed whole — it existed only to present data that never arrives, and
+  stripping just the token left the ATRAMENT portrait reading
+  *"Pinned to the lapel is a diagnosis: 'Leserlichkeit: %'"*, which still tells
+  an image model to draw a badge;
+* otherwise the token alone is removed and the gap it leaves is closed. The
+  sentence stays, because it carries a variable that does arrive.
+  Prose is never rewritten, only cut at those seams — every cut is printed
+  below before anything is written;
 * ``variables`` -> a real JSON array of the names the repaired text uses. A.6
   wrote ``json.dumps([])`` into a jsonb column, i.e. the *string* "[]".
 
 Rows whose type has no contract (``embassy_pair_generation``, ``agent_backstory``,
 the scanner prompts) are reported and left alone: no declaration, no authority.
 Platform rows are out of scope — they are seeded by migrations and are repaired
-by one (see 20260830…_280_prompt_template_syntax_normalisation.sql).
+by one (see 20260830120000_280_prompt_template_one_syntax.sql).
 
 Safety:
 

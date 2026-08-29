@@ -441,15 +441,26 @@ class ScannerService(BaseSchedulerMixin):
             system_prompt = cls._DISPATCH_SYSTEM_PROMPT
             user_template = cls._DISPATCH_USER_TEMPLATE
 
-        user_prompt = user_template.format(
-            article_title=result.title,
-            article_description=result.description or "",
-            source_category=result.source_category,
-            archetype_name=archetype,
-            archetype_description=archetype_desc,
-            magnitude_scaled=magnitude_scaled,
-            locale="English",
-        )
+        format_values = {
+            "article_title": result.title,
+            "article_description": result.description or "",
+            "source_category": result.source_category,
+            "archetype_name": archetype,
+            "archetype_description": archetype_desc,
+            "magnitude_scaled": magnitude_scaled,
+            "locale": "English",
+        }
+        try:
+            user_prompt = user_template.format(**format_values)
+        except (KeyError, IndexError, ValueError):
+            # A DB template naming something this call site does not supply must
+            # not take the dispatch down with it. The inline default always
+            # matches these seven values.
+            logger.warning(
+                "scanner_bureau_dispatch template does not match the supplied variables; using the inline default",
+                exc_info=True,
+            )
+            user_prompt = cls._DISPATCH_USER_TEMPLATE.format(**format_values)
 
         try:
             openrouter = OpenRouterService(api_key)

@@ -31,7 +31,12 @@ from backend.services.prompt_contracts import (
     sanitize_template,
     variable_catalogue,
 )
-from backend.services.prompt_service import HARDCODED_FALLBACKS, PromptResolver, ResolvedPrompt
+from backend.services.prompt_service import (
+    HARDCODED_FALLBACKS,
+    PromptResolver,
+    PromptSource,
+    ResolvedPrompt,
+)
 
 BACKEND = Path(__file__).resolve().parents[2]
 
@@ -403,6 +408,35 @@ class TestSanitize:
         result = sanitize_template(text, contract)
         assert result.text == "Building:  {building_name}\nType:  {building_type}\n"
 
+    def test_a_clean_multi_paragraph_template_is_returned_byte_identical(self):
+        """Blank lines are structure, not emptiness.
+
+        The first version of the segment walk decided "drop this separator" by
+        looking at whether the previous rebuilt entry was empty — which is also
+        true for a blank line. It ate the blank lines out of every bulleted
+        template and reported `changed=True` with an empty defect set: a silent
+        rewrite with no reason to show the operator, on 48 production rows.
+        """
+        contract = get_contract("portrait_description")
+        text = (
+            "RULES:\n"
+            "- Be bold\n"
+            "\n"
+            "VARIABLES:\n"
+            "- {agent_name}\n"
+            "\n"
+            "Portrait of {agent_character}.\n\n- mood\n\n- light"
+        )
+        result = sanitize_template(text, contract)
+        assert result.text == text
+        assert not result.changed
+
+    def test_a_dropped_sentence_still_takes_its_separator(self):
+        """Rule 2 must keep working after the blank-line fix."""
+        contract = get_contract("portrait_description")
+        result = sanitize_template("Portrait of {agent_name}. Badge: {leserlichkeit_level}%. Done.", contract)
+        assert result.text == "Portrait of {agent_name}. Done."
+
     def test_a_clean_template_is_returned_byte_identical(self):
         contract = get_contract("portrait_description")
         text = 'Portrait of {agent_name}. {agent_character}. Return {"a": 1}'
@@ -421,7 +455,7 @@ class TestPlatformFrame:
     """The guarantee a world may not edit away."""
 
     @staticmethod
-    def _resolved(template_type: str, content: str, source: str) -> ResolvedPrompt:
+    def _resolved(template_type: str, content: str, source: PromptSource) -> ResolvedPrompt:
         return ResolvedPrompt(
             template_type=template_type,
             locale="en",
@@ -438,7 +472,7 @@ class TestPlatformFrame:
     def test_frame_is_appended_to_a_simulation_template(self):
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]  # no I/O on this path
         filled = resolver.fill_template(
-            self._resolved("portrait_description", "A kalotype of {agent_name}.", "simulation+locale"),
+            self._resolved("portrait_description", "A kalotype of {agent_name}.", PromptSource.SIMULATION_LOCALE),
             {"agent_name": "Almandine"},
         )
         assert filled.startswith("A kalotype of Almandine.")
@@ -448,7 +482,7 @@ class TestPlatformFrame:
     def test_frame_is_not_appended_to_a_platform_template(self):
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]
         filled = resolver.fill_template(
-            self._resolved("portrait_description", "A portrait of {agent_name}.", "platform+locale"),
+            self._resolved("portrait_description", "A portrait of {agent_name}.", PromptSource.PLATFORM_LOCALE),
             {"agent_name": "Almandine"},
         )
         assert filled == "A portrait of Almandine."
@@ -456,7 +490,7 @@ class TestPlatformFrame:
     def test_a_type_without_a_frame_gets_nothing_appended(self):
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]
         filled = resolver.fill_template(
-            self._resolved("event_generation", "An event of type {event_type}.", "simulation+locale"),
+            self._resolved("event_generation", "An event of type {event_type}.", PromptSource.SIMULATION_LOCALE),
             {"event_type": "political"},
         )
         assert filled == "An event of type political."
@@ -464,14 +498,14 @@ class TestPlatformFrame:
     def test_system_prompt_is_filled(self):
         """The platform chronicle system prompt names {simulation_name}."""
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]
-        resolved = self._resolved("chronicle_generation", "body", "platform+locale")
+        resolved = self._resolved("chronicle_generation", "body", PromptSource.PLATFORM_LOCALE)
         resolved.system_prompt = "You are the editor-in-chief of {simulation_name}'s newspaper."
         filled = resolver.fill_system_prompt(resolved, {"simulation_name": "Velgarien"})
         assert filled == "You are the editor-in-chief of Velgarien's newspaper."
 
     def test_system_prompt_of_a_template_without_one_is_empty(self):
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]
-        resolved = self._resolved("chronicle_generation", "body", "platform+locale")
+        resolved = self._resolved("chronicle_generation", "body", PromptSource.PLATFORM_LOCALE)
         assert resolver.fill_system_prompt(resolved, {}) == ""
 
 

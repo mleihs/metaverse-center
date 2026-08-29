@@ -15,7 +15,7 @@ from backend.models.prompt_template import (
     PromptTestResponse,
 )
 from backend.services.audit_service import AuditService
-from backend.services.prompt_contracts import example_variables
+from backend.services.prompt_contracts import audit_template, example_variables
 from backend.services.prompt_service import PromptResolver
 from backend.services.prompt_template_service import PromptTemplateService
 from backend.utils.responses import paginated
@@ -126,9 +126,16 @@ async def test_prompt_template(
 
     # Example values come from the contract, so the preview shows every slot the
     # code can actually fill for this type — not one hand-kept dict that knew
-    # about ten variables out of thirty-three template types.
+    # about ten variables out of thirty-three template types. For a type with no
+    # contract (embassy_pair_generation, the scanner prompts) the names in the
+    # text stand in for themselves; leaving them unset would render the preview
+    # as a page of gaps.
     contract = resolved.contract
-    example_vars = example_variables(contract) if contract else {}
+    if contract:
+        example_vars = example_variables(contract)
+    else:
+        audit = audit_template(resolved.prompt_content, None)
+        example_vars = {name: f"<{name}>" for name in audit.known}
     filled = resolver.fill_template(resolved, example_vars)
 
     return SuccessResponse(

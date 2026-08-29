@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from backend.services.chat_ai_service import ChatAIService
-from backend.services.prompt_service import HARDCODED_FALLBACKS, ResolvedPrompt
+from backend.services.prompt_service import HARDCODED_FALLBACKS, PromptSource, ResolvedPrompt
 
 # ---------------------------------------------------------------------------
 # _build_agent_variables (static, no mocks needed)
@@ -78,7 +78,7 @@ def _make_resolved_prompt(content: str) -> ResolvedPrompt:
         temperature=0.7,
         max_tokens=1024,
         negative_prompt=None,
-        source="test",
+        source=PromptSource.PLATFORM_LOCALE,
     )
 
 
