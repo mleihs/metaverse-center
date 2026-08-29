@@ -164,7 +164,7 @@ OPERATIVE_TARGET_TYPE: dict[str, str] = {
 # variant of `deepseek-r1-0528` no longer exists. The last line of defence was
 # unusable, and only reachable once everything else had already broken.
 PLATFORM_DEFAULT_MODELS: dict[str, str] = {
-    "default": "deepseek/deepseek-v4-flash",
+    "default": "deepseek/deepseek-v4-flash-0731",
     "fallback": "google/gemini-2.5-flash-lite",
 }
 
