@@ -265,26 +265,26 @@ class TestDungeonAction:
         action = DungeonAction(action_type="encounter_choice", choice_id="choice_1")
         assert action.action_type == "encounter_choice"
 
-    def test_valid_combat_action(self):
-        action = DungeonAction(
-            action_type="combat_action",
-            agent_id=uuid4(),
-            ability_id="spy_observe",
-            target_id="enemy_1",
-        )
-        assert action.action_type == "combat_action"
+    def test_carries_the_agent_for_a_skill_check(self):
+        agent_id = uuid4()
+        action = DungeonAction(action_type="encounter_choice", choice_id="c1", agent_id=agent_id)
+        assert action.agent_id == agent_id
 
     def test_invalid_action_type(self):
         with pytest.raises(ValidationError):
             DungeonAction(action_type="invalid_type")
 
-    @pytest.mark.parametrize(
-        "action_type",
-        ["encounter_choice", "combat_action", "interact", "use_ability"],
-    )
-    def test_all_valid_action_types(self, action_type):
-        action = DungeonAction(action_type=action_type)
-        assert action.action_type == action_type
+    @pytest.mark.parametrize("action_type", ["combat_action", "interact", "use_ability"])
+    def test_rejects_action_types_this_endpoint_cannot_serve(self, action_type):
+        """The three types the router accepted but could never fulfil.
+
+        `POST /runs/{id}/action` has exactly one destination — `handle_encounter_choice`,
+        which requires an encounter phase. Nothing downstream reads `action_type`, so a
+        combat action posted here WITH a valid choice_id used to be resolved as that
+        encounter choice. Validation now refuses it at the door.
+        """
+        with pytest.raises(ValidationError):
+            DungeonAction(action_type=action_type)
 
 
 # ── RoomNode Defaults ────────────────────────────────────────────────────

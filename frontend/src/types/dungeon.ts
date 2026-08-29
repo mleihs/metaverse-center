@@ -446,13 +446,19 @@ export interface DungeonMoveRequest {
   room_index: number;
 }
 
-/** POST /dungeons/runs/{id}/action — generic encounter/interaction action. */
+/**
+ * POST /dungeons/runs/{id}/action — one encounter choice.
+ *
+ * The union used to list four action types. The endpoint has only ever had one
+ * destination for them, and nothing downstream reads the discriminator, so the
+ * other three could not succeed — while a `combat_action` carrying a valid
+ * `choice_id` would have been resolved AS that encounter choice. Combat has its
+ * own endpoint and its own body (`CombatSubmission`). Narrowed on both sides.
+ */
 export interface DungeonAction {
-  action_type: 'encounter_choice' | 'combat_action' | 'interact' | 'use_ability';
+  action_type: 'encounter_choice';
   agent_id?: UUID | null;
   choice_id?: string | null;
-  ability_id?: string | null;
-  target_id?: string | null;
 }
 
 /** Single agent's combat action for the planning phase. */
