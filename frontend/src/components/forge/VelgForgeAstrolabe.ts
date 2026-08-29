@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -7,6 +7,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { t } from '../../utils/locale-fields.js';
 import {
   forgeButtonStyles,
+  forgeConsoleTypeTokens,
   forgeFieldStyles,
   forgeInfoBubbleStyles,
   forgeRangeStyles,
@@ -14,8 +15,14 @@ import {
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import { fanRotation, renderInfoBubble } from './forge-utils.js';
+import {
+  estimateDraftingMinutes,
+  estimateForgeCost,
+  fanRotation,
+  renderInfoBubble,
+} from './forge-utils.js';
 
+import './VelgForgeActionBar.js';
 import './VelgForgeScanOverlay.js';
 
 // Seed suggestions are resolved at render-time via msg() for i18n support.
@@ -28,6 +35,7 @@ import './VelgForgeScanOverlay.js';
 @customElement('velg-forge-astrolabe')
 export class VelgForgeAstrolabe extends LitElement {
   static styles = [
+    forgeConsoleTypeTokens,
     forgeButtonStyles,
     forgeFieldStyles,
     forgeRangeStyles,
@@ -517,23 +525,65 @@ export class VelgForgeAstrolabe extends LitElement {
 
       /* ── Footer ──────────────────────────── */
 
-      .astrolabe__footer {
+      /* ── Folded seed ─────────────────────── */
+
+      .seed-box--folded {
+        padding: var(--space-4) var(--space-6);
+      }
+
+      .seed-folded {
         display: flex;
-        justify-content: flex-end;
-        margin-top: var(--space-8);
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin-top: var(--space-2);
       }
 
-      .btn--advance {
-        background: var(--color-border-light);
-        border-color: var(--color-border);
+      .seed-folded__quote {
+        margin: 0;
+        min-width: 0;
+        font-family: var(--font-prose, serif);
+        font-style: italic;
+        font-size: var(--text-sm);
+        line-height: var(--leading-snug, 1.375);
+        color: var(--color-text-secondary);
+        border-left: 1px solid var(--color-border);
+        padding-left: var(--space-3);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .seed-folded__edit {
+        flex-shrink: 0;
+        background: none;
+        border: var(--border-width-thin) solid var(--color-border);
+        padding: var(--space-1) var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-widest, 0.1em);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: border-color var(--transition-fast, 100ms), color var(--transition-fast, 100ms);
+      }
+
+      .seed-folded__edit:hover {
+        border-color: var(--color-primary);
         color: var(--color-text-primary);
-        padding: var(--space-2-5, 10px) var(--space-6);
       }
 
-      .btn--advance:hover:not(:disabled) {
-        background: var(--color-border);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0 0 0 / 0.3);
+      /* ── Cost preview, at the sliders that set it ───── */
+
+      .cost-line {
+        margin: var(--space-4) 0 0;
+        padding-top: var(--space-3);
+        border-top: 1px dashed var(--color-border);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--color-text-tertiary);
       }
 
       /* ── Responsive ──────────────────────── */
@@ -582,9 +632,18 @@ export class VelgForgeAstrolabe extends LitElement {
   @state() private _options: PhilosophicalAnchor[] = [];
   @state() private _isDealing = true;
   @state() private _genConfig = forgeStateManager.generationConfig.value;
+  /**
+   * Whether the seed editor is folded away.
+   *
+   * It folds itself the moment anchors arrive. The seed box is a 130px textarea
+   * plus four suggestion blocks, and the three anchor cards it produces are
+   * 458px tall — so on a laptop the result of the scan opened entirely below
+   * the fold and nothing on screen changed. Folding the box pulls the anchors
+   * up into view without seizing the scroll position from the reader.
+   */
+  @state() private _seedCollapsed = false;
 
   private _disposeEffects: (() => void)[] = [];
-  private _hasScrolledToAnchors = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -599,28 +658,17 @@ export class VelgForgeAstrolabe extends LitElement {
           setTimeout(() => {
             this._isDealing = false;
           }, 800);
-          // Auto-scroll to anchor cards after first appearance
-          if (!this._hasScrolledToAnchors) {
-            this._hasScrolledToAnchors = true;
-            this.updateComplete.then(() => {
-              const fan = this.renderRoot.querySelector('.anchor-fan');
-              fan?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-          }
+          // Anchors exist, so the seed editor folds and the fan rises into view
+          // on its own. Deliberately not a scrollIntoView: taking the scroll
+          // position away from someone who is reading is its own defect.
+          this._seedCollapsed = true;
         }
       }),
       effect(() => {
         this._isRecovering = forgeStateManager.isRecovering.value;
       }),
       effect(() => {
-        const generating = forgeStateManager.isGenerating.value;
-        this._isGenerating = generating;
-        if (generating) {
-          this.updateComplete.then(() => {
-            const overlay = this.renderRoot.querySelector('velg-forge-scan-overlay');
-            overlay?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          });
-        }
+        this._isGenerating = forgeStateManager.isGenerating.value;
       }),
       effect(() => {
         this._error = forgeStateManager.error.value;
@@ -634,7 +682,6 @@ export class VelgForgeAstrolabe extends LitElement {
   disconnectedCallback() {
     for (const dispose of this._disposeEffects) dispose();
     this._disposeEffects = [];
-    this._hasScrolledToAnchors = false;
     super.disconnectedCallback();
   }
 
@@ -712,11 +759,6 @@ export class VelgForgeAstrolabe extends LitElement {
         selected,
       },
     });
-    // Scroll to the anchor detail + forge params that appear below the fan
-    this.updateComplete.then(() => {
-      const detail = this.renderRoot.querySelector('.anchor-detail');
-      detail?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
   }
 
   private _fillSeed(text: string) {
@@ -762,10 +804,52 @@ export class VelgForgeAstrolabe extends LitElement {
     return renderInfoBubble(text, example);
   }
 
+  /** The folded seed: one quoted line and the way back into editing it. */
+  private _renderSeedSummary() {
+    return html`
+      <div class="seed-folded">
+        <p class="seed-folded__quote">${this._seed}</p>
+        <button
+          type="button"
+          class="seed-folded__edit"
+          @click=${() => {
+            this._seedCollapsed = false;
+          }}
+        >
+          <span aria-hidden="true">&#9998;</span> ${msg('Change seed')}
+        </button>
+      </div>
+    `;
+  }
+
+  /**
+   * What the parameters above will cost, stated where they are chosen.
+   *
+   * These four sliders decide how many cards phase II asks the user to review
+   * and how many images the ignition pays for, but the only cost line in the
+   * wizard used to sit in phase IV, three screens after the decision.
+   */
+  private _renderCostPreview() {
+    const cost = estimateForgeCost(this._genConfig.agent_count, this._genConfig.building_count);
+    const minutes = estimateDraftingMinutes(
+      this._genConfig.agent_count,
+      this._genConfig.building_count,
+      (type) => forgeStateManager.getEstimatedDuration(type),
+    );
+
+    return html`
+      <p class="cost-line">
+        ${msg(str`~${cost.totalImages} images · about ${minutes} min of drafting · ${cost.tokens} Forge token`)}
+      </p>
+    `;
+  }
+
   protected render() {
+    const canAdvance = this._selectedIdx !== null;
+
     return html`
       <div class="astrolabe">
-        <div class="seed-box">
+        <div class="seed-box ${this._seedCollapsed ? 'seed-box--folded' : ''}">
           <div class="seed-box__header">
             <span class="seed-box__title">${msg('The Initial Seed')}</span>
             ${this._renderInfoBubble(
@@ -777,6 +861,11 @@ export class VelgForgeAstrolabe extends LitElement {
               ),
             )}
           </div>
+
+          ${
+            this._seedCollapsed
+              ? this._renderSeedSummary()
+              : html`
           <textarea
             .value=${this._seed}
             @input=${(e: InputEvent) => (this._seed = (e.target as HTMLTextAreaElement).value)}
@@ -827,6 +916,8 @@ export class VelgForgeAstrolabe extends LitElement {
             >${msg('Scan Multiverse')}</button>
           `
               : nothing
+          }
+          `
           }
         </div>
 
@@ -1003,15 +1094,8 @@ export class VelgForgeAstrolabe extends LitElement {
                 <span class="toggle-field__label">${msg('Deep Research')}</span>
                 <span class="toggle-field__hint">${msg('Run literary & philosophical research before lore generation. Produces richer, citation-grounded worldbuilding.')}</span>
               </label>
-            </div>
 
-            <div class="astrolabe__footer">
-              <button
-                class="btn btn--advance"
-                @click=${this._handleNext}
-              >
-                ${msg('Descend to Table')} &ensp; &rarr;
-              </button>
+              ${this._renderCostPreview()}
             </div>
           `
               : nothing
@@ -1019,6 +1103,21 @@ export class VelgForgeAstrolabe extends LitElement {
         `
             : nothing
         }
+
+        <velg-forge-action-bar
+          next-label=${msg('Descend to Table')}
+          ?next-disabled=${!canAdvance}
+          hint=${msg('Choose a philosophical anchor to advance')}
+          .readiness=${[
+            {
+              label: msg('anchors offered'),
+              done: this._options.length,
+              total: this._options.length || 3,
+            },
+            { label: msg('anchor chosen'), done: canAdvance ? 1 : 0, total: 1 },
+          ]}
+          @forge-next=${this._handleNext}
+        ></velg-forge-action-bar>
       </div>
     `;
   }

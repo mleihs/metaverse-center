@@ -2,16 +2,25 @@ import { localized, msg } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import type { ForgeDraft } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { navigate } from '../../utils/navigation.js';
 import {
   forgeBackButtonStyles,
   forgeButtonStyles,
+  forgeConsoleTypeTokens,
   forgeSectionStyles,
   forgeStatusStyles,
 } from '../shared/forge-console-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  agentCardView,
+  buildingCardView,
+  cardThemeStyle,
+  type ForgeCardView,
+} from './forge-card-data.js';
+import { getBuildingSet, getOperativeSet } from './forge-placeholders.js';
 
 import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';
@@ -26,6 +35,7 @@ import './VelgForgeCeremony.js';
 @customElement('velg-forge-ignition')
 export class VelgForgeIgnition extends LitElement {
   static styles = [
+    forgeConsoleTypeTokens,
     forgeButtonStyles,
     forgeBackButtonStyles,
     forgeStatusStyles,
@@ -92,6 +102,39 @@ export class VelgForgeIgnition extends LitElement {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      /* ── Contact Sheet ──────────────────── */
+
+      .contact-sheet {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        padding: var(--space-6);
+      }
+
+      .contact-sheet__title {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-2);
+      }
+
+      .contact-sheet__note {
+        margin: 0 0 var(--space-4);
+        padding-bottom: var(--space-3);
+        border-bottom: var(--border-width-thin) solid var(--color-border);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-readout);
+        color: var(--color-text-tertiary);
+      }
+
+      .contact-sheet__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: var(--space-3);
+        justify-items: center;
       }
 
       /* ── Generation Cost Preview ────────── */
@@ -255,6 +298,53 @@ export class VelgForgeIgnition extends LitElement {
     forgeStateManager.error.value = null;
   }
 
+  /**
+   * The contact sheet: every card that is about to become permanent.
+   *
+   * The summary above it counts rows ("6 agents, 7 buildings"). After two
+   * phases spent building and reviewing cards, a count is the wrong last look
+   * at the work — this is the same deck at thumbnail size, so the final check
+   * before an irreversible action is made on the thing itself.
+   */
+  private _renderContactSheet(draft: ForgeDraft) {
+    const agents = draft.agents;
+    const buildings = draft.buildings;
+    if (agents.length === 0 && buildings.length === 0) return nothing;
+
+    const seed = draft.seed_prompt ?? draft.id;
+    const agentArt = getOperativeSet(agents.length, seed);
+    const buildingArt = getBuildingSet(buildings.length, `${seed}_bld`);
+    const theme = cardThemeStyle(draft.theme_config ?? {});
+
+    const card = (view: ForgeCardView, imageUrl: string) => html`
+      <velg-game-card
+        style=${theme}
+        .type=${view.type}
+        .name=${view.name}
+        .subtitle=${view.subtitle}
+        .badges=${view.badges}
+        .rarity=${view.rarity}
+        .conditionDots=${view.conditionDots}
+        .imageUrl=${imageUrl}
+        size="sm"
+        .interactive=${false}
+      ></velg-game-card>
+    `;
+
+    return html`
+      <div class="contact-sheet">
+        <div class="contact-sheet__title">${msg('Contact Sheet')}</div>
+        <p class="contact-sheet__note">
+          ${msg('Everything below becomes permanent when you ignite.')}
+        </p>
+        <div class="contact-sheet__grid">
+          ${agents.map((a, i) => card(agentCardView(a), agentArt[i] ?? ''))}
+          ${buildings.map((b, i) => card(buildingCardView(b), buildingArt[i] ?? ''))}
+        </div>
+      </div>
+    `;
+  }
+
   protected render() {
     if (!this._hasDraft) return nothing;
 
@@ -338,6 +428,8 @@ export class VelgForgeIgnition extends LitElement {
           </div>
         </div>
 
+        ${this._renderContactSheet(draft)}
+
         <!-- Cost Preview -->
         <div class="cost-preview">
           ${msg('This will generate:')}
@@ -345,7 +437,7 @@ export class VelgForgeIgnition extends LitElement {
             1 ${msg('banner')} + ${agentCount} ${msg('portraits')} + ${buildingCount} ${msg('building images')} + ~${loreImageCount} ${msg('lore images')}
           </span>
           = <span class="cost-preview__highlight">~${totalImages} ${msg('images')}</span><br>
-          ${msg('Estimated time: 3-5 minutes (background)')}
+          ${msg('The world is ready to enter as soon as it ignites; the images develop in the background for about 3 to 5 minutes after that.')}
         </div>
 
         <button class="btn btn--back" @click=${this._handleBack}>

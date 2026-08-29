@@ -1,9 +1,13 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import type { ForgeDraft } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
+import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
+import { forgeConsoleTypeTokens } from '../shared/forge-console-styles.js';
 
 import './VelgForgeAstrolabe.js';
 import './VelgForgeTable.js';
@@ -18,6 +22,7 @@ import './VelgForgeIgnition.js';
 @customElement('velg-forge-wizard')
 export class VelgForgeWizard extends LitElement {
   static styles = [
+    forgeConsoleTypeTokens,
     css`
       /* ── Dark Console Shell ──────────────── */
 
@@ -116,24 +121,132 @@ export class VelgForgeWizard extends LitElement {
         position: relative;
       }
 
-      .forge-hero__save-status {
+      .forge-hero__save {
         position: absolute;
         top: var(--space-4);
         right: var(--space-6);
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+
+      /* ── Context strip (phases II onward) ───── */
+
+      .forge-strip {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+        padding: var(--space-3) var(--space-4);
+        margin-bottom: var(--space-6);
+        background: var(--color-surface);
+        border-bottom: 2px solid var(--color-border);
+      }
+
+      .forge-strip__save {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-left: auto;
+      }
+
+      .context-bar {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-4);
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .context-bar__main {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-3);
+        min-width: 0;
+      }
+
+      .context-bar__city {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-bold, 700);
+        font-size: var(--text-sm);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist, 0.08em);
+        color: var(--color-text-primary);
+      }
+
+      .context-bar__anchor {
         font-family: var(--font-mono, monospace);
-        font-size: 10px;
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+      }
+
+      .context-bar__params {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--color-text-tertiary);
+      }
+
+      .context-bar__jump {
+        background: none;
+        border: none;
+        padding: 0;
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--color-text-link);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        cursor: pointer;
+      }
+
+      .context-bar__jump:hover {
+        color: var(--color-text-primary);
+      }
+
+      /* ── Save state ─────────────────────────── */
+
+      .save-state {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1-5);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
         text-transform: uppercase;
         letter-spacing: 0.1em;
         color: var(--color-text-muted);
+        white-space: nowrap;
       }
 
-      .forge-hero__save-status--saving {
-        color: var(--color-success);
-        animation: blink 1s step-end infinite;
+      .save-state--pending {
+        color: var(--color-text-tertiary);
       }
 
-      @keyframes blink {
-        50% { opacity: 0; }
+      .save-state__dot {
+        width: var(--space-1-5);
+        height: var(--space-1-5);
+        background: var(--color-success);
+        border-radius: var(--border-radius-full);
+      }
+
+      .save-state__leave {
+        background: none;
+        border: var(--border-width-thin) solid var(--color-border);
+        padding: var(--space-1) var(--space-2);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: border-color var(--transition-fast, 100ms), color var(--transition-fast, 100ms);
+      }
+
+      .save-state__leave:hover {
+        border-color: var(--color-text-secondary);
+        color: var(--color-text-primary);
       }
 
       /* ── Phase Indicator Bar ─────────────── */
@@ -199,15 +312,33 @@ export class VelgForgeWizard extends LitElement {
 
       .phase--done {
         color: var(--color-success);
-        background: rgba(74 222 128 / 0.1);
+        background: color-mix(in srgb, var(--color-success) 10%, transparent);
+        padding: 0;
       }
 
-      .phase--clickable {
+      /* A completed step is a real button, so it carries its own padding and
+         fills the cell; the cell keeps its list semantics. */
+      .phase__jump {
+        display: block;
+        width: 100%;
+        padding: var(--space-2-5, 10px) var(--space-3);
+        background: none;
+        border: none;
+        font: inherit;
+        color: inherit;
+        text-transform: inherit;
+        letter-spacing: inherit;
         cursor: pointer;
+        transition: background var(--transition-normal, 200ms);
       }
 
-      .phase--clickable:hover {
-        background: rgba(74 222 128 / 0.18);
+      .phase__jump:hover {
+        background: color-mix(in srgb, var(--color-success) 18%, transparent);
+      }
+
+      .phase__jump:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: -3px;
       }
 
       /* ── Phase Content with slide transitions ── */
@@ -248,7 +379,8 @@ export class VelgForgeWizard extends LitElement {
   ];
 
   @state() private _phase: string = 'astrolabe';
-  @state() private _hasDraft = false;
+  @state() private _draft: ForgeDraft | null = null;
+  @state() private _lastSavedAt: number | null = null;
   private _disposeEffects: (() => void)[] = [];
 
   /** Screen Wake Lock — keeps display on during the entire forge session. */
@@ -265,7 +397,10 @@ export class VelgForgeWizard extends LitElement {
         this._phase = forgeStateManager.phase.value;
       }),
       effect(() => {
-        this._hasDraft = forgeStateManager.draft.value !== null;
+        this._draft = forgeStateManager.draft.value;
+      }),
+      effect(() => {
+        this._lastSavedAt = forgeStateManager.lastSavedAt.value;
       }),
     );
 
@@ -311,6 +446,18 @@ export class VelgForgeWizard extends LitElement {
     forgeStateManager.updateDraft({ current_phase: phaseId });
   }
 
+  /**
+   * The four-step phase bar.
+   *
+   * Every ARIA attribute here used to be written as an element-position
+   * expression – `${isActive ? html\`aria-current="step"\` : nothing}` – which
+   * Lit only accepts for directives. A TemplateResult in that position is
+   * dropped without an error, so `aria-current`, `role="button"` and the
+   * per-step `aria-label` never reached the DOM: the bar announced itself as a
+   * plain list, and every completed step was a focusable div with no name and
+   * no role. They are ordinary attribute bindings now, and a completed step is
+   * a real button rather than a div with a keydown handler.
+   */
   private _renderPhaseBar() {
     const steps: {
       id: 'astrolabe' | 'drafting' | 'darkroom' | 'ignition';
@@ -330,27 +477,35 @@ export class VelgForgeWizard extends LitElement {
         ${steps.map((s, i) => {
           const isDone = i < currentIdx;
           const isActive = this._phase === s.id;
+          const classes = [
+            'phase',
+            isDone ? 'phase--done' : '',
+            isActive ? 'phase--active' : '',
+            s.ignition ? 'phase--ignition' : '',
+          ]
+            .filter(Boolean)
+            .join(' ');
+
           return html`
             <div
               role="listitem"
-              class="phase ${isDone ? 'phase--done phase--clickable' : ''} ${isActive ? 'phase--active' : ''} ${s.ignition ? 'phase--ignition' : ''}"
-              ${isActive ? html`aria-current="step"` : nothing}
-              @click=${isDone ? () => this._navigateToPhase(s.id) : nothing}
-              @keydown=${
-                isDone
-                  ? (e: KeyboardEvent) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this._navigateToPhase(s.id);
-                      }
-                    }
-                  : nothing
-              }
-              tabindex=${isDone ? '0' : '-1'}
-              ${isDone ? html`role="button"` : nothing}
-              ${isDone ? html`aria-label=${`${msg('Return to')} ${s.label}`}` : nothing}
+              class="${classes}"
+              aria-current=${isActive ? 'step' : nothing}
             >
-              ${isDone ? html`<span aria-hidden="true">&#10003; </span>` : nothing}${s.label}
+              ${
+                isDone
+                  ? html`
+                <button
+                  type="button"
+                  class="phase__jump"
+                  aria-label=${msg(str`Return to ${s.label}`)}
+                  @click=${() => this._navigateToPhase(s.id)}
+                >
+                  <span aria-hidden="true">&#10003;</span> ${s.label}
+                </button>
+              `
+                  : html`<span class="phase__label">${s.label}</span>`
+              }
             </div>
           `;
         })}
@@ -358,21 +513,98 @@ export class VelgForgeWizard extends LitElement {
     `;
   }
 
+  /**
+   * The compact context strip that replaces the hero from phase II onward.
+   *
+   * The hero is onboarding: it names the tool and asks for fifteen minutes.
+   * That is worth 250 pixels once. Carrying it through all four phases cost
+   * that height on every screen while the things the user had actually decided
+   * – the city, the anchor, the parameters – were nowhere on screen at all.
+   */
+  private _renderContextBar() {
+    const draft = this._draft;
+    if (!draft) return nothing;
+
+    const city = (draft.geography as { city_name?: string } | undefined)?.city_name;
+    const anchor = draft.philosophical_anchor?.selected;
+    const cfg = draft.generation_config;
+
+    return html`
+      <div class="context-bar">
+        <div class="context-bar__main">
+          ${city ? html`<span class="context-bar__city">${city}</span>` : nothing}
+          ${anchor ? html`<span class="context-bar__anchor">${t(anchor, 'title')}</span>` : nothing}
+        </div>
+        ${
+          cfg
+            ? html`
+          <span class="context-bar__params">
+            ${msg(str`${cfg.agent_count} operatives · ${cfg.building_count} structures · ${cfg.zone_count} districts`)}
+          </span>
+        `
+            : nothing
+        }
+        <button
+          type="button"
+          class="context-bar__jump"
+          @click=${() => this._navigateToPhase('astrolabe')}
+        >${msg('Back to the seed')}</button>
+      </div>
+    `;
+  }
+
+  /**
+   * Save state, reported from an acknowledged write rather than from the mere
+   * existence of a draft.
+   */
+  private _renderSaveState() {
+    if (this._lastSavedAt === null) {
+      return html`<span class="save-state save-state--pending">${msg('Not saved yet')}</span>`;
+    }
+    const time = new Date(this._lastSavedAt).toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return html`
+      <span class="save-state" role="status">
+        <span class="save-state__dot" aria-hidden="true"></span>
+        ${msg(str`Saved ${time}`)}
+      </span>
+      <button type="button" class="save-state__leave" @click=${this._handleSaveAndLeave}>
+        ${msg('Save and leave')}
+      </button>
+    `;
+  }
+
+  private _handleSaveAndLeave = async (): Promise<void> => {
+    await forgeStateManager.flushNow();
+    navigate('/');
+  };
+
   protected render() {
+    const isOpening = this._phase === 'astrolabe';
+
     return html`
       <div class="forge-container">
-        <header class="forge-hero">
-          <div class="forge-hero__classification">${msg('Bureau of Impossible Geography')}</div>
-          <h1 class="forge-hero__title">${msg('The Simulation Forge')}</h1>
-          <p class="forge-hero__subtitle">
-            ${msg('Materialize a new Shard through the mechanics of Curated Proceduralism.')}
-          </p>
-          ${
-            this._hasDraft
-              ? html`<span class="forge-hero__save-status" role="status">${msg('Saved')}</span>`
-              : nothing
-          }
-        </header>
+        ${
+          isOpening
+            ? html`
+          <header class="forge-hero">
+            <div class="forge-hero__classification">${msg('Bureau of Impossible Geography')}</div>
+            <h1 class="forge-hero__title">${msg('The Simulation Forge')}</h1>
+            <p class="forge-hero__subtitle">
+              ${msg('Materialize a new Shard through the mechanics of Curated Proceduralism.')}
+            </p>
+            <div class="forge-hero__save">${this._renderSaveState()}</div>
+          </header>
+        `
+            : html`
+          <header class="forge-strip">
+            ${this._renderContextBar()}
+            <div class="forge-strip__save">${this._renderSaveState()}</div>
+          </header>
+        `
+        }
 
         ${this._renderPhaseBar()}
 

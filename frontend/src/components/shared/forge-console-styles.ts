@@ -4,6 +4,30 @@
  */
 import { css } from 'lit';
 
+/**
+ * The console's two micro-type steps, as Tier 3 component-local tokens.
+ *
+ * The Forge annotates everything with instrument labels and readouts that sit
+ * below the platform's smallest type token: `--text-xs` is 10.24px, `--text-sm`
+ * is 12.8px, and the console needs a step between them for readout body text.
+ * The phases had answered that by writing `font-size: 10px` and `11px` inline —
+ * forty-one times across four files — which is a scale nobody can retune.
+ *
+ * Both are derived from `--text-xs` rather than restated in pixels, so the
+ * console still moves if the type scale does. Include
+ * {@link forgeConsoleTypeTokens} in a component's `static styles` before use.
+ *
+ * Legacy inline values are being folded into these two as each rule is touched.
+ */
+export const forgeConsoleTypeTokens = css`
+  :host {
+    /* Instrument labels: division names, stamps, counters. */
+    --_forge-label: var(--text-xs);
+    /* Readout body: panel descriptions, hints, warnings. */
+    --_forge-readout: calc(var(--text-xs) * 1.075);
+  }
+`;
+
 export const forgeButtonStyles = css`
   .btn {
     padding: var(--space-2) var(--space-4);

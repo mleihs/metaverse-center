@@ -57,6 +57,16 @@ interface TimingRecord {
 class ForgeStateManager {
   // --- Core State ---
   readonly draft = signal<ForgeDraft | null>(null);
+  /**
+   * Epoch millis of the last write the server acknowledged, or `null` if this
+   * session has not saved yet.
+   *
+   * The wizard used to show a "Saved" badge for the mere existence of a draft,
+   * which said nothing about whether the last edit had reached the server. This
+   * is set only after `forgeApi.updateDraft` resolves.
+   */
+  readonly lastSavedAt = signal<number | null>(null);
+
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly isGenerating = signal(false);
@@ -266,10 +276,25 @@ class ForgeStateManager {
     if (!this.draft.value) return;
     try {
       await forgeApi.updateDraft(this.draft.value.id, data);
+      this.lastSavedAt.value = Date.now();
     } catch (err) {
       captureError(err, { source: 'ForgeStateManager._flushUpdate' });
       this.error.value = err instanceof Error ? err.message : 'Failed to save draft';
     }
+  }
+
+  /**
+   * Flush anything still waiting on the debounce timer.
+   *
+   * The wizard calls this before it lets the user leave, so "Save and leave"
+   * means the work is on the server rather than in a pending 500ms timeout.
+   */
+  async flushNow(): Promise<void> {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+    }
+    await this._flushPending();
   }
 
   async startResearch() {

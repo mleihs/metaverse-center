@@ -7498,22 +7498,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Image Generation Parameters</source>
   <target>Bildgenerierungs-Parameter</target>
 </trans-unit>
-<trans-unit id="sf5ce181404c7703f">
-  <source>How strictly the AI follows the prompt. Higher = more literal. Lower = more creative.</source>
-  <target>Wie streng die KI dem Prompt folgt. Höher = wörtlicher. Niedriger = kreativer.</target>
-</trans-unit>
-<trans-unit id="s1e4afa2230f7fb5d">
-  <source>7.5 is the default. Try 12 for photorealistic, 4 for dreamlike.</source>
-  <target>7,5 ist der Standard. Probier 12 für fotorealistisch, 4 für traumhaft.</target>
-</trans-unit>
-<trans-unit id="s7d5fdb806a82140d">
-  <source>Number of denoising iterations. More steps = more detail but slower generation.</source>
-  <target>Anzahl der Entrauschungs-Iterationen. Mehr Schritte = mehr Detail, aber langsamere Generierung.</target>
-</trans-unit>
-<trans-unit id="sd17a959451038c72">
-  <source>28 is a good balance. 50 for maximum quality.</source>
-  <target>28 ist ein guter Kompromiss. 50 für maximale Qualität.</target>
-</trans-unit>
 <trans-unit id="sad7b49e42d6ff377">
   <source>GUIDANCE</source>
   <target>GUIDANCE</target>
@@ -7565,10 +7549,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sbbaa66fa4373e3eb">
   <source>images</source>
   <target>Bilder</target>
-</trans-unit>
-<trans-unit id="sd73072c381d2c0f9">
-  <source>Estimated time: 3-5 minutes (background)</source>
-  <target>Geschätzte Dauer: 3–5 Minuten (im Hintergrund)</target>
 </trans-unit>
 <trans-unit id="s03b278b9d9f713a3">
   <source>By igniting this Shard, you will consume 1 Forge Token and permanently add this world to the multiverse. Hold the button for 2 seconds to confirm.</source>
@@ -7955,9 +7935,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s897972e2944cbd4c">
   <source>Mutation Prompt</source>
 <target>Mutations-Prompt</target></trans-unit>
-<trans-unit id="s7544a5916292e23c">
-  <source>Return to</source>
-<target>Zurück zu</target></trans-unit>
 <trans-unit id="s4fcd634b4ebc761b">
   <source>Add Section</source>
 <target>Abschnitt hinzufügen</target></trans-unit>
@@ -11683,10 +11660,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sd52c28ec5e8a6195">
   <source>Materializing</source>
   <target>Materialisierung</target>
-</trans-unit>
-<trans-unit id="s4cc3a5c4ba8ece2e">
-  <source>Materializing Assets</source>
-  <target>Objekte materialisieren</target>
 </trans-unit>
 <trans-unit id="s1850e83d7c17c607">
   <source>Purchase failed</source>
@@ -28344,6 +28317,170 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sfa677c967b501271">
   <source>No passage leads to it from room #<x id="0" equiv-text="${this.currentIndex}"/>.</source>
         <target>Von Raum #<x id="0" equiv-text="${this.currentIndex}"/> führt kein Gang dorthin.</target>
+</trans-unit>
+<trans-unit id="sd94da878e7b07b32">
+  <source>Operative slot <x id="0" equiv-text="${position}"/> – still empty</source>
+  <target>Operativen-Platz <x id="0" equiv-text="${position}"/> – noch leer</target>
+</trans-unit>
+<trans-unit id="s4d3bb23781928d72">
+  <source>Structure slot <x id="0" equiv-text="${position}"/> – still empty</source>
+  <target>Bauwerk-Platz <x id="0" equiv-text="${position}"/> – noch leer</target>
+</trans-unit>
+<trans-unit id="s23c5c4f970df7f30">
+  <source>Phase readiness</source>
+  <target>Stand der Phase</target>
+</trans-unit>
+<trans-unit id="s1046f216bbdb6dfa">
+  <source>Change seed</source>
+  <target>Seed ändern</target>
+</trans-unit>
+<trans-unit id="s1630411427d6016c">
+  <source>~<x id="0" equiv-text="${cost.totalImages}"/> images · about <x id="1" equiv-text="${minutes}"/> min of drafting · <x id="2" equiv-text="${cost.tokens}"/> Forge token</source>
+  <target>~<x id="0" equiv-text="${cost.totalImages}"/> Bilder · etwa <x id="1" equiv-text="${minutes}"/> Min Entwurfsarbeit · <x id="2" equiv-text="${cost.tokens}"/> Forge-Token</target>
+</trans-unit>
+<trans-unit id="s9644c0a9fb94b806">
+  <source>Choose a philosophical anchor to advance</source>
+  <target>Wähle einen philosophischen Anker, um fortzufahren</target>
+</trans-unit>
+<trans-unit id="s5a8f41d7411e555a">
+  <source>anchors offered</source>
+  <target>Anker angeboten</target>
+</trans-unit>
+<trans-unit id="s5fc5e3fa538cdbce">
+  <source>anchor chosen</source>
+  <target>Anker gewählt</target>
+</trans-unit>
+<trans-unit id="sec6fb94a15e9a463">
+  <source>Portraits and banner keep developing in the background – the world is ready to walk into now.</source>
+  <target>Portraits und Banner entwickeln im Hintergrund weiter – die Welt lässt sich schon jetzt betreten.</target>
+</trans-unit>
+<trans-unit id="s19e84b851836664f">
+  <source>Fast</source>
+  <target>Schnell</target>
+</trans-unit>
+<trans-unit id="s997fc2e10cccc800">
+  <source>Looser reading of the prompt, quickest to develop</source>
+  <target>Freiere Lesart der Vorgabe, am schnellsten entwickelt</target>
+</trans-unit>
+<trans-unit id="sad6cbc641d7ec134">
+  <source>The house setting</source>
+  <target>Die Hauseinstellung</target>
+</trans-unit>
+<trans-unit id="s00decbd8fed4f501">
+  <source>Maximum</source>
+  <target>Maximal</target>
+</trans-unit>
+<trans-unit id="s706b40385f03243d">
+  <source>Closest to the prompt, slowest to develop</source>
+  <target>Am nächsten an der Vorgabe, am langsamsten entwickelt</target>
+</trans-unit>
+<trans-unit id="s7b8b273a0121b0eb">
+  <source>Image Quality</source>
+  <target>Bildgüte</target>
+</trans-unit>
+<trans-unit id="s3f45df17267be844">
+  <source>How closely the image generator follows your style prompts, and how long it spends on each image.</source>
+  <target>Wie genau der Bildgenerator deinen Stilvorgaben folgt und wie lange er an jedem Bild arbeitet.</target>
+</trans-unit>
+<trans-unit id="sadfa8a7419623410">
+  <source>Balanced suits almost every world. Maximum is worth it for a showcase Shard.</source>
+  <target>Ausgewogen passt für fast jede Welt. Maximal lohnt sich für einen Schaustück-Splitter.</target>
+</trans-unit>
+<trans-unit id="s21b06c38fc4164db">
+  <source>Advanced</source>
+  <target>Erweitert</target>
+</trans-unit>
+<trans-unit id="s7d6094ddd9155b17">
+  <source>Guidance</source>
+  <target>Führung</target>
+</trans-unit>
+<trans-unit id="sd2023813cc70bf74">
+  <source>Steps</source>
+  <target>Schritte</target>
+</trans-unit>
+<trans-unit id="sbcf295db877db49b">
+  <source>This is the card as phase II will draw it, with the values above applied.</source>
+  <target>So zeichnet Phase II die Karte, mit den Werten von oben.</target>
+</trans-unit>
+<trans-unit id="sa617f3bb34fb7990">
+  <source>palette set</source>
+  <target>Palette gesetzt</target>
+</trans-unit>
+<trans-unit id="s0abb2a8bc2ae06bc">
+  <source>Contact Sheet</source>
+  <target>Kontaktbogen</target>
+</trans-unit>
+<trans-unit id="s70565f5e5afdeea4">
+  <source>Everything below becomes permanent when you ignite.</source>
+  <target>Alles hierunter wird mit der Zündung endgültig.</target>
+</trans-unit>
+<trans-unit id="sec5c10143d1a9f8b">
+  <source>The world is ready to enter as soon as it ignites; the images develop in the background for about 3 to 5 minutes after that.</source>
+  <target>Die Welt lässt sich betreten, sobald sie zündet; die Bilder entwickeln danach noch etwa 3 bis 5 Minuten im Hintergrund.</target>
+</trans-unit>
+<trans-unit id="s69b34a5cc05af674">
+  <source>districts</source>
+  <target>Bezirke</target>
+</trans-unit>
+<trans-unit id="s647e532c4f71e2cf">
+  <source>operatives</source>
+  <target>Operative</target>
+</trans-unit>
+<trans-unit id="sf87eeaedabb71e8f">
+  <source>structures</source>
+  <target>Bauwerke</target>
+</trans-unit>
+<trans-unit id="s614ab15b48c2586e">
+  <source>Discards <x id="0" equiv-text="${count}"/> drafted operatives.</source>
+  <target>Verwirft <x id="0" equiv-text="${count}"/> entworfene Operative.</target>
+</trans-unit>
+<trans-unit id="s55e60ee4e2adff1a">
+  <source>Discards <x id="0" equiv-text="${count}"/> drafted structures.</source>
+  <target>Verwirft <x id="0" equiv-text="${count}"/> entworfene Bauwerke.</target>
+</trans-unit>
+<trans-unit id="sea3c4f6cf5cd1e85">
+  <source>Replaces the survey of <x id="0" equiv-text="${count}"/> districts.</source>
+  <target>Ersetzt die Vermessung von <x id="0" equiv-text="${count}"/> Bezirken.</target>
+</trans-unit>
+<trans-unit id="s4fb3e8bdbec41be7">
+  <source>Overwrite – confirm</source>
+  <target>Überschreiben – bestätigen</target>
+</trans-unit>
+<trans-unit id="s40dcc42e1aa8d58c">
+  <source>Keep what is drafted</source>
+  <target>Entworfenes behalten</target>
+</trans-unit>
+<trans-unit id="s720c4d0f30ef914e">
+  <source>Working...</source>
+  <target>Arbeitet...</target>
+</trans-unit>
+<trans-unit id="sb2b44de8a70ae954">
+  <source><x id="0" equiv-text="${current}"/> of <x id="1" equiv-text="${total}"/></source>
+  <target><x id="0" equiv-text="${current}"/> von <x id="1" equiv-text="${total}"/></target>
+</trans-unit>
+<trans-unit id="s1e5c51d6cc3cf97e">
+  <source>Return to <x id="0" equiv-text="${s.label}"/></source>
+  <target>Zurück zu <x id="0" equiv-text="${s.label}"/></target>
+</trans-unit>
+<trans-unit id="scae17cb6aa68f7f4">
+  <source><x id="0" equiv-text="${cfg.agent_count}"/> operatives · <x id="1" equiv-text="${cfg.building_count}"/> structures · <x id="2" equiv-text="${cfg.zone_count}"/> districts</source>
+  <target><x id="0" equiv-text="${cfg.agent_count}"/> Operative · <x id="1" equiv-text="${cfg.building_count}"/> Bauwerke · <x id="2" equiv-text="${cfg.zone_count}"/> Bezirke</target>
+</trans-unit>
+<trans-unit id="s3056baa800b42c95">
+  <source>Back to the seed</source>
+  <target>Zurück zum Seed</target>
+</trans-unit>
+<trans-unit id="s5ac685dcf0a02ceb">
+  <source>Not saved yet</source>
+  <target>Noch nicht gespeichert</target>
+</trans-unit>
+<trans-unit id="sd4b8a4ae8aa32f76">
+  <source>Saved <x id="0" equiv-text="${time}"/></source>
+  <target>Gespeichert <x id="0" equiv-text="${time}"/></target>
+</trans-unit>
+<trans-unit id="s23d4b5f264f76fc6">
+  <source>Save and leave</source>
+  <target>Speichern und verlassen</target>
 </trans-unit>
 
 </body>

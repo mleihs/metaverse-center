@@ -312,6 +312,39 @@ These files are exempt from the token-only rule:
 
 ---
 
+## Type Scale: one documented exception
+
+The type-size rule is `--text-{xs…4xl}` (or `clamp()`), never raw `px`. One file
+is exempt, and it is exempt for a structural reason rather than by neglect:
+
+| File | Reason |
+|------|--------|
+| `shared/VelgGameCard.ts` | Closed, card-proportional px scale — see below |
+
+`<velg-game-card>` sizes its entire interior against `--card-w` / `--card-h`, and
+each element carries a per-variant ladder: the name is 7 / 10 / 13 / 16px across
+`xs` / `sm` / `md` / `lg`, the description 7 / 7 / 8 / 10px, the gems 7 / 9 / 11 /
+14px. Two things follow. The smallest steps sit **below the scale** — `--text-xs`
+is 10.24px, and an `xs` card needs 7px — so no token can express them. And the
+platform scale is viewport-relative, while these values must stay proportional to
+the card, which changes size independently of the page. Introducing `--text-*`
+into a handful of the file's 35 rules would produce a card whose parts no longer
+scale together.
+
+The rule for that file is therefore: **px, consistently, with a per-size ladder
+for every element that carries type.** A new rule there follows its neighbours.
+Everywhere else, including the Forge phases that host these cards, the token
+scale applies.
+
+Where the Forge console genuinely needs a step the scale does not have — its
+10px instrument labels and 11px readouts — that step is defined once as a Tier 3
+token pair (`--_forge-label`, `--_forge-readout` in
+`shared/forge-console-styles.ts`, derived from `--text-xs`) rather than written
+inline. Legacy inline values in the phase files are folded into it as each rule
+is touched.
+
+---
+
 ## Adding a New Semantic Token
 
 1. Add the `:root` default in `_colors.css`
