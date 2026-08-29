@@ -8,13 +8,22 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
 
 class BattleLogService:
-    """Service for recording and querying competitive event narratives."""
+    """Service for recording and querying competitive event narratives.
+
+    Writes always go through the service-role client, never the caller's.
+    The battle log is the server's account of what happened — a player must
+    never be able to author or edit a narrative entry. The RLS INSERT policy
+    is service-role-only to match (migration 275); the ``supabase`` argument
+    on the write helpers is kept for call-site symmetry and used for reads
+    only. Fog-of-war SELECT policies still apply to the read path.
+    """
 
     # ── Record ────────────────────────────────────────────
 
@@ -51,7 +60,9 @@ class BattleLogService:
             data["mission_id"] = str(mission_id)
 
         try:
-            resp = await supabase.table("battle_log").insert(data).execute()
+            # Privileged system write: service_role only (see class docstring).
+            admin = await get_admin_supabase_client()
+            resp = await admin.table("battle_log").insert(data).execute()
             return resp.data[0] if resp.data else data
         except (PostgrestAPIError, httpx.HTTPError):
             logger.error(

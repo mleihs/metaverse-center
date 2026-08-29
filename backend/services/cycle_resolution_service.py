@@ -12,6 +12,7 @@ from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.journal.hooks import enqueue_epoch_signature
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, not_found
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
@@ -182,6 +183,12 @@ class CycleResolutionService:
 
         Validates the epoch is in an active phase, sets has_acted_this_cycle,
         and logs a battle log event.
+
+        Returns the caller's participant state in ``PassCycleResponse`` shape —
+        the same contract toggle_ready() answers with, so the router's response
+        model validates for both. (Previously returned ``{"passed": True}``,
+        which failed response validation and turned every pass into a 500
+        AFTER the mark_acted write had already committed.)
         """
         from backend.services.epoch_service import EpochService
 
@@ -200,7 +207,17 @@ class CycleResolutionService:
             source_simulation_id=simulation_id,
             is_public=False,
         )
-        return {"passed": True}
+
+        participant = await maybe_single_data(
+            admin_supabase.table("epoch_participants")
+            .select("simulation_id, cycle_ready, has_acted_this_cycle")
+            .eq("epoch_id", str(epoch_id))
+            .eq("simulation_id", str(simulation_id))
+            .maybe_single()
+        )
+        if not participant:
+            raise not_found(detail="Participant not found in this epoch.")
+        return participant
 
     # ── Cycle Resolution ─────────────────────────────────────
 
@@ -240,7 +257,21 @@ class CycleResolutionService:
 
         data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
         config = {**DEFAULT_CONFIG, **data.get("config", {})}
-        cycle_number = data.get("current_cycle", 1)
+
+        # Two distinct cycle numbers, previously conflated into one.
+        # resolve_cycle() has already incremented, so `current_cycle` is the
+        # cycle players are about to act in -- not the one whose actions we are
+        # now resolving. Everything that RECORDS what just happened (mission
+        # outcomes, scores, alliance tension) belongs to the cycle that ended;
+        # everything that looks FORWARD (bot turns, upkeep on the RP just
+        # granted, expiry checks against `expires_at_cycle`) belongs to the new
+        # one. Labelling both with the new number shifted the entire score
+        # history one cycle to the right and left cycle 1 without a score row.
+        # resolve_cycle() always returns a re-fetched row whose current_cycle is
+        # >= 2 (start_epoch sets 1, fn_advance_epoch_cycle increments before this
+        # line runs), so the subtraction needs no floor.
+        cycle_number = data["current_cycle"]
+        resolved_cycle = cycle_number - 1
 
         db = admin_supabase or supabase
 
@@ -274,7 +305,7 @@ class CycleResolutionService:
             # Log mission results to battle log
             for mission in resolved:
                 try:
-                    await BattleLogService.log_mission_result(db, epoch_id, cycle_number, mission)
+                    await BattleLogService.log_mission_result(db, epoch_id, resolved_cycle, mission)
                 except (PostgrestAPIError, httpx.HTTPError):
                     logger.debug("Battle log write failed for mission result", exc_info=True)
         except (PostgrestAPIError, httpx.HTTPError):
@@ -315,10 +346,10 @@ class CycleResolutionService:
 
         # Compute scores after missions resolve (best-effort)
         try:
-            await ScoringService.compute_cycle_scores(supabase, epoch_id, cycle_number)
+            await ScoringService.compute_cycle_scores(supabase, epoch_id, resolved_cycle)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, AttributeError) as exc:
             logger.warning(
-                "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number}, exc_info=True
+                "Scoring failed", extra={"epoch_id": str(epoch_id), "cycle_number": resolved_cycle}, exc_info=True
             )
             sentry_sdk.capture_exception(exc)
 
@@ -327,7 +358,7 @@ class CycleResolutionService:
         tension_results = None
         if resolved is not None:
             try:
-                tension_results = await AllianceService.compute_tension(db, epoch_id, cycle_number)
+                tension_results = await AllianceService.compute_tension(db, epoch_id, resolved_cycle)
                 dissolved = [r for r in tension_results if r.get("dissolved")]
                 if dissolved:
                     logger.info(
@@ -374,7 +405,7 @@ class CycleResolutionService:
         # Journal: Signature fragment per participant. Runs after scoring
         # is committed so dimension_dominance reflects this cycle's data.
         # Fire-and-forget — the helper absorbs all failures internally.
-        await enqueue_epoch_signature(db, epoch_id, cycle_number)
+        await enqueue_epoch_signature(db, epoch_id, resolved_cycle)
 
         return data
 

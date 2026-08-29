@@ -461,12 +461,23 @@ export class VelgEpochCreationWizard extends LitElement {
         margin-top: var(--space-3);
         padding: var(--space-2) var(--space-3);
         /* Der Balken war Doppelung: der Kasten steht bereits auf
-           --color-danger-bg und traegt sein Warnsymbol in derselben Farbe. */
+           --color-danger-bg und traegt sein Warnsymbol in derselben Farbe.
+           Als der Balken fiel, war das Symbol allerdings noch nicht da — das
+           flex/gap hier stand fuer eines, das nie eingebaut wurde, und uebrig
+           blieb ein blockierender Hinweis, der auf dem dunklen Grund fast
+           verschwand. Symbol nachgereicht, damit die Begruendung traegt. */
         background: var(--color-danger-bg);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
         line-height: var(--leading-snug);
         color: var(--color-text-primary);
+      }
+
+      .config-warning__icon {
+        display: flex;
+        flex-shrink: 0;
+        margin-top: 1px;
+        color: var(--color-danger);
       }
 
       /* ── Toggle Switch ───────────────────── */
@@ -1552,7 +1563,14 @@ export class VelgEpochCreationWizard extends LitElement {
 
         ${
           this._phaseOverlapError()
-            ? html`<div class="config-warning" role="alert">${this._phaseOverlapError()}</div>`
+            ? html`
+              <div class="config-warning" role="alert">
+                <span class="config-warning__icon" aria-hidden="true">
+                  ${icons.alertTriangle(16)}
+                </span>
+                <span>${this._phaseOverlapError()}</span>
+              </div>
+            `
             : nothing
         }
       </div>

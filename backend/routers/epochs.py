@@ -12,6 +12,7 @@ from backend.dependencies import (
     get_effective_supabase,
     require_epoch_creator,
     require_epoch_participant,
+    require_epoch_participant_path,
 )
 from backend.models.aptitude import DraftRequest
 from backend.models.bot import AddBotToEpoch
@@ -470,9 +471,16 @@ async def draft_agents(
     simulation_id: UUID,
     body: DraftRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
+    _participant: Annotated[dict, Depends(require_epoch_participant_path())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ParticipantResponse]:
-    """Lock in a draft roster for a participant (lobby phase only)."""
+    """Lock in a draft roster for a participant (lobby phase only). Own roster only.
+
+    The endpoint had no authorisation gate: the service validated that every
+    drafted agent belongs to the named simulation, but nothing checked that the
+    caller owns that simulation. Any authenticated user could overwrite any
+    player's roster before the epoch started.
+    """
     data = await EpochService.draft_agents(supabase, epoch_id, simulation_id, body.agent_ids)
     await AuditService.safe_log(
         supabase,
@@ -522,9 +530,15 @@ async def remove_bot_from_epoch(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _creator_check: Annotated[None, Depends(require_epoch_creator())],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
 ) -> SuccessResponse[MessageResponse]:
-    """Remove a bot participant from epoch lobby. Creator only."""
-    await EpochService.remove_bot(supabase, epoch_id, participant_id)
+    """Remove a bot participant from epoch lobby. Creator only.
+
+    Runs on the admin client: bot participant rows carry no user_id, so the
+    `user_id = auth.uid()` DELETE policy never matched them and the removal
+    silently affected zero rows while still reporting success.
+    """
+    await EpochService.remove_bot(admin_supabase, epoch_id, participant_id)
     await AuditService.safe_log(
         supabase,
         None,

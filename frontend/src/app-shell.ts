@@ -236,6 +236,24 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        // Deep link to one epoch. MUST stay after '/epoch/join' so the literal
+        // segment wins. Every cycle/phase/completion notification email links
+        // here, and the onboarding academy hand-off lands here too.
+        path: '/epoch/:epochId',
+        render: ({ epochId }) =>
+          html`<velg-epoch-command-center .epochId=${epochId ?? ''}></velg-epoch-command-center>`,
+        enter: async () => {
+          await this._authReady;
+          if (!(await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))))
+            return false;
+          seoService.setTitle(['Epoch Command Center']);
+          seoService.setCanonical('/epoch');
+          seoService.setRobots('noindex');
+          analyticsService.trackPageView('/epoch/:id', document.title);
+          return true;
+        },
+      },
+      {
         path: '/forge',
         render: () =>
           appState.canForge.value
@@ -1270,7 +1288,7 @@ export class VelgApp extends LitElement {
       .createQuickAcademy()
       .then((resp) => {
         if (resp.success && resp.data) {
-          navigate(`/epochs/${resp.data.id}`);
+          navigate(`/epoch/${resp.data.id}`);
         }
       })
       .catch((err) => captureError(err, { source: 'VelgApp._handleOnboardingAcademy' }));

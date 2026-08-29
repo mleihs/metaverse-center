@@ -537,11 +537,43 @@ def require_architect():
     return _check_architect
 
 
+async def _load_epoch_participant(
+    epoch_id: UUID,
+    simulation_id: UUID,
+    user: CurrentUser,
+    supabase: Client,
+) -> dict:
+    """Fetch the caller's participant row, or raise 403.
+
+    Shared by both `require_epoch_participant` variants so the authorisation
+    query has exactly one definition.
+    """
+    resp = await (
+        supabase.table("epoch_participants")
+        .select("id, simulation_id, user_id, current_rp")
+        .eq("epoch_id", str(epoch_id))
+        .eq("simulation_id", str(simulation_id))
+        .eq("user_id", str(user.id))
+        .limit(1)
+        .execute()
+    )
+    if not resp.data:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "You are not a participant in this epoch with this simulation.",
+        )
+    return resp.data[0]
+
+
 def require_epoch_participant():
     """Dependency that checks the user is a participant in the epoch.
 
     Requires `epoch_id` as a path parameter and `simulation_id` as a query parameter.
     Returns the participant row dict (id, simulation_id, user_id, current_rp).
+
+    For routes that carry `simulation_id` in the PATH instead, use
+    `require_epoch_participant_path()` — FastAPI resolves the parameter source
+    from the annotation, so the two cannot share one signature.
     """
 
     async def _check(
@@ -550,21 +582,26 @@ def require_epoch_participant():
         user: CurrentUser = Depends(get_current_user),
         supabase: Client = Depends(get_supabase),
     ) -> dict:
-        resp = await (
-            supabase.table("epoch_participants")
-            .select("id, simulation_id, user_id, current_rp")
-            .eq("epoch_id", str(epoch_id))
-            .eq("simulation_id", str(simulation_id))
-            .eq("user_id", str(user.id))
-            .limit(1)
-            .execute()
-        )
-        if not resp.data:
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN,
-                "You are not a participant in this epoch with this simulation.",
-            )
-        return resp.data[0]
+        return await _load_epoch_participant(epoch_id, simulation_id, user, supabase)
+
+    return _check
+
+
+def require_epoch_participant_path():
+    """Same check as `require_epoch_participant`, for `simulation_id` in the path.
+
+    Used by `/epochs/{epoch_id}/participants/{simulation_id}/draft`, which had
+    no authorisation gate at all: the roster write validated that the drafted
+    agents belong to the named simulation, but never that the CALLER owns it.
+    """
+
+    async def _check(
+        epoch_id: Annotated[UUID, Path()],
+        simulation_id: Annotated[UUID, Path()],
+        user: CurrentUser = Depends(get_current_user),
+        supabase: Client = Depends(get_supabase),
+    ) -> dict:
+        return await _load_epoch_participant(epoch_id, simulation_id, user, supabase)
 
     return _check
 

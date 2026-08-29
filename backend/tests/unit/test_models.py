@@ -95,3 +95,80 @@ class TestPaginatedResponse:
         assert response.success is True
         assert response.data == []
         assert response.meta.count == 0
+
+
+# ── EpochConfig ────────────────────────────────────────────────
+
+
+class TestEpochConfigPhaseBudget:
+    """foundation + reckoning must leave room for a competition phase.
+
+    Before validate_phase_budget existed this was only checked in
+    start_epoch() — i.e. after the lobby had filled and invitations had gone
+    out. The creation wizard happily produced 1 day / 24h cycles (one cycle
+    total) with foundation 1 + reckoning 2, showed "Competition 0 cycles",
+    and created an epoch that could never be started.
+    """
+
+    @pytest.mark.parametrize(
+        ("duration_days", "cycle_hours", "foundation", "reckoning"),
+        [
+            (1, 2, 1, 2),      # blitz preset
+            (3, 4, 2, 3),      # sprint preset
+            (14, 8, 4, 8),     # standard preset
+            (28, 8, 6, 12),    # marathon preset
+        ],
+    )
+    def test_shipped_presets_are_valid(self, duration_days, cycle_hours, foundation, reckoning):
+        from backend.models.epoch import EpochConfig
+
+        config = EpochConfig(
+            duration_days=duration_days,
+            cycle_hours=cycle_hours,
+            foundation_cycles=foundation,
+            reckoning_cycles=reckoning,
+        )
+        total = (duration_days * 24) // cycle_hours
+        assert config.foundation_cycles + config.reckoning_cycles < total
+
+    def test_rejects_phase_overlap(self):
+        from pydantic import ValidationError
+
+        from backend.models.epoch import EpochConfig
+
+        with pytest.raises(ValidationError) as exc:
+            # 1 day at 24h cycles == 1 cycle total; 1 + 2 does not fit.
+            EpochConfig(duration_days=1, cycle_hours=24, foundation_cycles=1, reckoning_cycles=2)
+        assert "Phase overlap" in str(exc.value)
+
+    def test_rejects_exact_fit_leaving_no_competition(self):
+        from pydantic import ValidationError
+
+        from backend.models.epoch import EpochConfig
+
+        # 1 day at 2h cycles == 12 cycles; 4 + 8 leaves zero competition cycles.
+        with pytest.raises(ValidationError):
+            EpochConfig(duration_days=1, cycle_hours=2, foundation_cycles=4, reckoning_cycles=8)
+
+    def test_default_mode_stays_manual_for_existing_epochs(self):
+        """The wizard sends 'activity_gated'; the default must not change.
+
+        Epochs created before the wizard sent auto_resolve_mode carry no value
+        for it, and switching the default would silently arm deadlines and AFK
+        penalties on games already in progress.
+        """
+        from backend.models.epoch import EpochConfig
+
+        assert EpochConfig().auto_resolve_mode == "manual"
+
+    def test_legacy_config_keys_are_ignored(self):
+        """referee_mode / min_cycle_duration_minutes were removed as dead fields.
+
+        Live epochs still carry them in their JSONB config, so parsing must not
+        break on them.
+        """
+        from backend.models.epoch import EpochConfig
+
+        config = EpochConfig(**{"referee_mode": True, "min_cycle_duration_minutes": 30})
+        assert not hasattr(config, "referee_mode")
+        assert config.cycle_deadline_minutes == 480

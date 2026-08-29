@@ -496,6 +496,31 @@ min_cycle_duration_minutes: int = 60  # Mindestens 1h auch bei All-Ready
 6. Kompatibel mit bestehendem Ready-Mechanismus (Erweiterung, kein Ersatz)
 7. Folgt dem Dominions-Hybrid-Pattern (Timer + Democracy + Host)
 
+> ## Umsetzungsstand (2026-08-29)
+>
+> Umgesetzt sind **`manual`** und **`activity_gated`** (Variation C). Die Modi
+> `hard_deadline`, `deadline_or_ready` und `fixed_schedule` sind Entwurf
+> geblieben und wurden aus dem `Literal` in `backend/models/epoch.py` entfernt:
+> ein Wert, den die Config annimmt, den aber keine Codestelle auswertet, liest
+> sich an jedem `!= "manual"`-Vergleich wie ein funktionierendes Feature.
+>
+> Bis 2026-08-29 hat der Erstellungs-Wizard `auto_resolve_mode` **überhaupt
+> nicht mitgeschickt**. Jede über die Oberfläche angelegte Epoche fiel damit auf
+> den Backend-Default `manual` zurück — und mit ihr lag das gesamte hier
+> spezifizierte Subsystem still: keine Deadline, kein Countdown, kein
+> Aktivitätsgate, kein Pass-Button, keine AFK-Behandlung. Der
+> `EpochCycleScheduler` lief seit seinem Start alle 30 Sekunden und fand
+> konstruktionsbedingt nie eine Epoche mit `cycle_deadline_at`. Der Wizard
+> setzt jetzt `activity_gated` für alle neuen Epochen; bestehende bleiben
+> `manual`.
+>
+> **`min_cycle_duration_minutes` ist ersatzlos entfallen.** Das Feld war nie
+> ausgewertet worden. Der Schutz, den es beschreibt — die All-Ready-Beschleunigung
+> darf einen Zyklus nicht in Sekunden durchrauschen — ist mit aktivem
+> `activity_gated` erst jetzt überhaupt relevant und braucht eine eigene
+> Umsetzung (frühester Auflösungszeitpunkt im Sweep des Schedulers), nicht ein
+> Config-Feld ohne Wirkung.
+
 ### Implementierungsempfehlung: Modularer Ansatz
 
 Alle 5 Variationen teilen gemeinsame Infrastruktur. Implementiere `auto_resolve_mode` als Config-Wert in `EpochConfig`, sodass der Epoch-Creator den Modus wählen kann:

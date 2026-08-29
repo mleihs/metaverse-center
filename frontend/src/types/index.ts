@@ -1179,17 +1179,12 @@ export interface EpochConfig {
   max_agents_per_player: number;
   allow_betrayal: boolean;
   score_weights: EpochScoreWeights;
-  referee_mode: boolean;
-  // Auto-resolve (defaults to "manual" for backward compat)
-  // Only 'manual' and 'activity_gated' are implemented. Others are spec stubs.
-  auto_resolve_mode?:
-    | 'manual'
-    | 'hard_deadline'
-    | 'deadline_or_ready'
-    | 'activity_gated'
-    | 'fixed_schedule';
+  // How a cycle ends. Defaults to 'manual' for epochs created before the
+  // wizard sent this field; new epochs get 'activity_gated'. The three
+  // unimplemented spec variations were removed from the union — an accepted
+  // value that no code path honours reads as a working feature.
+  auto_resolve_mode?: 'manual' | 'activity_gated';
   cycle_deadline_minutes?: number;
-  min_cycle_duration_minutes?: number;
   require_action_for_ready?: boolean;
   afk_penalty_enabled?: boolean;
   afk_rp_penalty?: number;
@@ -1400,6 +1395,25 @@ export interface MVPAward {
   simulation_id: UUID;
   simulation_name: string;
   value: number;
+}
+
+/** Participant cycle state returned by the ready + pass-cycle endpoints.
+ *  `auto_resolved` / `new_cycle` are only populated when a ready signal
+ *  completed the roster and triggered cycle resolution. */
+export interface CycleReadyState {
+  simulation_id: UUID;
+  cycle_ready: boolean;
+  has_acted_this_cycle: boolean;
+  auto_resolved: boolean;
+  auto_resolve_error: boolean;
+  new_cycle: number | null;
+}
+
+/** Result of a join-team / leave-team action. */
+export interface TeamActionResult {
+  simulation_id: UUID;
+  team_id: UUID | null;
+  action: 'join' | 'leave';
 }
 
 export interface ResultsSummary {

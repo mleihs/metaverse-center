@@ -85,6 +85,7 @@ tags: [index, catalog, documentation]
 | [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
+| [Epoch Mode — Full Audit and Remediation](analysis/epoch-audit-2026-08-29.md) | 1.0 | 2026-08-29 | en | active |
 | [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
 
 ## Audits (1)

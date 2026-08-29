@@ -41,6 +41,21 @@ class EpochScoreWeights(BaseModel):
         return self
 
 
+def total_cycles_for(duration_days: int, cycle_hours: int) -> int:
+    """Total cycles an epoch runs for.
+
+    Single Python definition of a formula that had drifted into four copies
+    (this model, EpochLifecycleService.start_epoch, OperativeMissionService,
+    UserDashboardService). It is also implemented in SQL inside
+    fn_advance_epoch_cycle and in TypeScript in `frontend/src/utils/epoch.ts`;
+    those two cannot share this one, but they must not diverge from it — all
+    three use integer/floor division on the same inputs.
+    """
+    if cycle_hours <= 0:
+        return 0
+    return (duration_days * 24) // cycle_hours
+
+
 class EpochConfig(BaseModel):
     """Epoch configuration stored as JSONB in game_epochs.config."""
 
@@ -54,20 +69,21 @@ class EpochConfig(BaseModel):
     max_agents_per_player: int = Field(6, ge=4, le=8)
     allow_betrayal: bool = True
     score_weights: EpochScoreWeights = Field(default_factory=EpochScoreWeights)
-    referee_mode: bool = False
 
     # ── Auto-Resolve ──────────────────────────────────────────
-    # Default "manual" preserves IST-Verhalten for existing epochs.
-    # Epoch creation UI sets "activity_gated" as the recommended value.
-    auto_resolve_mode: Literal[
-        "manual",
-        "hard_deadline",  # not yet implemented
-        "deadline_or_ready",  # not yet implemented
-        "activity_gated",
-        "fixed_schedule",  # not yet implemented
-    ] = "manual"
+    # "manual" stays the default so epochs created before the creation wizard
+    # started sending this field keep their behaviour. The wizard now sends
+    # "activity_gated" for every new epoch — until it did, the entire deadline /
+    # AFK / pass subsystem (migration 204, EpochCycleScheduler, the countdown
+    # and the pass button) was unreachable in production.
+    #
+    # Only the two modes below are implemented. Three further variations are
+    # described in docs/specs/epoch-auto-resolve-team-pvp.md ("hard_deadline",
+    # "deadline_or_ready", "fixed_schedule") and are deliberately NOT part of
+    # this Literal: an accepted-but-inert config value reads as a working
+    # feature at every call site that checks `!= "manual"`.
+    auto_resolve_mode: Literal["manual", "activity_gated"] = "manual"
     cycle_deadline_minutes: int = Field(480, ge=15, le=2880)
-    min_cycle_duration_minutes: int = Field(15, ge=5, le=120)
     require_action_for_ready: bool = False
 
     # ── AFK Handling ──────────────────────────────────────────
@@ -98,9 +114,20 @@ class EpochConfig(BaseModel):
     proposal_expiry_cycles: int = Field(2, ge=1, le=5)
 
     @model_validator(mode="after")
-    def validate_deadline_vs_min(self) -> "EpochConfig":
-        if self.cycle_deadline_minutes < self.min_cycle_duration_minutes:
-            msg = "cycle_deadline_minutes must be >= min_cycle_duration_minutes"
+    def validate_phase_budget(self) -> "EpochConfig":
+        """Foundation + reckoning must leave at least one competition cycle.
+
+        EpochLifecycleService.start_epoch() rejects an overlap too — but only
+        once the lobby has filled and invitations have gone out. Validating at
+        construction means an unstartable epoch cannot be created in the first
+        place.
+        """
+        total_cycles = total_cycles_for(self.duration_days, self.cycle_hours)
+        if self.foundation_cycles + self.reckoning_cycles >= total_cycles:
+            msg = (
+                f"Phase overlap: foundation ({self.foundation_cycles}) + reckoning "
+                f"({self.reckoning_cycles}) must be less than total cycles ({total_cycles})."
+            )
             raise ValueError(msg)
         return self
 
@@ -370,6 +397,14 @@ class LeaderboardEntry(BaseModel):
     ally_count: int = 0
     ally_bonus_pct: float = 0.0
     betrayal_penalty: float = 0.0
+    # Dimension titles — awarded by ScoringService.get_final_standings() to the
+    # best performer per dimension. Declared here so response serialisation
+    # keeps them; without these fields Pydantic silently dropped every title.
+    stability_title: str | None = None
+    influence_title: str | None = None
+    sovereignty_title: str | None = None
+    diplomatic_title: str | None = None
+    military_title: str | None = None
 
 
 # ── Battle Log ───────────────────────────────────────────────────
@@ -465,11 +500,21 @@ class OperativeTypeInfo(BaseModel):
 
 
 class PassCycleResponse(BaseModel):
-    """Response for pass-cycle / toggle-ready endpoints."""
+    """Response for pass-cycle / toggle-ready endpoints.
+
+    Both endpoints return the caller's participant state after the action.
+    ``auto_resolved`` / ``new_cycle`` are only populated by toggle-ready when
+    the signal completed the roster and triggered a cycle resolution — the
+    frontend reads ``new_cycle`` to drive the cycle-advance overlay, so it must
+    survive response serialisation.
+    """
 
     simulation_id: UUID
     cycle_ready: bool = False
+    has_acted_this_cycle: bool = False
     auto_resolved: bool = False
+    auto_resolve_error: bool = False
+    new_cycle: int | None = None
 
 
 class TeamActionResponse(BaseModel):
@@ -477,7 +522,7 @@ class TeamActionResponse(BaseModel):
 
     simulation_id: UUID
     team_id: UUID | None = None
-    action: str
+    action: Literal["join", "leave"]
 
 
 class FortifyZoneResponse(BaseModel):
@@ -489,10 +534,26 @@ class FortifyZoneResponse(BaseModel):
     cost_rp: int
 
 
-class ResultsSummaryResponse(BaseModel):
-    """Comprehensive epoch results (standings, history, awards)."""
+class ResultsSummaryEpoch(BaseModel):
+    """Epoch identity block embedded in the results summary."""
 
+    id: UUID
+    name: str = ""
+    epoch_type: str = "competitive"
+    status: str
+    current_cycle: int = 1
+
+
+class ResultsSummaryResponse(BaseModel):
+    """Comprehensive epoch results (standings, history, awards).
+
+    ``score_history`` is keyed by simulation_id — one chronologically ordered
+    list of per-cycle score rows per participant, which is what the results
+    view charts. It is NOT a flat list.
+    """
+
+    epoch: ResultsSummaryEpoch
     standings: list[dict]
-    score_history: list[dict]
+    score_history: dict[str, list[dict]]
     mvp_awards: list[dict]
     participant_stats: list[dict]

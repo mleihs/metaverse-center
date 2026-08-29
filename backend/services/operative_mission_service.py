@@ -10,7 +10,12 @@ from uuid import UUID
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.epoch import DEFAULT_EPOCH_CONFIG, OperativeDeploy, ResonanceOpType
+from backend.models.epoch import (
+    DEFAULT_EPOCH_CONFIG,
+    OperativeDeploy,
+    ResonanceOpType,
+    total_cycles_for,
+)
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
 from backend.services.constants import (
@@ -692,9 +697,15 @@ class OperativeMissionService:
         )
 
         if is_detected:
+            # SECDEF privileged writes: service_role only (ADR-006 / migration
+            # 275). Both statements mutate OTHER players' rows (every ally loses
+            # the team, the betrayer takes a scoring penalty) — the user client
+            # can no longer reach them, and never should have been able to.
+            admin = await get_admin_supabase_client()
+
             # Dissolve alliance -- remove all members from team
             await (
-                supabase.table("epoch_participants")
+                admin.table("epoch_participants")
                 .update({"team_id": None})
                 .eq("epoch_id", mission["epoch_id"])
                 .eq("team_id", source_team)
@@ -703,7 +714,7 @@ class OperativeMissionService:
 
             # Apply -25% diplomatic penalty to betrayer
             await (
-                supabase.table("epoch_participants")
+                admin.table("epoch_participants")
                 .update({"betrayal_penalty": 0.25})
                 .eq("epoch_id", mission["epoch_id"])
                 .eq("simulation_id", mission["source_simulation_id"])
@@ -1258,7 +1269,7 @@ class OperativeMissionService:
         if "foundation_cycles" in config:
             foundation_cycles = config["foundation_cycles"]
         else:
-            total_cycles = (config.get("duration_days", 14) * 24) // config.get("cycle_hours", 8)
+            total_cycles = total_cycles_for(config.get("duration_days", 14), config.get("cycle_hours", 8))
             foundation_cycles = round(total_cycles * config.get("foundation_pct", 10) / 100)
         expires_at_cycle = foundation_cycles + FORTIFICATION_DURATION_CYCLES
 

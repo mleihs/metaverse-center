@@ -645,8 +645,14 @@ class TestBotParticipants:
             data={"id": str(participant_id), "is_bot": True}
         ))
 
+        # PostgREST returns the deleted rows. An empty list means nothing was
+        # removed — remove_bot now surfaces that instead of reporting success
+        # (bot rows carry no user_id, so the RLS DELETE policy used to filter
+        # them out and the removal silently did nothing).
         delete_chain = _make_chain()
-        delete_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        delete_chain.execute = AsyncMock(return_value=MagicMock(
+            data=[{"id": str(participant_id)}]
+        ))
 
         call_counts: dict[str, int] = {}
 
@@ -664,6 +670,39 @@ class TestBotParticipants:
         sb.table.side_effect = table_router
 
         await EpochService.remove_bot(sb, EPOCH_ID, participant_id)
+
+    @pytest.mark.asyncio
+    async def test_remove_bot_raises_when_delete_matches_nothing(self):
+        """A DELETE that affects zero rows must not report success."""
+        participant_id = uuid4()
+        sb = MagicMock()
+
+        epoch_chain = _make_chain()
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"id": str(EPOCH_ID), "status": "lobby"}
+        ))
+        p_chain = _make_chain()
+        p_chain.execute = AsyncMock(return_value=MagicMock(
+            data={"id": str(participant_id), "is_bot": True}
+        ))
+        delete_chain = _make_chain()
+        delete_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+
+        call_counts: dict[str, int] = {}
+
+        def table_router(name):
+            call_counts[name] = call_counts.get(name, 0) + 1
+            if name == "game_epochs":
+                return epoch_chain
+            if name == "epoch_participants":
+                return p_chain if call_counts[name] == 1 else delete_chain
+            return _make_chain()
+
+        sb.table.side_effect = table_router
+
+        with pytest.raises(HTTPException) as exc:
+            await EpochService.remove_bot(sb, EPOCH_ID, participant_id)
+        assert exc.value.status_code == 500
 
     @pytest.mark.asyncio
     async def test_remove_bot_rejects_non_bot_participant(self):
