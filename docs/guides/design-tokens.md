@@ -376,12 +376,90 @@ The three-font-family system (mono headings + serif body + sans UI) is the "inte
 
 ---
 
+## Auszeichnung — how a box says what it is
+
+**Never put a coloured bar down one edge of a box.** A `border-left` of 2px or
+more in a status or accent colour is rejected by
+`frontend/scripts/lint-no-accent-edge-bar.sh`.
+
+It is the single gesture that makes an interface read as machine-assembled:
+every card wears the same slab, the slab has no shape of its own, and a screen
+full of them reads as a template rather than as a document. This platform's
+aesthetic is a Cold War intelligence dossier — registration marks, stamps,
+typewriter labels — and none of those is a coloured stripe.
+
+The bar had spread to 110 declarations across 66 files, and it was doing four
+different jobs at once. That is why removing it needed a vocabulary rather than
+a delete. The vocabulary lives in `components/shared/marker-styles.ts`:
+
+| The job | The device |
+|:--------|:-----------|
+| Identity / category — which shard, which archetype | `markerCornerStyles` → `.marker-corners`: two L-brackets, top-left and bottom-right, in the accent colour |
+| Status / severity — danger, warning, success | `markerStatusStyles` → `.status-mark`: a Courier micro-label whose WORD carries the colour; the container stays neutral |
+| Emphasis — this one is featured | No new device. The existing `--shadow-*` tokens say "lifted" better than a stripe does |
+| Grouping — a quote, a nested block | `markerQuoteStyles` → `.marker-quote`: a **neutral** 1px hairline, or `.marker-indent` for flowing prose |
+
+Two further idioms, for boxes that are the wrong frame to begin with: a
+**letterbox band with a vertical gradient** instead of an edge on a wide plate,
+and a **hanging indent** instead of a rule on flowing prose.
+
+### Ask this first: what is the colour already saying?
+
+Most of the 110 needed no replacement at all. They were the third or fourth
+signal for something the box said already — a tinted background, a coloured
+label, an icon beside it. `.msg--error` in `terminal-theme-styles.ts` said
+"error" **four times**: tinted background, full border in the danger colour, a
+3px bar, and its own text set in danger-coloured bold uppercase.
+
+So the order of questions is:
+
+1. **Is the colour already there?** Tinted background, coloured label, icon,
+   coloured text. If yes, delete the bar and stop. ⚠ *Check what it doubles —
+   do not infer it from the layout.* A `display: flex; gap` is not proof that
+   an icon exists.
+2. **Does the box already have a border?** Then colour the WHOLE border
+   (40–55% mixed against `--color-border`), not one edge. Remember to convert
+   any `border-left-color` in `:hover`, `:disabled` and keyframe rules to
+   `border-color` — otherwise they colour an edge that no longer exists.
+3. **Is it a button?** Same: the whole border. A button is already a shape; a
+   bracket in front of it is an appendage.
+4. **Is it a quote or a nested block?** Keep the rule, drop the colour.
+5. **Otherwise** it is identity, and it gets corner brackets.
+
+### What is NOT a violation
+
+- **Selection markers on list rows** (`--active`, `--selected`, `--current`,
+  `:hover`, `:focus`). A coloured edge on the active row of a navigation list
+  is a POSITION indicator, not decoration, and it says something the box says
+  nowhere else. The gate skips these by selector.
+- **1px in any colour** — a quote rule is typography and predates the web.
+- **Any width in a neutral colour.**
+- **A `border-left` paired with `border-top`/`border-bottom`** — that is one
+  corner of a bracket, the very idiom this rule steers towards.
+- **A panel's own edge against the page** (a fixed drawer's seam). Allowlisted
+  by filename in `frontend/scripts/lint-accent-edge-bar.py`.
+
+### Two build forms the gate cannot see
+
+The gate reads CSS rules. Two other forms exist and were found by hand:
+
+- an inline `style="border-left: 3px solid ${themeColor}"` in a template
+  (`SimulationsDashboard`), and
+- a narrow absolutely positioned `::before` painted in an accent colour
+  (`.dossier-card`, which used a component-local `--dossier-color` and so fell
+  through every colour-name pattern).
+
+When reviewing a new component, look for those two by eye.
+
+---
+
 ## Enforcement
 
 Run the lint gate to check for violations:
 
 ```bash
-bash frontend/scripts/lint-color-tokens.sh
+bash frontend/scripts/lint-color-tokens.sh      # raw hex / rgb()
+bash frontend/scripts/lint-no-accent-edge-bar.sh # coloured edge bars
 ```
 
 Add `// lint-color-ok` to a line to suppress false positives (use sparingly, document why).

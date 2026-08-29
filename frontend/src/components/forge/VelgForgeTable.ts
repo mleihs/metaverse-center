@@ -295,19 +295,19 @@ export class VelgForgeTable extends LitElement {
 
       @keyframes panel-beckon {
         0% {
-          border-left-color: var(--color-text-muted);
+          border-color: var(--color-text-muted);
           box-shadow: none;
         }
         25% {
-          border-left-color: var(--color-success);
+          border-color: var(--color-success);
           box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
         }
         65% {
-          border-left-color: var(--color-success);
+          border-color: var(--color-success);
           box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
         }
         100% {
-          border-left-color: var(--color-text-muted);
+          border-color: var(--color-text-muted);
           box-shadow: none;
         }
       }

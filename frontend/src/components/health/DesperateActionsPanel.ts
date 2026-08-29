@@ -200,8 +200,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
 
     .action:hover,
     .action:focus-visible {
-      border-color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
-      border-left-color: var(--action-color);
+      border-color: var(--action-color);
       background: color-mix(in srgb, var(--action-color) 4%, var(--color-surface-raised));
       box-shadow: 0 0 12px color-mix(in srgb, var(--action-color) 8%, transparent);
     }

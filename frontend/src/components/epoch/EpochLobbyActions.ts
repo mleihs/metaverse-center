@@ -433,8 +433,8 @@ export class VelgEpochLobbyActions extends LitElement {
       gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--slot-accent, var(--color-success));
+      /* Die Fraktionsfarbe des Platzes faerbt den ganzen Rahmen. */
+      border: 1px solid var(--slot-accent, var(--color-success));
       opacity: 0;
       animation: slot-enter 300ms ease forwards;
       animation-delay: calc(var(--i, 0) * 60ms);

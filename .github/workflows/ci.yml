@@ -80,6 +80,14 @@ jobs:
         run: bash frontend/scripts/lint-no-backtick-in-css.sh
         working-directory: .
 
+      # A coloured bar down one edge of a card is the single gesture that makes
+      # an interface read as machine-assembled. Removed from 110 declarations
+      # across 66 files; the vocabulary that replaces it lives in
+      # components/shared/marker-styles.ts.
+      - name: Marker lint (no coloured edge bars)
+        run: bash frontend/scripts/lint-no-accent-edge-bar.sh
+        working-directory: .
+
       # Guards the guards: a lint script whose grep target does not exist under
       # the caller's cwd prints PASS instead of failing. Six frontend gates were
       # silent no-ops in this very job until 2026-08-28.

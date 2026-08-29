@@ -133,14 +133,15 @@ export class VelgDriftEffectCards extends LitElement {
         gap: var(--space-2);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface);
-        border: var(--border-width-thin) solid var(--color-border);
-        border-left: var(--border-width-thick) solid var(--_applied);
+        /* Der Zustand der Karte (angewandt / gefiltert) faerbt den ganzen
+           Rahmen; die Filterregel darunter zieht nach. */
+        border: var(--border-width-thin) solid var(--_applied);
         animation: card-flip 640ms var(--ease-dramatic) both;
         animation-delay: calc(var(--i, 0) * 120ms);
       }
 
       .card--filtered {
-        border-left-color: var(--_filtered);
+        border-color: var(--_filtered);
         background: var(--color-surface-sunken);
         animation: card-flip 640ms var(--ease-dramatic) both,
           card-glitch 90ms steps(2, end) calc(var(--i, 0) * 120ms + 520ms) 1;

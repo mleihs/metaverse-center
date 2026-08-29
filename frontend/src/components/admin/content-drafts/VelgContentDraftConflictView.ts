@@ -117,13 +117,12 @@ export class VelgContentDraftConflictView extends LitElement {
       text-align: center;
     }
 
+    /* Doppelung: beide Karten stehen bereits auf ihrer eigenen Statustoenung. */
     .summary__card--auto {
-      border-left: 3px solid var(--_success);
       background: var(--_success-bg);
     }
 
     .summary__card--pending {
-      border-left: 3px solid var(--_accent);
       background: var(--_accent-bg);
     }
 
@@ -266,16 +265,19 @@ export class VelgContentDraftConflictView extends LitElement {
       }
     }
 
+    /* Wessen Fassung gewinnt, faerbt den ganzen Rahmen des Eintrags. Vorher
+       lag die Zuordnung als 3-px-Platte an der linken Kante — und sie ist hier
+       das EINZIGE Signal, also gehoert sie auf die ganze Form. */
     .conflict--ours {
-      border-left: 3px solid var(--_success);
+      border-color: var(--_success);
     }
 
     .conflict--theirs {
-      border-left: 3px solid var(--color-info);
+      border-color: var(--color-info);
     }
 
     .conflict--auto {
-      border-left: 3px solid var(--_accent);
+      border-color: var(--_accent);
     }
 
     .conflict__head {

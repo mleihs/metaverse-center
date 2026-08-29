@@ -240,8 +240,8 @@ velg-drift-chart {
   max-width: 240px;
   padding: var(--space-2-5) var(--space-3);
   background: color-mix(in srgb, var(--color-surface) 95%, transparent);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-left: var(--border-width-thick) solid var(--color-primary);
+  /* Akzent auf dem ganzen Rahmen des Dossier-Tooltips. */
+  border: var(--border-width-thin) solid color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
   box-shadow: var(--shadow-lg);
   pointer-events: none;
   animation: drift-dossier-in var(--duration-fast) var(--ease-out) both;

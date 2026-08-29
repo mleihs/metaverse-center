@@ -239,8 +239,9 @@ export class VelgContentDraftsList extends LitElement {
       gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
       margin-top: var(--space-2);
+      /* Doppelung zur Toenung; die Zeile ist ausserdem eine brutalistische
+         Versalienmarke, die den Gruppennamen ausspricht. */
       background: color-mix(in srgb, var(--_accent) 6%, transparent);
-      border-left: 3px solid var(--_accent-dim);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       text-transform: uppercase;

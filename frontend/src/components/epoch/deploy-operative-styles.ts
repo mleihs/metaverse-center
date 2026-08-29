@@ -830,8 +830,8 @@ export const deployOperativeStyles = css`
 			gap: var(--space-3);
 			padding: var(--space-2) var(--space-3);
 			margin-bottom: var(--space-3);
-			border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
-			border-left: 3px solid var(--color-epoch-accent);
+			/* Akzent auf dem ganzen Rahmen der Zielabschnitts-Kopfzeile. */
+			border: 1px solid color-mix(in srgb, var(--color-epoch-accent) 45%, var(--color-border));
 			background:
 				linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 6%, transparent) 0%, transparent 60%),
 				var(--color-surface);
@@ -1244,8 +1244,8 @@ export const deployOperativeStyles = css`
 			background:
 				linear-gradient(90deg, var(--_hi-dim) 0%, transparent 60%),
 				var(--color-surface);
-			border: 1px solid var(--color-border);
-			border-left: 3px solid var(--agent-accent, var(--color-epoch-accent));
+			/* Die Operativenfarbe faerbt den ganzen Rahmen der Detailzeile. */
+			border: 1px solid color-mix(in srgb, var(--agent-accent, var(--color-epoch-accent)) 45%, var(--color-border));
 			animation: detail-fade-in 200ms ease both;
 		}
 
