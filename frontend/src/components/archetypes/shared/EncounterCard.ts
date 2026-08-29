@@ -20,8 +20,9 @@ export class VelgEncounterCard extends LitElement {
       .card {
         padding: var(--space-5, 20px);
         background: color-mix(in oklch, var(--color-surface-raised, #111) 94%, var(--_accent) 6%);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-left: 2px solid var(--_accent);
+        /* Akzent auf dem ganzen Rahmen; die Flaeche ist ohnehin schon mit
+           6% des Akzents unterlegt. */
+        border: 1px solid color-mix(in oklch, var(--_accent) 35%, transparent);
         border-radius: 4px;
         transition: transform 0.3s var(--_ease-dramatic);
       }

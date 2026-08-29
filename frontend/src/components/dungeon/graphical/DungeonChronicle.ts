@@ -241,8 +241,9 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
       .entry--error {
         color: color-mix(in srgb, var(--_danger) 82%, var(--_phosphor));
         font-weight: var(--font-semibold, 600);
+        /* Doppelung: die Zeile steht bereits in Gefahrenfarbe und halbfett.
+           Der Einzug bleibt, damit Fehler im Strom hervortreten. */
         padding-left: var(--space-1-5, 6px);
-        border-left: 2px solid color-mix(in srgb, var(--_danger) 70%, transparent);
       }
       .entry--combat-player {
         color: var(--_phosphor);

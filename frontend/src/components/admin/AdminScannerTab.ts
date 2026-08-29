@@ -817,8 +817,9 @@ export class VelgAdminScannerTab extends LitElement {
       color: var(--color-text-secondary);
       line-height: 1.6;
       padding: var(--space-2) var(--space-3);
+      /* Vorschautext: neutrale Haarlinie, die Toenung traegt die Zuordnung. */
       background: color-mix(in srgb, var(--color-info) 3%, var(--color-surface));
-      border-left: 2px solid color-mix(in srgb, var(--color-info) 30%, transparent);
+      border-left: 1px solid var(--color-border);
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;

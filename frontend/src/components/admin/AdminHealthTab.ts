@@ -89,12 +89,13 @@ export class VelgAdminHealthTab extends LitElement {
         border-color: var(--color-text-muted);
       }
 
+      /* Der Zustand faerbt den ganzen Kartenrahmen statt einer Platte links. */
       .sim-card--critical {
-        border-left: 3px solid var(--color-danger);
+        border-color: var(--color-danger);
       }
 
       .sim-card--ascendant {
-        border-left: 3px solid var(--color-accent-gold);
+        border-color: var(--color-accent-gold);
       }
 
       .sim-card__header {

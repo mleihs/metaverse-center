@@ -207,7 +207,9 @@ export const detailCardStyles = css`
     background: color-mix(in oklch, var(--color-surface, #0a0a0a) 75%, transparent);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-left: 2px solid color-mix(in oklch, var(--_accent) 50%, transparent);
+    /* Museumsschild: neutrale Haarlinie. Der Kasten ist eine Bildunterschrift,
+       kein Statusfeld. */
+    border-left: 1px solid var(--color-border);
     border-radius: 4px;
     font-family: var(--_font-prose);
     font-size: var(--_label-size);
