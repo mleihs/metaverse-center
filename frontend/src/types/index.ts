@@ -1198,7 +1198,10 @@ export interface Epoch {
   id: UUID;
   name: string;
   description?: string;
-  created_by_id: UUID;
+  /** Absent for system-created epochs (academy). Both call sites compare it
+   *  against the current user id, so `undefined` correctly reads as "not the
+   *  creator". */
+  created_by_id?: UUID;
   starts_at?: string;
   ends_at?: string;
   current_cycle: number;

@@ -114,6 +114,66 @@ class TestCycleEndpointContracts:
         assert data["new_cycle"] == 7
 
 
+class TestNullableColumnContracts:
+    """Columns that are nullable in the schema must be optional in the model.
+
+    Found on 2026-08-29 while play-testing activity_gated against production:
+    ``GET /api/v1/epochs/active`` returned 500 for every caller because one
+    academy epoch carries ``created_by_id = NULL`` while ``EpochResponse``
+    declared it a required ``UUID``. Same failure class as the four endpoints
+    above, but reached through the DATA rather than through a service's return
+    shape — which is why an audit of the services did not surface it.
+
+    ``GET /api/v1/epochs`` kept answering 200 only because the frontend always
+    passes a status filter that happened to exclude the offending row.
+    """
+
+    @staticmethod
+    def _epoch_row(**overrides) -> dict:
+        row = {
+            "id": str(EPOCH_ID),
+            "name": "Academy Training",
+            "description": None,
+            "created_by_id": None,
+            "starts_at": None,
+            "ends_at": None,
+            "current_cycle": 5,
+            "status": "competition",
+            "config": {},
+            "epoch_type": "academy",
+            "cycle_started_at": None,
+            "cycle_deadline_at": None,
+            "created_at": "2026-03-10T09:12:29.757011+00:00",
+            "updated_at": "2026-03-10T09:12:29.757011+00:00",
+        }
+        row.update(overrides)
+        return row
+
+    def test_active_epochs_tolerates_null_creator(self, client: TestClient):
+        """A system-created epoch has no creator. That must serialise, not 500."""
+        with patch(
+            "backend.services.epoch_service.EpochService.get_active_epochs",
+            new=AsyncMock(return_value=[self._epoch_row()]),
+        ):
+            resp = client.get("/api/v1/epochs/active")
+
+        assert resp.status_code == 200, resp.text
+        data = resp.json()["data"]
+        assert len(data) == 1
+        assert data[0]["created_by_id"] is None
+
+    def test_list_epochs_tolerates_null_creator(self, client: TestClient):
+        """The unfiltered list carries the same row and the same model."""
+        with patch(
+            "backend.services.epoch_service.EpochService.list_epochs",
+            new=AsyncMock(return_value=([self._epoch_row()], 1)),
+        ):
+            resp = client.get("/api/v1/epochs")
+
+        assert resp.status_code == 200, resp.text
+        assert resp.json()["data"][0]["created_by_id"] is None
+
+
 class TestTeamEndpointContracts:
     def test_join_team_serialises(self, client: TestClient):
         """The join had already committed when serialisation used to fail."""
@@ -126,9 +186,7 @@ class TestTeamEndpointContracts:
             "backend.services.epoch_service.EpochService.join_team",
             new=AsyncMock(return_value=service_return),
         ):
-            resp = client.post(
-                f"/api/v1/epochs/{EPOCH_ID}/teams/{TEAM_ID}/join?simulation_id={SIM_ID}"
-            )
+            resp = client.post(f"/api/v1/epochs/{EPOCH_ID}/teams/{TEAM_ID}/join?simulation_id={SIM_ID}")
 
         assert resp.status_code == 200, resp.text
         data = resp.json()["data"]
@@ -176,9 +234,7 @@ class TestServiceReturnsMatchTheirModels:
         }
         sb = make_async_supabase_mock()
         admin = make_async_supabase_mock()
-        admin.table.return_value.execute = AsyncMock(
-            return_value=MagicMock(data=participant)
-        )
+        admin.table.return_value.execute = AsyncMock(return_value=MagicMock(data=participant))
 
         with (
             patch(
@@ -208,18 +264,14 @@ class TestServiceReturnsMatchTheirModels:
 
         admin = make_async_supabase_mock()
         admin.rpc.return_value.execute = AsyncMock(
-            return_value=MagicMock(
-                data={"simulation_id": str(SIM_ID), "previous_team_id": str(TEAM_ID)}
-            )
+            return_value=MagicMock(data={"simulation_id": str(SIM_ID), "previous_team_id": str(TEAM_ID)})
         )
 
         with patch(
             "backend.services.epoch_participation_service.get_admin_supabase_client",
             new=AsyncMock(return_value=admin),
         ):
-            result = await EpochParticipationService.leave_team(
-                make_async_supabase_mock(), EPOCH_ID, SIM_ID
-            )
+            result = await EpochParticipationService.leave_team(make_async_supabase_mock(), EPOCH_ID, SIM_ID)
 
         validated = TeamActionResponse.model_validate(result)
         assert validated.action == "leave"
@@ -251,9 +303,7 @@ class TestServiceReturnsMatchTheirModels:
                 "backend.services.scoring_service.EpochService.get",
                 new=AsyncMock(return_value=epoch_row),
             ),
-            patch.object(
-                ScoringService, "get_final_standings", new=AsyncMock(return_value=[])
-            ),
+            patch.object(ScoringService, "get_final_standings", new=AsyncMock(return_value=[])),
             patch(
                 "backend.services.scoring_service.EpochService.list_participants",
                 new=AsyncMock(return_value=[{"simulation_id": str(SIM_ID)}]),
