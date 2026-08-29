@@ -18,7 +18,11 @@ import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { captureError } from '../../services/SentryService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
 import '../shared/BaseModal.js';
-import { computePhaseCycles, DEFAULT_RECKONING_CYCLES } from '../../utils/epoch.js';
+import {
+  computePhaseCycles,
+  computeTotalCycles,
+  DEFAULT_RECKONING_CYCLES,
+} from '../../utils/epoch.js';
 import { icons } from '../../utils/icons.js';
 import { formStyles } from '../shared/form-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
@@ -36,8 +40,21 @@ interface FormatPreset {
   reckoning_cycles: number | null;
   rp_per_cycle: number | null;
   rp_cap: number | null;
+  /** How a cycle ends. 'activity_gated' = resolve when everyone is ready OR
+   *  the deadline expires; 'manual' = only when everyone signals ready. */
+  auto_resolve_mode: AutoResolveMode | null;
+  /** Deadline per cycle in minutes. Ignored when the mode is 'manual'. */
+  cycle_deadline_minutes: number | null;
   icon: ReturnType<typeof icons.bolt> | null;
 }
+
+/** Backend supports five modes; three are not implemented yet, so the wizard
+ *  offers only the two that are wired end to end. */
+type AutoResolveMode = 'manual' | 'activity_gated';
+
+/** EpochConfig bounds — mirrored from backend/models/epoch.py. */
+const DEADLINE_MIN_MINUTES = 15;
+const DEADLINE_MAX_MINUTES = 2880;
 
 function getFormatPresets(): FormatPreset[] {
   return [
@@ -51,6 +68,8 @@ function getFormatPresets(): FormatPreset[] {
       reckoning_cycles: 2,
       rp_per_cycle: 15,
       rp_cap: 30,
+      auto_resolve_mode: 'activity_gated',
+      cycle_deadline_minutes: 120,
       icon: icons.bolt(18),
     },
     {
@@ -63,6 +82,8 @@ function getFormatPresets(): FormatPreset[] {
       reckoning_cycles: 3,
       rp_per_cycle: 12,
       rp_cap: 36,
+      auto_resolve_mode: 'activity_gated',
+      cycle_deadline_minutes: 240,
       icon: icons.timer(18),
     },
     {
@@ -75,6 +96,8 @@ function getFormatPresets(): FormatPreset[] {
       reckoning_cycles: 8,
       rp_per_cycle: 12,
       rp_cap: 40,
+      auto_resolve_mode: 'activity_gated',
+      cycle_deadline_minutes: 480,
       icon: icons.crossedSwords(18),
     },
     {
@@ -87,6 +110,8 @@ function getFormatPresets(): FormatPreset[] {
       reckoning_cycles: 12,
       rp_per_cycle: 12,
       rp_cap: 40,
+      auto_resolve_mode: 'activity_gated',
+      cycle_deadline_minutes: 480,
       icon: icons.trophy(18),
     },
     {
@@ -99,6 +124,8 @@ function getFormatPresets(): FormatPreset[] {
       reckoning_cycles: null,
       rp_per_cycle: null,
       rp_cap: null,
+      auto_resolve_mode: null,
+      cycle_deadline_minutes: null,
       icon: icons.gear(18),
     },
   ];
@@ -369,6 +396,77 @@ export class VelgEpochCreationWizard extends LitElement {
         .field-row {
           grid-template-columns: 1fr;
         }
+      }
+
+      /* ── Segmented control (cycle resolution) ── */
+
+      .segmented {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+      }
+
+      .segmented__option {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        padding: var(--space-3);
+        text-align: left;
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-none);
+        cursor: pointer;
+        color: var(--color-text-secondary);
+        transition:
+          border-color var(--transition-fast),
+          background var(--transition-fast),
+          box-shadow var(--transition-fast);
+      }
+
+      .segmented__option:hover {
+        border-color: var(--color-primary-border);
+      }
+
+      .segmented__option:focus-visible {
+        outline: none;
+        box-shadow: var(--ring-focus);
+      }
+
+      .segmented__option[aria-pressed='true'] {
+        background: var(--color-primary-bg);
+        border-color: var(--color-primary);
+        color: var(--color-text-primary);
+        box-shadow: var(--shadow-xs);
+      }
+
+      .segmented__name {
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        font-weight: var(--font-bold);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+      }
+
+      .segmented__desc {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-text-muted);
+      }
+
+      .config-warning {
+        display: flex;
+        gap: var(--space-2);
+        align-items: flex-start;
+        margin-top: var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        /* Der Balken war Doppelung: der Kasten steht bereits auf
+           --color-danger-bg und traegt sein Warnsymbol in derselben Farbe. */
+        background: var(--color-danger-bg);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-text-primary);
       }
 
       /* ── Toggle Switch ───────────────────── */
@@ -889,6 +987,14 @@ export class VelgEpochCreationWizard extends LitElement {
   @state() private _foundationCycles = 4;
   @state() private _reckoningCycles = DEFAULT_RECKONING_CYCLES;
 
+  // Cycle resolution — how a round ends. Until now the wizard never sent
+  // auto_resolve_mode, so every epoch fell back to the backend default
+  // ('manual') and the whole deadline / AFK / pass subsystem stayed dormant.
+  @state() private _autoResolveMode: AutoResolveMode = 'activity_gated';
+  @state() private _cycleDeadlineMinutes = 480;
+  @state() private _requireActionForReady = true;
+  @state() private _afkPenaltyEnabled = true;
+
   // Step 3: Doctrine (score weights, percentages that sum to 100)
   @state() private _wStability = 25;
   @state() private _wInfluence = 20;
@@ -913,6 +1019,10 @@ export class VelgEpochCreationWizard extends LitElement {
       this._formatPreset = 'standard';
       this._foundationCycles = 4;
       this._reckoningCycles = DEFAULT_RECKONING_CYCLES;
+      this._autoResolveMode = 'activity_gated';
+      this._cycleDeadlineMinutes = 480;
+      this._requireActionForReady = true;
+      this._afkPenaltyEnabled = true;
       this._wStability = 25;
       this._wInfluence = 20;
       this._wSovereignty = 20;
@@ -946,7 +1056,7 @@ export class VelgEpochCreationWizard extends LitElement {
   private _canAdvance(): boolean {
     switch (this._step) {
       case 'designation':
-        return this._name.trim().length >= 3;
+        return this._name.trim().length >= 3 && this._phaseOverlapError() === null;
       case 'economy':
         return true;
       case 'doctrine':
@@ -976,6 +1086,9 @@ export class VelgEpochCreationWizard extends LitElement {
       if (preset.reckoning_cycles != null) this._reckoningCycles = preset.reckoning_cycles;
       if (preset.rp_per_cycle != null) this._rpPerCycle = preset.rp_per_cycle;
       if (preset.rp_cap != null) this._rpCap = preset.rp_cap;
+      if (preset.auto_resolve_mode != null) this._autoResolveMode = preset.auto_resolve_mode;
+      if (preset.cycle_deadline_minutes != null)
+        this._cycleDeadlineMinutes = preset.cycle_deadline_minutes;
     }
   }
 
@@ -1051,6 +1164,10 @@ export class VelgEpochCreationWizard extends LitElement {
       max_team_size: this._maxTeamSize,
       max_agents_per_player: this._maxAgentsPerPlayer,
       allow_betrayal: this._allowBetrayal,
+      auto_resolve_mode: this._autoResolveMode,
+      cycle_deadline_minutes: this._cycleDeadlineMinutes,
+      require_action_for_ready: this._requireActionForReady,
+      afk_penalty_enabled: this._afkPenaltyEnabled,
       score_weights: {
         stability: this._wStability,
         influence: this._wInfluence,
@@ -1124,6 +1241,147 @@ export class VelgEpochCreationWizard extends LitElement {
             </div>
           `,
         )}
+      </div>
+    `;
+  }
+
+  // ── Shared field renderers ──────────────────────────
+
+  /** Toggle switch row. One implementation for every boolean in the wizard —
+   *  the betrayal switch used to carry this markup inline. */
+  private _renderToggleField(
+    label: string,
+    hint: string,
+    value: boolean,
+    onToggle: () => void,
+    disabled = false,
+  ) {
+    const flip = () => {
+      if (!disabled) onToggle();
+    };
+    return html`
+      <div class="toggle-field">
+        <span class="toggle-field__label">${label} ${renderInfoBubble(hint)}</span>
+        <div
+          class="toggle ${value ? 'toggle--on' : ''} ${disabled ? 'toggle--disabled' : ''}"
+          role="switch"
+          tabindex=${disabled ? -1 : 0}
+          aria-checked=${value}
+          aria-disabled=${disabled}
+          aria-label=${label}
+          @click=${flip}
+          @keydown=${(e: KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              flip();
+            }
+          }}
+        >
+          <div class="toggle__thumb"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  /** Human-readable deadline, e.g. "8h" or "45min". */
+  private _deadlineLabel(minutes: number): string {
+    if (minutes % 60 === 0) {
+      const hours = minutes / 60;
+      return msg(str`${hours}h`);
+    }
+    return msg(str`${minutes}min`);
+  }
+
+  // ── Cycle Resolution ────────────────────────────────
+
+  private _renderCycleResolution() {
+    const isGated = this._autoResolveMode === 'activity_gated';
+    return html`
+      <div class="field">
+        <label class="field__label">
+          ${msg('Cycle Resolution')}
+          ${renderInfoBubble(msg('Decides how a cycle ends. A deadline keeps the epoch moving when someone stops responding – without one, a single absent player can stall every remaining cycle indefinitely.'))}
+        </label>
+        <div class="segmented" role="group" aria-label=${msg('Cycle Resolution')}>
+          <button
+            type="button"
+            class="segmented__option"
+            aria-pressed=${isGated}
+            @click=${() => {
+              this._autoResolveMode = 'activity_gated';
+              this._formatPreset = 'custom';
+            }}
+          >
+            <span class="segmented__name">${msg('Ready or Deadline')}</span>
+            <span class="segmented__desc">
+              ${msg('Resolves as soon as everyone is ready, or automatically when the deadline expires.')}
+            </span>
+          </button>
+          <button
+            type="button"
+            class="segmented__option"
+            aria-pressed=${!isGated}
+            @click=${() => {
+              this._autoResolveMode = 'manual';
+              this._formatPreset = 'custom';
+            }}
+          >
+            <span class="segmented__name">${msg('All Players Ready')}</span>
+            <span class="segmented__desc">
+              ${msg('Waits indefinitely until every human player signals ready. No deadline, no absence handling.')}
+            </span>
+          </button>
+        </div>
+
+        ${
+          isGated
+            ? html`
+              <div class="range-field" style="margin-top: var(--space-4)">
+                <div class="range-field__header">
+                  <span class="range-field__label">${msg('Cycle Deadline')}</span>
+                  <span class="range-field__readout">
+                    ${this._deadlineLabel(this._cycleDeadlineMinutes)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  aria-label=${msg('Cycle Deadline')}
+                  min=${DEADLINE_MIN_MINUTES}
+                  max=${DEADLINE_MAX_MINUTES}
+                  step="15"
+                  .value=${String(this._cycleDeadlineMinutes)}
+                  @input=${(e: Event) => {
+                    this._cycleDeadlineMinutes = Number((e.target as HTMLInputElement).value);
+                    this._formatPreset = 'custom';
+                  }}
+                />
+                <span class="field__hint">
+                  ${msg(str`Cycles are ${this._cycleHours}h long – a deadline near that keeps pacing predictable.`)}
+                </span>
+              </div>
+              ${this._renderToggleField(
+                msg('Require Action Before Ready'),
+                msg(
+                  'Players must deploy, fortify, or explicitly pass before they can signal ready. Prevents empty cycles.',
+                ),
+                this._requireActionForReady,
+                () => {
+                  this._requireActionForReady = !this._requireActionForReady;
+                },
+              )}
+              ${this._renderToggleField(
+                msg('Absence Penalties'),
+                msg(
+                  'Players who miss a cycle lose RP, escalating with each consecutive absence. After repeated absences an AI assumes control so the epoch keeps moving.',
+                ),
+                this._afkPenaltyEnabled,
+                () => {
+                  this._afkPenaltyEnabled = !this._afkPenaltyEnabled;
+                },
+              )}
+            `
+            : nothing
+        }
       </div>
     `;
   }
@@ -1291,8 +1549,31 @@ export class VelgEpochCreationWizard extends LitElement {
         <span class="field__hint">
           ${msg(str`Foundation ${phases.foundation} · Competition ${phases.competition} · Reckoning ${phases.reckoning} cycles – ${this._durationDays}d (${foundationDays}d + ${competitionDays}d + ${reckoningDays}d)`)}
         </span>
+
+        ${
+          this._phaseOverlapError()
+            ? html`<div class="config-warning" role="alert">${this._phaseOverlapError()}</div>`
+            : nothing
+        }
       </div>
+
+      ${this._renderCycleResolution()}
     `;
+  }
+
+  /** Foundation + Reckoning must leave room for a competition phase.
+   *  The backend rejects an overlap in start_epoch() — i.e. only AFTER the
+   *  lobby filled up and invitations went out. Catch it at creation time. */
+  private _phaseOverlapError(): string | null {
+    const total = computeTotalCycles({
+      duration_days: this._durationDays,
+      cycle_hours: this._cycleHours,
+    });
+    const used = this._foundationCycles + this._reckoningCycles;
+    if (used < total) return null;
+    return msg(
+      str`Foundation (${this._foundationCycles}) + Reckoning (${this._reckoningCycles}) must stay below the total of ${total} cycles. Lengthen the epoch, shorten the cycle interval, or reduce a phase.`,
+    );
   }
 
   // ── Step 2: Economy ─────────────────────────────────
@@ -1384,31 +1665,17 @@ export class VelgEpochCreationWizard extends LitElement {
           />
         </div>
 
-        <div class="toggle-field">
-          <span class="toggle-field__label">
-            ${msg('Allow Betrayal')}
-            ${renderInfoBubble(msg('When enabled, alliance members can leave and attack former allies. Betrayal incurs a -20% diplomatic penalty and marks the traitor publicly.'))}
-          </span>
-          <div
-            class="toggle ${this._allowBetrayal ? 'toggle--on' : ''} ${this._maxTeamSize <= 2 ? 'toggle--disabled' : ''}"
-            role="switch"
-            tabindex=${this._maxTeamSize <= 2 ? -1 : 0}
-            aria-checked=${this._allowBetrayal}
-            aria-disabled=${this._maxTeamSize <= 2}
-            aria-label=${msg('Allow Betrayal')}
-            @click=${() => {
-              if (this._maxTeamSize > 2) this._allowBetrayal = !this._allowBetrayal;
-            }}
-            @keydown=${(e: KeyboardEvent) => {
-              if ((e.key === 'Enter' || e.key === ' ') && this._maxTeamSize > 2) {
-                e.preventDefault();
-                this._allowBetrayal = !this._allowBetrayal;
-              }
-            }}
-          >
-            <div class="toggle__thumb"></div>
-          </div>
-        </div>
+        ${this._renderToggleField(
+          msg('Allow Betrayal'),
+          msg(
+            'When enabled, alliance members can leave and attack former allies. Betrayal incurs a -25% diplomatic penalty and marks the traitor publicly.',
+          ),
+          this._allowBetrayal,
+          () => {
+            this._allowBetrayal = !this._allowBetrayal;
+          },
+          this._maxTeamSize <= 2,
+        )}
         ${this._maxTeamSize <= 2 ? html`<p class="toggle-hint">${msg('Betrayal requires a team size of at least 3.')}</p>` : nothing}
       </div>
     `;
@@ -1577,6 +1844,34 @@ export class VelgEpochCreationWizard extends LitElement {
             <span class="summary__key">${msg('Cycle Interval')}</span>
             <span class="summary__val">${this._cycleHours}h</span>
           </div>
+          <div class="summary__row">
+            <span class="summary__key">${msg('Cycle Resolution')}</span>
+            <span class="summary__val">
+              ${
+                this._autoResolveMode === 'activity_gated'
+                  ? msg(str`Ready or ${this._deadlineLabel(this._cycleDeadlineMinutes)} deadline`)
+                  : msg('All players ready')
+              }
+            </span>
+          </div>
+          ${
+            this._autoResolveMode === 'activity_gated'
+              ? html`
+                <div class="summary__row">
+                  <span class="summary__key">${msg('Action Required')}</span>
+                  <span class="summary__val">
+                    ${this._requireActionForReady ? msg('Yes') : msg('No')}
+                  </span>
+                </div>
+                <div class="summary__row">
+                  <span class="summary__key">${msg('Absence Penalties')}</span>
+                  <span class="summary__val">
+                    ${this._afkPenaltyEnabled ? msg('Enabled') : msg('Disabled')}
+                  </span>
+                </div>
+              `
+              : nothing
+          }
         </div>
 
         <div class="summary__section">

@@ -15,6 +15,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import type {
   Epoch,
@@ -701,7 +702,10 @@ export class VelgEpochResultsView extends LitElement {
     if (!this.epoch) return;
     this._loading = true;
 
-    const resp = await epochsApi.getResultsSummary(this.epoch.id);
+    const resp = await epochsApi.getResultsSummary(
+      this.epoch.id,
+      appState.isAuthenticated.value ? 'member' : 'public',
+    );
     if (resp.success && resp.data) {
       this._standings = resp.data.standings ?? [];
       this._stats = resp.data.participant_stats ?? [];

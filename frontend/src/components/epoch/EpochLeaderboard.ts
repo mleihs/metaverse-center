@@ -99,8 +99,9 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .row--self {
+      /* Doppelung: die Zeile ist bereits getoent UND traegt die
+         .self-badge als eigene Marke. Der Streifen war das dritte Signal. */
       background: var(--_self-bg);
-      border-left: 3px solid var(--color-epoch-accent);
     }
 
     .row--self:hover {
@@ -369,7 +370,6 @@ export class VelgEpochLeaderboard extends LitElement {
       }
 
       .row--self {
-        border-left: 3px solid var(--color-epoch-accent);
       }
 
       .row td {

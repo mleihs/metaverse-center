@@ -128,8 +128,11 @@ export class VelgEpochOverviewTab extends LitElement {
       background:
         linear-gradient(90deg, var(--_hi-dim) 0%, transparent 60%),
         var(--color-border);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--_accent, var(--color-border));
+      /* Die Aktionsfarbe liegt jetzt auf dem GANZEN Rahmen statt als 3-px-Platte
+         an der linken Kante. Ein Knopf ist kein Kasten, an den ein Eckwinkel
+         gehoert — er ist selbst schon eine Form, und ein Rahmen in seiner Farbe
+         sagt dasselbe ohne Anhaengsel. Hover verstaerkt ihn (siehe unten). */
+      border: 1px solid color-mix(in srgb, var(--_accent, var(--color-border)) 55%, var(--color-border));
       cursor: pointer;
       transition:
         transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -165,8 +168,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .action-btn:hover {
       transform: translateY(-2px);
-      border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
-      border-left-color: var(--_accent);
+      border-color: var(--_accent);
       box-shadow:
         0 4px 12px var(--_sh-light),
         0 0 20px color-mix(in srgb, var(--_accent) 12%, transparent),
@@ -480,7 +482,7 @@ export class VelgEpochOverviewTab extends LitElement {
       gap: var(--space-2);
       padding: 5px var(--space-2);
       margin-bottom: 2px;
-      border-left: 2px solid var(--color-warning);
+      /* Doppelung zum getoenten Hintergrund der Zeile. */
       background: var(--_primary-faint);
       opacity: 0;
       animation: fort-slide 0.3s ease-out forwards;

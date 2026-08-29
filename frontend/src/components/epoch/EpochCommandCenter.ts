@@ -14,7 +14,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
@@ -390,7 +390,8 @@ export class VelgEpochCommandCenter extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-1-5) var(--space-3);
-      border-left: 2px solid var(--color-warning);
+      /* Doppelung: der Pokal daneben traegt --color-warning bereits, samt
+         eigener Glut-Animation. Ein Streifen sagt dasselbe ein zweites Mal. */
       background: var(--_primary-faint);
       margin-left: var(--space-2);
     }
@@ -1417,6 +1418,11 @@ export class VelgEpochCommandCenter extends LitElement {
   @state() private _showCycleOverlay = false;
   @state() private _newCycleNumber = 0;
   @state() private _cycleBump = false;
+  /** Deep-link target: when `/epoch/:id` is routed, preselect this epoch on
+   *  first load instead of dropping the visitor on the ops board. Notification
+   *  emails and shared links point here. */
+  @property({ type: String, attribute: 'epoch-id' }) epochId = '';
+
   @state() private _cycleJustResolved = false;
   @state() private _phaseOverlayPhase = '';
   @state() private _showPhaseOverlay = false;
@@ -1444,6 +1450,16 @@ export class VelgEpochCommandCenter extends LitElement {
     });
 
     await this._loadData();
+  }
+
+  updated(changed: Map<string, unknown>) {
+    // The router reuses this element when navigating between two `/epoch/:id`
+    // URLs — same template literal, so lit patches the property instead of
+    // remounting and connectedCallback never runs again. Without this the deep
+    // link only worked on a cold load.
+    if (changed.has('epochId') && this.epochId && this.epochId !== this._epoch?.id) {
+      void this._openDeepLinkedEpoch();
+    }
   }
 
   disconnectedCallback() {
@@ -1582,11 +1598,35 @@ export class VelgEpochCommandCenter extends LitElement {
       };
     }
 
+    // Deep link: `/epoch/:id`.
+    if (this.epochId && !this._epoch) {
+      await this._openDeepLinkedEpoch();
+    }
+
     this._loading = false;
 
     // Find an epoch for the comms panel (ops board only — when no epoch is selected)
     if (!this._epoch) {
       await this._findCommsEpoch();
+    }
+  }
+
+  /** Resolve `this.epochId` and select it. Checks the lists already in memory
+   *  first, then falls back to a direct fetch — the epoch may be cancelled, or
+   *  a completed one beyond the first page of past epochs. */
+  private async _openDeepLinkedEpoch() {
+    const known =
+      this._activeEpochs.find((e) => e.id === this.epochId) ??
+      this._pastEpochs.find((e) => e.id === this.epochId);
+    if (known) {
+      await this._onSelectEpoch(known);
+      return;
+    }
+    const direct = await epochsApi.getEpoch(this.epochId, this._authMode);
+    if (direct.success && direct.data) {
+      await this._onSelectEpoch(direct.data as Epoch);
+    } else {
+      VelgToast.warning(msg('That epoch could not be opened.'));
     }
   }
 
@@ -1972,7 +2012,17 @@ export class VelgEpochCommandCenter extends LitElement {
           </div>
           <span class="phase-overlay__name">${this._phaseOverlayPhase.toUpperCase()}</span>
           <span class="phase-overlay__subtitle">
-            ${this._phaseOverlayPhase === 'competition' ? msg('All operatives unlocked') : msg('Final cycles – double points')}
+            ${
+              // Both lines state what the phase actually changes. Reckoning used
+              // to promise "double points" — no scoring multiplier exists, and
+              // the composite is a snapshot of the last cycle rather than a sum
+              // across cycles, so per-cycle weighting could not affect the
+              // standings anyway. What genuinely changes is that no new
+              // alliances can form (AllianceService.create_proposal).
+              this._phaseOverlayPhase === 'competition'
+                ? msg('All operatives unlocked')
+                : msg('Final cycles – alliances are sealed')
+            }
           </span>
         </div>
       `

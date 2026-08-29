@@ -48,23 +48,9 @@ export class VelgEpochBattleLog extends LitElement {
       position: relative;
     }
 
-    .entry::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      opacity: 0;
-      transition: opacity var(--transition-normal);
-    }
 
     .entry:hover {
       background: var(--_hi-dim);
-    }
-
-    .entry:hover::before {
-      opacity: 1;
     }
 
     .entry:last-child {
@@ -80,33 +66,39 @@ export class VelgEpochBattleLog extends LitElement {
 
     /* ── Type-specific accent colors ─────── */
 
-    .entry--operative_deployed::before      { background: var(--color-warning); }
-    .entry--mission_success::before         { background: var(--color-success); }
-    .entry--mission_failed::before          { background: var(--color-icon); }
-    .entry--detected::before                { background: var(--color-danger); }
-    .entry--sabotage::before                { background: var(--color-warning); }
-    .entry--propaganda::before              { background: var(--color-epoch-influence); }
-    .entry--assassination::before           { background: var(--color-danger); }
-    .entry--agent_wounded::before           { background: var(--color-danger); }
-    .entry--alliance_formed::before         { background: var(--color-info); }
-    .entry--betrayal::before                { background: var(--color-danger-hover); width: 4px; opacity: 1; }
-    .entry--betrayal .entry__narrative       { font-weight: var(--font-bold); color: var(--color-text-primary); }
-    .entry--betrayal .entry__type            { color: var(--color-danger); }
-    .entry--phase_change::before            { background: var(--color-warning); }
-    .entry--counter_intel::before           { background: var(--color-info); }
-    .entry--intel_report::before            { background: var(--color-info); }
-    .entry--alliance_proposal::before        { background: var(--color-epoch-accent, var(--color-primary)); }
-    .entry--alliance_proposal_accepted::before { background: var(--color-success); }
-    .entry--alliance_proposal_rejected::before { background: var(--color-danger); }
-    .entry--alliance_tension_increase::before { background: var(--color-warning); }
-    .entry--alliance_dissolved_tension::before { background: var(--color-danger); width: 4px; opacity: 1; }
-    .entry--alliance_upkeep::before          { background: var(--color-text-muted); }
-    .entry--player_passed::before             { background: var(--color-text-muted); }
-    .entry--cycle_resolved::before            { background: var(--color-warning); }
-    .entry--cycle_auto_resolved::before       { background: var(--color-warning); }
-    .entry--player_afk::before                { background: var(--color-text-muted); }
-    .entry--player_afk_penalty::before        { background: var(--color-danger); }
-    .entry--player_afk_ai_takeover::before    { background: var(--color-info); }
+    .entry--operative_deployed                   { --_entry-accent: var(--color-warning); }
+    .entry--mission_success                      { --_entry-accent: var(--color-success); }
+    .entry--mission_failed                       { --_entry-accent: var(--color-icon); }
+    .entry--detected                             { --_entry-accent: var(--color-danger); }
+    .entry--sabotage                             { --_entry-accent: var(--color-warning); }
+    .entry--propaganda                           { --_entry-accent: var(--color-epoch-influence); }
+    .entry--assassination                        { --_entry-accent: var(--color-danger); }
+    .entry--agent_wounded                        { --_entry-accent: var(--color-danger); }
+    .entry--alliance_formed                      { --_entry-accent: var(--color-info); }
+    .entry--betrayal                             { --_entry-accent: var(--color-danger-hover); }  /* dauerhaft hervorgehoben */
+    /* Die zwei Ereignisse, die vorher als EINZIGE einen dauerhaften, 4px
+       breiten Balken trugen (alle anderen erschienen nur beim Ueberfahren).
+       Ihr Gewicht liegt jetzt in der Schrift statt an der Kante. */
+    .entry--betrayal .entry__narrative,
+    .entry--alliance_dissolved_tension .entry__narrative {
+      font-weight: var(--font-bold);
+      color: var(--color-text-primary);
+    }
+    .entry--phase_change                         { --_entry-accent: var(--color-warning); }
+    .entry--counter_intel                        { --_entry-accent: var(--color-info); }
+    .entry--intel_report                         { --_entry-accent: var(--color-info); }
+    .entry--alliance_proposal                    { --_entry-accent: var(--color-epoch-accent, var(--color-primary)); }
+    .entry--alliance_proposal_accepted           { --_entry-accent: var(--color-success); }
+    .entry--alliance_proposal_rejected           { --_entry-accent: var(--color-danger); }
+    .entry--alliance_tension_increase            { --_entry-accent: var(--color-warning); }
+    .entry--alliance_dissolved_tension           { --_entry-accent: var(--color-danger); }  /* dauerhaft hervorgehoben */
+    .entry--alliance_upkeep                      { --_entry-accent: var(--color-text-muted); }
+    .entry--player_passed                        { --_entry-accent: var(--color-text-muted); }
+    .entry--cycle_resolved                       { --_entry-accent: var(--color-warning); }
+    .entry--cycle_auto_resolved                  { --_entry-accent: var(--color-warning); }
+    .entry--player_afk                           { --_entry-accent: var(--color-text-muted); }
+    .entry--player_afk_penalty                   { --_entry-accent: var(--color-danger); }
+    .entry--player_afk_ai_takeover               { --_entry-accent: var(--color-info); }
 
     .allied-intel-badge {
       display: inline-block;
@@ -122,7 +114,7 @@ export class VelgEpochBattleLog extends LitElement {
       margin-left: var(--space-1);
       vertical-align: middle;
     }
-    .entry--zone_fortified::before          { background: var(--color-warning); }
+    .entry--zone_fortified                       { --_entry-accent: var(--color-warning); }
 
     .entry__intel-fort {
       margin-top: 4px;
@@ -164,7 +156,9 @@ export class VelgEpochBattleLog extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-text-tertiary);
+      /* Traegt die Ereignisfarbe mit — im compact-Modus ist das Typwort
+         ausgeblendet und das Symbol der einzige Ort, an dem sie ankommt. */
+      color: var(--_entry-accent, var(--color-text-tertiary));
       border: 1px solid var(--color-border);
       background: var(--color-surface-raised);
       flex-shrink: 0;
@@ -191,13 +185,18 @@ export class VelgEpochBattleLog extends LitElement {
       line-height: 1.5;
     }
 
+    /* Die Ereignisfarbe sitzt auf dem WORT, nicht auf einer Kante.
+       Vorher trug sie ein 2px-Balken links, der mit opacity:0 begann und nur
+       beim Ueberfahren erschien — 22 von 24 Ereignistypen zeigten ihre Farbe
+       also praktisch nie. Jetzt steht sie dauerhaft an der Typmarke und am
+       Symbol, ist damit ueberflogen lesbar statt suchbar. */
     .entry__type {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--_entry-accent, var(--color-text-muted));
     }
 
     /* ── Cycle tag ────────────────────────── */
@@ -486,7 +485,7 @@ export class VelgEpochBattleLog extends LitElement {
         newPhase === 'competition'
           ? msg('All operatives unlocked')
           : newPhase === 'reckoning'
-            ? msg('Final cycles – double points')
+            ? msg('Final cycles – alliances are sealed')
             : '';
       return html`
         <div

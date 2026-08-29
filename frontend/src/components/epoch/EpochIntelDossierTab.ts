@@ -252,8 +252,9 @@ export class VelgEpochIntelDossierTab extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: 3px 8px;
+      /* Doppelung: die SCHRIFT dieser Zeile steht schon auf --color-warning
+         (siehe color weiter unten), der Hintergrund ist zusaetzlich getoent. */
       background: color-mix(in srgb, var(--color-primary) 6%, transparent);
-      border-left: 2px solid var(--color-warning);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       color: var(--color-warning);
