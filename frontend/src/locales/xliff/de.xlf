@@ -8129,7 +8129,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <target>Kartographische Abteilung</target></trans-unit>
 <trans-unit id="sd1d4d9ec8a50ce94">
   <source>Survey dimensional topology and chart transit corridors from your seed vision.</source>
-<target>Vermiss die Dimensions-Topologie und kartier Transit-Korridore aus deiner Saat-Vision.</target></trans-unit>
+<target>Vermiss die Dimensionstopologie und kartiere die Transit-Korridore aus deinem Anfangskeim.</target></trans-unit>
 <trans-unit id="s6cdffcbb5936b488">
   <source>Initiate Survey</source>
 <target>Vermessung starten</target></trans-unit>
@@ -8141,7 +8141,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <target>Vermessen</target></trans-unit>
 <trans-unit id="sadb4e5d474369016">
   <source>Surveys dimensional topology and charts transit corridors based on your seed vision.</source>
-<target>Vermisst die Dimensions-Topologie und kartiert Transit-Korridore auf Grundlage deiner Saat-Vision.</target></trans-unit>
+<target>Vermisst die Dimensionstopologie und kartiert die Transit-Korridore auf Grundlage deines Anfangskeims.</target></trans-unit>
 <trans-unit id="se02179ea8ddc56d5">
   <source>Generates 5 zones and 5 streets with unique names and characteristics.</source>
 <target>Generiert 5 Zonen und 5 Straßen mit einzigartigen Namen und Eigenschaften.</target></trans-unit>
@@ -27307,9 +27307,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s50a00ce7012262b3">
   <source>The Driftkarte needs WebGL2, which this display cannot provide.</source>
 <target>Die Driftkarte benötigt WebGL2, das dieses Display nicht bereitstellen kann.</target></trans-unit>
-<trans-unit id="sed5f6475009977d7">
-  <source>DRIFT navigation chart – the frequency-layered Bleed</source>
-<target>DRIFT-Navigationskarte – der frequenzgeschichtete Bleed</target></trans-unit>
 <trans-unit id="sa0bf504c889e91f2">
   <source>Frequenzen</source>
 <target>Frequenzen</target></trans-unit>
@@ -27694,9 +27691,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s162c7629fef4d86e">
   <source>Fahrt endet</source>
 <target>Fahrt endet</target></trans-unit>
-<trans-unit id="s6e07f19f6fda058e">
-  <source>Anchor to a home simulation before you set out.</source>
-<target>Verankere dich in einer Heimat-Simulation, bevor du aufbrichst.</target></trans-unit>
 <trans-unit id="sf1857af699a4c08e">
   <source>Entladung nur an deiner Heimat-Broadcast.</source>
 <target>Entladung nur an deiner Heimat-Broadcast.</target></trans-unit>
@@ -27772,12 +27766,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s4321de844bbc40a1">
   <source>Ortung läuft</source>
 <target>Ortung läuft</target></trans-unit>
-<trans-unit id="seebefb5a6f688d11">
-  <source>Tuning the Driftkarte…</source>
-<target>Driftkarte wird abgestimmt…</target></trans-unit>
-<trans-unit id="s513249b058f16bcc">
-  <source>The Driftkarte is unreachable.</source>
-<target>Die Driftkarte ist nicht erreichbar.</target></trans-unit>
 <trans-unit id="s0f2ed3df7703f8db">
   <source>Ausgang</source>
 <target>Ausgang</target></trans-unit>
@@ -27820,15 +27808,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s24f2d7bcb96b3926">
   <source>Fracht über Bord geben</source>
 <target>Fracht über Bord geben</target></trans-unit>
-<trans-unit id="sf9c6f0843095c063">
-  <source>No active drift</source>
-<target>Kein aktiver Drift</target></trans-unit>
-<trans-unit id="s041af9c3e30e5950">
-  <source>Open a run at your home broadcast, then click a lit node to cross the Bleed.</source>
-<target>Eröffne einen Durchlauf an deiner Heimat-Broadcast, dann klicke einen erleuchteten Knoten, um den Bleed zu überqueren.</target></trans-unit>
-<trans-unit id="sf2522d3eed9cf7c5">
-  <source>You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.</source>
-<target>Du liest die geteilte Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.</target></trans-unit>
 <trans-unit id="s6a991098385e3515">
   <source>Aufbruch</source>
 <target>Aufbruch</target></trans-unit>
@@ -28522,7 +28501,88 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source><x id="0" equiv-text="${left}"/> of <x id="1" equiv-text="${VelgForgeAstrolabe._MAX_SCANS}"/> readings left</source>
   <target>Noch <x id="0" equiv-text="${left}"/> von <x id="1" equiv-text="${VelgForgeAstrolabe._MAX_SCANS}"/> Lesungen</target>
 </trans-unit>
+<trans-unit id="s724cae1f972a76e3">
+  <source>Erstvermessung – von dir</source>
+<target>Erstvermessung – von dir</target></trans-unit>
+<trans-unit id="s0e73324d891a5528">
+  <source>Erstvermessung – bereits beansprucht</source>
+<target>Erstvermessung – bereits beansprucht</target>
+</trans-unit>
+<trans-unit id="s3eb44fd5c0ee5a75">
+  <source>DRIFT-Navigationskarte – der frequenzgeschichtete Bleed</source>
+</trans-unit>
+<trans-unit id="s9f6cef4383e24f2a">
+  <source>Erstvermessung</source>
+<target>Erstvermessung</target>
+</trans-unit>
+<trans-unit id="sec5a64beda421913">
+  <source>von dir</source>
+<target>von dir</target>
+</trans-unit>
+<trans-unit id="sbb1b222d3877a558">
+  <source>bereits beansprucht</source>
+<target>bereits beansprucht</target>
+</trans-unit>
+<trans-unit id="s6bc9f3d7f68374c9">
+  <source>offen</source>
+<target>offen</target>
+</trans-unit>
+<trans-unit id="sad9d4c81474d41c3">
+  <source>Statik</source>
+<target>Statik</target>
+</trans-unit>
+<trans-unit id="s77341801d8f8fedd">
+  <source>1 Stich</source>
+<target>1 Stich</target>
+</trans-unit>
+<trans-unit id="s935629b098a76bd4">
+  <source>Verankere dich in einer Heimatwelt, bevor du aufbrichst.</source>
+</trans-unit>
+<trans-unit id="s053212bb7aff604b">
+  <source>Zwischenraum <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(a)}"/> – <x id="2" equiv-text="${worldName(b)}"/></source>
+<target>Zwischenraum <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(a)}"/> – <x id="2" equiv-text="${worldName(b)}"/></target>
+</trans-unit>
+<trans-unit id="s08c1a512d5cbefb8">
+  <source>Vorfeld <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(slug)}"/></source>
+<target>Vorfeld <x id="0" equiv-text="${leg}"/> · <x id="1" equiv-text="${worldName(slug)}"/></target>
+</trans-unit>
+<trans-unit id="sf4f9c0caf0ca749f">
+  <source>Die Driftkarte wird eingestimmt…</source>
+</trans-unit>
+<trans-unit id="s035e2d44303ce9f2">
+  <source>Die Driftkarte ist nicht erreichbar.</source>
+</trans-unit>
+<trans-unit id="s28347005fcbb204d">
+  <source>Keine Fahrt im Drift</source>
+</trans-unit>
+<trans-unit id="sfb40c52a72bc0e95">
+  <source>Brich an deinem Heimat-Broadcast auf, dann klick einen erhellten Knoten an, um den Bleed zu queren.</source>
+</trans-unit>
+<trans-unit id="s35d1e6ce0f36ba4c">
+  <source>Du liest die gemeinsame Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.</source>
+</trans-unit>
 
+<trans-unit id="sf9c6f0843095c063">
+  <source>No active drift</source>
+<target>Kein aktiver Drift</target></trans-unit>
+<trans-unit id="s041af9c3e30e5950">
+  <source>Open a run at your home broadcast, then click a lit node to cross the Bleed.</source>
+<target>Eröffne einen Durchlauf an deiner Heimat-Broadcast, dann klicke einen erleuchteten Knoten, um den Bleed zu überqueren.</target></trans-unit>
+<trans-unit id="seebefb5a6f688d11">
+  <source>Tuning the Driftkarte…</source>
+<target>Driftkarte wird abgestimmt…</target></trans-unit>
+<trans-unit id="s513249b058f16bcc">
+  <source>The Driftkarte is unreachable.</source>
+<target>Die Driftkarte ist nicht erreichbar.</target></trans-unit>
+<trans-unit id="sed5f6475009977d7">
+  <source>DRIFT navigation chart – the frequency-layered Bleed</source>
+<target>DRIFT-Navigationskarte – der frequenzgeschichtete Bleed</target></trans-unit>
+<trans-unit id="sf2522d3eed9cf7c5">
+  <source>You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.</source>
+<target>Du liest die geteilte Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.</target></trans-unit>
+<trans-unit id="s6e07f19f6fda058e">
+  <source>Anchor to a home simulation before you set out.</source>
+<target>Verankere dich in einer Heimat-Simulation, bevor du aufbrichst.</target></trans-unit>
 </body>
 </file>
 </xliff>

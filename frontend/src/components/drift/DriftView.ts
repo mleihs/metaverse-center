@@ -1287,7 +1287,7 @@ export class VelgDriftView extends LitElement {
   private _open(): void {
     const anchor = this.anchorSimulationId || appState.currentSimulation.value?.id;
     if (!anchor) {
-      VelgToast.error(msg('Verankere dich in einer Heimatwelt, bevor du aufbrichst.'));
+      VelgToast.error(msg('Anchor to a home simulation before you set out.'));
       return;
     }
     void this._mutate(() => driftApi.openRun(anchor), this._adoptRun, 'VelgDriftView._open');
@@ -1414,11 +1414,11 @@ export class VelgDriftView extends LitElement {
 
   protected render() {
     if (this._loading) {
-      return html`<velg-loading-state .message=${msg('Die Driftkarte wird eingestimmt…')}></velg-loading-state>`;
+      return html`<velg-loading-state .message=${msg('Tuning the Driftkarte…')}></velg-loading-state>`;
     }
     if (this._error) {
       return html`<velg-error-state
-        .message=${msg('Die Driftkarte ist nicht erreichbar.')}
+        .message=${msg('The Driftkarte is unreachable.')}
         show-retry
         @retry=${this._load}
       ></velg-error-state>`;
@@ -1601,7 +1601,7 @@ export class VelgDriftView extends LitElement {
       const isMember = appState.isAuthenticated.value;
       return html`
         <div class="hud" ?inert=${sceneOpen}>
-          <p class="hud__title">${msg('Keine Fahrt im Drift')}</p>
+          <p class="hud__title">${msg('No active drift')}</p>
           ${
             // BETWEEN runs is exactly when the account matters most: the Entladung just paid,
             // and the promotion it unlocked is sat from this strip. The strip used to live in
@@ -1620,10 +1620,10 @@ export class VelgDriftView extends LitElement {
             ${
               isMember
                 ? msg(
-                    'Brich an deinem Heimat-Broadcast auf, dann klick einen erhellten Knoten an, um den Bleed zu queren.',
+                    'Open a run at your home broadcast, then click a lit node to cross the Bleed.',
                   )
                 : msg(
-                    'Du liest die gemeinsame Driftkarte. Melde dich an, um den Bleed selbst zu bereisen.',
+                    'You are reading the shared Driftkarte. Sign in to travel the Bleed yourself.',
                   )
             }
           </p>
