@@ -26,6 +26,37 @@ export type TerminalLineType =
   | 'combat-heal' // stress heals, condition recovery (success green)
   | 'combat-system'; // round headers, victory, stalemate (bold amber)
 
+/**
+ * Structured payload riding along a formatted line.
+ *
+ * A formatter that computed numbers to print them can attach the numbers
+ * themselves here. The terminal renders `content` and ignores this field; a
+ * richer surface renders a widget from the values and drops the text lines the
+ * widget replaces. Both read the SAME numbers – neither parses the other's
+ * prose, which is what made the two dungeon surfaces drift apart before.
+ *
+ * Deliberately domain-neutral: `types/terminal.ts` knows nothing about
+ * dungeons, and the one assignment site is type-checked against
+ * `SkillCheckDetail`, so the shapes cannot silently diverge.
+ */
+export type TerminalLineMeta =
+  | {
+      readonly kind: 'skill-check';
+      readonly aptitude: string;
+      readonly level: number;
+      /** Pre-roll success probability in percent, as the server computed it. */
+      readonly chance: number;
+      /** The raw d100 before modifiers. */
+      readonly roll: number;
+      /** Sum of all modifiers; may be negative. */
+      readonly adjustment: number;
+      /** roll + adjustment, clamped to 1..100 – the number that decided it. */
+      readonly effectiveRoll: number;
+      readonly result: 'success' | 'partial' | 'fail';
+    }
+  /** A text line the preceding widget already says. Rich surfaces drop it. */
+  | { readonly kind: 'skill-check-part' };
+
 /** A single line (or block) of terminal output. */
 export interface TerminalLine {
   /** Unique key for lit repeat(). */
@@ -37,6 +68,8 @@ export interface TerminalLine {
   readonly timestamp: Date;
   /** Zone context for locality filtering (feed entries). */
   readonly zoneId?: string;
+  /** Optional structured twin of `content`. See TerminalLineMeta. */
+  readonly meta?: TerminalLineMeta;
 }
 
 // ── Command System ─────────────────────────────────────────────────────────

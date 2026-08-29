@@ -68,6 +68,9 @@ screenshots/
 *.png
 *.jpeg
 !docs/screenshots/*.png
+# UI-Piktogramm-Masken: 19 Alphakanal-PNGs à ~3 KB, die die Kampfleiste als
+# CSS-mask-image laedt. Sie muessen mit, sonst rendern die Ability-Knoepfe leer.
+!frontend/public/ui-pictograms/*.png
 
 # Dungeon enemy art: the generated raws stay local (42 files, ~141 MB — they would
 # more than double the repo). Only the keyed AVIFs are tracked; those are what the
@@ -100,3 +103,10 @@ spikes/
 
 # Claude Code session lock
 .claude/scheduled_tasks.lock
+
+# UI pictograms: the magenta originals stay local (10 files, ~37 MB). The keyed
+# masters in assets/ui-pictograms/ are the repo copy; regenerate them with
+#   .venv/bin/python scripts/key_dungeon_enemy_art.py \
+#       assets/ui-pictograms/raw assets/ui-pictograms --min-blob-share 0.02
+# Provenance and acceptance measurements: docs/plans/ui-pictogram-prompts.md
+assets/ui-pictograms/raw/

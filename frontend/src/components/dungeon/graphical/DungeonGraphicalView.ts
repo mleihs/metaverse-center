@@ -42,9 +42,11 @@ import type {
   AgentCombatStateClient,
   AvailableDungeonResponse,
   Condition,
+  DungeonPhase,
   DungeonRunCreate,
 } from '../../../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../../../types/index.js';
+import type { TerminalLine } from '../../../types/terminal.js';
 import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
 import { dungeonEnemyArtUrl } from '../../../utils/dungeon-enemy-art.js';
 import {
@@ -84,6 +86,7 @@ import '../DungeonHeader.js';
 import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
+import './DungeonChronicle.js';
 import './DungeonCombatFx.js';
 import type { RoomDescription } from '../../../utils/dungeon-room-text.js';
 
@@ -174,21 +177,26 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         color: var(--color-danger);
       }
 
-      /* ── HUD grid — [ map rail | scene | party ].
+      /* ── HUD grid — [ map rail | scene | party + chronicle ].
          The map is the primary navigation surface, so it lives in a persistent
          left rail at its native ~320px width (the same sidebar mode the terminal
          view uses) instead of a modal that over-scaled it 2× and hid the current
-         room below the fold. ── */
+         room below the fold.
+
+         The right column carries the party AND the chronicle. It grew 280 → 340
+         because the chronicle has to hold a line of prose without breaking every
+         third word; below the party card there were ~300px standing empty, which
+         is where the account of the descent now lives. ── */
       .dungeon-hud {
         display: grid;
         grid-template-rows: auto 1fr auto;
-        grid-template-columns: 320px 1fr 280px;
+        grid-template-columns: 320px 1fr 340px;
         flex: 1;
         min-height: 0;
         gap: 0;
       }
       .dungeon-hud--rail-collapsed {
-        grid-template-columns: 40px 1fr 280px;
+        grid-template-columns: 40px 1fr 340px;
       }
       .dungeon-hud__header {
         grid-column: 1 / -1;
@@ -211,16 +219,38 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         flex-direction: column;
         min-height: 0;
       }
-      .dungeon-hud__party {
+      /* Right column: who is with you (top), and what has happened (below).
+         Two independent scroll regions, never one — a party of four must stay
+         readable while the chronicle runs on underneath it. */
+      .dungeon-hud__side {
         grid-column: 3;
         grid-row: 2;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
         border-left: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
-        padding: 8px;
         font-family: var(--_mono);
         font-size: 10px;
         color: var(--_phosphor-dim);
         background: var(--color-surface);
+      }
+      .dungeon-hud__party {
+        flex: 0 0 auto;
+        max-height: 58%;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      .dungeon-hud__chronicle {
+        flex: 1 1 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+      }
+      .dungeon-hud__chronicle velg-dungeon-chronicle {
+        flex: 1 1 0;
+        min-height: 0;
       }
       .dungeon-hud__actions {
         grid-column: 1 / -1;
@@ -316,18 +346,32 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           grid-column: 1;
           grid-row: 2;
         }
+        .dungeon-hud__side {
+          grid-column: 1;
+          grid-row: 3;
+          display: contents;
+          border-left: none;
+        }
         .dungeon-hud__party {
           grid-column: 1;
           grid-row: 3;
+          flex: none;
           max-height: 96px;
-          border-left: none;
           border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
           overflow-x: auto;
           overflow-y: hidden;
+          background: var(--color-surface);
+        }
+        .dungeon-hud__chronicle {
+          grid-column: 1;
+          grid-row: 4;
+          height: clamp(140px, 24vh, 220px);
+          border-top: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+          background: var(--color-surface);
         }
         .dungeon-hud__rail {
           grid-column: 1;
-          grid-row: 4;
+          grid-row: 5;
           border-right: none;
           border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
           height: clamp(200px, 38vh, 340px);
@@ -337,7 +381,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         }
         .dungeon-hud__actions {
           grid-column: 1;
-          grid-row: 5;
+          grid-row: 6;
         }
       }
 
@@ -1374,6 +1418,100 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         opacity: 0.75;
       }
 
+      /* ── Outcome: the account of a finished descent ──
+         Two columns on desktop: the verdict on the left, the full chronicle on
+         the right. The chronicle is the SAME component the HUD uses — the run's
+         record does not get re-derived to be read once more. */
+      .outcome {
+        display: grid;
+        grid-template-columns: minmax(240px, 340px) 1fr;
+        gap: 20px;
+        flex: 1;
+        min-height: 0;
+      }
+      .outcome__verdict {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-self: start;
+        padding: 16px;
+        border: 1px solid color-mix(in srgb, var(--_border) 70%, transparent);
+        border-top: 3px solid var(--_verdict, var(--_phosphor));
+        background: color-mix(in srgb, var(--color-surface-raised) 92%, transparent);
+      }
+      .outcome__label {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--_phosphor-dim);
+      }
+      .outcome__title {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 22px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        line-height: 1.15;
+        color: var(--_verdict, var(--_phosphor));
+      }
+      .outcome__archetype {
+        font-family: var(--_mono);
+        font-size: 12px;
+        color: var(--_phosphor-dim);
+      }
+      .outcome__note {
+        font-family: var(--_mono);
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+      }
+      .outcome__btn {
+        margin-top: 4px;
+        padding: 9px 14px;
+        border: 1px solid var(--_phosphor-dim);
+        background: transparent;
+        color: var(--_phosphor);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        cursor: pointer;
+        transition:
+          background var(--transition-fast, 100ms ease),
+          border-color var(--transition-fast, 100ms ease);
+      }
+      .outcome__btn:hover {
+        border-color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_phosphor) 12%, transparent);
+      }
+      .outcome__btn:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      .outcome__record {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border: 1px solid color-mix(in srgb, var(--_border) 60%, transparent);
+        background: var(--color-surface);
+      }
+      .outcome__record velg-dungeon-chronicle {
+        flex: 1 1 0;
+        min-height: 0;
+      }
+      @media (max-width: 899px) {
+        .outcome {
+          grid-template-columns: 1fr;
+          overflow-y: auto;
+        }
+        .outcome__record {
+          height: clamp(220px, 40vh, 420px);
+        }
+      }
+
       /* ── Agent picker ── */
       .picker {
         display: flex;
@@ -1805,6 +1943,26 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   @state() private _pickerSelection: string[] = [];
   /** True while the create-run request is in flight (disables the controls). */
   @state() private _startingRun = false;
+  /**
+   * The descent that just ended, held so its outcome can be read.
+   *
+   * `_exitDungeon()` (dungeon-commands.ts) tears the run down BEFORE the
+   * handler's closing lines — the victory block, the loot list, the wipe — are
+   * appended. The terminal does not mind: its scrollback is the outcome screen.
+   * The graphical view had no scrollback, so `isInDungeon` flipped false and
+   * render() swapped to the lobby in the same tick, and a player never saw how
+   * their run ended. This holds the last known run so the view can show it.
+   *
+   * View-local on purpose: the shared state model is not wrong, and the
+   * terminal must keep behaving exactly as it does (DungeonView's standing
+   * contract). The panel is a SECOND RENDERER of the chronicle stream, which is
+   * the same principle the chronicle itself is built on.
+   */
+  @state() private _endedRun: { archetype: string; phase: DungeonPhase } | null = null;
+
+  /** Rolling copy of the run state, so the tick that nulls it still knows what
+   *  ended. Not @state — it feeds `_endedRun`, which is what renders. */
+  private _lastRunSnapshot: { archetype: string; phase: DungeonPhase } | null = null;
 
   private _wakeLock: WakeLockReleasable | null = null;
   private _resizeObserver: ResizeObserver | null = null;
@@ -1828,6 +1986,31 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     this._releaseWakeLock();
     terminalState.clearDungeon();
     terminalState.dispose();
+  }
+
+  /**
+   * Watch for the run ending under us.
+   *
+   * Reading the signals here keeps them tracked by SignalWatcher, so the flip
+   * is observed in the same update that would otherwise have shown the lobby.
+   */
+  protected willUpdate(): void {
+    const state = dungeonState.clientState.value;
+    if (state) {
+      this._lastRunSnapshot = { archetype: state.archetype, phase: state.phase };
+      if (this._endedRun) this._endedRun = null;
+      return;
+    }
+    // clientState went null while we were showing a scene: the run just ended.
+    if (this._lastRunSnapshot && !this._endedRun) {
+      this._endedRun = this._lastRunSnapshot;
+      this._lastRunSnapshot = null;
+    }
+  }
+
+  /** Dismiss the outcome and return to the archetype grid. */
+  private _dismissOutcome(): void {
+    this._endedRun = null;
   }
 
   /** Couple the host height to its real top offset (see the `:host` height
@@ -1944,16 +2127,35 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     if (!command) return;
     terminalState.isLoading.value = true;
     try {
-      // Output still flows to the terminal buffer (kept for continuity if the
-      // player toggles back to terminal view); the scene reacts to applyState.
       const lines = await parseAndExecute(command);
-      terminalState.appendOutput(lines);
+      this._absorb(lines);
     } catch (err) {
       captureError(err, { source: 'VelgDungeonGraphicalView._runCommand', command });
       VelgToast.error(err instanceof Error ? err.message : msg('Command failed.'));
     } finally {
       terminalState.isLoading.value = false;
     }
+  }
+
+  /**
+   * The single sink for command output in this view.
+   *
+   * `appendOutput` keeps the terminal buffer in sync (so toggling back to the
+   * terminal shows a continuous session) and, in dungeon mode, mirrors the same
+   * lines into the chronicle. Both call sites go through here so neither can
+   * quietly grow a path that renders nowhere — which is exactly how the rolls
+   * and results went missing in the first place.
+   *
+   * A refusal from the server ("Cannot move in phase: rest") also gets a toast.
+   * The chronicle records it, but a player looking at the stage would otherwise
+   * see a button do nothing at all. NOT captureError: a refused move is the
+   * game answering, not a defect — the Sentry path stays reserved for the
+   * thrown exceptions the callers already handle.
+   */
+  private _absorb(lines: TerminalLine[]): void {
+    terminalState.appendOutput(lines);
+    const refusal = lines.find((line) => line.type === 'error');
+    if (refusal?.content) VelgToast.error(refusal.content);
   }
 
   // ── Agent picker (graphical lobby → party assembly → run start) ────────────
@@ -2016,8 +2218,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         party_agent_ids: party,
         difficulty: dungeon.suggested_difficulty,
       });
-      // Keep the terminal buffer in sync for players who toggle back.
-      terminalState.appendOutput(lines);
+      this._absorb(lines);
       this._closePicker();
     } catch (err) {
       captureError(err, { source: 'VelgDungeonGraphicalView._beginRun', command: archetype });
@@ -2038,7 +2239,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       return html`<div class="gview-loading">${msg('Rendering descent...')}</div>`;
     }
     const sid = this.simulationId || appState.simulationId.value || '';
-    return dungeonState.isInDungeon.value ? this._renderScene() : this._renderLobby(sid);
+    if (dungeonState.isInDungeon.value) return this._renderScene();
+    if (this._endedRun) return this._renderOutcome(this._endedRun);
+    return this._renderLobby(sid);
   }
 
   private _renderScene() {
@@ -2121,8 +2324,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           }}
         ></velg-lightbox>
 
-        <div class="dungeon-hud__party" role="complementary" aria-label=${msg('Party status')}>
-          <velg-dungeon-party-panel></velg-dungeon-party-panel>
+        <div class="dungeon-hud__side">
+          <div class="dungeon-hud__party" role="complementary" aria-label=${msg('Party status')}>
+            <velg-dungeon-party-panel></velg-dungeon-party-panel>
+          </div>
+          <div
+            class="dungeon-hud__chronicle"
+            role="complementary"
+            aria-label=${msg('Chronicle of the descent')}
+          >
+            <velg-dungeon-chronicle></velg-dungeon-chronicle>
+          </div>
         </div>
 
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
@@ -2305,6 +2517,59 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             </div>
           `;
         })}
+      </div>
+    `;
+  }
+
+  /**
+   * The account of a finished descent.
+   *
+   * Shown in place of the lobby for as long as the player wants it. The record
+   * on the right is the same `<velg-dungeon-chronicle>` the HUD uses, reading
+   * the same buffer — `terminalState.clearDungeon()` deliberately leaves the
+   * chronicle standing so the closing lines, which are appended after the run
+   * is torn down, are still in it.
+   */
+  private _renderOutcome(ended: { archetype: string; phase: DungeonPhase }) {
+    const wiped = ended.phase === 'wiped';
+    const completed = ended.phase === 'completed';
+    const verdict = wiped
+      ? msg('Party lost')
+      : completed
+        ? msg('Descent complete')
+        : msg('Withdrawn');
+    const note = wiped
+      ? msg('No one came back up. What they carried stayed down there with them.')
+      : completed
+        ? msg('The resonance is spent. Everything the party carried out is theirs.')
+        : msg('The party left early and kept what it had already taken.');
+    // Colour carries the verdict; --_verdict feeds the panel's top rule and title.
+    const verdictColor = wiped
+      ? 'var(--color-danger)'
+      : completed
+        ? 'var(--color-success)'
+        : 'var(--_phosphor)';
+
+    return html`
+      <div class="dungeon-lobby">
+        <div class="outcome">
+          <div class="outcome__verdict" style="--_verdict:${verdictColor}">
+            <span class="outcome__label">${msg('Descent ended')}</span>
+            <span class="outcome__title">${verdict}</span>
+            <span class="outcome__archetype">${getArchetypeDisplayName(ended.archetype)}</span>
+            <p class="outcome__note">${note}</p>
+            <button class="outcome__btn" type="button" @click=${this._dismissOutcome}>
+              ${msg('Return to the lobby')}
+            </button>
+          </div>
+          <div
+            class="outcome__record"
+            role="region"
+            aria-label=${msg('Chronicle of the descent')}
+          >
+            <velg-dungeon-chronicle></velg-dungeon-chronicle>
+          </div>
+        </div>
       </div>
     `;
   }
