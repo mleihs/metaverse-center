@@ -260,13 +260,30 @@ class DungeonMoveRequest(BaseModel):
 
 
 class DungeonAction(BaseModel):
-    """Generic action submission (encounter choice or ability use)."""
+    """Body of ``POST /dungeons/runs/{id}/action`` — one encounter choice.
 
-    action_type: Literal["encounter_choice", "combat_action", "interact", "use_ability"]
+    The name says "action" and the endpoint used to accept four action types
+    (``combat_action``, ``interact``, ``use_ability`` alongside the choice), but
+    the router has only ever had one destination for them: ``handle_encounter_choice``,
+    whose first statement demands an encounter phase. Three of the four could
+    therefore never succeed — and worse than being dead surface, they were
+    DANGEROUS: a ``combat_action`` posted with a valid ``choice_id`` during an
+    encounter would have been resolved as that encounter choice, because nothing
+    downstream ever reads ``action_type``.
+
+    Combat has its own endpoint and its own model (``CombatSubmission`` /
+    ``CombatAction``). ``ability_id`` and ``target_id`` belonged to that story
+    and were never read here either, so they are gone as well; Pydantic ignores
+    unknown fields, so a client still sending them is unaffected.
+
+    The single-valued Literal is deliberate rather than pointless: it keeps the
+    body self-describing and turns a combat action posted to the wrong endpoint
+    into a 422 at the door instead of a silent misinterpretation.
+    """
+
+    action_type: Literal["encounter_choice"]
     agent_id: UUID | None = None
     choice_id: str | None = None
-    ability_id: str | None = None
-    target_id: str | None = None
 
 
 class CombatAction(BaseModel):
