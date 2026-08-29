@@ -21,6 +21,11 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
+#: Keys inside `philosophical_anchor` that the Astrolabe owns and a client
+#: update must never drop. See ForgeDraftService.update_draft.
+_SERVER_OWNED_ANCHOR_KEYS = frozenset({"scans", "seed"})
+
+
 
 # ── Domain Exceptions ────────────────────────────────────────────────
 # Services raise these; routers catch and translate to HTTP status codes.
@@ -180,6 +185,22 @@ class ForgeDraftService:
         update_data = data.model_dump(exclude_unset=True)
         if not update_data:
             return await ForgeDraftService.get_draft(supabase, user_id, draft_id)
+
+        # `philosophical_anchor` is one JSON column with two owners: the client
+        # writes `selected`, the Astrolabe writes `options` and the reading
+        # budget (`scans` / `seed`). A column update replaces the whole value,
+        # so a client that sends only the fields it cares about erases the rest
+        # — which is exactly what happened: choosing an anchor dropped the
+        # budget and handed the user three fresh readings. The client no longer
+        # does that, but the server must not depend on every client getting it
+        # right, so the keys it owns are carried across.
+        anchor = update_data.get("philosophical_anchor")
+        if isinstance(anchor, dict) and not _SERVER_OWNED_ANCHOR_KEYS <= anchor.keys():
+            existing = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
+            previous = existing.get("philosophical_anchor") or {}
+            for key in _SERVER_OWNED_ANCHOR_KEYS - anchor.keys():
+                if key in previous:
+                    anchor[key] = previous[key]
 
         response = await (
             supabase.table("forge_drafts")

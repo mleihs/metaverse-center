@@ -46,6 +46,30 @@ export function fanRotation(
 /** Card widths in px, keyed by the `size` attribute of `<velg-game-card>`. */
 const CARD_WIDTH = { xs: 80, sm: 120, md: 200, lg: 280 } as const;
 
+/** The card is 5:8, so its height is this multiple of its width. */
+const CARD_ASPECT = 8 / 5;
+
+/**
+ * How far a turned card reaches past the edge of the space it is laid out in.
+ *
+ * Two things make this bigger than intuition suggests. A turned rectangle's
+ * upright bounding box is wider than the rectangle, and because the card is
+ * tall (5:8) the height term dominates: at 22 degrees a 200px card spans 304px.
+ * And the fan turns each card about its **bottom centre**, not its middle, so
+ * that extra width is not split evenly — the top corner swings out by the full
+ * `h·sin θ` on one side while the other side tucks in.
+ *
+ * Measured on screen: six cards reached 1310px inside a 1150px console. Against
+ * the flat width the fit calculation was 214px optimistic; against a
+ * centre-rotation model it was still 110px out. This is the term that matches
+ * what the browser actually lays down.
+ */
+function fanOverhang(cardWidth: number, degrees: number): number {
+  const rad = (Math.abs(degrees) * Math.PI) / 180;
+  const half = cardWidth / 2;
+  return half * Math.cos(rad) + cardWidth * CARD_ASPECT * Math.sin(rad) - half;
+}
+
 /** Fraction of a card that must stay visible under its right-hand neighbour. */
 const MIN_VISIBLE = 0.42;
 
@@ -107,10 +131,18 @@ export function fanGeometry(count: number, availableWidth: number): FanGeometry 
   // division by zero — the ResizeObserver corrects it on the next frame.
   const available = availableWidth > 0 ? availableWidth : Number.POSITIVE_INFINITY;
 
+  // The outermost card is the most turned, and it is the one that decides
+  // where the fan ends.
+  const outerTilt = ((count - 1) / 2) * rotStep;
+
   for (const size of ['md', 'sm'] as const) {
     const cardWidth = CARD_WIDTH[size];
     const maxOverlap = cardWidth * (1 - MIN_VISIBLE);
-    const needed = (count * cardWidth - available) / (count - 1);
+    // Layout advances by (width - overlap) per card and ends with one full
+    // card; both outer cards then reach past that box by their overhang.
+    // extent = (w - overlap)·(n-1) + w + 2·overhang, solved for overlap.
+    const overhang = fanOverhang(cardWidth, outerTilt);
+    const needed = (cardWidth * count + 2 * overhang - available) / (count - 1);
 
     if (needed <= maxOverlap) {
       const overlap = Math.min(maxOverlap, Math.max(RESTING_OVERLAP, needed));

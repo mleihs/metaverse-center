@@ -75,13 +75,33 @@ function building(overrides: Partial<ForgeBuildingDraft> = {}): ForgeBuildingDra
 }
 
 describe('fanGeometry', () => {
+  /**
+   * The fan's real extent, as the browser lays it down: the layout row plus the
+   * overhang each outer card gains by turning about its bottom centre.
+   */
+  function fanExtent(count: number, geo: ReturnType<typeof fanGeometry>): number {
+    const rad = (((count - 1) / 2) * geo.rotStep * Math.PI) / 180;
+    const half = geo.cardWidth / 2;
+    const overhang = half * Math.cos(rad) + geo.cardWidth * (8 / 5) * Math.sin(rad) - half;
+    return (geo.cardWidth - geo.overlap) * (count - 1) + geo.cardWidth + 2 * overhang;
+  }
+
   it('keeps a full twelve-card hand inside the console it is given', () => {
     const count = 12;
     const geo = fanGeometry(count, CONSOLE_WIDTH);
-    const width = count * geo.cardWidth - (count - 1) * geo.overlap;
 
     expect(geo.overflows).toBe(false);
-    expect(width).toBeLessThanOrEqual(CONSOLE_WIDTH + 1);
+    expect(fanExtent(count, geo)).toBeLessThanOrEqual(CONSOLE_WIDTH + 1);
+  });
+
+  it('counts the turned outer cards, not their flat width', () => {
+    // Six 200px cards fit trivially against flat widths — and measured 1310px
+    // on screen inside a 1150px console, because each card turns about its
+    // bottom centre and its top corner swings well past the layout box.
+    for (const count of [3, 6, 9, 12]) {
+      const geo = fanGeometry(count, CONSOLE_WIDTH);
+      expect(fanExtent(count, geo)).toBeLessThanOrEqual(CONSOLE_WIDTH + 1);
+    }
   });
 
   it('never hides so much of a card that it stops being readable', () => {

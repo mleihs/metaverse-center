@@ -132,3 +132,90 @@ async def test_a_draft_from_before_the_budget_existed_is_not_locked_out():
 
     payload = update.await_args.args[3]
     assert payload.philosophical_anchor["scans"] == 1
+
+
+@pytest.mark.asyncio
+async def test_a_partial_anchor_update_keeps_the_reading_budget():
+    """Choosing an anchor must not hand the budget back.
+
+    `philosophical_anchor` is one JSON column with two owners, and a column
+    update replaces the whole value. The client used to rebuild the object from
+    `options` + `selected`, which dropped `scans` and `seed` — so selecting an
+    anchor silently reset the count to zero and offered three fresh readings.
+    The client was fixed; this pins the server so it does not depend on that.
+    """
+    from backend.models.forge import ForgeDraftUpdate
+    from backend.services.forge_draft_service import ForgeDraftService
+
+    stored = {
+        "philosophical_anchor": {
+            "options": [{"title": "One"}],
+            "scans": 2,
+            "seed": SEED,
+        }
+    }
+
+    captured: dict = {}
+
+    class _Table:
+        def update(self, payload):
+            captured.update(payload)
+            return self
+
+        def eq(self, *_a, **_k):
+            return self
+
+        async def execute(self):
+            return type("R", (), {"data": [{"id": "x"}]})()
+
+    supabase = type("S", (), {"table": lambda _self, _n: _Table()})()
+
+    with patch.object(
+        ForgeDraftService, "get_draft", AsyncMock(return_value=stored)
+    ):
+        await ForgeDraftService.update_draft(
+            supabase,
+            uuid4(),
+            uuid4(),
+            ForgeDraftUpdate(
+                philosophical_anchor={"options": [{"title": "One"}], "selected": {"title": "One"}}
+            ),
+        )
+
+    anchor = captured["philosophical_anchor"]
+    assert anchor["selected"] == {"title": "One"}
+    assert anchor["scans"] == 2, "the reading count was dropped by a partial write"
+    assert anchor["seed"] == SEED
+
+
+@pytest.mark.asyncio
+async def test_a_full_anchor_write_is_left_alone():
+    """A write that carries the budget itself is authoritative — no merge."""
+    from backend.models.forge import ForgeDraftUpdate
+    from backend.services.forge_draft_service import ForgeDraftService
+
+    captured: dict = {}
+
+    class _Table:
+        def update(self, payload):
+            captured.update(payload)
+            return self
+
+        def eq(self, *_a, **_k):
+            return self
+
+        async def execute(self):
+            return type("R", (), {"data": [{"id": "x"}]})()
+
+    supabase = type("S", (), {"table": lambda _self, _n: _Table()})()
+
+    with patch.object(ForgeDraftService, "get_draft", AsyncMock()) as get_draft:
+        await ForgeDraftService.update_draft(
+            supabase,
+            uuid4(),
+            uuid4(),
+            ForgeDraftUpdate(philosophical_anchor={"options": [], "scans": 1, "seed": "new"}),
+        )
+
+    get_draft.assert_not_awaited()
+    assert captured["philosophical_anchor"]["scans"] == 1

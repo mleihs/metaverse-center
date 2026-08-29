@@ -858,9 +858,16 @@ export class VelgForgeAstrolabe extends LitElement {
   private _selectAnchor(idx: number) {
     this._selectedIdx = idx;
     const selected = this._options[idx];
+    // Spread, don't rebuild. `philosophical_anchor` is one JSON column that
+    // holds more than the two fields this method cares about — the server also
+    // keeps the reading count and the seed it belongs to there. Listing the
+    // fields by hand wrote a partial update as a full replacement and silently
+    // dropped the rest, so choosing an anchor handed the budget back to three.
+    const current = forgeStateManager.draft.value?.philosophical_anchor;
     forgeStateManager.updateDraft({
       philosophical_anchor: {
-        options: forgeStateManager.draft.value?.philosophical_anchor?.options ?? [],
+        ...current,
+        options: current?.options ?? [],
         selected,
       },
     });

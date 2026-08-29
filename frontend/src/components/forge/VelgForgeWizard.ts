@@ -534,7 +534,12 @@ export class VelgForgeWizard extends LitElement {
 
     const city = (draft.geography as { city_name?: string } | undefined)?.city_name;
     const anchor = draft.philosophical_anchor?.selected;
-    const cfg = draft.generation_config;
+    // From the state manager, not the raw column. `generation_config` is only
+    // written once the user moves a slider, so a draft that took the defaults
+    // has an empty object there and the strip read
+    // "undefined operatives · undefined structures". The manager merges the
+    // defaults, which is also what the phase itself and the action bar use.
+    const cfg = forgeStateManager.generationConfig.value;
 
     return html`
       <div class="context-bar">
