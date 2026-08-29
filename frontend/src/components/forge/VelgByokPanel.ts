@@ -202,8 +202,9 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__key-card {
+      /* Der Zustand (eingerichtet / nicht) faerbt den ganzen Rahmen statt
+         einer Platte an der Kante. */
       border: 1px solid var(--color-border-light);
-      border-left: 3px solid var(--color-text-muted);
       background: var(--color-surface);
       padding: var(--space-4, 16px);
       transition: border-color var(--transition-fast);
@@ -211,7 +212,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__key-card[data-configured] {
-      border-left-color: var(--color-success);
+      border-color: color-mix(in srgb, var(--color-success) 55%, var(--color-border));
     }
 
     .byok__key-card:nth-child(1) {

@@ -134,8 +134,8 @@ export class VelgForgeAccessModal extends LitElement {
       gap: 16px;
       padding: 14px 16px;
       background: var(--color-surface);
-      border: 1px solid var(--color-border-light);
-      border-left: 3px solid var(--color-accent-amber);
+      /* Akzent auf dem ganzen Rahmen des Hinweiskastens. */
+      border: 1px solid color-mix(in srgb, var(--color-accent-amber) 50%, var(--color-border));
       margin-bottom: 24px;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
