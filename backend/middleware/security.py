@@ -33,7 +33,26 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Immutable caching for content-hashed static assets.
         # Vite adds content hashes to filenames (e.g., index-fXYAEj1v.js),
         # so a 1-year cache is safe — new deploys produce new filenames.
-        if request.url.path.startswith("/assets/"):
+        #
+        # ONLY for a response that actually carries the asset. The reasoning
+        # above holds for 200s and inverts for everything else: a 404 on this
+        # path is the most transient answer the server gives, because the file
+        # appears the moment the deploy finishes.
+        #
+        # Marking one immutable poisoned production for a year. During a rolling
+        # deploy a browser asked the retiring container for a filename only the
+        # incoming one had; it answered 404, and this header told the CDN to
+        # keep that answer until 2027. Cached under the `Origin` variant —
+        # CORSMiddleware sets `Vary: Origin`, and Vite emits every module script
+        # with `crossorigin`, so every browser sends that header and every
+        # browser got the dead copy. The site rendered black in Chrome and
+        # Brave alike while the container beside it served the same file with a
+        # 200. Measured: `cf-cache-status: HIT`, `age: 664`,
+        # `cache-control: public, max-age=31536000, immutable` on a 404.
+        if request.url.path.startswith("/assets/") and response.status_code < 400:
             response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif request.url.path.startswith("/assets/"):
+            # A miss here is a deploy in flight, not a fact about the URL.
+            response.headers["Cache-Control"] = "no-store"
 
         return response
