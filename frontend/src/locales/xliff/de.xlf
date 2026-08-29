@@ -18209,7 +18209,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Qual.</target></trans-unit>
 <trans-unit id="s3657fd9d1acde61d">
   <source>Cond</source>
-<target>Zust.</target></trans-unit>
+<target>Zustand</target></trans-unit>
 <trans-unit id="s70c8b0ac61ab3786">
   <source>API Key Active – Unlimited Access</source>
 <target>API-Schlüssel aktiv – Unbegrenzter Zugang</target></trans-unit>
@@ -20876,7 +20876,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s9877a319fac66d50">
   <source>Str</source>
-  <target>Str</target>
+  <target>Belastung</target>
 </trans-unit>
 <trans-unit id="sf8b2710d898e366d">
   <source>Active effects</source>
@@ -28152,6 +28152,10 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sf37ca99ea5888162">
   <source>baseline</source>
   <target>Grundwert</target>
+</trans-unit>
+<trans-unit id="sb321b849ef96a43b">
+  <source>at least 2</source>
+  <target>mindestens 2</target>
 </trans-unit>
 
 </body>

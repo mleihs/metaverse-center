@@ -1401,8 +1401,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           box-shadow var(--transition-fast, 100ms ease),
           background var(--transition-fast, 100ms ease);
       }
+      /* Hover is a hint, selection is a commitment — they must not look alike.
+         Both used to set border-color to the same phosphor, distinguished only
+         by a 12% background tint that is invisible at a glance on a dark card.
+         A player moving the mouse across the roster saw cards "light up"
+         exactly as selection does. Hover now lifts; selection marks. */
       .picker-card:hover:not(:disabled) {
-        border-color: var(--_phosphor);
+        border-color: color-mix(in srgb, var(--_phosphor) 55%, transparent);
         box-shadow: var(--shadow-md);
       }
       .picker-card:focus-visible {
@@ -1411,7 +1416,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       }
       .picker-card--selected {
         border-color: var(--_phosphor);
-        background: color-mix(in srgb, var(--_phosphor) 12%, var(--color-surface-raised));
+        border-left-width: 3px;
+        background: color-mix(in srgb, var(--_phosphor) 18%, var(--color-surface-raised));
       }
       .picker-card:disabled {
         opacity: 0.4;
@@ -1424,14 +1430,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         flex: 1;
         min-width: 0;
       }
+      /* Two lines rather than an ellipsis: six of the eight agents in the test
+         simulation were cut ("Chrysanthe the Res…", "Formicastra the Si…"), and
+         a name one cannot read is not a choice one can make. The card grid has
+         the vertical room; it never had the horizontal room. */
       .picker-card__name {
         font-family: var(--_mono);
         font-size: 12px;
         font-weight: 600;
+        line-height: 1.3;
         color: var(--color-text-primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow-wrap: anywhere;
       }
       .picker-card__apts {
         display: flex;
@@ -1472,6 +1481,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         gap: 12px;
         padding-top: 10px;
         border-top: 1px dashed color-mix(in srgb, var(--_border) 40%, transparent);
+      }
+      .picker__count-need {
+        margin-left: 6px;
+        color: var(--color-warning);
       }
       .picker__count {
         font-family: var(--_mono);
@@ -2398,6 +2411,16 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                 <div class="picker__footer">
                   <span class="picker__count" aria-live="polite">
                     ${msg('Party')}: ${count}/4
+                    ${
+                      // "0/4" states the ceiling; the floor is 2, and a player
+                      // who picks one agent and presses BEGIN gets no
+                      // explanation for why nothing happens.
+                      count < 2
+                        ? html`<span class="picker__count-need">
+                            ${msg('at least 2')}
+                          </span>`
+                        : nothing
+                    }
                   </span>
                   <div class="picker__actions">
                     <button
