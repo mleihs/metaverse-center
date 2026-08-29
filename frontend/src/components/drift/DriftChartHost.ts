@@ -57,6 +57,23 @@ const PARTICLE_COUNT = 900;
 const INITIAL_CENTER = { x: -235, y: -150 };
 const INITIAL_VIEW_HEIGHT = 1500;
 
+// Hard ceiling on the drawing buffer, in CSS pixels.
+//
+// The board's size is bounded by ONE thing: the explicit `height: clamp(...)` on
+// `.drift-chart` (the rule CLAUDE.md prescribes for any canvas with an internal
+// ResizeObserver). That single bound is also a single point of failure. The canvas is
+// sized by the stylesheet (`position: absolute; inset: 0`) while `renderer.setSize(w, h,
+// false)` deliberately does NOT write inline dimensions — so if the stylesheet is ever
+// absent or overridden, the canvas falls back to sizing itself from its own buffer
+// attributes, the viewport grows to contain it, the observer fires with the larger box,
+// and the two feed each other. Seen during development after a hot-reload dropped the
+// injected stylesheet: 1352x631 became 2704x7236 within a few frames — a 78-megapixel
+// buffer, roughly 300 MB of GPU memory, and a board that renders as a black rectangle.
+// These ceilings are far above any real display (the CSS caps the height at 880px) and
+// cost one Math.min per resize, but they turn an unbounded loop into a clamp.
+const MAX_BOARD_W = 4096;
+const MAX_BOARD_H = 1600;
+
 // ── Light-DOM style injection (SimulationWorldMap pattern) ───────────────────
 const _styledRoots = new WeakSet<Document | ShadowRoot>();
 
@@ -195,6 +212,8 @@ export class VelgDriftChartHost extends LitElement {
   // HTML world-name labels over the canvas (homes only); transforms updated per frame.
   private _labelLayer: HTMLElement | null = null;
   private _labels: { el: HTMLElement; id: string; x: number; y: number }[] = [];
+  /** Measured size of the hover dossier, cached per node (see _positionDossier). */
+  private _dossierBox: { id: string; w: number; h: number } | null = null;
 
   // Erstvermessung seals over the canvas — rendered declaratively (Lit, so the icon
   // glyph comes from icons.ts) and projected to screen each frame. _sealData is the
@@ -346,8 +365,8 @@ export class VelgDriftChartHost extends LitElement {
   private _resize = (): void => {
     const wrap = this.querySelector<HTMLElement>('.drift-chart__viewport');
     if (!wrap || !this._renderer || !this._post || !this._background) return;
-    const w = wrap.clientWidth;
-    const h = wrap.clientHeight;
+    const w = Math.min(wrap.clientWidth, MAX_BOARD_W);
+    const h = Math.min(wrap.clientHeight, MAX_BOARD_H);
     if (w === 0 || h === 0) return;
     this._renderer.setSize(w, h, false);
     this._post.setSize(w, h, this._pixelRatio);
@@ -465,6 +484,10 @@ export class VelgDriftChartHost extends LitElement {
         class="drift-chart__seal ${d.mine ? 'drift-chart__seal--self' : ''}"
         data-x=${d.x}
         data-y=${d.y}
+        role="img"
+        aria-label=${
+          d.mine ? msg('Erstvermessung – von dir') : msg('Erstvermessung – bereits beansprucht')
+        }
       >
         <span class="drift-chart__seal-inner">
           <span class="drift-chart__seal-stamp"></span>
@@ -686,22 +709,31 @@ export class VelgDriftChartHost extends LitElement {
     return FREQUENCIES.filter((v) => open.has(v));
   }
 
-  /** Anchor the hover dossier beside its node (upper-right by default; flips at edges). */
+  /** Anchor the hover dossier beside its node (upper-right by default; flips at edges).
+   *
+   * Runs on every animation frame for as long as the pointer rests on a node, so it does
+   * two things carefully. `offsetWidth`/`offsetHeight` force a synchronous layout, and the
+   * box only changes size when its CONTENT does — so the measurement is cached per hovered
+   * node instead of being taken 60-120 times a second for an answer that cannot have
+   * changed. And the position is written as a transform, not left/top, so the panel is
+   * translated on the compositor rather than re-laid-out and re-rasterised each frame. */
   private _positionDossier(wrap: HTMLElement): void {
     const node = this._hoverNode;
     const el = this.querySelector<HTMLElement>('.drift-chart__dossier');
     if (!node || !el || !this._controller) return;
+    if (this._dossierBox?.id !== node.id) {
+      this._dossierBox = { id: node.id, w: el.offsetWidth, h: el.offsetHeight };
+    }
+    const { w: pw, h: ph } = this._dossierBox;
     const s = this._controller.worldToScreen(node.x, node.y);
-    const pw = el.offsetWidth;
-    const ph = el.offsetHeight;
     let left = s.x + 18;
     if (left + pw > wrap.clientWidth - 8) left = s.x - pw - 18;
     left = Math.max(8, left);
     let top = s.y - ph - 12;
     if (top < 8) top = s.y + 18;
     top = Math.min(top, wrap.clientHeight - ph - 8);
-    el.style.left = `${left}px`;
-    el.style.top = `${top}px`;
+    el.style.setProperty('--x', `${left}px`);
+    el.style.setProperty('--y', `${top}px`);
   }
 
   private _frame = (now: number): void => {
@@ -886,6 +918,30 @@ export class VelgDriftChartHost extends LitElement {
                 open.length
                   ? this._renderVectorChips(open)
                   : html`<span class="drift-chart__dossier-none">${msg('versiegelt')}</span>`
+              }
+            </dd>
+          </div>
+          <!--
+            The claim, in words. The board stamps a medallion beside every surveyed node,
+            and that medallion was the only place the fact existed: no title, no legend, and
+            the seal layer is pointer-events:none, so it could not even be hovered. A reader
+            saw an unexplained mark and had no route to its meaning. The dossier is the
+            board's "what am I looking at" surface, and the seal marks a NODE — so the
+            node's own dossier is where the mark gets read out.
+          -->
+          <div class="drift-chart__dossier-row">
+            <dt>${msg('Erstvermessung')}</dt>
+            <dd>
+              ${
+                this.selfKeys.has(node.stable_key)
+                  ? html`<span class="drift-chart__dossier-claim drift-chart__dossier-claim--self"
+                      >${msg('von dir')}</span
+                    >`
+                  : this.claimedKeys.has(node.stable_key)
+                    ? html`<span class="drift-chart__dossier-claim"
+                        >${msg('bereits beansprucht')}</span
+                      >`
+                    : html`<span class="drift-chart__dossier-none">${msg('offen')}</span>`
               }
             </dd>
           </div>
