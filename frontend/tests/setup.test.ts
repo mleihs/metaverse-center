@@ -23,6 +23,7 @@ describe('Type definitions', () => {
       description: 'A test simulation',
       theme: 'dystopian',
       status: 'draft',
+      simulation_type: 'template',
       content_locale: 'de',
       additional_locales: ['en'],
       owner_id: '00000000-0000-0000-0000-000000000002',
@@ -38,6 +39,7 @@ describe('Type definitions', () => {
     const agent: Agent = {
       id: '00000000-0000-0000-0000-000000000003',
       simulation_id: '00000000-0000-0000-0000-000000000001',
+      slug: 'test-agent',
       name: 'Test Agent',
       created_at: '2026-01-01T00:00:00Z',
       updated_at: '2026-01-01T00:00:00Z',
@@ -49,6 +51,7 @@ describe('Type definitions', () => {
     const building: Building = {
       id: '00000000-0000-0000-0000-000000000004',
       simulation_id: '00000000-0000-0000-0000-000000000001',
+      slug: 'test-building',
       name: 'Test Building',
       building_type: 'residential',
       population_capacity: 100,
@@ -67,6 +70,7 @@ describe('Type definitions', () => {
       data_source: 'local',
       impact_level: 5,
       tags: ['test'],
+      event_status: 'active',
       created_at: '2026-01-01T00:00:00Z',
       updated_at: '2026-01-01T00:00:00Z',
     };
@@ -105,11 +109,16 @@ describe('Type definitions', () => {
     expect(response.meta?.limit).toBe(25);
   });
 
-  it('should compile PaginatedResponse type without meta', () => {
+  it('should compile PaginatedResponse error branch without meta', () => {
+    // A *successful* paginated response always carries meta; only the failure
+    // branch omits it. The previous version of this test asserted an optional
+    // meta on `success: true` -- a shape the type has not permitted for a long
+    // time. tsc never saw this file, so the assertion went on passing.
     const response: PaginatedResponse<Agent> = {
-      success: true,
-      data: [],
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'No agents.' },
     };
     expect(response.meta).toBeUndefined();
+    expect(response.error?.code).toBe('NOT_FOUND');
   });
 });

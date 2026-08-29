@@ -12,7 +12,6 @@ import {
   computeAnimationDurations,
   computeShadows,
 } from '../src/services/ThemeService.js';
-import type { ShadowStyle } from '../src/services/ThemeService.js';
 
 // ---------------------------------------------------------------------------
 // THEME_TOKEN_MAP

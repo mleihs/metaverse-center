@@ -234,8 +234,11 @@ describe('AnalyticsService', () => {
   beforeEach(() => {
     localStorage.clear();
     // Reset window globals
-    delete (window as Record<string, unknown>).dataLayer;
-    delete (window as Record<string, unknown>).gtag;
+    // AnalyticsService declares dataLayer/gtag as NON-optional Window fields, so
+    // `delete window.x` is not allowed on them and the Record cast was not a legal
+    // conversion. Reflect.deleteProperty needs neither.
+    Reflect.deleteProperty(window, 'dataLayer');
+    Reflect.deleteProperty(window, 'gtag');
   });
 
   afterEach(() => {
@@ -286,8 +289,11 @@ describe('AnalyticsService — Event Hub', () => {
 
   beforeEach(async () => {
     localStorage.clear();
-    delete (window as Record<string, unknown>).dataLayer;
-    delete (window as Record<string, unknown>).gtag;
+    // AnalyticsService declares dataLayer/gtag as NON-optional Window fields, so
+    // `delete window.x` is not allowed on them and the Record cast was not a legal
+    // conversion. Reflect.deleteProperty needs neither.
+    Reflect.deleteProperty(window, 'dataLayer');
+    Reflect.deleteProperty(window, 'gtag');
 
     vi.resetModules();
 

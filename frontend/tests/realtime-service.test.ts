@@ -41,8 +41,11 @@ class TestableRealtimeService {
   readonly unreadEpochCount = signal(0);
   readonly unreadTeamCount = signal(0);
 
-  private _epochChatFocused = true;
-  private _teamChatFocused = false;
+  // Public, damit der Fokuswechsel PRUEFBAR ist. Als `private` wurden beide nur
+  // geschrieben und nie gelesen — der Testdouble bildete Verhalten nach, das
+  // kein Test je betrachtet hat.
+  epochChatFocused = true;
+  teamChatFocused = false;
 
   initReadyStates(participants: Array<{ simulation_id: string; cycle_ready?: boolean }>) {
     const states: Record<string, boolean> = {};
@@ -55,12 +58,12 @@ class TestableRealtimeService {
   resetUnreadCount(channelType: 'epoch' | 'team') {
     if (channelType === 'epoch') {
       this.unreadEpochCount.value = 0;
-      this._epochChatFocused = true;
-      this._teamChatFocused = false;
+      this.epochChatFocused = true;
+      this.teamChatFocused = false;
     } else {
       this.unreadTeamCount.value = 0;
-      this._teamChatFocused = true;
-      this._epochChatFocused = false;
+      this.teamChatFocused = true;
+      this.epochChatFocused = false;
     }
   }
 
@@ -135,6 +138,16 @@ describe('RealtimeService — resetUnreadCount', () => {
     service.unreadTeamCount.value = 3;
     service.resetUnreadCount('epoch');
     expect(service.unreadTeamCount.value).toBe(3);
+  });
+
+  it('should move chat focus to the reset channel', () => {
+    service.resetUnreadCount('team');
+    expect(service.teamChatFocused).toBe(true);
+    expect(service.epochChatFocused).toBe(false);
+
+    service.resetUnreadCount('epoch');
+    expect(service.epochChatFocused).toBe(true);
+    expect(service.teamChatFocused).toBe(false);
   });
 });
 

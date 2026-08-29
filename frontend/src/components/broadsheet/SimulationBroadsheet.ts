@@ -20,6 +20,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { broadsheetApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
+import { getPresetForTheme, type ThemePresetName } from '../../services/theme-presets.js';
 import type { ApiResponse, Broadsheet, BroadsheetArticle } from '../../types/index.js';
 import { formatDateRange, formatShortDateRange, getDateLocale } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
@@ -41,7 +42,7 @@ import './BroadsheetArticle.js';
 import './BroadsheetGazetteWire.js';
 
 /** Theme-specific "end" symbols per the spec (Zetland "finishable" marker). */
-const COMPLETE_MARKS: Record<string, string> = {
+const COMPLETE_MARKS: Record<ThemePresetName, string> = {
   brutalist: '///',
   'sunless-sea': '~',
   cyberpunk: '[EOF]',
@@ -348,8 +349,20 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
     return this._broadsheets.filter((b) => b.id !== featured.id);
   }
 
-  private get _themePreset(): string {
-    return appState.currentSimulation.value?.theme ?? 'brutalist';
+  /** The active theme PRESET.
+   *
+   *  This used to return `simulation.theme` — a `SimulationTheme`
+   *  ('dystopian' | 'utopian' | 'fantasy' | 'scifi' | 'historical' | 'custom').
+   *  Both consumers key on `ThemePresetName` ('cyberpunk', 'sunless-sea', …),
+   *  and the two vocabularies are DISJOINT: `_atmosphereClass` could never
+   *  match a case and always returned '', and `COMPLETE_MARKS` always missed
+   *  and always fell back to the generic mark. The `: string` return type is
+   *  what hid it — widening to string defeats the check the same way a cast
+   *  does. Typing it `ThemePresetName` makes both consumers provable.
+   */
+  private get _themePreset(): ThemePresetName {
+    const sim = appState.currentSimulation.value;
+    return sim ? getPresetForTheme(sim.theme, sim.slug) : 'brutalist';
   }
 
   private get _themeColor(): string {
