@@ -10,6 +10,7 @@ from backend.dependencies import get_admin_supabase
 from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.platform_model_config import get_platform_model
 from backend.services.prompt_service import PromptResolver
 from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
@@ -262,7 +263,10 @@ class EpochInvitationService:
 
         # Generate via OpenRouter
         openrouter = OpenRouterService()
-        model = prompt.default_model or "deepseek/deepseek-chat-v3-0324"
+        # The DB prompt may pin its own model; otherwise the configured default
+        # (Admin > Models) decides. It used to fall back to a literal, which meant
+        # this one path silently ignored the platform setting.
+        model = prompt.default_model or get_platform_model("default")
         # Bureau Ops Deferral A.2 — epoch lore is cached per-epoch; no
         # simulation_id or user_id in scope (epoch_id is not a budget axis).
         # Global + purpose enforcement only. The cache above guarantees at

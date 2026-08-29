@@ -17,6 +17,7 @@ from backend.config import settings
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.platform_model_config import get_platform_model
 from backend.services.resonance_service import ResonanceService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
@@ -251,7 +252,11 @@ class ScannerService(BaseSchedulerMixin):
                 purpose="scanner_classification",
             )
             classified = await classifier.classify_batch(
-                novel, openrouter, system_prompt_override=cls_system_prompt, budget=cls_budget,
+                novel,
+                openrouter,
+                model=get_platform_model("default"),
+                system_prompt_override=cls_system_prompt,
+                budget=cls_budget,
             )
             metrics["llm_calls"] = 1
         else:
@@ -455,7 +460,7 @@ class ScannerService(BaseSchedulerMixin):
                 purpose="scanner_dispatch",
             )
             dispatch = await openrouter.generate_with_system(
-                model="deepseek/deepseek-v3.2",
+                model=get_platform_model("default"),
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=float(db_template.get("temperature", 0.9)) if db_template else 0.9,
@@ -497,7 +502,9 @@ class ScannerService(BaseSchedulerMixin):
             current.remove(name)
 
         await upsert_platform_setting(
-            admin, "news_scanner_adapters", json.dumps(current),
+            admin,
+            "news_scanner_adapters",
+            json.dumps(current),
         )
 
         return {"name": name, "enabled": enabled}
