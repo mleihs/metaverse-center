@@ -939,7 +939,7 @@ export class VelgAdminScannerTab extends LitElement {
           color-mix(in srgb, var(--color-info) 4%, var(--color-surface)) 0%,
           var(--color-surface) 100%
         );
-      border-left: 3px solid var(--color-info);
+      /* Doppelung: der Kasten liegt bereits auf einem Info-Verlauf. */
       line-height: 1.7;
       white-space: pre-wrap;
       position: relative;

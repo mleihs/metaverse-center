@@ -71,8 +71,9 @@ export const propheticFragmentStyles = css`
     font-style: italic;
     font-size: var(--text-sm);
     color: rgba(210, 190, 230, 0.95);
+    /* Traumfragment: der violette Verlauf traegt die Sorte bereits, und dieser
+       Balken war ausserdem die einzige rohe rgba-Farbe im ganzen Sweep. */
     background: linear-gradient(145deg, rgba(40, 20, 60, 0.7), rgba(25, 15, 45, 0.8));
-    border-left: 3px solid rgba(150, 100, 200, 0.5);
     transform: rotate(-0.3deg);
   }
 

@@ -115,9 +115,10 @@ export class VelgEpochIntelDossierTab extends LitElement {
       color: var(--color-text-muted);
     }
 
+    /* Veraltete Aufklaerung: die Zeile wird gedaempft. Der Kantenbalken, den
+       sie frueher zurueckgenommen hat, existiert nicht mehr. */
     .card--stale .fort-row {
       color: var(--color-text-muted);
-      border-left-color: var(--color-icon);
       background: var(--_stale-bg);
     }
 

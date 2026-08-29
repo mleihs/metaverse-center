@@ -119,8 +119,8 @@ export class VelgEpochBattleLog extends LitElement {
     .entry__intel-fort {
       margin-top: 4px;
       padding: 6px 8px;
+      /* Doppelung: der Kasten ist bereits mit 10% derselben Farbe unterlegt. */
       background: color-mix(in srgb, var(--color-warning) 10%, transparent);
-      border-left: 2px solid var(--color-warning);
       font-size: 0.75rem;
       color: var(--color-text-secondary);
       font-family: var(--font-mono);
@@ -142,7 +142,6 @@ export class VelgEpochBattleLog extends LitElement {
       margin-top: 4px;
       padding: 6px 8px;
       background: color-mix(in srgb, var(--color-info) 10%, transparent);
-      border-left: 2px solid var(--color-info);
       font-size: 0.75rem;
       color: var(--color-text-secondary);
       font-family: var(--font-mono);
