@@ -1214,7 +1214,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         flex-direction: column;
         justify-content: flex-end;
         gap: 6px;
-        min-height: 132px;
+        min-height: 172px;
         padding: 14px;
         overflow: hidden;
         border: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
@@ -1222,7 +1222,15 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         box-shadow: var(--shadow-sm);
       }
       /* A leaf <img>, so the filter never creates a containing block for the
-         HUD's fixed-position overlays (same reasoning as .scene__art-img). */
+         HUD's fixed-position overlays (same reasoning as .scene__art-img).
+
+         FULL opacity plus a brightness filter — the same treatment
+         .scene__art-img uses for these very images, and the showcase slides
+         before it. The first version of this rule dimmed with opacity 0.42
+         instead, which blends the picture toward the near-black card ground and
+         collapses its own contrast: on production the cards read as empty
+         rectangles although the images had loaded (1920px, complete). Filters
+         scale the image's values and keep a picture legible as a picture. */
       .lobby-card__art {
         position: absolute;
         inset: 0;
@@ -1230,14 +1238,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         height: 100%;
         object-fit: cover;
         object-position: center;
-        opacity: 0.42;
-        filter: saturate(0.72) contrast(1.05);
-        transition:
-          opacity var(--transition-normal, 200ms ease),
-          filter var(--transition-normal, 200ms ease);
+        filter: brightness(0.62) saturate(0.85) contrast(1.05);
+        transition: filter var(--transition-normal, 200ms ease);
       }
       /* The scrim lives on the card, not on the image: it must also darken the
-         plain background when a card has no art. */
+         plain background when a card has no art. Tight to the text band — the
+         upper half stays picture. */
       .lobby-card::after {
         content: '';
         position: absolute;
@@ -1245,9 +1251,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         pointer-events: none;
         background: linear-gradient(
           to top,
-          var(--color-surface) 4%,
-          color-mix(in srgb, var(--color-surface) 72%, transparent) 46%,
-          color-mix(in srgb, var(--color-surface) 22%, transparent)
+          var(--color-surface) 0%,
+          color-mix(in srgb, var(--color-surface) 84%, transparent) 34%,
+          color-mix(in srgb, var(--color-surface) 32%, transparent) 62%,
+          transparent 100%
         );
       }
       .lobby-card__name,
@@ -1257,8 +1264,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       }
       .lobby-card--available:hover .lobby-card__art,
       .lobby-card--available:focus-visible .lobby-card__art {
-        opacity: 0.6;
-        filter: saturate(0.95) contrast(1.05);
+        filter: brightness(0.85) saturate(1) contrast(1.05);
       }
       /* Why this archetype is listed when no resonance put it there. Dashed and
          in the warning tone, like every other "this is not a measurement"
