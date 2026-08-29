@@ -330,7 +330,10 @@ class DungeonCheckpointService:
             loot_assignments = instance.loot_assignments
             loot_suggestions = cls._compute_loot_suggestions(instance)
 
-        # Encounter fields (only during encounter/rest/threshold phase)
+        # Encounter fields. Choices and prose answer two different questions:
+        # the choices are gone the moment the party picks one, but the SITUATION
+        # stands until it is resolved — including all the way through the fight
+        # it started (see the `combat` branch below).
         encounter_choices = None
         encounter_desc_en = None
         encounter_desc_de = None
@@ -355,6 +358,22 @@ class DungeonCheckpointService:
                 encounter = get_encounter_by_id(current_room.encounter_template_id)
                 if encounter:
                     encounter_choices = cls.format_encounter_choices(encounter.choices)
+                    encounter_desc_en = encounter.description_en
+                    encounter_desc_de = encounter.description_de
+        elif instance.phase in ("combat_planning", "combat_resolving"):
+            # Prose only, deliberately no choices: they were consumed when the
+            # party entered the fight. Without this the encounter text died the
+            # instant combat began — 129 authored encounter templates went
+            # silent exactly when the situation they describe was happening,
+            # and a page reload mid-fight left the graphical scene with nothing
+            # to say about the room at all.
+            #
+            # A room that started combat without an encounter template (plain
+            # combat room) has no id here and correctly stays silent.
+            current_room = instance.rooms[instance.current_room]
+            if current_room.encounter_template_id:
+                encounter = get_encounter_by_id(current_room.encounter_template_id)
+                if encounter:
                     encounter_desc_en = encounter.description_en
                     encounter_desc_de = encounter.description_de
 

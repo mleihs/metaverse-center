@@ -254,15 +254,25 @@ export function describeRoom(
   move?: MoveToRoomResponse | null,
 ): RoomDescription {
   // On entry the encounter prose rides on the move response; on a re-describe
-  // it is recovered from the checkpointed state, but only while the room is
-  // actually presenting choices — otherwise the party has already resolved it.
+  // it is recovered from the checkpointed state.
   const showsChoices = move
     ? !!move.choices?.length
     : !!state.encounter_choices?.length &&
       (state.phase === 'threshold' || state.phase === 'encounter' || state.phase === 'rest');
 
+  // Choices and prose are NOT the same question. The choices vanish the moment
+  // the party picks one; the situation stands until it is resolved — including
+  // through the fight that choice started. Combat is therefore a re-describe
+  // case of its own: no choices to offer, but very much a situation to state.
+  //
+  // Only on a re-describe. A move INTO a combat room already carries its own
+  // arrival prose (banter, anchors) on the response, and entry behaviour is
+  // deliberately left untouched.
+  const inCombat = state.phase === 'combat_planning' || state.phase === 'combat_resolving';
+  const situationStands = showsChoices || (!move && inCombat);
+
   let encounter: string | null = null;
-  if (showsChoices) {
+  if (situationStands) {
     encounter = move
       ? localized(move, 'description') || null
       : localized(state, 'encounter_description') || null;

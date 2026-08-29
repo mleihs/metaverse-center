@@ -138,6 +138,34 @@ describe('describeRoom — re-describe (state only)', () => {
     expect(describeRoom(room(), s).encounter).toBeNull();
   });
 
+  it('states the situation during combat, where there are no choices left', () => {
+    // The choices were consumed when the party entered the fight. The prose
+    // that introduced it is still true, and it is all the scene has to say
+    // about a combat room — roomTypeAmbient covers only rest/treasure/boss.
+    const s = state({
+      phase: 'combat_planning',
+      encounter_choices: null,
+      encounter_description_en: 'Something ambushes you from the seam.',
+      encounter_description_de: 'Etwas ueberfaellt euch aus der Naht.',
+    });
+
+    expect(describeRoom(room({ room_type: 'combat' }), s).encounter).toBe(
+      'Something ambushes you from the seam.',
+    );
+  });
+
+  it('leaves entry behaviour untouched — a move into combat keeps its arrival prose', () => {
+    // The move response is the authority on entry; only the re-describe paths
+    // (look, recovery) reach into state for the situation.
+    const s = state({ phase: 'combat_planning', encounter_description_en: 'Ambush.' });
+    const move: MoveToRoomResponse = {
+      description_en: 'Ignored on entry.',
+      state: s,
+    };
+
+    expect(describeRoom(room({ room_type: 'combat' }), s, move).encounter).toBeNull();
+  });
+
   it('never invents banter or anchors, which only exist at the moment of entry', () => {
     const d = describeRoom(room(), state());
     expect(d.banter).toBeNull();
