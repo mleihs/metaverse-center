@@ -241,8 +241,27 @@ export const mapNodeStyles = css`
       filter: drop-shadow(0 0 4px var(--_node-color, var(--_phosphor-glow)));
     }
 
-    /* Node reveal: scale-in with ring trace */
-    .node--just-revealed {
+    /* Node reveal: scale-in with ring trace.
+       The animation runs on .node__body, NOT on .node. The outer group carries
+       transform="translate(x, y)" as a presentation attribute, and a CSS
+       transform in a keyframe does not compose with that attribute — it
+       REPLACES it, because a presentation attribute is the lowest-priority
+       style for the very same property. Measured, not assumed: a scaled group
+       authored at x=250 drew at x=1, and its CTM read e=0 f=0 against the
+       control's e=100 f=100. Every freshly revealed room was therefore drawn in
+       the corner of the map, while its reveal ripple (rendered by DungeonMap at
+       the room's own coordinates) stayed correctly in place — and the node
+       stayed in the corner until the next render, because the newly-revealed
+       set is only cleared in the FOLLOWING willUpdate. It went unnoticed
+       because this whole block is inside a prefers-reduced-motion query.
+       The inner group has no transform attribute, so the keyframe owns the
+       property outright. fill-box + center is exact here: every element of a
+       node is a circle centred on the local origin (ring 30, beacon 37,
+       reticle 34) or lies strictly inside the r=30 ring (cleared badge,
+       sparkles, icon), so the bounding box is always origin-centred. */
+    .node--just-revealed .node__body {
+      transform-box: fill-box;
+      transform-origin: center;
       animation: map-node-reveal 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
     .node--just-revealed .node__ring {
@@ -451,6 +470,15 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
     >
       <title>${typeLabel}</title>
 
+      <!-- Everything drawable sits one level in, on .node__body. The outer
+           group owns the POSITION (transform="translate(…)" as a presentation
+           attribute) and the semantics (role, aria-label, title, handlers); the
+           inner group owns whatever CSS wants to transform. Keeping those apart
+           is not tidiness: a keyframe that animates the transform property on
+           the outer group silently replaces the translate and parks the node
+           in the corner of the map. See .node--just-revealed above. -->
+      <g class="node__body">
+
       <!-- "You are here" beacon halo (behind the disc) -->
       ${current ? svg`<circle r=${RING_R + 7} class="node__beacon" aria-hidden="true" />` : nothing}
 
@@ -503,6 +531,7 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
       `
           : nothing
       }
+      </g>
     </g>
   `;
 }
