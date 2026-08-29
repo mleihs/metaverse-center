@@ -45,6 +45,9 @@ interface FormatPreset {
   auto_resolve_mode: AutoResolveMode | null;
   /** Deadline per cycle in minutes. Ignored when the mode is 'manual'. */
   cycle_deadline_minutes: number | null;
+  /** Floor under a cycle in minutes: how SHORT it may be when everyone is ready
+   *  early. 0 disables it. Ignored when the mode is 'manual'. */
+  min_cycle_minutes: number | null;
   icon: ReturnType<typeof icons.bolt> | null;
 }
 
@@ -55,6 +58,7 @@ type AutoResolveMode = 'manual' | 'activity_gated';
 /** EpochConfig bounds — mirrored from backend/models/epoch.py. */
 const DEADLINE_MIN_MINUTES = 15;
 const DEADLINE_MAX_MINUTES = 2880;
+const MIN_CYCLE_MAX_MINUTES = 1440;
 
 function getFormatPresets(): FormatPreset[] {
   return [
@@ -70,6 +74,7 @@ function getFormatPresets(): FormatPreset[] {
       rp_cap: 30,
       auto_resolve_mode: 'activity_gated',
       cycle_deadline_minutes: 120,
+      min_cycle_minutes: 10,
       icon: icons.bolt(18),
     },
     {
@@ -84,6 +89,7 @@ function getFormatPresets(): FormatPreset[] {
       rp_cap: 36,
       auto_resolve_mode: 'activity_gated',
       cycle_deadline_minutes: 240,
+      min_cycle_minutes: 20,
       icon: icons.timer(18),
     },
     {
@@ -98,6 +104,7 @@ function getFormatPresets(): FormatPreset[] {
       rp_cap: 40,
       auto_resolve_mode: 'activity_gated',
       cycle_deadline_minutes: 480,
+      min_cycle_minutes: 30,
       icon: icons.crossedSwords(18),
     },
     {
@@ -112,6 +119,7 @@ function getFormatPresets(): FormatPreset[] {
       rp_cap: 40,
       auto_resolve_mode: 'activity_gated',
       cycle_deadline_minutes: 480,
+      min_cycle_minutes: 30,
       icon: icons.trophy(18),
     },
     {
@@ -126,6 +134,7 @@ function getFormatPresets(): FormatPreset[] {
       rp_cap: null,
       auto_resolve_mode: null,
       cycle_deadline_minutes: null,
+      min_cycle_minutes: null,
       icon: icons.gear(18),
     },
   ];
@@ -1003,6 +1012,7 @@ export class VelgEpochCreationWizard extends LitElement {
   // ('manual') and the whole deadline / AFK / pass subsystem stayed dormant.
   @state() private _autoResolveMode: AutoResolveMode = 'activity_gated';
   @state() private _cycleDeadlineMinutes = 480;
+  @state() private _minCycleMinutes = 30;
   @state() private _requireActionForReady = true;
   @state() private _afkPenaltyEnabled = true;
 
@@ -1032,6 +1042,7 @@ export class VelgEpochCreationWizard extends LitElement {
       this._reckoningCycles = DEFAULT_RECKONING_CYCLES;
       this._autoResolveMode = 'activity_gated';
       this._cycleDeadlineMinutes = 480;
+      this._minCycleMinutes = 30;
       this._requireActionForReady = true;
       this._afkPenaltyEnabled = true;
       this._wStability = 25;
@@ -1100,6 +1111,7 @@ export class VelgEpochCreationWizard extends LitElement {
       if (preset.auto_resolve_mode != null) this._autoResolveMode = preset.auto_resolve_mode;
       if (preset.cycle_deadline_minutes != null)
         this._cycleDeadlineMinutes = preset.cycle_deadline_minutes;
+      if (preset.min_cycle_minutes != null) this._minCycleMinutes = preset.min_cycle_minutes;
     }
   }
 
@@ -1177,6 +1189,7 @@ export class VelgEpochCreationWizard extends LitElement {
       allow_betrayal: this._allowBetrayal,
       auto_resolve_mode: this._autoResolveMode,
       cycle_deadline_minutes: this._cycleDeadlineMinutes,
+      min_cycle_minutes: this._minCycleMinutes,
       require_action_for_ready: this._requireActionForReady,
       afk_penalty_enabled: this._afkPenaltyEnabled,
       score_weights: {
@@ -1368,6 +1381,35 @@ export class VelgEpochCreationWizard extends LitElement {
                 />
                 <span class="field__hint">
                   ${msg(str`Cycles are ${this._cycleHours}h long – a deadline near that keeps pacing predictable.`)}
+                </span>
+              </div>
+              <div class="range-field" style="margin-top: var(--space-4)">
+                <div class="range-field__header">
+                  <span class="range-field__label">${msg('Shortest Cycle')}</span>
+                  <span class="range-field__readout">
+                    ${
+                      this._minCycleMinutes > 0
+                        ? this._deadlineLabel(this._minCycleMinutes)
+                        : msg('None')
+                    }
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  aria-label=${msg('Shortest Cycle')}
+                  min="0"
+                  max=${MIN_CYCLE_MAX_MINUTES}
+                  step="5"
+                  .value=${String(this._minCycleMinutes)}
+                  @input=${(e: Event) => {
+                    this._minCycleMinutes = Number((e.target as HTMLInputElement).value);
+                    this._formatPreset = 'custom';
+                  }}
+                />
+                <span class="field__hint">
+                  ${msg(
+                    'The deadline caps how long a cycle runs; this caps how short. Everyone signalling ready early brings the deadline forward to this point instead of ending the cycle at once.',
+                  )}
                 </span>
               </div>
               ${this._renderToggleField(
@@ -1875,6 +1917,16 @@ export class VelgEpochCreationWizard extends LitElement {
           ${
             this._autoResolveMode === 'activity_gated'
               ? html`
+                <div class="summary__row">
+                  <span class="summary__key">${msg('Shortest Cycle')}</span>
+                  <span class="summary__val">
+                    ${
+                      this._minCycleMinutes > 0
+                        ? this._deadlineLabel(this._minCycleMinutes)
+                        : msg('No floor')
+                    }
+                  </span>
+                </div>
                 <div class="summary__row">
                   <span class="summary__key">${msg('Action Required')}</span>
                   <span class="summary__val">

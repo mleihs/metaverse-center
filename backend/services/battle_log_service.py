@@ -4,6 +4,7 @@ import logging
 from uuid import UUID
 
 import httpx
+import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.db import maybe_single_data
@@ -64,13 +65,28 @@ class BattleLogService:
             admin = await get_admin_supabase_client()
             resp = await admin.table("battle_log").insert(data).execute()
             return resp.data[0] if resp.data else data
-        except (PostgrestAPIError, httpx.HTTPError):
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
+            # Best-effort by design: a lost log line must not abort the cycle
+            # resolution that produced it. But "best-effort" was reading as
+            # "unobserved" — on 2026-08-29 a CHECK constraint rejected four
+            # event types of the auto-resolve path for months, and the only
+            # trace was a log line nobody greps. Cycles resolved with holes in
+            # their record and nothing ever went red.
+            #
+            # Sentry gets it now, tagged so the event_type is the first thing
+            # visible: a rejected type is a schema/code mismatch (migration 276),
+            # not noise.
             logger.error(
                 "Battle log insert failed for event_type=%s: %s",
                 event_type,
                 data.get("narrative", "")[:100],
                 exc_info=True,
             )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "battle_log")
+                scope.set_tag("battle_log.event_type", event_type)
+                scope.set_context("battle_log", {"epoch_id": str(epoch_id), "cycle_number": cycle_number})
+                sentry_sdk.capture_exception(exc)
             return data
 
     # ── Convenience Loggers ───────────────────────────────
@@ -110,19 +126,13 @@ class BattleLogService:
             try:
                 if mission.get("agent_id"):
                     agent_data = await maybe_single_data(
-                        supabase.table("agents")
-                        .select("name")
-                        .eq("id", str(mission["agent_id"]))
-                        .maybe_single()
+                        supabase.table("agents").select("name").eq("id", str(mission["agent_id"])).maybe_single()
                     )
                     if agent_data:
                         metadata["agent_name"] = agent_data["name"]
                 if mission.get("target_zone_id"):
                     zone_data = await maybe_single_data(
-                        supabase.table("zones")
-                        .select("name")
-                        .eq("id", str(mission["target_zone_id"]))
-                        .maybe_single()
+                        supabase.table("zones").select("name").eq("id", str(mission["target_zone_id"])).maybe_single()
                     )
                     if zone_data:
                         metadata["target_zone_name"] = zone_data["name"]

@@ -1184,6 +1184,10 @@ export interface EpochConfig {
   // unimplemented spec variations were removed from the union — an accepted
   // value that no code path honours reads as a working feature.
   auto_resolve_mode?: 'manual' | 'activity_gated';
+  /** Floor under a cycle in minutes. 0 = off (every epoch created before the
+   *  field existed). Everyone ready earlier brings the deadline forward to this
+   *  point rather than ending the cycle at once. */
+  min_cycle_minutes?: number;
   cycle_deadline_minutes?: number;
   require_action_for_ready?: boolean;
   afk_penalty_enabled?: boolean;
@@ -1410,6 +1414,10 @@ export interface CycleReadyState {
   auto_resolved: boolean;
   auto_resolve_error: boolean;
   new_cycle: number | null;
+  /** Everyone is ready, but the cycle floor has not elapsed. The deadline has
+   *  been pulled forward to `resolves_at`; the cycle ends there. */
+  auto_resolve_pending?: boolean;
+  resolves_at?: string | null;
 }
 
 /** Result of a join-team / leave-team action. */
