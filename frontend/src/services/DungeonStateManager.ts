@@ -34,7 +34,11 @@ import {
   formatLootDrop,
   formatPartyWipe,
 } from '../utils/dungeon-formatters.js';
-import { mergeRoomDescription, type RoomDescription } from '../utils/dungeon-room-text.js';
+import {
+  describeRoom,
+  mergeRoomDescription,
+  type RoomDescription,
+} from '../utils/dungeon-room-text.js';
 import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { analyticsService } from './AnalyticsService.js';
 import { appState } from './AppStateManager.js';
@@ -253,6 +257,27 @@ class DungeonStateManager {
     );
   }
 
+  /**
+   * Re-derive the standing room description from run state alone.
+   *
+   * `applyState` deliberately does NOT set it: on a move the prose rides on the
+   * move RESPONSE, so applying state must never overwrite the richer arrival
+   * text. After a page reload there is no move response to carry it, and the
+   * graphical scene — whose only source is this signal — came up with an empty
+   * stage until the player moved. The choices survived (applyState restores
+   * `encounterChoices`); only the prose was missing.
+   *
+   * This is the same derivation `look` performs, minus the arrival-only texts
+   * (banter, anchor prose, barometer) that only exist at the moment of arrival.
+   * Recovery must not invent them.
+   */
+  private _redescribeCurrentRoom(): void {
+    const state = this.clientState.value;
+    const room = this.currentRoom.value;
+    if (!state || !room) return;
+    this.publishRoomDescription(describeRoom(room, state));
+  }
+
   /** Publish a resolved combat round for the graphical combat-FX host. Called
    *  at the two submit-resolution sites after applyState() (applyState lives on
    *  the state object and would otherwise drop round_result). */
@@ -382,6 +407,7 @@ class DungeonStateManager {
       const resp = await dungeonApi.getState(storedId);
       if (resp.success && resp.data) {
         this.applyState(resp.data);
+        this._redescribeCurrentRoom();
         return true;
       }
       // Run expired/completed — clear stale storage
