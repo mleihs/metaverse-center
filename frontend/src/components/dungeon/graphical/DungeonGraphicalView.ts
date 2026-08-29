@@ -290,8 +290,15 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         flex: 1 1 0;
         min-height: 0;
       }
+      /* The controls belong to the STAGE, so they sit under it — not under the
+         whole HUD. Spanning 1 / -1 put the three move buttons under the map
+         rail at x=29 and the standing group under the chronicle at x=1426,
+         with a thousand pixels of nothing under the stage between them
+         (measured at a 1728px viewport: grid 320px | 1021px | 340px). Cause
+         and effect now share a column: what you can do sits beneath the thing
+         you are doing it to. */
       .dungeon-hud__actions {
-        grid-column: 1 / -1;
+        grid-column: 2 / 3;
         grid-row: 3;
         position: relative;
         z-index: 21;
@@ -1263,6 +1270,20 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         text-transform: uppercase;
         color: var(--_phosphor);
         text-shadow: 0 1px 2px var(--color-surface);
+      }
+      /* Label and figure share a baseline and the bar's width, so the number
+         reads as the bar's value rather than as a second, unrelated label. */
+      .scene__readout-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        width: 120px;
+      }
+      .scene__readout-value {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.5px;
+        color: color-mix(in srgb, var(--_phosphor) 78%, var(--color-text-primary));
       }
       .scene__readout-bar {
         width: 120px;
@@ -2477,11 +2498,23 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
             <velg-dungeon-combat-fx></velg-dungeon-combat-fx>
 
+            <!-- The number was reachable only through the aria-label: no
+                 visible figure, and no title either, so a sighted player could
+                 read the bar's length and nothing else. A hover tooltip would
+                 have been the smaller fix and the wrong one — it is unreachable
+                 on touch, and this meter is the archetype's central pressure
+                 reading. It travels as a number, next to the word it belongs
+                 to. -->
             <div
               class="scene__readout"
               aria-label=${`${meterLabel} ${Math.round(env.pressure01 * 100)}%`}
             >
-              <span>${meterLabel}</span>
+              <span class="scene__readout-head">
+                <span>${meterLabel}</span>
+                <span class="scene__readout-value" aria-hidden="true"
+                  >${Math.round(env.pressure01 * 100)}%</span
+                >
+              </span>
               <div class="scene__readout-bar">
                 <div class="scene__readout-fill"></div>
               </div>

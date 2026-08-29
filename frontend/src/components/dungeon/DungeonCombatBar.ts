@@ -293,7 +293,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         gap: 3px;
         width: 88px;
         /* Feste Hoehe, weil nur ein Teil der Faehigkeiten eine Erfolgszeile hat
-           und die Unterkanten einer Zeile sonst ausfransen. */
+           und die Unterkanten einer Zeile sonst ausfransen. Die Zeile wird
+           inzwischen IMMER gerendert (leer, wenn es keine Quote gibt), sonst
+           blieb unter kurzen Kacheln ein Rest von rund 20px stehen und das
+           Piktogramm klebte sichtbar an der Oberkante. */
         min-height: 74px;
         justify-content: flex-start;
         padding: 5px 4px 4px;
@@ -356,17 +359,27 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        /* Two clamped lines, always. A one-word ability would otherwise pull
+           the row beneath it up by a full line and the glyphs of neighbouring
+           tiles would stop sharing a baseline. */
+        min-height: calc(2 * 1.15 * 9px);
       }
 
       /* Same datum as in the text variant, hence the same class: the success
-         odds decide the move, so they stay on the face of the tile. */
+         odds decide the move, so they stay on the face of the tile.
+         The row is reserved on every tile, empty ones included, and it follows
+         the name in normal flow instead of being pushed to the bottom by an
+         auto top margin. With the old rule a tile WITHOUT a success line had
+         its whole slack collected under the name — 20px of nothing, which read
+         as the pictogram being stuck to the top edge rather than as a footer
+         datum being absent. */
       .ability--tile .ability__check {
         display: block;
         margin-left: 0;
         font-size: 8px;
         line-height: 1.1;
+        min-height: calc(1.1 * 8px);
         max-width: 100%;
-        margin-top: auto;
         overflow-wrap: anywhere;
       }
 
@@ -1446,11 +1459,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       ? html`
           <span class="ability__glyph" style="--_mask: url('${mask}')" aria-hidden="true"></span>
           <span class="ability__name">${name}</span>
-          ${
-            ability.check_info
-              ? html`<span class="ability__check">${ability.check_info}</span>`
-              : nothing
-          }
+          <span class="ability__check">${ability.check_info ?? ''}</span>
           ${
             onCooldown
               ? html`<span class="ability__cd-badge" aria-hidden="true"
