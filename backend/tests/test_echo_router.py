@@ -10,7 +10,12 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
-from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID
+from backend.tests.conftest import (
+    MOCK_USER_EMAIL,
+    MOCK_USER_ID,
+    make_async_supabase_mock,
+    make_chain_mock,
+)
 
 SIM_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2")
@@ -47,19 +52,9 @@ def _mock_supabase_with_role(role: str = "admin") -> MagicMock:
     mock = MagicMock()
 
     def make_builder(table_name):
-        b = MagicMock()
-        b.select.return_value = b
-        b.eq.return_value = b
-        b.limit.return_value = b
-        b.single.return_value = b
-
-        r = MagicMock()
         if table_name == "simulation_members":
-            r.data = [{"member_role": role}]
-        else:
-            r.data = None
-        b.execute = AsyncMock(return_value=r)
-        return b
+            return make_chain_mock(execute_data=[{"member_role": role}])
+        return make_chain_mock(execute_data=None)
 
     mock.table.side_effect = make_builder
     return mock
@@ -73,7 +68,11 @@ def client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    # Must answer the platform-admin refresh query; a bare MagicMock() cannot
+    # be awaited and only survived because an earlier test warmed the cache.
+    app.dependency_overrides[get_admin_supabase] = lambda: make_async_supabase_mock(
+        execute_data=[]
+    )
 
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -87,7 +86,11 @@ def viewer_client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    # Must answer the platform-admin refresh query; a bare MagicMock() cannot
+    # be awaited and only survived because an earlier test warmed the cache.
+    app.dependency_overrides[get_admin_supabase] = lambda: make_async_supabase_mock(
+        execute_data=[]
+    )
 
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -174,27 +177,19 @@ class TestTriggerEcho:
         call_count = [0]
 
         def make_builder(table_name):
-            b = MagicMock()
-            b.select.return_value = b
-            b.eq.return_value = b
-            b.limit.return_value = b
-            b.single.return_value = b
-
-            r = MagicMock()
             call_count[0] += 1
             if table_name == "simulation_members":
-                r.data = [{"member_role": "admin"}]
-            elif table_name in ("events", "active_events"):
-                r.data = {
-                    "id": str(EVENT_ID),
-                    "title": "Big Event",
-                    "impact_level": 9,
-                    "simulation_id": str(SIM_ID),
-                }
-            else:
-                r.data = None
-            b.execute = AsyncMock(return_value=r)
-            return b
+                return make_chain_mock(execute_data=[{"member_role": "admin"}])
+            if table_name in ("events", "active_events"):
+                return make_chain_mock(
+                    execute_data={
+                        "id": str(EVENT_ID),
+                        "title": "Big Event",
+                        "impact_level": 9,
+                        "simulation_id": str(SIM_ID),
+                    }
+                )
+            return make_chain_mock(execute_data=None)
 
         mock_supabase.table.side_effect = make_builder
         app.dependency_overrides[get_effective_supabase] = lambda: mock_supabase

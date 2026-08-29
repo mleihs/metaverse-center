@@ -454,6 +454,20 @@ async def _refresh_platform_admin_ids(admin_supabase: "Client") -> None:
     _platform_admin_ids_expires = time.monotonic() + 300  # 5 min TTL
 
 
+def reset_platform_admin_cache() -> None:
+    """Forget the cached admin IDs and force the next check to refresh.
+
+    Exists for tests. The cache is process-wide with a 5-minute TTL, so
+    whichever test happens to run first fills it and every later test in the
+    same process silently skips tier 3. That makes a role gate pass or fail
+    depending on file order — and hides an admin-Supabase mock that cannot
+    actually answer the refresh query.
+    """
+    global _platform_admin_ids, _platform_admin_ids_expires  # noqa: PLW0603
+    _platform_admin_ids = set()
+    _platform_admin_ids_expires = 0.0
+
+
 async def is_platform_admin(user: CurrentUser, admin_supabase: "Client") -> bool:
     """Check if user is a platform admin using the 3-tier pattern.
 

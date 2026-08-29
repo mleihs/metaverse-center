@@ -9,6 +9,7 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.bot_player_service import BotPlayerService
+from backend.tests.conftest import make_chain_mock
 
 # ── Helpers ────────────────────────────────────────────────────
 
@@ -19,14 +20,7 @@ BOT_ID = uuid4()
 
 def _make_chain(**overrides):
     """Create a mock Supabase query chain."""
-    c = MagicMock()
-    c.select.return_value = c
-    c.eq.return_value = c
-    c.single.return_value = c
-    c.order.return_value = c
-    c.insert.return_value = c
-    c.update.return_value = c
-    c.delete.return_value = c
+    c = make_chain_mock()
     for k, v in overrides.items():
         setattr(c, k, v)
     return c

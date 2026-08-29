@@ -13,6 +13,7 @@ from uuid import uuid4
 import pytest
 
 from backend.services.dossier_evolution_service import DossierEvolutionService
+from backend.tests.conftest import make_chain_mock
 
 SIM_ID = uuid4()
 _MOD = "backend.services.dossier_evolution_service"
@@ -22,13 +23,7 @@ def _make_admin():
     """Mock admin client: simulations read is awaitable; rpc captured."""
     admin = MagicMock()
 
-    sim_chain = MagicMock()
-    sim_chain.select.return_value = sim_chain
-    sim_chain.eq.return_value = sim_chain
-    sim_chain.single.return_value = sim_chain
-    sim_chain.execute = AsyncMock(
-        return_value=MagicMock(data={"name": "Test Sim", "description": "A theme"})
-    )
+    sim_chain = make_chain_mock(execute_data={"name": "Test Sim", "description": "A theme"})
 
     # simulation_lore / feature_purchases chains are only built as the (ignored)
     # argument to the patched maybe_single_data, so a bare auto-chaining mock is fine.

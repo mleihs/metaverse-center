@@ -7,6 +7,7 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.embassy_service import EmbassyService
+from backend.tests.conftest import make_table_mock
 
 SIM_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02")
@@ -17,27 +18,7 @@ EMBASSY_ID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
 
 def _mock_supabase(data=None, count=None):
     """Build a mock Supabase client with a fluent query builder."""
-    mock = MagicMock()
-    response = MagicMock()
-    response.data = data
-    response.count = count
-
-    # Fluent chaining: every method returns the builder, execute() returns response
-    builder = MagicMock()
-    builder.select.return_value = builder
-    builder.insert.return_value = builder
-    builder.update.return_value = builder
-    builder.delete.return_value = builder
-    builder.eq.return_value = builder
-    builder.or_.return_value = builder
-    builder.order.return_value = builder
-    builder.range.return_value = builder
-    builder.limit.return_value = builder
-    builder.single.return_value = builder
-    builder.execute = AsyncMock(return_value=response)
-
-    mock.table.return_value = builder
-    return mock, builder, response
+    return make_table_mock(data=data, count=count)
 
 
 MOCK_EMBASSY = {

@@ -8,6 +8,7 @@ import pytest
 from fastapi import HTTPException
 
 from backend.services.epoch_chat_service import EpochChatService
+from backend.tests.conftest import make_chain_mock
 
 # ── Helpers ───────────────────────────────────────────────
 
@@ -71,15 +72,10 @@ def _mock_supabase(
     # Ready toggle: .update().eq().eq().execute()
     ep_combined = MagicMock()
 
-    gate_subchain = MagicMock()
-    gate_subchain.eq.return_value = gate_subchain
-    gate_subchain.single.return_value = gate_subchain
-    gate_subchain.execute = AsyncMock(return_value=MagicMock(data=None))
+    gate_subchain = make_chain_mock(execute_data=None)
     ep_combined.select = MagicMock(return_value=gate_subchain)
 
-    update_subchain = MagicMock()
-    update_subchain.eq.return_value = update_subchain
-    update_subchain.execute = AsyncMock(return_value=MagicMock(data=update_data))
+    update_subchain = make_chain_mock(execute_data=update_data)
     ep_combined.update = MagicMock(return_value=update_subchain)
 
     def table_side_effect(name):

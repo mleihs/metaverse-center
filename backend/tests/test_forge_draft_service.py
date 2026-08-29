@@ -1,6 +1,5 @@
 """Tests for ForgeDraftService."""
 
-from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
 import pytest
@@ -8,6 +7,7 @@ from fastapi import HTTPException
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate
 from backend.services.forge_draft_service import ForgeDraftService
+from backend.tests.conftest import make_table_mock
 
 USER_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 DRAFT_ID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
@@ -15,23 +15,7 @@ DRAFT_ID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 
 def _mock_supabase(data=None, count=None):
     """Build a mock Supabase client with a fluent query builder."""
-    mock = MagicMock()
-    response = MagicMock()
-    response.data = data
-    response.count = count
-
-    builder = MagicMock()
-    builder.select.return_value = builder
-    builder.insert.return_value = builder
-    builder.update.return_value = builder
-    builder.delete.return_value = builder
-    builder.eq.return_value = builder
-    builder.order.return_value = builder
-    builder.range.return_value = builder
-    builder.single.return_value = builder
-    builder.execute = AsyncMock(return_value=response)
-
-    mock.table.return_value = builder
+    mock, builder, _ = make_table_mock(data=data, count=count)
     return mock, builder
 
 

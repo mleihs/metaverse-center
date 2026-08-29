@@ -55,26 +55,61 @@ def mock_user_token() -> str:
     return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.signature"
 
 
+# Every postgrest builder method the production code chains onto a query.
+#
+# This list has to be a SUPERSET of what the code under test calls, and the
+# failure mode when it is not is nasty: MagicMock invents any missing
+# attribute, so `.gte(...)` on an unwired mock silently returns a *different*
+# mock instead of the chain. The next `.execute()` is then a plain MagicMock —
+# the test dies on `await` with a TypeError that names neither the method nor
+# the query, or, worse, asserts against a builder the service never touched.
+#
+# Regenerate with:
+#   grep -rhoE '\.(select|insert|...)\(' backend/services backend/routers backend/utils \
+#     | sort -u
+CHAIN_METHODS = (
+    # writes
+    "insert", "update", "upsert", "delete",
+    # projection / shaping
+    "select", "order", "limit", "offset", "range",
+    # filters
+    "eq", "neq", "gt", "gte", "lt", "lte",
+    "like", "ilike", "is_", "in_", "not_", "or_", "filter", "match",
+    "contains", "overlaps",
+    # terminators that still return a builder
+    "single", "maybe_single",
+)
+
+
 def make_chain_mock(execute_data=None, execute_count=None):
     """Reusable Supabase query chain mock.
 
     Usage: chain = make_chain_mock(execute_data=[...])
-    Supports: .select(), .eq(), .in_(), .lt(), .gt(), .or_(), .order(),
-              .limit(), .single(), .maybe_single(), .is_(), .not_(),
-              .range(), .insert(), .update(), .delete(), .upsert()
+    Every method in CHAIN_METHODS returns the chain; execute() is an AsyncMock
+    resolving to a response whose .data / .count carry the arguments.
     """
     c = MagicMock()
-    for method in (
-        "select", "eq", "in_", "lt", "gt", "or_", "order",
-        "limit", "single", "maybe_single", "is_", "not_",
-        "range", "insert", "update", "delete", "upsert",
-    ):
+    for method in CHAIN_METHODS:
         getattr(c, method).return_value = c
     resp = MagicMock()
     resp.data = execute_data
     resp.count = execute_count
     c.execute = AsyncMock(return_value=resp)
     return c
+
+
+def make_table_mock(data=None, count=None):
+    """A Supabase client mock whose .table()/.rpc() hand back one fluent chain.
+
+    Returns ``(client, chain, response)``. Prefer this over hand-wiring a
+    builder inside a test module: a local list of chain methods drifts from
+    the code the moment a service starts using one it does not name.
+    """
+    chain = make_chain_mock(execute_data=data, execute_count=count)
+    client = MagicMock()
+    client.table.return_value = chain
+    client.rpc.return_value = chain
+    return client, chain, chain.execute.return_value
 
 
 def make_async_supabase_mock(execute_data=None):
@@ -125,9 +160,14 @@ def _reset_admin_supabase_cache():
     ``app.dependency_overrides[get_admin_supabase]``), so this
     fixture adds essentially zero overhead for the common path.
     """
+    from backend.dependencies import reset_platform_admin_cache
     from backend.utils.supabase_admin_cache import reset_admin_supabase_cache
 
     reset_admin_supabase_cache()
+    # Same reasoning one level up: the platform-admin ID set is process-wide
+    # with a 5-minute TTL, so without this every test after the first inherits
+    # whatever the first one resolved. See reset_platform_admin_cache().
+    reset_platform_admin_cache()
     yield
 
 

@@ -104,6 +104,18 @@ def mock_supabase_client():
     return _mock_supabase()
 
 
+@pytest.fixture()
+def no_platform_admins():
+    """An admin client whose platform_admins query comes back empty.
+
+    These tests call the dependency function directly instead of going through
+    FastAPI, so nothing resolves ``Depends(get_admin_supabase)`` for them — the
+    default arrives as a raw ``Depends`` object. It went unnoticed while the
+    process-wide admin-ID cache stayed warm from whichever test ran first.
+    """
+    return _mock_supabase()
+
+
 # ---------------------------------------------------------------------------
 # Helper: create a role-check override that returns a fixed role
 # ---------------------------------------------------------------------------
@@ -502,7 +514,7 @@ class TestDataIsolation:
             finally:
                 await gen.aclose()
 
-    def test_require_role_queries_correct_simulation(self, user_a, mock_supabase_client):
+    def test_require_role_queries_correct_simulation(self, user_a, mock_supabase_client, no_platform_admins):
         """require_role should query simulation_members for the given simulation_id."""
         import asyncio
 
@@ -521,6 +533,7 @@ class TestDataIsolation:
                     simulation_id=sim_id,
                     user=user_a,
                     supabase=mock_supabase_client,
+                    admin_supabase=no_platform_admins,
                 )
             )
         finally:
@@ -530,7 +543,7 @@ class TestDataIsolation:
         # Verify the table was queried
         mock_supabase_client.table.assert_called_with("simulation_members")
 
-    def test_require_role_rejects_non_member(self, user_b, mock_supabase_client):
+    def test_require_role_rejects_non_member(self, user_b, mock_supabase_client, no_platform_admins):
         """require_role should raise 403 when the user is not a member."""
         import asyncio
 
@@ -551,6 +564,7 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_b,
                         supabase=mock_supabase_client,
+                        admin_supabase=no_platform_admins,
                     )
                 )
             assert exc_info.value.status_code == 403
@@ -558,7 +572,7 @@ class TestDataIsolation:
         finally:
             loop.close()
 
-    def test_require_role_rejects_insufficient_role(self, user_a, mock_supabase_client):
+    def test_require_role_rejects_insufficient_role(self, user_a, mock_supabase_client, no_platform_admins):
         """require_role('admin') should reject a user who only has 'editor' role."""
         import asyncio
 
@@ -578,6 +592,7 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_a,
                         supabase=mock_supabase_client,
+                        admin_supabase=no_platform_admins,
                     )
                 )
             assert exc_info.value.status_code == 403
@@ -585,7 +600,7 @@ class TestDataIsolation:
         finally:
             loop.close()
 
-    def test_role_hierarchy_is_respected(self, user_a, mock_supabase_client):
+    def test_role_hierarchy_is_respected(self, user_a, mock_supabase_client, no_platform_admins):
         """An owner should satisfy any role requirement (viewer, editor, admin)."""
         import asyncio
 
@@ -603,6 +618,7 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_a,
                         supabase=mock_supabase_client,
+                        admin_supabase=no_platform_admins,
                     )
                 )
                 assert result == "owner", f"Owner should satisfy '{required}' requirement"
