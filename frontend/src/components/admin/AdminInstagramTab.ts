@@ -2063,15 +2063,18 @@ export class VelgAdminInstagramTab extends LitElement {
   private _renderStoryCard(story: SocialStoryItem) {
     const badgeColor = STORY_STATUS_COLORS[story.status] ?? 'info';
     const typeLabel = STORY_TYPE_LABELS[story.story_type] ?? story.story_type.toUpperCase();
-    const hasImage = !!story.image_url;
+    // Narrowed to a value, not a boolean: `!!story.image_url` told the reader
+    // there is an image but left the binding's type as `string | null`, so a
+    // null would have been bound as the literal string "null" and fetched.
+    const imageUrl = story.image_url || null;
     const disabled = this._storyActionInProgress === story.id;
 
     return html`
       <div class="story-card">
-        <div class="story-card__thumb ${!hasImage ? 'story-card__thumb--empty' : ''}">
+        <div class="story-card__thumb ${imageUrl ? '' : 'story-card__thumb--empty'}">
           ${
-            hasImage
-              ? html`<img src="${story.image_url}" alt="${story.caption ?? ''}" loading="lazy" />`
+            imageUrl
+              ? html`<img src=${imageUrl} alt=${story.caption ?? ''} loading="lazy" />`
               : html`<span>9:16</span>`
           }
         </div>

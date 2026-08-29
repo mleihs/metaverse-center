@@ -17,7 +17,7 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
+import { css, html, LitElement, nothing, type PropertyValues, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 import {
@@ -998,12 +998,20 @@ export class AgentMoodPanel extends LitElement {
             role="img"
             aria-label=${`${msg('Needs radar')} - ${ariaLabel}`}
           >
+            <!-- Grid rings, axes and dots use the \`svg\` tag, not \`html\`.
+                 A nested html\`\` fragment is parsed as HTML even when it lands
+                 inside an <svg>: the browser builds an HTMLUnknownElement in the
+                 XHTML namespace, which draws nothing. Measured — html\`<line/>\`
+                 gives ns=http://www.w3.org/1999/xhtml / HTMLUnknownElement, while
+                 svg\`<circle/>\` gives SVGCircleElement. Only the area path below
+                 rendered, because it is written directly in this template. -->
+
             <!-- Grid rings -->
-            ${gridRings.map((d) => html`<path class="needs__grid-line" d=${d} />`)}
+            ${gridRings.map((d) => svg`<path class="needs__grid-line" d=${d} />`)}
 
             <!-- Axes -->
             ${axes.map(
-              (a) => html`
+              (a) => svg`
               <line class="needs__axis" x1=${a.x1} y1=${a.y1} x2=${a.x2} y2=${a.y2} />
             `,
             )}
@@ -1013,7 +1021,7 @@ export class AgentMoodPanel extends LitElement {
 
             <!-- Data points -->
             ${points.map(
-              (p) => html`
+              (p) => svg`
               <circle class="needs__dot" cx=${p.x} cy=${p.y} />
             `,
             )}

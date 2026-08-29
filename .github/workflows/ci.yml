@@ -37,6 +37,10 @@ jobs:
       - name: Lit template check
         run: npm run lint:lit
 
+      - name: SVG fragment tag lint
+        run: bash frontend/scripts/lint-svg-fragments-use-svg-tag.sh
+        working-directory: .
+
       - name: Color token lint
         run: bash frontend/scripts/lint-color-tokens.sh
         working-directory: .

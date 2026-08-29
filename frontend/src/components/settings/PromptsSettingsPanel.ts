@@ -5,6 +5,7 @@ import { appState } from '../../services/AppStateManager.js';
 import { promptTemplatesApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import type { PromptCategory, PromptTemplate, PromptTemplateType } from '../../types/index.js';
+import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -83,18 +84,33 @@ export class VelgPromptsSettingsPanel extends LitElement {
     /* Template list */
     .templates { display: flex; flex-direction: column; gap: var(--space-2); }
 
+    /* The row is a plain container, not a button. It used to be one, with the
+       deactivate button nested inside it — invalid HTML: a button may not
+       contain interactive content, and a spec-compliant parser closes the outer
+       one before it opens the inner. The rendered DOM was therefore not the
+       written structure. Caught by lit-analyzer once its glob was fixed. */
     .template {
-      appearance: none;
-      font: inherit;
-      text-align: start;
-      display: grid; grid-template-columns: 1fr auto auto;
+      display: grid; grid-template-columns: 1fr auto;
       align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4);
       background: var(--color-surface-raised); border: var(--border-default);
-      transition: all var(--transition-fast); cursor: pointer;
+      transition: all var(--transition-fast);
     }
 
     .template:hover {
       transform: translate(-1px, -1px); box-shadow: var(--shadow-md);
+    }
+
+    /* Carries what the row itself used to carry: the click, the pointer, the
+       focus. Keeps the two leading columns so the layout is unchanged. */
+    .template__open {
+      appearance: none; font: inherit; text-align: start; cursor: pointer;
+      background: none; border: 0; padding: 0; color: inherit; min-width: 0;
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: center; gap: var(--space-3);
+    }
+
+    .template__open:focus-visible {
+      outline: var(--ring-focus); outline-offset: var(--space-0-5);
     }
 
     .template__info { display: flex; flex-direction: column; gap: var(--space-0-5); min-width: 0; }
@@ -208,7 +224,8 @@ export class VelgPromptsSettingsPanel extends LitElement {
         justify-content: center;
       }
 
-      .template {
+      .template,
+      .template__open {
         grid-template-columns: 1fr;
         gap: var(--space-2);
       }
@@ -419,39 +436,35 @@ export class VelgPromptsSettingsPanel extends LitElement {
       <div class="templates">
         ${this._templates.map(
           (t) => html`
-            <button type="button" class="template" @click=${() => this._openEdit(t)}>
-              <div class="template__info">
-                <div class="template__name">${t.template_name}</div>
-                <div class="template__meta">
-                  <span class="template__badge template__badge--type">
-                    ${getTemplateTypeLabels()[t.template_type] ?? t.template_type}
-                  </span>
-                  <span class="template__badge template__badge--category">
-                    ${getCategoryLabels()[t.prompt_category] ?? t.prompt_category}
-                  </span>
-                  ${t.is_system_default ? html`<span class="template__badge template__badge--default">${msg('Default')}</span>` : nothing}
-                  ${!t.is_active ? html`<span class="template__badge template__badge--inactive">${msg('Inactive')}</span>` : nothing}
+            <div class="template">
+              <button type="button" class="template__open" @click=${() => this._openEdit(t)}>
+                <div class="template__info">
+                  <div class="template__name">${t.template_name}</div>
+                  <div class="template__meta">
+                    <span class="template__badge template__badge--type">
+                      ${getTemplateTypeLabels()[t.template_type] ?? t.template_type}
+                    </span>
+                    <span class="template__badge template__badge--category">
+                      ${getCategoryLabels()[t.prompt_category] ?? t.prompt_category}
+                    </span>
+                    ${t.is_system_default ? html`<span class="template__badge template__badge--default">${msg('Default')}</span>` : nothing}
+                    ${!t.is_active ? html`<span class="template__badge template__badge--inactive">${msg('Inactive')}</span>` : nothing}
+                  </div>
                 </div>
-              </div>
-              <span class="template__badge">${t.locale}</span>
+                <span class="template__badge">${t.locale}</span>
+              </button>
               <div class="template__actions">
                 <button
+                  type="button"
                   class="template__action-btn template__action-btn--danger"
                   title=${msg('Deactivate')}
-                  @click=${(e: Event) => {
-                    e.stopPropagation();
-                    this._handleDelete(t);
-                  }}
+                  aria-label=${msg('Deactivate')}
+                  @click=${() => this._handleDelete(t)}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/>
-                    <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/>
-                    <path d="M9 7v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>
-                  </svg>
+                  ${icons.trash(16)}
                 </button>
               </div>
-            </button>
+            </div>
           `,
         )}
       </div>
