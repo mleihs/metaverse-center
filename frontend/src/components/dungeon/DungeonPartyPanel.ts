@@ -27,9 +27,9 @@ import type {
 import type { OperativeType } from '../../types/index.js';
 import { getConditionLabel, getStressLabel } from '../../utils/dungeon-formatters.js';
 import {
+  aptitudeCode,
+  aptitudeDisplayName,
   OPERATIVE_COLORS,
-  OPERATIVE_SHORT,
-  operativeName,
 } from '../../utils/operative-constants.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
@@ -163,14 +163,38 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
         margin-top: 1px;
       }
 
+      /* ── Aptitude chips ── */
+      /* Three-letter school codes, not initials. Six operative names share four
+         initials, so the single-letter table had to give Spy the S and push
+         Saboteur onto B, Assassin onto A against Guardian's G — a full row read
+         "A9 G9 P6 B5 S4 I3", which is not decipherable without a legend that
+         does not exist anywhere in this HUD. SPY GRD SAB PRP INF ASN costs two
+         glyphs per chip and needs none. The row wraps rather than spilling:
+         values reach double digits and the panel is 280px in the terminal
+         layout, 340px in the graphical one. */
       .card-aptitudes {
         display: flex;
-        gap: 6px;
+        flex-wrap: wrap;
+        gap: 3px 6px;
         padding: 2px 0 4px;
         font-family: var(--_mono);
         font-size: 10px;
         color: var(--_phosphor-dim);
         letter-spacing: 0.5px;
+      }
+
+      /* The number is what the player weighs; the code only says which scale it
+         is on. Separating them lets the value carry the brighter ink. */
+      .apt {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 2px;
+        white-space: nowrap;
+      }
+
+      .apt__val {
+        font-weight: 600;
+        color: var(--_phosphor);
       }
 
       /* ── Gauge Bars ── */
@@ -349,6 +373,16 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
           display: none;
         }
 
+        /* The strip card is a glance, not a readout — it already drops the mood
+           row, the bar labels and the effect pills. Six three-letter chips do
+           not fit 140px, and a flex row that cannot wrap would push them out of
+           the card entirely. The entries arrive sorted highest first, so the
+           three strongest stand for the operative and the rest wait for the
+           desktop column. */
+        .apt:nth-child(n + 4) {
+          display: none;
+        }
+
         .bars {
           margin-bottom: 0;
         }
@@ -523,8 +557,10 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
               .filter(([, v]) => v > 0)
               .sort(([, a], [, b]) => (b as number) - (a as number))
               .map(
-                ([k, v]) =>
-                  html`<span class="apt" title="${operativeName(k as OperativeType)} ${v}">${OPERATIVE_SHORT[k as OperativeType] ?? k.charAt(0).toUpperCase()}${v}</span>`,
+                ([k, v]) => html`<span class="apt" title="${aptitudeDisplayName(k)} ${v}"
+                    ><span class="apt__code">${aptitudeCode(k)}</span
+                    ><span class="apt__val">${v}</span></span
+                  >`,
               )}
           </div>
         `
@@ -551,6 +587,13 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
             <span class="bar-value" aria-live="polite">${getConditionLabel(agent.condition)}</span>
           </div>
 
+          <!-- "STR" spelled out. Every other abbreviation here has one reading;
+               STR has two, and the wrong one is the one an RPG player reaches
+               for first (strength). "Cond" stays short on purpose: it has no
+               competing expansion, and the label column is shared by all three
+               rows, so widening it to "CONDITION" would take 14px straight out
+               of the bar tracks. German was already carrying the widest label
+               ("Belastung", 9 characters) and now carries a shorter one. -->
           <div
             class="bar-row bar-row--stress"
             role="progressbar"
@@ -559,7 +602,7 @@ export class VelgDungeonPartyPanel extends SignalWatcher(LitElement) {
             aria-valuemax="1000"
             aria-label=${msg('Stress')}
           >
-            <span class="bar-label">${msg('Str')}</span>
+            <span class="bar-label">${msg('Stress')}</span>
             <div class="bar-track">
               <div
                 class="bar-fill bar-fill--stress-${agent.stress_threshold}"

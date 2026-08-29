@@ -13,15 +13,14 @@
  * Pattern: DungeonQuickActions.ts (terminal-command dispatch, action button styling).
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import type { RoomNodeClient } from '../../types/dungeon.js';
-import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
-import { ROOM_ICON, ROOM_ICON_UNKNOWN } from './dungeon-map-icons.js';
+import { ROOM_ICON, ROOM_ICON_UNKNOWN, roomNodeLabel } from './dungeon-map-icons.js';
 
 // ── Component ───────────────────────────────────────────────────────────────
 
@@ -31,6 +30,8 @@ export class VelgDungeonRoomPanel extends LitElement {
   @property({ type: Object }) room: RoomNodeClient | null = null;
   @property({ type: Boolean }) adjacent = false;
   @property({ type: Boolean }) current = false;
+  /** Index of the room the party is standing in, for the "no route" reason. */
+  @property({ type: Number }) currentIndex: number | null = null;
 
   static styles = [
     terminalTokens,
@@ -183,6 +184,48 @@ export class VelgDungeonRoomPanel extends LitElement {
         background: color-mix(in srgb, var(--color-danger) 8%, transparent);
       }
 
+      /* ── Standing note ──
+         The bottom slot when there is no action to offer. It carries the same
+         leading icon column as the action button, so the slot keeps one shape
+         whether it holds a verb or a refusal, and the panel never ends on a
+         blank edge that reads as a button failing to render. */
+      .panel__note {
+        display: grid;
+        grid-template-columns: 14px 1fr;
+        align-items: start;
+        gap: 2px 6px;
+        margin: 10px 0 0;
+        padding-top: 8px;
+        border-top: 1px dashed color-mix(in srgb, var(--_border) 45%, transparent);
+        font-size: 9px;
+        line-height: 1.5;
+        color: var(--_phosphor-dim);
+      }
+
+      .panel__note-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+      }
+
+      .panel__note-head {
+        display: block;
+        font-family: var(--font-brutalist, var(--_mono));
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--_phosphor);
+      }
+
+      .panel__note--locked {
+        color: var(--color-text-secondary);
+      }
+
+      .panel__note--locked .panel__note-head {
+        color: color-mix(in srgb, var(--color-danger) 70%, var(--_phosphor));
+      }
+
       @media (prefers-reduced-motion: no-preference) {
         .panel {
           animation: panel-slide-in 200ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
@@ -203,7 +246,7 @@ export class VelgDungeonRoomPanel extends LitElement {
   // ── Render ──────────────────────────────────────────────────────────────
 
   protected render() {
-    const { room, adjacent, current } = this;
+    const { room, current } = this;
     if (!room) return nothing;
 
     const iconFn = ROOM_ICON[room.room_type] ?? ROOM_ICON_UNKNOWN;
@@ -231,7 +274,7 @@ export class VelgDungeonRoomPanel extends LitElement {
         <div class="panel__header">
           <span class="panel__icon">${iconFn(18)}</span>
           <span class="panel__title">
-            ${getRoomTypeLabel(room.room_type)} #${room.index}
+            ${roomNodeLabel(room)} #${room.index}
           </span>
           <button
             class="panel__close"
@@ -250,22 +293,70 @@ export class VelgDungeonRoomPanel extends LitElement {
           <span class="panel__value">${room.depth}</span>
         </div>
 
-        <!-- Move action (only for adjacent, non-current rooms) -->
-        ${
-          adjacent && !current
-            ? html`
-          <button
-            class="panel__action ${isBoss ? 'panel__action--danger' : ''}"
-            @click=${this._moveToRoom}
-          >
-            ${icons.footprints(14)}
-            ${isBoss ? msg('Enter Boss Room') : msg('Move Here')}
-          </button>
-        `
-            : nothing
-        }
+        <!-- Bottom slot: an action, or the reason there is none -->
+        ${this._renderAction(isBoss)}
       </div>
     `;
+  }
+
+  /**
+   * The bottom of the panel always says something.
+   *
+   * It used to be `adjacent && !current ? button : nothing` with no else
+   * branch. Click a room two corridors away and the panel named it, gave its
+   * depth, and then stopped: nothing separated "you cannot go there" from "the
+   * button has not rendered yet". At any moment most of the map is in that
+   * state, so silence was the common case rather than the edge one, and the
+   * player had to infer a rule the interface never stated.
+   *
+   * A locked option that names its lock is the convention the encounter
+   * choices already follow (utils/dungeon-encounter-choices.ts). Same idea,
+   * same reason: knowing what you cannot do is part of knowing where you are.
+   */
+  private _renderAction(isBoss: boolean) {
+    if (this.current) {
+      return html`
+        <p class="panel__note">
+          <span class="panel__note-icon">${icons.mapPin(12)}</span>
+          <span>${msg('Your operatives are standing here.')}</span>
+        </p>
+      `;
+    }
+
+    if (!this.adjacent) {
+      return html`
+        <p class="panel__note panel__note--locked">
+          <span class="panel__note-icon">${icons.lock(12)}</span>
+          <span>
+            <span class="panel__note-head">${msg('Not reachable')}</span>
+            ${this._noRouteReason()}
+          </span>
+        </p>
+      `;
+    }
+
+    return html`
+      <button
+        class="panel__action ${isBoss ? 'panel__action--danger' : ''}"
+        @click=${this._moveToRoom}
+      >
+        ${icons.footprints(14)}
+        ${isBoss ? msg('Enter Boss Room') : msg('Move Here')}
+      </button>
+    `;
+  }
+
+  /**
+   * Why the room cannot be entered, as concretely as the data allows.
+   *
+   * The reason is always the same one — the room is not among the current
+   * room's connections — but naming the room the party actually stands in
+   * turns a rule into a fact the player can check against the map.
+   */
+  private _noRouteReason(): string {
+    return this.currentIndex === null
+      ? msg('No passage leads to it from where the party stands.')
+      : msg(str`No passage leads to it from room #${this.currentIndex}.`);
   }
 
   // ── Handlers ────────────────────────────────────────────────────────────

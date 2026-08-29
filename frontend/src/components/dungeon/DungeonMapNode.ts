@@ -20,8 +20,12 @@ import { msg } from '@lit/localize';
 import { css, nothing, type SVGTemplateResult, svg } from 'lit';
 
 import type { RoomNodeClient } from '../../types/dungeon.js';
-import { getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
-import { ROOM_ICON, ROOM_ICON_UNKNOWN, resolveRoomColor } from './dungeon-map-icons.js';
+import {
+  ROOM_ICON,
+  ROOM_ICON_UNKNOWN,
+  resolveRoomColor,
+  roomNodeLabel,
+} from './dungeon-map-icons.js';
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
@@ -29,6 +33,26 @@ const RING_R = 30;
 const FILL_R = 24;
 const ICON_SIZE = 20;
 const ICON_OFFSET = -ICON_SIZE / 2;
+
+/**
+ * Selection reticle geometry.
+ *
+ * Half-width of the bracket square and the arm length of each corner. 34 sits
+ * outside the ring (30) and inside the "you are here" beacon (37), so a room
+ * that is both current and selected still shows two separate marks. The layout
+ * engine guarantees 55px of edge padding around every node centre
+ * (`edgePad = max(padding, nodeRadius + 25)`), so nothing here can clip.
+ */
+const SELECT_HALF = RING_R + 4;
+const SELECT_ARM = 9;
+
+/** The four corner brackets, as SVG path data around the node centre. */
+const SELECT_BRACKETS: readonly string[] = [
+  `M${-SELECT_HALF} ${-SELECT_HALF + SELECT_ARM} L${-SELECT_HALF} ${-SELECT_HALF} L${-SELECT_HALF + SELECT_ARM} ${-SELECT_HALF}`,
+  `M${SELECT_HALF - SELECT_ARM} ${-SELECT_HALF} L${SELECT_HALF} ${-SELECT_HALF} L${SELECT_HALF} ${-SELECT_HALF + SELECT_ARM}`,
+  `M${SELECT_HALF} ${SELECT_HALF - SELECT_ARM} L${SELECT_HALF} ${SELECT_HALF} L${SELECT_HALF - SELECT_ARM} ${SELECT_HALF}`,
+  `M${-SELECT_HALF + SELECT_ARM} ${SELECT_HALF} L${-SELECT_HALF} ${SELECT_HALF} L${-SELECT_HALF} ${SELECT_HALF - SELECT_ARM}`,
+];
 
 // ── Sparkle positions (treasure shimmer) ────────────────────────────────────
 
@@ -134,9 +158,30 @@ export const mapNodeStyles = css`
   }
 
   /* ── State: Selected ── */
+  /* Selection gets its own channel instead of borrowing one.
+     The ring's STROKE already carries the room TYPE — gold treasure, red boss,
+     blue encounter, amber elite, and for unrevealed rooms a depth-risk tint —
+     so recolouring it to mark selection would overwrite information the player
+     is selecting the room in order to read. The old rule set stroke-width 3
+     and nothing else, which is exactly what .node--current sets: the selected
+     node was not distinguishable from the one you are standing in, and under
+     reduced motion not distinguishable from anything at all, because the only
+     colour it ever had was a drop-shadow inside a motion query.
+     Four corner brackets in the neutral text colour — a colour that appears
+     nowhere in ROOM_COLOR — mark the picked node without touching the type
+     reading. They are drawn geometry, not a filter, so reduced motion keeps
+     them. */
   .node--selected .node__ring {
     stroke-width: 3;
     stroke-dasharray: none;
+  }
+
+  .node__reticle path {
+    fill: none;
+    stroke: var(--color-text-primary);
+    stroke-width: 1.5;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
   }
 
   /* ── State: Submerged (Deluge water overlay) ── */
@@ -228,6 +273,18 @@ export const mapNodeStyles = css`
     .node--selected .node__ring {
       filter: drop-shadow(0 0 6px var(--_node-color, var(--_phosphor-glow)));
     }
+
+    /* Reticle lock-on: each bracket draws itself out of its corner, 30ms after
+       the one before, so selection reads as an instrument acquiring rather than
+       a box appearing. Dash length is the full path (2 * SELECT_ARM = 18).
+       The "both" fill mode is safe on these paths: they carry no transform
+       presentation attribute for a CSS transform to overwrite. */
+    .node__reticle path {
+      stroke-dasharray: 18;
+      stroke-dashoffset: 18;
+      animation: map-node-reticle-lock 180ms var(--ease-snap, cubic-bezier(0.22, 1, 0.36, 1)) both;
+      animation-delay: calc(var(--_bracket, 0) * 30ms);
+    }
   }
 
   /* ── Keyframes ── */
@@ -297,6 +354,10 @@ export const mapNodeStyles = css`
     50% { opacity: 0.7; }
   }
 
+  @keyframes map-node-reticle-lock {
+    to { stroke-dashoffset: 0; }
+  }
+
   @keyframes map-sparkle-twinkle {
     0%, 100% { opacity: 0; transform: scale(0); }
     50% { opacity: 1; transform: scale(1); }
@@ -351,10 +412,14 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
     .filter(Boolean)
     .join(' ');
 
-  // Aria label
+  // Aria label. Selection is announced as well as drawn: the reticle is the
+  // only cue that the detail panel below belongs to THIS node, and a cue that
+  // exists solely as geometry reaches nobody using a screen reader.
+  const selectedTag = selected ? ` (${msg('selected')})` : '';
+  const typeLabel = roomNodeLabel(room);
   const ariaLabel = room.revealed
-    ? `${getRoomTypeLabel(room.room_type)} ${msg('room')} ${room.index}${room.cleared ? ` (${msg('cleared')})` : ''}${current ? ` (${msg('current')})` : ''}`
-    : msg('Unknown room');
+    ? `${typeLabel} ${msg('room')} ${room.index}${room.cleared ? ` (${msg('cleared')})` : ''}${current ? ` (${msg('current')})` : ''}${selectedTag}`
+    : `${msg('Unknown room')}${selectedTag}`;
 
   // Icon
   const iconFn = room.revealed
@@ -384,7 +449,7 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
       @click=${handleClick}
       @keydown=${handleKeydown}
     >
-      <title>${room.revealed ? getRoomTypeLabel(room.room_type) : msg('Unknown')}</title>
+      <title>${typeLabel}</title>
 
       <!-- "You are here" beacon halo (behind the disc) -->
       ${current ? svg`<circle r=${RING_R + 7} class="node__beacon" aria-hidden="true" />` : nothing}
@@ -423,6 +488,17 @@ export function renderMapNode(props: MapNodeProps): SVGTemplateResult {
               style="--_sparkle-delay: ${s.delay}s" />
           `,
           )}
+        </g>
+      `
+          : nothing
+      }
+
+      <!-- Selection reticle: last, so nothing paints over the mark -->
+      ${
+        selected
+          ? svg`
+        <g class="node__reticle" aria-hidden="true">
+          ${SELECT_BRACKETS.map((d, i) => svg`<path d=${d} style="--_bracket: ${i}" />`)}
         </g>
       `
           : nothing
