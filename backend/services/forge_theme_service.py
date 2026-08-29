@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
@@ -17,6 +18,13 @@ from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import get_openrouter_model, run_ai
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.platform_model_config import get_platform_model
+from backend.services.prompt_contracts import (
+    PromptContract,
+    SanitizeResult,
+    get_contract,
+    sanitize_template,
+    variable_catalogue,
+)
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
@@ -66,6 +74,77 @@ THEME_ARCHITECT_PROMPT = (
     "- Create something UNIQUE. Do not copy existing presets. Be bold and distinctive.\n"
     "- The theme should feel like it belongs to this specific world and no other."
 )
+
+
+@dataclass(frozen=True, slots=True)
+class GeneratedTemplateSpec:
+    """The column values phase A.6 writes alongside a generated template."""
+
+    prompt_category: str
+    template_name: str
+    temperature: float
+    max_tokens: int
+
+
+# The four template types phase A.6 writes. Keyed by template_type so the
+# generation prompt, the response-shape hint and the row builder all read from
+# one place; the variable contract for each comes from `prompt_contracts`.
+GENERATED_TEMPLATES: dict[str, GeneratedTemplateSpec] = {
+    "portrait_description": GeneratedTemplateSpec("image", "Portrait Description", 0.8, 300),
+    "building_image_description": GeneratedTemplateSpec("image", "Building Image Description", 0.8, 300),
+    "chronicle_generation": GeneratedTemplateSpec("generation", "Chronicle", 0.9, 2000),
+    "chat_system_prompt": GeneratedTemplateSpec("chat", "Chat System Prompt", 0.85, 500),
+}
+
+_SHAPE_EXAMPLES: dict[str, tuple[str, str]] = {
+    "portrait_description": (
+        "You are a [world-specific] portrait specialist...",
+        "Describe a portrait of {agent_name}...",
+    ),
+    "building_image_description": (
+        "You are a [world-specific] architectural photographer...",
+        "Describe an image of {building_name}...",
+    ),
+    "chronicle_generation": (
+        "You are the editor of {sim}'s chronicle...",
+        "Write edition #{edition_number}...",
+    ),
+    "chat_system_prompt": (
+        "You roleplay characters from {sim}...",
+        "You are {agent_name}...",
+    ),
+}
+
+
+def _response_shape_hint(sim_name: str) -> str:
+    """The JSON shape the model must return, built from GENERATED_TEMPLATES."""
+    blocks = []
+    for ttype in GENERATED_TEMPLATES:
+        system_example, content_example = _SHAPE_EXAMPLES[ttype]
+        blocks.append(
+            f'  "{ttype}": {{\n'
+            f'    "system_prompt": "{system_example.replace("{sim}", sim_name)}",\n'
+            f'    "prompt_content": "{content_example}"\n'
+            f"  }}"
+        )
+    return "{\n" + ",\n".join(blocks) + "\n}"
+
+
+def _variable_contract_hint() -> str:
+    """One line per generated template type listing exactly its allowed variables.
+
+    The prompt used to carry a single global list for all four types. It was
+    short by nine names the code does supply, and it invited `{zone_name}` into
+    the chat template, where nothing supplies it — which is how the chat prompt
+    of one production world came to carry a literal `{zone_name}` forever.
+    """
+    lines = []
+    for ttype in GENERATED_TEMPLATES:
+        contract = get_contract(ttype)
+        if contract is None:  # pragma: no cover - guarded by test_prompt_contracts
+            continue
+        lines.append(f"- {ttype}: {variable_catalogue(contract)}")
+    return "\n".join(lines)
 
 
 class ForgeThemeService:
@@ -356,6 +435,51 @@ class ForgeThemeService:
             sentry_sdk.capture_exception(exc)
 
     @staticmethod
+    def _enforce_contract(
+        text: str,
+        contract: PromptContract | None,
+        *,
+        simulation_id: UUID,
+        template_type: str,
+        field_name: str,
+    ) -> SanitizeResult:
+        """Strip what the code cannot fill, and say so.
+
+        The model writes in the world's own vocabulary, and that is the point —
+        but it also invents variables in that vocabulary (`{leserlichkeit_level}`,
+        `{pathological_condition}`), which look plausible enough that nobody
+        notices. Storing them unchecked is how a rendered portrait came back
+        wearing a lapel badge reading "Leserlichkeit: 9 %", a number no code
+        computed. What survives here is the world's voice; what does not is the
+        invented slot.
+        """
+        result = sanitize_template(text, contract)
+        if result.changed:
+            logger.warning(
+                "Generated template '%s' (%s) violated its contract: %s",
+                template_type,
+                field_name,
+                {defect.value: sorted(names) for defect, names in result.audit.defects.items()},
+                extra={"simulation_id": str(simulation_id)},
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "ForgeThemeService")
+                scope.set_tag("template_type", template_type)
+                scope.set_tag("simulation_id", str(simulation_id))
+                scope.set_context(
+                    "prompt_contract",
+                    {
+                        "field": field_name,
+                        **{defect.value: sorted(names) for defect, names in result.audit.defects.items()},
+                    },
+                )
+                sentry_sdk.capture_message(
+                    f"Generated prompt template '{template_type}' violated its contract",
+                    level="warning",
+                )
+        return result
+
+    @staticmethod
     async def generate_simulation_templates(
         supabase: Client,
         simulation_id: UUID,
@@ -363,10 +487,17 @@ class ForgeThemeService:
     ) -> None:
         """Generate world-specific prompt templates using lore context.
 
-        Creates simulation-scoped prompt_templates rows for portrait_description,
-        building_image_description, chronicle_generation, and chat_system_prompt.
-        These override the generic platform defaults with world-specific voice,
-        visual language, and narrative conventions drawn from the simulation's lore.
+        Creates simulation-scoped prompt_templates rows for the four types in
+        ``GENERATED_TEMPLATES``. They override the generic platform defaults with
+        world-specific voice, visual language and narrative conventions drawn
+        from the simulation's lore.
+
+        The world owns the *style*; the platform keeps the rest. The prompt
+        offers each template exactly the variables its call site supplies, the
+        model's output is sanitised against that contract before it is stored,
+        and the compositional guarantees are appended at render time by
+        ``PromptResolver`` — so a generated template can no longer drop "a SINGLE
+        person" or invent a variable nothing fills.
         """
         import json as _json
 
@@ -409,41 +540,32 @@ class ForgeThemeService:
             f"WORLD: {sim.get('description', '')}\n\n"
             f"LORE EXCERPTS:\n{lore_digest}\n\n"
             f"VISUAL STYLE: {styles.get('image_style_prompt_portrait', 'not set')}\n\n"
-            f"Generate 4 prompt templates that capture this world's UNIQUE voice, "
-            f"visual language, and narrative conventions. Each template must be deeply "
-            f"specific to this world — referencing its materials, aesthetics, social "
+            f"Generate {len(GENERATED_TEMPLATES)} prompt templates that capture this world's "
+            f"UNIQUE voice, visual language, and narrative conventions. Each template must be "
+            f"deeply specific to this world — referencing its materials, aesthetics, social "
             f"structures, and atmospheric qualities from the lore.\n\n"
-            f"Return valid JSON with exactly these 4 keys:\n"
-            f"{{\n"
-            f'  "portrait_description": {{\n'
-            f'    "system_prompt": "You are a [world-specific] portrait specialist...",\n'
-            f'    "prompt_content": "Describe a portrait of {{agent_name}}..."\n'
-            f"  }},\n"
-            f'  "building_image_description": {{\n'
-            f'    "system_prompt": "You are a [world-specific] architectural photographer...",\n'
-            f'    "prompt_content": "Describe an image of {{building_name}}..."\n'
-            f"  }},\n"
-            f'  "chronicle_generation": {{\n'
-            f'    "system_prompt": "You are the editor of {sim_name}\'s chronicle...",\n'
-            f'    "prompt_content": "Write edition #{{edition_number}}..."\n'
-            f"  }},\n"
-            f'  "chat_system_prompt": {{\n'
-            f'    "system_prompt": "You roleplay characters from {sim_name}...",\n'
-            f'    "prompt_content": "You are {{agent_name}}..."\n'
-            f"  }}\n"
-            f"}}\n\n"
+            f"Return valid JSON with exactly these {len(GENERATED_TEMPLATES)} keys:\n"
+            f"{_response_shape_hint(sim_name)}\n\n"
             f"RULES:\n"
             f"- system_prompt: Sets the AI's persona (2-4 sentences, world-specific)\n"
             f"- prompt_content: The user-facing template with {{variable}} placeholders\n"
             f"- portrait_description MUST reference the visual style above\n"
             f"- chronicle MUST capture the world's media/propaganda voice from lore\n"
             f"- chat MUST establish how characters from this world speak and think\n"
-            f"- Be BOLD and SPECIFIC — generic templates are useless\n"
-            f"- Use template variables: {{agent_name}}, {{agent_character}}, "
-            f"{{agent_background}}, {{building_name}}, {{building_type}}, "
-            f"{{building_condition}}, {{building_description}}, {{zone_name}}, "
-            f"{{simulation_name}}, {{edition_number}}, {{period_start}}, {{period_end}}, "
-            f"{{event_summary}}, {{echo_summary}}, {{battle_summary}}, {{reaction_summary}}"
+            f"- Be BOLD and SPECIFIC — generic templates are useless\n\n"
+            f"VARIABLES — a hard contract, not a suggestion. Each template may use ONLY "
+            f"the names listed for it:\n"
+            f"{_variable_contract_hint()}\n"
+            f"- Write a variable as {{name}}. Never {{{{name}}}}: doubled braces are not "
+            f"substituted and reach the model as literal text.\n"
+            f"- Any other {{placeholder}} is stripped before the template is stored, taking "
+            f"its sentence's meaning with it.\n"
+            f"- Do not invent a variable because this world has a concept for it. If the "
+            f"world measures legibility, write about legibility in words — there is no "
+            f"{{legibility_level}} for the code to fill.\n\n"
+            f"COMPOSITION: the platform appends its own constraints (subject count, framing, "
+            f"output format) to every rendered prompt. Write this world's style and voice; do "
+            f"not restate or contradict those constraints."
         )
 
         try:
@@ -482,53 +604,52 @@ class ForgeThemeService:
                 logger.warning("Template generation returned non-dict")
                 return
 
-            # Template type → column mappings
-            template_meta = {
-                "portrait_description": {
-                    "prompt_category": "image",
-                    "template_name": f"{sim_name} Portrait Description",
-                    "temperature": 0.8,
-                    "max_tokens": 300,
-                },
-                "building_image_description": {
-                    "prompt_category": "image",
-                    "template_name": f"{sim_name} Building Image Description",
-                    "temperature": 0.8,
-                    "max_tokens": 300,
-                },
-                "chronicle_generation": {
-                    "prompt_category": "generation",
-                    "template_name": f"{sim_name} Chronicle",
-                    "temperature": 0.9,
-                    "max_tokens": 2000,
-                },
-                "chat_system_prompt": {
-                    "prompt_category": "chat",
-                    "template_name": f"{sim_name} Chat System Prompt",
-                    "temperature": 0.85,
-                    "max_tokens": 500,
-                },
-            }
-
             rows = []
             for ttype, tdata in templates.items():
-                if ttype not in template_meta:
+                spec = GENERATED_TEMPLATES.get(ttype)
+                if spec is None:
+                    logger.warning(
+                        "Template generation returned an unrequested type '%s' — ignored",
+                        ttype,
+                        extra={"simulation_id": str(simulation_id)},
+                    )
                     continue
                 if not isinstance(tdata, dict):
                     continue
-                meta = template_meta[ttype]
+
+                contract = get_contract(ttype)
+                content = ForgeThemeService._enforce_contract(
+                    tdata.get("prompt_content", ""),
+                    contract,
+                    simulation_id=simulation_id,
+                    template_type=ttype,
+                    field_name="prompt_content",
+                )
+                system = ForgeThemeService._enforce_contract(
+                    tdata.get("system_prompt", ""),
+                    contract,
+                    simulation_id=simulation_id,
+                    template_type=ttype,
+                    field_name="system_prompt",
+                )
+
+                # `variables` is jsonb. It used to receive json.dumps([]) — a JSON
+                # *string* "[]", not an array, and empty either way. It now
+                # declares the variables the stored text actually uses.
+                declared = sorted(set(content.used_variables) | set(system.used_variables))
+
                 rows.append(
                     {
                         "simulation_id": str(simulation_id),
                         "template_type": ttype,
-                        "prompt_category": meta["prompt_category"],
+                        "prompt_category": spec.prompt_category,
                         "locale": "en",
-                        "template_name": meta["template_name"],
-                        "prompt_content": tdata.get("prompt_content", ""),
-                        "system_prompt": tdata.get("system_prompt", ""),
-                        "variables": _json.dumps([]),
-                        "temperature": meta["temperature"],
-                        "max_tokens": meta["max_tokens"],
+                        "template_name": f"{sim_name} {spec.template_name}",
+                        "prompt_content": content.text,
+                        "system_prompt": system.text,
+                        "variables": [{"name": name} for name in declared],
+                        "temperature": spec.temperature,
+                        "max_tokens": spec.max_tokens,
                         "is_system_default": False,
                     }
                 )

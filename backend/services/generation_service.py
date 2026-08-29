@@ -585,6 +585,7 @@ class GenerationService:
             variables={
                 "source_title": source_event.get("title", ""),
                 "source_description": source_event.get("description", ""),
+                "impact_level": str(source_event.get("impact_level", "")),
                 "source_simulation": await self._get_simulation_name(),
                 "target_simulation": target_simulation_name,
                 "target_description": target_description,
@@ -1023,8 +1024,11 @@ class GenerationService:
         if game_context:
             filled_prompt += self._format_game_context(game_context)
 
-        # 3. Build system prompt with language instruction
-        system_prompt = prompt.system_prompt or ""
+        # 3. Build system prompt with language instruction. The system prompt is
+        # part of the template and names the same variables — the platform
+        # chronicle row opens with "{simulation_name}'s newspaper" — so it goes
+        # through the same renderer as the user prompt.
+        system_prompt = self._prompt_resolver.fill_system_prompt(prompt, variables)
         system_prompt += PromptResolver.build_language_instruction(locale)
 
         # 4. Resolve model (use template's default_model as hint)

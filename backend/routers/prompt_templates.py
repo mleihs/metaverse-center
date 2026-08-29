@@ -15,6 +15,7 @@ from backend.models.prompt_template import (
     PromptTestResponse,
 )
 from backend.services.audit_service import AuditService
+from backend.services.prompt_contracts import example_variables
 from backend.services.prompt_service import PromptResolver
 from backend.services.prompt_template_service import PromptTemplateService
 from backend.utils.responses import paginated
@@ -123,18 +124,11 @@ async def test_prompt_template(
     resolver = PromptResolver(supabase, simulation_id)
     resolved = await resolver.resolve(template_type, locale)
 
-    example_vars = {
-        "agent_name": "Test Agent",
-        "agent_system": "politics",
-        "agent_gender": "male",
-        "agent_character": "A brave leader...",
-        "agent_background": "Born in the capital...",
-        "building_type": "government",
-        "building_name": "City Hall",
-        "event_type": "political",
-        "simulation_name": "Test Simulation",
-        "locale_name": "English",
-    }
+    # Example values come from the contract, so the preview shows every slot the
+    # code can actually fill for this type — not one hand-kept dict that knew
+    # about ten variables out of thirty-three template types.
+    contract = resolved.contract
+    example_vars = example_variables(contract) if contract else {}
     filled = resolver.fill_template(resolved, example_vars)
 
     return SuccessResponse(
@@ -142,7 +136,7 @@ async def test_prompt_template(
             template_type=resolved.template_type,
             locale=resolved.locale,
             source=resolved.source,
-            system_prompt=resolved.system_prompt,
+            system_prompt=resolver.fill_system_prompt(resolved, example_vars) or None,
             prompt_preview=filled[:500],
             model_hint=resolved.default_model,
         )

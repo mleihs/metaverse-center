@@ -259,7 +259,7 @@ class EpochInvitationService:
             "participant_names": participant_names,
         }
         user_prompt = resolver.fill_template(prompt, variables)
-        system_prompt = prompt.system_prompt or ""
+        system_prompt = resolver.fill_system_prompt(prompt, variables)
 
         # Generate via OpenRouter
         openrouter = OpenRouterService()

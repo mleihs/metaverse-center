@@ -433,9 +433,10 @@ class ScannerService(BaseSchedulerMixin):
 
         if db_template:
             system_prompt = db_template.get("system_prompt") or cls._DISPATCH_SYSTEM_PROMPT
-            # DB template uses {{var}} mustache placeholders — convert to Python format
+            # Placeholders are {name}, enforced by a CHECK constraint since
+            # migration 280. This used to rewrite {{name}} -> {name} here, which
+            # papered over a seed written in the wrong syntax instead of fixing it.
             user_template = db_template.get("prompt_content", cls._DISPATCH_USER_TEMPLATE)
-            user_template = user_template.replace("{{", "{").replace("}}", "}")
         else:
             system_prompt = cls._DISPATCH_SYSTEM_PROMPT
             user_template = cls._DISPATCH_USER_TEMPLATE
