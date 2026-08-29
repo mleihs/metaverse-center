@@ -46,8 +46,9 @@ export class VelgDriftDockPanel extends LitElement {
       overflow-y: auto;
       padding: var(--space-5) var(--space-4) var(--space-4);
       background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+      /* Akzent auf dem ganzen Rahmen statt als Kantenplatte. */
       border: var(--border-medium);
-      border-left: var(--border-width-heavy) solid var(--_accent);
+      border-color: color-mix(in srgb, var(--_accent) 45%, var(--color-border));
       box-shadow: var(--shadow-xl);
       backdrop-filter: blur(3px);
       animation: dock-in var(--duration-entrance) var(--ease-dramatic) both;
@@ -109,8 +110,8 @@ export class VelgDriftDockPanel extends LitElement {
     .dock__lore {
       margin: 0;
       padding: var(--space-2) 0 var(--space-2) var(--space-3);
-      border-left: var(--border-width-thick) solid
-        color-mix(in srgb, var(--_accent) 50%, transparent);
+      /* Zitatlinie fuer den Lore-Absatz, neutral. */
+      border-left: 1px solid var(--color-border);
     }
     .dock__epigraph {
       margin: 0 0 var(--space-1);

@@ -55,8 +55,8 @@ export class VelgDriftLedgerStrip extends LitElement {
       margin: 0 0 var(--space-3);
       padding: var(--space-2) var(--space-3);
       background: color-mix(in srgb, var(--color-surface-sunken) 80%, transparent);
-      border: var(--border-width-thin) solid var(--_rule);
-      border-left: var(--border-width-thick) solid var(--_siegel);
+      /* Das Siegel faerbt den ganzen Rahmen der Zeile. */
+      border: var(--border-width-thin) solid var(--_siegel);
     }
 
     .ledger__row {

@@ -134,7 +134,7 @@ export class VelgAttunementPanel extends LitElement {
     }
 
     .card--unlocked {
-      border-left-color: var(--_accent);
+      border-color: var(--_accent);
       background: color-mix(in srgb, var(--_accent) 4%, var(--color-surface-raised));
       box-shadow: var(--shadow-sm);
     }

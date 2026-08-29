@@ -100,8 +100,8 @@ export class VelgDriftEffectCards extends LitElement {
         gap: var(--space-3);
         margin-bottom: var(--space-3);
         padding: var(--space-2) var(--space-3);
+        /* Doppelung zum getoenten Hintergrund. */
         background: var(--color-primary-bg);
-        border-left: var(--border-width-thick) solid var(--_applied);
       }
 
       .earnings__item {
