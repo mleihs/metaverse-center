@@ -1,3 +1,14 @@
+---
+title: "The Simulation Forge — Full Production Run, 2026-08-29/30"
+id: doc-forge-prod-run-2026-08-30
+version: 1.0
+lang: en
+type: analysis
+status: active
+date: 2026-08-30
+tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
+---
+
 # The Simulation Forge — Full Production Run, 2026-08-29/30
 
 > One complete pass through the Forge against **production**, with `FORGE_MOCK_MODE=false`

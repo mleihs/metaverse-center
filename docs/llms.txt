@@ -59,6 +59,7 @@
 - [Techstack Recommendation](explanations/techstack-recommendation.md)
 
 ## Analysis
+- [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md)
 - [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md)
 - [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md)
 - [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md)
@@ -66,6 +67,7 @@
 - [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md)
 - [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md)
 - [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md)
+- [The Simulation Forge — Full Production Run, 2026-08-29/30](analysis/forge-prod-run-2026-08-30.md)
 
 ## Audits
 - [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md)

@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 80 documents, 11 categories + 9 ADRs.
+> Auto-generated from frontmatter. 83 documents, 11 categories + 9 ADRs.
 
 ## Specifications (19)
 
@@ -52,7 +52,7 @@ tags: [index, catalog, documentation]
 | [Alpha Suite — Bureau-Dispatch Indicators for Pre-Release Builds](guides/alpha-suite.md) | 1.0 | 2026-04-19 | en | active |
 | [Deployment Infrastructure](guides/deployment-infrastructure.md) | 1.3 | 2026-03-07 | de | active |
 | [Production Deployment Procedures](guides/deployment-procedures.md) | 1.0 | — | en | active |
-| [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.0 | 2026-03-09 | en | active |
+| [Epoch Gameplay Guide](guides/epoch-gameplay-guide.md) | 1.1 | 2026-08-29 | en | active |
 | [Local DB Reset & Storage Recovery Guide](guides/local-db-reset.md) | 1.0 | — | en | active |
 | [Migration Strategy](guides/migration-strategy.md) | 1.2 | 2026-02-25 | de | active |
 | [Pillow Story Template Design Guide](guides/pillow-story-templates.md) | 2.0 | 2026-04-15 | en | active |
@@ -75,18 +75,19 @@ tags: [index, catalog, documentation]
 | [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Analysis (7)
+## Analysis (9)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
+| [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md) | — | 2026-04-17 | de | active |
 | [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md) | 1.0 | 2026-03-08 | de | active |
 | [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 5-Player Simulation: 50-Game Analysis](analysis/epoch-5p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
-| [Epoch Mode — Full Audit and Remediation](analysis/epoch-audit-2026-08-29.md) | 1.0 | 2026-08-29 | en | active |
 | [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
+| [The Simulation Forge — Full Production Run, 2026-08-29/30](analysis/forge-prod-run-2026-08-30.md) | 1.0 | 2026-08-30 | en | active |
 
 ## Audits (1)
 
@@ -94,11 +95,12 @@ tags: [index, catalog, documentation]
 |----------|---------|------|------|--------|
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
 
-## Plans (3)
+## Plans (4)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Bureau Ops — AI Spend & Signal Control Center Implementation Plan](plans/bureau-ops-implementation-plan.md) | 1.0 | 2026-04-21 | en | ready-to-implement |
+| [W1 — Der Vertrag für KI-erzeugte Prompt-Vorlagen](plans/forge-w1-prompt-template-contract.md) | 1.0 | 2026-08-30 | de | implementing |
 | [Per-Simulation World Map — Handover (Phases 4-7)](plans/per-simulation-world-map-handover.md) | 1.0 | 2026-05-10 | en | active |
 | [Per-Simulation Procedural World Map — Implementation Plan](plans/per-simulation-world-map-plan.md) | 1.0 | 2026-05-10 | en | implementing |
 
