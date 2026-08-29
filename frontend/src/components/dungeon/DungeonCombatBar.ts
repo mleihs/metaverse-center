@@ -31,6 +31,7 @@ import type {
   CombatAction,
   EnemyCombatStateClient,
 } from '../../types/dungeon.js';
+import { dungeonEnemyArtUrl } from '../../utils/dungeon-enemy-art.js';
 import {
   buildEnemyDisplayNames,
   getConditionLabel,
@@ -38,6 +39,7 @@ import {
 } from '../../utils/dungeon-formatters.js';
 import { localized as localizedValue } from '../../utils/locale-fields.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
+import '../shared/VelgAvatar.js';
 
 /** Timer urgency thresholds (milliseconds). */
 const TIMER_WARNING_MS = 10_000;
@@ -608,6 +610,130 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         flex-shrink: 0;
       }
 
+      /* -- Compact console: portrait roster + one open action desk -------- */
+      .console {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 0;
+      }
+      .roster {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      /* One chip per agent: face, short name, and what they are doing. The face
+         is the same portrait the scene and the party panel already show, so the
+         figure on stage, the card on the right and the chip here are visibly
+         one person. */
+      .chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 5px 10px 5px 5px;
+        border: 1px solid color-mix(in srgb, var(--_border) 55%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 82%, transparent);
+        cursor: pointer;
+        text-align: left;
+        transition:
+          border-color var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease);
+      }
+      .chip:hover {
+        border-color: color-mix(in srgb, var(--_phosphor) 60%, transparent);
+      }
+      .chip--active {
+        border-color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_phosphor) 12%, var(--_screen-bg));
+      }
+      .chip--done {
+        border-style: dashed;
+      }
+      .chip:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      .chip__face {
+        flex: none;
+      }
+      .chip__text {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      .chip__name {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--_phosphor);
+      }
+      /* What this agent is doing — the chosen ability once picked, the condition
+         before that. The roster answers "who still needs me" at a glance. */
+      .chip__state {
+        max-width: 130px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: var(--_mono);
+        font-size: 9px;
+        color: var(--_phosphor-dim);
+      }
+      .chip__done {
+        flex: none;
+        font-size: 12px;
+        color: var(--color-success);
+      }
+
+      .desk {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 30%, transparent);
+        background: color-mix(in srgb, var(--_screen-bg) 60%, transparent);
+      }
+      .desk__head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .desk__name {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--_phosphor);
+      }
+      .desk__condition {
+        font-family: var(--_mono);
+        font-size: 9px;
+        color: var(--_phosphor-dim);
+      }
+      .desk__abilities {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      /* Faces on the target row too: the cutout here is the same one standing in
+         the enemy band above. */
+      .target__art {
+        height: 22px;
+        width: auto;
+        max-width: 30px;
+        object-fit: contain;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+      .target__face {
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+
       /* -- Onboarding Briefing (compact) -- */
       .briefing {
         padding: 5px 12px;
@@ -773,6 +899,22 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
    *  the graphical view; the terminal view leaves it off and is unchanged. */
   @property({ type: Boolean, reflect: true }) compact = false;
 
+  /**
+   * The agent whose action console is open, in compact mode.
+   *
+   * One actor at a time. Showing every party member's full ability list at once
+   * produced 57 buttons over 40% of the window in a live fight, and left the
+   * scene 255px — too little for the enemy band, which collapsed to 2px and drew
+   * its creatures above the frame. No shipped game does it that way: Darkest
+   * Dungeon shows the ACTIVE hero's skills and pages through the party,
+   * Baldur's Gate 3 swaps one hotbar per character. Into the Breach's rule for
+   * its own UI was to sacrifice ideas for clarity every time.
+   *
+   * Null means "the first agent still without an action" — resolved at render
+   * so the console follows the player forward without needing to be told.
+   */
+  @state() private _activeAgentId: string | null = null;
+
   /** Agent ID currently awaiting target selection. */
   @state() private _targetingAgentId: string | null = null;
 
@@ -846,15 +988,25 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         ${this._showOnboarding ? this._renderOnboarding() : nothing}
         ${this._renderTimer(remaining, combat?.timer?.duration_ms ?? 30_000)}
 
-        <div class="agents" role="list" aria-label=${msg('Agent actions')}>
-          ${actionable.map((agent) => this._renderAgent(agent, selected, enemies))}
-        </div>
+        ${
+          this.compact
+            ? this._renderConsole(actionable, selected, enemies)
+            : html`<div class="agents" role="list" aria-label=${msg('Agent actions')}>
+                ${actionable.map((agent) => this._renderAgent(agent, selected, enemies))}
+              </div>`
+        }
 
         <div class="footer">
           <span class="counter" aria-live="polite">
             ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length} ${msg('ACTIONS')}
           </span>
-          <span class="footer__hint">${msg('or type "submit" in terminal')}</span>
+          ${
+            // The graphical mode has no terminal buffer to type into; pointing
+            // at one there is an instruction the player cannot follow.
+            this.compact
+              ? nothing
+              : html`<span class="footer__hint">${msg('or type "submit" in terminal')}</span>`
+          }
           <button
             class="execute ${allSelected && !submitting ? 'execute--ready' : ''}"
             ?disabled=${!allSelected || submitting}
@@ -891,6 +1043,116 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
           <div class="timer__fill" style="width: ${pct}%"></div>
         </div>
         <span class="timer__seconds">${seconds}s</span>
+      </div>
+    `;
+  }
+
+  /**
+   * Compact console: a portrait roster plus ONE open action desk.
+   *
+   * The roster answers "who acts, and who is already done"; the desk below
+   * carries the abilities of exactly one of them. Selecting an action advances
+   * to the next agent still waiting, so the common path is portrait -> action ->
+   * (target) -> next, without the player ever choosing which panel to look at.
+   */
+  private _renderConsole(
+    actionable: AgentCombatStateClient[],
+    selected: Map<string, CombatAction>,
+    enemies: EnemyCombatStateClient[],
+  ) {
+    const active = this._resolveActiveAgent(actionable, selected);
+    if (!active) return nothing;
+
+    return html`
+      <div class="console">
+        <div class="roster" role="tablist" aria-label=${msg('Agent actions')}>
+          ${actionable.map((agent) => this._renderRosterChip(agent, selected, agent === active))}
+        </div>
+        ${this._renderDesk(active, selected, enemies)}
+      </div>
+    `;
+  }
+
+  /** The open agent: an explicit pick that is still waiting, else the first
+   *  agent without an action, else the last one (everyone is done). */
+  private _resolveActiveAgent(
+    actionable: AgentCombatStateClient[],
+    selected: Map<string, CombatAction>,
+  ): AgentCombatStateClient | null {
+    if (actionable.length === 0) return null;
+    const picked = actionable.find((a) => a.agent_id === this._activeAgentId);
+    if (picked) return picked;
+    return actionable.find((a) => !selected.has(a.agent_id)) ?? actionable[actionable.length - 1];
+  }
+
+  private _renderRosterChip(
+    agent: AgentCombatStateClient,
+    selected: Map<string, CombatAction>,
+    isActive: boolean,
+  ) {
+    const action = selected.get(agent.agent_id);
+    const chosen = action
+      ? (agent.available_abilities.find((ab) => ab.id === action.ability_id) ?? null)
+      : null;
+    const chosenName = chosen ? localizedValue(chosen, 'name') : null;
+    const state = chosenName ?? getConditionLabel(agent.condition);
+
+    return html`
+      <button
+        class="chip ${isActive ? 'chip--active' : ''} ${action ? 'chip--done' : ''}"
+        type="button"
+        role="tab"
+        aria-selected=${isActive ? 'true' : 'false'}
+        aria-label=${`${agent.agent_name} \u2013 ${state}`}
+        title=${`${agent.agent_name} \u2013 ${state}`}
+        @click=${() => {
+          this._activeAgentId = agent.agent_id;
+          this._targetingAgentId = null;
+          this._targetingAbilityId = null;
+        }}
+      >
+        <velg-avatar
+          class="chip__face"
+          size="sm"
+          .src=${agent.portrait_url ?? ''}
+          .name=${agent.agent_name}
+        ></velg-avatar>
+        <span class="chip__text">
+          <span class="chip__name">${agent.agent_name.split(' ')[0]}</span>
+          <span class="chip__state">${state}</span>
+        </span>
+        ${action ? html`<span class="chip__done" aria-hidden="true">\u2713</span>` : nothing}
+      </button>
+    `;
+  }
+
+  /** The open agent's abilities and, when one needs a target, the target row. */
+  private _renderDesk(
+    agent: AgentCombatStateClient,
+    selected: Map<string, CombatAction>,
+    enemies: EnemyCombatStateClient[],
+  ) {
+    const selection = selected.get(agent.agent_id);
+    const targetingAbility = this._targetingAbilityId
+      ? agent.available_abilities.find((a) => a.id === this._targetingAbilityId)
+      : null;
+    const isTargeting =
+      this._targetingAgentId === agent.agent_id &&
+      !!targetingAbility &&
+      targetingAbility.targets !== 'self' &&
+      targetingAbility.targets !== 'all_enemies' &&
+      targetingAbility.targets !== 'all_allies';
+
+    return html`
+      <div class="desk" role="tabpanel" aria-label=${`${agent.agent_name} ${msg('actions')}`}>
+        <div class="desk__head">
+          <span class="desk__name">${agent.agent_name}</span>
+          <span class="desk__condition">${getConditionLabel(agent.condition)}</span>
+        </div>
+        <div class="desk__abilities" role="radiogroup" aria-label=${msg('Abilities')}>
+          ${this._renderAbilityGroups(agent, selection?.ability_id ?? null, enemies)}
+        </div>
+        ${isTargeting ? this._renderTargetPicker(agent, enemies) : nothing}
       </div>
     `;
   }
@@ -1058,6 +1320,16 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
               role="option"
               @click=${() => this._handleTargetClick(ally.agent_id)}
             >
+              ${
+                this.compact
+                  ? html`<velg-avatar
+                      class="target__face"
+                      size="xs"
+                      .src=${ally.portrait_url ?? ''}
+                      .name=${ally.agent_name}
+                    ></velg-avatar>`
+                  : nothing
+              }
               ${ally.agent_name}
             </button>
           `,
@@ -1078,12 +1350,27 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
             enemy.condition_display !== 'healthy'
               ? ` (${getEnemyConditionLabel(enemy.condition_display)})`
               : '';
+          // The creature, not just its name: the band above shows the same
+          // cutout, so the target row and the stage speak about the same thing.
+          const art = this.compact ? dungeonEnemyArtUrl(enemy.image_path) : null;
           return html`
             <button
               class="target"
               role="option"
               @click=${() => this._handleTargetClick(enemy.instance_id)}
             >
+              ${
+                art
+                  ? html`<img
+                      class="target__art"
+                      src=${art}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      aria-hidden="true"
+                    />`
+                  : nothing
+              }
               ${baseName}${cond}
             </button>
           `;
@@ -1110,6 +1397,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     if (ability.targets === 'self') {
       dungeonState.selectAction(agent.agent_id, ability.id, agent.agent_id);
       this._clearTargeting();
+      this._advance();
       return;
     }
 
@@ -1117,6 +1405,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     if (ability.targets === 'all_enemies' || ability.targets === 'all_allies') {
       dungeonState.selectAction(agent.agent_id, ability.id);
       this._clearTargeting();
+      this._advance();
       return;
     }
 
@@ -1128,6 +1417,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       if (allies.length <= 1) {
         dungeonState.selectAction(agent.agent_id, ability.id, allies[0]?.agent_id);
         this._clearTargeting();
+        this._advance();
         return;
       }
       // Multiple allies: auto-target first, allow override via target click
@@ -1141,6 +1431,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     if (alive.length <= 1) {
       dungeonState.selectAction(agent.agent_id, ability.id, alive[0]?.instance_id);
       this._clearTargeting();
+      this._advance();
       return;
     }
 
@@ -1188,6 +1479,21 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     }
     this._targetingAgentId = null;
     this._targetingAbilityId = null;
+    this._advance();
+  }
+
+  /**
+   * Hand the console to the next agent still without an action.
+   *
+   * Clearing the explicit pick is enough: _resolveActiveAgent falls back to the
+   * first agent without a selection, so the console moves forward on its own
+   * and stops on the last one when everybody is ready. A player who wants to
+   * revise an earlier choice clicks that portrait; the next completed selection
+   * carries them forward again.
+   */
+  private _advance(): void {
+    if (!this.compact) return;
+    this._activeAgentId = null;
   }
 
   private _handleSubmit(): void {

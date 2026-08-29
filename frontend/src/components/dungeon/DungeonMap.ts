@@ -131,6 +131,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
          chased the panel, which is why the map appeared to jump away.
          A row cannot be scrolled out from under its sibling. */
       .map-content {
+        box-sizing: border-box;
         display: grid;
         grid-template-rows: minmax(0, 1fr) auto;
         overflow: hidden;
@@ -163,6 +164,7 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
 
       /* ── Persistent mode heading (no toggle visible) ── */
       .map-heading {
+        flex: none;
         font-family: var(--font-brutalist, var(--_mono));
         font-size: 9px;
         font-weight: 700;
@@ -185,17 +187,25 @@ export class VelgDungeonMap extends SignalWatcher(LitElement) {
         display: none;
       }
 
+      /* The rail hands the component its height; the host then DISTRIBUTES it
+         rather than the content claiming a share of it. .map-content used to
+         say height:100%, which is 100% of the HOST — it ignored the heading
+         above it (17.5px) and, without border-box, added its own padding (8px)
+         on top. The grid rows were correct; the box they lived in simply hung
+         25.5px below the rail, and overflow:hidden cut the "Move here"
+         button off. Measured on production before and after. */
+      :host([persistent]) {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
       :host([persistent]) .map-content {
         max-height: none;
-        height: 100%;
+        flex: 1 1 auto;
+        height: auto;
         min-height: 0;
         border-top: none;
-      }
-      /* The rail hands the component its height; without this the host is
-         content-sized and the grid's 1fr track has nothing to divide. */
-      :host([persistent]) {
-        min-height: 0;
-        height: 100%;
       }
 
       /* ── Empty ── */

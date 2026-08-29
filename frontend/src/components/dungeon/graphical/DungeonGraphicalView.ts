@@ -361,7 +361,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         overflow: hidden;
         border: 1px solid color-mix(in srgb, var(--_border) 50%, transparent);
         display: grid;
-        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        /* The STAGE gets the guaranteed height, the TEXT gets the flexible one.
+           The first version had it the other way round: foes took the 1fr track
+           and the chamber text an auto row. Measured in a live fight, where the combat
+           bar leaves the scene 255px, that gave the enemy band 2px — the
+           creatures were clamped to their 44px floor and drew 33px ABOVE the
+           scene, invisible. The text can scroll (it has overscroll containment);
+           a creature cannot. So the band gets a floor and the prose yields. */
+        grid-template-rows: auto minmax(110px, 1fr) auto minmax(0, auto);
         grid-template-areas:
           'readout'
           'foes'
@@ -1106,6 +1113,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
       .chamber {
         grid-area: text;
         z-index: 4;
+        min-height: 0;
         margin: 10px 12px 12px;
         padding: 12px 14px;
         max-width: 68ch;
