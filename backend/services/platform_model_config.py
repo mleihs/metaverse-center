@@ -52,6 +52,37 @@ HARDCODED_DEFAULTS: dict[str, str] = {
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
 
+# ── Reasoning effort per purpose ─────────────────────────────────────
+# OpenRouter counts reasoning tokens INSIDE max_tokens and bills them as
+# output ("max_tokens must be strictly higher than the reasoning budget";
+# "Reasoning tokens are considered output tokens"). Effort maps to a share of
+# the budget: xhigh ~95%, high ~80%, medium ~50%, low ~20%, minimal ~10%.
+#
+# `deepseek/deepseek-v4-pro` — the model `model_forge` carries — only offers
+# `high` and `xhigh`. Left unset it spent 3016 of 3072 tokens thinking and
+# emitted nothing, which is what a `entity` call looks like when it 502s:
+# `UnexpectedModelBehavior: Model token limit (3072) exceeded before any
+# response was generated`. Measured on prod 2026-08-29: 3 of 4 attempts failed
+# that way, 50-115s each, billed in full.
+#
+# "off" disables thinking outright — a first-class mode on the V4 hybrids, not
+# a workaround. Measured against the real ForgeAgentDraft schema, `entity` went
+# from ~25% to 3/3 complete objects and from 50-115s to ~31s; `lore` kept 2/2
+# while gaining sections at half the cost. Values: off | minimal | low |
+# medium | high | xhigh | auto (send nothing, let the model decide).
+REASONING_DEFAULTS: dict[str, str] = {
+    "reasoning_entity": "off",
+    "reasoning_lore": "off",
+    "reasoning_chunk": "off",
+    # Anchors are the one purpose where thinking demonstrably earns its budget:
+    # the run that produced correctly-dated, checkable citations (Scott 1998)
+    # was a thinking run. Left on until measured otherwise.
+    "reasoning_anchors": "auto",
+    "reasoning_dossier": "auto",
+}
+
+_REASONING_KEYS = tuple(REASONING_DEFAULTS.keys())
+
 
 async def _load_all(admin_supabase: Client) -> None:
     """Load model settings from platform_settings."""
@@ -61,13 +92,13 @@ async def _load_all(admin_supabase: Client) -> None:
         response = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
-            .like("setting_key", "model_%")
+            .in_("setting_key", [*_MODEL_KEYS, *_REASONING_KEYS])
             .execute()
         )
         new_cache: dict[str, str] = {}
         for row in extract_list(response):
             key = row["setting_key"]
-            if key not in _MODEL_KEYS:
+            if key not in _MODEL_KEYS and key not in _REASONING_KEYS:
                 continue
             raw = str(row.get("setting_value", "")).strip('"')
             if raw:
@@ -136,3 +167,32 @@ def invalidate() -> None:
     global _cache, _cache_loaded_at  # noqa: PLW0603
     _cache = {}
     _cache_loaded_at = 0.0
+
+
+def get_platform_reasoning(purpose: str) -> dict[str, object] | None:
+    """Return the OpenRouter ``reasoning`` payload for a purpose, or ``None``.
+
+    ``None`` means "send nothing" — the model's own default applies. That is
+    what ``auto`` resolves to, and it is deliberately distinct from ``off``,
+    which sends ``{"enabled": False}`` and suppresses thinking entirely.
+
+    Sync — reads the same in-process cache as :func:`get_platform_model`, so an
+    admin edit takes effect on the next :func:`invalidate` + reload, never on a
+    redeploy. See ``REASONING_DEFAULTS`` for why each purpose is set as it is.
+    """
+    raw = (_cache.get(f"reasoning_{purpose}") or REASONING_DEFAULTS.get(f"reasoning_{purpose}") or "auto").lower()
+
+    if raw == "auto":
+        return None
+    if raw == "off":
+        return {"enabled": False}
+    if raw in ("minimal", "low", "medium", "high", "xhigh"):
+        return {"effort": raw}
+
+    logger.warning(
+        "Unknown reasoning level %r for purpose %r - falling back to the model default",
+        raw,
+        purpose,
+        extra={"purpose": purpose, "raw": raw},
+    )
+    return None

@@ -10,6 +10,7 @@ import {
   adminLoadingStyles,
 } from '../shared/admin-shared-styles.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { markerQuoteStyles } from '../shared/marker-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 interface ModelSettingMeta {
@@ -28,6 +29,90 @@ const DEV_KEYS = [
 
 const ALL_MODEL_KEYS = [...PROD_KEYS, ...DEV_KEYS] as const;
 type ModelSettingKey = (typeof ALL_MODEL_KEYS)[number];
+
+/**
+ * Reasoning effort per AI purpose (`platform_settings.reasoning_*`).
+ *
+ * OpenRouter spends reasoning tokens from inside `max_tokens` and bills them as
+ * output, so the effort level decides how much of a purpose's budget ever
+ * reaches the answer. Left unset, `deepseek-v4-pro` spent 3016 of 3072 tokens
+ * thinking and emitted nothing – which is what a failed entity generation looks
+ * like from the outside. Backend reads these via `get_platform_reasoning()`.
+ */
+const REASONING_KEYS = [
+  'reasoning_entity',
+  'reasoning_chunk',
+  'reasoning_lore',
+  'reasoning_dossier',
+  'reasoning_anchors',
+] as const;
+type ReasoningKey = (typeof REASONING_KEYS)[number];
+
+const ALL_SETTING_KEYS = [...ALL_MODEL_KEYS, ...REASONING_KEYS] as const;
+type SettingKey = (typeof ALL_SETTING_KEYS)[number];
+
+/** Share of `max_tokens` each level leaves for thinking (OpenRouter docs). */
+const REASONING_LEVELS = [
+  { id: 'off', share: null },
+  { id: 'minimal', share: '~10%' },
+  { id: 'low', share: '~20%' },
+  { id: 'medium', share: '~50%' },
+  { id: 'high', share: '~80%' },
+  { id: 'xhigh', share: '~95%' },
+  { id: 'auto', share: null },
+] as const;
+
+function getReasoningLevelLabel(id: string, share: string | null): string {
+  if (id === 'off') return msg('off – no thinking');
+  if (id === 'auto') return msg('auto – model decides');
+  return msg(str`${id} – ${share ?? ''} of the budget`);
+}
+
+function getReasoningMeta(): Record<string, ModelSettingMeta> {
+  return {
+    reasoning_entity: {
+      label: msg('Single entity'),
+      description: msg('One agent or building, bilingual'),
+    },
+    reasoning_chunk: {
+      label: msg('Batch generation'),
+      description: msg('Geography, agents and buildings at once'),
+    },
+    reasoning_lore: {
+      label: msg('Lore Scroll'),
+      description: msg('5–7 sections of founding lore'),
+    },
+    reasoning_dossier: {
+      label: msg('Classified dossier'),
+      description: msg('6 sections, around 9,000 words'),
+    },
+    reasoning_anchors: {
+      label: msg('Philosophical anchors'),
+      description: msg('Three grounded angles from the research'),
+    },
+  };
+}
+
+function getReasoningTip(key: string): string {
+  const tips: Record<string, string> = {
+    reasoning_entity: msg(
+      'Measured on production: left to the model, deepseek-v4-pro spent 3016 of the 3072 available tokens thinking and produced no answer at all – 3 of 4 attempts failed after 50 to 115 seconds, billed in full. Set to "off" this purpose produces complete objects on every attempt in about 31 seconds. Raise it only together with the token budget.',
+    ),
+    reasoning_chunk: msg(
+      'Batch generation writes several entities in one response, so the same budget arithmetic applies as for a single entity, only more so. Kept at "off" until a measurement says otherwise.',
+    ),
+    reasoning_lore: msg(
+      'Measured: "off" and "auto" both succeed, but "off" returns more sections, runs about 40 percent faster and costs half as much. Thinking earns nothing here that the prose does not already carry.',
+    ),
+    reasoning_dossier: msg(
+      'The longest output in the pipeline: around 9,000 words against a 16,384 token budget, which leaves little room to think even before an effort level is set. Left on "auto" because the measurement was inconclusive – most runs hit an upstream provider error unrelated to thinking.',
+    ),
+    reasoning_anchors: msg(
+      'The one purpose where thinking demonstrably earns its budget: the run that produced correctly dated, checkable citations was a thinking run. Change this only with a measurement in hand.',
+    ),
+  };
+  return tips[key] ?? '';
+}
 
 /** Purpose labels shared between prod and dev columns. */
 function getModelMeta(): Record<string, ModelSettingMeta> {
@@ -84,13 +169,24 @@ function getModelMeta(): Record<string, ModelSettingMeta> {
   };
 }
 
+/**
+ * Presets offered in the dropdown. Every id here must exist in OpenRouter's
+ * catalogue – verified 2026-08-30. The previous list was stale in a way that
+ * mattered: it offered `anthropic/claude-sonnet-4-6` (a HYPHEN where the
+ * catalogue has a dot) as the default for `model_default` and `model_forge`,
+ * so "Reset to Defaults" wrote an id that had never resolved into production.
+ * Keep this list in sync with `HARDCODED_DEFAULTS` in
+ * `backend/services/platform_model_config.py`.
+ */
 const MODEL_OPTIONS = [
-  { id: 'anthropic/claude-sonnet-4-6', label: 'Claude Sonnet 4.6' },
-  { id: 'anthropic/claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
-  { id: 'deepseek/deepseek-v3.2', label: 'DeepSeek V3.2' },
-  { id: 'deepseek/deepseek-r1-0528:free', label: 'DeepSeek R1 (Free)' },
-  { id: 'google/gemini-2.0-flash-001', label: 'Gemini 2.0 Flash' },
-  { id: 'google/gemini-2.5-pro-preview', label: 'Gemini 2.5 Pro' },
+  { id: 'deepseek/deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
+  { id: 'deepseek/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash 0731' },
+  { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+  { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { id: 'anthropic/claude-sonnet-4.6', label: 'Claude Sonnet 4.6' },
+  { id: 'anthropic/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+  { id: 'x-ai/grok-4.20', label: 'Grok 4.20' },
+  { id: 'mistralai/mistral-medium-3.1', label: 'Mistral Medium 3.1' },
 ];
 
 function getModelTip(key: string): string {
@@ -113,15 +209,26 @@ function getModelTip(key: string): string {
   return tips[baseKey] ?? '';
 }
 
-const DEFAULTS: Record<ModelSettingKey, string> = {
-  model_default: 'anthropic/claude-sonnet-4-6',
-  model_fallback: 'deepseek/deepseek-r1-0528:free',
-  model_research: 'google/gemini-2.0-flash-001',
-  model_forge: 'anthropic/claude-sonnet-4-6',
-  model_default_dev: 'deepseek/deepseek-r1-0528:free',
-  model_fallback_dev: 'deepseek/deepseek-r1-0528:free',
-  model_research_dev: 'google/gemini-2.0-flash-001',
-  model_forge_dev: 'deepseek/deepseek-r1-0528:free',
+/**
+ * MUST mirror `HARDCODED_DEFAULTS` in
+ * `backend/services/platform_model_config.py`. "Reset to Defaults" writes these
+ * straight into `platform_settings`, so a value that has drifted from the
+ * backend is not cosmetic – it is a live footgun on the production database.
+ */
+const DEFAULTS: Record<SettingKey, string> = {
+  model_default: 'deepseek/deepseek-v4-flash-0731',
+  model_fallback: 'google/gemini-2.5-flash-lite',
+  model_research: 'deepseek/deepseek-v4-flash-0731',
+  model_forge: 'deepseek/deepseek-v4-pro',
+  model_default_dev: 'deepseek/deepseek-v4-flash-0731',
+  model_fallback_dev: 'google/gemini-2.5-flash-lite',
+  model_research_dev: 'deepseek/deepseek-v4-flash-0731',
+  model_forge_dev: 'deepseek/deepseek-v4-flash-0731',
+  reasoning_entity: 'off',
+  reasoning_chunk: 'off',
+  reasoning_lore: 'off',
+  reasoning_dossier: 'auto',
+  reasoning_anchors: 'auto',
 };
 
 @localized()
@@ -133,6 +240,7 @@ export class VelgAdminModelsTab extends LitElement {
     adminButtonStyles,
     adminLoadingStyles,
     infoBubbleStyles,
+    markerQuoteStyles,
     css`
       :host {
         display: block;
@@ -361,9 +469,59 @@ export class VelgAdminModelsTab extends LitElement {
         margin-top: var(--space-5);
       }
 
+      /* --- Reasoning effort (SEC-02) --- */
+
+      .forge-section__header--secondary {
+        margin-top: var(--space-8);
+      }
+
+      /* Grouping, not status: the neutral hairline from marker-styles carries
+         it. A coloured edge bar was removed platform-wide in the accent sweep. */
+      .reasoning-note {
+        margin: 0 0 var(--space-4);
+        color: var(--color-text-secondary);
+        font-size: var(--text-sm);
+        line-height: var(--leading-relaxed);
+        max-width: 78ch;
+      }
+
+      /* Five purposes read as a set, so they get a grid rather than the
+         single column the environment splits use. */
+      .model-cards--reasoning {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width, 280px), 1fr));
+        gap: var(--space-3);
+      }
+
+      .model-cards--reasoning .model-card {
+        animation: reasoning-card-in var(--duration-entrance) var(--ease-dramatic) both;
+        animation-delay: calc(var(--i, 0) * var(--duration-stagger));
+      }
+
+      @keyframes reasoning-card-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       @media (max-width: 768px) {
         .env-columns {
           grid-template-columns: 1fr;
+        }
+
+        .model-cards--reasoning {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .model-cards--reasoning .model-card {
+          animation-duration: 0.01ms;
         }
       }
     `,
@@ -392,18 +550,22 @@ export class VelgAdminModelsTab extends LitElement {
     if (settingsResult.success && settingsResult.data) {
       const allSettings = settingsResult.data as PlatformSetting[];
       this._settings = allSettings.filter((s) =>
-        (ALL_MODEL_KEYS as readonly string[]).includes(s.setting_key),
+        (ALL_SETTING_KEYS as readonly string[]).includes(s.setting_key),
       );
       this._editValues = {};
       this._customMode = new Set();
       // Seed all keys with defaults first, then overlay DB values
-      for (const key of ALL_MODEL_KEYS) {
+      for (const key of ALL_SETTING_KEYS) {
         this._editValues[key] = DEFAULTS[key];
       }
       for (const s of this._settings) {
         const val = String(s.setting_value).replace(/"/g, '');
         this._editValues[s.setting_key] = val;
-        if (!MODEL_OPTIONS.some((o) => o.id === val)) {
+        // Custom mode is a model-id affordance only. Reasoning keys have a
+        // closed set of levels, so a value outside MODEL_OPTIONS is expected
+        // there and must not flip the card into free-text entry.
+        const isModelKey = (ALL_MODEL_KEYS as readonly string[]).includes(s.setting_key);
+        if (isModelKey && !MODEL_OPTIONS.some((o) => o.id === val)) {
           this._customMode.add(s.setting_key);
         }
       }
@@ -420,7 +582,7 @@ export class VelgAdminModelsTab extends LitElement {
     const original = this._settings.find((s) => s.setting_key === key);
     if (!original) {
       // Key not in DB yet — dirty if value differs from hardcoded default
-      const defaultVal = DEFAULTS[key as ModelSettingKey];
+      const defaultVal = DEFAULTS[key as SettingKey];
       return defaultVal !== undefined && this._editValues[key] !== defaultVal;
     }
     const origVal = String(original.setting_value).replace(/"/g, '');
@@ -439,7 +601,7 @@ export class VelgAdminModelsTab extends LitElement {
       if (!MODEL_OPTIONS.some((o) => o.id === currentVal)) {
         this._editValues = {
           ...this._editValues,
-          [key]: DEFAULTS[key as ModelSettingKey] ?? MODEL_OPTIONS[0].id,
+          [key]: DEFAULTS[key as SettingKey] ?? MODEL_OPTIONS[0].id,
         };
       }
     } else {
@@ -471,7 +633,7 @@ export class VelgAdminModelsTab extends LitElement {
     }
 
     if (successCount > 0) {
-      VelgToast.success(msg(str`${successCount} model settings saved.`));
+      VelgToast.success(msg(str`${successCount} settings saved.`));
     }
     if (errorCount > 0) {
       VelgToast.error(msg(str`${errorCount} settings failed to save.`));
@@ -484,20 +646,20 @@ export class VelgAdminModelsTab extends LitElement {
   private _resetToDefaults(): void {
     this._editValues = { ...this._editValues };
     this._customMode = new Set();
-    for (const key of ALL_MODEL_KEYS) {
+    for (const key of ALL_SETTING_KEYS) {
       this._editValues[key] = DEFAULTS[key];
     }
     this.requestUpdate();
   }
 
-  private _renderModelCard(key: string) {
+  private _renderModelCard(key: ModelSettingKey) {
     const meta = getModelMeta();
     const m = meta[key];
     if (!m) return nothing;
     const isDirty = this._isDirty(key);
     const isCustom = this._customMode.has(key);
     const currentVal = this._editValues[key] ?? '';
-    const defaultVal = DEFAULTS[key as ModelSettingKey];
+    const defaultVal = DEFAULTS[key];
     const tip = getModelTip(key);
 
     return html`
@@ -565,6 +727,60 @@ export class VelgAdminModelsTab extends LitElement {
     `;
   }
 
+  /**
+   * A reasoning-effort card. Deliberately narrower than the model card: the
+   * levels are a closed set, so there is no custom-id escape hatch. The share
+   * readout is the fact that actually decides the outcome – at "high" roughly
+   * four fifths of the purpose's token budget is spent before a single word of
+   * the answer is written.
+   */
+  private _renderReasoningCard(key: ReasoningKey, index = 0) {
+    const meta = getReasoningMeta();
+    const m = meta[key];
+    if (!m) return nothing;
+    const isDirty = this._isDirty(key);
+    const currentVal = this._editValues[key] ?? '';
+    const defaultVal = DEFAULTS[key];
+    const tip = getReasoningTip(key);
+    const level = REASONING_LEVELS.find((l) => l.id === currentVal);
+
+    return html`
+      <div class="model-card ${isDirty ? 'model-card--dirty' : ''}" style="--i: ${index}">
+        <p class="model-card__label">${m.label}</p>
+        <p class="model-card__description">${m.description}</p>
+        ${tip ? renderInfoBubble(tip, `tip-${key}`) : nothing}
+        <div class="model-card__select-row">
+          <select
+            class="model-card__select"
+            aria-label=${m.label}
+            .value=${currentVal}
+            @change=${(e: Event) => {
+              this._editValues = {
+                ...this._editValues,
+                [key]: (e.target as HTMLSelectElement).value,
+              };
+            }}
+          >
+            ${REASONING_LEVELS.map(
+              (opt) => html`
+                <option value=${opt.id} ?selected=${opt.id === currentVal}>
+                  ${getReasoningLevelLabel(opt.id, opt.share)}
+                </option>
+              `,
+            )}
+          </select>
+        </div>
+        <p class="model-card__default">
+          ${
+            level?.share
+              ? msg(str`Default: ${defaultVal} · leaves ${level.share} of the budget for thinking`)
+              : msg(str`Default: ${defaultVal}`)
+          }
+        </p>
+      </div>
+    `;
+  }
+
   protected render() {
     if (this._loading) {
       return html`<div class="loading">${msg('Loading model settings...')}</div>`;
@@ -598,6 +814,20 @@ export class VelgAdminModelsTab extends LitElement {
             </div>
             <div class="model-cards">${DEV_KEYS.map((k) => this._renderModelCard(k))}</div>
           </div>
+        </div>
+
+        <div class="forge-section__header forge-section__header--secondary">
+          <span class="forge-section__code">SEC-02</span>
+          <h3 class="forge-section__title">${msg('Reasoning Effort per Purpose')}</h3>
+        </div>
+        <div class="forge-section__divider"></div>
+        <p class="reasoning-note marker-quote">
+          ${msg(
+            'Reasoning tokens are spent from the same budget as the answer and are billed as output. The level below decides how much of a purpose\u2019s token budget is left once the model has finished thinking.',
+          )}
+        </p>
+        <div class="model-cards model-cards--reasoning">
+          ${REASONING_KEYS.map((k, i) => this._renderReasoningCard(k, i))}
         </div>
 
         <div class="actions">
