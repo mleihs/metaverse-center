@@ -94,7 +94,9 @@ def _parse_json_from_text(text: str) -> Any:
 async def classify_batch(
     results: list[ScanResult],
     openrouter: OpenRouterService,
-    model: str = "deepseek/deepseek-v3.2",
+    # No default: a model literal here would quietly outrank Admin > Models for
+    # this one path. Callers resolve it through get_platform_model().
+    model: str,
     *,
     system_prompt_override: str | None = None,
     budget: BudgetContext | None = None,
