@@ -39,15 +39,15 @@ _CACHE_TTL = 300  # 5 minutes
 #   curl -s https://openrouter.ai/api/v1/models -H "Authorization: Bearer $KEY" \
 #     | python3 -c "import json,sys; print('<id>' in {m['id'] for m in json.load(sys.stdin)['data']})"
 HARDCODED_DEFAULTS: dict[str, str] = {
-    "model_default": "deepseek/deepseek-v4-flash",
+    "model_default": "deepseek/deepseek-v4-flash-0731",
     "model_fallback": "google/gemini-2.5-flash-lite",
-    "model_research": "deepseek/deepseek-v4-flash",
+    "model_research": "deepseek/deepseek-v4-flash-0731",
     "model_forge": "deepseek/deepseek-v4-pro",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
-    "model_default_dev": "deepseek/deepseek-v4-flash",
+    "model_default_dev": "deepseek/deepseek-v4-flash-0731",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
-    "model_research_dev": "deepseek/deepseek-v4-flash",
-    "model_forge_dev": "deepseek/deepseek-v4-flash",
+    "model_research_dev": "deepseek/deepseek-v4-flash-0731",
+    "model_forge_dev": "deepseek/deepseek-v4-flash-0731",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
