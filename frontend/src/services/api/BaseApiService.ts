@@ -61,6 +61,17 @@ export class BaseApiService {
       }
 
       if (signOutOn401 && response.status === 401) {
+        // Destroying the session is the loudest thing this layer does and it
+        // used to happen in complete silence. When the backend rejected every
+        // token — a local stack whose signing had moved on, an expired signing
+        // key, a misconfigured issuer — the client signed itself out on the
+        // very first call after login, so signing in looked like a no-op with
+        // nothing anywhere to explain it. An involuntary sign-out is a fact
+        // worth recording.
+        captureError(new Error(`Signed out by a 401 from ${response.url}: ${errorMessage}`), {
+          source: 'BaseApiService.handleResponse.signOutOn401',
+          code: errorCode,
+        });
         await supabase.auth.signOut();
       }
 
