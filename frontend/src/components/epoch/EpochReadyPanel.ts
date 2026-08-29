@@ -503,7 +503,7 @@ export class VelgEpochReadyPanel extends LitElement {
         [this.mySimulationId]: newReady,
       };
 
-      const data = result.data as { auto_resolved?: boolean; new_cycle?: number } | undefined;
+      const data = result.data;
       if (data?.auto_resolved) {
         const newCycle = data.new_cycle ?? 0;
         const resetStates: Record<string, boolean> = {};

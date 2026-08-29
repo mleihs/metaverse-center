@@ -11,6 +11,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { AllianceProposal, Epoch, EpochParticipant, EpochTeam } from '../../types/index.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 import './EpochPresenceIndicator.js';
 
 @localized()
@@ -18,6 +19,7 @@ import './EpochPresenceIndicator.js';
 export class VelgEpochAlliancesTab extends LitElement {
   static styles = [
     infoBubbleStyles,
+    markerCornerStyles,
     css`
     :host {
       display: block;
@@ -94,15 +96,11 @@ export class VelgEpochAlliancesTab extends LitElement {
       overflow: hidden;
     }
 
-    .alliance::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: var(--color-info);
-      transition: width 0.3s ease;
+    /* Die Buendnis-Kennfarbe markiert jetzt die Ecken statt der linken Kante
+       (markerCornerStyles). Hover verlaengert die Marken, statt den Balken zu
+       verdicken — dieselbe Geste, ohne die Platte. */
+    .alliance {
+      --marker-color: var(--color-info);
     }
 
     .alliance:hover {
@@ -110,8 +108,8 @@ export class VelgEpochAlliancesTab extends LitElement {
       transform: translateX(2px);
     }
 
-    .alliance:hover::before {
-      width: 4px;
+    .alliance:hover {
+      --marker-arm: 16px;
     }
 
     .alliance__header {
@@ -655,7 +653,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     );
 
     return html`
-      <div class="alliance">
+      <div class="alliance marker-corners">
         <div class="alliance__header">
           <div>
             <div class="alliance__name">${t.name}</div>
