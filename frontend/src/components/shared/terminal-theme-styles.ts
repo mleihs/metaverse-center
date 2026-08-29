@@ -162,13 +162,15 @@ export const terminalFormStyles = css`
     outline-offset: 2px;
   }
 
-  /* ── Status Messages ── */
+  /* ── Status Messages ──
+     Kein Kantenbalken: diese Kaesten sind bereits getoent, vollstaendig
+     umrandet UND in Versalien in der Statusfarbe gesetzt. Der Balken war
+     das vierte Signal fuer dieselbe Aussage. */
   .msg--error {
     padding: 12px 14px;
     margin-bottom: 20px;
     background: color-mix(in srgb, var(--color-danger) 8%, transparent);
     border: 1px solid var(--color-danger-border);
-    border-left: 3px solid var(--color-danger);
     color: color-mix(in srgb, var(--color-danger) 65%, white);
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-weight: 700;
@@ -182,7 +184,6 @@ export const terminalFormStyles = css`
     margin-bottom: 20px;
     background: color-mix(in srgb, var(--color-success) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
-    border-left: 3px solid var(--color-success);
     color: color-mix(in srgb, var(--color-success) 55%, white);
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-weight: 700;
