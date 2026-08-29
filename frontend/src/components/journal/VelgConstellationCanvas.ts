@@ -71,6 +71,7 @@ import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import '../shared/ErrorState.js';
@@ -132,7 +133,9 @@ interface MoveTarget {
 @localized()
 @customElement('velg-constellation-canvas')
 export class VelgConstellationCanvas extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
       padding: var(--space-6) var(--space-6) var(--space-12);
@@ -480,7 +483,8 @@ export class VelgConstellationCanvas extends LitElement {
     }
 
     .card--impression .card__body {
-      border-left: 3px solid var(--_rule);
+      /* Zitatlinie einer Impression, neutral statt bernstein. */
+      border-left: 1px solid var(--color-border);
       padding-left: var(--space-3);
     }
 
@@ -657,7 +661,9 @@ export class VelgConstellationCanvas extends LitElement {
       padding: var(--space-5) var(--space-6);
       background: var(--color-surface-raised);
       border: 1px solid var(--_rule);
-      border-left: 4px solid var(--_accent);
+      /* Eckwinkel statt Kantenplatte. */
+      --marker-color: var(--_accent);
+      --marker-arm: 16px;
     }
 
     .insight-display__label {
@@ -703,7 +709,8 @@ export class VelgConstellationCanvas extends LitElement {
         height: 60vh;
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: String, attribute: 'constellation-id' }) constellationId = '';
 
@@ -1375,7 +1382,7 @@ export class VelgConstellationCanvas extends LitElement {
     const text = this._insightText();
     if (!text || this._constellation?.status !== 'crystallized' || this._revealing) return '';
     return html`
-      <section class="insight-display" aria-label=${msg('Insight')}>
+      <section class="insight-display marker-corners" aria-label=${msg('Insight')}>
         <p class="insight-display__label">${msg('Insight')}</p>
         <p class="insight-display__text">${text}</p>
       </section>

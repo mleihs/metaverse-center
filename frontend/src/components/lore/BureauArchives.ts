@@ -218,7 +218,9 @@ export class VelgBureauArchives extends LitElement {
       font-style: italic;
       font-size: var(--text-sm);
       color: var(--color-text-muted);
-      border-left: 2px solid var(--color-warning-glow);
+      /* Zitatlinie, neutral. Ein Epigraph ist Typografie und keine Statusmeldung;
+         die Linie darf bleiben, die Statusfarbe nicht. */
+      border-left: 1px solid var(--color-border);
       padding-left: var(--space-4);
       margin: 0 0 var(--space-6);
     }
@@ -279,7 +281,8 @@ export class VelgBureauArchives extends LitElement {
       max-width: 800px;
       margin: var(--space-10) auto;
       padding: var(--space-6);
-      border-left: 3px solid var(--color-warning-glow);
+      /* Zitatlinie, neutral — die Transmission ist ein Zitatblock. */
+      border-left: 1px solid var(--color-border);
       background: color-mix(in srgb, var(--color-primary) 2%, transparent);
       opacity: 0;
       transform: scale(0.98);

@@ -213,7 +213,8 @@ export class VelgConstellationList extends LitElement {
       font-style: italic;
       line-height: var(--leading-relaxed);
       color: var(--_ink);
-      border-left: 3px solid var(--_rule);
+      /* Zitatlinie, neutral. */
+      border-left: 1px solid var(--color-border);
       padding-left: var(--space-3);
       margin: var(--space-3) 0 var(--space-4);
       /* Two-line clamp keeps rows dense when many crystallized. */

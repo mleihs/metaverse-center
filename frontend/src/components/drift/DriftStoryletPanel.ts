@@ -147,7 +147,8 @@ export class VelgDriftStoryletPanel extends LitElement {
       margin: 0 0 var(--space-4);
       padding: var(--space-3);
       background: var(--color-surface-sunken);
-      border-left: var(--border-width-thick) solid var(--_accent);
+      /* Akzent auf dem ganzen Rahmen des Wirkungsblocks. */
+      border: 1px solid color-mix(in srgb, var(--_accent) 40%, var(--color-border));
     }
 
     .delta {
@@ -265,8 +266,9 @@ export class VelgDriftStoryletPanel extends LitElement {
       padding: var(--space-3);
       text-align: left;
       background: var(--color-surface);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-left: var(--border-width-thick) solid var(--_accent);
+      /* Ein Knopf ist selbst schon eine Form: der Akzent faerbt seinen
+         Rahmen, nicht eine Platte davor. */
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--_accent) 55%, var(--color-border));
       color: var(--color-text-primary);
       cursor: pointer;
       transition: background var(--transition-fast), border-color var(--transition-fast);
@@ -288,7 +290,7 @@ export class VelgDriftStoryletPanel extends LitElement {
     }
 
     .option--danger {
-      border-left-color: var(--_danger);
+      border-color: var(--_danger);
     }
 
     .option--danger:hover:not(:disabled) {

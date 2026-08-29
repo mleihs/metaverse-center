@@ -37,9 +37,9 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
 import type { Attunement } from '../../services/api/JournalApiService.js';
 import { localeService } from '../../services/i18n/locale-service.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 
 const TIMING = {
   DIM_IN: 180,
@@ -54,7 +54,9 @@ const TIMING = {
 @localized()
 @customElement('velg-insight-reveal')
 export class VelgInsightReveal extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       position: absolute;
       inset: 0;
@@ -87,7 +89,10 @@ export class VelgInsightReveal extends LitElement {
       padding: var(--space-6) var(--space-7);
       background: var(--color-surface-raised);
       border: 1px solid var(--_rule);
-      border-left: 4px solid var(--_accent);
+      /* Der Enthuellungsrahmen bekommt Eckwinkel statt einer Kantenplatte —
+         eine Registriermarke passt zu dem Moment, ein Streifen nicht. */
+      --marker-color: var(--_accent);
+      --marker-arm: 18px;
       box-shadow: var(--shadow-lg);
       z-index: 2;
       opacity: 0;
@@ -189,9 +194,9 @@ export class VelgInsightReveal extends LitElement {
       width: min(520px, 78%);
       padding: var(--space-4) var(--space-5);
       background: color-mix(in srgb, var(--_accent) 6%, var(--color-surface-raised));
-      border-left: 3px solid var(--_accent);
-      border-top: 1px solid color-mix(in srgb, var(--_accent) 40%, transparent);
-      border-bottom: 1px solid color-mix(in srgb, var(--_accent) 40%, transparent);
+      /* Der Kasten war ohnehin schon dreiseitig gerahmt; jetzt vollstaendig,
+         in einer Staerke, statt links vier Mal so dick wie oben. */
+      border: 1px solid color-mix(in srgb, var(--_accent) 40%, transparent);
       box-shadow: var(--shadow-md);
       opacity: 0;
       /* Leaf-only transform (sibling of .frame, not nested inside a
@@ -283,7 +288,8 @@ export class VelgInsightReveal extends LitElement {
         animation: none;
       }
     }
-  `;
+  `,
+  ];
 
   /** The full Insight text to reveal. Passed by the parent canvas. */
   @property({ type: String }) insight = '';
@@ -495,7 +501,7 @@ export class VelgInsightReveal extends LitElement {
     return html`
       <div class=${`dim ${this._dimVisible ? 'dim--visible' : ''}`} aria-hidden="true"></div>
       <div
-        class=${`frame ${this._frameVisible ? 'frame--visible' : 'frame--hidden'}`}
+        class=${`frame marker-corners ${this._frameVisible ? 'frame--visible' : 'frame--hidden'}`}
         role="presentation"
       >
         <p class="frame__label">${msg('Insight')}</p>

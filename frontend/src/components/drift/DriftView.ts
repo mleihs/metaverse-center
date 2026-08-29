@@ -183,8 +183,11 @@ export class VelgDriftView extends LitElement {
         box-sizing: border-box;
         padding: var(--space-4);
         background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+        /* Der Akzent liegt auf dem ganzen Rahmen statt als Platte an einer
+           Kante — ein Kasten, der bereits umrandet ist, braucht keinen zweiten
+           Rahmen in Streifenform. */
         border: var(--border-medium);
-        border-left: var(--border-width-heavy) solid var(--color-primary);
+        border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
         box-shadow: var(--shadow-md);
         backdrop-filter: blur(2px);
         z-index: var(--z-raised);
@@ -205,8 +208,8 @@ export class VelgDriftView extends LitElement {
         justify-content: space-between;
         margin: 0 0 var(--space-3);
         padding: var(--space-2) var(--space-3);
+        /* Doppelung: die Zeile steht bereits auf --color-primary-bg. */
         background: var(--color-primary-bg);
-        border-left: var(--border-width-thick) solid var(--color-primary);
       }
       .hud__haul-label {
         font-family: var(--font-brutalist);
@@ -302,10 +305,12 @@ export class VelgDriftView extends LitElement {
         margin: 0 0 var(--space-3);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-raised);
-        border-left: var(--border-width-thick) solid var(--color-info);
+        /* Die Kategoriefarbe faerbt den ganzen, duennen Rahmen der Zeile statt
+           einer Platte an der Kante. */
+        border: 1px solid color-mix(in srgb, var(--color-info) 40%, var(--color-border));
       }
       .hud__depesche {
-        border-left-color: var(--color-primary);
+        border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
       }
       .manifest__item {
         display: flex;

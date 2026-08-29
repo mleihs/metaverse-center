@@ -98,7 +98,8 @@ export class VelgFragmentCard extends LitElement {
     }
 
     .fragment--impression .body {
-      border-left: 3px solid var(--_rule);
+      /* Zitatlinie einer Impression, neutral. */
+      border-left: 1px solid var(--color-border);
       padding-left: var(--space-4);
     }
 

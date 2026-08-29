@@ -759,7 +759,9 @@ export class VelgLoreScroll extends LitElement {
       cursor: pointer;
       padding: var(--space-3) var(--space-4);
       background: var(--lore-surface);
-      border-left: 3px solid color-mix(in srgb, var(--lore-accent) 60%, transparent);
+      /* Anklickbare Kopfzeile: der Lore-Akzent faerbt ihren ganzen Rahmen,
+         statt als Platte an der linken Kante zu stehen. */
+      border: 1px solid color-mix(in srgb, var(--lore-accent) 45%, var(--color-border));
       border-radius: 0 var(--border-radius) var(--border-radius) 0;
       overflow: hidden;
       transition:
@@ -799,7 +801,7 @@ export class VelgLoreScroll extends LitElement {
 
     .section__header:hover {
       background: var(--lore-surface-hover);
-      border-left-color: var(--lore-accent);
+      border-color: var(--lore-accent);
       transform: translateX(4px);
       box-shadow: -4px 0 12px color-mix(in srgb, var(--lore-accent) 15%, transparent);
     }
@@ -1180,7 +1182,9 @@ export class VelgLoreScroll extends LitElement {
       padding: var(--space-6) var(--space-6) var(--space-6) var(--space-8);
       margin-left: 8%;
       max-width: 640px;
-      border-left: 3px solid var(--lore-accent);
+      /* Zitatlinie, neutral — das Anfuehrungszeichen darunter (::before)
+         traegt den Lore-Akzent bereits und sagt deutlicher, was der Block ist. */
+      border-left: 1px solid var(--color-border);
       position: relative;
     }
 

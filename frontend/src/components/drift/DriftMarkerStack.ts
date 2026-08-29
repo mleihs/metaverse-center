@@ -48,12 +48,12 @@ export class VelgDriftMarkerStack extends LitElement {
     .site {
       padding: var(--space-3);
       background: var(--color-surface-sunken);
-      border: var(--border-width-thin) dashed var(--color-border);
-      border-left: var(--border-width-thick) solid var(--color-primary);
+      /* Der gestrichelte Rahmen bleibt die Form, der Akzent faerbt ihn. */
+      border: var(--border-width-thin) dashed color-mix(in srgb, var(--color-primary) 50%, var(--color-border));
     }
 
     .site--rissig {
-      border-left-color: var(--color-danger);
+      border-color: color-mix(in srgb, var(--color-danger) 55%, var(--color-border));
       background: var(--color-danger-bg);
     }
 
@@ -181,8 +181,8 @@ export class VelgDriftMarkerStack extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-primary);
       background: var(--color-surface);
-      border: var(--border-width-thin) solid var(--color-border);
-      border-left: var(--border-width-thick) solid var(--color-primary);
+      /* Knopf: Akzent auf dem ganzen Rahmen. */
+      border: var(--border-width-thin) solid color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
       cursor: pointer;
       transition:
         background var(--transition-fast),
@@ -205,7 +205,7 @@ export class VelgDriftMarkerStack extends LitElement {
     }
 
     .act--bank {
-      border-left-color: var(--color-success);
+      border-color: var(--color-success);
     }
 
     .act--bank:hover:not(:disabled) {
