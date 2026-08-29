@@ -34,7 +34,7 @@ import {
   formatLootDrop,
   formatPartyWipe,
 } from '../utils/dungeon-formatters.js';
-import type { RoomDescription } from '../utils/dungeon-room-text.js';
+import { mergeRoomDescription, type RoomDescription } from '../utils/dungeon-room-text.js';
 import { combatSystemLine, systemLine } from '../utils/terminal-formatters.js';
 import { analyticsService } from './AnalyticsService.js';
 import { appState } from './AppStateManager.js';
@@ -233,10 +233,24 @@ class DungeonStateManager {
 
   // ── Room Narrative (client-only publication) ───────────────────────────
 
-  /** Publish the current room's description for the graphical scene. Called at
-   *  the move resolution site and by `look` (utils/dungeon-commands.ts). */
+  /**
+   * Publish the current room's description for the graphical scene. Called at
+   * the move resolution site and by `look` (utils/dungeon-commands.ts).
+   *
+   * MERGES with the standing description rather than replacing it. Only the
+   * move response carries banter, anchor prose and the barometer line; `look`
+   * re-derives from run state alone and correctly has none of them. Publishing
+   * that impoverished object used to wipe the arrival prose — the room
+   * described itself once and then went quiet the moment the player looked
+   * again or resolved its encounter. `mergeRoomDescription` keeps the
+   * arrival-only fields while the party is still in the same room and drops
+   * them on a room change.
+   */
   publishRoomDescription(description: RoomDescription): void {
-    this.lastRoomDescription.value = description;
+    this.lastRoomDescription.value = mergeRoomDescription(
+      this.lastRoomDescription.value,
+      description,
+    );
   }
 
   /** Publish a resolved combat round for the graphical combat-FX host. Called
