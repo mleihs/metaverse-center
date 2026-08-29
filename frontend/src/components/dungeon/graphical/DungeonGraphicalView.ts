@@ -463,10 +463,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
          and the scene used to show six seconds of flat green nothing — the
          player could not tell a slow load from a broken one. The skeleton is
          tinted with the archetype's own accent and breathes, so the frame reads
-         as "arriving" from the first paint. */
+         as "arriving" from the first paint.
+
+         It sits BEHIND the picture rather than fading out on top of it, and is
+         removed from the DOM once the picture has painted. An overlay that
+         fades leaves a composited layer over the art for no gain; behind it,
+         the picture simply arrives and covers it. Nothing above the backdrop
+         image needs to animate, so nothing does. */
       .scene__skeleton {
         position: absolute;
         inset: 0;
+        pointer-events: none;
         background:
           radial-gradient(
             120% 80% at 50% 78%,
@@ -498,22 +505,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0;
-        transition:
-          opacity 520ms var(--ease-out, ease),
-          filter 600ms var(--ease-out, ease);
         /* Dim at rest, dimmer + desaturated as pressure rises (foreboding). */
         filter: brightness(calc(0.6 - var(--_p) * 0.24)) saturate(calc(0.9 - var(--_p) * 0.35))
           contrast(1.03);
+        transition: filter 600ms var(--ease-out, ease);
       }
-      .scene__art--ready .scene__art-img {
-        opacity: 1;
-      }
-      .scene__art--ready .scene__skeleton {
-        opacity: 0;
-        animation: none;
-        transition: opacity 520ms var(--ease-out, ease);
-      }
+
       /* Scrim: vignette enclosure + top/bottom darkening for text legibility. */
       .scene__art::after {
         content: '';
@@ -2162,7 +2159,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     this._endedRun = null;
   }
 
-  /** A backdrop has painted: cross-fade it in over the skeleton. Replaced,
+  /** A backdrop has painted: drop the skeleton standing in for it. Replaced,
    *  never mutated — Lit compares by reference (same rule as _failedEnemyArt). */
   private _markBackdropReady(url: string): void {
     if (this._decodedBackdrops.has(url)) return;
@@ -2435,13 +2432,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             </div>
             ${
               showArt
-                ? html`<div
-                  class="scene__art ${
-                    this._decodedBackdrops.has(backdropUrl) ? 'scene__art--ready' : ''
-                  }"
-                  aria-hidden="true"
-                >
-                  <div class="scene__skeleton"></div>
+                ? html`<div class="scene__art" aria-hidden="true">
+                  ${
+                    this._decodedBackdrops.has(backdropUrl)
+                      ? nothing
+                      : html`<div class="scene__skeleton"></div>`
+                  }
                   <img
                     class="scene__art-img"
                     src=${backdropUrl}

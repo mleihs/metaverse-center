@@ -162,6 +162,49 @@ gefüllt — `lobby-card__art` existiert.)
 
 ---
 
+## Beim Durchspielen gefunden, NICHT hier behoben
+
+### Die Archetyp-Kulisse ist unsichtbar (Entropy geprüft, vermutlich alle acht)
+
+`dungeon-entropy.avif` ist geladen (1920×1065, `complete`, `opacity: 1`, kein
+zusätzlicher Filter) und auf dem Bildschirm trotzdem **nicht zu sehen**: die
+Bühne zeigt eine flache grüne Fläche. Phase 3a hat die Kulissen ausgeliefert;
+sichtbar sind sie nicht.
+
+**Ursache, spezifikationsgenau.** `.scene__backdrop` ist positioniert *mit*
+`z-index`, also ein Stacking Context, also eine **isolierte Gruppe**.
+`mix-blend-mode` darin mischt gegen den Inhalt DIESER Gruppe, nicht durch sie
+hindurch auf das, was darunter liegt. Der Decay-Plane (`overlay`) und die
+Scanlines (`multiply`) mischen sich folglich mit einer leeren Gruppe und liefern
+ein deckendes Ergebnis zurück, das der `z-index`-Gleichstand zwischen
+`.scene__art` und `.scene__backdrop` (beide 0) über das Foto legt.
+
+**Gemessen, jeweils auf Produktion:**
+
+| Eingriff | Laufzeit-Mutation | nach Neuladen |
+|---|---|---|
+| `mix-blend-mode` → `normal` / `soft-light` / `screen` | Bild erscheint | **weiter platt** |
+| `.scene__backdrop` über das Foto, Basis-Verlauf entfernt | Bild erscheint | **weiter platt** |
+| `.scene__art { z-index: 1 }` | Bild erscheint | **weiter platt** |
+| `.scene__plane { display: none }` | Bild erscheint | (nicht geprüft) |
+
+**Die Falle:** jede Laufzeit-Mutation lässt das Bild erscheinen, keine davon
+hält beim ersten Paint. Wer im DevTools-Inspektor probiert, bekommt also für
+jeden Kandidaten ein falsches Grün. Nur ein vollständiges Neuladen zählt.
+
+**Vorschlag für den eigenen Vorgang:** die Atmosphäre aus `.scene__backdrop`
+herausziehen und als Geschwister von `.scene__art` unter ein
+`isolation: isolate` auf `.scene` legen — dann mischen die Planes mit dem FOTO
+statt mit einer leeren Gruppe. Das ändert das Aussehen aller acht
+Archetyp-Bühnen und gehört mit Augen auf jede einzelne geprüft, nicht blind
+ans Ende einer anderen Arbeit.
+
+Drei Kandidaten wurden gebaut und wieder **zurückgenommen**, weil keiner die
+Gegenprobe nach dem Neuladen bestand. Der Stand entspricht dem, was auf
+Produktion läuft.
+
+---
+
 ## Nicht in diesem Plan
 
 Die **Raumwiederholung** (Rast → Schatz → Rast → Schatz bis Tiefe 4, nahezu wortgleich)

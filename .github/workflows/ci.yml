@@ -73,6 +73,13 @@ jobs:
         run: bash frontend/scripts/lint-no-ternary-in-msg.sh
         working-directory: .
 
+      # A backtick inside a css`...` block ends the template literal, and the
+      # rest of the styles block is parsed as JavaScript. `biome check --write`
+      # does not error on it - it silently rewrites the whole block.
+      - name: CSS template lint (no stray backticks in css blocks)
+        run: bash frontend/scripts/lint-no-backtick-in-css.sh
+        working-directory: .
+
       # Guards the guards: a lint script whose grep target does not exist under
       # the caller's cwd prints PASS instead of failing. Six frontend gates were
       # silent no-ops in this very job until 2026-08-28.
