@@ -28622,6 +28622,38 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sba2d8e5a93d3e850">
   <source>Reasoning tokens are spent from the same budget as the answer and are billed as output. The level below decides how much of a purpose’s token budget is left once the model has finished thinking.</source>
 <target>Reasoning-Tokens werden aus demselben Budget bezahlt wie die Antwort und als Ausgabe abgerechnet. Die Stufe unten entscheidet, wie viel vom Token-Budget eines Zwecks übrig bleibt, wenn das Modell mit dem Denken fertig ist.</target></trans-unit>
+<trans-unit id="s1b4bb1ecee5558db">
+  <source>Each simulation also has its own street-level world map, separate from this one</source>
+  <target>Jede Simulation hat außerdem ihre eigene Weltkarte auf Straßenebene – eine andere Karte als diese</target>
+</trans-unit>
+<trans-unit id="sc77643c5e7f9b0fb">
+  <source>Two Different Maps</source>
+  <target>Zwei verschiedene Karten</target>
+</trans-unit>
+<trans-unit id="s2db195447b887fbe">
+  <source>The Cartographer’s Map shows the multiverse: simulations as nodes, embassies as edges. Every simulation also has its own world map – a street-level view of that one world, with its zones as coloured districts, its street network, and every building placed where it stands. Open it from the simulation’s own navigation, not from here.</source>
+  <target>Die Karte des Kartografen zeigt das Multiversum: Simulationen als Knoten, Botschaften als Kanten. Jede Simulation hat außerdem ihre eigene Weltkarte – eine Ansicht dieser einen Welt auf Straßenebene, mit ihren Zonen als farbigen Bezirken, ihrem Straßennetz und jedem Gebäude an seinem Ort. Sie wird über die Navigation der Simulation geöffnet, nicht von hier aus.</target>
+</trans-unit>
+<trans-unit id="sf5cc6d472a776e8b">
+  <source>Where the Streets Come From</source>
+  <target>Woher die Straßen kommen</target>
+</trans-unit>
+<trans-unit id="sad3b92c506ddbf62">
+  <source>A world map is generated once, when the simulation is forged: the zones are laid out first, then a street network is grown through them, then buildings are placed along the streets. Agents are assigned homes in the process. Adding a building later places it on the existing network rather than redrawing the city.</source>
+  <target>Eine Weltkarte entsteht einmal, beim Schmieden der Simulation: zuerst werden die Zonen ausgelegt, dann wächst ein Straßennetz durch sie hindurch, dann werden die Gebäude an den Straßen platziert. Dabei bekommen auch die Agenten ihre Wohnorte. Ein später hinzugefügtes Gebäude wird in das bestehende Netz eingefügt, statt die Stadt neu zu zeichnen.</target>
+</trans-unit>
+<trans-unit id="s771910a46b8d9170">
+  <source>Two ways to play the same run: the terminal war room, or the rendered 2D view</source>
+  <target>Zwei Wege, denselben Durchgang zu spielen: der Terminal-Gefechtsstand oder die gezeichnete 2D-Ansicht</target>
+</trans-unit>
+<trans-unit id="s48a2a43ff142d25c">
+  <source>Terminal or Rendered View</source>
+  <target>Terminal oder gezeichnete Ansicht</target>
+</trans-unit>
+<trans-unit id="sdf5357d627d3d4f1">
+  <source>The same run can be played two ways. The terminal war room is the original: everything as text, typed commands, full command history. The rendered view draws the same dungeon – the node map with fog of war, enemy portraits in the scene, the party along the bottom, and a chronicle that keeps the narration you would otherwise read in the terminal. Switch with the toggle in the dungeon header; your choice is remembered on this device. Nothing about the run changes – the same engine, the same rolls, the same loot.</source>
+  <target>Derselbe Durchgang lässt sich auf zwei Arten spielen. Der Terminal-Gefechtsstand ist das Original: alles als Text, getippte Befehle, vollständige Befehlshistorie. Die gezeichnete Ansicht zeigt denselben Dungeon – die Knotenkarte mit Nebel des Krieges, Gegnerbilder in der Szene, die Gruppe am unteren Rand und eine Chronik, die jene Schilderung festhält, die man sonst im Terminal liest. Umgeschaltet wird über den Schalter in der Dungeon-Kopfzeile; die Wahl bleibt auf diesem Gerät erhalten. Am Durchgang selbst ändert sich nichts – dieselbe Maschine, dieselben Würfe, dieselbe Beute.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

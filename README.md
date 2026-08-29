@@ -21,6 +21,8 @@ Players shape their worlds through AI-assisted content generation and compete in
 
 A **simulation heartbeat system** drives narrative arcs forward through configurable tick cycles, with anchors, attunement bonds, and automated Bureau responses keeping each world's story coherent as it evolves. The **Living World** agent autonomy system gives agents independent lives between player sessions: they develop moods, form opinions, pursue activities via Utility AI with Boltzmann selection, generate social interactions, and trigger autonomous events. When players return, a classified morning briefing summarizes what happened.
 
+Beside the competitive layer sit three solo surfaces. **Resonance Dungeons** are procedural runs spawned from substrate resonances, playable either as a terminal war room or in a rendered 2D view. **DRIFT** is a travel game across the Zwischenraum between worlds, with routes, cargo, dissonance and a chart that redraws itself. And every simulation now carries its own **world map** – procedurally generated streets, zones and building positions on a MapLibre canvas.
+
 Every number tells a story. Every story changes a number. Agent aptitudes shape operative success probabilities. Zone stability degrades under sabotage. Embassy effectiveness drops when infiltrators compromise diplomatic channels. Game balance is calibrated through deterministic simulation of hundreds of epoch matches, with statistical analysis driving each tuning pass.
 
 The entire platform is bilingual (English/German), fully themed per-simulation with WCAG 2.1 AA contrast validation, and browsable without authentication via a public-first architecture.
@@ -244,7 +246,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌────────────────┐    │
 │   FastAPI       │    │
-│  49 routers     │    │
+│  59 routers     │    │
 │  AsyncClient    │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
@@ -253,10 +255,10 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
        ▼              ▼
 ┌──────────────────────────────┐
 │   Supabase (PostgreSQL)          │
-│   90+ tables + pgvector           │
-│   165+ functions, 62 triggers    │
-│   258 RLS policies, 9 ADRs       │
-│   4 materialized views           │
+│   147 tables + pgvector           │
+│   226 functions, 133 triggers    │
+│   388 RLS policies, 9 ADRs       │
+│   5 materialized views           │
 │   Realtime channels              │
 │   Auth (ES256/HS256)             │
 │   Storage (4 buckets)            │
@@ -269,7 +271,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Hybrid Supabase** – Frontend talks directly to Supabase for Auth, Storage, and Realtime. Business logic goes through FastAPI, which forwards the user's JWT so RLS is always enforced.
 - **Defense in Depth** – FastAPI `Depends()` validates roles (layer 1), Supabase RLS validates row-level access (layer 2). Neither layer trusts the other.
 - **Per-Simulation Theming** – CSS custom properties cascade through shadow DOM. Each simulation gets a theme preset validated against WCAG 2.1 AA.
-- **Database-First Logic** – Business invariants enforced in PostgreSQL via 165+ functions and 27 trigger functions. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
+- **Database-First Logic** – Business invariants enforced in PostgreSQL via 226 functions and 133 triggers. Epoch cloning (~250 lines PL/pgSQL), forge materialization, and game mechanics (building degradation, zone security, RP grants, fortification expiry) run as atomic transactions. See ADR-007.
 - **Game Instance Isolation** – Epoch start atomically clones participating simulations into balanced game instances. Templates stay untouched.
 - **Structured Logging** – structlog over stdlib logging. JSON in production, console locally. Request context (user_id, request_id, path) injected via middleware.
 - **Admin-Configurable AI** – LLM model selection (default, fallback, research, forge) configurable at runtime with environment-specific overrides.
@@ -283,7 +285,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.136 | Async web framework, 49 routers |
+| FastAPI | 0.136 | Async web framework, 59 routers |
 | Pydantic v2 | 2.12 | Request/response validation, typed API responses (45 response models), settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.28 | Native AsyncClient with RLS enforcement |
@@ -294,18 +296,23 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | httpx | 0.28 | Async HTTP client for OpenRouter AI calls |
 | slowapi | 0.1 | Tiered rate limiting (30/hr AI, 100/min standard) |
 | cryptography | 46.0.6 | AES-256 encryption for sensitive settings |
-| pydantic-ai-slim | 1.77 | AI agent framework for structured generation |
+| pydantic-ai-slim | 1.66+ | AI agent framework for structured generation (native `OpenRouterModel`) |
+| shapely | 2.0 | Geometry for the procedural world map (Voronoi, polygon containment) |
+| PyYAML | 6.0 | Content packs (`content/dungeon/**`, `content/drift/**`) |
 | tavily-python | 0.5 | Web research for Forge pipeline |
 
 ### Frontend
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| Lit | 3.3 | Web Components framework (256 custom elements) |
+| Lit | 3.3 | Web Components framework (318 custom elements) |
 | Preact Signals | 1.14 | Fine-grained reactive state management |
 | Supabase JS | 2.101 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) – tree-shaken, lazy-loaded |
 | 3d-force-graph | 1.79 | Cartographer's Map visualization |
+| MapLibre GL | 5.24 | Per-simulation world map (light-DOM render root) |
+| PixiJS | 8.19 | Graphical dungeon renderer (lazy-loaded) |
+| Howler | 2.2 | Dungeon and chat sound sprites |
 | web-vitals | 5.2 | Core Web Vitals reporting |
 | Zod | 4.3 | Runtime schema validation |
 | TypeScript | 6.0 | Type safety |
@@ -321,33 +328,37 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 | Email | SMTP SSL (bilingual tactical briefing emails, fog-of-war compliant) |
 | AI Text | OpenRouter (admin-configurable model chain with env-specific fallbacks) |
 | AI Images | Replicate (Flux, Stable Diffusion) |
-| Hosting | Railway (3-stage Docker build with SEO prerender) + Cloudflare (CDN/DNS) |
+| Hosting | Self-hosted VPS orchestrated by Coolify (3-stage Docker build with SEO prerender) + Cloudflare (CDN/DNS). Migrated off Railway in June 2026. |
 | Error Tracking | Sentry (backend + frontend, FastAPI integration) |
 | Analytics | GA4 (consent mode v2, 44 custom events, web vitals) |
 | Testing | pytest + vitest + Playwright |
-| Linting | Ruff (backend) + Biome 2.4 (frontend) + lit-analyzer + custom content lints |
+| Linting | Ruff (backend) + Biome 2.4 (frontend) + lit-analyzer + 16 custom gates (colour tokens, empty catch, `as unknown as`, edge bars, …) |
 
 ---
 
 ## Project Statistics
 
+Measured against the production database and the repository, 2026-08-30.
+
 | Metric | Count |
 |:-------|------:|
-| Database tables | 90+ |
-| PostgreSQL functions | 165+ (incl. 12 atomic game RPCs) |
-| Trigger functions | 27 (62 triggers total) |
-| Views (regular + materialized) | 14 + 4 |
-| RLS policies | 270+ |
-| SQL migrations | 195 |
-| Routers | 49 |
+| Database tables | 147 |
+| PostgreSQL functions | 226 (incl. the atomic game RPCs) |
+| Triggers | 133 |
+| Views (regular + materialized) | 11 + 5 |
+| RLS policies | 388 |
+| SQL migrations | 280 |
+| Routers | 59 |
 | Achievement badges | 35 (7 categories, 5 rarity tiers, 13 DB triggers) |
-| Web Components | 256 (Lit custom elements) |
-| Unit tests | 2,184+ (pytest) + vitest |
-| Localized UI strings | 6,593 (EN/DE, 0 missing) |
+| Web Components | 318 (Lit custom elements, 36 directories) |
+| Backend tests | 3,780 (pytest) |
+| Localized UI strings | 7,759 (EN/DE, 0 missing) |
+| Lint gates | 16 (typecheck, tests-typecheck, Biome + 13 project gates) |
 | GA4 custom events | 44 |
-| Documentation files | 104 (Divio structure + 10 ADRs) |
+| Documentation files | 158 markdown (Divio structure + 9 ADRs) |
 | Dungeon archetypes | 8 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge, Awakening, Overthrow) |
-| Flagship simulations | 5 + 2 community presets |
+| Dungeon render modes | 2 (terminal war room, rendered 2D) |
+| Flagship simulations | 5 + community-forged worlds |
 | Operative types | 6 |
 | Scoring dimensions | 5 |
 | Bot personalities | 5 archetypes x 3 difficulty levels |
@@ -373,7 +384,21 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 - **Alliances** – Proposal-based, shared intelligence, RP upkeep, tension mechanic, betrayal penalties
 - **Bot AI** – 5 personality archetypes, 3 difficulty levels, fog-of-war compliant, dual-mode chat
 - **Academy Mode** – Solo training against AI opponents
-- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (60s planning → simultaneous resolution, clock-skew-free `remaining_ms` timer), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. **Objektanker narrative system**: 2 wandering objects per run (64 bilingual prose fragments across 4 phases: discovery → echo → mutation → climax) plus archetype-state barometer (prose translation of mechanical thresholds). Literary DNA per archetype: Lovecraft/VanderMeer (Shadow), Kafka/Ballard (Tower), VanderMeer/Butler (Mother), Beckett/Pynchon (Entropy), Schulz/Lem (Prometheus), Ballard/Woolf/Carson (Deluge), Jung/Proust/Dick (Awakening), Orwell/Dostoevsky/Brecht (Overthrow). Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 700+ seed rows, migration 173-181). Terminal-based submarine war room HUD.
+- **Resonance Dungeons** – Procedural FTL-style dungeons spawned from substrate resonances. 8 playable archetypes: The Shadow (visibility), The Tower (stability countdown), The Entropy (decay bloom), The Devouring Mother (parasitic attachment), The Prometheus (insight crafting), The Deluge (rising water with tidal recession, inverted loot gradient, salvage mechanic, debris deposits, elemental warding), The Awakening (awareness gauge with lucid dreaming, déjà-vu room morphing, grounding action, personality modifier loot), The Overthrow (political vertigo, allegiance flipping, regime collapse, faction loyalty mechanics). Phase-based combat (60s planning → simultaneous resolution, clock-skew-free `remaining_ms` timer), 18 abilities in 6 schools, condition tracks, stress system. Registry-based multi-archetype dispatch. **Two render modes** share one engine: the original terminal war room, and a rendered 2D view (PixiJS, lazy-loaded, light-DOM render root) with enemy art, fog of war and a running chronicle. The mode is a per-player choice, persisted locally; terminal stays the default. Loot distribution debrief with aptitude boosts (+2 cap), memories, moodlets, simulation modifiers, personality modifiers. **Objektanker narrative system**: 2 wandering objects per run (64 bilingual prose fragments across 4 phases: discovery → echo → mutation → climax) plus archetype-state barometer (prose translation of mechanical thresholds). Literary DNA per archetype: Lovecraft/VanderMeer (Shadow), Kafka/Ballard (Tower), VanderMeer/Butler (Mother), Beckett/Pynchon (Entropy), Schulz/Lem (Prometheus), Ballard/Woolf/Carson (Deluge), Jung/Proust/Dick (Awakening), Orwell/Dostoevsky/Brecht (Overthrow). Admin panel with global dungeon config (cascading overrides, terminal clearance control). Content DB (10 tables, 700+ seed rows, migration 173-181). Terminal-based submarine war room HUD.
+
+### DRIFT – Travel Between Worlds
+
+A solo travel game across the Zwischenraum, the space between simulations. Players run a vessel along routes, carry cargo, and manage **dissonance** – the cost of moving between worlds that disagree with each other. Runs have their own state machine in PostgreSQL with `auth.uid()` as the identity, so ownership survives every admin path (the one documented exception to the `get_effective_supabase` rule).
+
+The **drift chart** is generated server-side by a Fruchterman-Reingold force layout with an explicit frame: before it had one, the whole multiverse collapsed into a tenth of the board and nodes overlapped inside each other's click radius. Travel, requisition and quest actions run as atomic RPCs that self-validate the caller. Gated by `drift_p0_enabled`.
+
+### Per-Simulation World Map
+
+Every simulation has a navigable OSM-style map: procedurally generated street network, zone polygons and building positions, rendered with MapLibre. Generation is Python (shapely), but **all** geometry persistence goes through one atomic SQL function that bumps `map_geometry_version` as its last statement, so a partial map is impossible.
+
+### Resonance Journal
+
+A per-player record of what the substrate did to their worlds: fragments collected from resonance events, arranged into constellations, with an attunement panel that tracks affinity per archetype.
 
 ### Agent Bonds
 - **Bond Formation** – Bonds emerge from accumulated attention (viewing agent detail pages). After crossing a configurable threshold over 14+ days, agents recognize the player and offer a bond. Max 5 bonds per simulation.
@@ -401,9 +426,11 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 ### Platform
 - **Landing page** – Live AI characters as "Intercepted Dossiers" with holographic foil TCG cards, viewport-responsive (6–12 agents)
+- **Alpha suite** – Four Bureau-flavoured pre-release indicators (stamp, build strip, first-contact modal, redaction marker) behind a build-time flag, so a release cut removes them by tree-shaking rather than by editing
+- **Bureau Ops** – AI spend and signal control centre: per-purpose model selection, reasoning effort, and budget enforcement across four axes (global, purpose, simulation, user)
 - **Daily Substrate Dispatch** – Classified Bureau intelligence briefing on first daily visit
 - **Commendations** – 35 badges across 7 categories, 5 rarity tiers, hexagonal badge grid, Realtime unlock toasts, dashboard summary card, 13 PostgreSQL triggers + backend hooks
-- **Bilingual i18n** – English + German (6,593 localized strings)
+- **Bilingual i18n** – English + German (7,759 localized strings, 0 missing)
 - **Per-simulation theming** – CSS presets with WCAG 2.1 AA validation, light & dark modes
 - **Public-first browsing** – Full read access without authentication
 - **SEO** – Slug URLs, JSON-LD, dynamic sitemap (1500+ URLs), server-side crawler enrichment
@@ -463,10 +490,10 @@ npx playwright test
 
 ```
 backend/
-  app.py                    # FastAPI entry (49 routers)
+  app.py                    # FastAPI entry (59 routers)
   logging_config.py         # structlog setup
   dependencies.py           # JWT auth, Supabase clients, role checking
-  routers/                  # 49 route modules
+  routers/                  # 59 route modules
   models/                   # Pydantic models
   services/                 # Business logic (BaseService CRUD, AI, email, bots, scanning)
     combat/                 # Shared combat engine (ability schools, skill checks, conditions, stress)
@@ -476,24 +503,29 @@ backend/
 frontend/
   src/
     app-shell.ts            # Router + auth + simulation context
-    components/             # 239 Lit web components across 31 directories
+    components/             # 318 Lit web components across 36 directories
       dungeon/              # Resonance Dungeons HUD (terminal, combat, map, party, enemy)
+        graphical/          # Rendered 2D dungeon (PixiJS, light-DOM render root)
+      drift/                # DRIFT travel game (chart, dock, logbook, ledger)
+      world-map/            # Per-simulation MapLibre world map
+      journal/              # Resonance Journal (fragments, constellations, attunement)
     services/               # API, state, theme, i18n, realtime, SEO, analytics
     styles/tokens/          # CSS design tokens (8 files)
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 195 SQL migrations
+  migrations/               # 280 SQL migrations
   seed/                     # Seed data (21 files)
+content/                    # Authoring source for dungeon + DRIFT content packs (YAML)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
-docs/                       # 104 documents (Divio structure)
-  specs/                    # 16 hard contracts
-  references/               # 5 canonical data
-  guides/                   # 16 procedural guides
-  concepts/                 # 8 research & proposals (incl. Resonance Dungeons spec)
-  explanations/             # 5 understanding docs
-  analysis/                 # 7 epoch balance + accessibility reports
-  audits/                   # 2 gameplay audit reports
+docs/                       # 158 markdown documents (Divio structure)
+  specs/                    # 20 hard contracts
+  references/               # canonical data
+  guides/                   # 20 procedural guides
+  concepts/                 # research & proposals (incl. Resonance Dungeons spec)
+  explanations/             # understanding docs
+  analysis/                 # audits, playtests and production-run reports
+  plans/                    # implementation plans
   adr/                      # 9 Architecture Decision Records
   INDEX.md                  # Auto-generated catalog
   llms.txt                  # AI-friendly doc index
@@ -504,7 +536,7 @@ e2e/                        # Playwright E2E tests (13 spec files)
 
 ## Documentation
 
-The `docs/` directory contains 73 documents in [Divio](https://docs.divio.com/documentation-system/) structure with YAML frontmatter. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
+The `docs/` directory contains 158 markdown documents in [Divio](https://docs.divio.com/documentation-system/) structure; the 93 that carry YAML frontmatter are catalogued automatically. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 ---
 

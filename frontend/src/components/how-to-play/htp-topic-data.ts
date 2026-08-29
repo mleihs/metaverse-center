@@ -430,12 +430,32 @@ export const TOPICS: TopicDefinition[] = [
       msg('Game instances orbit their parent template during active epochs'),
       msg('Health arcs, sparklines, and operative trails visualize live game state'),
       msg('Battle feed ticker shows public events across all active epochs'),
+      msg('Each simulation also has its own street-level world map, separate from this one'),
     ],
     sections: () => [
       {
         kind: 'steps',
         title: msg('The Cartographer\u2019s Map'),
         steps: getMultiverseMapGuideSteps,
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('Two Different Maps'),
+            text: msg(
+              'The Cartographer\u2019s Map shows the multiverse: simulations as nodes, embassies as edges. Every simulation also has its own world map \u2013 a street-level view of that one world, with its zones as coloured districts, its street network, and every building placed where it stands. Open it from the simulation\u2019s own navigation, not from here.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('Where the Streets Come From'),
+            text: msg(
+              'A world map is generated once, when the simulation is forged: the zones are laid out first, then a street network is grown through them, then buildings are placed along the streets. Agents are assigned homes in the process. Adding a building later places it on the existing network rather than redrawing the city.',
+            ),
+          },
+        ],
       },
     ],
     related: ['world', 'epochs', 'advanced'],
@@ -990,6 +1010,7 @@ export const TOPICS: TopicDefinition[] = [
       ),
       msg('Loot grants permanent aptitude boosts (+2 cap per agent), memories, and moodlets'),
       msg('Party of up to 4 agents \u2013 condition tracks from Operational to Afflicted'),
+      msg('Two ways to play the same run: the terminal war room, or the rendered 2D view'),
     ],
     sections: () => [
       {
@@ -1006,6 +1027,13 @@ export const TOPICS: TopicDefinition[] = [
             label: msg('How to Enter'),
             text: msg(
               'Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (up to 4 agents). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('Terminal or Rendered View'),
+            text: msg(
+              'The same run can be played two ways. The terminal war room is the original: everything as text, typed commands, full command history. The rendered view draws the same dungeon \u2013 the node map with fog of war, enemy portraits in the scene, the party along the bottom, and a chronicle that keeps the narration you would otherwise read in the terminal. Switch with the toggle in the dungeon header; your choice is remembered on this device. Nothing about the run changes \u2013 the same engine, the same rolls, the same loot.',
             ),
           },
         ],
