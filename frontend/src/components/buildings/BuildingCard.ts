@@ -3,6 +3,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building, Simulation } from '../../types/index.js';
+import { conditionDots, conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
@@ -75,12 +76,17 @@ export class VelgBuildingCard extends LitElement {
     return 'common';
   }
 
+  /**
+   * Filled dots for the condition gem.
+   *
+   * Both this and `_getConditionVariant` used to carry their own copy of the
+   * mapping, and both dropped `pristine` — a value the generator emits
+   * (`ForgeBuildingDraft.building_condition`) — into the `ruined` branch, so a
+   * flawless building showed an empty gem and a neutral badge. One table now,
+   * in `utils/building-condition.ts`.
+   */
   private _getConditionDots(): number {
-    const condition = this.building?.building_condition?.toLowerCase();
-    if (condition === 'good') return 3;
-    if (condition === 'fair') return 2;
-    if (condition === 'poor') return 1;
-    return 0; // ruined
+    return conditionDots(this.building?.building_condition) ?? 0;
   }
 
   private _getBadges(): CardBadge[] {
@@ -98,11 +104,7 @@ export class VelgBuildingCard extends LitElement {
   }
 
   private _getConditionVariant(): string {
-    const condition = this.building?.building_condition?.toLowerCase();
-    if (condition === 'good') return 'success';
-    if (condition === 'fair') return 'warning';
-    if (condition === 'poor' || condition === 'ruined') return 'danger';
-    return 'default';
+    return conditionVariant(this.building?.building_condition);
   }
 
   private _getSubtitle(): string {

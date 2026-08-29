@@ -685,11 +685,19 @@ export class VelgGameCard extends LitElement {
     }
 
     /* ── DRAFTED stamp overlay ── */
+    /* A straight, line-flanked band rather than a rubber stamp tilted across
+       the art. Rotated pseudo-stamps are out of the design vocabulary; the
+       45-degree lozenges used for the stat gems are the documented exception. */
     .card__stamp {
       position: absolute;
       top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-12deg);
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
       font-family: var(--card-font-heading);
       font-weight: 900;
       font-size: 18px;
@@ -699,6 +707,14 @@ export class VelgGameCard extends LitElement {
       opacity: 0.6;
       z-index: 10;
       pointer-events: none;
+    }
+
+    .card__stamp::before,
+    .card__stamp::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: currentColor;
     }
 
     :host([size="xs"]) .card__stamp { font-size: 8px; }
