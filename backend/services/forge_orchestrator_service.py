@@ -46,6 +46,12 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
+#: How often one draft may re-read the Astrolabe. Each read is an AI call, and
+#: the anchors are the cheapest thing in the Forge to be dissatisfied with —
+#: three attempts get past an unlucky set without turning the phase into a slot
+#: machine. Enforced server-side because a client-side counter resets on reload.
+MAX_ANCHOR_SCANS = 3
+
 
 WORLD_ARCHITECT_PROMPT = (
     "You are a Senior World Architect at the Bureau of Impossible Geography. "
@@ -352,10 +358,33 @@ class ForgeOrchestratorService:
         user_id: UUID,
         draft_id: UUID,
     ) -> dict:
-        """Run AI research phase (Phase 1)."""
+        """Run AI research phase (Phase 1).
+
+        Re-runnable up to :data:`MAX_ANCHOR_SCANS` times **per seed** so a
+        worldbuilder can reject a set of anchors and ask for another. The count
+        is kept on the draft and enforced here rather than in the client: the
+        limit exists because each scan is an AI call, and a client-side counter
+        resets on every page reload.
+
+        The budget belongs to the seed, not to the draft. Rewriting the seed
+        asks a different question, and the three readings that answered the old
+        one say nothing about the new one — so an edited seed starts over. The
+        seed that spent the budget is stored next to the count; anything else
+        would make "change the seed and try again" advice the code does not
+        honour.
+        """
         logger.info("Starting Astrolabe research", extra={"user_id": str(user_id), "draft_id": str(draft_id)})
         draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
         seed = draft_data["seed_prompt"]
+
+        previous_anchor = draft_data.get("philosophical_anchor") or {}
+        seed_changed = previous_anchor.get("seed") != seed
+        scans_used = 0 if seed_changed else int(previous_anchor.get("scans", 0))
+        if scans_used >= MAX_ANCHOR_SCANS:
+            raise bad_request(
+                f"The Astrolabe has already been read {MAX_ANCHOR_SCANS} times for this seed. "
+                "Rewrite the seed to ask it something else."
+            )
 
         if settings.forge_mock_mode:
             logger.debug("FORGE_MOCK_MODE: using mock research + anchors")
@@ -387,7 +416,15 @@ class ForgeOrchestratorService:
             draft_id,
             ForgeDraftUpdate(
                 research_context={"raw_data": context, "source": research_source},
-                philosophical_anchor={"options": [a.model_dump() for a in anchors]},
+                # `selected` is deliberately not carried over: a re-scan
+                # replaces the three anchors, so a selection pointing at one of
+                # the old ones would name something that no longer exists.
+                philosophical_anchor={
+                    "options": [a.model_dump() for a in anchors],
+                    "scans": scans_used + 1,
+                    # The seed this budget belongs to; a different one starts over.
+                    "seed": seed,
+                },
                 status="draft",
             ),
         )

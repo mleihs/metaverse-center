@@ -283,6 +283,13 @@ class ForgeDraftCreate(BaseModel):
 class ForgeDraftUpdate(BaseModel):
     """Schema for updating a draft state."""
 
+    # The seed is editable for as long as the draft is a draft. It was absent
+    # here, which made it write-once at creation: the Astrolabe offers a "change
+    # seed" control and a textarea, and every edit was dropped by this model
+    # without a word, so the phase kept answering the question the user had
+    # already replaced. Same bounds as ForgeDraftCreate — a seed that would be
+    # refused at creation must not slip in through an update.
+    seed_prompt: str | None = Field(default=None, min_length=3, max_length=1500)
     current_phase: ForgePhase | None = None
     philosophical_anchor: dict[str, Any] | None = None
     research_context: dict[str, Any] | None = None

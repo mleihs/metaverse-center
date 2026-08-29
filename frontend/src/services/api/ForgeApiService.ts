@@ -82,6 +82,16 @@ export interface ForgeDraft {
   philosophical_anchor: {
     options: PhilosophicalAnchor[];
     selected?: PhilosophicalAnchor;
+    /**
+     * How often the Astrolabe has been read for this draft.
+     *
+     * Written by the server on every scan and capped there
+     * (`MAX_ANCHOR_SCANS` in `forge_orchestrator_service.py`); the client only
+     * reads it to show how many readings are left.
+     */
+    scans?: number;
+    /** The seed those scans were spent on; a different one starts the budget over. */
+    seed?: string;
   };
   taxonomies: Record<string, unknown>;
   geography: Record<string, unknown>;

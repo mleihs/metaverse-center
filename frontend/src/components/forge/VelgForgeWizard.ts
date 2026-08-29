@@ -32,7 +32,14 @@ export class VelgForgeWizard extends LitElement {
         background: var(--color-surface-sunken);
         color: var(--color-text-primary);
         position: relative;
-        overflow: hidden;
+        /* clip, not hidden: any non-visible overflow makes this element a
+           scroll container, and a sticky descendant then sticks to the bottom
+           of THIS box instead of the viewport. The phase action bar is
+           position: sticky and was measured 1163px down a 1024px viewport —
+           pinned to nothing. Clip still contains horizontal overflow without
+           creating that container. The CRT overlay below is position: fixed
+           and never needed the clipping. */
+        overflow-x: clip;
       }
 
       /* CRT scanline overlay — full host coverage */

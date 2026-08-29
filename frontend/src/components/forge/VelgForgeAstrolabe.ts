@@ -426,6 +426,15 @@ export class VelgForgeAstrolabe extends LitElement {
         align-items: center;
       }
 
+      /* A fanned card is overlapped by its right-hand neighbour, so the strip
+         under that neighbour cannot carry content. Measured on screen: the
+         status word lost its last 15px and read "CLASSIFI". The overlap is a
+         layout constant, so the footer reserves it rather than hoping. The
+         last card has no neighbour and keeps the full width. */
+      .anchor-fan__card:not(:last-child) .dossier__footer {
+        padding-right: 34px;
+      }
+
       .dossier__index {
         font-family: var(--font-mono, monospace);
         font-size: 20px;
@@ -574,6 +583,45 @@ export class VelgForgeAstrolabe extends LitElement {
         color: var(--color-text-primary);
       }
 
+      /* ── Re-scan the Astrolabe ───────────────── */
+
+      .rescan {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        border: 1px dashed var(--color-border);
+      }
+
+      .rescan--armed {
+        border-style: solid;
+        border-color: var(--color-danger);
+        background: var(--color-danger-bg);
+      }
+
+      .rescan--spent {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-readout);
+        color: var(--color-text-tertiary);
+        justify-content: center;
+      }
+
+      .rescan__warning {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-readout);
+        color: var(--color-danger);
+      }
+
+      .rescan__left {
+        font-family: var(--font-mono, monospace);
+        font-size: var(--_forge-label);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider, 0.05em);
+        color: var(--color-text-tertiary);
+      }
+
       /* ── Cost preview, at the sliders that set it ───── */
 
       .cost-line {
@@ -623,6 +671,11 @@ export class VelgForgeAstrolabe extends LitElement {
   ];
 
   private static readonly _SEED_MAX = 1500;
+  /**
+   * Mirrors `MAX_ANCHOR_SCANS` in `forge_orchestrator_service.py`, for the
+   * readout only — the server enforces the limit and answers 400 past it.
+   */
+  private static readonly _MAX_SCANS = 3;
 
   @state() private _seed = '';
   @state() private _selectedIdx: number | null = null;
@@ -642,6 +695,23 @@ export class VelgForgeAstrolabe extends LitElement {
    * up into view without seizing the scroll position from the reader.
    */
   @state() private _seedCollapsed = false;
+  /**
+   * Whether the user asked to edit the seed and has not scanned since.
+   *
+   * While this holds, the draft may not fold the editor or overwrite the text —
+   * an explicit request outranks the automatic behaviour until it is answered.
+   */
+  private _seedEditRequested = false;
+  /** Astrolabe readings already spent on this draft; the server owns the cap. */
+  @state() private _scansUsed = 0;
+  /**
+   * Whether a re-scan that would discard a chosen anchor is armed.
+   *
+   * A re-scan with nothing selected costs nothing anyone wanted, so it fires on
+   * the first click. Once an anchor is chosen there is a decision to lose, and
+   * the same two-step the drafting table uses applies.
+   */
+  @state() private _rescanArmed = false;
 
   private _disposeEffects: (() => void)[] = [];
 
@@ -651,16 +721,37 @@ export class VelgForgeAstrolabe extends LitElement {
     this._disposeEffects.push(
       effect(() => {
         const draft = forgeStateManager.draft.value;
-        this._seed = draft?.seed_prompt ?? '';
+
+        // While the editor is open the textarea is the source of truth. This
+        // used to assign unconditionally, so any draft write — the debounced
+        // parameter save, the seed write itself — replaced what the user was
+        // typing with the copy still on the server, mid-sentence.
+        if (!this._seedEditRequested) {
+          this._seed = draft?.seed_prompt ?? '';
+        }
+
         this._options = (draft?.philosophical_anchor?.options as PhilosophicalAnchor[]) ?? [];
-        if (this._options.length > 0) {
+        // The budget belongs to the seed, so a seed the server has not scanned
+        // for yet shows a full three — matching what the server will allow.
+        const scannedSeed = draft?.philosophical_anchor?.seed;
+        this._scansUsed =
+          scannedSeed !== undefined && scannedSeed !== this._seed
+            ? 0
+            : (draft?.philosophical_anchor?.scans ?? 0);
+
+        // Anchors exist, so the seed editor folds and the fan rises into view
+        // on its own. Deliberately not a scrollIntoView: taking the scroll
+        // position away from someone who is reading is its own defect.
+        //
+        // Guarded by the edit request, because this effect runs on *every*
+        // draft change, not only when a reading arrives — so asking to change
+        // the seed and then touching anything else slammed the editor shut
+        // again under the cursor.
+        if (this._options.length > 0 && !this._seedEditRequested) {
           this._isDealing = true;
           setTimeout(() => {
             this._isDealing = false;
           }, 800);
-          // Anchors exist, so the seed editor folds and the fan rises into view
-          // on its own. Deliberately not a scrollIntoView: taking the scroll
-          // position away from someone who is reading is its own defect.
           this._seedCollapsed = true;
         }
       }),
@@ -741,9 +832,23 @@ export class VelgForgeAstrolabe extends LitElement {
 
   private async _handleResearch() {
     if (!this._seed) return;
-    if (!forgeStateManager.draft.value) {
+
+    const draft = forgeStateManager.draft.value;
+    if (!draft) {
       await forgeStateManager.createDraft(this._seed);
+    } else if (draft.seed_prompt !== this._seed) {
+      // The textarea only ever held the edit locally. Once a draft existed,
+      // rewriting the seed and scanning again re-read the *old* seed from the
+      // server and produced anchors for a world the user had already moved on
+      // from — silently, since the anchors that came back looked plausible.
+      // Flushed rather than debounced: the scan reads `seed_prompt` server-side
+      // and would race a 500ms timer.
+      forgeStateManager.updateDraft({ seed_prompt: this._seed });
+      await forgeStateManager.flushNow();
     }
+
+    // The request is answered: the reading that comes back may fold the editor.
+    this._seedEditRequested = false;
     await forgeStateManager.startResearch();
     if (forgeStateManager.lastGenerationRecovered.value) {
       VelgToast.success(msg('Signal recovered – anchor data retrieved from Bureau archives'));
@@ -804,6 +909,72 @@ export class VelgForgeAstrolabe extends LitElement {
     return renderInfoBubble(text, example);
   }
 
+  /** Readings left before the server refuses another. */
+  private get _scansLeft(): number {
+    return Math.max(0, VelgForgeAstrolabe._MAX_SCANS - this._scansUsed);
+  }
+
+  /**
+   * Ask the Astrolabe for another three anchors.
+   *
+   * The server replaces the whole set and drops any selection with it, because
+   * a selection points at an anchor that no longer exists.
+   */
+  private async _handleRescan() {
+    if (this._scansLeft === 0) return;
+
+    if (this._selectedIdx !== null && !this._rescanArmed) {
+      this._rescanArmed = true;
+      return;
+    }
+
+    this._rescanArmed = false;
+    this._selectedIdx = null;
+    await forgeStateManager.startResearch();
+  }
+
+  /** The re-scan control, with what it costs and what is left. */
+  private _renderRescan() {
+    const left = this._scansLeft;
+
+    if (left === 0) {
+      return html`
+        <div class="rescan rescan--spent">
+          ${msg('No further readings for this seed – rewrite it to ask again.')}
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="rescan ${this._rescanArmed ? 'rescan--armed' : ''}">
+        ${
+          this._rescanArmed
+            ? html`<span class="rescan__warning" role="alert">
+                <span aria-hidden="true">⚠</span> ${msg('This replaces all three anchors and clears your choice.')}
+              </span>`
+            : nothing
+        }
+        <button
+          class="btn ${this._rescanArmed ? 'btn--danger' : 'btn--next'}"
+          ?disabled=${this._isGenerating}
+          @click=${this._handleRescan}
+        >
+          ${this._rescanArmed ? msg('Read again – confirm') : msg('Read the Astrolabe again')}
+        </button>
+        ${
+          this._rescanArmed
+            ? html`<button
+                class="btn btn--ghost"
+                @click=${() => {
+                  this._rescanArmed = false;
+                }}
+              >${msg('Keep these anchors')}</button>`
+            : html`<span class="rescan__left">${msg(str`${left} of ${VelgForgeAstrolabe._MAX_SCANS} readings left`)}</span>`
+        }
+      </div>
+    `;
+  }
+
   /** The folded seed: one quoted line and the way back into editing it. */
   private _renderSeedSummary() {
     return html`
@@ -813,6 +984,7 @@ export class VelgForgeAstrolabe extends LitElement {
           type="button"
           class="seed-folded__edit"
           @click=${() => {
+            this._seedEditRequested = true;
             this._seedCollapsed = false;
           }}
         >
@@ -934,7 +1106,12 @@ export class VelgForgeAstrolabe extends LitElement {
         ${this._error ? html`<div class="error-banner" role="alert">${this._error}</div>` : nothing}
 
         ${
-          this._options.length > 0
+          // The superseded anchors leave while the new reading runs. Until the
+          // Astrolabe could be re-read there was never a scan with a fan
+          // already on screen, so the old three stayed under the scan overlay
+          // and flickered behind it — three answers to a question that was
+          // being asked again.
+          this._options.length > 0 && !this._isGenerating
             ? html`
           <div class="anchor-fan" role="radiogroup" aria-label=${msg('Philosophical Anchors')}>
             ${this._options.map(
@@ -976,6 +1153,8 @@ export class VelgForgeAstrolabe extends LitElement {
             `,
             )}
           </div>
+
+          ${this._renderRescan()}
 
           ${
             this._researchSource

@@ -198,6 +198,14 @@ class ForgeStateManager {
         // first Darkroom entry after a page refresh, triggering a regeneration
         // with the current entity roster. This is intentional: ensures the
         // Darkroom always reflects the latest agents/buildings.
+      } else if (resp.error?.code === 'HTTP_404') {
+        // The stored id names a draft the server no longer has — deleted, or
+        // belonging to another account. Parking an error would replay the same
+        // failure on every reload, because the dead id stays in sessionStorage
+        // and `restoreSession` reaches for it again. A reference to something
+        // that no longer exists is forgotten, not reported forever; the phase
+        // then opens on an empty seed, ready for a new draft.
+        this.forgetSession();
       } else {
         this.error.value = resp.error?.message ?? 'Failed to load draft';
       }
@@ -207,6 +215,13 @@ class ForgeStateManager {
     } finally {
       this.isLoading.value = false;
     }
+  }
+
+  /** Drop the restored draft and the id that pointed at it. */
+  forgetSession(): void {
+    sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+    this.draft.value = null;
+    this.error.value = null;
   }
 
   async createDraft(seed: string) {
