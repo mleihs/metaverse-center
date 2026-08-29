@@ -22,16 +22,32 @@ _cache: dict[str, str] = {}
 _cache_loaded_at: float = 0.0
 _CACHE_TTL = 300  # 5 minutes
 
+# Used whenever the cache is cold — startup before `ensure_loaded`, a DB read
+# that failed, or a key absent from platform_settings. These MIRROR the values
+# production actually carries, so a cold cache behaves like a warm one. Any
+# other rule makes the first AI call after a restart quietly different from the
+# second.
+#
+# ⚠ Every id here must exist in OpenRouter's catalogue. Checked 2026-08-29:
+# `anthropic/claude-sonnet-4-6` (default + forge) and `google/gemini-2.0-flash-001`
+# (fallback + research + all four dev keys) were all gone — the Claude id had a
+# HYPHEN where the catalogue has a dot (`claude-sonnet-4.6`), so it had never
+# resolved at all. A dead fallback is worse than none: it only ever runs when
+# the primary already failed.
+#
+# Verify with:
+#   curl -s https://openrouter.ai/api/v1/models -H "Authorization: Bearer $KEY" \
+#     | python3 -c "import json,sys; print('<id>' in {m['id'] for m in json.load(sys.stdin)['data']})"
 HARDCODED_DEFAULTS: dict[str, str] = {
-    "model_default": "anthropic/claude-sonnet-4-6",
-    "model_fallback": "google/gemini-2.0-flash-001",
-    "model_research": "google/gemini-2.0-flash-001",
-    "model_forge": "anthropic/claude-sonnet-4-6",
-    # Dev defaults — cheap/free models for development
-    "model_default_dev": "google/gemini-2.0-flash-001",
-    "model_fallback_dev": "google/gemini-2.0-flash-001",
-    "model_research_dev": "google/gemini-2.0-flash-001",
-    "model_forge_dev": "google/gemini-2.0-flash-001",
+    "model_default": "deepseek/deepseek-v4-flash",
+    "model_fallback": "google/gemini-2.5-flash-lite",
+    "model_research": "deepseek/deepseek-v4-flash",
+    "model_forge": "deepseek/deepseek-v4-pro",
+    # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
+    "model_default_dev": "deepseek/deepseek-v4-flash",
+    "model_fallback_dev": "google/gemini-2.5-flash-lite",
+    "model_research_dev": "deepseek/deepseek-v4-flash",
+    "model_forge_dev": "deepseek/deepseek-v4-flash",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())

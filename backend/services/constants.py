@@ -148,18 +148,24 @@ OPERATIVE_TARGET_TYPE: dict[str, str] = {
 
 # ── Model resolver constants (from model_resolver.py) ────────────────────
 
-# Platform defaults -- used when simulation has no model configured
+# Last-resort model ids, read at exactly ONE call site:
+# GenerationService layer 3, after both the resolved model and the platform
+# fallback have already failed.
+#
+# It used to carry a per-purpose entry for each of the eight generation kinds.
+# None of them was ever read: ModelResolver step 3 goes through
+# `get_platform_model(purpose)`, which maps everything except forge/research/
+# fallback onto `model_default`. Nine of eleven entries were decoration that
+# read like configuration — so they are gone rather than merely corrected.
+#
+# ⚠ Both ids below must exist in OpenRouter's catalogue. Checked 2026-08-29:
+# `anthropic/claude-sonnet-4-6` had a HYPHEN where the catalogue has a dot
+# (`claude-sonnet-4.6`) and had therefore never resolved, and the `:free`
+# variant of `deepseek-r1-0528` no longer exists. The last line of defence was
+# unusable, and only reachable once everything else had already broken.
 PLATFORM_DEFAULT_MODELS: dict[str, str] = {
-    "agent_description": "anthropic/claude-sonnet-4-6",
-    "agent_reactions": "anthropic/claude-sonnet-4-6",
-    "building_description": "anthropic/claude-sonnet-4-6",
-    "event_generation": "anthropic/claude-sonnet-4-6",
-    "chat_response": "anthropic/claude-sonnet-4-6",
-    "news_transformation": "anthropic/claude-sonnet-4-6",
-    "social_trends": "anthropic/claude-sonnet-4-6",
-    "bot_chat": "anthropic/claude-sonnet-4-6",
-    "default": "anthropic/claude-sonnet-4-6",
-    "fallback": "deepseek/deepseek-r1-0528:free",
+    "default": "deepseek/deepseek-v4-flash",
+    "fallback": "google/gemini-2.5-flash-lite",
 }
 
 # ── Event constants (from models/event.py) ───────────────────────────────
