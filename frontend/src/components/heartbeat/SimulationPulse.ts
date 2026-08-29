@@ -435,19 +435,21 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       gap: var(--space-3);
       padding: var(--space-2) var(--space-4);
       margin-bottom: var(--space-2);
-      border-left: 2px solid var(--color-border);
+      /* Neutrale Gruppierungslinie. Den Schweregrad traegt der TEXT der Zeile
+         (siehe die beiden Modifikatoren), nicht mehr die Kante. */
+      border-left: 1px solid var(--color-border);
       background: color-mix(in srgb, var(--color-surface-sunken) 40%, transparent);
       font-family: var(--font-body);
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
     }
 
-    .tick-summary--critical {
-      border-left-color: var(--color-danger);
+    .tick-summary--critical .tick-summary__text {
+      color: var(--color-danger);
     }
 
-    .tick-summary--positive {
-      border-left-color: var(--color-success);
+    .tick-summary--positive .tick-summary__text {
+      color: var(--color-success);
     }
 
     .tick-summary__text {
@@ -490,20 +492,8 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       position: relative;
     }
 
-    /* Type accent left border */
-    .entry::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      opacity: 0;
-      transition: opacity var(--transition-normal);
-    }
 
     .entry:hover { background: color-mix(in srgb, var(--color-text-primary) 2%, transparent); }
-    .entry:hover::before { opacity: 1; }
     .entry:last-child { border-bottom: none; }
 
     @keyframes entry-slide {
@@ -512,22 +502,22 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
 
     /* ── Type accent colors ──────────────── */
 
-    .entry--zone_shift::before           { background: var(--color-warning); }
-    .entry--event_aging::before          { background: var(--color-text-muted); }
-    .entry--event_escalation::before     { background: var(--color-danger); }
-    .entry--event_resolution::before     { background: var(--_emerald); }
-    .entry--scar_tissue::before          { background: var(--_scar); }
-    .entry--resonance_pressure::before   { background: var(--color-info); }
-    .entry--bureau_response::before      { background: var(--color-text-primary); }
-    .entry--attunement_deepen::before    { background: var(--color-warning); }
-    .entry--anchor_strengthen::before    { background: var(--color-info); }
-    .entry--narrative_arc::before        { background: var(--color-warning); }
-    .entry--system_note::before          { background: var(--color-border); }
+    .entry--zone_shift                   { --_entry-accent: var(--color-warning); }
+    .entry--event_aging                  { --_entry-accent: var(--color-text-muted); }
+    .entry--event_escalation             { --_entry-accent: var(--color-danger); }
+    .entry--event_resolution             { --_entry-accent: var(--_emerald); }
+    .entry--scar_tissue                  { --_entry-accent: var(--_scar); }
+    .entry--resonance_pressure           { --_entry-accent: var(--color-info); }
+    .entry--bureau_response              { --_entry-accent: var(--color-text-primary); }
+    .entry--attunement_deepen            { --_entry-accent: var(--color-warning); }
+    .entry--anchor_strengthen            { --_entry-accent: var(--color-info); }
+    .entry--narrative_arc                { --_entry-accent: var(--color-warning); }
+    .entry--system_note                  { --_entry-accent: var(--color-border); }
 
     /* Cascade/convergence/positive — always visible left bar */
-    .entry--cascade_spawn::before        { background: var(--color-danger); width: 4px; opacity: 1; }
-    .entry--convergence::before          { background: var(--_cascade-magenta); width: 4px; opacity: 1; }
-    .entry--positive_event::before       { background: var(--_emerald); width: 3px; opacity: 1; }
+    .entry--cascade_spawn                { --_entry-accent: var(--color-danger); }
+    .entry--convergence                  { --_entry-accent: var(--_cascade-magenta); }
+    .entry--positive_event               { --_entry-accent: var(--_emerald); }
 
     /* ── Icon with accent glow ─────────── */
 
@@ -537,7 +527,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-icon);
+      color: var(--_entry-accent, var(--color-icon));
       border: 1px solid var(--color-border);
       background: var(--color-surface);
       flex-shrink: 0;
@@ -578,13 +568,17 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       line-height: 1.5;
     }
 
+    /* Die Ereignisfarbe sitzt auf dem WORT und dem Symbol, nicht auf einer
+       Kante. Vorher trug sie ein 2px-Balken mit opacity:0, der erst beim
+       Ueberfahren erschien — die Farbe war also fuer fast alle Ereignistypen
+       unsichtbar, obwohl es 20 davon gibt. */
     .entry__type {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-tertiary);
+      color: var(--_entry-accent, var(--color-text-tertiary));
     }
 
     .entry__meta {
@@ -603,11 +597,11 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     /* CRITICAL: red border glow + pulsing background */
     .entry--severity-critical {
       background: color-mix(in srgb, var(--color-danger) 5%, transparent);
-      border-left: 3px solid var(--color-danger);
+      /* Der Balken doppelte den Inset-Schein darunter, der ohnehin eine
+         farbige Kante zeichnet — plus die Hintergrundtoenung darueber. */
       box-shadow: inset 4px 0 12px -4px var(--_danger-glow);
       animation: entry-slide 0.25s ease-out forwards, critical-pulse 2.5s ease-in-out infinite;
     }
-    .entry--severity-critical::before { opacity: 1 !important; }
     .entry--severity-critical .entry__narrative {
       font-weight: var(--font-bold);
       color: var(--color-text-primary);
@@ -629,7 +623,6 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     /* POSITIVE: emerald shimmer */
     .entry--severity-positive {
       background: color-mix(in srgb, var(--_emerald) 4%, transparent);
-      border-left: 2px solid var(--_emerald);
       box-shadow: inset 3px 0 10px -4px var(--_emerald-glow);
       animation: entry-slide 0.25s ease-out forwards, emerald-shimmer 4s ease-in-out infinite;
     }
@@ -661,7 +654,6 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         color-mix(in srgb, var(--color-warning) 4%, transparent) 50%,
         color-mix(in srgb, var(--color-danger) 3%, transparent) 100%
       );
-      border-left: 4px solid var(--color-danger);
       box-shadow:
         inset 6px 0 20px -6px var(--_danger-glow),
         0 0 1px color-mix(in srgb, var(--color-danger) 30%, transparent);
@@ -695,7 +687,6 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         color-mix(in srgb, var(--_cascade-magenta) 4%, transparent) 50%,
         color-mix(in srgb, var(--_cascade-magenta) 3%, transparent) 100%
       );
-      border-left: 4px solid var(--_cascade-magenta);
       box-shadow:
         inset 6px 0 20px -6px var(--_cascade-glow),
         0 0 1px color-mix(in srgb, var(--_cascade-magenta) 30%, transparent);

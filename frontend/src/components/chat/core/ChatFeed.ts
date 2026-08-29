@@ -180,8 +180,9 @@ export class ChatFeed extends LitElement {
 
     .event-card__body {
       padding: var(--space-3) var(--space-4);
+      /* Akzent auf dem ganzen Rahmen; der Kasten war ohnehin umrandet. */
       border: var(--border-default);
-      border-left: 3px solid var(--color-info);
+      border-color: color-mix(in srgb, var(--color-info) 45%, var(--color-border));
       background: color-mix(in srgb, var(--color-info) 6%, var(--color-surface-sunken));
       text-align: center;
       max-width: 480px;

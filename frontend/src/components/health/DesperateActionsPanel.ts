@@ -189,8 +189,9 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       gap: var(--space-2, 8px);
       padding: var(--space-3, 12px) var(--space-4, 16px);
       background: var(--color-surface-raised);
-      border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
-      border-left: 3px solid color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
+      /* Die Handlungsfarbe faerbt den ganzen Rahmen der Karte statt einer
+         Platte an der linken Kante. */
+      border: 1px solid color-mix(in srgb, var(--action-color) 50%, var(--color-border));
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.2s ease;

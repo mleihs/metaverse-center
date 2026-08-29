@@ -65,7 +65,8 @@ export class VelgAutonomyBriefing extends LitElement {
       margin-bottom: var(--space-4);
       padding: var(--space-3) var(--space-4);
       background: var(--color-surface-sunken);
-      border-left: 3px solid var(--color-primary);
+      /* Zitatlinie fuer den Erzaehlabsatz, neutral. */
+      border-left: 1px solid var(--color-border);
       opacity: 0;
       animation: narrative-in 500ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) 200ms forwards;
     }
