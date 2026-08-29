@@ -199,7 +199,7 @@ export class VelgEpochOverviewTab extends LitElement {
       color: var(--color-text-muted);
       cursor: not-allowed;
       pointer-events: none;
-      border-left-color: var(--color-surface-raised);
+      border-color: var(--color-surface-raised);
     }
 
     .action-btn__icon {
@@ -505,7 +505,6 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry--expired {
-      border-left-color: var(--color-surface-raised);
       background: transparent;
       animation: none;
     }

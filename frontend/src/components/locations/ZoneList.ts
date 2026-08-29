@@ -183,13 +183,13 @@ export class VelgZoneList extends LitElement {
       background: var(--color-surface-sunken);
     }
 
+    /* Die Risikostufe steckt in der Toenung UND in .item__risk-tier als Wort;
+       der Kantenbalken war das dritte Signal. */
     .item__event-risk--high {
-      border-left-color: var(--color-warning);
       background: color-mix(in srgb, var(--color-warning) 4%, var(--color-surface-sunken));
     }
 
     .item__event-risk--critical {
-      border-left-color: var(--color-danger);
       background: color-mix(in srgb, var(--color-danger) 6%, var(--color-surface-sunken));
     }
 

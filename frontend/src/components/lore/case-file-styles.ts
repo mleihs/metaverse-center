@@ -150,7 +150,8 @@ export const caseFileStyles = css`
     font-style: italic;
     font-size: var(--text-sm);
     color: var(--color-text-muted);
-    border-left: 2px solid color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+    /* Zitatlinie eines Epigraphs, neutral. */
+    border-left: 1px solid var(--color-border);
     padding-left: var(--space-3);
     margin: 0 0 var(--space-4);
     line-height: 1.6;
