@@ -114,20 +114,24 @@ export class VelgContentDraftEditor extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       line-height: 1.55;
-      border-left: 3px solid;
     }
 
     .banner--warn {
       background: color-mix(in srgb, var(--color-warning) 8%, transparent);
-      border-left-color: var(--color-warning);
       color: var(--color-text-primary);
     }
 
     .banner--error {
       background: var(--_danger-bg);
-      border-left-color: var(--color-danger);
       color: var(--color-text-primary);
     }
+
+    /* Die Schwere sitzt auf der Marke, nicht an der Kante: der Kasten ist
+       ohnehin schon in der Statusfarbe getoent, und diese Zeile ist die
+       Ueberschrift, die den Status benennt. */
+    .banner--warn .banner__title    { color: var(--color-warning); }
+    .banner--error .banner__title   { color: var(--color-danger); }
+    .banner--success .banner__title { color: var(--color-success); }
 
     .banner__title {
       font-family: var(--font-brutalist);
@@ -271,8 +275,9 @@ export class VelgContentDraftEditor extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-danger);
       padding: var(--space-1) var(--space-2);
+      /* Doppelung: die SCHRIFT steht bereits auf --color-danger und der
+         Kasten auf der Gefahrentoenung. */
       background: var(--_danger-bg);
-      border-left: 2px solid var(--color-danger);
     }
 
     .editor__empty {

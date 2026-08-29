@@ -50,7 +50,8 @@ export class VelgDraftPresenceIndicator extends SignalWatcher(LitElement) {
       margin: var(--space-2) 0 var(--space-3);
       background: var(--_surface);
       border: 1px dashed var(--_accent-dim);
-      border-left: 3px solid var(--_accent);
+      /* Doppelung zur Hintergrundtoenung; dieser Banner hat keine
+         eigene Ueberschriftszeile, an der die Farbe sitzen koennte. */
       animation: enter var(--duration-entrance) var(--ease-dramatic);
     }
 
