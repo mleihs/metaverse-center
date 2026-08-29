@@ -39,6 +39,7 @@ function makeAvailable(archetype: string): AvailableDungeonResponse {
     suggested_depth: 5,
     last_run_at: null,
     available: true,
+  admin_override: false,
   };
 }
 

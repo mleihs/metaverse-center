@@ -66,7 +66,7 @@ describe('describeRoom — on entry (move response)', () => {
   it('carries every text role the move response holds', () => {
     const move: MoveToRoomResponse = {
       banter: { text_en: 'Aranea goes still.', text_de: 'Aranea erstarrt.' },
-      anchor_texts: [{ text_en: 'A chair, facing the wall.', text_de: 'Ein Stuhl zur Wand.' }],
+      anchor_texts: [{ text_en: 'A chair, facing the wall.', text_de: 'Ein Stuhl zur Wand.', anchor_id: 'a-1', phase: 'entry' }],
       barometer_text: { text_en: 'The dark presses closer.', text_de: 'Das Dunkel rueckt naeher.' },
       description_en: 'Something breathes in the corner.',
       description_de: 'Etwas atmet in der Ecke.',
@@ -106,7 +106,7 @@ describe('describeRoom — on entry (move response)', () => {
 
   it('drops empty anchor entries rather than rendering blanks', () => {
     const move: MoveToRoomResponse = {
-      anchor_texts: [{ text_en: '', text_de: '' }, { text_en: 'A shoe.', text_de: 'Ein Schuh.' }],
+      anchor_texts: [{ text_en: '', text_de: '', anchor_id: 'a-1', phase: 'entry' }, { text_en: 'A shoe.', text_de: 'Ein Schuh.', anchor_id: 'a-1', phase: 'entry' }],
       state: state(),
     };
 
@@ -234,7 +234,7 @@ describe('mergeRoomDescription — the description survives a second look', () =
   // resolved its encounter.
   const arrival: MoveToRoomResponse = {
     banter: { text_en: 'Aranea goes still.', text_de: 'Aranea erstarrt.' },
-    anchor_texts: [{ text_en: 'A chair, facing the wall.', text_de: 'Ein Stuhl zur Wand.' }],
+    anchor_texts: [{ text_en: 'A chair, facing the wall.', text_de: 'Ein Stuhl zur Wand.', anchor_id: 'a-1', phase: 'entry' }],
     barometer_text: { text_en: 'The dark presses closer.', text_de: 'Das Dunkel rueckt naeher.' },
     description_en: 'Something breathes in the corner.',
     description_de: 'Etwas atmet in der Ecke.',
