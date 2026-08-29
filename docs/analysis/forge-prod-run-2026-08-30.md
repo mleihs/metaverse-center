@@ -36,8 +36,8 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 2 | Wrong pydantic-ai model class — `openrouter_reasoning` unreachable | **Critical** | **Fixed** (same commit) |
 | 3 | `invalidate_model_config()` never fired for `reasoning_*` | High | **Fixed** (same commit) |
 | 4 | Admin `DEFAULTS` still wrote the dead `claude-sonnet-4-6` id into production | High | **Fixed** (same commit) |
-| 5 | Generated prompt templates invent variables no code supplies (8 across 4 templates) | **Critical** | Open |
-| 6 | Generated prompt templates drop the platform template's compositional guardrails | **Critical** | Open |
+| 5 | Generated prompt templates invent variables no code supplies (8 across 4 templates) | **Critical** | **Fixed** (`36fe1b8b`, W1) |
+| 6 | Generated prompt templates drop the platform template's compositional guardrails | **Critical** | **Fixed** (`36fe1b8b`, W1) |
 | 7 | No floor under content quality — a `"..."`-filled entity validates clean | **Critical** | Open |
 | 8 | No retry on image failure; one empty completion = permanently image-less building | High | Open |
 | 9 | Partial success reported as success (departments, materialization) | High | Open |
@@ -54,6 +54,9 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 20 | Deep research fails during materialization, silently degrades | Medium | Open |
 | 21 | The Table never scrolls to what it just produced | Low | Open |
 | 22 | Three German errors in one localized string | Low | **Fixed** (`a5cb9b73`) |
+| 23 | Sixteen rows in four worlds are written in Mustache syntax and never substitute | **Critical** | **Fixed** (`36fe1b8b`, migration 280) |
+| 24 | Two `social_media.py` endpoints call `GenerationService` with parameter names that do not exist | High | Open |
+| 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | Open |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -195,9 +198,18 @@ plausible. Measured on the rendered 772×1024 portrait of "Almandine": the lapel
 **"Leserlichkeit: 9%"**, a number nobody computed. A missing variable is not reported; it is
 overwritten with fiction.
 
-**Fix.** After generation, diff the template's placeholders against the known variable set for
-that template type. Unknown → reject the generated template (keep the platform one) or strip the
-placeholder, and be loud either way.
+**Fixed in `36fe1b8b` (W1).** `backend/services/prompt_contracts.py` declares, per template
+type, the variables its call site supplies. The A.6 generation prompt is built from that
+declaration (it used to carry one global list, nine supplied names short, that invited
+`{zone_name}` into the chat template where nothing supplies it — which is exactly what
+happened); the model's output is sanitised against it before storage; and `fill_template`
+reports an undeclared placeholder to the log and to Sentry instead of leaving it standing.
+`variables` is now written as a real JSON array rather than `json.dumps([])` into a jsonb
+column.
+
+The declaration is bound to the call sites by AST in `test_prompt_contracts.py`, so it cannot
+drift silently — mutation-checked in both directions. That binding is what found
+`agent_memories`, a legitimate chat variable missing from the plan's own table.
 
 **Reusable check:** pull `re.findall(r'\{(\w+)\}', prompt_content)` for both the simulation and
 platform rows of the same `template_type`; the set difference is what was invented.
@@ -232,9 +244,91 @@ Generated `portrait_description`, full text:
 twice; the Aktenlampe visible top right; badge reading "Leserlichkeit: 9%". The craft is there
 (scriptural scars on the face, handwriting on the hands) — the control is not.
 
-**Fix.** The generated template may replace the **style** portion only. Composition, subject
-count and the variable list stay platform-owned. Alternatively a post-generation checklist
-(placeholder set + required phrases) that keeps the platform template on violation.
+**Fixed in `36fe1b8b` (W1).** The generated template owns the style; the platform keeps a
+`frame` per template type — composition and subject count for an image, the JSON shape for
+the chronicle, staying in character for chat — appended by `PromptResolver` at render time
+whenever the resolved template is simulation-owned. It is not stored, so it cannot be edited
+away, and it is appended after substitution, so it can never carry a placeholder (there is a
+test for that).
+
+The frames are lifted from the curated platform rows measured here, not invented: the
+portrait frame is that row's own COMPOSITION/IMPORTANT block.
+
+Not addressed by the frame, and worth knowing: the ATRAMENT portrait template still does not
+use `{agent_background}` at all. The frame cannot add it (frames carry no placeholders); the
+new generation prompt offers it explicitly, so a regenerated template should.
+
+### 23. Sixteen rows in four worlds never substitute a single variable — **Critical**
+
+**Found while implementing W1, measured through the real `fill_template` code path.**
+
+`PromptResolver` renders `str.format` style: `{name}`. Migrations 026 and 028 (February
+2026) seeded per-simulation templates written Mustache style, `{{name}}` — which
+`str.format` renders as the *literal text* `{name}`.
+
+Rendered with a full variable set, the stored Speranza `relationship_generation` row
+produces:
+
+```
+AGENT:
+Name: {agent_name}
+Character: {agent_character}
+Background: {agent_background}
+```
+
+The model has never seen the agent. Affected: `relationship_generation` and
+`event_echo_transformation` in Speranza, Station Null, The Gaslit Reach and Velgarien
+(8 rows that are rendered), plus `embassy_pair_generation` and `embassy_event_echo` in the
+same four worlds (8 rows that no code renders at all). One **platform** row is affected
+too — `cycle_sitrep_generation` — so every epoch SITREP has been asking for
+"Cycle {cycle_number}".
+
+Nobody noticed because a template that renders its own placeholder names still produces
+plausible prose.
+
+**`scanner_service.py:436` already carried a local workaround** — `user_template.replace("{{",
+"{")`, with the comment *"DB template uses {{var}} mustache placeholders — convert to Python
+format"*. One service compensated for the data instead of the data being fixed.
+
+**Fix.** Migration 280 normalises every `{{identifier}}` to `{identifier}` and adds a CHECK
+constraint so the mistake cannot return; the scanner workaround is deleted in the same
+change. Verified on all 104 production rows first: every doubled brace is a Mustache
+placeholder, none is an escaped literal.
+
+**Consequence for the repair pass:** the two curated types also name a variable no call site
+supplies. `event_echo_transformation` wants `impact_level`, which the events row carries —
+so the *call site* was fixed rather than the data. `relationship_generation` wants
+`relationship_types`, and there is no canonical list to supply (`agent_relationships.relationship_type`
+is free text, and production holds world-specific values like `contrada_kin`, `raid_partner`),
+so the placeholder is stripped. A follow-up could pass the types already in use in that
+simulation.
+
+### 24. Two social-media endpoints cannot run at all — High
+
+`routers/social_media.py:135` calls `gen.generate_social_media_transform(original_text=…,
+transformation_type=…)`; the method signature is `(post_content, transform_type, locale)`.
+Line 187 calls `gen.generate_social_trends_campaign(trend_name=…, trend_platform=…,
+trend_sentiment=…)` against `(trend_data: dict, locale)`. Both raise `TypeError` on the
+first call. The sentiment endpoint's own comment says it uses the `social_media_sentiment`
+template; it calls the trends-campaign method instead, and `social_media_sentiment` is one
+of four platform template types no code renders (with `chat_with_memory`,
+`news_agent_reaction`, `user_agent_description`).
+
+Found while sweeping every template consumer for W1. Not fixed there: the return-shape
+mismatch (`result.get("transformed_text")` against `_generate`'s `{"content", …}`) means the
+endpoints need a decision about intent, not a rename.
+
+### 25. The chat `system_prompt` phase A.6 writes is never used — Medium
+
+A.6 generates a `system_prompt` per template. `GenerationService._generate` uses it (and now
+fills it, see finding 5's fix). `ChatAIService` does not: it builds the system message from
+`prompt_content` alone, so the authored persona — *"You roleplay characters from the
+Verwaltungsbezirk Atrament, where the state is a living body and legibility its breath"* —
+is written, stored, and discarded.
+
+Deliberately not changed in W1: chat is the most user-visible surface, `prompt_content`
+already sets a persona, and concatenating both without measuring the result would be a
+guess. It belongs with W5.
 
 ---
 
@@ -530,7 +624,7 @@ Grouped so that each step is independently shippable and verifiable.
 
 | Step | Findings | Why here |
 |:--|:--|:--|
-| **W1** | 5, 6 | Highest leverage. Until the generated templates are validated, **every future world** is born with invented variables and no compositional guardrails. Nothing else prevents that. |
+| **W1** ✅ | 5, 6, 23 | Highest leverage. Until the generated templates are validated, **every future world** is born with invented variables and no compositional guardrails. Nothing else prevents that. Done in `36fe1b8b` + migration 280; finding 23 was uncovered by the work and folded in. |
 | **W2** | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. |
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
 | **W4** | 11, 13, 14, 15 | Configuration: wire `purpose=`, give the two orphan purposes budgets, unify the image defaults, lift budgets/timeouts into `platform_settings`. |
@@ -540,4 +634,7 @@ W1 before W2 because W1 stops the bleeding on new worlds; W2 hardens the contrac
 have caught it. W3 is independent and can run in parallel.
 
 **Already-created worlds carry the W1 damage in their stored templates** — a repair pass over
-existing `prompt_templates` rows belongs in W1.
+existing `prompt_templates` rows belongs in W1. Shipped as
+`scripts/repair_simulation_prompt_templates.py`: dry run by default, a full row backup before
+`--apply`, `--restore` to undo, and the target database must be named explicitly (the first
+dry run silently read local Supabase and reported 36 rows where production has 48).
