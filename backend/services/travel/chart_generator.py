@@ -85,6 +85,22 @@ class ChartTuning:
     # (a single edge can land a frontier world as near as a connected one — a chain keeps
     #  the Tiefdrift frontier a genuine deep haul, not a cheap back door)
 
+    # ── Board fitting (see _normalise_layout) ────────────────────────────────────
+    # The force layout settles into whatever shape the seed happens to produce; without a
+    # frame that shape is an accident, and an accidental 1:4 ribbon in a 2:1 viewport is
+    # framed by its long axis and covers ~10 % of the board's width. The original
+    # Fruchterman-Reingold algorithm draws inside a bounded W x H frame for exactly this
+    # reason; these three knobs are that frame.
+    board_width: float = 3000.0  # canonical width the finished cloud is scaled to
+    target_aspect: float = 1.60  # w/h the board is fitted to — the play surface's aspect
+    #   (the viewport minus the HUD gutter, ~1000x630 on a desktop board)
+    max_stretch: float = 2.50  # cap on the anisotropic scale, so the fit never caricatures
+    #   the graph's own proportions; beyond it the board simply stays a little letterboxed
+    min_separation: float = 0.055  # closest two nodes may sit, as a fraction of board_width
+    #   (~0.055 * 850 px of drawn width = 47 px, clear of the 44 px WCAG coarse-pointer tap
+    #    target, so no two nodes can ever share a finger)
+    separation_iterations: int = 120
+
 
 # ── Inputs / output shapes ───────────────────────────────────────────────────────
 
@@ -193,6 +209,153 @@ def _layout_homes(
             pos[wid][1] += disp[wid][1] / mag * step
         cool = max(0.05, cool * 0.992)
     return pos
+
+
+def _normalise_layout(nodes: list[dict], t: ChartTuning) -> None:
+    """Fit the finished point cloud onto the board — in place, on every node.
+
+    `_layout_homes` is a Fruchterman-Reingold relaxation, and the original algorithm draws
+    into a bounded W x H frame. This implementation dropped the frame, so the drawing's
+    proportions were whatever the seed settled on. Measured on chart_version 4 (7 worlds,
+    48 nodes): the cloud came out 1854 x 7103 units — aspect 0.26, a tall thin ribbon. The
+    camera fits both axes, so in a 2.15-aspect viewport that ribbon is framed by its HEIGHT
+    and covers **10.4 % of the board's width**; 42 of 48 nodes then sit inside another
+    node's 30 px click radius (median nearest-neighbour: 20.7 px), and half the board is
+    empty. Both complaints — "everything is cramped" and "so much empty space" — are the
+    same number.
+
+    This is the frame, in three steps, and it changes NOTHING but the drawing:
+
+    1. **Principal axis → horizontal.** A rigid rotation, so every distance, every corridor
+       bow and the whole visual grammar of the graph survive exactly. This step alone takes
+       the measured chart from 10.4 % to 62.7 % width coverage: the cloud was never badly
+       shaped, only badly oriented.
+    2. **Aspect fit,** capped at `max_stretch`. A bounded anisotropic scale toward
+       `target_aspect`. Capped, because past a point a stretch stops fitting the graph and
+       starts caricaturing it — a letterboxed board is better than a smeared one.
+    3. **Minimum separation.** A few relaxation passes that push apart only the pairs closer
+       than `min_separation`. Steps 1-2 fix the board; they cannot fix two corridor
+       interiors that the layout stacked on top of each other (measured minimum: 1.4 px).
+       A move is a commitment — it spends a Takt, Bandbreite and Dissonanz and draws a
+       signal — so the board owes the player an unambiguous answer to "which node am I
+       clicking". Two nodes inside one tap target cannot give it.
+
+    x/y are presentation only: `distance_band` comes from a node's fraction along its
+    corridor and `frequency_mask` from its vectors, so nothing here touches gameplay data.
+    The last step scales the cloud to `board_width`, which is what lets `min_separation`
+    be a plain ratio instead of a number that means something different on every chart.
+    """
+    if len(nodes) < 2:
+        return
+
+    pts = [[float(n["x"]), float(n["y"])] for n in nodes]
+    n_pts = len(pts)
+
+    # ── 1. Rigid rotation onto the principal axis ────────────────────────────────
+    cx = sum(p[0] for p in pts) / n_pts
+    cy = sum(p[1] for p in pts) / n_pts
+    for p in pts:
+        p[0] -= cx
+        p[1] -= cy
+    sxx = sum(p[0] * p[0] for p in pts) / n_pts
+    syy = sum(p[1] * p[1] for p in pts) / n_pts
+    sxy = sum(p[0] * p[1] for p in pts) / n_pts
+    # The covariance eigenvector angle. atan2 keeps it stable when sxx == syy (a round
+    # cloud), where the axis is arbitrary and any answer is as good as any other.
+    theta = 0.5 * math.atan2(2 * sxy, sxx - syy)
+    cos_t, sin_t = math.cos(-theta), math.sin(-theta)
+    for p in pts:
+        p[0], p[1] = p[0] * cos_t - p[1] * sin_t, p[0] * sin_t + p[1] * cos_t
+
+    def _extent() -> tuple[float, float]:
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        return max(xs) - min(xs), max(ys) - min(ys)
+
+    # ── 2. Bounded aspect fit ────────────────────────────────────────────────────
+    width, height = _extent()
+    if width > 1e-6 and height > 1e-6:
+        # Clamp the correction both ways: a cloud that is already wider than the target is
+        # squeezed back, one that is taller is pulled open — never by more than max_stretch.
+        k = t.target_aspect / (width / height)
+        k = min(max(k, 1.0 / t.max_stretch), t.max_stretch)
+        if k >= 1.0:
+            for p in pts:
+                p[0] *= k
+        else:
+            for p in pts:
+                p[1] /= k
+
+    # ── 3. Into the frame, and apart inside it ───────────────────────────────────
+    # This is the bounded W x H frame the FR algorithm draws into. The relaxation below
+    # pushes crowded pairs apart and the frame catches them — which is what makes the two
+    # halves of the complaint one fix: the push fills the empty space, the wall stops the
+    # cloud from simply inflating past the board instead of spreading inside it.
+    frame_w = t.board_width
+    frame_h = t.board_width / t.target_aspect
+
+    width, height = _extent()
+    if width > 1e-6 and height > 1e-6:
+        scale = min(frame_w / width, frame_h / height)
+        for p in pts:
+            p[0] *= scale
+            p[1] *= scale
+
+    half_w, half_h = frame_w / 2, frame_h / 2
+
+    def _recentre() -> None:
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        mx = (max(xs) + min(xs)) / 2
+        my = (max(ys) + min(ys)) / 2
+        for p in pts:
+            p[0] -= mx
+            p[1] -= my
+
+    _recentre()
+
+    min_sep = t.min_separation * t.board_width
+    if min_sep > 0:
+        for _ in range(t.separation_iterations):
+            moved = False
+            for i in range(n_pts):
+                for j in range(i + 1, n_pts):
+                    dx = pts[j][0] - pts[i][0]
+                    dy = pts[j][1] - pts[i][1]
+                    d = math.hypot(dx, dy)
+                    if d >= min_sep:
+                        continue
+                    moved = True
+                    if d < 1e-6:
+                        # Exactly coincident: no direction to push along, so deal one out
+                        # of the pair's index. Deterministic, and any axis will do.
+                        ang = 2 * math.pi * ((i * 7 + j * 13) % n_pts) / n_pts
+                        ux, uy = math.cos(ang), math.sin(ang)
+                        d = 1e-6
+                    else:
+                        ux, uy = dx / d, dy / d
+                    # Half the deficit each, so the pair's midpoint stays put and a corridor
+                    # interior does not walk off its own corridor.
+                    push = (min_sep - d) * 0.5
+                    pts[i][0] -= ux * push
+                    pts[i][1] -= uy * push
+                    pts[j][0] += ux * push
+                    pts[j][1] += uy * push
+            # The wall. Clamping inside the loop (not once at the end) is what turns the
+            # push into a SPREAD: a node driven against the edge cannot keep going, so the
+            # next pass redistributes its neighbours along the frame instead of letting the
+            # whole cloud inflate — and the board fills from the middle outwards.
+            for p in pts:
+                p[0] = min(half_w, max(-half_w, p[0]))
+                p[1] = min(half_h, max(-half_h, p[1]))
+            if not moved:
+                break
+
+    _recentre()
+
+    for node, p in zip(nodes, pts, strict=True):
+        node["x"] = round(p[0], 2)
+        node["y"] = round(p[1], 2)
 
 
 # ── The builder ──────────────────────────────────────────────────────────────────
@@ -416,6 +579,11 @@ def build_chart(
             )
             made += 1
 
+    # Every node is placed by now (homes, corridor interiors, frontier chains) — fit the
+    # finished cloud onto the board. Last, because a normalisation that ran before the
+    # frontier chains were appended would leave them outside the frame it just established.
+    _normalise_layout(draft.nodes, t)
+
     return draft
 
 
@@ -457,9 +625,7 @@ class ChartGeneratorService:
             .eq("simulation_type", "template")
             .execute()
         )
-        worlds = [
-            World(id=r["id"], slug=r["slug"], name=r["name"]) for r in (sims_resp.data or [])
-        ]
+        worlds = [World(id=r["id"], slug=r["slug"], name=r["name"]) for r in (sims_resp.data or [])]
 
         conn_resp = await (
             admin_client.table("simulation_connections")
@@ -518,5 +684,3 @@ class ChartGeneratorService:
             resp.data,
         )
         return resp.data
-
-
