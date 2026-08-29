@@ -262,6 +262,77 @@ back if the creator is not enrolled (ADR-007).
 
 ---
 
+## Addendum, same evening — what the first production run found
+
+Migration 275 shipped and `activity_gated` was play-tested against production
+for the first time (see `Verification` below for the method). The subsystem
+works: the scheduler swept an expired deadline, advanced cycle 1 to 2, moved the
+epoch from foundation to competition, and re-armed the deadline at exactly the
+configured 2-hour interval.
+
+Running it also surfaced two defects that this audit could not have found,
+because the code had never executed.
+
+### 15. `battle_log` rejects the automatic cycle path
+
+`battle_log_event_type_check` enumerates 29 event types. It carries
+`cycle_resolved` and `player_passed` — the *manual* path — and never gained the
+four the *automatic* path emits, all from `epoch_cycle_scheduler.py`:
+`cycle_auto_resolved`, `player_afk`, `player_afk_penalty`,
+`player_afk_ai_takeover`. Migration 204 added the columns and the RPCs and
+forgot the constraint.
+
+Two independent layers of concealment:
+
+1. `activity_gated` was never sent by a client, so the scheduler's sweep never
+   matched a row and the code never ran (finding 2).
+2. `BattleLogService.log_event` catches `PostgrestAPIError`, logs it, and
+   returns the unsaved dict. A rejected insert therefore does not raise — the
+   cycle resolves anyway, just with a hole in its record. Nothing reaches the
+   user or Sentry.
+
+The second is the more general lesson: **a sink that swallows its own failures
+makes every contract break behind it invisible.** The audit read this code and
+did not flag it, because on the manual path every emitted type happens to be
+allowed.
+
+Fixed in migration 276, which rewrites the constraint in full (a CHECK cannot be
+extended in place) and documents the rule: a new `log_event` type extends the
+list in the same migration. Verified on production with a transactional dry run
+— the four types are accepted, and an invented type is still rejected, so the
+constraint did not silently become a no-op.
+
+### 16. `GET /epochs/active` returned 500 for every caller
+
+```text
+ResponseValidationError: data[6].created_by_id
+UUID input should be a string, bytes or UUID object, input: None
+```
+
+`game_epochs.created_by_id` is nullable — system-created academy epochs have no
+creator, and one such row exists in production. `EpochResponse` declared it a
+required `UUID`, and because return annotations are the response model here, a
+NULL is a guaranteed 500 rather than a null in the payload.
+
+This is finding 1's class reached through the **data** instead of through a
+service's return shape, which is exactly why auditing the services did not
+surface it. `GET /epochs` kept answering 200 only because the frontend always
+sends a status filter that happened to exclude the offending row.
+`AdminApiService.ts` had already declared the field `string | null`.
+
+Checking the *pattern* rather than the reported field — the lesson from finding
+4 — turned up a second mismatch: `current_cycle` is nullable in the schema and
+typed `int`. The answer there is the opposite one. A cycle counter has no
+meaningful NULL, the column already carries `DEFAULT 0`, and production holds
+zero NULLs, so integrity belongs in SQL: migration 276 sets it `NOT NULL`
+instead of widening the model and making the whole frontend defend against it.
+
+Regression tests in `TestNullableColumnContracts`
+(`backend/tests/integration/test_epoch_response_contracts.py`) drive both
+endpoints through the real app with a row shaped like the production one. They
+were checked against the old model first and fail there — a regression test that
+cannot fail is not one.
+
 ## Open items
 
 **#15 — Operative costs and durations are global constants.** `OPERATIVE_RP_COSTS`,
