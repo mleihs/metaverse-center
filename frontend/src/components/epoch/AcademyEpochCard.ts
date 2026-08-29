@@ -10,11 +10,14 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 
 @localized()
 @customElement('velg-academy-epoch-card')
 export class VelgAcademyEpochCard extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
       opacity: 0;
@@ -43,11 +46,18 @@ export class VelgAcademyEpochCard extends LitElement {
       to   { transform: translateY(100%); }
     }
 
+    /* Registration marks, not a stripe. The bar down the left edge was the
+       one gesture that made every card on the dashboard look assembled by a
+       machine; the corner brackets carry the same accent colour without
+       occupying an edge, and they are this platform's own idiom (see
+       terminalFrameStyles, and the dungeon map's selection reticle).
+       --before, because ::after already carries the scanline. */
     .card {
       position: relative;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-primary);
+      --marker-color: var(--color-primary);
+      --marker-arm: 18px;
       padding: 24px;
       overflow: hidden;
     }
@@ -279,7 +289,8 @@ export class VelgAcademyEpochCard extends LitElement {
       .btn-train { justify-content: center; }
       .roster__label { display: none; }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Number }) academyEpochsPlayed = 0;
   @property({ type: Boolean }) hasActiveEpoch = false;
@@ -296,7 +307,7 @@ export class VelgAcademyEpochCard extends LitElement {
     ];
 
     return html`
-      <div class="card">
+      <div class="card marker-corners--before">
         <!-- Header -->
         <div class="header">
           <span class="header__classification">${msg('Academy // Training Protocol')}</span>

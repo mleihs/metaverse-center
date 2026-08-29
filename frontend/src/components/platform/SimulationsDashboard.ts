@@ -31,6 +31,7 @@ import '../shared/VelgBadge.js';
 import '../shared/VelgGameCard.js';
 import '../shared/PlatformFooter.js';
 import './VelgAchievementSummaryCard.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 
 type DashboardState = 'guest' | 'new_member' | 'active_player' | 'power_user';
 
@@ -40,7 +41,9 @@ const BOOT_KEY = 'velg_dashboard_booted';
 @localized()
 @customElement('velg-simulations-dashboard')
 export class VelgSimulationsDashboard extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
       background: var(--color-surface-sunken);
@@ -439,16 +442,13 @@ export class VelgSimulationsDashboard extends LitElement {
       margin-bottom: var(--space-3);
     }
 
-    /* Left accent bar */
-    .dossier-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: var(--dossier-color);
-      transition: width 0.2s, box-shadow 0.2s;
+    /* The status colour used to run down the left edge as a 3px slab. It now
+       marks the corners instead (markerCornerStyles), so the colour still says
+       which stage the epoch is in without the card wearing a stripe.
+       --marker-color is fed from the same --dossier-color the border and the
+       hover glow already use, so there is still ONE colour per card. */
+    .dossier-card {
+      --marker-color: var(--dossier-color);
     }
 
     .dossier-card:hover {
@@ -459,9 +459,9 @@ export class VelgSimulationsDashboard extends LitElement {
         inset 0 0 0 1px color-mix(in srgb, var(--dossier-color) 10%, transparent);
     }
 
-    .dossier-card:hover::before {
-      width: 4px;
-      box-shadow: 0 0 10px var(--dossier-color);
+    /* Hover lengthens the marks rather than fattening a bar. */
+    .dossier-card:hover {
+      --marker-arm: 16px;
     }
 
     .dossier-card--lobby { --dossier-color: var(--color-text-muted); }
@@ -1434,7 +1434,8 @@ export class VelgSimulationsDashboard extends LitElement {
         opacity: 1;
       }
     }
-  `;
+  `,
+  ];
 
   @state() private _simulations: Simulation[] = [];
   @state() private _allSimulations: Simulation[] = [];
@@ -1902,7 +1903,7 @@ export class VelgSimulationsDashboard extends LitElement {
 
     return html`
       <div
-        class="dossier-card dossier-card--${ep.epoch_status}"
+        class="dossier-card marker-corners dossier-card--${ep.epoch_status}"
         style="--i: ${index}"
         @click=${() => navigate(`/epoch`)}
       >
@@ -2153,7 +2154,7 @@ export class VelgSimulationsDashboard extends LitElement {
             : html`<div class="featured__bg" style="background: linear-gradient(135deg, var(--color-surface), var(--color-border-light));"></div>`
         }
         <div class="featured__gradient"></div>
-        <div class="featured__content" style="border-left: 3px solid ${themeColor}">
+        <div class="featured__content marker-corners" style="--marker-color: ${themeColor}">
           <div class="featured__header">
             <h3 class="featured__name">${t(sim, 'name')}</h3>
             <velg-badge variant=${getThemeVariant(sim.theme)}>${sim.theme}</velg-badge>
