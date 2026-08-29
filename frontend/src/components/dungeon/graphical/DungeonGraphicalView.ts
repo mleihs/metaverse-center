@@ -61,6 +61,7 @@ import {
   buildEnemyDisplayNames,
   describeEnemy,
   type EnemyFacts,
+  getArchetypeBriefing,
   getArchetypeDisplayName,
   resonanceMagnitudeLabel,
   topAptitudes,
@@ -154,10 +155,20 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
            brutalist) override --color-surface to white and break contrast. */
         --color-surface: #0a0a0a; /* lint-color-ok */
         --color-surface-raised: #111111; /* lint-color-ok */
+        /* Was missing, and it showed: <velg-avatar> paints its initials
+           placeholder on --color-surface-sunken. Under a simulation theme that
+           lightens the surface scale (Velgarien brutalist sets it to white) the
+           token stayed light while everything around it was forced dark, so an
+           agent without a portrait became the single brightest rectangle on a
+           near-black screen — pointing at nothing. Any token a CHILD component
+           may read has to be in this block, not only the ones this file uses. */
+        --color-surface-sunken: #060606; /* lint-color-ok */
+        --color-surface-overlay: #111111; /* lint-color-ok */
         --color-text-primary: #e5e5e5; /* lint-color-ok */
         --color-text-secondary: #a0a0a0; /* lint-color-ok */
         --color-text-muted: #888888; /* lint-color-ok */
         --color-border: #333333; /* lint-color-ok */
+        --color-border-light: #222222; /* lint-color-ok */
         background: var(--color-surface);
         font-family: var(--_mono);
         color: var(--_phosphor-dim);
@@ -448,15 +459,60 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         pointer-events: none;
         overflow: hidden;
       }
+      /* The wait, made honest. A 1920px backdrop takes seconds on a cold cache,
+         and the scene used to show six seconds of flat green nothing — the
+         player could not tell a slow load from a broken one. The skeleton is
+         tinted with the archetype's own accent and breathes, so the frame reads
+         as "arriving" from the first paint. */
+      .scene__skeleton {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            120% 80% at 50% 78%,
+            color-mix(in srgb, var(--_fx-accent) 14%, transparent) 0%,
+            transparent 62%
+          ),
+          linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--_fx-accent) 7%, var(--color-surface)) 0%,
+            var(--color-surface) 70%
+          );
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .scene__skeleton {
+          animation: scene-skeleton-breathe 2.4s var(--ease-in-out, ease-in-out) infinite;
+        }
+        @keyframes scene-skeleton-breathe {
+          0%,
+          100% {
+            opacity: 0.75;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+      }
       .scene__art-img {
         display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        opacity: 0;
+        transition:
+          opacity 520ms var(--ease-out, ease),
+          filter 600ms var(--ease-out, ease);
         /* Dim at rest, dimmer + desaturated as pressure rises (foreboding). */
         filter: brightness(calc(0.6 - var(--_p) * 0.24)) saturate(calc(0.9 - var(--_p) * 0.35))
           contrast(1.03);
-        transition: filter 600ms var(--ease-out, ease);
+      }
+      .scene__art--ready .scene__art-img {
+        opacity: 1;
+      }
+      .scene__art--ready .scene__skeleton {
+        opacity: 0;
+        animation: none;
+        transition: opacity 520ms var(--ease-out, ease);
       }
       /* Scrim: vignette enclosure + top/bottom darkening for text legibility. */
       .scene__art::after {
@@ -1430,7 +1486,24 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           transparent 100%
         );
       }
+      /* What this descent is actually about. The three numbers below were the
+         same on every card; this line is the only thing that differs, so it is
+         the only thing a player can choose on. */
+      .lobby-card__brief {
+        position: relative;
+        z-index: 1;
+        font-family: var(--font-bureau, var(--font-prose, serif));
+        font-size: 12px;
+        line-height: 1.5;
+        color: color-mix(in srgb, var(--color-text-primary) 82%, transparent);
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
       .lobby-card__name,
+      .lobby-card__brief,
       .lobby-card__meta {
         position: relative;
         z-index: 1;
@@ -2006,6 +2079,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   @state() private _failedEnemyArt: ReadonlySet<string> = new Set();
   /** Creature currently enlarged from the band, or null. */
   @state() private _enemyArtLightbox: { url: string; facts: EnemyFacts } | null = null;
+  /** Backdrop URLs that have painted at least once. Keyed by URL so moving
+   *  between archetypes re-shows the skeleton for an image not yet seen, while
+   *  a cached one appears without a flash of placeholder. */
+  @state() private _decodedBackdrops: ReadonlySet<string> = new Set();
   /** Archetype whose party is being assembled in the graphical picker. Null =
    *  show the archetype grid; non-null = show the agent picker. This replaces
    *  the terminal-only agent picker so a run can start entirely from the
@@ -2083,6 +2160,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   /** Dismiss the outcome and return to the archetype grid. */
   private _dismissOutcome(): void {
     this._endedRun = null;
+  }
+
+  /** A backdrop has painted: cross-fade it in over the skeleton. Replaced,
+   *  never mutated — Lit compares by reference (same rule as _failedEnemyArt). */
+  private _markBackdropReady(url: string): void {
+    if (this._decodedBackdrops.has(url)) return;
+    this._decodedBackdrops = new Set([...this._decodedBackdrops, url]);
   }
 
   /** Couple the host height to its real top offset (see the `:host` height
@@ -2351,12 +2435,19 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             </div>
             ${
               showArt
-                ? html`<div class="scene__art" aria-hidden="true">
+                ? html`<div
+                  class="scene__art ${
+                    this._decodedBackdrops.has(backdropUrl) ? 'scene__art--ready' : ''
+                  }"
+                  aria-hidden="true"
+                >
+                  <div class="scene__skeleton"></div>
                   <img
                     class="scene__art-img"
                     src=${backdropUrl}
                     alt=""
                     decoding="async"
+                    @load=${() => this._markBackdropReady(backdropUrl)}
                     @error=${() => {
                       this._failedBackdrop = backdropUrl;
                       captureError(new Error(`Dungeon backdrop failed to load: ${backdropUrl}`), {
@@ -2728,6 +2819,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                   : nothing
               }
               <span class="lobby-card__name">${getArchetypeDisplayName(d.archetype)}</span>
+              <span class="lobby-card__brief"
+                >${getArchetypeBriefing(d.archetype).intro.join(' ')}</span
+              >
               <span class="lobby-card__meta">
                 ${
                   magnitude

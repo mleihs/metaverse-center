@@ -75,10 +75,20 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
            in Header, Map, Party Panel, and Quick Actions. */
         --color-surface: #0a0a0a; /* lint-color-ok */
         --color-surface-raised: #111111; /* lint-color-ok */
+        /* Was missing, and it showed: <velg-avatar> paints its initials
+           placeholder on --color-surface-sunken. Under a simulation theme that
+           lightens the surface scale (Velgarien brutalist sets it to white) the
+           token stayed light while everything around it was forced dark, so an
+           agent without a portrait became the single brightest rectangle on a
+           near-black screen — pointing at nothing. Any token a CHILD component
+           may read has to be in this block, not only the ones this file uses. */
+        --color-surface-sunken: #060606; /* lint-color-ok */
+        --color-surface-overlay: #111111; /* lint-color-ok */
         --color-text-primary: #e5e5e5; /* lint-color-ok */
         --color-text-secondary: #a0a0a0; /* lint-color-ok */
         --color-text-muted: #888888; /* lint-color-ok */
         --color-border: #333333; /* lint-color-ok */
+        --color-border-light: #222222; /* lint-color-ok */
         background: var(--color-surface);
       }
 
