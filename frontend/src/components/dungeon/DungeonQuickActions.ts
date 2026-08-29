@@ -26,8 +26,8 @@ import { customElement } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import type { DungeonPhase } from '../../types/dungeon.js';
+import { type ChoiceDescriptor, describeChoices } from '../../utils/dungeon-encounter-choices.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
-import { localized as localizedValue } from '../../utils/locale-fields.js';
 import {
   terminalActionStyles,
   terminalComponentTokens,
@@ -102,6 +102,117 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       /* Room-type risk colors are set via --_btn-color / --_btn-border / --_btn-weight
          custom properties on each button's style attribute (see _renderMoveButtons).
          This avoids !important overrides against the shared terminalActionStyles. */
+
+      /* ── Encounter options ──
+         The one place in a run where the player weighs something, so these are
+         not chips. Each card carries what the terminal has always printed and
+         the HUD never did: the requirement, whether the party meets it, and who
+         would step forward. An option out of reach stays VISIBLE and states its
+         lock (Disco Elysium's convention) — knowing what you cannot do is part
+         of knowing where you are. Hiding it would leave a player wondering
+         whether the option existed at all. */
+      .choices {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        flex: 1;
+      }
+      .choice {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 168px;
+        max-width: 300px;
+        flex: 1 1 200px;
+        padding: 7px 9px;
+        text-align: left;
+        background: transparent;
+        border: 1px solid color-mix(in srgb, var(--_border) 70%, transparent);
+        border-left: 3px solid var(--_phosphor-dim);
+        color: var(--_phosphor-dim);
+        font-family: var(--_mono);
+        cursor: pointer;
+        transition:
+          border-color var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease),
+          color var(--transition-fast, 100ms ease);
+      }
+      .choice:hover:not(:disabled) {
+        color: var(--_phosphor);
+        border-color: var(--_phosphor-dim);
+        border-left-color: var(--_phosphor);
+        background: color-mix(in srgb, var(--_phosphor) 6%, transparent);
+      }
+      .choice:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: 2px;
+      }
+      .choice:disabled {
+        cursor: not-allowed;
+        border-left-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
+        opacity: 0.72;
+      }
+      .choice__label {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        color: var(--_phosphor);
+        text-transform: none;
+      }
+      .choice:disabled .choice__label {
+        color: var(--_phosphor-dim);
+      }
+      .choice__index {
+        flex: none;
+        font-weight: 700;
+        opacity: 0.6;
+      }
+      /* Who steps forward — the single most useful line on the card, because it
+         names the aptitude the roll will actually use. */
+      .choice__volunteer {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        color: var(--color-text-secondary);
+      }
+      .choice__portrait {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        object-fit: cover;
+        border: 1px solid color-mix(in srgb, var(--_border) 80%, transparent);
+      }
+      .choice__apt {
+        opacity: 0.75;
+        font-variant-numeric: tabular-nums;
+      }
+      .choice__reqs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        font-size: 9px;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+      }
+      .choice__req {
+        color: color-mix(in srgb, var(--color-success) 85%, var(--_phosphor));
+      }
+      .choice__req--unmet {
+        color: var(--color-danger);
+        font-weight: 700;
+      }
+
+      @media (max-width: 640px) {
+        .choice {
+          max-width: none;
+          flex-basis: 100%;
+          min-height: 44px;
+        }
+      }
 
       /* ── Hold button terminal theming ── */
       velg-hold-button {
@@ -296,19 +407,76 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
         </button>
       `;
     }
+
+    // Same derivation the terminal prints from — neither surface can name a
+    // different volunteer or read a requirement differently.
+    const described = describeChoices(choices, dungeonState.party.value);
+
     return html`
-      ${choices.map(
-        (choice, i) => html`
-          <button
-            class="action-btn action-btn--primary"
-            @click=${() => this._dispatch(`interact ${i + 1}`)}
-          >
-            [${i + 1}] ${localizedValue(choice, 'label')}
-          </button>
-        `,
-      )}
+      <div class="choices">
+        ${described.map((choice) => this._renderChoice(choice))}
+      </div>
       <button class="action-btn" @click=${() => this._dispatch('look')}>
         ${msg('Look')}
+      </button>
+    `;
+  }
+
+  private _renderChoice(choice: ChoiceDescriptor) {
+    const blocked = choice.requirements.filter((r) => !r.met);
+    // The accessible name says the whole card, including the lock, because a
+    // screen reader user gets the label first and the detail lines after.
+    const label = blocked.length
+      ? `${choice.label} – ${msg('Out of reach')}: ${blocked
+          .map((r) => `${r.label} ${r.level}`)
+          .join(', ')}`
+      : choice.label;
+
+    return html`
+      <button
+        class="choice"
+        type="button"
+        ?disabled=${!choice.available}
+        aria-label=${label}
+        title=${choice.description ?? label}
+        @click=${() => this._dispatch(`interact ${choice.index}`)}
+      >
+        <span class="choice__label">
+          <span class="choice__index">[${choice.index}]</span>
+          <span>${choice.label}</span>
+        </span>
+        ${
+          choice.volunteer
+            ? html`<span class="choice__volunteer">
+              ${
+                choice.volunteer.portraitUrl
+                  ? html`<img
+                    class="choice__portrait"
+                    src=${choice.volunteer.portraitUrl}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />`
+                  : nothing
+              }
+              <span>${choice.volunteer.name}</span>
+              <span class="choice__apt">
+                ${choice.volunteer.aptitude} ${choice.volunteer.level}
+              </span>
+            </span>`
+            : nothing
+        }
+        ${
+          choice.requirements.length
+            ? html`<span class="choice__reqs">
+              ${choice.requirements.map(
+                (req) => html`<span class="choice__req ${req.met ? '' : 'choice__req--unmet'}">
+                  ${req.label} ${req.level}${req.met ? '' : ` (${msg('have')} ${req.best})`}
+                </span>`,
+              )}
+            </span>`
+            : nothing
+        }
       </button>
     `;
   }
