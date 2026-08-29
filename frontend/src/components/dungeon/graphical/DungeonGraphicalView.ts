@@ -274,6 +274,18 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         flex-direction: column;
         border-top: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
       }
+      /* In a fight the combat bar claims the lower half of the screen and the
+         side column is left with a couple of hundred pixels. The party card is
+         the part to give up: every operative is already listed in the combat
+         bar's own tabs, with their condition. The chronicle is not duplicated
+         anywhere, and a fight is exactly when a player needs to read what just
+         happened — who hit, who missed, what it cost. */
+      .dungeon-hud--combat .dungeon-hud__party {
+        display: none;
+      }
+      .dungeon-hud--combat .dungeon-hud__chronicle {
+        border-top: none;
+      }
       .dungeon-hud__chronicle velg-dungeon-chronicle {
         flex: 1 1 0;
         min-height: 0;
@@ -2409,7 +2421,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
     return html`
       <div
-        class="dungeon-hud ${this._railCollapsed ? 'dungeon-hud--rail-collapsed' : ''}"
+        class="dungeon-hud ${this._railCollapsed ? 'dungeon-hud--rail-collapsed' : ''} ${
+          inCombat ? 'dungeon-hud--combat' : ''
+        }"
         @terminal-command=${this._handleTerminalCommand}
       >
         <div class="dungeon-hud__header" role="banner" aria-label=${msg('Dungeon status')}>
