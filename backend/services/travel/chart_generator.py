@@ -602,7 +602,11 @@ def build_chart(
 DEFAULT_CHART_SEED = 20260614
 
 # Stamped onto chart_versions.generator_version so a chart's provenance is legible.
-GENERATOR_VERSION = "derived-topology-1"
+# Bumped when the DRAWING changed: `_normalise_layout` fits the finished cloud into a bounded
+# frame (principal axis, capped aspect, minimum separation), so a chart built after this point
+# is a different picture of the same topology than one built before it. The version is the only
+# way to tell the two apart after the fact.
+GENERATOR_VERSION = "framed-topology-2"
 
 
 class ChartGeneratorService:
