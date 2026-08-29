@@ -40,7 +40,7 @@ import {
   isTowerState,
 } from '../types/dungeon.js';
 import type { Agent, AptitudeSet, OperativeType } from '../types/index.js';
-import type { TerminalLine } from '../types/terminal.js';
+import type { TerminalLine, TerminalLineMeta } from '../types/terminal.js';
 import type { AptitudeIndex } from './aptitudes.js';
 import type { RoomDescription } from './dungeon-room-text.js';
 import { getAmbient } from './dungeon-room-text.js';
@@ -1043,17 +1043,40 @@ export function formatSkillCheckResult(
   // Check header with aptitude, level, and modifier
   const adjustment = check.breakdown?.adjustment ?? 0;
   const modifierStr = adjustment >= 0 ? `+${adjustment}` : `${adjustment}`;
-  lines.push(
-    systemLine(`[${check.aptitude.toUpperCase()} CHECK \u2013 ${msg('Modifier')}: ${modifierStr}]`),
-  );
-  lines.push(systemLine(''));
-
   // Rolling bar — use effective roll (raw + adjustment) for visual feedback
   const effectiveRoll = Math.max(1, Math.min(100, check.roll + adjustment));
+
+  // The five lines below SAY these numbers; `meta` hands them over as numbers.
+  // A surface that can draw a die renders one from the same values the text is
+  // built from and drops the lines the drawing replaces — nobody parses
+  // "Rolling... 94 (+40) = 100" back apart. That parsing step is precisely how
+  // the two dungeon surfaces used to drift; see TerminalLineMeta.
+  const checkMeta: TerminalLineMeta = {
+    kind: 'skill-check',
+    aptitude: check.aptitude,
+    level: check.level,
+    chance: check.chance,
+    roll: check.roll,
+    adjustment,
+    effectiveRoll,
+    result: check.result,
+  };
+  const part: TerminalLineMeta = { kind: 'skill-check-part' };
+
+  lines.push(
+    systemLine(
+      `[${check.aptitude.toUpperCase()} CHECK \u2013 ${msg('Modifier')}: ${modifierStr}]`,
+      checkMeta,
+    ),
+  );
+  lines.push(systemLine('', part));
+
   const rollBar = progressBar(effectiveRoll, 100);
-  lines.push(systemLine(`${msg('Rolling')}... ${check.roll} (${modifierStr}) = ${effectiveRoll}`));
-  lines.push(systemLine(`${rollBar}`));
-  lines.push(systemLine(''));
+  lines.push(
+    systemLine(`${msg('Rolling')}... ${check.roll} (${modifierStr}) = ${effectiveRoll}`, part),
+  );
+  lines.push(systemLine(`${rollBar}`, part));
+  lines.push(systemLine('', part));
 
   // Result with transparent outcome thresholds
   const resultLabel =
@@ -1062,7 +1085,7 @@ export function formatSkillCheckResult(
       : check.result === 'partial'
         ? msg('PARTIAL SUCCESS')
         : msg('FAILURE');
-  lines.push(systemLine(`${msg('Result')}: ${effectiveRoll} \u2013 ${resultLabel}`));
+  lines.push(systemLine(`${msg('Result')}: ${effectiveRoll} \u2013 ${resultLabel}`, part));
   lines.push(responseLine(''));
 
   // Narrative

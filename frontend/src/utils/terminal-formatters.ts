@@ -22,7 +22,7 @@ import type {
   Zone,
   ZoneStability,
 } from '../types/index.js';
-import type { TerminalCommand, TerminalLine } from '../types/terminal.js';
+import type { TerminalCommand, TerminalLine, TerminalLineMeta } from '../types/terminal.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -36,8 +36,14 @@ function responseLine(content: string, zoneId?: string): TerminalLine {
   return { id: lineId(), type: 'response', content, timestamp: new Date(), zoneId };
 }
 
-function systemLine(content: string): TerminalLine {
-  return { id: lineId(), type: 'system', content, timestamp: new Date() };
+/**
+ * `meta` carries the structured twin of a formatted line — the numbers a
+ * formatter computed in order to print them. The terminal renders `content` and
+ * ignores it; a richer surface builds a widget from the values instead of
+ * parsing the prose. See TerminalLineMeta in types/terminal.ts.
+ */
+function systemLine(content: string, meta?: TerminalLineMeta): TerminalLine {
+  return { id: lineId(), type: 'system', content, timestamp: new Date(), meta };
 }
 
 /** ASCII art block — rendered with tight line-height so underscore glyphs
