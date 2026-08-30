@@ -99,8 +99,9 @@ loot:
   tier: 2
   effect_type: memory
   effect_params:
-    memory_text_en: A photograph with a scratched-out face. The hat remains.
-    memory_text_de: Ein Foto mit ausgekratztem Gesicht. Die Mütze bleibt.
+    importance: 6
+    content_en: A photograph with a scratched-out face. The hat remains.
+    content_de: Ein Foto mit ausgekratztem Gesicht. Die Mütze bleibt.
   description_en: Kundera's Clementis photograph. The body erased, the fur hat remaining on Gottwald's
     head. Evidence that something was, before it was unmade.
   description_de: Kunderas Clementis-Foto. Der Körper gelöscht, die Pelzmütze noch auf Gottwalds Kopf.

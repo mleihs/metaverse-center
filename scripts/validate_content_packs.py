@@ -62,6 +62,11 @@ from backend.services.content_packs.travel_schema import (  # noqa: E402
     INTERACTIVE_SIGNAL_CLASSES,
     SignalClass,
 )
+from backend.services.dungeon_loot_contracts import (  # noqa: E402
+    BUFF_SHAPES,
+    LOOT_EFFECT_CONTRACTS,
+    unknown_params,
+)
 
 
 REQUIRED_ROOM_TYPES_AT_LEAST_ONCE: tuple[str, ...] = ("boss", "rest", "treasure")
@@ -84,6 +89,7 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     violations.extend(_check_spawn_fk_integrity(result))
     violations.extend(_check_archetype_completeness(result))
     violations.extend(_check_enemy_art_paths(result))
+    violations.extend(_check_loot_effect_contract(result))
     warnings.extend(_check_choice_narrative_coverage(result))
     warnings.extend(_check_enemy_art_coverage(result))
 
@@ -174,6 +180,53 @@ def _check_global_id_uniqueness(result: PackLoadResult) -> list[str]:
     for dup, count in Counter(ability_ids).items():
         if count > 1:
             violations.append(f"ability id '{dup}' appears {count}× (must be globally unique)")
+
+    return violations
+
+
+def _check_loot_effect_contract(result: PackLoadResult) -> list[str]:
+    """Every loot effect names a consumer, and every parameter has a reader.
+
+    The Systemprüfung found 39 of 105 loot items with no effect path at all
+    (Bericht §3.1 D4) — and, worse, no way to notice: the RPC had no ELSE, so an
+    unknown effect_type produced neither an `applied` nor a `skipped` entry.
+    `backend/services/dungeon_loot_contracts.py` is the declaration; this is the
+    gate that holds content to it.
+
+    Parameters that are knowingly unread are listed in `UNREAD_PARAMS` with a
+    reason, so this stays a hard gate without silently blessing the gap.
+    """
+    violations: list[str] = []
+
+    for archetype, tiers in result.loot.items():
+        for tier, items in tiers.items():
+            for item in items:
+                where = f"loot '{item.id}' ({archetype} T{tier})"
+
+                if item.effect_type not in LOOT_EFFECT_CONTRACTS:
+                    violations.append(
+                        f"{where}: effect_type '{item.effect_type}' has no contract — "
+                        f"declare it in backend/services/dungeon_loot_contracts.py "
+                        f"(known: {', '.join(sorted(LOOT_EFFECT_CONTRACTS))})"
+                    )
+                    continue
+
+                params = item.effect_params or {}
+                extra = unknown_params(item.effect_type, params)
+                if extra:
+                    violations.append(
+                        f"{where}: parameter(s) {', '.join(extra)} are read by nobody — "
+                        f"wire a consumer, rename to a declared parameter, or list them "
+                        f"in UNREAD_PARAMS with a reason"
+                    )
+
+                # `dungeon_buff` is the one type whose consumer depends on WHICH
+                # parameter is present, so an unrecognised shape is its own defect.
+                if item.effect_type == "dungeon_buff" and not (set(params) & set(BUFF_SHAPES)):
+                    violations.append(
+                        f"{where}: dungeon_buff carries none of the known shape keys "
+                        f"({', '.join(sorted(BUFF_SHAPES))}) — it would take hold nowhere"
+                    )
 
     return violations
 
