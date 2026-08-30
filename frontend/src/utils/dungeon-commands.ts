@@ -18,7 +18,7 @@ import { dungeonAudio } from '../services/DungeonAudioService.js';
 import { dungeonState } from '../services/DungeonStateManager.js';
 import { captureError } from '../services/SentryService.js';
 import { terminalState } from '../services/TerminalStateManager.js';
-import type { CombatEvent, CombatSubmission } from '../types/dungeon.js';
+import type { AgentCombatStateClient, CombatEvent, CombatSubmission } from '../types/dungeon.js';
 import type { CommandContext, TerminalLine } from '../types/terminal.js';
 import { handleDungeonEnter } from './dungeon-entry-flow.js';
 import {
@@ -471,31 +471,56 @@ function handleDungeonProtocol(): TerminalLine[] {
 
 // ── Command: scout ───────────────────────────────────────────────────────────
 
+/**
+ * Which agent performs a single-actor verb.
+ *
+ * Four verbs — scout, seal, ground, rally — carried this block verbatim,
+ * differing only in the aptitude that drives the automatic pick. Four copies
+ * meant four places to change when the party filter or the name match does.
+ *
+ * With a name in the argument: fuzzy-matched against the party, and a name that
+ * does not match is an ERROR rather than a quiet fall back to whoever stands
+ * first. Sending the wrong agent through a Deluge breach is not a recoverable
+ * mistake, and a typo should not decide it.
+ *
+ * Without one: the highest `preferred` aptitude in the party.
+ */
+function resolveActingAgent(
+  ctx: CommandContext,
+  preferred: string,
+): { agent: AgentCombatStateClient } | { error: TerminalLine[] } {
+  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
+  if (party.length === 0) return { error: [errorLine(msg('No agents available.'))] };
+
+  if (ctx.args.length > 0) {
+    const requested = ctx.args.join(' ');
+    const matched = fuzzyName(
+      requested,
+      party.map((a) => a.agent_name),
+    );
+    // `matched` comes out of this very list, so the lookup cannot miss; the old
+    // copies carried a `?? party[0]` fallback for a branch that never ran.
+    const agent = matched ? party.find((a) => a.agent_name === matched) : undefined;
+    if (!agent) return { error: [errorLine(`${msg('Unknown agent')}: ${requested}`)] };
+    return { agent };
+  }
+
+  return {
+    agent: party.reduce((best, a) =>
+      (a.aptitudes[preferred] ?? 0) > (best.aptitudes[preferred] ?? 0) ? a : best,
+    ),
+  };
+}
+
 async function handleDungeonScout(ctx: CommandContext): Promise<TerminalLine[]> {
   const state = dungeonState.clientState.value;
   const runId = dungeonState.runId.value;
   if (!state || !runId) return [errorLine(msg('No active dungeon.'))];
 
   // Find the best spy agent (or specified agent)
-  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
-  if (party.length === 0) return [errorLine(msg('No agents available.'))];
-
-  let agent = party[0];
-  if (ctx.args.length > 0) {
-    const agentName = ctx.args.join(' ');
-    const names = party.map((a) => a.agent_name);
-    const matched = fuzzyName(agentName, names);
-    if (matched) {
-      agent = party.find((a) => a.agent_name === matched) ?? agent;
-    } else {
-      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
-    }
-  } else {
-    // Auto-select highest spy aptitude
-    agent = party.reduce((best, a) =>
-      (a.aptitudes.spy ?? 0) > (best.aptitudes.spy ?? 0) ? a : best,
-    );
-  }
+  const picked = resolveActingAgent(ctx, 'spy');
+  if ('error' in picked) return picked.error;
+  const agent = picked.agent;
 
   try {
     const resp = await dungeonApi.scout(runId, agent.agent_id);
@@ -1078,24 +1103,9 @@ async function handleDungeonSeal(ctx: CommandContext): Promise<TerminalLine[]> {
     return [errorLine(msg('Seal Breach is only available in Deluge dungeons.'))];
   }
 
-  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
-  if (party.length === 0) return [errorLine(msg('No agents available.'))];
-
-  let agent = party[0];
-  if (ctx.args.length > 0) {
-    const agentName = ctx.args.join(' ');
-    const names = party.map((a) => a.agent_name);
-    const matched = fuzzyName(agentName, names);
-    if (matched) {
-      agent = party.find((a) => a.agent_name === matched) ?? agent;
-    } else {
-      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
-    }
-  } else {
-    agent = party.reduce((best, a) =>
-      (a.aptitudes.guardian ?? 0) > (best.aptitudes.guardian ?? 0) ? a : best,
-    );
-  }
+  const picked = resolveActingAgent(ctx, 'guardian');
+  if ('error' in picked) return picked.error;
+  const agent = picked.agent;
 
   try {
     const resp = await dungeonApi.seal(runId, agent.agent_id);
@@ -1128,24 +1138,9 @@ async function handleDungeonGround(ctx: CommandContext): Promise<TerminalLine[]>
     return [errorLine(msg('Ground is only available in Awakening dungeons.'))];
   }
 
-  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
-  if (party.length === 0) return [errorLine(msg('No agents available.'))];
-
-  let agent = party[0];
-  if (ctx.args.length > 0) {
-    const agentName = ctx.args.join(' ');
-    const names = party.map((a) => a.agent_name);
-    const matched = fuzzyName(agentName, names);
-    if (matched) {
-      agent = party.find((a) => a.agent_name === matched) ?? agent;
-    } else {
-      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
-    }
-  } else {
-    agent = party.reduce((best, a) =>
-      (a.aptitudes.spy ?? 0) > (best.aptitudes.spy ?? 0) ? a : best,
-    );
-  }
+  const picked = resolveActingAgent(ctx, 'spy');
+  if ('error' in picked) return picked.error;
+  const agent = picked.agent;
 
   try {
     const resp = await dungeonApi.ground(runId, agent.agent_id);
@@ -1178,24 +1173,9 @@ async function handleDungeonRally(ctx: CommandContext): Promise<TerminalLine[]> 
     return [errorLine(msg('Rally is only available in Overthrow dungeons.'))];
   }
 
-  const party = dungeonState.party.value.filter((a) => a.condition !== 'captured');
-  if (party.length === 0) return [errorLine(msg('No agents available.'))];
-
-  let agent = party[0];
-  if (ctx.args.length > 0) {
-    const agentName = ctx.args.join(' ');
-    const names = party.map((a) => a.agent_name);
-    const matched = fuzzyName(agentName, names);
-    if (matched) {
-      agent = party.find((a) => a.agent_name === matched) ?? agent;
-    } else {
-      return [errorLine(`${msg('Unknown agent')}: ${agentName}`)];
-    }
-  } else {
-    agent = party.reduce((best, a) =>
-      (a.aptitudes.propagandist ?? 0) > (best.aptitudes.propagandist ?? 0) ? a : best,
-    );
-  }
+  const picked = resolveActingAgent(ctx, 'propagandist');
+  if ('error' in picked) return picked.error;
+  const agent = picked.agent;
 
   try {
     const resp = await dungeonApi.rally(runId, agent.agent_id);
