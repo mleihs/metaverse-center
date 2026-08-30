@@ -1552,7 +1552,7 @@ export function formatDungeonHelp(): TerminalLine[] {
 
   const cmds: [string, string][] = [
     ['dungeon [n|name]', msg('Enter a dungeon (by number or name)')],
-    ['move [room]', msg('Move to adjacent room (alias: m)')],
+    ['move [room]', msg('Move to adjacent room (aliases: m, go)')],
     ['scout [agent]', msg('Reveal adjacent rooms (alias: sc)')],
     ['look', msg('Re-examine current room (alias: l)')],
     ['status', msg('Dungeon status overview')],
@@ -1573,12 +1573,18 @@ export function formatDungeonHelp(): TerminalLine[] {
 
   lines.push(systemLine(''));
   lines.push(systemLine(msg('Archetype-specific:')));
-  lines.push(responseLine(`  ${'seal [agent]'.padEnd(22)} ${msg('Seal breach (Deluge only)')}`));
-  lines.push(
-    responseLine(
-      `  ${'salvage [room]'.padEnd(22)} ${msg('Dive for submerged loot (Deluge only)')}`,
-    ),
-  );
+  // `ground` and `rally` were dispatched and gated but never listed here, so
+  // two archetypes had a verb the help did not mention (Befund D19).
+  // `lint-dungeon-verbs-gated.sh` now holds this list to the dispatcher.
+  const archetypeCmds: [string, string][] = [
+    ['seal [agent]', msg('Seal breach (Deluge only)')],
+    ['salvage [room]', msg('Dive for submerged loot (Deluge only, alias: dive)')],
+    ['ground [agent]', msg('Ground a reconstructed room (Awakening only)')],
+    ['rally [agent]', msg('Rally the faction (Overthrow only)')],
+  ];
+  for (const [syntax, desc] of archetypeCmds) {
+    lines.push(responseLine(`  ${syntax.padEnd(22)} ${desc}`));
+  }
 
   return lines;
 }

@@ -98,6 +98,8 @@ jobs:
       # measurement that set its thresholds.
       - name: Shared-style lint (no hand-copied style modules)
         run: bash frontend/scripts/lint-no-shared-style-copy.sh
+      - name: Lint — every dungeon verb is gated and documented
+        run: bash frontend/scripts/lint-dungeon-verbs-gated.sh
         working-directory: .
 
       # Guards the guards: a lint script whose grep target does not exist under
