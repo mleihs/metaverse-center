@@ -93,6 +93,64 @@ def _sanitize_short_fields(entity: dict, entity_type: str) -> None:
             entity[field_name] = truncated
 
 
+# ── Shared prompt blocks ─────────────────────────────────────────────────────
+#
+# `_build_chunk_prompt` and `_build_entity_prompt` are two paths to the same
+# output — a batch of entities, or one entity at a time — and they had the prose
+# requirements and the bilingual instruction written out twice. That is how a
+# single-site edit silently reached only half the Forge: the copies looked
+# identical, so a change to one read as a change to both. One definition now.
+
+_AGENT_PROSE_REQUIREMENTS: tuple[str, ...] = (
+    "- Write 'character' (200-300 words): temperament, how they work, what they avoid, how they "
+    "treat the people above and below them, and a brief physical impression (build, distinguishing "
+    "feature, typical clothing). The physical details will feed portrait image generation.",
+    "- Write 'background' (200-300 words): origin, formative event, current motivation.",
+)
+
+_BUILDING_PROSE_REQUIREMENTS: tuple[str, ...] = (
+    "- Write 'description' (150-250 words): architectural style, dominant materials (stone, iron, "
+    "glass, wood), sensory details (sounds, smells, light), what the place is used for and what "
+    "state it is in. These feed image generation.",
+)
+
+# The style floor. Last in the prompt, because position decides.
+#
+# Both builders used to ORDER, item by item, every formula that makes an
+# LLM character read like every other LLM character: "vivid", "rich",
+# "contradictions", "a memorable quirk", "a secret or unresolved tension". A
+# production world returned exactly that — "Ihr groesster Widerspruch: …",
+# "Ihre private Ketzerei: …", a stray lock of hair she never tucks back — and
+# the reader called it "poetry by sixteen-year-olds". Every one of those was a
+# line item in this file, not an invention of the model.
+#
+# Measured (deepseek-chat-v3-0324, T=0.8, 3 runs x 2 fields): the same floor
+# placed only in the SYSTEM prompt left 0 of 6 closing sentences clean; placed
+# at the END of the user prompt it left 4-5 of 6 clean. Negative style rules
+# lose to a strong prior unless they come last — so this block goes last, and
+# only the bilingual instruction, which is mechanical rather than stylistic,
+# follows it.
+_STYLE_FLOOR: tuple[str, ...] = (
+    "",
+    "STYLE (platform requirement, overrides anything above):",
+    "- At most one simile or image per paragraph.",
+    '- No formula that sums the subject up ("Their greatest contradiction:", "Their private heresy:").',
+    "- No signature quirk invented to make the subject memorable.",
+    "- The LAST sentence of each field is a fact, not an epigram and not a comparison.",
+    "- Sentences may be long; they should just not all share one shape.",
+    "- Ordinary registers are allowed: a clerk may be described in the language of clerks.",
+)
+
+_BILINGUAL_BLOCK: tuple[str, ...] = (
+    "",
+    "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
+    "equivalent in the corresponding _de field (e.g. description → description_de, "
+    "character → character_de). The German text should read as if originally written "
+    "in German — not a literal translation. Keep ALL proper nouns (names, places) "
+    "identical across both languages.",
+)
+
+
 def _build_chunk_prompt(
     chunk_type: str,
     anchor: dict,
@@ -141,11 +199,7 @@ def _build_chunk_prompt(
         lines += [
             "",
             "Requirements:",
-            "- Write 'character' as a vivid personality portrait (200-300 words): temperament, mannerisms, "
-            "contradictions, a memorable quirk, and a brief physical impression (build, distinguishing "
-            "feature, typical clothing). The physical details will feed portrait image generation.",
-            "- Write 'background' as rich backstory (200-300 words): origin, formative event, "
-            "current motivation, and a secret or unresolved tension.",
+            *_AGENT_PROSE_REQUIREMENTS,
             "- Vary genders across the set (mix of male, female, non-binary).",
             "- Each agent should belong to a different faction/system tied to the world's geography.",
             "- Professions should be unique and thematically resonant — avoid generic titles.",
@@ -167,9 +221,7 @@ def _build_chunk_prompt(
         lines += [
             "",
             "Requirements:",
-            "- Write 'description' as an atmospheric passage (150-250 words): architectural style, "
-            "dominant materials (stone, iron, glass, wood), sensory details (sounds, smells, light), "
-            "and what makes the place remarkable or unsettling. These feed image generation.",
+            *_BUILDING_PROSE_REQUIREMENTS,
             "- Vary 'building_condition' across the set: use pristine, good, fair, poor, or ruined. "
             "At least one should be 'poor' or 'ruined', and at least one 'pristine' or 'good'.",
             "- Vary building types (tavern, archive, factory, residence, market, observatory, etc.).",
@@ -177,14 +229,7 @@ def _build_chunk_prompt(
         ]
 
     # Always generate bilingually — the platform serves EN + DE.
-    lines += [
-        "",
-        "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
-        "equivalent in the corresponding _de field (e.g. description → description_de, "
-        "character → character_de). The German text should read as if originally written "
-        "in German — not a literal translation. Keep ALL proper nouns (names, places) "
-        "identical across both languages.",
-    ]
+    lines += [*_STYLE_FLOOR, *_BILINGUAL_BLOCK]
 
     return "\n".join(lines)
 
@@ -239,11 +284,7 @@ def _build_entity_prompt(
             f"This is operative {entity_index + 1} of {entity_total}.",
             "",
             "Requirements:",
-            "- Write 'character' as a vivid personality portrait (200-300 words): temperament, mannerisms, "
-            "contradictions, a memorable quirk, and a brief physical impression (build, distinguishing "
-            "feature, typical clothing). The physical details will feed portrait image generation.",
-            "- Write 'background' as rich backstory (200-300 words): origin, formative event, "
-            "current motivation, and a secret or unresolved tension.",
+            *_AGENT_PROSE_REQUIREMENTS,
             "- Vary gender from already-recruited operatives where possible.",
             "- 'system' is the agent's faction or organization — a SHORT name (1-5 words, max 80 chars). "
             "Examples: 'Gildenrat', 'Kanalgrund Widerstand', 'Observatorium'. "
@@ -257,23 +298,14 @@ def _build_entity_prompt(
             f"This is structure {entity_index + 1} of {entity_total}.",
             "",
             "Requirements:",
-            "- Write 'description' as an atmospheric passage (150-250 words): architectural style, "
-            "dominant materials (stone, iron, glass, wood), sensory details (sounds, smells, light), "
-            "and what makes the place remarkable or unsettling. These feed image generation.",
+            *_BUILDING_PROSE_REQUIREMENTS,
             "- Vary 'building_condition' from already-designed structures.",
             "- Building type should differ from existing structures.",
             "- Building name should be evocative and world-specific.",
         ]
 
     # Bilingual block
-    lines += [
-        "",
-        "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
-        "equivalent in the corresponding _de field (e.g. description → description_de, "
-        "character → character_de). The German text should read as if originally written "
-        "in German — not a literal translation. Keep ALL proper nouns (names, places) "
-        "identical across both languages.",
-    ]
+    lines += [*_STYLE_FLOOR, *_BILINGUAL_BLOCK]
 
     return "\n".join(lines)
 
