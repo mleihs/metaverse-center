@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
@@ -13,6 +13,8 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
+import { markerStatusStyles } from '../shared/marker-styles.js';
+import { VelgToast } from '../shared/Toast.js';
 import { cardFrameFromTheme, cardThemeStyle } from './forge-card-data.js';
 
 import '../shared/VelgGameCard.js';
@@ -27,7 +29,9 @@ import '../shared/VelgGameCard.js';
 @localized()
 @customElement('velg-forge-ceremony')
 export class VelgForgeCeremony extends LitElement {
-  static styles = css`
+  static styles = [
+    markerStatusStyles,
+    css`
     :host {
       display: block;
       /* Tier 3 — primary amber opacity scale (adapts to sim theme) */
@@ -836,6 +840,92 @@ export class VelgForgeCeremony extends LitElement {
 
     /* ── Lore Phase Readout ──────────────────────── */
 
+    /* The shortfall panel. A tinted plate rather than the amber readout beside
+       it: this is the one place in the ceremony that reports a LOSS, and it has
+       to read as a different kind of statement than "translating section 3 of 7".
+       The severity sits on the mark, per shared/marker-styles.ts — no edge bar. */
+    .ceremony__shortfall {
+      position: relative;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      max-width: 46ch;
+      margin: 0 auto;
+      padding: var(--space-3) var(--space-4);
+      background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-warning) 30%, transparent);
+      text-align: center;
+    }
+
+    .ceremony__shortfall-mark {
+      margin: 0;
+    }
+
+    .ceremony__shortfall-count {
+      margin: 0;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+
+    .ceremony__shortfall-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-1) var(--space-3);
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-text-primary);
+    }
+
+    .ceremony__shortfall-queued {
+      margin: 0;
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    .ceremony__shortfall-btn {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      /* 44px tall so a thumb can hit it on a phone. */
+      min-height: 44px;
+      padding: var(--space-2) var(--space-5);
+      border: 1px solid var(--color-warning);
+      background: none;
+      color: var(--color-warning);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .ceremony__shortfall-btn:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--color-warning) 16%, transparent);
+    }
+
+    .ceremony__shortfall-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-warning);
+    }
+
+    .ceremony__shortfall-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ceremony__shortfall-btn {
+        transition: none;
+      }
+    }
+
     .ceremony__lore-phase {
       position: relative;
       z-index: 6;
@@ -1535,10 +1625,13 @@ export class VelgForgeCeremony extends LitElement {
         contain: none;
       }
     }
-  `;
+    `,
+  ];
 
   // ── Public properties ──────────────────────────
 
+  /** Needed for the shortfall repair; `getForgeProgress` polls by slug. */
+  @property() simulationId = '';
   @property() shardName = '';
   @property() slug = '';
   @property() seedPrompt = '';
@@ -1560,6 +1653,9 @@ export class VelgForgeCeremony extends LitElement {
 
   /** Names whose image just materialised this poll (triggers flash animation). */
   @state() private _freshImages = new Set<string>();
+  @state() private _repairingImages = false;
+  /** Set once the repair is queued, so the button cannot be pressed twice. */
+  @state() private _repairQueued = false;
 
   private _timers: ReturnType<typeof setTimeout>[] = [];
   private _typeInterval: ReturnType<typeof setInterval> | null = null;
@@ -1827,9 +1923,82 @@ export class VelgForgeCeremony extends LitElement {
         return `${msg('Translating Section')} ${lp.current ?? 0}/${lp.total ?? 0}`;
       case 'entities':
         return msg('Translating Entities...');
+      case 'images_incomplete':
+        return msg('Some images did not come back');
       default:
         return '';
     }
+  }
+
+  /**
+   * Ask the Bureau to redraw only what is missing.
+   *
+   * Free and narrow on purpose: after a partial run one image of sixteen is
+   * typically absent, and regenerating the set would spend fifteen to repair
+   * one. The poll picks the result up on its own, so this only has to say that
+   * the order was placed.
+   */
+  private async _repairImages() {
+    if (this._repairingImages || this._repairQueued || !this.simulationId) return;
+    this._repairingImages = true;
+    try {
+      const resp = await forgeApi.generateMissingImages(this.simulationId);
+      if (resp.success && resp.data) {
+        this._repairQueued = true;
+      } else {
+        VelgToast.error(msg('The Bureau could not take the order. Try again shortly.'));
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgForgeCeremony._repairImages' });
+      VelgToast.error(msg('The Bureau could not take the order. Try again shortly.'));
+    } finally {
+      this._repairingImages = false;
+    }
+  }
+
+  /**
+   * The shortfall panel.
+   *
+   * Names the entities and the count, and NOT the error text: that string is
+   * model output, English, and unlocalised — it belongs in Sentry, not on a
+   * ceremony screen. What a reader needs here is which of their buildings has no
+   * picture and one thing to press.
+   */
+  private _renderImageShortfall(lp: LorePhaseProgress) {
+    const failed = lp.failed ?? 0;
+    const total = lp.total ?? 0;
+    if (failed <= 0) return nothing;
+    const names = (lp.entities ?? []).map((e) => e.entity_name).filter(Boolean);
+    return html`
+      <div class="ceremony__shortfall" role="status" aria-live="polite">
+        <p class="ceremony__shortfall-mark status-mark status-mark--warning">
+          ${msg('Incomplete delivery')}
+        </p>
+        <p class="ceremony__shortfall-count">
+          ${msg(str`${failed} of ${total} images did not come back.`, { id: 'forge-image-shortfall-count' })}
+        </p>
+        ${
+          names.length
+            ? html`<ul class="ceremony__shortfall-list">
+                ${names.map((n) => html`<li>${n}</li>`)}
+              </ul>`
+            : nothing
+        }
+        ${
+          this._repairQueued
+            ? html`<p class="ceremony__shortfall-queued">
+                ${msg('Order placed. The images appear here as they arrive.')}
+              </p>`
+            : html`<button
+                class="ceremony__shortfall-btn"
+                ?disabled=${this._repairingImages || !this.simulationId}
+                @click=${this._repairImages}
+              >
+                ${this._repairingImages ? msg('Sending...') : msg('Redraw what is missing')}
+              </button>`
+        }
+      </div>
+    `;
   }
 
   // ── Event ──────────────────────────────────────
@@ -2104,6 +2273,13 @@ export class VelgForgeCeremony extends LitElement {
             })()}
           </div>
         `
+            : nothing
+        }
+
+        <!-- Shortfall: the batch finished and some images did not come back -->
+        ${
+          this._progress?.lore_progress?.phase === 'images_incomplete'
+            ? this._renderImageShortfall(this._progress.lore_progress)
             : nothing
         }
 

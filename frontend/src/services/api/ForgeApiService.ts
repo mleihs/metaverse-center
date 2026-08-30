@@ -112,11 +112,37 @@ export interface ForgeProgressEntity {
   image_url: string | null;
 }
 
+/** One entity whose image did not come back, for the shortfall panel. */
+export interface FailedImageEntity {
+  entity_type: string;
+  entity_name: string;
+  entity_id: string;
+  /** Raw model/provider error. English, unlocalised — never render it plainly. */
+  error: string;
+}
+
 export interface LorePhaseProgress {
-  phase: 'research' | 'generating' | 'translating' | 'entities' | 'images';
+  /**
+   * `images_incomplete` is a RESTING state, not a step: the batch finished and
+   * some images did not come back. Before it existed, `lore_progress` was set to
+   * NULL at the end of every run, and `get_forge_progress` computes `done` as
+   * `completed >= total` — so a partial run left the bar at 15/16 forever,
+   * without a word and without anything to press.
+   */
+  phase: 'research' | 'generating' | 'translating' | 'entities' | 'images' | 'images_incomplete';
   current?: number;
   total?: number;
   section_title?: string;
+  /** `images_incomplete` only: how many of `total` have no image. */
+  failed?: number;
+  /** `images_incomplete` only: which ones. */
+  entities?: FailedImageEntity[];
+}
+
+/** Result of asking the Bureau to redraw only what is missing. */
+export interface MissingImagesResponse {
+  queued: number;
+  message: string;
 }
 
 export interface ForgeProgress {
@@ -255,6 +281,17 @@ export class ForgeApiService extends BaseApiService {
 
   getForgeProgress(slug: string): Promise<ApiResponse<ForgeProgress>> {
     return this.getPublic(`/simulations/by-slug/${slug}/forge-progress`);
+  }
+
+  /**
+   * Redraw ONLY the entities that have no image.
+   *
+   * Free, and deliberately narrow: after a partial run one image of sixteen is
+   * typically missing, and regenerating the set would spend fifteen to repair
+   * one. Calling it with nothing missing is a no-op that returns `queued: 0`.
+   */
+  generateMissingImages(simulationId: string): Promise<ApiResponse<MissingImagesResponse>> {
+    return this.post(`/forge/simulations/${simulationId}/generate-missing-images`);
   }
 
   getWallet(): Promise<ApiResponse<WalletResponse>> {

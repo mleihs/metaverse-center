@@ -233,6 +233,10 @@ export class VelgForgeIgnition extends LitElement {
   @state() private _hasDraft = false;
   @state() private _isIgniting = false;
   @state() private _materializedSlug: string | null = null;
+  /** Kept for the ceremony's repair button: the shortfall endpoint is keyed on
+      the simulation id, while `getForgeProgress` polls by slug — this is the
+      only place the id is in hand. */
+  @state() private _materializedId = '';
   @state() private _materializedName = '';
   @state() private _materializedDescription = '';
   @state() private _error: string | null = null;
@@ -264,6 +268,7 @@ export class VelgForgeIgnition extends LitElement {
       const result = await forgeStateManager.ignite();
       if (result.slug) {
         this._materializedSlug = result.slug;
+        this._materializedId = result.simulationId ?? '';
         this._materializedName = result.name ?? '';
         this._materializedDescription = result.description ?? '';
         VelgToast.success(msg('Shard ignited! Materializing assets...'));
@@ -362,6 +367,7 @@ export class VelgForgeIgnition extends LitElement {
         <velg-forge-ceremony
           .shardName=${this._materializedName || this._materializedSlug}
           .slug=${this._materializedSlug}
+          .simulationId=${this._materializedId}
           .seedPrompt=${this._materializedDescription || draft?.seed_prompt || ''}
           .anchorTitle=${anchor?.title ?? ''}
           .agents=${draft?.agents ?? []}
