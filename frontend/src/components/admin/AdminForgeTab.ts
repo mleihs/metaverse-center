@@ -710,7 +710,7 @@ export class VelgAdminForgeTab extends LitElement {
       <div class="forge-admin">
 
         <!-- SEC-01: Forge Overview -->
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-01</span>
             <h3 class="forge-section__title">${msg('Forge Overview')}</h3>
@@ -736,7 +736,7 @@ export class VelgAdminForgeTab extends LitElement {
         ${this._renderTokenEconomy()}
 
         <!-- SEC-03: Clearance Requests -->
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-03</span>
             <h3 class="forge-section__title">${msg('Clearance Queue')}</h3>
@@ -755,7 +755,7 @@ export class VelgAdminForgeTab extends LitElement {
         </div>
 
         <!-- SEC-07: Global Controls -->
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-07</span>
             <h3 class="forge-section__title">${msg('Global Economic Controls')}</h3>
@@ -825,7 +825,7 @@ export class VelgAdminForgeTab extends LitElement {
         </div>
 
         <!-- SEC-08: Personal BYOK Keys -->
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-08</span>
             <h3 class="forge-section__title">${msg('Personal API Keys (BYOK)')}</h3>
@@ -836,7 +836,7 @@ export class VelgAdminForgeTab extends LitElement {
         </div>
 
         <!-- SEC-09: Maintenance -->
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="forge-section__header">
             <span class="forge-section__code">SEC-09</span>
             <h3 class="forge-section__title">${msg('Maintenance')}</h3>
@@ -859,7 +859,7 @@ export class VelgAdminForgeTab extends LitElement {
     if (!s) return nothing;
 
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-02</span>
           <h3 class="forge-section__title">${msg('Token Economy')}</h3>
@@ -898,7 +898,7 @@ export class VelgAdminForgeTab extends LitElement {
     if (!this._bundles.length) return nothing;
 
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-04</span>
           <h3 class="forge-section__title">${msg('Bundle Management')}</h3>
@@ -1082,7 +1082,7 @@ export class VelgAdminForgeTab extends LitElement {
 
   private _renderGrantForm() {
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-05</span>
           <h3 class="forge-section__title">${msg('Grant Tokens')}</h3>
@@ -1136,7 +1136,7 @@ export class VelgAdminForgeTab extends LitElement {
 
   private _renderPurchaseLedger() {
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-06</span>
           <h3 class="forge-section__title">${msg('Purchase Ledger')}</h3>

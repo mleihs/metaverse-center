@@ -34,19 +34,18 @@ import { contentDraftsApi } from '../../../services/api/index.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/BaseModal.js';
+import { draftBannerStyles } from './draft-banner-styles.js';
 
 type ModalState = 'loading' | 'preview' | 'deleting' | 'done' | 'error';
 
 @localized()
 @customElement('velg-sweep-orphans-modal')
 export class VelgSweepOrphansModal extends LitElement {
-  static styles = css`
+  static styles = [
+    draftBannerStyles,
+    css`
     :host {
-      --_accent: var(--color-accent-amber);
       --_danger-bg: color-mix(in srgb, var(--color-danger) 10%, transparent);
-      --_danger-border: color-mix(in srgb, var(--color-danger) 40%, transparent);
-      --_warn-bg: color-mix(in srgb, var(--color-warning) 8%, transparent);
-      --_success-bg: color-mix(in srgb, var(--color-success) 10%, transparent);
       --_keep-bg: color-mix(in srgb, var(--color-success) 14%, transparent);
       --_keep-fg: var(--color-success);
       --_delete-bg: color-mix(in srgb, var(--color-danger) 14%, transparent);
@@ -56,43 +55,17 @@ export class VelgSweepOrphansModal extends LitElement {
       font-family: var(--font-mono, monospace);
     }
 
+    /* This modal stacks its banner directly onto a summary, so it sits one
+       step tighter than the shared default. */
+    .banner {
+      --banner-gap: var(--space-3);
+    }
+
     .lead {
       font-size: var(--text-xs);
       line-height: 1.55;
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-3);
-    }
-
-    .banner {
-      padding: var(--space-3) var(--space-4);
-      margin-bottom: var(--space-3);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      line-height: 1.55;
-    }
-    .banner--warn {
-      background: var(--_warn-bg);
-    }
-    .banner--error {
-      background: var(--_danger-bg);
-    }
-    .banner--success {
-      background: var(--_success-bg);
-    }
-    /* Die Schwere sitzt auf der Marke, nicht an der Kante: der Kasten ist
-       ohnehin schon in der Statusfarbe getoent, und diese Zeile ist die
-       Ueberschrift, die den Status benennt. */
-    .banner--warn .banner__title    { color: var(--color-warning); }
-    .banner--error .banner__title   { color: var(--color-danger); }
-    .banner--success .banner__title { color: var(--color-success); }
-
-    .banner__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      margin: 0 0 var(--space-1);
     }
 
     .totals {
@@ -258,7 +231,8 @@ export class VelgSweepOrphansModal extends LitElement {
         transition: none;
       }
     }
-  `;
+    `,
+  ];
 
   @property({ type: Boolean, reflect: true }) open = false;
 
@@ -349,7 +323,7 @@ export class VelgSweepOrphansModal extends LitElement {
     if (this._state === 'error') {
       return html`
         <div class="banner banner--error">
-          <p class="banner__title">${msg('Sweep failed')}</p>
+          <p class="banner__title status-mark">${msg('Sweep failed')}</p>
           ${this._error ?? msg('Unknown error.')}
         </div>
       `;
@@ -444,7 +418,7 @@ export class VelgSweepOrphansModal extends LitElement {
     if (result.error_count > 0) {
       return html`
         <div class="banner banner--warn">
-          <p class="banner__title">${msg('Sweep complete with errors')}</p>
+          <p class="banner__title status-mark">${msg('Sweep complete with errors')}</p>
           ${msg(
             str`Deleted ${result.deleted_count} branch(es). ${result.error_count} failed – see row details below.`,
           )}
@@ -453,7 +427,7 @@ export class VelgSweepOrphansModal extends LitElement {
     }
     return html`
       <div class="banner banner--success">
-        <p class="banner__title">${msg('Sweep complete')}</p>
+        <p class="banner__title status-mark">${msg('Sweep complete')}</p>
         ${
           result.deleted_count === 0
             ? msg('Nothing needed deletion.')

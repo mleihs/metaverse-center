@@ -17,13 +17,16 @@ import { forgeApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import type { ForgeAccessRequestWithEmail } from '../../types/index.js';
 import { formatDateTime } from '../../utils/date-format.js';
+import { adminForgeSectionStyles } from '../shared/admin-shared-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgBadge.js';
 
 @localized()
 @customElement('velg-clearance-queue')
 export class VelgClearanceQueue extends LitElement {
-  static styles = css`
+  static styles = [
+    adminForgeSectionStyles,
+    css`
     :host {
       display: block;
     }
@@ -48,65 +51,11 @@ export class VelgClearanceQueue extends LitElement {
 
     /* ── Full variant: forge-section wrapper ── */
 
+    /* The panel comes from the shared admin module; this component had carried
+       a hand-copy of all six of its rules, the amber edge bar included. */
     .forge-section {
-      position: relative;
-      background: var(--color-surface-sunken);
-      border: 1px solid var(--color-border);
-      padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
-      animation: panel-enter 0.4s ease both;
-    }
-
-    .forge-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: linear-gradient(
-        180deg,
-        var(--color-accent-amber) 0%,
-        var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
-      );
-    }
-
-    .forge-section__header {
-      display: flex;
-      align-items: baseline;
-      gap: var(--space-3);
-      margin-bottom: var(--space-1);
-    }
-
-    .forge-section__code {
-      font-family: var(--font-mono, 'SF Mono', monospace);
-      font-size: 9px;
-      letter-spacing: 2px;
-      color: var(--color-accent-amber);
-      opacity: 0.7;
-      white-space: nowrap;
-    }
-
-    .forge-section__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
-      margin: 0;
-    }
-
-    .forge-section__desc {
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      margin-bottom: var(--space-4);
-      padding-left: 1px;
-    }
-
-    .forge-section__divider {
-      height: 1px;
-      background: linear-gradient(90deg, var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%, transparent 80%);
-      margin-bottom: var(--space-4);
+      /* Outermost element here — the queue's parent owns the spacing below. */
+      margin-bottom: 0;
     }
 
     /* ── Request cards ── */
@@ -345,7 +294,8 @@ export class VelgClearanceQueue extends LitElement {
         text-align: center;
       }
     }
-  `;
+    `,
+  ];
 
   @property({ reflect: true }) variant: 'full' | 'compact' = 'full';
 
@@ -462,7 +412,7 @@ export class VelgClearanceQueue extends LitElement {
     const count = this._requests.length;
     return html`
       <div
-        class="forge-section"
+        class="forge-section marker-corners"
         role="region"
         aria-label=${msg('Pending clearance requests')}
         tabindex="-1"

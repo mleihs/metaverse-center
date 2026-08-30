@@ -35,7 +35,7 @@ Focus on:
 - **Color & Theme**: Commit to the 3-tier token system (see below). Dominant status color with sharp accents. Use `color-mix(in srgb, ...)` for component-local derived colors in `:host` only. The amber-on-black default palette is dramatic by itself — lean into it.
 - **Motion**: Use animation tokens (`--duration-entrance`, `--ease-dramatic`, `--duration-stagger`). Focus on high-impact moments: one well-orchestrated page load with staggered reveals via `calc(var(--i, 0) * var(--duration-stagger))` creates more delight than scattered micro-interactions. Scroll-reveal with IntersectionObserver + `.in-view` class toggle. Hover states that transform with `--transition-fast`. ALL animations must include `@media (prefers-reduced-motion: reduce)` override.
 - **Spatial Composition**: Asymmetric layouts. Grid-breaking hero sections. Generous negative space with `--space-{12,16,20,24}` tokens. Dense data panels with `--space-{2,3,4}` tight spacing. Use `repeat(auto-fill, minmax(var(--grid-min-width, 340px), 1fr))` for adaptive card grids.
-- **Atmospheric Details**: Corner brackets (terminal frame pattern from `terminalFrameStyles`). Scanline overlays. Dashed borders (`1px dashed var(--color-border)`). Accent bars (`3px solid var(--color-primary)` left border). SVG filters from `<velg-svg-filters>` (ink-bleed, parchment-noise, ghost-text-blur). Inset glows via `color-mix()` with transparency. The brutalist offset shadows (`--shadow-{xs-2xl}`) are hard-edge by default — use them for depth without blur.
+- **Atmospheric Details**: Corner brackets (terminal frame pattern from `terminalFrameStyles`). Scanline overlays. Dashed borders (`1px dashed var(--color-border)`). Marking devices from `shared/marker-styles.ts` — `.marker-corners` for identity, `.status-mark` for severity, `.marker-quote` for grouping. NOT a coloured edge bar: it is rejected by `lint-no-accent-edge-bar.sh` in both of its shapes (a `border-left` >= 2px, and a pinned narrow `::before`). SVG filters from `<velg-svg-filters>` (ink-bleed, parchment-noise, ghost-text-blur). Inset glows via `color-mix()` with transparency. The brutalist offset shadows (`--shadow-{xs-2xl}`) are hard-edge by default — use them for depth without blur.
 
 NEVER use:
 - Generic AI aesthetics: overused font families (Inter, Roboto, Space Grotesk), purple gradients, rounded-corner card soup
@@ -210,7 +210,7 @@ Additional: `--color-text-tertiary`, `--color-icon` (= text-muted), `--color-sep
 |-----------|-----|-----------|
 | Badge | `<velg-badge variant="default|primary|info|success|warning|danger">` | Pop animation |
 | Avatar | `<velg-avatar src name size="xs|sm|full" moodColor clickable>` | Mood ring, click event |
-| MetricCard | `<velg-metric-card label value sublabel variant>` | Corner brackets, accent bar |
+| MetricCard | `<velg-metric-card label value sublabel variant>` | Corner brackets, brutalist shadow |
 | GameCard | `<velg-game-card type title imageSrc rarity size operative>` | TCG card, 3D tilt, foil |
 
 ### Overlay & Notification
@@ -343,12 +343,13 @@ When touching existing components, flag and fix these opportunities:
 2. **No em dashes**: No U+2014 in `msg()` strings. Use en dashes U+2013. Enforced by `frontend/scripts/lint-llm-content.sh`.
 3. **No LLM-isms**: No "tapestry", "delve", "unleash", "seamlessly", "holistic", "multifaceted", "bustling", "game-changer", "cutting-edge" in `msg()` strings. Same lint gate.
 4. **Icons from `icons.ts` only**: Never inline SVG markup.
-5. **No layout container effects**: Never apply `filter`, `transform`, `will-change`, `contain: paint`, or `perspective` on shells, views, or panels. Apply to leaf elements only.
-6. **Brutalist headings**: All headings use `font-family: var(--font-brutalist)`, `text-transform: uppercase`, `letter-spacing: var(--tracking-brutalist)`.
-7. **WCAG AA**: 4.5:1 contrast ratio for normal text, 3:1 for large text. 44px minimum touch targets on mobile. Visible focus rings via `--ring-focus`. `@media (prefers-reduced-motion)` on all animations.
-8. **Three-state rendering**: Every data-driven component must handle loading, empty, and content states. Use shared state components.
-9. **i18n mandatory**: Every user-facing string wrapped in `msg()`. Component must have `@localized()` decorator.
-10. **Lint after every change**: Run `bash frontend/scripts/lint-color-tokens.sh && bash frontend/scripts/lint-llm-content.sh` to verify compliance.
+5. **No coloured edge bars**: Never mark a box with a coloured bar down one edge — neither as `border-left: >=2px solid <status colour>` nor as an absolutely positioned `::before`/`::after` a few pixels wide. Use `shared/marker-styles.ts` (`.marker-corners` / `.status-mark` / `.marker-quote`), or colour the whole border. Enforced by `frontend/scripts/lint-no-accent-edge-bar.sh`. First ask whether the colour is already said elsewhere on the same box — most of the 110 removed in the sweep needed no replacement at all.
+6. **No layout container effects**: Never apply `filter`, `transform`, `will-change`, `contain: paint`, or `perspective` on shells, views, or panels. Apply to leaf elements only.
+7. **Brutalist headings**: All headings use `font-family: var(--font-brutalist)`, `text-transform: uppercase`, `letter-spacing: var(--tracking-brutalist)`.
+8. **WCAG AA**: 4.5:1 contrast ratio for normal text, 3:1 for large text. 44px minimum touch targets on mobile. Visible focus rings via `--ring-focus`. `@media (prefers-reduced-motion)` on all animations.
+9. **Three-state rendering**: Every data-driven component must handle loading, empty, and content states. Use shared state components.
+10. **i18n mandatory**: Every user-facing string wrapped in `msg()`. Component must have `@localized()` decorator.
+11. **Lint after every change**: Run `bash frontend/scripts/lint-color-tokens.sh && bash frontend/scripts/lint-llm-content.sh` to verify compliance.
 
 ---
 

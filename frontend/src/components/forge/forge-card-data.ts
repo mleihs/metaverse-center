@@ -95,11 +95,6 @@ export function buildingCardView(building: ForgeBuildingDraft): ForgeCardView {
   };
 }
 
-/** Short label naming what a slot holds, for screen readers and tooltips. */
-export function cardAriaLabel(view: ForgeCardView): string {
-  return view.subtitle ? `${view.name} – ${view.subtitle}` : view.name;
-}
-
 /**
  * Theme values → the `--card-*` custom properties `<velg-game-card>` reads.
  *

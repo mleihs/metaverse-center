@@ -1328,7 +1328,7 @@ export class VelgGameCard extends LitElement {
           role="button"
           tabindex="0"
           .draggable=${this.draggable}
-          aria-label=${this.name}
+          aria-label=${this._accessibleName}
           aria-busy=${this.generating && !this.imageUrl ? 'true' : 'false'}
           @mousemove=${this._onMouseMove}
           @mouseleave=${this._onMouseLeave}
@@ -1579,6 +1579,19 @@ export class VelgGameCard extends LitElement {
         })}
       </div>
     `;
+  }
+
+  /**
+   * The card's accessible name.
+   *
+   * `aria-label` on the `role="button"` REPLACES the card's contents for a
+   * screen reader, so a bare name dropped the subtitle — which is what tells an
+   * agent card from a building card of the same name. The separator is a comma
+   * rather than the dash used in the visible layout: a comma is the one
+   * character every screen reader turns into a pause.
+   */
+  private get _accessibleName(): string {
+    return this.subtitle ? `${this.name}, ${this.subtitle}` : this.name;
   }
 
   private _renderPlaceholderIcon() {

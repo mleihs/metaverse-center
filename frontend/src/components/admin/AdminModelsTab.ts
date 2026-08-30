@@ -789,7 +789,7 @@ export class VelgAdminModelsTab extends LitElement {
     const isProd = this._activeEnvironment === 'production';
 
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-01</span>
           <h3 class="forge-section__title">${msg('Model Configuration')}</h3>

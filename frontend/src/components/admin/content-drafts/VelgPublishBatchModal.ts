@@ -33,19 +33,19 @@ import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
 import '../../shared/BaseModal.js';
 import { VelgToast } from '../../shared/Toast.js';
+import { draftBannerStyles } from './draft-banner-styles.js';
 
 const COMMIT_MSG_MAX = 72;
 
 @localized()
 @customElement('velg-publish-batch-modal')
 export class VelgPublishBatchModal extends LitElement {
-  static styles = css`
+  static styles = [
+    draftBannerStyles,
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       --_accent-dim: color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
-      --_accent-bg: color-mix(in srgb, var(--color-accent-amber) 10%, transparent);
-      --_danger-bg: color-mix(in srgb, var(--color-danger) 10%, transparent);
-      --_success-bg: color-mix(in srgb, var(--color-success) 10%, transparent);
       display: block;
       color: var(--color-text-primary);
       font-family: var(--font-mono, monospace);
@@ -61,37 +61,6 @@ export class VelgPublishBatchModal extends LitElement {
       margin-bottom: var(--space-3);
     }
 
-    .banner {
-      padding: var(--space-3) var(--space-4);
-      margin-bottom: var(--space-4);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      line-height: 1.55;
-    }
-    .banner--warn {
-      background: color-mix(in srgb, var(--color-warning) 8%, transparent);
-    }
-    .banner--error {
-      background: var(--_danger-bg);
-    }
-    .banner--success {
-      background: var(--_success-bg);
-    }
-    /* Die Schwere sitzt auf der Marke, nicht an der Kante: der Kasten ist
-       ohnehin schon in der Statusfarbe getoent, und diese Zeile ist die
-       Ueberschrift, die den Status benennt. */
-    .banner--warn .banner__title    { color: var(--color-warning); }
-    .banner--error .banner__title   { color: var(--color-danger); }
-    .banner--success .banner__title { color: var(--color-success); }
-
-    .banner__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      margin: 0 0 var(--space-1);
-    }
 
     .drafts {
       list-style: none;
@@ -199,7 +168,8 @@ export class VelgPublishBatchModal extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       .btn { transition: none; }
     }
-  `;
+    `,
+  ];
 
   @property({ type: Boolean, reflect: true }) open = false;
 
@@ -332,7 +302,7 @@ export class VelgPublishBatchModal extends LitElement {
       </p>
 
       <div class="banner banner--warn">
-        <p class="banner__title">${msg('Deploy-lag advisory')}</p>
+        <p class="banner__title status-mark">${msg('Deploy-lag advisory')}</p>
         ${msg(
           'Publish reads the currently-deployed YAML to derive the seed migration. If another content PR merged in the last ~5 minutes, waiting for the next deploy before publishing avoids silently reverting those changes.',
         )}
@@ -342,7 +312,7 @@ export class VelgPublishBatchModal extends LitElement {
         this._error
           ? html`
             <div class="banner banner--error">
-              <p class="banner__title">${msg('Publish failed')}</p>
+              <p class="banner__title status-mark">${msg('Publish failed')}</p>
               ${this._error}
             </div>
           `
@@ -387,7 +357,7 @@ export class VelgPublishBatchModal extends LitElement {
     if (!result) return html``;
     return html`
       <div class="banner banner--success">
-        <p class="banner__title">${msg('PR opened')}</p>
+        <p class="banner__title status-mark">${msg('PR opened')}</p>
         ${msg(
           str`Pull request #${result.pr_number} is live on ${result.branch_name}. After merge, the next deploy applies the auto-generated seed migration.`,
         )}

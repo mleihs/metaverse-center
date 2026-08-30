@@ -49,6 +49,7 @@ import './VelgContentDraftConflictView.js';
 import './VelgDraftPresenceIndicator.js';
 import { type JsonEditorHandle, mountJsonEditor } from './codemirror-json-editor.js';
 import { ABILITY_PACK_SLUG, getSchemaForResource } from './content-schemas.js';
+import { draftBannerStyles } from './draft-banner-styles.js';
 
 /** Initial content for a blank-start draft (admin chose a resource that
  *  has no on-disk YAML yet OR explicitly opted for empty). Derives the
@@ -63,7 +64,9 @@ function seedContentFor(resourcePath: string): Record<string, unknown> {
 @localized()
 @customElement('velg-content-draft-editor')
 export class VelgContentDraftEditor extends LitElement {
-  static styles = css`
+  static styles = [
+    draftBannerStyles,
+    css`
     :host {
       --_accent: var(--color-accent-amber);
       --_accent-dim: color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
@@ -108,39 +111,6 @@ export class VelgContentDraftEditor extends LitElement {
       align-items: center;
     }
 
-    .banner {
-      padding: var(--space-3) var(--space-4);
-      margin-bottom: var(--space-4);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      line-height: 1.55;
-    }
-
-    .banner--warn {
-      background: color-mix(in srgb, var(--color-warning) 8%, transparent);
-      color: var(--color-text-primary);
-    }
-
-    .banner--error {
-      background: var(--_danger-bg);
-      color: var(--color-text-primary);
-    }
-
-    /* Die Schwere sitzt auf der Marke, nicht an der Kante: der Kasten ist
-       ohnehin schon in der Statusfarbe getoent, und diese Zeile ist die
-       Ueberschrift, die den Status benennt. */
-    .banner--warn .banner__title    { color: var(--color-warning); }
-    .banner--error .banner__title   { color: var(--color-danger); }
-    .banner--success .banner__title { color: var(--color-success); }
-
-    .banner__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest);
-      margin: 0 0 var(--space-1);
-    }
 
     .banner__action {
       display: inline-block;
@@ -375,7 +345,8 @@ export class VelgContentDraftEditor extends LitElement {
     @media (prefers-reduced-motion: reduce) {
       .btn, .entry-row { transition: none; }
     }
-  `;
+    `,
+  ];
 
   /** When set, the editor fetches and edits that draft. */
   @property({ type: String, attribute: 'draft-id' })
@@ -1150,7 +1121,7 @@ export class VelgContentDraftEditor extends LitElement {
         this._readOnly
           ? html`
             <div class="banner banner--warn">
-              <p class="banner__title">${msg('View-only draft')}</p>
+              <p class="banner__title status-mark">${msg('View-only draft')}</p>
               ${this._readOnlyReason(draft.status)}
             </div>
           `
@@ -1160,7 +1131,7 @@ export class VelgContentDraftEditor extends LitElement {
         this._staleVersion
           ? html`
             <div class="banner banner--error">
-              <p class="banner__title">${msg('Stale version')}</p>
+              <p class="banner__title status-mark">${msg('Stale version')}</p>
               ${msg('Another admin saved this draft. Reload to see the latest.')}
               <button class="banner__action" @click=${this._handleReload}>
                 ${msg('Reload')}
@@ -1173,7 +1144,7 @@ export class VelgContentDraftEditor extends LitElement {
         this._sameResourceOthers.length > 0
           ? html`
             <div class="banner banner--warn">
-              <p class="banner__title">${msg('Concurrent edit')}</p>
+              <p class="banner__title status-mark">${msg('Concurrent edit')}</p>
               ${msg(
                 str`${this._sameResourceOthers.length} other open draft(s) target this resource. Check with the other authors before saving.`,
               )}
@@ -1400,7 +1371,7 @@ export class VelgContentDraftEditor extends LitElement {
                   selectedRow
                     ? html`
                       <div class="banner banner--warn">
-                        <p class="banner__title">${msg('Selected')}</p>
+                        <p class="banner__title status-mark">${msg('Selected')}</p>
                         ${msg(
                           str`${selectedRow.file_path} – ${selectedRow.entry_count >= 0 ? selectedRow.entry_count : '?'} entries on disk.`,
                         )}
