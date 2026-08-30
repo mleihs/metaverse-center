@@ -18,6 +18,7 @@ import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
+import '../heartbeat/AttunementConsole.js';
 import '../shared/VelgHelpTip.js';
 
 import '../shared/LoadingState.js';
@@ -821,11 +822,6 @@ export class VelgSimulationHealthView extends LitElement {
   @state() private _refreshing = false;
   @state() private _selectedZoneForAction: string | null = null;
   @state() private _actionLoading = false;
-  @state() private _attunements: Array<{
-    resonance_signature: string;
-    depth: number;
-    positive_threshold: number;
-  }> = [];
   @state() private _anchors: Array<{
     name: string;
     strength: number;
@@ -842,12 +838,10 @@ export class VelgSimulationHealthView extends LitElement {
     this._loading = true;
     this._error = null;
     try {
-      const [healthResult, attResult, anchorResult] = await Promise.all([
+      // Attunements are no longer fetched here: <velg-attunement-console> owns
+      // that list, and two copies of it in one screen is one copy too many.
+      const [healthResult, anchorResult] = await Promise.all([
         healthApi.getDashboard(this.simulationId, appState.currentSimulationMode.value),
-        heartbeatApi.listAttunements(this.simulationId).catch((err) => {
-          captureError(err, { source: 'VelgSimulationHealthView._load.listAttunements' });
-          return { success: false, data: null };
-        }),
         heartbeatApi.listAnchors({ simulation_id: this.simulationId }).catch((err) => {
           captureError(err, { source: 'VelgSimulationHealthView._load.listAnchors' });
           return { success: false, data: null };
@@ -857,9 +851,6 @@ export class VelgSimulationHealthView extends LitElement {
         this._dashboard = healthResult.data;
       } else {
         this._error = healthResult.error?.message ?? msg('Failed to load health data.');
-      }
-      if (attResult.success && attResult.data) {
-        this._attunements = attResult.data as typeof this._attunements;
       }
       if (anchorResult.success && anchorResult.data) {
         this._anchors = anchorResult.data as typeof this._anchors;
@@ -1345,7 +1336,11 @@ export class VelgSimulationHealthView extends LitElement {
   }
 
   private _renderHeartbeatSystemsPanel() {
-    if (this._attunements.length === 0 && this._anchors.length === 0) return nothing;
+    // No early return on "nothing yet" any more. The panel used to hide itself
+    // when a world held neither attunement nor anchor - which was every world,
+    // because nothing in the interface could create an attunement. The mechanic
+    // was visible only to worlds that already had it. The console below is the
+    // door, and a door has to be there before it is used.
 
     return html`
       <div class="panel">
@@ -1357,30 +1352,13 @@ export class VelgSimulationHealthView extends LitElement {
           </h3>
         </div>
 
-        ${
-          this._attunements.length > 0
-            ? html`
-          <div class="hb-subsection">
-            <span class="hb-subsection__label">${msg('Attunements')}</span>
-            ${this._attunements.map((att) => {
-              const pct = Math.round(att.depth * 100);
-              const thresh = Math.round(att.positive_threshold * 100);
-              const harmonized = att.depth >= att.positive_threshold;
-              return html`
-                <div class="hb-meter" aria-label=${msg(str`${att.resonance_signature}: ${pct}% depth`)}>
-                  <span class="hb-meter__label">${att.resonance_signature.replace(/_/g, ' ')}</span>
-                  <div class="hb-meter__bar">
-                    <div class="hb-meter__fill ${harmonized ? 'hb-meter__fill--harmonized' : ''}" style="width: ${pct}%"></div>
-                    <div class="hb-meter__threshold" style="left: ${thresh}%"></div>
-                  </div>
-                  <span class="hb-meter__value ${harmonized ? 'hb-meter__value--harmonized' : ''}">${pct}%</span>
-                </div>
-              `;
-            })}
-          </div>
-        `
-            : nothing
-        }
+        <div class="hb-subsection">
+          <span class="hb-subsection__label">${msg('Attunements')}</span>
+          <velg-attunement-console
+            .simulationId=${this.simulationId}
+            @attunement-changed=${this._load}
+          ></velg-attunement-console>
+        </div>
 
         ${
           this._anchors.length > 0

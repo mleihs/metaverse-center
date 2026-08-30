@@ -1520,6 +1520,12 @@ class HeartbeatService(BaseSchedulerMixin):
             .execute()
         )
 
+        # The two attunement rules travel with the overview so the console can
+        # state them instead of hard-coding the defaults: both are
+        # platform-configurable, and a screen that prints "1 of 2" while the
+        # platform allows three is worse than one that prints nothing.
+        config = await cls._load_full_config(supabase)
+
         return {
             "simulation_id": str(simulation_id),
             "last_tick": last_tick,
@@ -1529,6 +1535,8 @@ class HeartbeatService(BaseSchedulerMixin):
             "pending_responses": pending.count or 0,
             "active_attunements": attunements.count or 0,
             "active_anchors": anchors.count or 0,
+            "max_attunements": int(config.get("max_attunements", 2)),
+            "attunement_switching_cooldown_ticks": int(config.get("switching_cooldown_ticks", 3)),
         }
 
     @classmethod

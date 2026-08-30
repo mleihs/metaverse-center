@@ -85,6 +85,13 @@ class HeartbeatOverview(BaseModel):
     pending_responses: int = 0
     active_attunements: int = 0
     active_anchors: int = 0
+    #: How many signatures a world may hold at once, and how many ticks an
+    #: attunement is locked after being set. Both are platform-configurable
+    #: (``heartbeat_max_attunements`` / ``heartbeat_switching_cooldown_ticks``),
+    #: so the interface must be told them rather than printing the defaults it
+    #: happens to remember.
+    max_attunements: int = 2
+    attunement_switching_cooldown_ticks: int = 3
 
 
 # -- Narrative Arc --

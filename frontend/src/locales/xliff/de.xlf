@@ -14872,10 +14872,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s1991f8ef1483a22f">
   <source>Attunements</source>
 <target>Attunements</target></trans-unit>
-<trans-unit id="s1ea3a0b455afc4db">
-  <source><x id="0" equiv-text="${att.resonance_signature}"/>: <x id="1" equiv-text="${pct}"/>% depth</source>
-<target><x id="0" equiv-text="${att.resonance_signature}"/>: <x id="1" equiv-text="${pct}"/> % Tiefe</target>
-</trans-unit>
 <trans-unit id="s4f17fb8dc1f317e5">
   <source>Anchors</source>
 <target>Anker</target></trans-unit>
@@ -29003,6 +28999,102 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s2955eb1f4aaccf1a">
   <source>D<x id="0" equiv-text="${e.depth + 1}"/> · R<x id="1" equiv-text="${e.room_index + 1}"/></source>
 <target>T<x id="0" equiv-text="${e.depth + 1}"/> · R<x id="1" equiv-text="${e.room_index + 1}"/></target></trans-unit>
+<trans-unit id="sdb22e1b8c984b3e1">
+  <source>Economic tremor</source>
+<target>Wirtschaftsbeben</target></trans-unit>
+<trans-unit id="s3fc9fef30d838e6c">
+  <source>Conflict wave</source>
+<target>Konfliktwelle</target></trans-unit>
+<trans-unit id="s821606bee5559044">
+  <source>Biological tide</source>
+<target>Biologische Flut</target></trans-unit>
+<trans-unit id="s0249b3af78dece8c">
+  <source>Elemental surge</source>
+<target>Elementarschub</target></trans-unit>
+<trans-unit id="s3a362f748e007fac">
+  <source>Authority fracture</source>
+<target>Autoritätsbruch</target></trans-unit>
+<trans-unit id="s21f50593bf3874a3">
+  <source>Innovation spark</source>
+<target>Innovationsfunke</target></trans-unit>
+<trans-unit id="se22d2368a86b1611">
+  <source>Consciousness drift</source>
+<target>Bewusstseinsdrift</target></trans-unit>
+<trans-unit id="s65a2a1fa273ff05e">
+  <source>Decay bloom</source>
+<target>Zerfallsblüte</target></trans-unit>
+<trans-unit id="sf56edd9f1a767650">
+  <source>Market booms and trade windfalls.</source>
+<target>Marktaufschwünge und Handelsglücksfälle.</target></trans-unit>
+<trans-unit id="se46d866bfa4d0882">
+  <source>Peace accords and diplomatic breakthroughs.</source>
+<target>Friedensschlüsse und diplomatische Durchbrüche.</target></trans-unit>
+<trans-unit id="sf5149be5df0d1c4c">
+  <source>Medical breakthroughs and immune adaptation.</source>
+<target>Medizinische Durchbrüche und erworbene Widerstandskraft.</target></trans-unit>
+<trans-unit id="s86d789520b82af27">
+  <source>Geological discoveries and fertile aftermath.</source>
+<target>Geologische Funde und fruchtbare Nachwirkung.</target></trans-unit>
+<trans-unit id="s62468f8560fff506">
+  <source>Democratic reform and civic renaissance.</source>
+<target>Demokratische Reform und bürgerliche Erneuerung.</target></trans-unit>
+<trans-unit id="s05d9e378bf871d39">
+  <source>Technology dividends and innovation harvests.</source>
+<target>Technologische Dividenden und Innovationsernten.</target></trans-unit>
+<trans-unit id="s37dc73deea7464f6">
+  <source>Cultural awakening and philosophical harmony.</source>
+<target>Kulturelles Erwachen und philosophische Eintracht.</target></trans-unit>
+<trans-unit id="s313d971c04332497">
+  <source>Ecological recovery and a green renaissance.</source>
+<target>Ökologische Erholung und eine grüne Erneuerung.</target></trans-unit>
+<trans-unit id="s028fff2345fc220a">
+  <source>The substrate is listening to that signature.</source>
+<target>Das Substrat hört auf diese Signatur.</target></trans-unit>
+<trans-unit id="s96c62f5fc837fc3f">
+  <source>The substrate did not take the signature.</source>
+<target>Das Substrat hat die Signatur nicht angenommen.</target></trans-unit>
+<trans-unit id="s2c5c6f64113e321a">
+  <source>The signature has been let go. Its depth is lost.</source>
+<target>Die Signatur wurde losgelassen. Ihre Tiefe ist verloren.</target></trans-unit>
+<trans-unit id="s6a436529d2050620">
+  <source>The signature could not be released.</source>
+<target>Die Signatur ließ sich nicht loslassen.</target></trans-unit>
+<trans-unit id="s7ed79be0b703b076">
+  <source><x id="0" equiv-text="${held}"/> of <x id="1" equiv-text="${this._max}"/> signatures held</source>
+<target><x id="0" equiv-text="${held}"/> von <x id="1" equiv-text="${this._max}"/> Signaturen gehalten</target></trans-unit>
+<trans-unit id="s806893a5e1290137">
+  <source>Substrate attunement</source>
+<target>Einstimmung auf das Substrat</target></trans-unit>
+<trans-unit id="s19c59063b227751d">
+  <source>An attunement deepens with every pulse. Past the notch on its meter the signature harmonises, and its own kind of crisis starts producing its opposite instead. A signature just set is locked for <x id="0" equiv-text="${this._cooldown}"/> pulses, and letting one go loses everything it had gathered.</source>
+<target>Eine Einstimmung vertieft sich mit jedem Puls. Jenseits der Kerbe auf ihrem Messgerät harmonisiert die Signatur, und ihre eigene Art von Krise bringt fortan das Gegenteil hervor. Eine eben gesetzte Signatur ist <x id="0" equiv-text="${this._cooldown}"/> Pulse lang gesperrt, und wer eine loslässt, verliert alles, was sie gesammelt hatte.</target></trans-unit>
+<trans-unit id="s55d4f675c5949115">
+  <source>Tuning the substrate requires editor rights in this world.</source>
+<target>Das Substrat einzustimmen erfordert Schreibrechte in dieser Welt.</target></trans-unit>
+<trans-unit id="s59f219194183f769">
+  <source>Let another signature go first.</source>
+<target>Lass zuerst eine andere Signatur los.</target></trans-unit>
+<trans-unit id="sc21354d3313fc837">
+  <source><x id="0" equiv-text="${this._signatureLabel(signature)}"/>: depth <x id="1" equiv-text="${pct}"/> percent, harmonises at <x id="2" equiv-text="${threshold}"/></source>
+<target><x id="0" equiv-text="${this._signatureLabel(signature)}"/>: Tiefe <x id="1" equiv-text="${pct}"/> Prozent, harmonisiert bei <x id="2" equiv-text="${threshold}"/></target></trans-unit>
+<trans-unit id="s3d30c623a8e02ca6">
+  <source>Harmonised at <x id="0" equiv-text="${pct}"/>% – <x id="1" equiv-text="${this._promise(signature)}"/></source>
+<target>Harmonisiert bei <x id="0" equiv-text="${pct}"/> % – <x id="1" equiv-text="${this._promise(signature)}"/></target></trans-unit>
+<trans-unit id="s892e2c1a4f1d03cc">
+  <source>Depth <x id="0" equiv-text="${pct}"/>%, harmonises at <x id="1" equiv-text="${threshold}"/>% – <x id="2" equiv-text="${held.ticks_exposed}"/> pulses in</source>
+<target>Tiefe <x id="0" equiv-text="${pct}"/> %, harmonisiert bei <x id="1" equiv-text="${threshold}"/> % – <x id="2" equiv-text="${held.ticks_exposed}"/> Pulse dabei</target></trans-unit>
+<trans-unit id="sab9944630fc7d717">
+  <source>Locked for <x id="0" equiv-text="${held.switching_cooldown_ticks}"/> more pulses.</source>
+<target>Noch <x id="0" equiv-text="${held.switching_cooldown_ticks}"/> Pulse gesperrt.</target></trans-unit>
+<trans-unit id="s6038bb092ac0eb16">
+  <source>Releasing loses the depth gathered so far.</source>
+<target>Loslassen verliert die bisher gesammelte Tiefe.</target></trans-unit>
+<trans-unit id="sac3f5eacce41f03a">
+  <source>Locked (<x id="0" equiv-text="${held.switching_cooldown_ticks}"/>)</source>
+<target>Gesperrt (<x id="0" equiv-text="${held.switching_cooldown_ticks}"/>)</target></trans-unit>
+<trans-unit id="s6940beae6a0cc68c">
+  <source>Let go</source>
+<target>Loslassen</target></trans-unit>
 </body>
 </file>
 </xliff>
