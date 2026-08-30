@@ -19,6 +19,7 @@ import logging
 from datetime import UTC, datetime
 from uuid import UUID
 
+import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
@@ -392,6 +393,7 @@ class DungeonCombatService:
 
         if current_room.room_type == "boss":
             await DungeonAchievementService.on_boss_victory(admin_supabase, instance)
+            await cls._relieve_resonance(admin_supabase, instance)
 
             # The boss drop joins everything the run collected on the way in;
             # before D3 that earlier loot was shown to the player and dropped.
@@ -432,6 +434,54 @@ class DungeonCombatService:
             "banter": victory_banter,
             "state": DungeonCheckpointService.build_client_state(instance),
         }
+
+    @classmethod
+    async def _relieve_resonance(cls, admin_supabase: Client, instance: DungeonInstance) -> None:
+        """Report the victory back to the resonance that opened this dungeon.
+
+        Spec §5.4: pressure falls by 0.15 per difficulty step. Until the
+        Systemprüfung the dungeon gave a great deal back to the world — mood,
+        stress, a moodlet, an activity row, aptitude points, a memory, a journal
+        fragment, up to twelve achievements — and nothing at all to the
+        resonance. `runs.resonance_id` was NULL on all 15 production runs and no
+        dungeon service touched `resonance_impacts` (Befund D9), so a defeated
+        archetype was available again immediately and the victory changed
+        nothing about the world's state.
+
+        Best-effort: a run that is already won must not fail because the relief
+        did. The failure is logged and tagged instead.
+        """
+        if not instance.resonance_id:
+            # Admin-unlocked run: no resonance behind it, nothing to relieve.
+            return
+        try:
+            result = await admin_supabase.rpc(
+                "fn_relieve_resonance_after_dungeon",
+                {
+                    "p_resonance_id": str(instance.resonance_id),
+                    "p_simulation_id": str(instance.simulation_id),
+                    "p_difficulty": instance.difficulty,
+                },
+            ).execute()
+            data = result.data if result and result.data else {}
+            logger.info(
+                "Resonance relieved after boss victory",
+                extra=log_extra(
+                    instance,
+                    resonance_id=str(instance.resonance_id),
+                    relief=data,
+                ),
+            )
+        except PostgrestAPIError as exc:
+            logger.warning(
+                "Could not relieve the resonance after the victory",
+                extra=log_extra(instance, resonance_id=str(instance.resonance_id), error=str(exc)),
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "dungeon_engine")
+                scope.set_tag("phase", "resonance_relief")
+                scope.set_tag("run_id", str(instance.run_id))
+                sentry_sdk.capture_exception(exc)
 
     @classmethod
     async def _handle_party_wipe(cls, admin_supabase: Client, instance: DungeonInstance) -> dict:

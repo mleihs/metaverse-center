@@ -159,6 +159,11 @@ class DungeonInstance(BaseModel):
     # Phase timer metadata (set during combat planning for client countdown)
     phase_timer: PhaseTimer | None = None
 
+    # The resonance that opened this dungeon. NULL for an admin-unlocked run
+    # (there is no resonance behind it) — and NULL on all 15 production runs
+    # before the Systemprüfung, because nothing ever wrote it (Befund D9).
+    resonance_id: UUID | None = None
+
     # Loot found while the run is still going (combat victories, treasure rooms,
     # salvage). Held here until the run ends, then merged into the distribution
     # or the completion RPC — previously every non-boss drop was rolled, shown
@@ -226,6 +231,7 @@ class DungeonInstance(BaseModel):
             "used_banter_ids": self.used_banter_ids,
             "used_encounter_ids": self.used_encounter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
+            "resonance_id": str(self.resonance_id) if self.resonance_id else None,
             "run_loot": self.run_loot,
             "pending_loot": self.pending_loot,
             "loot_assignments": self.loot_assignments,
@@ -249,6 +255,8 @@ class DungeonInstance(BaseModel):
         self.used_encounter_ids = checkpoint.get("used_encounter_ids", [])
         timer_data = checkpoint.get("phase_timer")
         self.phase_timer = PhaseTimer(**timer_data) if timer_data else None
+        raw_resonance = checkpoint.get("resonance_id")
+        self.resonance_id = UUID(raw_resonance) if raw_resonance else None
         self.run_loot = checkpoint.get("run_loot", [])
         self.pending_loot = checkpoint.get("pending_loot", [])
         self.loot_assignments = checkpoint.get("loot_assignments", {})
