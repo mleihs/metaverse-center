@@ -5,11 +5,17 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+import sentry_sdk
+from fastapi import HTTPException
+from postgrest.exceptions import APIError as PostgrestAPIError
+from pydantic_ai.exceptions import ModelAPIError
+
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.services.email_service import EmailService
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.platform_model_config import get_platform_model
 from backend.services.prompt_service import PromptResolver
 from backend.utils.errors import gone, not_found, server_error
@@ -17,6 +23,20 @@ from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
+
+# Stand-in when the lore model cannot be reached. Deliberately written, not
+# generated: an invitation without a line of welcome still has to read like one.
+_LORE_FALLBACK = {
+    "en": (
+        "The Bureau has issued the summons. Across the multiverse, factions stir "
+        "and ledgers are opened. Your seat at the table is held \u2014 for now."
+    ),
+    "de": (
+        "Das B\u00fcro hat die Vorladung ausgestellt. Quer durch das Multiversum "
+        "regen sich die Fraktionen, und die B\u00fccher werden aufgeschlagen. "
+        "Ihr Platz an diesem Tisch ist reserviert \u2014 vorerst."
+    ),
+}
 
 
 class EpochInvitationService:
@@ -62,9 +82,14 @@ class EpochInvitationService:
         base_url: str,
         locale: str = "en",
     ) -> dict:
-        """Create invitation, generate lore, fetch epoch name, and send email."""
-        lore_text = await EpochInvitationService.generate_lore(supabase, epoch_id)
+        """Create invitation, generate lore, fetch epoch name, and send email.
 
+        Order matters (E12). The lore call used to come FIRST and without any
+        handler: the first invitation of an epoch needs a model round-trip, and
+        a model outage turned the whole request into a 500 — no invitation row,
+        no token, no mail, and nothing to retry from. The invitation is the
+        thing being created; the lore is decoration on it.
+        """
         invitation = await EpochInvitationService.create_invitation(
             supabase,
             epoch_id,
@@ -72,6 +97,8 @@ class EpochInvitationService:
             email,
             expires_in_hours,
         )
+
+        lore_text = await EpochInvitationService._lore_or_fallback(supabase, epoch_id, locale)
 
         invite_url = f"{base_url}/epoch/join?token={invitation['invite_token']}"
 
@@ -89,6 +116,40 @@ class EpochInvitationService:
         invitation["email_sent"] = email_sent
 
         return invitation
+
+    @staticmethod
+    async def _lore_or_fallback(supabase: Client, epoch_id: UUID, locale: str) -> str:
+        """Invitation lore, or a written stand-in when the model cannot be reached.
+
+        ``generate_lore`` keeps raising for its other caller — ``regenerate_lore``
+        is an explicit admin action and a silent fallback there would look like a
+        successful regeneration. Only the send path degrades.
+
+        The tuple names ``OpenRouterError`` itself, not its three subclasses:
+        ``openrouter.py`` raises the BASE class for an API error, for a failed
+        connection and for exhausted retries, so a handler that lists only
+        ``RateLimitError`` and ``ModelUnavailableError`` looks careful and misses
+        the common cases.
+        """
+        try:
+            return await EpochInvitationService.generate_lore(supabase, epoch_id)
+        except (
+            OpenRouterError,
+            ModelAPIError,
+            httpx.HTTPError,
+            PostgrestAPIError,
+            HTTPException,
+            KeyError,
+            TypeError,
+            ValueError,
+        ):
+            logger.warning(
+                "Invitation lore unavailable — sending the invitation without it",
+                extra={"epoch_id": str(epoch_id)},
+                exc_info=True,
+            )
+            sentry_sdk.capture_exception()
+            return _LORE_FALLBACK.get(locale, _LORE_FALLBACK["en"])
 
     @staticmethod
     async def list_invitations(supabase: Client, epoch_id: UUID) -> list[dict]:
