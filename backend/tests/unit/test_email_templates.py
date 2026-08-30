@@ -1096,3 +1096,93 @@ class TestPreheader:
 
     def test_filler_stops_the_client_pulling_body_text_in(self):
         assert "&zwnj;" in self._html()
+
+
+# ── Action line and podium ────────────────────────────────────────────────
+
+
+class TestActionLine:
+    """P1.15: nine sections of results and not one sentence saying what to do."""
+
+    def _html(self, locale="de", **over) -> str:
+        data = TestRenderCycleBriefing()._sample_data()
+        data.update(over)
+        return render_cycle_briefing(data, email_locale=locale)
+
+    def test_it_stands_before_the_standing(self):
+        """A briefing that opens with a rank invites a glance and a close."""
+        html = self._html()
+        assert html.index("Was jetzt zu tun ist") < html.index("DEINE POSITION")
+
+    def test_it_names_the_deadline_in_hours(self):
+        assert "in etwa 8 Std." in self._html(cycle_deadline_minutes=480)
+
+    def test_a_manual_epoch_is_not_given_a_deadline_it_does_not_have(self):
+        html = self._html(cycle_deadline_minutes=None)
+        assert "sobald alle bereit sind" in html
+        assert "Std." not in html.split("DEINE POSITION")[0]
+
+    def test_the_penalty_is_read_from_the_epoch_not_asserted(self):
+        """`afk_penalty_enabled` defaults to FALSE and the penalty to 2 RP.
+
+        The handoff proposed the fixed copy "and it costs 1 RP". A sentence like
+        that would threaten most readers with a punishment their epoch does not
+        apply, and would name the wrong number where it does.
+        """
+        off = self._html(afk_penalty_enabled=False, afk_rp_penalty=2)
+        assert "handelt der Zyklus ohne dich." in off
+        assert "kostet" not in off.split("DEINE POSITION")[0]
+
+        on = self._html(afk_penalty_enabled=True, afk_rp_penalty=3)
+        assert "kostet 3 RP" in on
+
+
+class TestPodium:
+    """P1.16: first and third looked alike in a monospaced table."""
+
+    def _lb(self, n=3) -> list[dict]:
+        rows = [
+            {"simulation_id": "a", "simulation_name": "Velgarien", "composite": 80.0,
+             "composite_score": 80.0, "rank": 1},
+            {"simulation_id": "b", "simulation_name": "Speranza", "composite": 66.5,
+             "composite_score": 66.5, "rank": 2},
+            {"simulation_id": "c", "simulation_name": "Station Null", "composite": 51.2,
+             "composite_score": 51.2, "rank": 3},
+        ]
+        return rows[:n]
+
+    def _html(self, lb, player="b", locale="de") -> str:
+        return render_epoch_completed(
+            epoch_name="Op", leaderboard=lb, player_simulation_id=player,
+            cycle_count=9, command_center_url="https://x", email_locale=locale,
+        )
+
+    def test_the_order_is_second_first_third(self):
+        html = self._html(self._lb())
+        podium = html[html.index("Das Podium"):html.index("ENDSTAND")]
+        assert podium.index("Speranza") < podium.index("Velgarien") < podium.index("Station Null")
+
+    def test_the_winner_block_is_the_tallest(self):
+        podium = self._html(self._lb())
+        assert 'height="64"' in podium
+        assert 'height="44"' in podium
+        assert 'height="32"' in podium
+
+    def test_the_reader_is_marked_on_it(self):
+        assert "&#9733; Speranza" in self._html(self._lb(), player="b")
+
+    def test_two_players_get_no_podium(self):
+        """A podium of two is a pair of steps, not a podium."""
+        html = self._html(self._lb(2), player="b")
+        assert "Das Podium" not in html
+        assert "ENDSTAND" in html
+
+    def test_scores_read_the_same_everywhere_in_one_message(self):
+        """The podium sits directly above the standings table."""
+        de = self._html(self._lb())
+        assert "80,0" in de
+        assert "80.0" not in de
+
+        en = self._html(self._lb(), locale="en")
+        assert "80.0" in en
+        assert "80,0" not in en

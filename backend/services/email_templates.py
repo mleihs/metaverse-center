@@ -618,12 +618,12 @@ def _ensure_readable(hex_color: str, background: str = "#0a0a0a") -> str:
     return "#ffffff"
 
 
-def _delta_arrow(delta: float) -> str:
-    """Return colored arrow for a score delta."""
+def _delta_arrow(delta: float, lang: str = "en") -> str:
+    """Return colored arrow for a score delta, in the reader's number format."""
     if delta > 0:
-        return f'<span style="color:{_GREEN};">&#9650; +{delta:.1f}</span>'
+        return f'<span style="color:{_GREEN};">&#9650; +{_fmt_num(delta, lang)}</span>'
     if delta < 0:
-        return f'<span style="color:{_RED};">&#9660; {delta:.1f}</span>'
+        return f'<span style="color:{_RED};">&#9660; \u2212{_fmt_num(abs(delta), lang)}</span>'
     return f'<span style="color:{_GRAY};">&ndash; 0.0</span>'
 
 
@@ -1273,6 +1273,34 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "Your clearance request was reviewed and not granted this time.",
         "de": "Dein Antrag auf Freigabe wurde gepr\u00fcft und diesmal nicht bewilligt.",
     },
+    "podium_heading": {
+        "en": "The podium",
+        "de": "Das Podium",
+    },
+    "act_heading": {
+        "en": "What to do now",
+        "de": "Was jetzt zu tun ist",
+    },
+    "act_deadline_hours": {
+        "en": "The next cycle resolves in about {n} h.",
+        "de": "Der n\u00e4chste Zyklus wird in etwa {n} Std. aufgel\u00f6st.",
+    },
+    "act_deadline_manual": {
+        "en": "The next cycle resolves once every player is ready.",
+        "de": "Der n\u00e4chste Zyklus wird aufgel\u00f6st, sobald alle bereit sind.",
+    },
+    "act_budget": {
+        "en": "You hold {rp} RP, {projected} after the next grant.",
+        "de": "Du hast {rp} RP, nach der n\u00e4chsten Zuteilung {projected}.",
+    },
+    "act_cost": {
+        "en": "Without orders the cycle acts without you \u2013 and it costs {rp} RP.",
+        "de": "Ohne Befehle handelt der Zyklus ohne dich \u2013 und kostet {rp} RP.",
+    },
+    "act_no_cost": {
+        "en": "Without orders the cycle acts without you.",
+        "de": "Ohne Befehle handelt der Zyklus ohne dich.",
+    },
     "footer_origin": {
         "en": "TRANSMISSION ORIGIN: metaverse.center",
         "de": "ÜBERTRAGUNGSURSPRUNG: metaverse.center",
@@ -1474,6 +1502,71 @@ _TITLE_TRANSLATIONS: dict[str, dict[str, str]] = {
 # ── Cycle Briefing Template ─────────────────────────────────────────────
 
 
+
+def _action_row(data: dict, lang: str, *, accent: str) -> str:
+    """The one instruction in a message otherwise made of results.
+
+    The briefing was nine sections of data and no sentence telling the reader
+    what to do with any of it (handoff P1.15). This box goes FIRST, before the
+    standing, because a briefing that opens with a rank invites a glance and
+    a close.
+
+    Every number in it is read from the epoch's own configuration. The handoff
+    proposed the copy "and it costs 1 RP"; measured, the default penalty is
+    2 RP and ``afk_penalty_enabled`` defaults to FALSE — so a fixed sentence
+    would have threatened most readers with a punishment their epoch does not
+    apply, which is worse than saying nothing.
+    """
+    lines: list[str] = []
+
+    deadline_minutes = data.get("cycle_deadline_minutes")
+    if deadline_minutes:
+        lines.append(_nt("act_deadline_hours", lang, n=max(1, round(int(deadline_minutes) / 60))))
+    else:
+        lines.append(_nt("act_deadline_manual", lang))
+
+    lines.append(
+        _nt(
+            "act_budget",
+            lang,
+            rp=data.get("rp_balance", 0),
+            # "+12 → 30 / 40" carries the cap; the sentence only wants the
+            # number the player will hold.
+            projected=_esc(str(data.get("next_cycle_rp_projection", "")))
+            .split("\u2192")[-1]
+            .split("/")[0]
+            .strip()
+            or data.get("rp_balance", 0),
+        )
+    )
+
+    penalty = int(data.get("afk_rp_penalty") or 0)
+    if data.get("afk_penalty_enabled") and penalty > 0:
+        lines.append(_nt("act_cost", lang, rp=penalty))
+    else:
+        lines.append(_nt("act_no_cost", lang))
+
+    body = "".join(
+        f'<p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">{line}</p>' for line in lines
+    )
+    return f"""\
+          <tr>
+            <td style="padding:8px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                     style="border:2px solid {accent};background-color:{_SURFACE};">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 8px;font-size:12px;letter-spacing:2px;color:{accent};text-transform:uppercase;font-weight:bold;">
+                      {_nt("act_heading", lang)}
+                    </p>
+                    {body}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>"""
+
+
 def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> str:
     """Render a single language block for the cycle briefing.
 
@@ -1524,7 +1617,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                   </tr>
                   <tr>
                     <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("composite", lang)}</td>
-                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">{data["composite"]:.1f} {_delta_arrow(data["composite_delta"])}</td>
+                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">{_fmt_num(float(data["composite"]), lang)} {_delta_arrow(data["composite_delta"], lang)}</td>
                   </tr>
                   <tr>
                     <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("rp_reserve", lang)}</td>
@@ -1631,8 +1724,8 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                   <tr>
                     <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:1px;text-transform:uppercase;padding:5px 0;white-space:nowrap;width:100px;">{label}</td>
                     <td style="padding:5px 8px;">{bar}</td>
-                    <td style="font-size:12px;color:{_TEXT};text-align:right;padding:5px 0;white-space:nowrap;width:50px;">{d["value"]:.1f}</td>
-                    <td style="font-size:12px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d["delta"])}</td>
+                    <td style="font-size:12px;color:{_TEXT};text-align:right;padding:5px 0;white-space:nowrap;width:50px;">{_fmt_num(float(d["value"]), lang)}</td>
+                    <td style="font-size:12px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d["delta"], lang)}</td>
                   </tr>"""
 
     dims_html = f"""\
@@ -1954,6 +2047,9 @@ def render_cycle_briefing(
 
     blocks: list[str] = [
         header,
+        # The instruction comes before the results. A briefing that opens with a
+        # rank invites a glance and a close (handoff P1.15).
+        _action_row(data, lang, accent=accent),
         _render_briefing_block(data, lang, accent=accent),
         _cta_button(cta_url, _nt("cta", lang), accent=accent),
         _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
@@ -2009,7 +2105,7 @@ def _render_phase_block(
         standing_html = f"""\
                   <tr>
                     <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:4px 0;">{_nt("your_standing", lang)}</td>
-                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">#{rank} / {total} &middot; {composite:.1f}</td>
+                    <td style="font-size:14px;color:{accent};font-weight:bold;text-align:right;padding:4px 0;">#{rank} / {total} &middot; {_fmt_num(float(composite), lang)}</td>
                   </tr>"""
 
     return f"""\
@@ -2113,6 +2209,67 @@ def render_phase_change(
 # ── Epoch Completed Template ─────────────────────────────────────────────
 
 
+
+def _podium_row(leaderboard: list[dict], player_simulation_id: str, lang: str, *, accent: str) -> str:
+    """The top three, as a shape rather than three lines of a table.
+
+    The results page in the app shows a crown and a staged reveal; the mail
+    listed the same three names in a monospaced table where first and third
+    looked alike (handoff P1.16). This is the same information given a form:
+    second, first, third, with the winner's block taller and in the accent
+    colour, aligned along a common floor.
+
+    Built as a table with fixed cell widths and bottom alignment - the two
+    things every mail client agrees on. No image, no animation.
+
+    Deliberately NOT included: the MVP card from the prototype. It needs the
+    agent's portrait, aptitude sum and a quotation, none of which this path
+    fetches; a card filled with placeholders would be worse than none.
+    """
+    top = leaderboard[:3]
+    if len(top) < 3:
+        return ""
+
+    order = [(top[1], 2), (top[0], 1), (top[2], 3)]
+    heights = {1: 64, 2: 44, 3: 32}
+
+    cells = ""
+    for entry, place in order:
+        is_player = entry.get("simulation_id") == player_simulation_id
+        colour = accent if place == 1 else _TEXT
+        block_bg = accent if place == 1 else _BORDER
+        name = _esc(str(entry.get("simulation_name", "?")))
+        score = _fmt_num(float(entry.get("composite", entry.get("composite_score", 0)) or 0), lang)
+        marker = "&#9733; " if is_player else ""
+        cells += f"""\
+                  <td width="33%" valign="bottom" align="center" style="padding:0 4px;">
+                    <p style="margin:0 0 4px;font-size:12px;color:{colour};text-transform:uppercase;letter-spacing:1px;">
+                      {marker}{name}
+                    </p>
+                    <p style="margin:0 0 6px;font-size:14px;color:{colour};font-weight:bold;">{score}</p>
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td height="{heights[place]}" align="center" valign="middle"
+                            bgcolor="{block_bg}" style="height:{heights[place]}px;background-color:{block_bg};">
+                          <span style="font-family:{_MONO};font-size:22px;font-weight:900;color:{_BG};">{place}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>"""
+
+    return f"""\
+{_section_header(_nt("podium_heading", lang))}
+          <tr>
+            <td style="padding:0 32px 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+{cells}
+                </tr>
+              </table>
+            </td>
+          </tr>"""
+
+
 def _render_completed_block(
     epoch_name: str,
     leaderboard: list[dict],
@@ -2146,7 +2303,7 @@ def _render_completed_block(
                   {_nt("winner_quip", lang)}
                 </p>
                 <p style="margin:0;font-size:14px;color:{_TEXT};">
-                  {_nt("composite", lang)}: {winner["composite"]:.1f}
+                  {_nt("composite", lang)}: {_fmt_num(float(winner["composite"]), lang)}
                 </p>
               </div>
             </td>
@@ -2164,7 +2321,7 @@ def _render_completed_block(
                   &#9733; {winner_name}
                 </p>
                 <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};">
-                  {_nt("composite", lang)}: {winner["composite"]:.1f}
+                  {_nt("composite", lang)}: {_fmt_num(float(winner["composite"]), lang)}
                 </p>
               </div>
             </td>
@@ -2182,10 +2339,13 @@ def _render_completed_block(
                   <tr style="background-color:{row_bg};">
                     <td style="font-size:13px;color:{_TEXT_DIM};padding:6px 4px;text-align:center;border-bottom:1px solid {_BORDER_SUBTLE};">#{entry["rank"]}</td>
                     <td style="font-size:13px;color:{name_color};padding:6px 4px;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:{"bold" if is_player else "normal"};">{sim_name}</td>
-                    <td style="font-size:13px;color:{accent};padding:6px 4px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:bold;">{entry["composite"]:.1f}</td>
+                    <td style="font-size:13px;color:{accent};padding:6px 4px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};font-weight:bold;">{_fmt_num(float(entry["composite"]), lang)}</td>
                   </tr>"""
 
+    podium_html = _podium_row(leaderboard, player_simulation_id, lang, accent=accent)
+
     leaderboard_html = f"""\
+{podium_html}
 {_section_header(_nt("final_standings", lang))}
           <tr>
             <td style="padding:0 32px 16px;">
@@ -2215,7 +2375,7 @@ def _render_completed_block(
                 <p style="margin:0;font-size:15px;color:{_TEXT};line-height:1.8;">
                   {_nt("rank", lang)}: <strong style="color:{accent};">#{player_entry["rank"]}</strong> / {len(leaderboard)}
                   &nbsp;&middot;&nbsp;
-                  {_nt("composite", lang)}: <strong style="color:{accent};">{player_entry["composite"]:.1f}</strong>
+                  {_nt("composite", lang)}: <strong style="color:{accent};">{_fmt_num(float(player_entry["composite"]), lang)}</strong>
                 </p>
               </div>
             </td>
@@ -2276,7 +2436,7 @@ def _render_completed_block(
                     score_key = f"{dim_key}_score" if f"{dim_key}_score" in (player_entry or {}) else dim_key
                     player_val = player_entry.get(score_key, player_entry.get(dim_key, 0))
                     if player_val:
-                        player_pos = f" | {_nt('you_label', lang)}: {float(player_val):.1f}"
+                        player_pos = f" | {_nt('you_label', lang)}: {_fmt_num(float(player_val), lang)}"
                 highlight = f"color:{accent};" if is_player else ""
                 title_items += f"""\
                 <p style="margin:0 0 4px;font-size:15px;color:{_TEXT};line-height:1.6;">
