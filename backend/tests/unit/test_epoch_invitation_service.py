@@ -1,7 +1,7 @@
 """Unit tests for EpochInvitationService — acceptance, revocation, and logging."""
 
 import logging
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 from backend.services.epoch_invitation_service import EpochInvitationService
 from backend.tests.conftest import make_chain_mock
+from backend.utils.errors import not_found
 
 # ── Helpers ────────────────────────────────────────────────────
 
@@ -97,3 +98,77 @@ class TestMarkAcceptedExpired:
         with pytest.raises(HTTPException) as exc_info:
             await EpochInvitationService.mark_accepted(sb, "expired-token", USER_ID)
         assert exc_info.value.status_code == 410
+
+
+# ── The accept endpoint ───────────────────────────────────────────────────
+#
+# Finding E2. `mark_accepted` had existed since the invitation system was built
+# and had NO CALLER: no endpoint, and an accept view that navigated to the epoch
+# LIST because no epoch id was ever fetched. Every invitation ever sent would
+# have stayed `pending`, the token would never be consumed, and the sender would
+# never learn who came.
+
+
+class TestAcceptEndpointExists:
+    """The door, not just the room behind it.
+
+    A service method with no route is the same defect as a route with no caller,
+    and neither shows up in a test of the service alone — which is exactly why
+    this one survived: `mark_accepted` has had unit tests all along.
+    """
+
+    def test_the_route_is_registered(self):
+        """Asserted against the OpenAPI surface, not ``app.routes``.
+
+        FastAPI groups included routers into opaque ``_IncludedRouter`` entries,
+        so walking ``app.routes`` finds no application path at all and a test
+        written that way would fail for the wrong reason — or, worse, pass
+        vacuously if it only checked that the list was non-empty.
+        """
+        from backend.app import app
+
+        paths = app.openapi()["paths"]
+        assert "/api/v1/epoch-invitations/{token}/accept" in paths
+        assert "post" in paths["/api/v1/epoch-invitations/{token}/accept"]
+
+    @pytest.mark.asyncio
+    async def test_accepting_returns_the_epoch_to_open(self):
+        from backend.routers.epoch_invitations import accept_invitation
+
+        invitation = {"id": "inv-1", "epoch_id": str(uuid4())}
+        with (
+            patch.object(
+                EpochInvitationService, "mark_accepted", new=AsyncMock(return_value=invitation)
+            ) as marked,
+            patch("backend.routers.epoch_invitations.AuditService.safe_log", new=AsyncMock()) as audit,
+        ):
+            response = await accept_invitation.__wrapped__(
+                request=MagicMock(),
+                token="tok",
+                user=MagicMock(id=USER_ID),
+                admin_supabase=MagicMock(),
+            )
+
+        assert response.data == {"epoch_id": invitation["epoch_id"]}
+        assert marked.await_args.args[1] == "tok"
+        audit.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_a_second_acceptance_is_refused(self):
+        """`mark_accepted` filters on status='pending', so the token is spent."""
+        from backend.routers.epoch_invitations import accept_invitation
+
+        with patch.object(
+            EpochInvitationService,
+            "mark_accepted",
+            new=AsyncMock(side_effect=not_found(detail="Invitation not found or already used.")),
+        ):
+            with pytest.raises(HTTPException) as exc:
+                await accept_invitation.__wrapped__(
+                    request=MagicMock(),
+                    token="tok",
+                    user=MagicMock(id=USER_ID),
+                    admin_supabase=MagicMock(),
+                )
+
+        assert exc.value.status_code == 404

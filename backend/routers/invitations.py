@@ -43,6 +43,9 @@ async def create_invitation(
         invited_email=body.invited_email,
         invited_role=body.invited_role,
         expires_in_hours=body.expires_in_hours,
+        # The inviter is named by their address, which is what the recipient
+        # will recognise; the platform keeps no display name of its own.
+        inviter_label=user.email,
     )
     await AuditService.safe_log(
         supabase,

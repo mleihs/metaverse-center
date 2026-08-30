@@ -5,6 +5,17 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
+
+from backend.config import settings
+from backend.services.email_service import EmailService
+from backend.services.email_templates import (
+    render_simulation_invitation,
+    simulation_invitation_subject,
+)
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -24,8 +35,10 @@ class InvitationService:
         invited_email: str | None = None,
         invited_role: str = "viewer",
         expires_in_hours: int = 168,
+        inviter_label: str | None = None,
+        email_locale: str | None = None,
     ) -> dict:
-        """Create a new invitation with a unique token."""
+        """Create a new invitation with a unique token, and tell the invitee."""
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now(UTC) + timedelta(hours=expires_in_hours)
 
@@ -46,8 +59,69 @@ class InvitationService:
 
         if not response.data:
             raise server_error("Failed to create invitation.")
+
+        invitation = response.data[0]
         logger.info("Invitation created", extra={"simulation_id": str(simulation_id), "invited_role": invited_role})
-        return response.data[0]
+
+        # Until now the service stopped here: the address and the token were
+        # stored and nobody was told (finding E3). The invitation existed only
+        # in a table, so the invited person could not act on it and the inviter
+        # had no way to notice.
+        invitation["email_sent"] = await InvitationService._send_invitation_email(
+            supabase, invitation, inviter_label=inviter_label, email_locale=email_locale
+        )
+        return invitation
+
+    @staticmethod
+    async def _send_invitation_email(
+        supabase: Client,
+        invitation: dict,
+        *,
+        inviter_label: str | None,
+        email_locale: str | None,
+    ) -> bool:
+        """Send the invitation mail. Best-effort: the row is the deliverable.
+
+        A mail failure must not undo a created invitation — the token is valid
+        either way and the inviter can copy the link. The result is returned so
+        the caller can say whether it went out instead of implying that it did.
+        """
+        recipient = invitation.get("invited_email")
+        if not recipient:
+            # A link-only invitation: no address was given, so there is nobody
+            # to write to. Not a failure.
+            return False
+
+        try:
+            simulation = await maybe_single_data(
+                supabase.table("simulations")
+                .select("name")
+                .eq("id", invitation["simulation_id"])
+                .maybe_single()
+            )
+            simulation_name = (simulation or {}).get("name") or "a simulation"
+            invite_url = f"{settings.site_url}/invitations/{invitation['invite_token']}"
+
+            html_body = render_simulation_invitation(
+                simulation_name=simulation_name,
+                inviter=inviter_label or "A member",
+                invite_url=invite_url,
+                invited_role=invitation.get("invited_role", "viewer"),
+                expires_at=invitation.get("expires_at"),
+                email_locale=email_locale,
+            )
+            subject = simulation_invitation_subject(
+                simulation_name, inviter_label or "A member", email_locale
+            )
+            return await EmailService.send(recipient, subject, html_body)
+        except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
+            logger.warning(
+                "Invitation email failed — the invitation itself stands",
+                extra={"simulation_id": invitation.get("simulation_id")},
+                exc_info=True,
+            )
+            sentry_sdk.capture_exception()
+            return False
 
     @staticmethod
     async def get_by_token(supabase: Client, token: str) -> dict:

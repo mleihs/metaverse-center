@@ -87,6 +87,105 @@ def epoch_invitation_subject(epoch_name: str, locale: str = "en") -> str:
     return f"{_nt('inv_subject', locale)} \u2014 {epoch_name}"
 
 
+# ── Simulation invitation ─────────────────────────────────────────────────
+
+
+def simulation_invitation_subject(simulation_name: str, inviter: str, email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    return _nt("sim_inv_subject", lang, inviter=_esc(inviter), simulation=_esc(simulation_name))
+
+
+def render_simulation_invitation(
+    *,
+    simulation_name: str,
+    inviter: str,
+    invite_url: str,
+    invited_role: str = "viewer",
+    expires_at: str | None = None,
+    email_locale: str | None = None,
+) -> str:
+    """Invitation into a simulation.
+
+    There was no template, because there was no mail: ``InvitationService``
+    stored an address and a token and returned, with no ``EmailService`` import
+    anywhere near it. The invited person was never told (finding E3) — the
+    invitation existed only in a table.
+
+    Transactional, so it carries no unsubscribe link: someone put this person's
+    name down by hand, and there is no list to leave.
+    """
+    lang = _resolve_lang(email_locale)
+    accent = _AMBER
+    safe_sim = _esc(simulation_name)
+    safe_inviter = _esc(inviter)
+    role_key = f"role_{invited_role}"
+    role_label = _nt(role_key, lang) if role_key in _NOTIF_STRINGS else _esc(invited_role)
+
+    expiry_html = ""
+    if expires_at:
+        expiry_html = f"""\
+          <tr>
+            <td style="padding:0 32px 8px;">
+              <p style="margin:0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
+                {_nt("sim_inv_expiry", lang, date=_esc(expires_at[:10]))}
+              </p>
+            </td>
+          </tr>"""
+
+    body = f"""\
+          <tr>
+            <td style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                {_nt("sim_inv_header", lang)}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                {_nt("sim_inv_kicker", lang)}
+              </p>
+              <h1 style="margin:0 0 8px;padding-bottom:8px;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};border-bottom:2px solid {_BORDER};">
+                {safe_sim}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 16px;">
+              <p style="margin:0 0 12px;font-size:15px;color:{_TEXT};line-height:1.6;">
+                {_nt("sim_inv_lead", lang, inviter=safe_inviter, simulation=safe_sim)}
+              </p>
+              <table role="presentation" cellpadding="0" cellspacing="0" style="border:1px dashed {_BORDER};">
+                <tr>
+                  <td style="padding:10px 16px;">
+                    <span style="font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                      {_nt("sim_inv_role_label", lang)}
+                    </span><br>
+                    <span style="font-size:15px;color:{accent};font-weight:bold;">{role_label}</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+{expiry_html}
+{_cta_button(invite_url, _nt("sim_inv_cta", lang), accent=accent)}
+          <tr>
+            <td style="padding:0 32px 8px;">
+              <p style="margin:0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
+                {_nt("sim_inv_ignore", lang)}
+              </p>
+            </td>
+          </tr>
+{_footer_row(email_locale)}"""
+
+    return _email_shell(
+        f"CLASSIFIED // ACCESS REQUEST \u2014 {safe_sim}",
+        body,
+        lang=lang,
+        preheader=_nt("sim_inv_preheader", lang, role=role_label, simulation=safe_sim),
+    )
+
+
 # ── Subject and preheader ─────────────────────────────────────────────────
 #
 # Subject, preheader and body are ONE contract: what the subject promises, the
@@ -1277,6 +1376,46 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "The podium",
         "de": "Das Podium",
     },
+    "sim_inv_header": {
+        "en": "BUREAU OF MULTIVERSE OBSERVATION",
+        "de": "B\u00dcRO F\u00dcR MULTIVERSUM-BEOBACHTUNG",
+    },
+    "sim_inv_kicker": {
+        "en": "Access request",
+        "de": "Zugangsgesuch",
+    },
+    "sim_inv_lead": {
+        "en": "{inviter} has entered your name on the roll of <strong>{simulation}</strong>.",
+        "de": "{inviter} hat deinen Namen in die Liste von <strong>{simulation}</strong> eingetragen.",
+    },
+    "sim_inv_role_label": {
+        "en": "Standing granted",
+        "de": "Erteilter Stand",
+    },
+    "sim_inv_expiry": {
+        "en": "The token expires on {date}. After that the invitation has to be issued again.",
+        "de": "Das Token verf\u00e4llt am {date}. Danach muss die Einladung neu ausgestellt werden.",
+    },
+    "sim_inv_cta": {
+        "en": "Accept the invitation",
+        "de": "Einladung annehmen",
+    },
+    "sim_inv_ignore": {
+        "en": "If you were not expecting this, nothing happens when you do nothing.",
+        "de": "Wenn du damit nicht gerechnet hast: Nichtstun ist folgenlos.",
+    },
+    "sim_inv_subject": {
+        "en": "{inviter} invites you into {simulation}",
+        "de": "{inviter} l\u00e4dt dich in {simulation} ein",
+    },
+    "sim_inv_preheader": {
+        "en": "A standing of {role} in {simulation}. One link, no account needed yet.",
+        "de": "Ein Stand als {role} in {simulation}. Ein Link, noch ohne Konto.",
+    },
+    "role_viewer": {"en": "Observer", "de": "Beobachter"},
+    "role_editor": {"en": "Editor", "de": "Bearbeiter"},
+    "role_admin": {"en": "Administrator", "de": "Verwalter"},
+    "role_owner": {"en": "Owner", "de": "Eigent\u00fcmer"},
     "act_heading": {
         "en": "What to do now",
         "de": "Was jetzt zu tun ist",

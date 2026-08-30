@@ -371,6 +371,16 @@ export class EpochsApiService extends BaseApiService {
   validateEpochInvitation(token: string): Promise<ApiResponse<EpochInvitationPublicInfo>> {
     return this.getPublic(`/epoch-invitations/${token}`);
   }
+
+  /**
+   * Consume an invitation token. Marks it accepted, attributes it to the
+   * signed-in user, and returns the epoch it opens. Nothing called this before
+   * - the endpoint did not exist, so every invitation stayed pending for ever
+   * and the sender never learned who came (finding E2).
+   */
+  acceptEpochInvitation(token: string): Promise<ApiResponse<{ epoch_id: string }>> {
+    return this.post(`/epoch-invitations/${token}/accept`);
+  }
 }
 
 export const epochsApi = new EpochsApiService();
