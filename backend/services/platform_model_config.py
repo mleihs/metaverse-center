@@ -13,6 +13,7 @@ import logging
 import time
 
 from backend.config import settings
+from backend.services.ai_purposes import AI_PURPOSES, UNDECLARED_PURPOSE, AIPurpose
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -43,11 +44,17 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     "model_fallback": "google/gemini-2.5-flash-lite",
     "model_research": "deepseek/deepseek-v4-flash-0731",
     "model_forge": "deepseek/deepseek-v4-pro",
+    # `ops_forecast` only. Until 2026-08-30 this id sat in `ops_forecast_service`
+    # as a `Final` constant, which is the one place an operator cannot reach it.
+    # Same model, now a settings row like every other. Verified in the catalogue
+    # 2026-08-30 together with the four above.
+    "model_forecast": "anthropic/claude-haiku-4.5",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
     "model_default_dev": "deepseek/deepseek-v4-flash-0731",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
     "model_research_dev": "deepseek/deepseek-v4-flash-0731",
     "model_forge_dev": "deepseek/deepseek-v4-flash-0731",
+    "model_forecast_dev": "anthropic/claude-haiku-4.5",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
@@ -70,18 +77,25 @@ _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
 # from ~25% to 3/3 complete objects and from 50-115s to ~31s; `lore` kept 2/2
 # while gaining sections at half the cost. Values: off | minimal | low |
 # medium | high | xhigh | auto (send nothing, let the model decide).
-REASONING_DEFAULTS: dict[str, str] = {
-    "reasoning_entity": "off",
-    "reasoning_lore": "off",
-    "reasoning_chunk": "off",
-    # Anchors are the one purpose where thinking demonstrably earns its budget:
-    # the run that produced correctly-dated, checkable citations (Scott 1998)
-    # was a thinking run. Left on until measured otherwise.
-    "reasoning_anchors": "auto",
-    "reasoning_dossier": "auto",
-}
+#
+# DERIVED, not written out a second time. The level belongs to the purpose, and
+# the purpose is declared once in `ai_purposes.py` together with the budget it
+# spends its thinking from — the two numbers are not independent, so keeping
+# them in two tables was an invitation to change one of them alone.
+REASONING_DEFAULTS: dict[str, str] = {f"reasoning_{p.name}": p.reasoning for p in AI_PURPOSES.values()}
 
 _REASONING_KEYS = tuple(REASONING_DEFAULTS.keys())
+
+# ── Per-purpose budget + timeout overrides ───────────────────────────
+# The defaults live in `ai_purposes.py`; these keys let an operator raise or
+# lower one purpose from Admin > Models without a redeploy. Finding 15: the
+# model id was the ONLY admin-editable part of a call, while `max_tokens` — the
+# number that broke the 2026-08-29 production run — could be changed only by
+# shipping code.
+_BUDGET_KEYS = tuple(f"max_tokens_{name}" for name in AI_PURPOSES)
+_TIMEOUT_KEYS = tuple(f"timeout_{name}" for name in AI_PURPOSES)
+
+_KNOWN_KEYS = frozenset((*_MODEL_KEYS, *_REASONING_KEYS, *_BUDGET_KEYS, *_TIMEOUT_KEYS))
 
 
 async def _load_all(admin_supabase: Client) -> None:
@@ -92,13 +106,13 @@ async def _load_all(admin_supabase: Client) -> None:
         response = await (
             admin_supabase.table("platform_settings")
             .select("setting_key, setting_value")
-            .in_("setting_key", [*_MODEL_KEYS, *_REASONING_KEYS])
+            .in_("setting_key", [*_MODEL_KEYS, *_REASONING_KEYS, *_BUDGET_KEYS, *_TIMEOUT_KEYS])
             .execute()
         )
         new_cache: dict[str, str] = {}
         for row in extract_list(response):
             key = row["setting_key"]
-            if key not in _MODEL_KEYS and key not in _REASONING_KEYS:
+            if key not in _KNOWN_KEYS:
                 continue
             raw = str(row.get("setting_value", "")).strip('"')
             if raw:
@@ -113,21 +127,30 @@ async def _load_all(admin_supabase: Client) -> None:
 def get_platform_model(purpose: str) -> str:
     """Return cached model ID for the given purpose. Sync — reads from memory.
 
-    Maps purpose strings to setting keys:
-    - "forge" → model_forge
-    - "research" → model_research
-    - "fallback" → model_fallback
-    - anything else → model_default
+    Resolution order:
+
+    1. A purpose **declared** in ``ai_purposes.AI_PURPOSES`` resolves through the
+       ``model_key`` it declares. This is what makes the model follow the purpose
+       instead of following ``create_forge_agent``'s default argument — before
+       2026-08-30, ``chunk``, ``entity``, ``lore``, ``dossier`` and the rest got
+       their model from the string ``"forge"`` and everything else about the call
+       from their own name (finding 11).
+    2. The literal setting-key names ``forge`` / ``research`` / ``fallback`` keep
+       resolving to themselves. Callers that want a *tier* rather than a purpose
+       pass these — ``run_ai``'s 429 fallback asks for ``"fallback"``, and the
+       GenerationService path asks for ``"forge"``.
+    3. Everything else — every ``GenerationService`` purpose, and any string that
+       reaches here by accident — resolves to ``model_default``, as it always has.
+       ``services/constants.py`` documents what that collapse already cost once.
 
     In non-production environments, resolves the ``_dev`` variant first,
     falling back to the production key if the dev key is absent.
     """
-    if purpose == "forge":
-        base_key = "model_forge"
-    elif purpose == "research":
-        base_key = "model_research"
-    elif purpose == "fallback":
-        base_key = "model_fallback"
+    declared = AI_PURPOSES.get(purpose)
+    if declared is not None:
+        base_key = f"model_{declared.model_key}"
+    elif purpose in ("forge", "research", "fallback"):
+        base_key = f"model_{purpose}"
     else:
         base_key = "model_default"
 
@@ -196,3 +219,84 @@ def get_platform_reasoning(purpose: str) -> dict[str, object] | None:
         extra={"purpose": purpose, "raw": raw},
     )
     return None
+
+
+def _declared(purpose: str) -> AIPurpose:
+    """The declaration for ``purpose``, or the conservative floor.
+
+    An undeclared purpose cannot reach here through merged code —
+    ``test_ai_purposes.py`` fails the build on one — so arriving here means a
+    purpose was assembled at runtime. Warn once per call rather than silently
+    handing the model its own ceiling, which is what ``dict.get`` returning
+    ``None`` used to do.
+    """
+    declared = AI_PURPOSES.get(purpose)
+    if declared is not None:
+        return declared
+    logger.warning(
+        "AI purpose %r is not declared in ai_purposes.AI_PURPOSES — "
+        "falling back to the conservative floor (max_tokens=%d, timeout=%ds)",
+        purpose,
+        UNDECLARED_PURPOSE.max_tokens,
+        UNDECLARED_PURPOSE.timeout,
+        extra={"purpose": purpose},
+    )
+    return UNDECLARED_PURPOSE
+
+
+def _positive_int_setting(key: str, default: int, purpose: str) -> int:
+    """Read a positive integer from the settings cache, else ``default``.
+
+    Anything unreadable — a non-numeric string, zero, a negative — logs and
+    yields the declared default. A typo in the admin UI must not be able to
+    remove a budget: ``max_tokens=0`` is not a small budget, and a negative
+    timeout is not a short one; both are ways of switching the guard off.
+    """
+    raw = _cache.get(key)
+    if raw is None:
+        return default
+    try:
+        value = int(str(raw).strip().strip('"'))
+    except (TypeError, ValueError):
+        logger.warning(
+            "platform_settings.%s is not an integer (%r) — using the declared default %d",
+            key,
+            raw,
+            default,
+            extra={"purpose": purpose, "setting_key": key, "raw": raw},
+        )
+        return default
+    if value <= 0:
+        logger.warning(
+            "platform_settings.%s must be positive (got %d) — using the declared default %d",
+            key,
+            value,
+            default,
+            extra={"purpose": purpose, "setting_key": key, "raw": raw},
+        )
+        return default
+    return value
+
+
+def get_platform_max_tokens(purpose: str) -> int:
+    """Return the output-token ceiling for a purpose.
+
+    Sync — same in-process cache as :func:`get_platform_model`, so an admin edit
+    takes effect on the next :func:`invalidate` + reload rather than on a
+    redeploy. The default comes from ``ai_purposes.AI_PURPOSES``, where the
+    measurement that set it is recorded alongside it.
+    """
+    declared = _declared(purpose)
+    return _positive_int_setting(f"max_tokens_{purpose}", declared.max_tokens, purpose)
+
+
+def get_platform_timeout(purpose: str) -> int:
+    """Return the wall-clock timeout in seconds for a purpose.
+
+    ``None`` is deliberately not representable. Before 2026-08-30 three purposes
+    were absent from the timeout map and ran with no limit at all against a
+    model whose output ceiling is 384 000 tokens; a purpose that is not declared
+    now gets the shortest declared timeout instead of an unbounded wait.
+    """
+    declared = _declared(purpose)
+    return _positive_int_setting(f"timeout_{purpose}", declared.timeout, purpose)

@@ -203,7 +203,7 @@ class ForgeLoreService:
             f"Epigraphs should draw from real literary works when possible."
         )
 
-        agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
+        agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key, purpose="lore")
 
         # Bureau Ops Deferral A.2 — global + purpose enforcement only.
         # simulation_id is not in scope yet at lore-generation time (the sim
@@ -245,7 +245,7 @@ class ForgeLoreService:
         """
         logger.info("Translating lore sections", extra={"section_count": len(sections)})
         translations: list[dict[str, Any]] = []
-        agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key)
+        agent = create_forge_agent(LORE_TRANSLATOR_PROMPT, api_key=openrouter_key, purpose="lore_translation")
 
         # Bureau Ops Deferral A.2 — fetched once outside the loop so the 15s
         # BudgetEnforcementService cache handles the repeated pre_check calls
@@ -584,7 +584,7 @@ REQUIREMENTS:
                     for arcanum in ["ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA"]
                 ]
             else:
-                agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key)
+                agent = create_forge_agent(BUREAU_ARCHIVIST_PROMPT, api_key=openrouter_key, purpose="dossier")
                 # Bureau Ops Deferral A.2 — full 4-axis enforcement here:
                 # admin_supabase, simulation_id, and user_id are all in scope
                 # from the method parameters.

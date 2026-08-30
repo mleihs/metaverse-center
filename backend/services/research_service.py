@@ -425,6 +425,7 @@ class ResearchService:
                 "Avoid generic tropes; aim for intellectual rigor and surrealist depth."
             ),
             api_key=openrouter_key,
+            purpose="anchors",
         )
 
         prompt = (

@@ -49,9 +49,10 @@ async def test_evolve_section_calls_atomic_rpc():
 
     with (
         patch(f"{_MOD}.maybe_single_data", new=AsyncMock(return_value=section)),
-        patch(f"{_MOD}.get_platform_model", return_value="model-x"),
-        patch(f"{_MOD}.get_openrouter_model", return_value=MagicMock()),
-        patch(f"{_MOD}.Agent", return_value=MagicMock()),
+        # W4: the service no longer builds its Agent by hand — model, budget,
+        # timeout and reasoning all come from the one `dossier_evolution` row in
+        # `ai_purposes.AI_PURPOSES`, resolved inside `create_forge_agent`.
+        patch(f"{_MOD}.create_forge_agent", return_value=MagicMock()),
         patch(f"{_MOD}.run_ai", new=AsyncMock(return_value=MagicMock(output="Generated addendum text."))),
         patch(
             f"{_MOD}.TranslationService.translate_text",
@@ -85,9 +86,10 @@ async def test_evolve_section_body_de_falls_back_to_english_on_translation_failu
 
     with (
         patch(f"{_MOD}.maybe_single_data", new=AsyncMock(return_value=section)),
-        patch(f"{_MOD}.get_platform_model", return_value="model-x"),
-        patch(f"{_MOD}.get_openrouter_model", return_value=MagicMock()),
-        patch(f"{_MOD}.Agent", return_value=MagicMock()),
+        # W4: the service no longer builds its Agent by hand — model, budget,
+        # timeout and reasoning all come from the one `dossier_evolution` row in
+        # `ai_purposes.AI_PURPOSES`, resolved inside `create_forge_agent`.
+        patch(f"{_MOD}.create_forge_agent", return_value=MagicMock()),
         patch(f"{_MOD}.run_ai", new=AsyncMock(return_value=MagicMock(output="English only addendum."))),
         patch(
             f"{_MOD}.TranslationService.translate_text",

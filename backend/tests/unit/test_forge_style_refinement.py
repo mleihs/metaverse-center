@@ -81,8 +81,10 @@ async def _refine(model_output: str) -> dict[str, str]:
     supabase = type("S", (), {"table": lambda _self, name: _Table(name)})()
 
     with (
-        patch("backend.services.forge_theme_service.get_openrouter_model"),
-        patch("backend.services.forge_theme_service.Agent"),
+        # W4: the service builds its agent through `create_forge_agent` now, so
+        # the `style_refine` row in `ai_purposes.AI_PURPOSES` supplies the model
+        # AND the budget/timeout this call used to run without.
+        patch("backend.services.forge_theme_service.create_forge_agent"),
         patch("backend.services.forge_theme_service.get_admin_supabase", AsyncMock()),
         patch(
             "backend.services.forge_theme_service.run_ai",

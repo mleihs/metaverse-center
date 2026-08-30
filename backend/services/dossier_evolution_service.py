@@ -8,15 +8,13 @@ from uuid import UUID
 
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
-from pydantic_ai import Agent
 
 from backend.models.translation import TranslationContext
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
-    get_openrouter_model,
+    create_forge_agent,
     run_ai,
 )
-from backend.services.platform_model_config import get_platform_model
 from backend.services.translation_service import TranslationService
 from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
@@ -159,11 +157,11 @@ class DossierEvolutionService:
                 entity_detail=entity_detail,
             )
 
-            model = get_openrouter_model(
-                openrouter_key,
-                model_id=get_platform_model("forge"),
+            agent = create_forge_agent(
+                "You are the Bureau's Senior Classified Analyst.",
+                api_key=openrouter_key,
+                purpose="dossier_evolution",
             )
-            agent = Agent(model, system_prompt="You are the Bureau's Senior Classified Analyst.")
             # Bureau Ops Deferral A.2 — simulation_id is in scope; thread it
             # so per-sim budgets can throttle runaway evolution storms. user_id
             # is not in scope (this runs from a post-trigger flow, not a user

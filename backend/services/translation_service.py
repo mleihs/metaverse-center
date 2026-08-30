@@ -9,13 +9,11 @@ from uuid import UUID
 import deepl
 import httpx
 import sentry_sdk
-from pydantic_ai import Agent
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.translation import TranslationContext, TranslationResult
-from backend.services.ai_utils import MODEL_CALL_ERRORS, get_openrouter_model, run_ai
-from backend.services.platform_model_config import get_platform_model
+from backend.services.ai_utils import MODEL_CALL_ERRORS, create_forge_agent, run_ai
 from backend.services.simulation_service import SimulationService
 from supabase import AsyncClient as Client
 
@@ -151,11 +149,7 @@ class TranslationService:
             target_lang=target_lang,
             context_block=_build_context_block(context),
         )
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=system,
-            retries=3,
-        )
+        agent = create_forge_agent(system, api_key=openrouter_key, purpose="translation", retries=3)
         # Bureau Ops Deferral A.2 — inherit global + purpose budget enforcement.
         # sim/user context isn't in scope at this call site (translation is a
         # platform-wide service fan-out from multiple upstream paths), so we
@@ -192,11 +186,7 @@ class TranslationService:
         for name, value in fields.items():
             prompt_parts.append(f"--- {name} ---\n{value}\n")
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=system,
-            retries=3,
-        )
+        agent = create_forge_agent(system, api_key=openrouter_key, purpose="translation", retries=3)
         # Bureau Ops Deferral A.2 — global + purpose enforcement only
         # (see `_translate_claude` for rationale).
         admin_supabase = await get_admin_supabase()

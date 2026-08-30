@@ -30,20 +30,22 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Final
 
-from pydantic_ai import Agent
-
 from backend.models.bureau_ops import ForecastProjection, ForecastSlider
-from backend.services.ai_utils import get_openrouter_model, run_ai
+from backend.services.ai_utils import create_forge_agent, run_ai
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# AD-6: Haiku — cheap NL synthesis. Hardcoded here rather than wired
-# through platform_model_config because the forecast service is the only
-# caller; keeping it self-contained avoids polluting the shared model
-# settings surface with a one-off purpose.
-_FORECAST_MODEL: Final[str] = "anthropic/claude-haiku-4.5"
+# AD-6: Haiku — cheap NL synthesis. The id used to live here as a `Final`,
+# with the reasoning that a one-off purpose should not pollute the shared
+# settings surface. That surface is now per-purpose (`ai_purposes.py`), so a
+# one-off purpose is exactly what it is built to hold — and the old
+# arrangement had the practical effect that the one model an operator might
+# most want to swap for a cheaper one was the only model they could not reach.
+# `model_forecast` is seeded with the same `anthropic/claude-haiku-4.5`.
+# The 200-token ceiling and the 10s upstream timeout moved to the same
+# declaration; `_DRIVER_TEXT_TIMEOUT_S` below remains the outer backstop.
 _FORECAST_PURPOSE: Final[str] = "ops_forecast"
 _DRIVER_TEXT_TTL_S: Final[float] = 5 * 60.0
 _DRIVER_TEXT_TIMEOUT_S: Final[float] = 15.0
@@ -290,15 +292,11 @@ class OpsForecastService:
         # multiplier so a Friday-heavy 2-week tail projects higher than a
         # Sunday-heavy one with the same daily mean.
         remaining_dates = [today + timedelta(days=i + 1) for i in range(days_remaining)]
-        seasonal_extra = sum(
-            overall_mean * dow_mult.get(d.weekday(), 1.0) for d in remaining_dates
-        )
+        seasonal_extra = sum(overall_mean * dow_mult.get(d.weekday(), 1.0) for d in remaining_dates)
         projected_usd = mtd_usd + seasonal_extra
         linear_extra = overall_mean * days_remaining
 
-        ci_half = (
-            daily_stdev * math.sqrt(days_remaining) if days_remaining > 0 else 0.0
-        )
+        ci_half = daily_stdev * math.sqrt(days_remaining) if days_remaining > 0 else 0.0
 
         sorted_purposes = sorted(
             per_purpose_30d.items(),
@@ -357,20 +355,17 @@ class OpsForecastService:
         forecast generation is budget-exempt by design (AD-6).
         """
         try:
-            agent = Agent(
-                get_openrouter_model(model_id=_FORECAST_MODEL),
-                system_prompt=(
+            agent = create_forge_agent(
+                (
                     "You are an ops analyst summarizing AI cost forecasts in 1-2 "
                     "sentences. Be specific about top drivers; no fluff; no "
                     "apology. Plain English, no markdown, no quotes."
                 ),
-                retries=1,
+                purpose=_FORECAST_PURPOSE,
             )
             top_lines = (
                 "\n".join(
-                    f"  - {p.purpose}: ${p.usd_30d:.2f} "
-                    f"({p.pct:.0f}% of 30d spend)"
-                    for p in snapshot.top_purposes
+                    f"  - {p.purpose}: ${p.usd_30d:.2f} ({p.pct:.0f}% of 30d spend)" for p in snapshot.top_purposes
                 )
                 or "  - (no spend recorded in the last 30 days)"
             )
@@ -389,11 +384,11 @@ class OpsForecastService:
                     agent,
                     prompt,
                     purpose=_FORECAST_PURPOSE,
-                    # max_tokens=200 caps cost at ~$0.0001/call for the
-                    # 1-2 sentence summary; timeout=10 bounds the upstream
-                    # call cleanly so the outer wait_for is a backstop, not
-                    # the primary deadline.
-                    model_settings={"timeout": 10, "max_tokens": 200},
+                    # The 200-token ceiling (~$0.0001/call for a 1-2 sentence
+                    # summary) and the 10s upstream timeout are declared with
+                    # the purpose in `ai_purposes.py`, so an operator can see
+                    # and change them next to the other twelve. The outer
+                    # `wait_for` below stays a backstop, not the deadline.
                     # admin_supabase intentionally omitted — see method docstring
                 ),
                 timeout=_DRIVER_TEXT_TIMEOUT_S,
