@@ -235,8 +235,14 @@ _SUBJECT_RE = re.compile(
     r"the subject|posed|portrait of)\b",
     re.IGNORECASE,
 )
-# A numeral becomes a numeral rendered on the picture, and it reads as a measurement.
-_NUMERAL_RE = re.compile(r"\d")
+# Not every numeral is a problem — measured across 123 production style prompts,
+# almost all of them are the vocabulary a style is written in: "1970s", "35mm",
+# "16:9", "f/8", "85mm", "CP437". A first version of this rule flagged all 42 and
+# would have been ignored within a week. What actually caused the harm is a
+# numeral presented as a MEASUREMENT: a percentage, or a label with a value after
+# a colon — "Leserlichkeit: 93%". Those get rendered onto the picture and read as
+# something the platform computed.
+_MEASUREMENT_RE = re.compile(r"\d+\s*%|\b[A-Za-zÄÖÜäöüß]{3,}\s*:\s*[^,;]*\d")
 # Emphasis and quotation marks are how a model writes text it wants drawn.
 _RENDERED_TEXT_RE = re.compile(
     r"[*\"\u201c\u201d\u2018\u2019]|\b(reading|labell?ed|inscribed with|caption)\b",
@@ -260,7 +266,7 @@ class StylePromptFinding:
 
 
 def audit_style_prompts(theme: Mapping[str, object]) -> tuple[StylePromptFinding, ...]:
-    """Report style prompts that name a subject, a number, or text to render."""
+    """Report style prompts that name a subject, a measurement, or text to render."""
     findings: list[StylePromptFinding] = []
     for key in STYLE_PROMPT_KEYS:
         value = theme.get(key)
@@ -269,8 +275,8 @@ def audit_style_prompts(theme: Mapping[str, object]) -> tuple[StylePromptFinding
         problems: list[str] = []
         if _SUBJECT_RE.search(value):
             problems.append("names a subject")
-        if _NUMERAL_RE.search(value):
-            problems.append("contains a numeral")
+        if _MEASUREMENT_RE.search(value):
+            problems.append("states a measurement")
         if _RENDERED_TEXT_RE.search(value):
             problems.append("asks for readable text")
         words = len(value.split())
