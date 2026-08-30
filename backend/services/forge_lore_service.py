@@ -15,7 +15,11 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
-from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.services.ai_utils import (
+    MODEL_CALL_ERRORS,
+    create_forge_agent,
+    run_ai,
+)
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_image_service import ForgeImageService
 from backend.services.simulation_service import SimulationService
@@ -277,7 +281,7 @@ class ForgeLoreService:
                         "entity_name": s["title"],
                     },
                 )
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
                     "Lore section translation failed — skipping",
                     extra={
@@ -669,7 +673,7 @@ REQUIREMENTS:
                 extra={"simulation_id": str(simulation_id), "sections": len(sections)},
             )
 
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        except (*MODEL_CALL_ERRORS, PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             sentry_sdk.capture_exception(exc)
             logger.exception("Dossier generation failed")
             await ForgeFeatureService.fail_feature(

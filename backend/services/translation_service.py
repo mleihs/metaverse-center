@@ -14,7 +14,7 @@ from pydantic_ai import Agent
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.translation import TranslationContext, TranslationResult
-from backend.services.ai_utils import get_openrouter_model, run_ai
+from backend.services.ai_utils import MODEL_CALL_ERRORS, get_openrouter_model, run_ai
 from backend.services.platform_model_config import get_platform_model
 from backend.services.simulation_service import SimulationService
 from supabase import AsyncClient as Client
@@ -347,7 +347,7 @@ async def _run_auto_translate(
 
     try:
         translated = await TranslationService.translate_fields(to_translate, context=context)
-    except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+    except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
         logger.exception("Auto-translation failed", extra={"entity_type": table, "entity_id": entity_id})
         sentry_sdk.capture_exception(exc)
         return

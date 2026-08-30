@@ -12,7 +12,7 @@ import sentry_sdk
 import structlog
 from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
+from pydantic_ai.exceptions import ModelAPIError, UnexpectedModelBehavior
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
@@ -27,6 +27,7 @@ from backend.models.forge import (
 )
 from backend.services import forge_mock_service as mock
 from backend.services.ai_utils import (
+    MODEL_CALL_ERRORS,
     ai_error_to_http,
     create_forge_agent,
     report_delivery_count,
@@ -445,7 +446,7 @@ class ForgeOrchestratorService:
                 # 2. Generate 3 Philosophical Anchors
                 logger.debug("Generating philosophical anchors...")
                 anchors = await ResearchService.generate_anchors(seed, context, or_key)
-            except ModelHTTPError as exc:
+            except ModelAPIError as exc:
                 raise ai_error_to_http(exc) from exc
 
         # 3. Update draft — track research source for frontend transparency
@@ -618,7 +619,7 @@ class ForgeOrchestratorService:
 
             else:
                 raise bad_request(f"Invalid chunk type: {chunk_type}")
-        except ModelHTTPError as exc:
+        except ModelAPIError as exc:
             raise ai_error_to_http(exc) from exc
         except UnexpectedModelBehavior as exc:
             with sentry_sdk.push_scope() as scope:
@@ -695,7 +696,7 @@ class ForgeOrchestratorService:
                         user_id=user_id,
                     )
                 entity = result.output.model_dump()
-            except ModelHTTPError as exc:
+            except ModelAPIError as exc:
                 raise ai_error_to_http(exc) from exc
             except UnexpectedModelBehavior as exc:
                 with sentry_sdk.push_scope() as scope:
@@ -881,7 +882,7 @@ class ForgeOrchestratorService:
                     buildings=buildings,
                     openrouter_key=or_key,
                 )
-            except ModelHTTPError as exc:
+            except ModelAPIError as exc:
                 raise ai_error_to_http(exc) from exc
             except (
                 PostgrestAPIError,
@@ -1022,7 +1023,7 @@ class ForgeOrchestratorService:
                     astrolabe_context=astrolabe_ctx,
                     openrouter_key=or_key,
                 )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "deep_research")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
@@ -1076,7 +1077,7 @@ class ForgeOrchestratorService:
                     openrouter_key=or_key,
                     on_section_start=on_section_start,
                 )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "lore_translation")
                     scope.set_context("forge", {"simulation_id": str(simulation_id)})
@@ -1090,10 +1091,9 @@ class ForgeOrchestratorService:
                 translations,
             )
         except (
+            *MODEL_CALL_ERRORS,
             PostgrestAPIError,
             httpx.HTTPError,
-            ModelHTTPError,
-            UnexpectedModelBehavior,
             OpenRouterError,
             KeyError,
             TypeError,
@@ -1161,10 +1161,9 @@ class ForgeOrchestratorService:
                     entity_translations,
                 )
         except (
+            *MODEL_CALL_ERRORS,
             PostgrestAPIError,
             httpx.HTTPError,
-            ModelHTTPError,
-            UnexpectedModelBehavior,
             KeyError,
             TypeError,
             ValueError,
@@ -1237,7 +1236,7 @@ class ForgeOrchestratorService:
                     simulation_id,
                     or_key,
                 )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Style prompt refinement failed — using original prompts",
                     exc_info=True,
@@ -1251,7 +1250,7 @@ class ForgeOrchestratorService:
                     simulation_id,
                     or_key,
                 )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Prompt template generation failed — using platform defaults",
                     exc_info=True,
@@ -1876,7 +1875,7 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
                         simulation_id,
                         translations,
                     )
-            except (httpx.HTTPError, ModelHTTPError, UnexpectedModelBehavior, KeyError, TypeError, ValueError):
+            except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "recruit_translation")
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "agent_count": len(generated)})
@@ -1898,10 +1897,9 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
             )
 
         except (
+            *MODEL_CALL_ERRORS,
             PostgrestAPIError,
             httpx.HTTPError,
-            ModelHTTPError,
-            UnexpectedModelBehavior,
             KeyError,
             TypeError,
             ValueError,

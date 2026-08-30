@@ -87,7 +87,8 @@ def too_many_requests(detail: str = "Too many requests.") -> HTTPException:
 def server_error(detail: str = "Internal server error.") -> HTTPException:
     """Create a 500 Internal Server Error."""
     return HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail,
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=detail,
     )
 
 
@@ -99,3 +100,14 @@ def bad_gateway(detail: str = "Upstream service error.") -> HTTPException:
 def service_unavailable(detail: str = "Service temporarily unavailable.") -> HTTPException:
     """Create a 503 Service Unavailable error."""
     return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=detail)
+
+
+def gateway_timeout(detail: str = "Upstream service did not answer in time.") -> HTTPException:
+    """Create a 504 Gateway Timeout error.
+
+    Distinct from 502 on purpose: an upstream that timed out is a different fact
+    from an upstream that answered wrongly, and only one of them is worth
+    retrying unchanged. Used for a model call that exhausts its configured
+    timeout budget (see ``PYDANTIC_AI_TIMEOUTS``).
+    """
+    return HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=detail)
