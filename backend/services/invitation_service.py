@@ -10,7 +10,7 @@ import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
-from backend.services.email_service import EmailService
+from backend.services.email_service import EmailService, MailRecord
 from backend.services.email_templates import (
     render_simulation_invitation,
     simulation_invitation_subject,
@@ -113,7 +113,15 @@ class InvitationService:
             subject = simulation_invitation_subject(
                 simulation_name, inviter_label or "A member", email_locale
             )
-            return await EmailService.send(recipient, subject, html_body)
+            return await EmailService.send(
+                recipient,
+                subject,
+                html_body,
+                record=MailRecord(
+                    template="simulation_invitation",
+                    simulation_id=str(invitation["simulation_id"]),
+                ),
+            )
         except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Invitation email failed — the invitation itself stands",

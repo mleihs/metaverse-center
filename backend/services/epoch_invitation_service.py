@@ -13,7 +13,7 @@ from pydantic_ai.exceptions import ModelAPIError
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
-from backend.services.email_service import EmailService
+from backend.services.email_service import EmailService, MailRecord
 from backend.services.email_templates import epoch_invitation_subject, render_epoch_invitation
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.platform_model_config import get_platform_model
@@ -119,6 +119,7 @@ class EpochInvitationService:
             invite_url=invite_url,
             locale=locale,
             cycle_hours=cycle_hours,
+            epoch_id=epoch_id,
         )
         invitation["email_sent"] = email_sent
 
@@ -380,6 +381,7 @@ class EpochInvitationService:
         locale: str = "en",
         *,
         cycle_hours: int = 8,
+        epoch_id: UUID | None = None,
     ) -> bool:
         """Send invitation email.
 
@@ -396,4 +398,9 @@ class EpochInvitationService:
         )
 
         subject = epoch_invitation_subject(epoch_name, locale)
-        return await EmailService.send(recipient_email, subject, html_body)
+        return await EmailService.send(
+            recipient_email,
+            subject,
+            html_body,
+            record=MailRecord(template="epoch_invitation", epoch_id=str(epoch_id) if epoch_id else None),
+        )

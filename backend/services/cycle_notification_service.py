@@ -15,7 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.models.epoch import SCORING_DIMENSIONS
-from backend.services.email_service import EmailService
+from backend.services.email_service import EmailService, MailRecord
 from backend.services.email_templates import (
     cycle_briefing_subject,
     epoch_completed_subject,
@@ -756,7 +756,17 @@ class CycleNotificationService:
                 subject = cycle_briefing_subject(briefing, email_locale)
 
                 if await EmailService.send(
-                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                    recipient["email"],
+                    subject,
+                    html_body,
+                    unsubscribe_url=opt_out,
+                    record=MailRecord(
+                        template="cycle_briefing",
+                        user_id=recipient["user_id"],
+                        epoch_id=epoch_id,
+                        simulation_id=recipient["simulation_id"],
+                        cycle_number=cycle_number,
+                    ),
                 ):
                     sent_count += 1
 
@@ -851,7 +861,17 @@ class CycleNotificationService:
                 )
 
                 if await EmailService.send(
-                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                    recipient["email"],
+                    subject,
+                    html_body,
+                    unsubscribe_url=opt_out,
+                    record=MailRecord(
+                        template="phase_change",
+                        user_id=recipient["user_id"],
+                        epoch_id=epoch_id,
+                        simulation_id=recipient["simulation_id"],
+                        cycle_number=cycle_count,
+                    ),
                 ):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
@@ -928,7 +948,17 @@ class CycleNotificationService:
                 )
 
                 if await EmailService.send(
-                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                    recipient["email"],
+                    subject,
+                    html_body,
+                    unsubscribe_url=opt_out,
+                    record=MailRecord(
+                        template="epoch_completed",
+                        user_id=recipient["user_id"],
+                        epoch_id=epoch_id,
+                        simulation_id=recipient["simulation_id"],
+                        cycle_number=cycle_count,
+                    ),
                 ):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
