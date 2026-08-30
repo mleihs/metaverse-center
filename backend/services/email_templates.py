@@ -301,7 +301,6 @@ def render_epoch_invitation(
     epoch_name: str,
     lore_text: str,
     invite_url: str,
-    locale: str = "en",
     *,
     email_locale: str | None = None,
     accent_color: str | None = None,
@@ -314,8 +313,16 @@ def render_epoch_invitation(
     - Dark background, monospace font, per-simulation accent color
     - Sections: intro, operation name, intel dossier, mission params, rules, CTA
 
-    If email_locale is "en" or "de", renders single-language.
-    Otherwise renders bilingual (EN first, then DE).
+    There used to be a second language parameter here, a positional ``locale``,
+    and NOTHING read it: the body resolved ``email_locale`` and the caller
+    passed the invitee's choice to ``locale`` (finding E9). Two parameters for
+    one concept, one of them dead — so an invitee who asked for German got the
+    default. The parameter is gone rather than wired up, because the second one
+    would have been the next thing to rot.
+
+    ``cycle_hours`` decides the sentence "N-hour cycles" in the mission
+    parameters. It defaulted to 8 and no caller passed it, so a 24-hour epoch
+    invited people to an 8-hour one.
     """
     safe_name = _esc(epoch_name)
     safe_lore = _esc(lore_text)
