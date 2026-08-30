@@ -511,57 +511,12 @@ export const forgeBackButtonStyles = css`
   }
 `;
 
-export const forgeOverlayStyles = css`
-  .forge-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-modal, 500);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: var(--color-surface);
-    overflow-y: auto;
-  }
+/* `forgeOverlayStyles` stood here with zero importers. Its `.forge-overlay`
+   collided with an unrelated rule of the same name in ArchetypeDetailView,
+   which styles its own — two meanings on one selector, waiting to be imported
+   into each other. Its other two classes appear in no markup. */
 
-  .forge-overlay__backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: var(--z-modal, 500);
-  }
-
-  .forge-overlay__close {
-    background: transparent;
-    border: 1px solid var(--color-border);
-    color: var(--color-icon);
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: var(--text-lg);
-    transition: color 0.2s, border-color 0.2s;
-  }
-
-  .forge-overlay__close:hover {
-    color: var(--color-text-primary);
-    border-color: var(--color-icon);
-  }
-
-  .forge-overlay__close:focus-visible {
-    outline: 2px solid var(--color-accent-amber);
-    outline-offset: 2px;
-  }
-`;
-
-/** All forge console styles combined for convenience. */
-export const forgeConsoleStyles = [
-  forgeButtonStyles,
-  forgeBackButtonStyles,
-  forgeFieldStyles,
-  forgeRangeStyles,
-  forgeStatusStyles,
-  forgeSectionStyles,
-  forgeInfoBubbleStyles,
-];
+/* The `forgeConsoleStyles` bundle stood here with zero importers: every
+   consumer names the two or three parts it actually needs, which is the better
+   habit. A convenience export nobody reaches for is a maintenance surface with
+   no user. */
