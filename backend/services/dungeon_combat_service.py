@@ -49,6 +49,7 @@ from backend.services.dungeon.dungeon_combat import (
     get_enemy_templates_dict,
     spawn_enemies,
 )
+from backend.services.dungeon.dungeon_cooldowns import advance_cooldowns, is_on_cooldown
 from backend.services.dungeon.dungeon_encounters import select_encounter
 from backend.services.dungeon.dungeon_loot import roll_loot
 from backend.services.dungeon.dungeon_run_buffs import record_and_apply
@@ -141,6 +142,22 @@ class DungeonCombatService:
                         extra=log_extra(instance, ability_id=ability_id, agent_id=agent_id),
                     )
                     continue
+                # Cooldowns were declared in content, shown in the UI and never
+                # enforced on either side (Befund D2). Dropped like an invalid
+                # ability rather than raised: a stale client should not lose the
+                # round, and auto-defend covers the agent.
+                actor = next((a for a in instance.party if str(a.agent_id) == str(agent_id)), None)
+                if actor and is_on_cooldown(actor, ability_id):
+                    logger.info(
+                        "Ability still on cooldown — auto-defend will cover this agent",
+                        extra=log_extra(
+                            instance,
+                            ability_id=ability_id,
+                            agent_id=agent_id,
+                            remaining=is_on_cooldown(actor, ability_id),
+                        ),
+                    )
+                    continue
                 agent_actions.append(
                     AgentAction(
                         agent_id=agent_id,
@@ -156,7 +173,14 @@ class DungeonCombatService:
             if can_act(agent.condition) and str(agent.agent_id) not in submitted_agent_ids:
                 if not alive_enemies:
                     continue
-                abilities = get_agent_all_abilities(agent.aptitudes, instance.archetype)
+                # Auto-defend must respect cooldowns too — otherwise the guard
+                # above only stops the player from spending a blocked ability and
+                # the server spends it for them.
+                abilities = [
+                    a
+                    for a in get_agent_all_abilities(agent.aptitudes, instance.archetype)
+                    if not is_on_cooldown(agent, a.id)
+                ]
                 damage_abilities = [a for a in abilities if a.effect_type == "damage" and a.targets == "single_enemy"]
                 if damage_abilities:
                     idx = (instance.combat.round_num + hash(str(agent.agent_id))) % len(damage_abilities)
@@ -214,6 +238,10 @@ class DungeonCombatService:
         )
         conditions_before = {a.agent_id: a.condition for a in instance.party}
         round_result = resolve_combat_round(context, agent_actions, enemy_actions, enemy_templates)
+
+        # Tick cooldowns down and stamp what this round actually used. Uses the
+        # validated actions, not the client's submission.
+        advance_cooldowns(instance.party, [(a.agent_id, a.ability_id) for a in agent_actions])
 
         # Sync mutable context state back to CombatState
         instance.combat.trap_deployed = context.trap_deployed
