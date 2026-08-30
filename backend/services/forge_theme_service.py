@@ -27,6 +27,7 @@ from backend.services.prompt_contracts import (
     variable_catalogue,
 )
 from backend.services.prompt_service import report_contract_violation
+from backend.services.theme_contrast import enforce_theme_contrast
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
@@ -266,6 +267,34 @@ class ForgeThemeService:
         if not theme_data:
             logger.warning("No theme data to apply for simulation %s", simulation_id)
             return
+
+        # A model picks the whole palette here, and the only thing that used to
+        # stand between it and production was a line in the prompt asking for
+        # WCAG AA. One world shipped `color_text` and `color_surface_header` set
+        # to the same value: its header rendered navy on navy, in all 37 places
+        # the token is used, and looked merely empty.
+        theme_data, contrast = enforce_theme_contrast(theme_data)
+        if not contrast.is_clean:
+            logger.warning(
+                "Theme contrast floor repaired %d surface(s) for simulation %s: %s",
+                len(contrast.repairs),
+                simulation_id,
+                contrast.as_context(),
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "ForgeThemeService")
+                scope.set_tag("simulation_id", str(simulation_id))
+                scope.set_context("theme_contrast", contrast.as_context())
+                sentry_sdk.capture_message(
+                    "Generated theme failed the WCAG AA contrast floor",
+                    level="warning",
+                )
+        elif contrast.advisories:
+            logger.info(
+                "Theme contrast advisories for simulation %s: %s",
+                simulation_id,
+                contrast.as_context(),
+            )
 
         # Style prompt keys go to category='ai', everything else to category='design'
         ai_keys = {

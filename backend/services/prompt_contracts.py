@@ -121,7 +121,9 @@ _FORMAT_DESCRIPTORS = "OUTPUT FORMAT: comma-separated visual descriptors, no sen
 _FRAME_PORTRAIT = (
     "COMPOSITION (platform requirement, overrides anything above): exactly ONE person, "
     "a single subject centered in frame. Never two people, never a pair of panels, never a "
-    "diptych. Close-up head-and-shoulders, shallow depth of field.\n"
+    "diptych. Close-up head-and-shoulders, shallow depth of field. No readable text, no badges, "
+    "no numerals on clothing or background: any figure a portrait shows is invented, and the "
+    "platform computes none.\n"
     f"{_FORMAT_DESCRIPTORS}"
 )
 
@@ -282,7 +284,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
         # ── Image descriptions — the frames live here ─────────────────────
         _contract(
             "portrait_description",
-            (*_AGENT_IDENTITY, *_WORLD),
+            (*_AGENT_IDENTITY, "agent_gender", *_WORLD),
             frame=_FRAME_PORTRAIT,
         ),
         _contract(
