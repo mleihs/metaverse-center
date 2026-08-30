@@ -1735,6 +1735,15 @@ export interface ResonanceImpact {
 
 export type HeartbeatStatus = 'processing' | 'completed' | 'failed' | 'skipped';
 
+/**
+ * The chronicle's vocabulary. Mirrors `HEARTBEAT_ENTRY_TYPES` in
+ * `backend/services/heartbeat_entry_builder.py`, which is also the source the
+ * database CHECK is generated from — the order here follows that tuple.
+ *
+ * Two of these arrived in the feed long before they arrived here, and until
+ * 30.08.2026 the pulse rendered them as raw slugs with a fallback icon:
+ * `resonance_mood` (migration 186) and `bond_whisper` (migration 285).
+ */
 export type HeartbeatEntryType =
   | 'zone_shift'
   | 'event_aging'
@@ -1742,6 +1751,7 @@ export type HeartbeatEntryType =
   | 'event_resolution'
   | 'scar_tissue'
   | 'resonance_pressure'
+  | 'resonance_mood'
   | 'cascade_spawn'
   | 'bureau_response'
   | 'attunement_deepen'
@@ -1754,7 +1764,8 @@ export type HeartbeatEntryType =
   | 'relationship_shift'
   | 'social_event'
   | 'autonomous_event'
-  | 'ambient_weather';
+  | 'ambient_weather'
+  | 'bond_whisper';
 
 export type HeartbeatSeverity = 'info' | 'warning' | 'critical' | 'positive';
 

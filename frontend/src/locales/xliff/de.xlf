@@ -28682,6 +28682,26 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>The Bureau delivered <x id="0" equiv-text="${shortfall.delivered}"/> of <x id="1" equiv-text="${shortfall.requested}"/>. Re-draft to fill the gap.</source>
   <target>Das Büro lieferte <x id="0" equiv-text="${shortfall.delivered}"/> von <x id="1" equiv-text="${shortfall.requested}"/>. Zeichne neu, um die Lücke zu füllen.</target>
 </trans-unit>
+<trans-unit id="s98a109787cb150cd">
+  <source>Whisper</source>
+  <target>Geflüster</target>
+</trans-unit>
+<trans-unit id="s695234d1d9321493">
+  <source>resonance reading</source>
+  <target>Resonanzmessung</target>
+</trans-unit>
+<trans-unit id="s28c4a094101978a0">
+  <source>resonance readings</source>
+  <target>Resonanzmessungen</target>
+</trans-unit>
+<trans-unit id="s131a36e806f5e3e8">
+  <source>agent report</source>
+  <target>Agentenmeldung</target>
+</trans-unit>
+<trans-unit id="s6b6ee743d3d1c061">
+  <source>agent reports</source>
+  <target>Agentenmeldungen</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

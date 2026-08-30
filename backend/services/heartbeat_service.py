@@ -45,6 +45,7 @@ from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
+from backend.utils.timestamps import parse_timestamp
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -275,11 +276,10 @@ class HeartbeatService(BaseSchedulerMixin):
                 # Never ticked — initialize and mark as due
                 due_sims.append(sim)
             else:
-                try:
-                    next_dt = datetime.fromisoformat(next_at.replace("Z", "+00:00"))
-                    if next_dt <= now:
-                        due_sims.append(sim)
-                except (ValueError, TypeError):
+                next_dt = parse_timestamp(next_at)
+                # An unreadable timestamp counts as due: a world we cannot date is
+                # better ticked once too often than never again.
+                if next_dt is None or next_dt <= now:
                     due_sims.append(sim)
 
         if not due_sims:
@@ -298,12 +298,260 @@ class HeartbeatService(BaseSchedulerMixin):
             async with semaphore:
                 await cls._tick_simulation(admin, sim, interval)
 
-        await asyncio.gather(
+        # ``return_exceptions=True`` keeps one world's failure from cancelling the
+        # others — but the returned exceptions are results, not raises, so nothing
+        # observes them unless we walk the list. Before this loop a tick that died
+        # outside its own try/except (an unexpected type from the claim query, a
+        # broken client) vanished without a log line or a Sentry event.
+        results = await asyncio.gather(
             *[_tick_with_limit(sim) for sim in due_sims],
             return_exceptions=True,
         )
+        for sim, result in zip(due_sims, results, strict=True):
+            if not isinstance(result, BaseException):
+                continue
+            sim_id = str(sim.get("id"))
+            sim_name = sim.get("name", "Unknown")
+            logger.error(
+                "Heartbeat: tick raised outside its own handler for %s",
+                sim_name,
+                exc_info=result,
+                extra={"simulation_id": sim_id, "slug": sim.get("slug")},
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "heartbeat")
+                scope.set_tag("simulation_id", sim_id)
+                scope.set_context(
+                    "heartbeat",
+                    {"simulation_name": sim_name, "slug": sim.get("slug")},
+                )
+                sentry_sdk.capture_exception(result)
 
     # ── Core Tick Pipeline ──────────────────────────────────────
+
+    @classmethod
+    async def _claim_tick(
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        sim_name: str,
+        interval: int,
+    ) -> UUID | None:
+        """Take ownership of one tick, or explain why this run must stand down.
+
+        The claim rides on ``UNIQUE(simulation_id, tick_number)``: the insert wins
+        or it conflicts, and the conflict is the interesting case. Until now it had
+        two answers — reclaim a ``failed`` row, otherwise skip — and the *otherwise*
+        was where two worlds went to die.
+
+        Velgarien last ticked on 25.03.2026. Its pointer stands at 46 and its row
+        for tick 47 says ``completed``: the tick ran, the chronicle was written, and
+        the update of ``simulations.last_heartbeat_tick`` did not land. Every run
+        since has computed 47 again, met the completed row, taken the *otherwise*
+        branch, and returned at ``logger.debug`` — five months of silence at a log
+        level nobody reads. The Möbius Academy has the mirror image: tick 39 has
+        sat at ``processing`` since 24.03., left behind by a worker that died, and
+        no ``processing`` row was ever old enough to be doubted.
+
+        So the conflict now has four answers, and only one of them is a skip:
+
+        ``failed``
+            Reclaim, as before — the previous attempt crashed and the tick is owed.
+        ``completed``
+            The world already lived this tick; only the pointer is behind. Advance
+            it to ``tick_number``, date it from the row, and make the world due
+            immediately so the next run computes ``tick_number + 1``. No entry is
+            written twice, because this run does not tick.
+        ``processing`` older than two tick intervals
+            No worker survives eight hours holding a semaphore slot. Treat it as
+            abandoned and reclaim it, loudly (Sentry, ``phase=orphan_reclaim``) —
+            a reclaim that is wrong costs one duplicated tick, a reclaim that never
+            happens costs the world.
+        ``processing``, young
+            A genuine concurrent worker. Skip — at ``info``, so the skip is visible
+            in a log that is actually read.
+
+        Returns the heartbeat id to tick under, or ``None`` to stand down.
+        """
+        heartbeat_id = uuid4()
+
+        resp = await (
+            admin.table("simulation_heartbeats")
+            .upsert(
+                {
+                    "id": str(heartbeat_id),
+                    "simulation_id": str(sim_id),
+                    "tick_number": tick_number,
+                    "status": "processing",
+                },
+                on_conflict="simulation_id,tick_number",
+                ignore_duplicates=True,
+            )
+            .execute()
+        )
+        if resp.data:
+            return heartbeat_id
+
+        existing = await (
+            admin.table("simulation_heartbeats")
+            .select("id, status, created_at")
+            .eq("simulation_id", str(sim_id))
+            .eq("tick_number", tick_number)
+            .limit(1)
+            .execute()
+        )
+        row = existing.data[0] if existing.data else None
+        _extra = {"simulation_id": str(sim_id), "tick_number": tick_number}
+
+        if row is None:
+            # The upsert reported a conflict and the conflicting row is gone: a
+            # delete between the two statements. Nothing to reclaim, nothing to
+            # heal — the next run inserts cleanly.
+            logger.warning(
+                "Heartbeat: tick %d for %s conflicted with a row that no longer exists",
+                tick_number,
+                sim_name,
+                extra=_extra,
+            )
+            return None
+
+        status = str(row.get("status") or "")
+
+        if status == "failed":
+            heartbeat_id = UUID(row["id"])
+            await (
+                admin.table("simulation_heartbeats")
+                .update({"status": "processing", "summary": None})
+                .eq("id", str(heartbeat_id))
+                .execute()
+            )
+            logger.info(
+                "Heartbeat: reclaiming failed tick %d for %s",
+                tick_number,
+                sim_name,
+                extra=_extra,
+            )
+            return heartbeat_id
+
+        if status == "completed":
+            await cls._advance_pointer_past_completed(admin, sim_id, tick_number, sim_name, row)
+            return None
+
+        if status == "processing":
+            created_at = parse_timestamp(row.get("created_at"))
+            age_limit = datetime.now(UTC) - timedelta(seconds=2 * interval)
+            # An unreadable created_at is treated as old on purpose: a row we
+            # cannot date at the current tick number blocks the world either way,
+            # and a duplicated tick is the cheaper of the two outcomes.
+            if created_at is None or created_at < age_limit:
+                heartbeat_id = UUID(row["id"])
+                await (
+                    admin.table("simulation_heartbeats")
+                    .update({"status": "processing", "summary": None})
+                    .eq("id", str(heartbeat_id))
+                    .execute()
+                )
+                logger.warning(
+                    "Heartbeat: reclaiming orphaned tick %d for %s (created %s, older than %ds)",
+                    tick_number,
+                    sim_name,
+                    created_at.isoformat() if created_at else "<unreadable>",
+                    2 * interval,
+                    extra=_extra,
+                )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "heartbeat")
+                    scope.set_tag("heartbeat.phase", "orphan_reclaim")
+                    scope.set_tag("simulation_id", str(sim_id))
+                    scope.set_context(
+                        "heartbeat",
+                        {
+                            "simulation_name": sim_name,
+                            "tick_number": tick_number,
+                            "created_at": row.get("created_at"),
+                            "age_limit_seconds": 2 * interval,
+                        },
+                    )
+                    sentry_sdk.capture_message(
+                        f"Heartbeat: orphaned tick #{tick_number} reclaimed for {sim_name}",
+                        level="warning",
+                    )
+                return heartbeat_id
+
+            logger.info(
+                "Heartbeat: tick %d in progress for %s (since %s), skipping",
+                tick_number,
+                sim_name,
+                created_at.isoformat(),
+                extra=_extra,
+            )
+            return None
+
+        # 'skipped', or a status a future migration adds: not ours to tick, but
+        # not a state the pipeline knows either. Say so rather than fall silent.
+        logger.warning(
+            "Heartbeat: tick %d for %s holds unexpected status %r, standing down",
+            tick_number,
+            sim_name,
+            status,
+            extra=_extra,
+        )
+        return None
+
+    @classmethod
+    async def _advance_pointer_past_completed(
+        cls,
+        admin: Client,
+        sim_id: UUID,
+        tick_number: int,
+        sim_name: str,
+        row: dict,
+    ) -> None:
+        """Move a lagging ``last_heartbeat_tick`` onto a tick that already ran.
+
+        Dated from the heartbeat row, not from ``now()`` — the world lived this
+        tick when the row was written, and a truthful ``last_heartbeat_at`` is what
+        the pulse, the dashboards and the next investigation read. ``next_heartbeat_at``
+        *is* ``now()``: the world is owed its next tick immediately, and the run
+        after this one computes ``tick_number + 1``.
+        """
+        completed_at = parse_timestamp(row.get("created_at")) or datetime.now(UTC)
+        await (
+            admin.table("simulations")
+            .update(
+                {
+                    "last_heartbeat_tick": tick_number,
+                    "last_heartbeat_at": completed_at.isoformat(),
+                    "next_heartbeat_at": datetime.now(UTC).isoformat(),
+                }
+            )
+            .eq("id", str(sim_id))
+            .execute()
+        )
+        logger.warning(
+            "Heartbeat: pointer for %s lagged behind a completed tick %d — advanced (dated %s)",
+            sim_name,
+            tick_number,
+            completed_at.isoformat(),
+            extra={"simulation_id": str(sim_id), "tick_number": tick_number},
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("service", "heartbeat")
+            scope.set_tag("heartbeat.phase", "pointer_catchup")
+            scope.set_tag("simulation_id", str(sim_id))
+            scope.set_context(
+                "heartbeat",
+                {
+                    "simulation_name": sim_name,
+                    "tick_number": tick_number,
+                    "completed_at": row.get("created_at"),
+                },
+            )
+            sentry_sdk.capture_message(
+                f"Heartbeat: pointer catch-up to tick #{tick_number} for {sim_name}",
+                level="warning",
+            )
 
     @classmethod
     async def _tick_simulation(
@@ -328,69 +576,9 @@ class HeartbeatService(BaseSchedulerMixin):
             )
             return
 
-        # Claim this tick via UNIQUE(simulation_id, tick_number).
-        #
-        # Three scenarios:
-        #   1. No row exists → INSERT succeeds, we own the tick
-        #   2. Row exists with status='processing' → concurrent worker, skip
-        #   3. Row exists with status='failed' → previous attempt crashed, reclaim it
-        #
-        # Scenario 3 is critical: without reclaiming failed ticks,
-        # last_heartbeat_tick never advances and the sim is permanently stuck.
-        heartbeat_id = uuid4()
-
-        # First try: insert new tick
-        resp = await (
-            admin.table("simulation_heartbeats")
-            .upsert(
-                {
-                    "id": str(heartbeat_id),
-                    "simulation_id": str(sim_id),
-                    "tick_number": tick_number,
-                    "status": "processing",
-                },
-                on_conflict="simulation_id,tick_number",
-                ignore_duplicates=True,
-            )
-            .execute()
-        )
-
-        if not resp.data:
-            # Row already exists — check if it's a failed tick we can reclaim
-            existing = await (
-                admin.table("simulation_heartbeats")
-                .select("id, status")
-                .eq("simulation_id", str(sim_id))
-                .eq("tick_number", tick_number)
-                .limit(1)
-                .execute()
-            )
-            row = existing.data[0] if existing.data else None
-
-            if row and row["status"] == "failed":
-                # Reclaim: reset the failed tick to processing with a new ID
-                heartbeat_id = UUID(row["id"])
-                await (
-                    admin.table("simulation_heartbeats")
-                    .update({"status": "processing", "summary": None})
-                    .eq("id", str(heartbeat_id))
-                    .execute()
-                )
-                logger.info(
-                    "Heartbeat: reclaiming failed tick %d for %s",
-                    tick_number,
-                    sim_name,
-                    extra={"simulation_id": str(sim_id), "tick_number": tick_number},
-                )
-            else:
-                # Tick is currently processing by another worker — skip
-                logger.debug(
-                    "Heartbeat: tick %d in progress for %s, skipping",
-                    tick_number,
-                    sim_name,
-                    extra={"simulation_id": str(sim_id), "tick_number": tick_number},
-                )
-                return
+        heartbeat_id = await cls._claim_tick(admin, sim_id, tick_number, sim_name, interval)
+        if heartbeat_id is None:
+            return
 
         logger.info(
             "Heartbeat: ticking %s (tick #%d)",
@@ -672,8 +860,40 @@ class HeartbeatService(BaseSchedulerMixin):
                     meta["epoch_id"] = active_epoch_id
                     entry["metadata"] = meta
 
-            # Batch insert entries — one bad row must not cost the whole tick
-            await cls._insert_entries(admin, entries, sim_id, tick_number)
+            # Batch insert entries — one bad row must not cost the whole tick.
+            # ``_insert_entries`` already survives a rejected row (it retries the
+            # batch row by row); this guard covers the layer below it — a dropped
+            # connection, a timeout. The chronicle is the tick's *account* of what
+            # happened, not the happening: the phases above have already written
+            # their effects, so losing the account must not also lose the pointer
+            # and leave the world to be ticked again from the same number.
+            try:
+                await cls._insert_entries(admin, entries, sim_id, tick_number)
+            except (PostgrestAPIError, httpx.HTTPError):
+                logger.exception(
+                    "Heartbeat: chronicle insert failed for %s (tick #%d, %d entries) — finalizing anyway",
+                    sim_name,
+                    tick_number,
+                    len(entries),
+                    extra={
+                        "simulation_id": str(sim_id),
+                        "tick_number": tick_number,
+                        "entry_count": len(entries),
+                    },
+                )
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "heartbeat")
+                    scope.set_tag("heartbeat.phase", "entries_insert")
+                    scope.set_tag("simulation_id", str(sim_id))
+                    scope.set_context(
+                        "heartbeat",
+                        {
+                            "simulation_name": sim_name,
+                            "tick_number": tick_number,
+                            "entry_count": len(entries),
+                        },
+                    )
+                    sentry_sdk.capture_exception()
 
             # Build dispatch summary
             dispatch_en = cls._build_dispatch(entries, tick_number, "en")
@@ -1302,12 +1522,21 @@ class HeartbeatService(BaseSchedulerMixin):
         supabase: Client,
         simulation_id: UUID,
         *,
-        entry_type: str | None = None,
+        entry_types: list[str] | None = None,
         tick_number: int | None = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[dict], int]:
         """Paginated chronicle feed (heartbeat entries).
+
+        ``entry_types`` filters on one *or several* types, because that is what
+        the pulse's filter chips actually ask for: "Events" means three types,
+        "Arcs" means four. While this took a single type, the chips could only be
+        honoured in the browser — the request fetched the last 100 entries of every
+        kind, filtered them client-side, and still displayed the *unfiltered* total
+        underneath. A chip could therefore show four entries above the words "127
+        entries", and an older filtered entry beyond the first page was simply
+        invisible. Filtering here makes the count and the pagination true.
 
         Returns (data, total) tuple.
         """
@@ -1319,8 +1548,11 @@ class HeartbeatService(BaseSchedulerMixin):
             .order("created_at", desc=True)
             .range(offset, offset + limit - 1)
         )
-        if entry_type:
-            query = query.eq("entry_type", entry_type)
+        if entry_types:
+            if len(entry_types) == 1:
+                query = query.eq("entry_type", entry_types[0])
+            else:
+                query = query.in_("entry_type", entry_types)
         if tick_number is not None:
             query = query.eq("tick_number", tick_number)
 
