@@ -36,14 +36,34 @@ from backend.services.anchor_service import AnchorService
 from backend.services.attunement_service import AttunementService
 from backend.services.audit_service import AuditService
 from backend.services.bureau_response_service import BureauResponseService
+from backend.services.heartbeat_entry_builder import HEARTBEAT_ENTRY_TYPES
 from backend.services.heartbeat_service import HeartbeatService
 from backend.services.narrative_arc_service import NarrativeArcService
+from backend.utils.errors import bad_request
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Heartbeat"])
+
+
+def _parse_entry_types(raw: str | None) -> list[str] | None:
+    """Read the ``entry_type`` query parameter: one name, or a comma-separated list.
+
+    An unknown name is a 400 and not an empty page. The vocabulary is the one
+    declaration in ``heartbeat_entry_builder`` — the same tuple the database CHECK
+    is generated from — so a filter can never quietly outlive the type it names.
+    """
+    if not raw:
+        return None
+    names = [part.strip() for part in raw.split(",") if part.strip()]
+    if not names:
+        return None
+    unknown = [name for name in names if name not in HEARTBEAT_ENTRY_TYPES]
+    if unknown:
+        raise bad_request(f"Unknown heartbeat entry type(s): {', '.join(sorted(unknown))}")
+    return names
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -83,11 +103,16 @@ async def list_heartbeat_entries(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[HeartbeatEntryResponse]:
-    """Paginated chronicle feed (heartbeat entries)."""
+    """Paginated chronicle feed (heartbeat entries).
+
+    ``entry_type`` takes one type or a comma-separated list ("Events" is three
+    types, "Arcs" is four); an unknown name is rejected rather than answered with
+    an empty page.
+    """
     data, total = await HeartbeatService.list_heartbeat_entries(
         supabase,
         simulation_id,
-        entry_type=entry_type,
+        entry_types=_parse_entry_types(entry_type),
         tick_number=tick_number,
         limit=limit,
         offset=offset,
@@ -128,11 +153,14 @@ async def public_list_heartbeat_entries(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[HeartbeatEntryResponse]:
-    """Public chronicle feed — no authentication required."""
+    """Public chronicle feed — no authentication required.
+
+    ``entry_type`` accepts a comma-separated list, exactly as the member feed does.
+    """
     data, total = await HeartbeatService.list_heartbeat_entries(
         supabase,
         simulation_id,
-        entry_type=entry_type,
+        entry_types=_parse_entry_types(entry_type),
         limit=limit,
         offset=offset,
     )

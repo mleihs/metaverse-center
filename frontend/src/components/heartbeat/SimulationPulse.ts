@@ -27,17 +27,68 @@ import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../.
 import { icons } from '../../utils/icons.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 
-type FilterKey = 'all' | 'zone' | 'events' | 'resonance' | 'bureau' | 'diplomatic' | 'arcs';
+type FilterKey =
+  | 'all'
+  | 'zone'
+  | 'events'
+  | 'resonance'
+  | 'bureau'
+  | 'diplomatic'
+  | 'life'
+  | 'arcs'
+  | 'system';
 
-const FILTER_TYPES: Record<FilterKey, HeartbeatEntryType[] | null> = {
-  all: null,
-  zone: ['zone_shift'],
-  events: ['event_aging', 'event_escalation', 'event_resolution'],
-  resonance: ['resonance_pressure', 'scar_tissue'],
-  bureau: ['bureau_response', 'attunement_deepen', 'positive_event'],
-  diplomatic: ['anchor_strengthen'],
-  arcs: ['cascade_spawn', 'convergence', 'narrative_arc', 'system_note'],
+/**
+ * Which chip a chronicle entry belongs under - the single grouping in this file.
+ *
+ * It is typed as a total map over `HeartbeatEntryType`, so a type added to the
+ * chronicle cannot reach the feed without being placed: tsc refuses the build
+ * until it has a chip. That is not a hypothetical guard. Seven of the twenty-one
+ * types had no chip at all before 30.08.2026 - among them every entry about an
+ * agent (crises, relationships, whispers) - and two of them, `resonance_mood`
+ * and `bond_whisper`, were not in the union either, so they rendered as raw
+ * slugs under a fallback icon.
+ *
+ * The filter chips and the per-tick summary read this same map. They used to
+ * keep two different groupings, which is why a whisper between two agents was
+ * counted under "system notes".
+ */
+const ENTRY_FILTER: Record<HeartbeatEntryType, Exclude<FilterKey, 'all'>> = {
+  zone_shift: 'zone',
+  ambient_weather: 'zone',
+  event_aging: 'events',
+  event_escalation: 'events',
+  event_resolution: 'events',
+  autonomous_event: 'events',
+  resonance_pressure: 'resonance',
+  scar_tissue: 'resonance',
+  resonance_mood: 'resonance',
+  bureau_response: 'bureau',
+  attunement_deepen: 'bureau',
+  positive_event: 'bureau',
+  anchor_strengthen: 'diplomatic',
+  agent_crisis: 'life',
+  relationship_shift: 'life',
+  social_event: 'life',
+  bond_whisper: 'life',
+  cascade_spawn: 'arcs',
+  convergence: 'arcs',
+  narrative_arc: 'arcs',
+  system_note: 'system',
 };
+
+const FILTER_TYPES: Record<FilterKey, HeartbeatEntryType[] | null> = (() => {
+  const map = { all: null } as Record<FilterKey, HeartbeatEntryType[] | null>;
+  for (const [type, key] of Object.entries(ENTRY_FILTER) as [
+    HeartbeatEntryType,
+    Exclude<FilterKey, 'all'>,
+  ][]) {
+    const bucket = map[key] ?? [];
+    bucket.push(type);
+    map[key] = bucket;
+  }
+  return map;
+})();
 
 @localized()
 @customElement('velg-simulation-pulse')
@@ -860,9 +911,12 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
   private async _loadData(): Promise<void> {
     this._loading = true;
     const params: Record<string, string> = { limit: '100' };
+    // Ask the server for the chip's types, not just for a chip that happens to
+    // name exactly one. Filtering the last 100 entries in the browser showed a
+    // handful of rows under an unfiltered total, and hid anything older.
     const filterTypes = FILTER_TYPES[this._filter];
-    if (filterTypes && filterTypes.length === 1) {
-      params.entry_type = filterTypes[0];
+    if (filterTypes?.length) {
+      params.entry_type = filterTypes.join(',');
     }
 
     const mode = appState.currentSimulationMode.value;
@@ -938,6 +992,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       event_resolution: () => icons.checkCircle(16),
       scar_tissue: () => icons.fracture(16),
       resonance_pressure: () => icons.radar(16),
+      resonance_mood: () => icons.smile(16),
       cascade_spawn: () => icons.bolt(16),
       bureau_response: () => icons.stampClassified(16),
       attunement_deepen: () => icons.compassRose(16),
@@ -951,53 +1006,38 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       social_event: () => icons.handshake(16),
       autonomous_event: () => icons.bolt(16),
       ambient_weather: () => icons.compassRose(16),
+      bond_whisper: () => icons.messageCircle(16),
     };
     return (iconMap[type] ?? (() => icons.bolt(16)))();
   }
 
   private _getTypeLabel(type: HeartbeatEntryType): string {
-    switch (type) {
-      case 'zone_shift':
-        return msg('Zone Shift');
-      case 'event_aging':
-        return msg('Event Aging');
-      case 'event_escalation':
-        return msg('Escalation');
-      case 'event_resolution':
-        return msg('Resolution');
-      case 'scar_tissue':
-        return msg('Scar Tissue');
-      case 'resonance_pressure':
-        return msg('Resonance');
-      case 'cascade_spawn':
-        return msg('Cascade');
-      case 'bureau_response':
-        return msg('Bureau');
-      case 'attunement_deepen':
-        return msg('Attunement');
-      case 'anchor_strengthen':
-        return msg('Anchor');
-      case 'convergence':
-        return msg('Convergence');
-      case 'positive_event':
-        return msg('Harvest');
-      case 'narrative_arc':
-        return msg('Arc');
-      case 'system_note':
-        return msg('System');
-      case 'agent_crisis':
-        return msg('Crisis');
-      case 'relationship_shift':
-        return msg('Relationship');
-      case 'social_event':
-        return msg('Social');
-      case 'autonomous_event':
-        return msg('Autonomous');
-      case 'ambient_weather':
-        return msg('Weather');
-      default:
-        return type;
-    }
+    // A total map rather than a switch with a default: a chronicle type added
+    // without a label is a build error, not a raw slug in the feed.
+    const labels: Record<HeartbeatEntryType, string> = {
+      zone_shift: msg('Zone Shift'),
+      event_aging: msg('Event Aging'),
+      event_escalation: msg('Escalation'),
+      event_resolution: msg('Resolution'),
+      scar_tissue: msg('Scar Tissue'),
+      resonance_pressure: msg('Resonance'),
+      resonance_mood: msg('Mood'),
+      cascade_spawn: msg('Cascade'),
+      bureau_response: msg('Bureau'),
+      attunement_deepen: msg('Attunement'),
+      anchor_strengthen: msg('Anchor'),
+      convergence: msg('Convergence'),
+      positive_event: msg('Harvest'),
+      narrative_arc: msg('Arc'),
+      system_note: msg('System'),
+      agent_crisis: msg('Crisis'),
+      relationship_shift: msg('Relationship'),
+      social_event: msg('Social'),
+      autonomous_event: msg('Autonomous'),
+      ambient_weather: msg('Weather'),
+      bond_whisper: msg('Whisper'),
+    };
+    return labels[type] ?? type;
   }
 
   private _formatRelativeTime(dateStr: string): string {
@@ -1071,7 +1111,9 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       resonance: msg('Resonance'),
       bureau: msg('Bureau'),
       diplomatic: msg('Diplomatic'),
+      life: msg('Agents'),
       arcs: msg('Arcs'),
+      system: msg('System'),
     };
 
     return html`
@@ -1161,38 +1203,39 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
   private _renderTickSummary(entries: HeartbeatEntry[]) {
     if (entries.length < 2) return nothing;
 
-    const counts: Record<string, number> = {};
+    // Counted with the same grouping the filter chips use. The summary kept its
+    // own, slightly different one, which is why an agent crisis, a relationship
+    // shift and a whisper between two agents all landed under "system notes".
+    const counts = new Map<FilterKey, number>();
     let criticalCount = 0;
     let positiveCount = 0;
 
     for (const e of entries) {
-      const cat = this._getSummaryCategory(e.entry_type);
-      counts[cat] = (counts[cat] ?? 0) + 1;
+      const cat = ENTRY_FILTER[e.entry_type] ?? 'system';
+      counts.set(cat, (counts.get(cat) ?? 0) + 1);
       if (e.severity === 'critical') criticalCount++;
       if (e.severity === 'positive') positiveCount++;
     }
 
-    const parts: string[] = [];
-    if (counts.events)
-      parts.push(
-        `${counts.events} ${counts.events === 1 ? msg('event update') : msg('event updates')}`,
-      );
-    if (counts.arcs)
-      parts.push(`${counts.arcs} ${counts.arcs === 1 ? msg('arc shift') : msg('arc shifts')}`);
-    if (counts.bureau)
-      parts.push(
-        `${counts.bureau} ${counts.bureau === 1 ? msg('bureau action') : msg('bureau actions')}`,
-      );
-    if (counts.diplomatic)
-      parts.push(
-        `${counts.diplomatic} ${counts.diplomatic === 1 ? msg('diplomatic signal') : msg('diplomatic signals')}`,
-      );
-    if (counts.zone)
-      parts.push(`${counts.zone} ${counts.zone === 1 ? msg('zone change') : msg('zone changes')}`);
-    if (counts.system)
-      parts.push(
-        `${counts.system} ${counts.system === 1 ? msg('system note') : msg('system notes')}`,
-      );
+    const nouns: Record<Exclude<FilterKey, 'all'>, [string, string]> = {
+      events: [msg('event update'), msg('event updates')],
+      resonance: [msg('resonance reading'), msg('resonance readings')],
+      life: [msg('agent report'), msg('agent reports')],
+      arcs: [msg('arc shift'), msg('arc shifts')],
+      bureau: [msg('bureau action'), msg('bureau actions')],
+      diplomatic: [msg('diplomatic signal'), msg('diplomatic signals')],
+      zone: [msg('zone change'), msg('zone changes')],
+      system: [msg('system note'), msg('system notes')],
+    };
+
+    const parts = (Object.keys(nouns) as Exclude<FilterKey, 'all'>[])
+      .map((key) => {
+        const n = counts.get(key) ?? 0;
+        if (!n) return null;
+        const [one, many] = nouns[key];
+        return `${n} ${n === 1 ? one : many}`;
+      })
+      .filter((part): part is string => part !== null);
 
     const severityClass =
       criticalCount > 0
@@ -1207,31 +1250,6 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
         ${criticalCount > 0 ? html`<span class="tick-summary__alert">${criticalCount} ${msg('critical')}</span>` : nothing}
       </div>
     `;
-  }
-
-  private _getSummaryCategory(type: HeartbeatEntryType): string {
-    switch (type) {
-      case 'event_aging':
-      case 'event_escalation':
-      case 'event_resolution':
-      case 'resonance_pressure':
-      case 'scar_tissue':
-        return 'events';
-      case 'narrative_arc':
-      case 'cascade_spawn':
-      case 'convergence':
-        return 'arcs';
-      case 'bureau_response':
-      case 'attunement_deepen':
-      case 'positive_event':
-        return 'bureau';
-      case 'anchor_strengthen':
-        return 'diplomatic';
-      case 'zone_shift':
-        return 'zone';
-      default:
-        return 'system';
-    }
   }
 
   private _renderEntry(entry: HeartbeatEntry, index: number) {
