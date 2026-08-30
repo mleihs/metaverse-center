@@ -1479,6 +1479,15 @@ export const dungeonGraphicalStyles = css`
         opacity: 0.75;
       }
 
+      /* The expedition register sits under the archetype grid: the lobby is
+         where a player decides what to do next, and what already happened is
+         the best argument either way. */
+      .lobby-register {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--color-border);
+      }
+
       /* ── Outcome: the account of a finished descent ──
          Two columns on desktop: the verdict on the left, the full chronicle on
          the right. The chronicle is the SAME component the HUD uses — the run's

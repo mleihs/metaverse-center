@@ -28907,6 +28907,102 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1a507007ff4e9068">
   <source>Send reset letter</source>
 <target>Brief zum Zurücksetzen schicken</target></trans-unit>
+<trans-unit id="s1c26e0aa9ff3b278">
+  <source>Still below</source>
+<target>Noch unten</target></trans-unit>
+<trans-unit id="s9c57bfae2da025a9">
+  <source>Contact resolved</source>
+<target>Kontakt beendet</target></trans-unit>
+<trans-unit id="se3d7a30d5e45c393">
+  <source>Trial</source>
+<target>Probe</target></trans-unit>
+<trans-unit id="sb0aadaa04e658ad6">
+  <source>Choice</source>
+<target>Entscheidung</target></trans-unit>
+<trans-unit id="s20c7305417726e5a">
+  <source>Recovered</source>
+<target>Geborgen</target></trans-unit>
+<trans-unit id="s139482ecadd01090">
+  <source>Strain</source>
+<target>Belastung</target></trans-unit>
+<trans-unit id="s7db41edef1a515a6">
+  <source>Affliction</source>
+<target>Leiden</target></trans-unit>
+<trans-unit id="s802808c7e305b304">
+  <source>Virtue</source>
+<target>Tugend</target></trans-unit>
+<trans-unit id="s3a61c1c4fda2ca18">
+  <source>Wound</source>
+<target>Wunde</target></trans-unit>
+<trans-unit id="sed17c6baaee9d3da">
+  <source>Guardian felled</source>
+<target>Wächter gefallen</target></trans-unit>
+<trans-unit id="s5b9efdd014a6d047">
+  <source>Ascent</source>
+<target>Aufstieg</target></trans-unit>
+<trans-unit id="s0884bc060470c06a">
+  <source>Withdrawal</source>
+<target>Rückzug</target></trans-unit>
+<trans-unit id="sf1169290dd2f2de9">
+  <source>Word between them</source>
+<target>Ein Wort untereinander</target></trans-unit>
+<trans-unit id="s44add38a493e53a5">
+  <source><x id="0" equiv-text="${minutes}"/> min</source>
+<target><x id="0" equiv-text="${minutes}"/> Min.</target></trans-unit>
+<trans-unit id="s672809d8ddbb4f27">
+  <source><x id="0" equiv-text="${hours}"/> h <x id="1" equiv-text="${minutes % 60}"/> min</source>
+<target><x id="0" equiv-text="${hours}"/> Std. <x id="1" equiv-text="${minutes % 60}"/> Min.</target></trans-unit>
+<trans-unit id="s79e9eb4fa65a82c9">
+  <source>Reading the register</source>
+<target>Das Register wird gelesen</target></trans-unit>
+<trans-unit id="s77653fe0283ed3b4">
+  <source>The register could not be read.</source>
+<target>Das Register ließ sich nicht lesen.</target></trans-unit>
+<trans-unit id="sdc9bdbcd4b874fbc">
+  <source>No descent has been recorded in this world. The register begins with the first.</source>
+<target>In dieser Welt ist noch kein Abstieg verzeichnet. Das Register beginnt mit dem ersten.</target></trans-unit>
+<trans-unit id="se4cb1bcae0ec1c07">
+  <source>Reading...</source>
+<target>Wird gelesen...</target></trans-unit>
+<trans-unit id="sea352d19bcb34b86">
+  <source>Earlier descents</source>
+<target>Frühere Abstiege</target></trans-unit>
+<trans-unit id="s9c2f75637c03daf7">
+  <source>Expedition register</source>
+<target>Expeditionsregister</target></trans-unit>
+<trans-unit id="s6cb0d8aa11d7c1b3">
+  <source>1 descent on file</source>
+<target>1 Abstieg verzeichnet</target></trans-unit>
+<trans-unit id="s02a84c1ea9f449bd">
+  <source><x id="0" equiv-text="${this._total}"/> descents on file</source>
+<target><x id="0" equiv-text="${this._total}"/> Abstiege verzeichnet</target></trans-unit>
+<trans-unit id="sbb0b2c4a0c54a679">
+  <source>depth <x id="0" equiv-text="${run.current_depth + 1}"/>/<x id="1" equiv-text="${run.depth_target + 1}"/></source>
+<target>Tiefe <x id="0" equiv-text="${run.current_depth + 1}"/>/<x id="1" equiv-text="${run.depth_target + 1}"/></target></trans-unit>
+<trans-unit id="sffd14dc74591fe14">
+  <source><x id="0" equiv-text="${run.rooms_cleared}"/>/<x id="1" equiv-text="${run.rooms_total}"/> rooms</source>
+<target><x id="0" equiv-text="${run.rooms_cleared}"/>/<x id="1" equiv-text="${run.rooms_total}"/> Räume</target></trans-unit>
+<trans-unit id="sd94ea3e8b2990dc9">
+  <source><x id="0" equiv-text="${run.party_agent_ids.length}"/> agents</source>
+<target><x id="0" equiv-text="${run.party_agent_ids.length}"/> Agenten</target></trans-unit>
+<trans-unit id="s2a9c46fc09cb9faa">
+  <source>Fetching the log...</source>
+<target>Das Protokoll wird geholt...</target></trans-unit>
+<trans-unit id="s25f7a3bf0e97bad2">
+  <source>The interior of this descent is closed to you. Only the party that went down may read its log.</source>
+<target>Das Innere dieses Abstiegs ist dir verschlossen. Nur die Gruppe, die hinabstieg, darf sein Protokoll lesen.</target></trans-unit>
+<trans-unit id="scdbec15174857909">
+  <source>The log could not be read.</source>
+<target>Das Protokoll ließ sich nicht lesen.</target></trans-unit>
+<trans-unit id="s3c4ed5fba878a56b">
+  <source>Nothing was written down for this descent.</source>
+<target>Zu diesem Abstieg wurde nichts aufgeschrieben.</target></trans-unit>
+<trans-unit id="sfb0231506e1f422b">
+  <source>Log of the descent</source>
+<target>Protokoll des Abstiegs</target></trans-unit>
+<trans-unit id="s2955eb1f4aaccf1a">
+  <source>D<x id="0" equiv-text="${e.depth + 1}"/> · R<x id="1" equiv-text="${e.room_index + 1}"/></source>
+<target>T<x id="0" equiv-text="${e.depth + 1}"/> · R<x id="1" equiv-text="${e.room_index + 1}"/></target></trans-unit>
 </body>
 </file>
 </xliff>

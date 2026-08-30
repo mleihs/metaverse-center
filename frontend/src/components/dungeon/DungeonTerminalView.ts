@@ -43,6 +43,7 @@ import {
 } from '../shared/terminal-theme-styles.js';
 import type { VelgBureauTerminal } from '../terminal/BureauTerminal.js';
 import '../terminal/BureauTerminal.js';
+import './DungeonExpeditionLog.js';
 import './DungeonCombatBar.js';
 import './DungeonEnemyPanel.js';
 import './DungeonHeader.js';
@@ -174,6 +175,12 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
         font-size: 10px;
         opacity: 0.7;
         margin-top: 8px;
+      }
+
+      .lobby-register {
+        margin-top: var(--space-5);
+        padding-top: var(--space-4);
+        border-top: 1px dashed var(--color-border);
       }
 
       .lobby-dungeons {
@@ -743,6 +750,11 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
                 </div>`
               : nothing
           }
+          <div class="lobby-register">
+            <velg-dungeon-expedition-log
+              .simulationId=${simulationId}
+            ></velg-dungeon-expedition-log>
+          </div>
         </div>
         <div class="terminal-wrapper" style="flex:1;min-height:0">
           <velg-bureau-terminal .simulationId=${simulationId} .dungeonMode=${true}></velg-bureau-terminal>

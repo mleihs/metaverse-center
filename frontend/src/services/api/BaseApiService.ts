@@ -77,7 +77,7 @@ export class BaseApiService {
 
       return {
         success: false,
-        error: { code: errorCode, message: errorMessage },
+        error: { code: errorCode, message: errorMessage, status: response.status },
       };
     }
 
