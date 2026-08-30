@@ -84,8 +84,14 @@ jobs:
       # an interface read as machine-assembled. Removed from 110 declarations
       # across 66 files; the vocabulary that replaces it lives in
       # components/shared/marker-styles.ts.
+      # `working-directory: .` is not decoration: this job defaults to `frontend`,
+      # so without it the step runs `bash frontend/frontend/scripts/...`, dies
+      # with exit 127 before the script starts, and the gate has never once run
+      # in CI. Every other gate step in this job carries the line; this one was
+      # added without it.
       - name: Marker lint (no coloured edge bars)
         run: bash frontend/scripts/lint-no-accent-edge-bar.sh
+        working-directory: .
 
       # Binds the class the marker gate could not: a shared style module that is
       # copied by hand instead of imported. See the script header for the

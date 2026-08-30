@@ -29,6 +29,13 @@ def _mock_supabase(data=None, count=None):
     builder.order.return_value = builder
     builder.range.return_value = builder
     builder.single.return_value = builder
+    # `maybe_single` was missing, and MagicMock hides that: the call returns a
+    # FRESH auto-created mock rather than the builder, so `.execute()` on it is a
+    # plain MagicMock and `await` raises "object MagicMock can't be used in
+    # 'await' expression". Three tests have been red since `get_draft` and
+    # `update_draft` moved to `maybe_single_data` (the CLAUDE.md rule that
+    # collapses postgrest-py's two-layer Optional).
+    builder.maybe_single.return_value = builder
     builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
