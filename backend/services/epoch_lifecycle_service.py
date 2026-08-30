@@ -161,18 +161,21 @@ class EpochLifecycleService:
             "lobby",
             "foundation",
         )
-        if epoch.get("epoch_type") != "academy":
-            try:
-                from backend.services.cycle_notification_service import CycleNotificationService
+        # The academy exception used to live here, and ONLY here — every call
+        # site written later sent academy mail regardless. It now sits inside
+        # CycleNotificationService (see ``_suppressed_for_epoch``), which is the
+        # single place that decides who gets post.
+        try:
+            from backend.services.cycle_notification_service import CycleNotificationService
 
-                await CycleNotificationService.send_phase_change_notifications(
-                    admin or supabase,
-                    str(epoch_id),
-                    "lobby",
-                    "foundation",
-                )
-            except Exception:  # noqa: BLE001 — notifications are best-effort
-                logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
+            await CycleNotificationService.send_phase_change_notifications(
+                admin or supabase,
+                str(epoch_id),
+                "lobby",
+                "foundation",
+            )
+        except Exception:  # noqa: BLE001 — notifications are best-effort
+            logger.warning("Epoch start notification failed for epoch %s", epoch_id, exc_info=True)
 
         result = extract_one(resp)
         if result is None:
