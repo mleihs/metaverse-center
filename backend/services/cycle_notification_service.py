@@ -17,7 +17,10 @@ from backend.config import settings
 from backend.models.epoch import SCORING_DIMENSIONS
 from backend.services.email_service import EmailService
 from backend.services.email_templates import (
+    cycle_briefing_subject,
+    epoch_completed_subject,
     get_sim_accent,
+    phase_change_subject,
     render_cycle_briefing,
     render_epoch_completed,
     render_phase_change,
@@ -739,7 +742,11 @@ class CycleNotificationService:
                 html_body = render_cycle_briefing(
                     briefing, email_locale=email_locale, unsubscribe_url=opt_out
                 )
-                subject = f"CLASSIFIED // SITREP \u2014 {epoch_name} \u2014 Cycle {cycle_number}"
+                # The change goes first. The old line spent its first 25
+                # characters on "CLASSIFIED // SITREP", a word identical in
+                # every message the platform has ever sent, and a phone shows
+                # roughly 35 (handoff P1.8).
+                subject = cycle_briefing_subject(briefing, email_locale)
 
                 if await EmailService.send(
                     recipient["email"], subject, html_body, unsubscribe_url=opt_out
@@ -806,14 +813,6 @@ class CycleNotificationService:
         # epoch is ranked against the same cycle.
         scored_cycle = await ScoringService.resolve_latest_scored_cycle(admin_supabase, UUID(epoch_id))
 
-        # Phase-scaled subject urgency (C2)
-        if new_phase == "reckoning":
-            subject = f"URGENT // FINAL PHASE \u2014 {epoch_name}"
-        elif old_phase == "lobby":
-            subject = f"CLASSIFIED // OPERATIONS COMMENCE \u2014 {epoch_name}"
-        else:
-            subject = f"CLASSIFIED // PHASE TRANSITION \u2014 {epoch_name}"
-
         sent_count = 0
         for recipient in recipients:
             try:
@@ -826,6 +825,10 @@ class CycleNotificationService:
                 )
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")
+                # Localized per recipient. The subject used to be built once,
+                # in English, for everyone — the body followed the reader's
+                # language and the subject did not (E15).
+                subject = phase_change_subject(epoch_name, old_phase, new_phase, email_locale)
 
                 opt_out = unsubscribe_url(recipient["user_id"], "phase_changed")
                 html_body = render_phase_change(
@@ -913,7 +916,9 @@ class CycleNotificationService:
                     campaign_stats=campaign_stats,
                     unsubscribe_url=opt_out,
                 )
-                subject = f"CLASSIFIED // OPERATION COMPLETE \u2014 {epoch_name}"
+                subject = epoch_completed_subject(
+                    epoch_name, leaderboard, recipient["simulation_id"], email_locale
+                )
 
                 if await EmailService.send(
                     recipient["email"], subject, html_body, unsubscribe_url=opt_out

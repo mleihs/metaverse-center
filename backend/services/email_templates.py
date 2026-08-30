@@ -87,6 +87,117 @@ def epoch_invitation_subject(epoch_name: str, locale: str = "en") -> str:
     return f"{_nt('inv_subject', locale)} \u2014 {epoch_name}"
 
 
+# ── Subject and preheader ─────────────────────────────────────────────────
+#
+# Subject, preheader and body are ONE contract: what the subject promises, the
+# preheader qualifies and the body delivers. They live next to each other so a
+# change to one is visibly a change to the others.
+#
+# The old subjects opened with the sender's rubber stamp — "CLASSIFIED // SITREP
+# — Operation Shadow — Cycle 3" spends its first 25 characters on a word that is
+# identical in every message the platform has ever sent, and roughly 35 are
+# visible on a phone. The change goes first now (handoff P1.8).
+
+
+def _fmt_num(value: float, lang: str) -> str:
+    """One decimal place, with the reader's decimal separator.
+
+    A German subject line reading "Gesamtwert 72.3" is a small tell that the
+    message was written for someone else.
+    """
+    text = f"{value:.1f}"
+    return text.replace(".", ",") if lang == "de" else text
+
+
+def _fmt_delta(value: float, lang: str) -> str:
+    sign = "+" if value >= 0 else "\u2212"
+    return f"{sign}{_fmt_num(abs(value), lang)}"
+
+
+def cycle_briefing_subject(data: dict, email_locale: str | None) -> str:
+    """Subject for the cycle briefing: what moved, not who is writing."""
+    lang = _resolve_lang(email_locale)
+    rank = int(data.get("rank") or 0)
+    total = int(data.get("total_players") or 0)
+    if not rank or not total:
+        return _nt("subj_cycle_unranked", lang, n=data.get("cycle_number", 0), epoch=data.get("epoch_name", ""))
+
+    prev = int(data.get("prev_rank") or 0)
+    if prev and prev > rank:
+        arrow = f"\u2191{prev - rank}"
+    elif prev and prev < rank:
+        arrow = f"\u2193{rank - prev}"
+    else:
+        arrow = ""
+    return _nt("subj_cycle", lang, n=data.get("cycle_number", 0), rank=rank, total=total, arrow=arrow).strip()
+
+
+def cycle_briefing_preheader(data: dict, email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    if not int(data.get("rank") or 0):
+        return _nt("pre_cycle_unranked", lang)
+    return _nt(
+        "pre_cycle",
+        lang,
+        score=_fmt_num(float(data.get("composite", 0)), lang),
+        delta=_fmt_delta(float(data.get("composite_delta", 0)), lang),
+        resolved=int(data.get("resolved_ops") or 0),
+        success=int(data.get("success_ops") or 0),
+        detected=int(data.get("detected_ops") or 0),
+    )
+
+
+def phase_change_subject(epoch_name: str, old_phase: str, new_phase: str, email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    if old_phase == "lobby":
+        return _nt("subj_phase_begins", lang, epoch=epoch_name)
+    if new_phase == "reckoning":
+        return _nt("subj_phase_final", lang, epoch=epoch_name)
+    phase_key = f"phase_{new_phase}"
+    phase_label = _nt(phase_key, lang) if phase_key in _NOTIF_STRINGS else new_phase.upper()
+    return _nt("subj_phase_other", lang, epoch=epoch_name, phase=phase_label)
+
+
+def phase_change_preheader(cycle_count: int, standing_data: dict | None, email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    if standing_data and standing_data.get("rank"):
+        return _nt(
+            "pre_phase_standing",
+            lang,
+            rank=standing_data["rank"],
+            total=standing_data.get("total_players", 0),
+            n=cycle_count,
+        )
+    return _nt("pre_phase_plain", lang, n=cycle_count)
+
+
+def epoch_completed_subject(epoch_name: str, leaderboard: list[dict], player_simulation_id: str, email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    rank = next(
+        (i for i, e in enumerate(leaderboard, start=1) if e.get("simulation_id") == player_simulation_id),
+        0,
+    )
+    if rank == 1:
+        return _nt("subj_done_won", lang, epoch=epoch_name)
+    if rank:
+        return _nt("subj_done_placed", lang, epoch=epoch_name, rank=rank, total=len(leaderboard))
+    return _nt("subj_done_won", lang, epoch=epoch_name).split(" \u2013 ")[0]
+
+
+def epoch_completed_preheader(leaderboard: list[dict], email_locale: str | None) -> str:
+    lang = _resolve_lang(email_locale)
+    if not leaderboard:
+        return _nt("pre_phase_plain", lang, n=0)
+    winner = leaderboard[0]
+    score = float(winner.get("composite_score", winner.get("composite", 0)) or 0)
+    return _nt(
+        "pre_done",
+        lang,
+        winner=_esc(str(winner.get("simulation_name") or winner.get("name") or "?")),
+        score=_fmt_num(score, lang),
+    )
+
+
 def render_epoch_invitation(
     epoch_name: str,
     lore_text: str,
@@ -127,7 +238,12 @@ def render_epoch_invitation(
     ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content, lang=lang)
+    return _email_shell(
+        f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}",
+        content,
+        lang=lang,
+        preheader=_nt("pre_invitation", lang),
+    )
 
 
 def _render_invitation_block(
@@ -533,11 +649,23 @@ def _score_bar(value: float, max_val: float = 100.0, accent: str = _AMBER) -> st
     return f'<table role="presentation" cellpadding="0" cellspacing="1" style="display:inline-table;vertical-align:middle;"><tr>{cells}</tr></table>'
 
 
-def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
+# Zero-width fillers. Without them the client keeps pulling body text into the
+# inbox preview after the preheader ends, which puts the decorative header back
+# where the preheader was supposed to be.
+_PREHEADER_FILL = "&#847;&zwnj;&nbsp;" * 40
+
+
+def _email_shell(title: str, content: str, *, lang: str = "en", preheader: str) -> str:
     """Wrap content in the standard dark email shell.
 
-    Supports dark mode declarations for Apple Mail/iOS, Outlook.com,
-    and Gmail. CSS animations degrade gracefully to static in Outlook.
+    Supports dark mode declarations for Apple Mail/iOS, Outlook.com and Gmail.
+
+    ``preheader`` is required, not optional. It is the line the inbox shows next
+    to the subject, and until now every message spent it on decoration: the
+    first visible text was "BUREAU DIRECTIVE // CYCLE DEBRIEF", i.e. the reader
+    learned the sender's rubber stamp instead of their own rank. It is the
+    second most valuable line in the message and there is exactly one of it, so
+    the parameter has no default — a new template has to decide (handoff P1.7).
     """
     return f"""\
 <!DOCTYPE html>
@@ -559,6 +687,8 @@ def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
   </style>
 </head>
 <body class="email-bg" style="margin:0;padding:0;background-color:{_BG};font-family:{_MONO};">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{preheader}</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{_PREHEADER_FILL}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-bg" style="background-color:{_BG};">
     <tr>
       <td align="center" style="padding:40px 20px;">
@@ -1082,6 +1212,66 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "you_label": {
         "en": "You",
         "de": "Du",
+    },
+    "subj_cycle": {
+        "en": "Cycle {n} \u00b7 Rank {rank} of {total} {arrow}",
+        "de": "Zyklus {n} \u00b7 Rang {rank} von {total} {arrow}",
+    },
+    "subj_cycle_unranked": {
+        "en": "Cycle {n} resolved \u00b7 {epoch}",
+        "de": "Zyklus {n} aufgel\u00f6st \u00b7 {epoch}",
+    },
+    "pre_cycle": {
+        "en": "Composite {score} ({delta}). {resolved} operations resolved, {success} succeeded, {detected} detected.",
+        "de": "Gesamtwert {score} ({delta}). {resolved} Operationen aufgel\u00f6st, {success} gelungen, {detected} aufgeflogen.",
+    },
+    "pre_cycle_unranked": {
+        "en": "No score was recorded for this cycle yet.",
+        "de": "F\u00fcr diesen Zyklus liegt noch keine Wertung vor.",
+    },
+    "subj_phase_begins": {
+        "en": "{epoch} begins \u00b7 first orders are due",
+        "de": "{epoch} beginnt \u00b7 die ersten Befehle stehen an",
+    },
+    "subj_phase_final": {
+        "en": "Final phase \u00b7 {epoch}",
+        "de": "Letzte Phase \u00b7 {epoch}",
+    },
+    "subj_phase_other": {
+        "en": "{epoch} enters {phase}",
+        "de": "{epoch} tritt in {phase} ein",
+    },
+    "pre_phase_standing": {
+        "en": "You stand {rank} of {total} after {n} cycles.",
+        "de": "Du stehst nach {n} Zyklen auf Rang {rank} von {total}.",
+    },
+    "pre_phase_plain": {
+        "en": "{n} cycles played. What counts changes from here.",
+        "de": "{n} Zyklen gespielt. Ab hier z\u00e4hlt anderes.",
+    },
+    "subj_done_won": {
+        "en": "{epoch} decided \u2013 you won",
+        "de": "{epoch} entschieden \u2013 du hast gewonnen",
+    },
+    "subj_done_placed": {
+        "en": "{epoch} decided \u2013 you placed {rank} of {total}",
+        "de": "{epoch} entschieden \u2013 Platz {rank} von {total}",
+    },
+    "pre_done": {
+        "en": "{winner} took the operation with {score}. Final standings and your campaign record inside.",
+        "de": "{winner} entschied die Operation mit {score}. Endstand und deine Bilanz stehen darin.",
+    },
+    "pre_invitation": {
+        "en": "An operation is forming. Your seat is held until the token expires.",
+        "de": "Eine Operation formiert sich. Dein Platz ist reserviert, bis das Token verf\u00e4llt.",
+    },
+    "pre_clearance_granted": {
+        "en": "The Forge is open to you. Starter tokens are on your account.",
+        "de": "Die Schmiede steht dir offen. Startguthaben liegt auf deinem Konto.",
+    },
+    "pre_clearance_denied": {
+        "en": "Your clearance request was reviewed and not granted this time.",
+        "de": "Dein Antrag auf Freigabe wurde gepr\u00fcft und diesmal nicht bewilligt.",
     },
     "footer_origin": {
         "en": "TRANSMISSION ORIGIN: metaverse.center",
@@ -1770,7 +1960,12 @@ def render_cycle_briefing(
     ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content, lang=lang)
+    return _email_shell(
+        f"CLASSIFIED // SITREP \u2014 {epoch_name}",
+        content,
+        lang=lang,
+        preheader=cycle_briefing_preheader(data, lang),
+    )
 
 
 # ── Phase Change Template ────────────────────────────────────────────────
@@ -1907,7 +2102,12 @@ def render_phase_change(
     ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content, lang=lang)
+    return _email_shell(
+        f"{subject_prefix} \u2014 {safe_name}",
+        content,
+        lang=lang,
+        preheader=phase_change_preheader(cycle_count, standing_data, lang),
+    )
 
 
 # ── Epoch Completed Template ─────────────────────────────────────────────
@@ -2173,7 +2373,12 @@ def render_epoch_completed(
     subject = f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}"
     if is_winner:
         subject += " \u2605\u2605\u2605"
-    return _email_shell(subject, content, lang=lang)
+    return _email_shell(
+        subject,
+        content,
+        lang=lang,
+        preheader=epoch_completed_preheader(leaderboard, lang),
+    )
 
 
 # ── Clearance Upgrade Templates ──────────────────────────────────────────
@@ -2294,7 +2499,12 @@ def render_clearance_granted(
     ]
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content, lang=lang)
+    return _email_shell(
+        "CLASSIFIED // CLEARANCE GRANTED",
+        content,
+        lang=lang,
+        preheader=_nt("pre_clearance_granted", lang),
+    )
 
 
 def render_clearance_denied(
@@ -2328,7 +2538,12 @@ def render_clearance_denied(
     ]
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content, lang=lang)
+    return _email_shell(
+        "CLASSIFIED // CLEARANCE REVIEW",
+        content,
+        lang=lang,
+        preheader=_nt("pre_clearance_denied", lang),
+    )
 
 
 def render_clearance_request_admin_notification(
@@ -2400,4 +2615,9 @@ def render_clearance_request_admin_notification(
     blocks.append(_footer_row("en"))
 
     content = "\n".join(blocks)
-    return _email_shell("BUREAU ALERT // NEW CLEARANCE REQUEST", content, lang="en")
+    return _email_shell(
+        "BUREAU ALERT // NEW CLEARANCE REQUEST",
+        content,
+        lang="en",
+        preheader=f"{_esc(user_email)} requests Forge clearance.",
+    )
