@@ -115,6 +115,12 @@ const DUNGEON_VERB_TIER: Record<string, number> = {
   rally: 2,
   salvage: 2,
   dive: 2,
+  // `protocol` was dispatched (see the switch below) but missing here, and the
+  // gate reads `if (requiredTier !== undefined)` — so a verb absent from this
+  // table skips the clearance check entirely rather than defaulting to a tier.
+  // It was freely usable at clearance 0 (Befund D18).
+  // `lint-dungeon-verbs-gated.sh` keeps the two lists in step from now on.
+  protocol: 2,
 };
 
 /** Verbs that don't trigger their own dramatic SFX — get command-confirm instead. */
