@@ -604,6 +604,56 @@ class TestShowcaseImageValidation:
         assert body["data"]["url"].endswith(".avif")
         mock_generate.assert_awaited_once()
 
+    @patch(
+        "backend.routers.admin.generate_and_upload_showcase",
+        new_callable=AsyncMock,
+    )
+    def test_model_failure_returns_503_not_500(
+        self, mock_generate: AsyncMock, client: TestClient,
+    ):
+        """An unavailable model is a 503, not a broken server.
+
+        `generate_showcase_image` calls the model without a guard of its own —
+        deliberately, since it has nothing to return but bytes. Until this
+        endpoint caught it, an OpenRouterError (connection failure, exhausted
+        retries) left the endpoint as an unhandled 500 and read to the admin
+        as a bug rather than an outage.
+        """
+        from backend.services.external.openrouter import OpenRouterError
+
+        _setup_admin()
+        mock_generate.side_effect = OpenRouterError("Connection failed after 3 attempts")
+        resp = client.post(
+            "/api/v1/admin/dungeon-showcase/generate-image",
+            json={"archetype_id": "shadow"},
+        )
+        assert resp.status_code == 503
+        assert "temporarily unavailable" in resp.json()["detail"]
+
+    @patch(
+        "backend.routers.admin.generate_and_upload_showcase",
+        new_callable=AsyncMock,
+    )
+    def test_rate_limit_subclass_is_also_503(
+        self, mock_generate: AsyncMock, client: TestClient,
+    ):
+        """The children must be covered by the parent, not enumerated.
+
+        `RateLimitError`, `ModelUnavailableError` and `CreditExhaustedError`
+        all descend from `OpenRouterError`. Two handlers elsewhere in the
+        backend catch two of the three children and miss the base class — the
+        shape this test exists to keep out of here.
+        """
+        from backend.services.external.openrouter import RateLimitError
+
+        _setup_admin()
+        mock_generate.side_effect = RateLimitError("429")
+        resp = client.post(
+            "/api/v1/admin/dungeon-showcase/generate-image",
+            json={"archetype_id": "shadow"},
+        )
+        assert resp.status_code == 503
+
     def test_missing_archetype_id_returns_422(self, client: TestClient):
         """Missing required field archetype_id triggers Pydantic 422."""
         _setup_admin()

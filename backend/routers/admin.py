@@ -8,7 +8,8 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+import sentry_sdk
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 
 from backend.config import settings
@@ -50,6 +51,7 @@ from backend.services.cache_config import load_ttls_from_db
 from backend.services.cleanup_service import CleanupService
 from backend.services.connection_service import ConnectionService
 from backend.services.dungeon.showcase_image_service import ARCHETYPE_VISUALS, generate_and_upload_showcase
+from backend.services.external.openrouter import OpenRouterError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
@@ -742,7 +744,27 @@ async def generate_showcase_image_endpoint(
         valid = ", ".join(sorted(ARCHETYPE_VISUALS))
         raise HTTPException(status_code=400, detail=f"Unknown archetype. Valid: {valid}")
 
-    data = await generate_and_upload_showcase(admin_supabase, body.archetype_id)
+    # `generate_and_upload_showcase` calls the model without a guard of its own,
+    # so an OpenRouterError used to leave this endpoint as an unhandled 500 —
+    # a connection failure or an exhausted retry chain read to the admin as a
+    # broken server rather than an unavailable service. Same house pattern as
+    # `_ai_generation_guard` in routers/generation.py, minus the simulation
+    # scope: the showcase is archetype-keyed and platform-wide.
+    try:
+        data = await generate_and_upload_showcase(admin_supabase, body.archetype_id)
+    except OpenRouterError as e:
+        logger.warning(
+            "Showcase image generation unavailable",
+            extra={"archetype": body.archetype_id, "error": str(e)},
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("service", "dungeon_showcase")
+            scope.set_tag("archetype", body.archetype_id)
+            sentry_sdk.capture_exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service temporarily unavailable.",
+        ) from None
     return SuccessResponse(data=data)
 
 
