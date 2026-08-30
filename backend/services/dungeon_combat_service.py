@@ -50,6 +50,7 @@ from backend.services.dungeon.dungeon_combat import (
 )
 from backend.services.dungeon.dungeon_encounters import select_encounter
 from backend.services.dungeon.dungeon_loot import roll_loot
+from backend.services.dungeon.dungeon_run_buffs import record_and_apply
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_distribution_service import DungeonDistributionService
 from backend.services.dungeon_instance_store import store as _store
@@ -347,7 +348,7 @@ class DungeonCombatService:
             # Non-boss victory: the drop is kept on the run and distributed with
             # the boss loot at the end. It used to be rolled, shown and dropped
             # (Befund D3).
-            loot_payload = instance.record_loot(loot)
+            loot_payload = record_and_apply(instance, loot)
             instance.phase = "room_clear"
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 

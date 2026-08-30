@@ -42,6 +42,11 @@ from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id, select_encounter
 from backend.services.dungeon.dungeon_loot import roll_loot
 from backend.services.dungeon.dungeon_objektanker import get_barometer_text, select_anchor_text
+from backend.services.dungeon.dungeon_run_buffs import (
+    consume_stress_resist,
+    record_and_apply,
+    rest_heal_multiplier,
+)
 from backend.services.dungeon.dungeon_threshold import (
     THRESHOLD_CHOICES,
     THRESHOLD_ENTRY_TEXT,
@@ -251,7 +256,10 @@ class DungeonMovementService:
 
         # Apply ambient stress (archetype may multiply, e.g. Tower structural failure)
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
-        ambient = int(ambient * strategy.get_ambient_stress_multiplier(instance))
+        # Loot-borne stress resistance ticks down here — once per room entered.
+        ambient = int(
+            ambient * strategy.get_ambient_stress_multiplier(instance) * consume_stress_resist(instance)
+        )
         for agent in instance.party:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
@@ -887,7 +895,7 @@ class DungeonMovementService:
             )
             # `instance.loot` never existed — this raised AttributeError on every
             # successful salvage (Befund D1). Loot is kept on the run now (D3).
-            recorded = instance.record_loot(loot)
+            recorded = record_and_apply(instance, loot)
 
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
             return SalvageResponse(
@@ -957,7 +965,8 @@ class DungeonMovementService:
         # Apply rest healing
         for agent in instance.party:
             if agent.agent_id in agent_ids and can_act(agent.condition):
-                agent.stress = max(0, agent.stress - REST_STRESS_HEAL)
+                heal = int(REST_STRESS_HEAL * rest_heal_multiplier(instance))
+                agent.stress = max(0, agent.stress - heal)
                 if agent.condition == "wounded":
                     agent.condition = "stressed"
 
@@ -1041,7 +1050,7 @@ class DungeonMovementService:
         return {
             "treasure": True,
             "auto_loot": True,
-            "loot": instance.record_loot(loot),
+            "loot": record_and_apply(instance, loot),
         }
 
     # ── Threshold Room ─────────────────────────────────────────────────────

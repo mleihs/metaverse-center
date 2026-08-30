@@ -3533,7 +3533,7 @@ Vervollstaendigt das Dungeon-System mit atomaren Transaktionen (ADR-007 Pattern)
 
 | Funktion | Zweck | Pattern |
 |----------|-------|---------|
-| `fn_apply_dungeon_loot(p_agent_id, p_simulation_id, p_run_id, p_loot_id, p_effect_type, p_effect_params)` | 8 Branches: aptitude_boost (Cap +2), memory, moodlet, event_modifier, arc_modifier, stress_heal, permanent/next_dungeon_bonus, simulation_modifier (Migration 174). | ADR-007 CAS |
+| `fn_apply_dungeon_loot(p_run_id, p_simulation_id, p_loot_items)` | 11 Branches + ELSE: aptitude_boost (Cap +2, CAS), memory, moodlet, event_modifier, arc_modifier, stress_heal, permanent/next_dungeon_bonus, simulation_modifier, personality_modifier, building_repair. Ein unbekannter Typ landet seit Migr. 289 in `skipped` mit Grund und Typnamen — davor in weder `applied` noch `skipped`. **Dies ist die einzige Fassung**; eine 6-arg-Überladung (Migr. 174/177/189) hatte nie einen Aufrufer und wurde in Migr. 289 entfernt. Aufrufer: `fn_finalize_dungeon_run`, `fn_complete_dungeon_run`. | ADR-007 CAS |
 | `fn_complete_dungeon_run(...)` | Atomisch: Status=completed + Outcome + Agent-Effekte + Loot + Event. Ruft intern `fn_apply_dungeon_outcome` + `fn_apply_dungeon_loot` auf. | ADR-007 |
 | `fn_abandon_dungeon_run(...)` | Atomisch: Status=abandoned + Partial-Outcome + Event | ADR-007 |
 | `fn_wipe_dungeon_run(...)` | Atomisch: Status=wiped + Trauma-Outcomes + Event | ADR-007 |
