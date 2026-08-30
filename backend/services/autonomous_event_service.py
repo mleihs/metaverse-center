@@ -36,7 +36,7 @@ from backend.dependencies import get_admin_supabase
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.journal.hooks import enqueue_simulation_echo
 from backend.services.model_resolver import ModelResolver
@@ -570,7 +570,7 @@ class AutonomousEventService:
             )
             narrative = cls._template_narrative(trigger, agent_names, zone_name)
 
-        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+        except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.warning("LLM narrative failed, using template", exc_info=True)
             narrative = cls._template_narrative(trigger, agent_names, zone_name)
 

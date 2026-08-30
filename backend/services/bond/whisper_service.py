@@ -22,7 +22,7 @@ import sentry_sdk
 from backend.dependencies import get_admin_supabase
 from backend.services.bond.whisper_template_service import WhisperTemplateService
 from backend.services.budget_enforcement_service import BudgetExceededError
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.journal.fragment_service import FragmentService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
@@ -592,7 +592,7 @@ class WhisperService:
                 # 4xx (except 429): likely persistent, skip retry
                 if exc.response.status_code < 500 and exc.response.status_code != 429:
                     break
-            except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+            except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError, OpenRouterError) as exc:
                 last_error = str(exc)
                 logger.warning(
                     "Whisper generation error on attempt %d/%d: %s",

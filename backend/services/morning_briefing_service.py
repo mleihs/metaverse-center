@@ -24,7 +24,7 @@ from backend.models.agent_autonomy import (
     MorningBriefingData,
     SimulationMoodSummary,
 )
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
@@ -377,7 +377,7 @@ class MorningBriefingService:
             data = json.loads(repaired)
             return data.get("narrative_en"), data.get("narrative_de")
 
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.warning("Briefing narrative generation failed", exc_info=True)
             sentry_sdk.capture_exception()
             return None, None

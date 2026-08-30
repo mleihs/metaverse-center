@@ -14,7 +14,7 @@ import httpx
 
 from backend.config import settings
 from backend.services.bot_game_state import BotGameState
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
@@ -377,7 +377,7 @@ class BotChatService:
                 budget=budget,
             )
             return response.strip() if response else None
-        except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.debug("LLM chat generation failed, falling back to template", exc_info=True)
             return cls._generate_template_message(personality, game_state)
 

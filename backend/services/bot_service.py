@@ -25,6 +25,7 @@ from backend.services.bot_chat_service import BotChatService
 from backend.services.bot_game_state import BotGameState
 from backend.services.bot_personality import create_personality
 from backend.services.epoch_service import EpochService
+from backend.services.external.openrouter import OpenRouterError
 from backend.services.operative_service import OperativeService
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -261,10 +262,14 @@ class BotService:
             proposal_vote_outcomes=proposal_vote_outcomes,
         )
 
-        # 6. Generate chat message (template or LLM, best-effort)
+        # 6. Generate chat message (template or LLM, best-effort).
+        # `OpenRouterError` is named even though the call is INDIRECT and the
+        # AST gate therefore cannot see it: BotChatService now falls back to a
+        # template on that error, but a failure inside the fallback would
+        # otherwise escape here and cost the bot its cycle over a chat line.
         try:
             await BotChatService.maybe_send_message(admin_supabase, epoch_id, participant, game_state, config)
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OpenRouterError):
             logger.debug("Bot chat generation failed for %s", participant["id"], exc_info=True)
 
         # 7. Set cycle_ready
