@@ -27,7 +27,7 @@ from backend.services.prompt_contracts import (
     variable_catalogue,
 )
 from backend.services.prompt_service import report_contract_violation
-from backend.services.theme_contrast import enforce_theme_contrast
+from backend.services.theme_contrast import audit_style_prompts, enforce_theme_contrast
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
@@ -73,7 +73,18 @@ THEME_ARCHITECT_PROMPT = (
     "technique. E.g. 'etching, cross-hatched, parchment texture, archival' or "
     "'concept art, moody environmental, desaturated palette'.\n"
     "These prompts should be consistent with the color palette and mood you designed above. "
-    "They should evoke the same world.\n\n"
+    "They should evoke the same world.\n"
+    "HARD RULES for all four, because these strings are appended verbatim to EVERY image this "
+    "world ever generates and are the last thing the image model reads:\n"
+    "- A STYLE, not a picture. Medium, process, light, palette, grain, surface. Nothing else.\n"
+    "- Never name or describe a SUBJECT. No person, no named building, no scene, no pose, no "
+    "gendered word (his, her, a man, a woman, an official). The subject comes from the entity "
+    "being drawn; a subject here would overwrite every one of them with the same one.\n"
+    "- No numerals, no percentages, no measurements, no readable text, no labels, no signage, "
+    "no captions. A number here becomes a number rendered ON the image, and it will look like a "
+    "value the platform computed.\n"
+    "- At most 45 words each. If it reads like a description of one finished picture, it is "
+    "wrong.\n\n"
     "- Create something UNIQUE. Do not copy existing presets. Be bold and distinctive.\n"
     "- The theme should feel like it belongs to this specific world and no other."
 )
@@ -295,6 +306,31 @@ class ForgeThemeService:
                 simulation_id,
                 contrast.as_context(),
             )
+
+        # The style prompts are appended verbatim to every image this world will
+        # ever generate, and they are the last thing the image model reads. One
+        # generated portrait style named its own subject ("of a Verwaltungsbeamter
+        # posed for HIS Salzzitat ... a diagnosis pinned to his lapel:
+        # *Leserlichkeit: 93%*") and thereby made every portrait in that world the
+        # same man wearing the same invented number. Not auto-repaired: rewriting
+        # a world's visual identity is editorial. Reported, and forbidden in the
+        # generation prompt above.
+        style_findings = audit_style_prompts(theme_data)
+        if style_findings:
+            logger.warning(
+                "Generated image style prompts describe a picture rather than a style "
+                "for simulation %s: %s",
+                simulation_id,
+                [f.as_context() for f in style_findings],
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "ForgeThemeService")
+                scope.set_tag("simulation_id", str(simulation_id))
+                scope.set_context("style_prompts", {"findings": [f.as_context() for f in style_findings]})
+                sentry_sdk.capture_message(
+                    "Generated image style prompt names a subject, a numeral or readable text",
+                    level="warning",
+                )
 
         # Style prompt keys go to category='ai', everything else to category='design'
         ai_keys = {

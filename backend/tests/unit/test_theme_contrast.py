@@ -13,6 +13,7 @@ import pytest
 from backend.services.theme_contrast import (
     AA_NORMAL_TEXT,
     ThemeContrastReport,
+    audit_style_prompts,
     contrast_ratio,
     enforce_theme_contrast,
     parse_hex,
@@ -135,3 +136,74 @@ class TestTheFloor:
         context = report.as_context()
         assert context["repairs"][0]["key"] == "color_surface_header"
         assert context["repairs"][0]["ratio_before"] == 1.0
+
+
+class TestStylePrompts:
+    """A style prompt is appended to every image and outranks everything else."""
+
+    # The exact string that shipped, and that produced the user's complaint.
+    SHIPPED_PORTRAIT_STYLE = (
+        "Kalotyp-Positivverfahren of a Verwaltungsbeamter posed for his Salzzitat, paper-negative "
+        "transferred directly onto officinal stock, the sitter's epidermis a palimpsest of healed "
+        "scriptural striae - inscriptions from past revisions visible as silvery scars beneath the "
+        "current text - his fingertips permanently stained with Eisengallustinte, the ghost of a "
+        "purged marginal gloss still faintly legible across his brow, lit by the directional beam "
+        "of a single Aktenlampe whose oil is distilled from expired Registraturgut, the shallow "
+        "plane of focus isolating a diagnosis pinned to his lapel: *Leserlichkeit: 93%* and "
+        "declining, wet-plate imperfections and nitrate bloom across the surface"
+    )
+
+    # The hand-written replacement: medium, light, palette, process. Nothing else.
+    REPAIRED_PORTRAIT_STYLE = (
+        "Kalotyp-Positivverfahren, paper negative contact-printed onto officinal stock, single "
+        "directional Aktenlampe beam from a low angle, palette limited to Silbernitratgrau, "
+        "Hämatoxylin blue-black and the warm amber of the Bottich's nutrient solution, nitrate "
+        "bloom and wet-plate imperfections at the plate edges, fine silver grain, shallow tonal "
+        "range, soft falloff into deep shadow, no lettering"
+    )
+
+    def test_the_shipped_style_is_caught_on_every_count(self):
+        findings = audit_style_prompts({"image_style_prompt_portrait": self.SHIPPED_PORTRAIT_STYLE})
+        assert len(findings) == 1
+        problems = findings[0].problems
+        assert "names a subject" in problems
+        assert "contains a numeral" in problems
+        assert "asks for readable text" in problems
+        assert any("not a style" in p for p in problems)
+
+    def test_the_repaired_style_passes(self):
+        assert audit_style_prompts({"image_style_prompt_portrait": self.REPAIRED_PORTRAIT_STYLE}) == ()
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "daguerreotype photograph, sepia toned, formal Victorian studio lighting",
+            "brutalist photography, overcast concrete, stark monochrome",
+            "etching, cross-hatched, parchment texture, archival",
+            "matte painting, volumetric god rays, mythic scale",
+        ],
+    )
+    def test_the_prompt_examples_all_pass(self, value: str):
+        """The four examples the generation prompt itself offers must be legal."""
+        assert audit_style_prompts({"image_style_prompt_portrait": value}) == ()
+
+    def test_a_gendered_word_alone_is_enough(self):
+        findings = audit_style_prompts({"image_style_prompt_building": "warm light on her face"})
+        assert findings and "names a subject" in findings[0].problems
+
+    def test_missing_or_empty_prompts_are_not_findings(self):
+        assert audit_style_prompts({}) == ()
+        assert audit_style_prompts({"image_style_prompt_lore": "   "}) == ()
+        assert audit_style_prompts({"image_style_prompt_lore": None}) == ()
+
+    def test_all_four_keys_are_audited(self):
+        theme = dict.fromkeys(
+            (
+                "image_style_prompt_portrait",
+                "image_style_prompt_building",
+                "image_style_prompt_banner",
+                "image_style_prompt_lore",
+            ),
+            "a portrait of a man, 90% opacity",
+        )
+        assert len(audit_style_prompts(theme)) == 4
