@@ -11,7 +11,11 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from pydantic_ai import Agent
 
 from backend.models.translation import TranslationContext
-from backend.services.ai_utils import get_openrouter_model, run_ai
+from backend.services.ai_utils import (
+    MODEL_CALL_ERRORS,
+    get_openrouter_model,
+    run_ai,
+)
 from backend.services.platform_model_config import get_platform_model
 from backend.services.translation_service import TranslationService
 from backend.utils.db import maybe_single_data
@@ -238,6 +242,6 @@ class DossierEvolutionService:
             )
             return True
 
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (*MODEL_CALL_ERRORS, PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Dossier evolution failed")
             return False

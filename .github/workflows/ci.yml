@@ -113,6 +113,14 @@ jobs:
         run: bash scripts/lint-no-dead-single-guard.sh
         working-directory: .
 
+      # A pydantic-ai run raises ModelAPIError on a timeout — the PARENT of
+      # ModelHTTPError, so `except ModelHTTPError` misses it, and no httpx/Key/
+      # Type/ValueError tuple ever saw it. Fourteen handlers written to degrade
+      # gracefully were blind to the failure they were written for.
+      - name: Backend lint (model-call handlers catch model errors)
+        run: bash scripts/lint-model-call-handlers.sh
+        working-directory: .
+
   lint-backend:
     name: Lint Backend
     # Enforces the FULL ruff ruleset declared in pyproject.toml (E,F,W,I,N,UP,S,B,A,

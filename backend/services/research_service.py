@@ -16,6 +16,7 @@ import sentry_sdk
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import PhilosophicalAnchor, counted_list
 from backend.services.ai_utils import (
+    MODEL_CALL_ERRORS,
     create_forge_agent,
     report_delivery_count,
     run_ai,
@@ -331,7 +332,7 @@ class ResearchService:
                 admin_supabase=admin_supabase,
             )
             parts.append(f"[LLM RESEARCH]\n{result.output}")
-        except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "lore_research")
                 scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})

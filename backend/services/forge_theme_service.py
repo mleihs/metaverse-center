@@ -16,7 +16,11 @@ from pydantic_ai import Agent
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeThemeOutput
-from backend.services.ai_utils import get_openrouter_model, run_ai
+from backend.services.ai_utils import (
+    MODEL_CALL_ERRORS,
+    get_openrouter_model,
+    run_ai,
+)
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.platform_model_config import get_platform_model
 from backend.services.prompt_contracts import (
@@ -318,8 +322,7 @@ class ForgeThemeService:
         style_findings = audit_style_prompts(theme_data)
         if style_findings:
             logger.warning(
-                "Generated image style prompts describe a picture rather than a style "
-                "for simulation %s: %s",
+                "Generated image style prompts describe a picture rather than a style for simulation %s: %s",
                 simulation_id,
                 [f.as_context() for f in style_findings],
             )
@@ -512,7 +515,7 @@ class ForgeThemeService:
                     },
                 )
 
-        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Style prompt refinement AI call failed", exc_info=True)
             sentry_sdk.capture_exception(exc)
 
@@ -747,7 +750,7 @@ class ForgeThemeService:
                     },
                 )
 
-        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning("Prompt template generation failed", exc_info=True)
             sentry_sdk.capture_exception(exc)
 
@@ -855,7 +858,7 @@ different typography. Same world, radically different visual identity."""
                 extra={"simulation_id": str(simulation_id), "count": len(variants)},
             )
 
-        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+        except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             sentry_sdk.capture_exception(exc)
             logger.exception("Darkroom variant generation failed")
             await ForgeFeatureService.fail_feature(

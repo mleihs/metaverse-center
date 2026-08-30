@@ -51,7 +51,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 17 | Citations are free text, bound to nothing — one misattribution measured | Medium | Open |
 | 18 | Four minutes of `0 / 16 · 0 %` before the first image | Medium | Open |
 | 19 | The denominator 16 is never broken down; banner and lore images are counted but never shown | Medium | Open |
-| 20 | Deep research fails during materialization, silently degrades | Medium | Open |
+| 20 | Deep research fails during materialization, silently degrades | Medium | **Fixed** (W3) |
 | 21 | The Table never scrolls to what it just produced | Low | Open |
 | 22 | Three German errors in one localized string | Low | **Fixed** (`a5cb9b73`) |
 | 23 | Sixteen rows in four worlds are written in Mustache syntax and never substitute | **Critical** | **Fixed** (`36fe1b8b`, migration 280) |
@@ -64,6 +64,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | Open |
 | 31 | Seeds run **after** migrations, so every platform-template `UPDATE` is discarded on a fresh database — migration 027 inert since February | **Critical** | **Fixed** (seed back-port + CI gate) |
 | 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | Open |
+| 33 | Every configured timeout is unhandled — a firing timeout raises `ModelAPIError`, a name that appeared nowhere in the backend | **Critical** | **Fixed** (W3) |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -769,7 +770,78 @@ Note the retries themselves are **not** silent and **not** unbounded (`MAX_RETRI
 `22:33:07 AI call started purpose=research` → 14.5 s → `AI call failed` → *"Deep research
 failed — using Astrolabe context only"*. The fallback holds and lore is still produced, but the
 deep research the user can switch on in the Darkroom delivers nothing. `purpose=research` runs
-at `max_tokens 2048`. Cause not yet determined — pull the traceback.
+at `max_tokens 2048`.
+
+**Cause determined, and it is not a model problem.** `research_for_lore` wraps its LLM call in a
+`try` that catches `httpx.HTTPError, KeyError, TypeError, ValueError` — a set that cannot contain
+any exception a model call raises. The handler was written to degrade gracefully (log the failure,
+keep going, and still run the three Tavily searches, which are independent and would have
+succeeded). It has never once run. The exception escapes to the orchestrator instead, which
+abandons the *whole* `research_for_lore` call — so a failure in the LLM half silently costs the user
+the web-augmentation half as well.
+
+14.5 s also rules out the timeout: the budget is 90 s. It was a status error, and the handler
+could not see that either.
+
+**Fixed in W3** as one case of finding 33, which is the same defect at thirteen other call sites.
+
+### 33. Every configured timeout is unhandled — **Critical**
+
+**Found by asking what finding 20's handler could actually catch, then measuring it.**
+
+`PYDANTIC_AI_TIMEOUTS` in `ai_utils.py` sets eleven timeout budgets, and the comment above them
+states the contract:
+
+> *"pydantic-ai passes `model_settings["timeout"]` to the OpenAI SDK's `create()` call, which sets
+> it as an httpx timeout. When it fires, `openai.APITimeoutError` is raised → caught by existing
+> except blocks."*
+
+Every clause after the arrow is false. Measured with a real call at `timeout=0.001`:
+
+```text
+Klasse: pydantic_ai.exceptions.ModelAPIError
+MRO:    ModelAPIError, AgentRunError, RuntimeError, Exception
+
+  caught by (httpx.HTTPError, KeyError, TypeError, ValueError): False
+  caught by ModelHTTPError:                                     False
+  caught by UnexpectedModelBehavior:                            False
+  caught by (ModelHTTPError, UnexpectedModelBehavior):          False
+```
+
+`openai.APITimeoutError` is an `openai.APIConnectionError`, not an `httpx.HTTPError`; pydantic-ai
+catches it and re-raises `ModelAPIError`; and `ModelAPIError` is the **parent** of
+`ModelHTTPError`, so even the best handler in the codebase — `except (ModelHTTPError,
+UnexpectedModelBehavior)` — misses it. Before this fix the name `ModelAPIError` appeared **zero
+times** in the backend, against twelve handlers naming its subclass.
+
+**Blast radius, swept by AST over all 20 `run_ai` call sites:** 14 of them had a `try` that could
+not catch a model error. Every one of those handlers exists precisely to degrade gracefully — patch
+a missing translation, keep a lore section, fall back to Astrolabe context — and none of them has
+ever run for its own failure mode.
+
+**Fix.** One tuple, `MODEL_CALL_ERRORS` in `ai_utils.py`, holding `ModelAPIError` (which subsumes
+`ModelHTTPError`) and `UnexpectedModelBehavior`, applied at all 14 sites; the non-model classes each
+site already listed stay, because they cover the non-model failures in the same block.
+`ai_error_to_http` now takes `ModelAPIError` and reads `.status_code` defensively — a timeout has
+none, and reading one used to raise `AttributeError` inside the handler that was supposed to produce
+a clean message. A timeout now maps to **504**, which says "upstream did not answer in time" rather
+than "this service is broken".
+
+Six call sites deliberately keep no local `try`: each propagates into a caller that does handle the
+error, and every one was checked individually rather than assumed.
+
+**Recurrence guard.** `scripts/lint-model-call-handlers.py` (wrapped by the matching `.sh`, in CI's
+`lint-frontend` job beside the other backend gates) walks the AST and fails when the `try` enclosing
+a `run_ai` call names none of `MODEL_CALL_ERRORS`, `ModelAPIError`, `AgentRunError`, `RuntimeError`
+or `Exception`. Measured in both directions before being trusted: green on 14 of 14, red with the
+exact file and line when one handler is reverted. Its docstring states the two things it cannot
+see — an indirect call (`_auto_translate_entity` wraps the model call three frames up; it had the
+same defect and was fixed by hand) and a site with no `try` at all — so nobody reads a pass as more
+than it is.
+
+`backend/tests/unit/test_model_call_errors.py` pins the class relationships themselves rather than
+the fix, so a pydantic-ai upgrade that re-parents these exceptions turns the test red instead of
+production.
 
 ---
 

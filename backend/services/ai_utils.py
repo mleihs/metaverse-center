@@ -12,7 +12,7 @@ from uuid import UUID
 import sentry_sdk
 from fastapi import HTTPException
 from pydantic_ai import Agent
-from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError, UnexpectedModelBehavior
 from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.providers.openrouter import OpenRouterProvider
 
@@ -22,7 +22,13 @@ from backend.services.budget_enforcement_service import (
     BudgetExceededError,
 )
 from backend.services.platform_model_config import get_platform_model, get_platform_reasoning
-from backend.utils.errors import bad_gateway, payment_required, service_unavailable, too_many_requests
+from backend.utils.errors import (
+    bad_gateway,
+    gateway_timeout,
+    payment_required,
+    service_unavailable,
+    too_many_requests,
+)
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -63,9 +69,45 @@ PYDANTIC_AI_TIMEOUTS: dict[str, int] = {
 }
 
 
-def ai_error_to_http(exc: ModelHTTPError) -> HTTPException:
-    """Map Pydantic AI HTTP errors to actionable user-facing HTTPExceptions."""
-    code = exc.status_code
+# ── What a model call can actually fail with ─────────────────────────
+#
+# Listing these by hand at a call site has been wrong at every call site that
+# tried, so they live here and nowhere else.
+#
+# `ModelAPIError` is the one that was missing everywhere, and it is the one that
+# matters most: pydantic-ai raises it for a TIMEOUT and for a connection failure
+# (openai.APITimeoutError -> APIConnectionError -> re-raised as ModelAPIError).
+# It is also the PARENT of `ModelHTTPError`, so `except ModelHTTPError` does not
+# catch it. Measured with a real call at `timeout=0.001`: the exception that
+# reaches the caller is `pydantic_ai.exceptions.ModelAPIError`, whose MRO is
+# (ModelAPIError, AgentRunError, RuntimeError, Exception) -- caught by none of
+# `httpx.HTTPError`, `KeyError`, `TypeError`, `ValueError`, `ModelHTTPError` or
+# `UnexpectedModelBehavior`. Before this constant existed the name appeared zero
+# times in the backend, while `PYDANTIC_AI_TIMEOUTS` set eleven budgets and the
+# comment above them claimed a firing timeout was "caught by existing except
+# blocks". It never was. See finding 33.
+MODEL_CALL_ERRORS: tuple[type[Exception], ...] = (
+    ModelAPIError,  # timeouts, connection failures, AND every ModelHTTPError
+    UnexpectedModelBehavior,  # output validation retries exhausted
+)
+
+
+def ai_error_to_http(exc: ModelAPIError) -> HTTPException:
+    """Map a Pydantic AI model error to an actionable user-facing HTTPException.
+
+    Takes `ModelAPIError`, not `ModelHTTPError`: a timeout and a connection
+    failure arrive as the parent class and carry no status code at all, and
+    reading `.status_code` off one raises `AttributeError` inside the handler
+    that was supposed to produce a clean message.
+    """
+    code = getattr(exc, "status_code", None)
+    if code is None:
+        # A timeout or a connection failure. 504 says "upstream did not answer
+        # in time", which is what happened, and keeps it out of the 5xx bucket
+        # that means "this service is broken".
+        return gateway_timeout(
+            "The AI model did not answer in time. Please try again.",
+        )
     if code == 402:
         return payment_required(
             "AI credit balance insufficient. Please top up your OpenRouter account or add a BYOK key.",
