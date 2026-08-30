@@ -1,5 +1,6 @@
 """Pydantic models for AI generation endpoints."""
 
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -138,6 +139,29 @@ class CycleSitrepDraft(BaseModel):
     """A generated tactical situation report for a single epoch cycle."""
 
     sitrep: str
+    model_used: str
+
+
+class SocialTransformDraft(BaseModel):
+    """A social-media post rewritten into the simulation's register."""
+
+    transformed_content: str = Field(..., min_length=1)
+    transform_type: str
+    model_used: str
+
+
+class SentimentAnalysis(BaseModel):
+    """Sentiment of a social-media post, as the `social_media_sentiment` template asks for it.
+
+    The template states the shape — `sentiment` from a closed set, `confidence`
+    0.0-1.0, a one-to-two-sentence `summary` — and this is that shape. The value
+    is stored in the `original_sentiment` / `transformed_sentiment` jsonb columns,
+    so it is worth having the model validate it before it becomes a row.
+    """
+
+    sentiment: Literal["positive", "negative", "neutral", "mixed"]
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    summary: str = Field(..., min_length=1)
     model_used: str
 
 

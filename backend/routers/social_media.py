@@ -5,7 +5,10 @@ from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
+import httpx
+import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_current_user, get_effective_supabase, require_role
 from backend.middleware.rate_limit import RATE_LIMIT_AI_GENERATION, RATE_LIMIT_EXTERNAL_API, limiter
@@ -17,11 +20,13 @@ from backend.models.social_media import (
     TransformPostRequest,
 )
 from backend.services.agent_service import AgentService
+from backend.services.ai_utils import MODEL_CALL_ERRORS
 from backend.services.audit_service import AuditService
 from backend.services.external.facebook import FacebookService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
 from backend.services.social_media_service import SocialMediaService
+from backend.utils.errors import bad_request
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -132,18 +137,23 @@ async def transform_post(
     ai_config = await resolver.get_ai_provider_config()
 
     gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
-    result = await gen.generate_social_media_transform(
-        original_text=post.get("message", ""),
-        transformation_type=body.transformation_type,
-    )
+    try:
+        draft = await gen.generate_social_media_transform(
+            post_content=post.get("message", ""),
+            transform_type=body.transformation_type,
+        )
+    except ValueError as exc:
+        # No template for this transformation. Before, the resolver fell through
+        # to a generic prompt and the result was stored as world content.
+        raise bad_request(str(exc)) from exc
 
     updated = await SocialMediaService.update_post(
         supabase,
         simulation_id,
         post_id,
         {
-            "transformed_content": result.get("transformed_text", ""),
-            "transformation_type": body.transformation_type,
+            "transformed_content": draft.transformed_content,
+            "transformation_type": draft.transform_type,
             "transformed_at": datetime.now(UTC).isoformat(),
         },
     )
@@ -180,17 +190,16 @@ async def analyze_sentiment(
 
     gen = GenerationService(supabase, simulation_id, ai_config.openrouter_api_key)
 
-    # Use the social_media_sentiment template
-    text = post.get("message", "")
+    # The sentiment of what the reader actually sees: the transformed text when
+    # there is one, the original otherwise. Until now this endpoint analysed
+    # neither — it called the trends-campaign method with parameter names that
+    # method does not have, and raised TypeError on the first call. See finding 24.
     transformed = post.get("transformed_content")
+    text = transformed or post.get("message", "")
 
-    sentiment_data = await gen.generate_social_trends_campaign(
-        trend_name=text[:100],
-        trend_platform=post.get("platform", "unknown"),
-        trend_sentiment="neutral",
-    )
+    analysis = await gen.generate_social_media_sentiment(post_content=text)
+    sentiment_data = analysis.model_dump(exclude={"model_used"})
 
-    # Store sentiment on original or transformed
     update_data: dict = {}
     if transformed:
         update_data["transformed_sentiment"] = sentiment_data
@@ -249,13 +258,15 @@ async def generate_reactions(
 
     for agent in agents:
         try:
-            result = await gen.generate_agent_reaction(
-                agent_name=agent["name"],
-                agent_system=agent.get("system", ""),
-                event_title=content[:100],
-                event_description=content,
+            # `generate_agent_reaction` takes the agent and the event as dicts and
+            # returns PROSE, not a structured reaction. It used to be called with
+            # four keywords it does not have, and its return read as a dict — two
+            # errors that a bare `except Exception` turned into a 200 with an
+            # empty list. Production has zero rows in this table. See finding 24.
+            reaction_text = await gen.generate_agent_reaction(
+                agent_data=agent,
+                event_data={"title": content[:100], "description": content},
             )
-
             reaction = await SocialMediaService.store_agent_reaction(
                 supabase,
                 simulation_id,
@@ -263,17 +274,26 @@ async def generate_reactions(
                     "post_id": str(post_id),
                     "agent_id": agent["id"],
                     "reaction_type": "ai_generated",
-                    "reaction_content": result.get("reaction", ""),
-                    "reaction_intensity": result.get("intensity", 5),
+                    # No intensity is generated, and the column is nullable. A
+                    # constant 5 would have been a number nobody measured.
+                    "reaction_content": reaction_text,
                 },
             )
             reactions.append(reaction)
-        except Exception:
+        except (*MODEL_CALL_ERRORS, PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            # Deliberately not `except Exception`: that is what hid the two bugs
+            # above for the life of the endpoint. One agent's failure must not
+            # stop the others, but it must be observed.
+            captured = f"{type(exc).__name__}: {exc}"
             logger.warning(
                 "Agent reaction generation failed",
-                extra={"agent_id": agent["id"]},
+                extra={"agent_id": agent["id"], "error": captured},
                 exc_info=True,
             )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("simulation_id", str(simulation_id))
+                scope.set_context("social_media", {"agent_id": agent["id"], "post_id": str(post_id)})
+                sentry_sdk.capture_exception(exc)
 
     await AuditService.safe_log(
         supabase,
