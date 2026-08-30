@@ -109,6 +109,20 @@ async def confirm_unsubscribe(
     return SuccessResponse(data=await _apply_unsubscribe(token))
 
 
+@router.get("/describe")
+async def describe_token(token: Annotated[str, Query(min_length=8, max_length=2048)]) -> SuccessResponse[dict]:
+    """Name the category a token would switch off, without switching anything off.
+
+    The confirmation page has to tell the reader what they are about to leave,
+    and the token is opaque to the browser. Read-only by construction: no client
+    is created here, so a link scanner that follows it changes nothing.
+    """
+    verified = verify_token(token)
+    if verified is None:
+        raise bad_request("This unsubscribe link is not valid.")
+    return SuccessResponse(data={"category": verified[1]})
+
+
 @router.get("")
 async def unsubscribe_landing(token: Annotated[str, Query(min_length=8, max_length=2048)]) -> RedirectResponse:
     """Send a human to the confirmation page. Changes nothing — see module docstring."""
