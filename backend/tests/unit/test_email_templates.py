@@ -10,7 +10,13 @@ from backend.services.email_templates import (
     _TEXT_DARK,
     _TEXT_DIM,
     contrast_ratio,
+    cycle_briefing_preheader,
+    cycle_briefing_subject,
+    epoch_completed_preheader,
+    epoch_completed_subject,
     get_sim_accent,
+    html_to_text,
+    phase_change_subject,
     render_cycle_briefing,
     render_epoch_completed,
     render_epoch_invitation,
@@ -991,3 +997,102 @@ class TestShellHygiene:
         for name, html in self._every_template().items():
             assert "[if mso]" in html, name
             assert "bgcolor=" in html, name
+
+
+# ── Subject and preheader ─────────────────────────────────────────────────
+#
+# Handoff P1.7 / P1.8. Two lines decide whether a message is opened at all, and
+# both were spent on the sender: the subject opened with "CLASSIFIED // SITREP",
+# a string identical in every message the platform has ever sent, and the
+# preview line showed "BUREAU DIRECTIVE // CYCLE DEBRIEF" because that happened
+# to be the first text in the body. A phone shows roughly 35 characters of the
+# first and one line of the second.
+
+
+class TestSubjectLines:
+    def _data(self, **over) -> dict:
+        base = {
+            "cycle_number": 7, "rank": 2, "prev_rank": 3, "total_players": 4,
+            "composite": 72.3, "composite_delta": 3.2,
+            "resolved_ops": 3, "success_ops": 2, "detected_ops": 1,
+            "epoch_name": "Operation Shadow",
+        }
+        base.update(over)
+        return base
+
+    def test_the_change_comes_first(self):
+        subject = cycle_briefing_subject(self._data(), "en")
+        assert subject.startswith("Cycle 7")
+        assert "CLASSIFIED" not in subject
+        assert "SITREP" not in subject
+
+    def test_it_fits_a_phone(self):
+        """Roughly 35 characters are visible in a mobile inbox."""
+        assert len(cycle_briefing_subject(self._data(), "en")) <= 40
+        assert len(cycle_briefing_subject(self._data(), "de")) <= 40
+
+    def test_rank_movement_is_shown_in_both_directions(self):
+        assert "\u21911" in cycle_briefing_subject(self._data(prev_rank=3), "en")
+        assert "\u21931" in cycle_briefing_subject(self._data(rank=3, prev_rank=2), "en")
+        assert "\u2191" not in cycle_briefing_subject(self._data(prev_rank=2), "en")
+
+    def test_an_unscored_cycle_does_not_claim_a_rank(self):
+        """Rank 0 of 0 was what the broken briefing actually printed."""
+        subject = cycle_briefing_subject(self._data(rank=0, total_players=0), "de")
+        assert "Rang" not in subject
+        assert "Zyklus 7" in subject
+
+    def test_german_uses_a_german_decimal_separator(self):
+        assert "72,3" in cycle_briefing_preheader(self._data(), "de")
+        assert "72.3" in cycle_briefing_preheader(self._data(), "en")
+
+    def test_phase_subject_names_the_moment(self):
+        assert "beginnt" in phase_change_subject("Op", "lobby", "foundation", "de")
+        assert "Letzte Phase" in phase_change_subject("Op", "competition", "reckoning", "de")
+
+    def test_completed_subject_states_the_outcome(self):
+        lb = [
+            {"simulation_id": "a", "simulation_name": "Velgarien", "composite_score": 80.0},
+            {"simulation_id": "b", "simulation_name": "Speranza", "composite_score": 60.0},
+        ]
+        assert "gewonnen" in epoch_completed_subject("Op", lb, "a", "de")
+        assert "Platz 2 von 2" in epoch_completed_subject("Op", lb, "b", "de")
+        assert "Velgarien" in epoch_completed_preheader(lb, "de")
+
+    def test_no_em_dashes(self):
+        """Project content rule: en dash, never em dash, in user-facing text."""
+        lb = [{"simulation_id": "a", "simulation_name": "A", "composite_score": 1.0}]
+        for text in (
+            cycle_briefing_subject(self._data(), "de"),
+            phase_change_subject("Op", "lobby", "foundation", "de"),
+            epoch_completed_subject("Op", lb, "a", "de"),
+            epoch_completed_subject("Op", lb, "zz", "de"),
+        ):
+            assert "\u2014" not in text, text
+
+
+class TestPreheader:
+    def _html(self, locale="de") -> str:
+        return render_phase_change(
+            epoch_name="Op", old_phase="competition", new_phase="reckoning",
+            cycle_count=7, command_center_url="https://x", email_locale=locale,
+            standing_data={"rank": 2, "total_players": 4, "composite": 70.1},
+        )
+
+    def test_the_preview_line_carries_the_number(self):
+        html = self._html()
+        assert "Du stehst nach 7 Zyklen auf Rang 2 von 4." in html
+
+    def test_it_is_hidden_from_the_body(self):
+        html = self._html()
+        assert "display:none" in html
+        # And it must not reappear in the plain-text part, where it would read
+        # as a stutter before the message proper.
+        assert "Du stehst nach 7 Zyklen" not in html_to_text(html)
+
+    def test_it_comes_before_any_visible_text(self):
+        html = self._html()
+        assert html.index("Du stehst nach 7 Zyklen") < html.index("PHASEN\u00dcBERGANG")
+
+    def test_filler_stops_the_client_pulling_body_text_in(self):
+        assert "&zwnj;" in self._html()
