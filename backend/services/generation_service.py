@@ -229,6 +229,10 @@ class GenerationService:
         if agent_data:
             variables["agent_character"] = agent_data.get("character", "")
             variables["agent_background"] = agent_data.get("background", "")
+            # Without this the text model guesses, and it guessed wrong on
+            # production: a female agent's description came back written in
+            # "his", and the image followed the description.
+            variables["agent_gender"] = agent_data.get("gender", "")
 
         result = await self._generate(
             template_type="portrait_description",
