@@ -1,11 +1,64 @@
 """Unit tests for email templates — structure and content verification."""
 
+from backend.config import settings
 from backend.services.email_templates import (
+    _BG,
+    _SIM_EMAIL_COLORS,
+    _TEXT,
+    _TEXT_DARK,
+    _TEXT_DIM,
+    contrast_ratio,
+    get_sim_accent,
     render_cycle_briefing,
     render_epoch_completed,
     render_epoch_invitation,
     render_phase_change,
 )
+
+# ── Contrast floor ────────────────────────────────────────────
+#
+# Email cannot use the design tokens (Outlook and Gmail do not resolve CSS
+# variables), so this module keeps its own palette. That exemption is about
+# HEX vs. token — not about legibility, and two of five world colours were
+# below WCAG AA when measured: cite-des-dames #1E3A8A at 1.91:1 and
+# the-gaslit-reach #0d7377 at 3.52:1. The first is the worse of the two, since
+# the call-to-action paints the accent as a BACKGROUND with the page background
+# as its text colour: dark blue on black, an invisible button.
+
+
+class TestContrastFloor:
+    def test_every_world_colour_is_legible(self):
+        for slug in _SIM_EMAIL_COLORS:
+            accent = get_sim_accent(slug)
+            ratio = contrast_ratio(accent, _BG)
+            assert ratio >= 4.5, f"{slug}: {accent} is {ratio:.2f}:1 on {_BG}"
+
+    def test_a_new_dark_colour_is_lifted_automatically(self):
+        """The floor lives in get_sim_accent, not in hand-picked replacements —
+        a world added tomorrow cannot reintroduce the defect."""
+        assert contrast_ratio("#101820", _BG) < 4.5
+        assert contrast_ratio(_lifted("#101820"), _BG) >= 4.5
+
+    def test_hue_survives_the_lift(self):
+        """A world keeps its colour; it only stops being one nobody can see."""
+        lifted = get_sim_accent("cite-des-dames")
+        raw = _SIM_EMAIL_COLORS["cite-des-dames"].lstrip("#")
+        # Blue channel still dominant, red still weakest — same colour, brighter.
+        r, g, b = (int(lifted.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+        assert b > g > r
+        assert int(raw[4:6], 16) > int(raw[2:4], 16) > int(raw[0:2], 16)
+
+    def test_text_colours_meet_aa(self):
+        for name, colour in (("_TEXT", _TEXT), ("_TEXT_DIM", _TEXT_DIM), ("_TEXT_DARK", _TEXT_DARK)):
+            ratio = contrast_ratio(colour, _BG)
+            assert ratio >= 4.5, f"{name}: {colour} is {ratio:.2f}:1"
+
+
+def _lifted(colour: str) -> str:
+    from backend.services.email_templates import _ensure_readable
+
+    return _ensure_readable(colour)
+
 
 # ── Cycle Briefing ────────────────────────────────────────────
 
@@ -124,8 +177,18 @@ class TestRenderCycleBriefing:
 
     def test_contains_footer_links(self):
         html = render_cycle_briefing(self._sample_data())
-        assert "Manage notifications" in html
-        assert "Benachrichtigungen verwalten" in html
+        assert "Manage all notifications" in html
+        assert f"{settings.site_url}/settings/notifications" in html
+        # Provider identification is mandatory for mail to German-speaking
+        # recipients and was absent entirely.
+        assert "Matthias Leihs" in html
+        assert f"{settings.site_url}/privacy" in html
+
+    def test_footer_language_follows_the_locale(self):
+        """The footer no longer prints both languages at once (handoff P1.9)."""
+        de = render_cycle_briefing(self._sample_data(), email_locale="de")
+        assert "Alle Benachrichtigungen verwalten" in de
+        assert "Manage all notifications" not in de
 
     def test_html_structure(self):
         html = render_cycle_briefing(self._sample_data())
@@ -574,8 +637,7 @@ class TestRenderEpochInvitation:
 
     def test_contains_footer(self):
         html = self._render()
-        assert "Manage notifications" in html
-        assert "Benachrichtigungen verwalten" in html
+        assert "Manage all notifications" in html
         assert "TRANSMISSION ORIGIN" in html
 
     def test_escapes_epoch_name_xss(self):
@@ -808,13 +870,17 @@ class TestCycleBriefingPhase7:
 
     # ── CSS Animations (progressive enhancement) ──
 
-    def test_css_animations_in_shell(self):
-        """Email shell includes CSS @keyframes for progressive enhancement."""
+    def test_no_stamp_animation_anywhere(self):
+        """The project forbids stamp aesthetics and rotated elements.
+
+        ``stamp-in`` rotated its target by -4deg and was applied to the operation
+        name and to the victory stars. Keyframe and both uses are gone; a plain
+        name in the accent colour carries the same weight.
+        """
         html = render_cycle_briefing(self._sample_data())
-        assert "@keyframes cursor-blink" in html
-        assert "@keyframes glow-breathe" in html
-        assert "@keyframes reveal-up" in html
-        assert "@keyframes stamp-in" in html
+        assert "@keyframes stamp-in" not in html
+        assert "stamp-in" not in html
+        assert "rotate(" not in html
 
     def test_lang_attribute_dynamic(self):
         """Email lang attribute matches locale."""
