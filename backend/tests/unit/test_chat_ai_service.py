@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -214,3 +214,88 @@ class TestHardcodedFallbacks:
     def test_template_type_has_fallback(self, template_type):
         assert template_type in HARDCODED_FALLBACKS
         assert len(HARDCODED_FALLBACKS[template_type]) > 0
+
+
+# ---------------------------------------------------------------------------
+# _build_generation_context — the persona half of a chat template (finding 25)
+# ---------------------------------------------------------------------------
+
+
+def _resolved_with_persona(content: str, persona: str | None) -> ResolvedPrompt:
+    """A chat template carrying both halves, as phase A.6 writes them."""
+    return ResolvedPrompt(
+        template_type="chat_system_prompt",
+        locale="en",
+        prompt_content=content,
+        system_prompt=persona,
+        variables=[],
+        default_model=None,
+        temperature=0.7,
+        max_tokens=1024,
+        negative_prompt=None,
+        source=PromptSource.SIMULATION_LOCALE,
+    )
+
+
+class TestChatPersonaIsUsed:
+    """Phase A.6 authors a per-world persona; chat used to discard it.
+
+    Measured on production 2026-08-30: four simulations carry a
+    ``chat_system_prompt`` row whose ``system_prompt`` runs 269-407 characters
+    ("You roleplay characters from {simulation_name}, where the state is a
+    living body and legibility its breath"). ``_build_generation_context`` built
+    its system message from ``prompt_content`` alone, so all four were written,
+    stored and dropped. Both platform rows carry no persona, which is why this
+    composition changes nothing for the other 37 worlds.
+    """
+
+    @pytest.mark.asyncio
+    async def test_the_authored_persona_reaches_the_model(self, chat_service):
+        template = _resolved_with_persona("Speak as {agent_name}.", "You roleplay clerks of {simulation_name}.")
+        with patch.object(chat_service, "_build_mood_context", AsyncMock(return_value="")):
+            messages = await chat_service._build_generation_context(
+                agent={"id": str(uuid4()), "name": "Registrar"},
+                simulation={"name": "Atrament"},
+                locale="en",
+                prompt_template=template,
+                history_messages=[],
+            )
+        system = messages[0]["content"]
+        assert "You roleplay clerks of" in system, "the persona must reach the model"
+        assert "Speak as" in system, "the per-agent body must still be there"
+        assert system.index("You roleplay clerks of") < system.index("Speak as"), (
+            "persona first, concrete instructions after — whatever comes last carries the "
+            "most weight, and the platform frame rides at the end of the body"
+        )
+
+    @pytest.mark.asyncio
+    async def test_the_persona_is_variable_substituted_not_pasted(self, chat_service):
+        """A literal `{simulation_name}` reaching the model is the defect
+        `fill_system_prompt` exists for — one of the four production rows uses it."""
+        template = _resolved_with_persona("Body.", "You roleplay characters from {simulation_name}.")
+        with patch.object(chat_service, "_build_mood_context", AsyncMock(return_value="")):
+            messages = await chat_service._build_generation_context(
+                agent={"id": str(uuid4()), "name": "Registrar"},
+                simulation={"name": "Atrament"},
+                locale="en",
+                prompt_template=template,
+                history_messages=[],
+            )
+        system = messages[0]["content"]
+        assert "{simulation_name}" not in system
+        assert "Atrament" in system
+
+    @pytest.mark.asyncio
+    async def test_a_template_without_a_persona_is_unchanged(self, chat_service):
+        """The platform rows carry none; those 37 worlds must see no difference."""
+        template = _resolved_with_persona("Speak as {agent_name}.", None)
+        with patch.object(chat_service, "_build_mood_context", AsyncMock(return_value="")):
+            messages = await chat_service._build_generation_context(
+                agent={"id": str(uuid4()), "name": "Registrar"},
+                simulation={"name": "Atrament"},
+                locale="en",
+                prompt_template=template,
+                history_messages=[],
+            )
+        system = messages[0]["content"]
+        assert system.startswith("Speak as"), "no persona means no leading blank lines either"

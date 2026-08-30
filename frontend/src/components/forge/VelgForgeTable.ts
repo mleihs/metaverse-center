@@ -1236,6 +1236,34 @@ export class VelgForgeTable extends LitElement {
     this._generateChunk(type);
   }
 
+  /**
+   * Bring a department's result into view once it exists.
+   *
+   * Finding 21: after each of the three departments the result appears well
+   * below the fold -- zones and streets, then the operative cadre, then the
+   * structures. The card flipped to "done" and the page stayed where it was,
+   * so manual scrolling was needed after EVERY department, on every run.
+   *
+   * Three things keep this from becoming the other kind of annoyance:
+   * it only fires when the generation actually produced something (never on an
+   * error, never on a short delivery, where the toast is the thing to read);
+   * it does nothing when the section is already on screen, so a user who
+   * scrolled there themselves is not yanked around; and it honours
+   * prefers-reduced-motion by jumping instead of gliding.
+   */
+  private async _revealSection(type: 'agents' | 'buildings' | 'geography') {
+    await this.updateComplete;
+    const section = this.renderRoot.querySelector(`.section--${type}`);
+    if (!(section instanceof HTMLElement)) return;
+
+    const box = section.getBoundingClientRect();
+    const alreadyVisible = box.top >= 0 && box.top < window.innerHeight * 0.6;
+    if (alreadyVisible) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    section.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  }
+
   private async _generateChunk(type: 'agents' | 'buildings' | 'geography') {
     this._generatingChunk = type;
     await forgeStateManager.generateChunk(type);
@@ -1259,6 +1287,7 @@ export class VelgForgeTable extends LitElement {
         ? msg('Signal recovered – blueprints retrieved from Bureau archives')
         : msg('Blueprint expanded successfully.');
       VelgToast.success(toastMsg);
+      void this._revealSection(type);
     }
   }
 
