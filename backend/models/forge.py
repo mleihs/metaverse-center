@@ -815,6 +815,13 @@ class DarkroomPassResponse(BaseModel):
     regen_budget: int
 
 
+class MissingImagesResponse(BaseModel):
+    """Result of the repair run that fills only the images an earlier run missed."""
+
+    queued: int
+    message: str
+
+
 class DarkroomRegenResponse(BaseModel):
     """Response from darkroom image regeneration."""
 

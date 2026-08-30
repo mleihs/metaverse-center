@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections.abc import Awaitable, Callable
 from uuid import UUID
 
 import httpx
@@ -912,6 +913,117 @@ class ForgeOrchestratorService:
 
         return theme_data
 
+    # ── One image, with the retry the user asked for ─────────────────
+    #
+    # The four image loops below (banner, agent, building, lore) carried four
+    # byte-similar try/except blocks that counted a failure, wrote it to Sentry,
+    # and moved on. Measured on production: one building lost its image to
+    # `OpenRouterError: Empty content in response` — the TEXT model writing the
+    # image description returned nothing — and stayed image-less for good while
+    # the task logged success and the ceremony sat at 15/16 forever, because
+    # `get_forge_progress` computes `done` as `completed >= total` and 15 is not
+    # 16. Explicit instruction from the project owner: "there must be hardening
+    # that asks again. This MUST run through." (finding 8)
+    #
+    # WHAT IS RETRIED, AND WHAT IS NOT. A retry re-runs the whole chain:
+    # description (text model) -> Replicate (paid) -> upload -> DB write. So the
+    # split is not "transient vs. permanent" but "can a second attempt cost a
+    # second image":
+    #
+    #   retried      OpenRouterError, ModelAPIError, UnexpectedModelBehavior --
+    #                the description step, which runs BEFORE any Replicate call,
+    #                and is the failure that was actually measured.
+    #                ReplicateError -- the generation call itself failed, and a
+    #                failed generation is not billed as a delivered one.
+    #                httpx.HTTPError -- a network fault, usually the reference-
+    #                image download, which is also before the paid call.
+    #
+    #   not retried  KeyError, TypeError, ValueError -- programmer errors; a
+    #                second attempt fails identically and costs a second image.
+    #                OSError -- encoding/upload, i.e. AFTER the paid call.
+    #                ReplicateBillingError -- re-raised, aborts everything;
+    #                retrying with no credit only burns money.
+    _IMAGE_RETRY_BACKOFFS = (3, 8)  # seconds; the batch already runs ~15 min
+    _IMAGE_RETRYABLE = (OpenRouterError, ModelAPIError, UnexpectedModelBehavior, ReplicateError, httpx.HTTPError)
+    _IMAGE_FATAL = (KeyError, TypeError, ValueError, OSError)
+
+    @classmethod
+    async def _generate_one_image(
+        cls,
+        generate: Callable[[], Awaitable[object]],
+        *,
+        entity_type: str,
+        entity_name: str,
+        entity_id: str | None,
+        simulation_id: UUID,
+        failures: list[dict[str, str]],
+    ) -> bool:
+        """Run one image generation, retrying what is safe to retry.
+
+        Returns True on success. On final failure the entity is appended to
+        ``failures`` so the caller can put it in front of the user instead of
+        only in Sentry. ``ReplicateBillingError`` is re-raised untouched.
+        """
+        attempts = len(cls._IMAGE_RETRY_BACKOFFS) + 1
+        for attempt, backoff in enumerate((0, *cls._IMAGE_RETRY_BACKOFFS), start=1):
+            if backoff:
+                await asyncio.sleep(backoff)
+            try:
+                await generate()
+                if attempt > 1:
+                    logger.info(
+                        "Image generation recovered on retry",
+                        extra={"entity_type": entity_type, "entity_name": entity_name, "attempt": attempt},
+                    )
+                return True
+            except ReplicateBillingError:
+                raise
+            except cls._IMAGE_RETRYABLE as exc:
+                last = exc
+                logger.warning(
+                    "Image generation failed (attempt %d/%d), retrying",
+                    attempt,
+                    attempts,
+                    extra={"entity_type": entity_type, "entity_name": entity_name, "entity_id": entity_id},
+                )
+                sentry_sdk.add_breadcrumb(
+                    category="forge",
+                    message=f"image retry {attempt}/{attempts} for {entity_type} {entity_name}",
+                    level="warning",
+                )
+            except cls._IMAGE_FATAL as exc:
+                last = exc
+                break  # a second attempt fails identically and costs a second image
+
+        failures.append(
+            {
+                "entity_type": entity_type,
+                "entity_name": entity_name,
+                "entity_id": entity_id or "",
+                "error": f"{type(last).__name__}: {last}"[:200],
+            }
+        )
+        logger.exception(
+            "Image generation failed after %d attempt(s)",
+            attempts,
+            extra={"entity_type": entity_type, "entity_name": entity_name, "entity_id": entity_id},
+            exc_info=last,
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("forge_phase", "batch_images")
+            scope.set_tag("entity_type", entity_type)
+            scope.set_context(
+                "image_generation",
+                {
+                    "simulation_id": str(simulation_id),
+                    "entity_id": entity_id,
+                    "entity_name": entity_name,
+                    "attempts": attempts,
+                },
+            )
+            sentry_sdk.capture_exception(last)
+        return False
+
     @staticmethod
     async def _update_lore_progress(
         supabase: Client,
@@ -1177,6 +1289,42 @@ class ForgeOrchestratorService:
         # Signal transition to image generation phase
         await cls._update_lore_progress(supabase, simulation_id, {"phase": "images"})
 
+    @staticmethod
+    async def count_missing_images(supabase: Client, simulation_id: UUID) -> int:
+        """How many images the world is still missing.
+
+        The same four columns ``get_forge_progress`` counts and ``only_missing``
+        filters on, so the number the ceremony shows, the number this reports and
+        the set the repair run regenerates cannot drift apart.
+        """
+        agents = await (
+            supabase.table("agents")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .is_("portrait_image_url", "null")
+            .execute()
+        )
+        buildings = await (
+            supabase.table("buildings")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .is_("image_url", "null")
+            .execute()
+        )
+        lore = await (
+            supabase.table("simulation_lore")
+            .select("id", count="exact")
+            .eq("simulation_id", str(simulation_id))
+            .not_.is_("image_slug", "null")
+            .is_("image_generated_at", "null")
+            .execute()
+        )
+        sim = await maybe_single_data(
+            supabase.table("simulations").select("banner_url").eq("id", str(simulation_id)).maybe_single()
+        )
+        banner_missing = 0 if (sim or {}).get("banner_url") else 1
+        return banner_missing + (agents.count or 0) + (buildings.count or 0) + (lore.count or 0)
+
     @classmethod
     async def run_batch_generation(
         cls,
@@ -1186,6 +1334,7 @@ class ForgeOrchestratorService:
         anchor_data: dict | None = None,
         draft_data: dict | None = None,
         entity_types: set[str] | None = None,
+        only_missing: bool = False,
     ) -> None:
         """Background task: lore generation → image generation.
 
@@ -1195,6 +1344,14 @@ class ForgeOrchestratorService:
 
         If entity_types is provided, only regenerate those types
         (e.g. {"lore"}, {"agent", "building"}).
+
+        With ``only_missing`` the run skips every entity that already has an
+        image. That is what the repair action needs: after a partial run the user
+        is missing one image out of sixteen, and re-generating the other fifteen
+        would cost fifteen images to fix one. It is also why the filter belongs
+        here rather than in the caller — the same column that decides it,
+        ``portrait_image_url`` / ``image_url`` / ``banner_url`` /
+        ``image_generated_at``, is the one ``get_forge_progress`` already counts.
         """
         batch_id = f"batch-{simulation_id!s:.8}"
         structlog.contextvars.bind_contextvars(
@@ -1363,71 +1520,83 @@ class ForgeOrchestratorService:
         images_succeeded = 0
         images_failed = 0
         img_counter = 0
+        # What went wrong, per entity, so the ceremony can name it. Until now the
+        # only record of a failed image was a Sentry event: the user saw a bar
+        # stuck at 15/16 with no explanation and nothing to press. See finding 8.
+        image_failures: list[dict[str, str]] = []
 
         # Count total images for progress tracking
+        # `only_missing` narrows every query below by the same column the
+        # progress function counts, so what the ceremony calls missing and what
+        # this run regenerates are one definition, not two.
         img_total_parts: list[int] = []
-        if not _types or "banner" in _types:
+        skip_banner = only_missing and bool(sim_data.get("banner_url"))
+        if (not _types or "banner" in _types) and not skip_banner:
             img_total_parts.append(1)
         if not _types or "agent" in _types:
-            agent_count_resp = (
-                await supabase.table("agents")
+            agent_count_query = (
+                supabase.table("agents")
                 .select("id", count="exact")
                 .eq(
                     "simulation_id",
                     str(simulation_id),
                 )
-                .execute()
             )
+            if only_missing:
+                agent_count_query = agent_count_query.is_("portrait_image_url", "null")
+            agent_count_resp = await agent_count_query.execute()
             img_total_parts.append(agent_count_resp.count or 0)
         if not _types or "building" in _types:
-            bldg_count_resp = (
-                await supabase.table("buildings")
+            bldg_count_query = (
+                supabase.table("buildings")
                 .select("id", count="exact")
                 .eq(
                     "simulation_id",
                     str(simulation_id),
                 )
-                .execute()
             )
+            if only_missing:
+                bldg_count_query = bldg_count_query.is_("image_url", "null")
+            bldg_count_resp = await bldg_count_query.execute()
             img_total_parts.append(bldg_count_resp.count or 0)
         if not _types or "lore" in _types:
-            lore_count_resp = (
-                await supabase.table("simulation_lore")
+            lore_count_query = (
+                supabase.table("simulation_lore")
                 .select("id", count="exact")
                 .eq(
                     "simulation_id",
                     str(simulation_id),
                 )
                 .not_.is_("image_slug", "null")
-                .execute()
             )
+            if only_missing:
+                lore_count_query = lore_count_query.is_("image_generated_at", "null")
+            lore_count_resp = await lore_count_query.execute()
             img_total_parts.append(lore_count_resp.count or 0)
         img_total = sum(img_total_parts)
 
         try:
-            if not _types or "banner" in _types:
+            if (not _types or "banner" in _types) and not skip_banner:
                 img_counter += 1
                 logger.info(
                     "Generating image",
                     extra={"entity_type": "banner", "progress": f"{img_counter}/{img_total}"},
                 )
-                try:
-                    await image_service.generate_banner_image(
+                if await cls._generate_one_image(
+                    lambda: image_service.generate_banner_image(
                         sim_name=sim_data.get("name", "Unknown"),
                         sim_description=sim_data.get("description", ""),
                         anchor_data=anchor_data,
-                    )
+                    ),
+                    entity_type="banner",
+                    entity_name=sim_data.get("name", "Unknown"),
+                    entity_id=None,
+                    simulation_id=simulation_id,
+                    failures=image_failures,
+                ):
                     images_succeeded += 1
-                except ReplicateBillingError:
-                    raise
-                except (httpx.HTTPError, ReplicateError, OpenRouterError, KeyError, TypeError, ValueError, OSError):
+                else:
                     images_failed += 1
-                    logger.exception("Banner generation failed")
-                    with sentry_sdk.push_scope() as scope:
-                        scope.set_tag("forge_phase", "batch_images")
-                        scope.set_tag("entity_type", "banner")
-                        scope.set_context("image_generation", {"simulation_id": str(simulation_id)})
-                        sentry_sdk.capture_exception()
 
                 # ── Generate terminal boot art from the banner image ──
                 try:
@@ -1484,12 +1653,14 @@ class ForgeOrchestratorService:
 
             # 2. Agent portraits
             if not _types or "agent" in _types:
-                agents = await (
+                agents_query = (
                     supabase.table("agents")
                     .select("id, name, character, background")
                     .eq("simulation_id", str(simulation_id))
-                    .execute()
                 )
+                if only_missing:
+                    agents_query = agents_query.is_("portrait_image_url", "null")
+                agents = await agents_query.execute()
                 for agent_row in extract_list(agents):
                     img_counter += 1
                     logger.info(
@@ -1500,37 +1671,28 @@ class ForgeOrchestratorService:
                             "entity_name": agent_row["name"],
                         },
                     )
-                    try:
-                        await image_service.generate_agent_portrait(
-                            agent_id=agent_row["id"],
-                            agent_name=agent_row["name"],
-                            agent_data={"character": agent_row["character"], "background": agent_row["background"]},
-                        )
+                    if await cls._generate_one_image(
+                        # `row=agent_row` binds the current row: a bare closure
+                        # over the loop variable would generate the last agent
+                        # every time the retry fires.
+                        lambda row=agent_row: image_service.generate_agent_portrait(
+                            agent_id=row["id"],
+                            agent_name=row["name"],
+                            agent_data={"character": row["character"], "background": row["background"]},
+                        ),
+                        entity_type="agent",
+                        entity_name=agent_row["name"],
+                        entity_id=str(agent_row["id"]),
+                        simulation_id=simulation_id,
+                        failures=image_failures,
+                    ):
                         images_succeeded += 1
-                    except ReplicateBillingError:
-                        raise
-                    except (httpx.HTTPError, ReplicateError, OpenRouterError, KeyError, TypeError, ValueError, OSError):
+                    else:
                         images_failed += 1
-                        logger.exception(
-                            "Batch image gen failed for agent",
-                            extra={"entity_type": "agent", "entity_id": agent_row["id"]},
-                        )
-                        with sentry_sdk.push_scope() as scope:
-                            scope.set_tag("forge_phase", "batch_images")
-                            scope.set_tag("entity_type", "agent")
-                            scope.set_context(
-                                "image_generation",
-                                {
-                                    "simulation_id": str(simulation_id),
-                                    "entity_id": str(agent_row["id"]),
-                                    "entity_name": agent_row["name"],
-                                },
-                            )
-                            sentry_sdk.capture_exception()
 
             # 3. Building images
             if not _types or "building" in _types:
-                buildings = await (
+                buildings_query = (
                     supabase.table("buildings")
                     .select(
                         "id, name, description, building_type, building_condition,"
@@ -1538,8 +1700,10 @@ class ForgeOrchestratorService:
                         " population_capacity, zones(name)"
                     )
                     .eq("simulation_id", str(simulation_id))
-                    .execute()
                 )
+                if only_missing:
+                    buildings_query = buildings_query.is_("image_url", "null")
+                buildings = await buildings_query.execute()
                 for building in extract_list(buildings):
                     img_counter += 1
                     logger.info(
@@ -1551,54 +1715,44 @@ class ForgeOrchestratorService:
                         },
                     )
                     zone_data = building.get("zones") or {}
-                    try:
-                        await image_service.generate_building_image(
-                            building_id=building["id"],
-                            building_name=building["name"],
-                            building_type=building["building_type"],
+                    if await cls._generate_one_image(
+                        lambda row=building, zone=zone_data: image_service.generate_building_image(
+                            building_id=row["id"],
+                            building_name=row["name"],
+                            building_type=row["building_type"],
                             building_data={
-                                "description": building.get("description", ""),
-                                "building_condition": building.get("building_condition", ""),
-                                "building_style": building.get("style", ""),
-                                "special_type": building.get("special_type", ""),
-                                "construction_year": building.get("construction_year", ""),
-                                "population_capacity": building.get("population_capacity", ""),
-                                "zone_name": zone_data.get("name", ""),
+                                "description": row.get("description", ""),
+                                "building_condition": row.get("building_condition", ""),
+                                "building_style": row.get("style", ""),
+                                "special_type": row.get("special_type", ""),
+                                "construction_year": row.get("construction_year", ""),
+                                "population_capacity": row.get("population_capacity", ""),
+                                "zone_name": zone.get("name", ""),
                             },
-                        )
+                        ),
+                        entity_type="building",
+                        entity_name=building["name"],
+                        entity_id=str(building["id"]),
+                        simulation_id=simulation_id,
+                        failures=image_failures,
+                    ):
                         images_succeeded += 1
-                    except ReplicateBillingError:
-                        raise
-                    except (httpx.HTTPError, ReplicateError, OpenRouterError, KeyError, TypeError, ValueError, OSError):
+                    else:
                         images_failed += 1
-                        logger.exception(
-                            "Batch image gen failed for building",
-                            extra={"entity_type": "building", "entity_id": building["id"]},
-                        )
-                        with sentry_sdk.push_scope() as scope:
-                            scope.set_tag("forge_phase", "batch_images")
-                            scope.set_tag("entity_type", "building")
-                            scope.set_context(
-                                "image_generation",
-                                {
-                                    "simulation_id": str(simulation_id),
-                                    "entity_id": str(building["id"]),
-                                    "entity_name": building["name"],
-                                },
-                            )
-                            sentry_sdk.capture_exception()
 
             # 4. Lore images (sections with image_slug)
             if not _types or "lore" in _types:
                 sim_slug = sim_data.get("slug", str(simulation_id))
-                lore_sections = await (
+                lore_query = (
                     supabase.table("simulation_lore")
                     .select("id, title, body, image_slug, image_caption")
                     .eq("simulation_id", str(simulation_id))
                     .not_.is_("image_slug", "null")
                     .order("sort_order")
-                    .execute()
                 )
+                if only_missing:
+                    lore_query = lore_query.is_("image_generated_at", "null")
+                lore_sections = await lore_query.execute()
                 for section in extract_list(lore_sections):
                     img_counter += 1
                     logger.info(
@@ -1609,36 +1763,24 @@ class ForgeOrchestratorService:
                             "entity_name": section["title"],
                         },
                     )
-                    try:
-                        await image_service.generate_lore_image(
-                            section_title=section["title"],
-                            section_body=section["body"],
-                            image_slug=section["image_slug"],
+                    if await cls._generate_one_image(
+                        lambda row=section: image_service.generate_lore_image(
+                            section_title=row["title"],
+                            section_body=row["body"],
+                            image_slug=row["image_slug"],
                             sim_slug=sim_slug,
-                            section_id=section["id"],
-                            image_caption=section.get("image_caption"),
-                        )
+                            section_id=row["id"],
+                            image_caption=row.get("image_caption"),
+                        ),
+                        entity_type="lore",
+                        entity_name=section["title"],
+                        entity_id=str(section["id"]),
+                        simulation_id=simulation_id,
+                        failures=image_failures,
+                    ):
                         images_succeeded += 1
-                    except ReplicateBillingError:
-                        raise
-                    except (httpx.HTTPError, ReplicateError, KeyError, TypeError, ValueError, OSError):
+                    else:
                         images_failed += 1
-                        logger.exception(
-                            "Lore image gen failed",
-                            extra={"entity_type": "lore_section", "entity_id": section["id"]},
-                        )
-                        with sentry_sdk.push_scope() as scope:
-                            scope.set_tag("forge_phase", "batch_images")
-                            scope.set_tag("entity_type", "lore")
-                            scope.set_context(
-                                "image_generation",
-                                {
-                                    "simulation_id": str(simulation_id),
-                                    "entity_id": str(section["id"]),
-                                    "entity_name": section["title"],
-                                },
-                            )
-                            sentry_sdk.capture_exception()
 
         except ReplicateBillingError:
             logger.error(
@@ -1678,8 +1820,24 @@ class ForgeOrchestratorService:
                     level="error" if images_succeeded == 0 else "warning",
                 )
 
-        # Clear lore progress — ceremony no longer needs it
-        await cls._update_lore_progress(supabase, simulation_id, None)
+        # Hand the outcome to the ceremony. Clearing `lore_progress` was right
+        # only when everything succeeded: `get_forge_progress` computes `done` as
+        # `completed >= total`, so after a partial run the bar sits at 15/16
+        # forever with nothing said and nothing to press. When images are missing
+        # the field now carries WHICH ones, so the surface can name them and
+        # offer the repair run. See finding 8.
+        await cls._update_lore_progress(
+            supabase,
+            simulation_id,
+            {
+                "phase": "images_incomplete",
+                "failed": images_failed,
+                "total": img_total,
+                "entities": image_failures[:20],
+            }
+            if image_failures
+            else None,
+        )
 
         logger.info(
             "Batch generation DONE",

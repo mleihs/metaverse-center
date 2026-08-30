@@ -13,6 +13,7 @@ from backend.dependencies import (
     get_current_user,
     get_effective_supabase,
     require_architect,
+    require_owner_or_platform_admin,
     require_platform_admin,
 )
 from backend.middleware.rate_limit import RATE_LIMIT_AI_ENTITY, RATE_LIMIT_AI_GENERATION, RATE_LIMIT_STANDARD, limiter
@@ -34,6 +35,7 @@ from backend.models.forge import (
     ForgeThemeOutput,
     IgnitionResponse,
     ImageRegenRequest,
+    MissingImagesResponse,
     PurchaseConfirmation,
     PurchaseReceipt,
     PurchaseRequest,
@@ -525,6 +527,62 @@ async def purchase_darkroom_pass(
     )
 
     return SuccessResponse(data=DarkroomPassResponse(purchase_id=purchase_id, regen_budget=10))
+
+
+@router.post("/simulations/{simulation_id}/generate-missing-images")
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def generate_missing_images(
+    request: Request,
+    simulation_id: UUID,
+    background_tasks: BackgroundTasks,
+    auth: Annotated[tuple[CurrentUser, bool], Depends(require_owner_or_platform_admin())],
+    supabase=Depends(get_effective_supabase),
+    admin_supabase=Depends(get_admin_supabase),
+) -> SuccessResponse[MissingImagesResponse]:
+    """Generate the images an earlier run failed to produce, and nothing else.
+
+    The batch run retries each image three times before giving up (finding 8),
+    so reaching this endpoint means a world came out of the forge incomplete
+    anyway. It regenerates ONLY the entities that still have no image: after a
+    partial run the user is typically short one image out of sixteen, and
+    re-running everything would spend fifteen images to fix one.
+
+    Free, and gated by ownership rather than by tokens: the entity was already
+    paid for once, and the image is missing because the platform failed, not the
+    user. Calling it when nothing is missing is a no-op that says so.
+    """
+    user, _is_admin = auth
+    missing = await _orchestrator_service.count_missing_images(admin_supabase, simulation_id)
+    if missing == 0:
+        return SuccessResponse(
+            data=MissingImagesResponse(
+                queued=0,
+                message="Every image is already in place.",
+            )
+        )
+
+    background_tasks.add_task(
+        safe_background(_orchestrator_service.run_batch_generation),
+        admin_supabase,
+        simulation_id,
+        user.id,
+        only_missing=True,
+    )
+    await AuditService.safe_log(
+        supabase,
+        str(simulation_id),
+        user.id,
+        "simulation",
+        str(simulation_id),
+        "generate_missing_images",
+        {"missing": missing},
+    )
+    return SuccessResponse(
+        data=MissingImagesResponse(
+            queued=missing,
+            message=f"Generating {missing} missing image(s).",
+        )
+    )
 
 
 @router.post(

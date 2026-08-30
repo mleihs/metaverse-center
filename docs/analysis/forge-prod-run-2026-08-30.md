@@ -39,7 +39,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 5 | Generated prompt templates invent variables no code supplies (8 across 4 templates) | **Critical** | **Fixed** (`36fe1b8b`, W1) |
 | 6 | Generated prompt templates drop the platform template's compositional guardrails | **Critical** | **Fixed** (`36fe1b8b`, W1) |
 | 7 | No floor under content quality — a `"..."`-filled entity validates clean | **Critical** | **Fixed** (W2) |
-| 8 | No retry on image failure; one empty completion = permanently image-less building | High | Open |
+| 8 | No retry on image failure; one empty completion = permanently image-less building | High | **Fixed** (W3) |
 | 9 | Partial success reported as success (departments, materialization) | High | Open |
 | 10 | List length is never enforced — the model may short-deliver silently | High | **Fixed** (W2) |
 | 11 | `purpose=` set at zero call sites — `model_research` is dead configuration | High | Open |
@@ -748,9 +748,45 @@ never to the user, never into a second attempt. The building is permanently imag
 
 **User requirement, verbatim: "there must be hardening that asks again. This MUST run through."**
 
-**Fix.** Per-image retry with backoff (the cause was transient), the partial failure carried in
-the result rather than only in Sentry, and a user-facing "generate the missing images" action.
-`ReplicateBillingError` stays exempt — retrying with no credit burns money.
+**Fixed in W3, in the three halves the requirement actually has.**
+
+**1. The retry, and what it deliberately does not retry.** The four image loops carried four
+byte-similar `try`/`except` blocks; they are now one helper, `_generate_one_image`, with three
+attempts and 3 s / 8 s backoff. The split is not "transient versus permanent" — a retry re-runs the
+whole chain, description (text model) → Replicate (**paid**) → upload → DB write, so the question is
+whether a second attempt can cost a second image:
+
+| retried | why |
+|:--|:--|
+| `OpenRouterError`, `ModelAPIError`, `UnexpectedModelBehavior` | the description step, which runs *before* any Replicate call — and is the failure that was actually measured |
+| `ReplicateError` | the generation call itself failed; a failed generation is not billed as a delivered one |
+| `httpx.HTTPError` | a network fault, usually the reference-image download, also before the paid call |
+
+| not retried | why |
+|:--|:--|
+| `KeyError`, `TypeError`, `ValueError` | programmer errors: a second attempt fails identically and costs a second image |
+| `OSError` | encoding/upload, i.e. *after* the paid call |
+| `ReplicateBillingError` | re-raised, aborts everything; retrying with no credit only burns money |
+
+**2. The failure reaches the ceremony.** `simulations.lore_progress` was cleared to `NULL` at the
+end of every run. That was right only when everything succeeded: `get_forge_progress` computes
+`done` as `completed >= total`, so after a partial run the bar sits at 15/16 forever, with nothing
+said and nothing to press. It now carries `{"phase": "images_incomplete", "failed", "total",
+"entities": [...]}` — which entity, of which type, with which error — so the surface can name them.
+
+**3. The repair action.** `POST /api/v1/forge/simulations/{id}/generate-missing-images`, gated by
+`require_owner_or_platform_admin` and free: the entity was paid for once already, and the image is
+missing because the platform failed. It regenerates **only** entities that still have no image
+(`only_missing=True`), because after a partial run the user is typically short one image out of
+sixteen and re-running everything would spend fifteen to fix one. The filter uses the same four
+columns `get_forge_progress` counts — `banner_url`, `portrait_image_url`, `image_url`,
+`image_generated_at` — so what the ceremony calls missing, what the endpoint reports and what the run
+regenerates are one definition rather than three. Calling it with nothing missing is a no-op that
+says so.
+
+`backend/tests/unit/test_image_retry.py` pins the split rather than the retry count: twelve tests,
+including the measured `OpenRouterError: Empty content in response` recovering on the second attempt,
+and every non-retryable class asserting exactly one call.
 
 ### 9. Partial success reported as success — High
 
