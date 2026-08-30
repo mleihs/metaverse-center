@@ -32,7 +32,7 @@ from backend.services.embassy_prompts import (
 )
 from backend.services.external.openrouter import (
     BudgetContext,
-    ModelUnavailableError,
+    OpenRouterError,
     OpenRouterService,
     RateLimitError,
 )
@@ -1174,7 +1174,13 @@ class GenerationService:
                 return result
             except RateLimitError:
                 continue  # try next backoff
-            except ModelUnavailableError:
+            except OpenRouterError:
+                # The base class, deliberately: it is what the client raises for
+                # an API error, a failed connection and exhausted retries. This
+                # handler used to list two of its three subclasses and therefore
+                # let the common failures through, straight out of the ladder
+                # that exists to survive them (E11). RateLimitError is caught
+                # above, so this is everything else.
                 break  # skip to layer 3
 
         # ── Layer 2: platform fallback model ────────────────────────
@@ -1207,8 +1213,8 @@ class GenerationService:
                 usage=self._openrouter.last_usage,
             )
             return result
-        except (RateLimitError, ModelUnavailableError):
-            pass  # fall through to layer 3
+        except OpenRouterError:
+            pass  # any OpenRouter failure — fall through to layer 3
 
         # ── Layer 3: platform default model (last resort) ──────────
         logger.warning(

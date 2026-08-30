@@ -16,7 +16,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.platform_model_config import get_platform_model
 from backend.services.resonance_service import ResonanceService
 from backend.services.scanning import classifier, deduplicator, pre_filter
@@ -480,7 +480,7 @@ class ScannerService(BaseSchedulerMixin):
                 budget=budget,
             )
             return dispatch.strip()
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.warning("Bureau dispatch generation failed for: %s", result.title[:80])
             return None
 

@@ -49,6 +49,7 @@ from backend.services.epoch_service import EpochService
 from backend.services.game_instance_service import GameInstanceService
 from backend.services.scoring_service import ScoringService
 from backend.services.sitrep_service import SitrepService
+from backend.utils.ai_guard import ai_generation_guard
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -293,13 +294,25 @@ async def get_cycle_sitrep(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
     simulation_id: Annotated[UUID | None, Query()] = None,
 ) -> SuccessResponse[SitrepResponse]:
-    """Generate AI tactical situation report for a cycle (War Room)."""
-    data = await SitrepService.generate_sitrep(
-        supabase,
-        str(epoch_id),
-        cycle_number,
-        simulation_id=str(simulation_id) if simulation_id else None,
-    )
+    """Generate AI tactical situation report for a cycle (War Room).
+
+    The generation is guarded like every other model-backed endpoint. It was
+    not: neither the service nor this router caught anything, so an OpenRouter
+    outage surfaced as a bare 500 on the War Room (E13). A 500 says the request
+    was wrong; a model outage is worth retrying in a minute, which is what 503
+    says.
+    """
+    async with ai_generation_guard(
+        "epoch_sitrep",
+        fail_detail="Failed to generate situation report.",
+        context={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
+    ):
+        data = await SitrepService.generate_sitrep(
+            supabase,
+            str(epoch_id),
+            cycle_number,
+            simulation_id=str(simulation_id) if simulation_id else None,
+        )
     return SuccessResponse(data=data)
 
 

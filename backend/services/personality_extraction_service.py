@@ -23,7 +23,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.model_resolver import ModelResolver
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -165,7 +165,7 @@ class PersonalityExtractionService:
                 max_tokens=512,
                 budget=budget,
             )
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.exception("LLM call failed for personality extraction")
             sentry_sdk.capture_exception()
             return cls._default_profile()

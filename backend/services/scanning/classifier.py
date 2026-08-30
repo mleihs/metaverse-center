@@ -9,7 +9,7 @@ from typing import Any
 
 import httpx
 
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.scanning.base_adapter import ScanResult
 
 logger = logging.getLogger(__name__)
@@ -172,7 +172,7 @@ async def classify_batch(
 
         return structured + classified
 
-    except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+    except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError, OpenRouterError):
         logger.exception("LLM batch classification failed")
         # Return all results unmodified on failure
         return structured + [r for _, r in unstructured]

@@ -47,10 +47,33 @@ import ast
 import pathlib
 import sys
 
-# A handler covers a model error if it names one of these. `MODEL_CALL_ERRORS` is
-# the tuple in `backend/services/ai_utils.py`; the rest are the superclasses that
-# genuinely include `ModelAPIError`.
+# A handler covers a `run_ai` error if it names one of these. `MODEL_CALL_ERRORS`
+# is the tuple in `backend/services/ai_utils.py`; the rest are the superclasses
+# that genuinely include `ModelAPIError`.
 COVERING = {"MODEL_CALL_ERRORS", "ModelAPIError", "AgentRunError", "RuntimeError", "Exception"}
+
+# The second family of model calls: `OpenRouterService.generate*`. Its error
+# hierarchy is its own and does not overlap with pydantic-ai's at all:
+#
+#   OpenRouterError            <- raised for "API error 500", "Connection failed
+#   ├── RateLimitError            after N attempts" and "All retry attempts
+#   ├── ModelUnavailableError     exhausted" -- i.e. the COMMON failures
+#   └── CreditExhaustedError
+#
+# Only the BASE class (or `Exception`) covers it. A handler listing
+# `RateLimitError, ModelUnavailableError` looks careful and misses every
+# connection failure -- the same parent/child confusion this gate was written
+# for on the pydantic-ai side.
+OPENROUTER_COVERING = {"OpenRouterError", "Exception"}
+
+# Method names on OpenRouterService that reach the network.
+OPENROUTER_METHODS = {
+    "generate",
+    "generate_with_system",
+    "generate_stream",
+    "generate_image",
+    "generate_json",
+}
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -105,17 +128,25 @@ def main() -> int:
                 parents[child] = node
 
         for node in ast.walk(tree):
-            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "run_ai"):
+            if not isinstance(node, ast.Call):
                 continue
+
+            if isinstance(node.func, ast.Name) and node.func.id == "run_ai":
+                covering, kind = COVERING, "run_ai"
+            elif isinstance(node.func, ast.Attribute) and node.func.attr in OPENROUTER_METHODS:
+                covering, kind = OPENROUTER_COVERING, f"OpenRouter.{node.func.attr}"
+            else:
+                continue
+
             block = enclosing_try(node, parents)
             if block is None:
                 continue  # propagates on purpose — see the module docstring
             checked += 1
             names = [n for handler in block.handlers for n in handler_names(handler)]
-            if "<bare>" in names or COVERING.intersection(names):
+            if "<bare>" in names or covering.intersection(names):
                 continue
             rel = path.relative_to(ROOT)
-            violations.append(f"  {rel}:{node.lineno}  catches only: {', '.join(names)}")
+            violations.append(f"  {rel}:{node.lineno}  [{kind}] catches only: {', '.join(names)}")
 
     if violations:
         print("FAIL: a try around a model call cannot catch a model error.")
@@ -127,11 +158,16 @@ def main() -> int:
         print("them is an httpx.HTTPError, KeyError, TypeError or ValueError, and")
         print("`except ModelHTTPError` does not cover a timeout either.")
         print("")
-        print("Fix: add `*MODEL_CALL_ERRORS` from backend/services/ai_utils.py to the")
-        print("except tuple, keeping the non-model classes it already lists.")
+        print("An OpenRouterService.generate* call raises OpenRouterError for an API")
+        print("error, a failed connection and exhausted retries. Its three subclasses")
+        print("cover none of those, so a handler must name the BASE class.")
+        print("")
+        print("Fix: add `*MODEL_CALL_ERRORS` from backend/services/ai_utils.py (run_ai)")
+        print("or `OpenRouterError` (OpenRouter) to the except tuple, keeping the")
+        print("non-model classes it already lists.")
         return 1
 
-    print(f"PASS: all {checked} guarded run_ai call sites catch model errors.")
+    print(f"PASS: all {checked} guarded model call sites catch model errors.")
     return 0
 
 
