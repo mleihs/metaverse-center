@@ -1430,24 +1430,39 @@ class HeartbeatService(BaseSchedulerMixin):
                     )
                 )
 
-        # 9f: Autonomous event generation (Tier 3 LLM, requires BYOK key)
-        auto_events: list[dict] = []
-        if owner_has_key:
-            llm_budget = int(overrides.get("autonomy_llm_budget_per_tick", 5))
-            tick_ctx = {
-                "breakdowns": mood_summary.get("breakdowns", []),
-                "relationship_events": opinion_summary.get("relationship_events", []),
-                "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
-            }
-            auto_events = await AutonomousEventService.check_and_generate(
-                admin,
-                sim_id,
-                tick_ctx,
-                llm_budget=llm_budget,
-                openrouter_api_key=byok_key,
-            )
+        # 9f: Autonomous event generation.
+        #
+        # This used to run only `if owner_has_key`, and nobody has a key — so the
+        # whole phase was off on every world (finding §2.2). What was switched
+        # off with it was not just the prose: autonomous events are what feeds
+        # zone pressure, catharsis, building damage and relationships-from-
+        # opinions. A cost decision about NARRATIVE silently disabled the
+        # MECHANICS that hang off it.
+        #
+        # `AutonomousEventService` has carried a template path all along: at
+        # `llm_budget=0` the check `llm_calls_used >= llm_budget` is true on the
+        # first event, so `_create_event_template` handles every one of them and
+        # no model is ever called. The texts are written and waiting.
+        #
+        # The budget is DERIVED from the key rather than configured next to it,
+        # so the two cannot drift apart: no key means zero calls by construction,
+        # not by someone remembering to set a number.
+        llm_budget = int(overrides.get("autonomy_llm_budget_per_tick", 5)) if owner_has_key else 0
+        tick_ctx = {
+            "breakdowns": mood_summary.get("breakdowns", []),
+            "relationship_events": opinion_summary.get("relationship_events", []),
+            "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
+        }
+        auto_events = await AutonomousEventService.check_and_generate(
+            admin,
+            sim_id,
+            tick_ctx,
+            llm_budget=llm_budget,
+            openrouter_api_key=byok_key if owner_has_key else None,
+        )
         stats["autonomous_events"] = len(auto_events)
         stats["byok_available"] = owner_has_key
+        stats["autonomous_events_llm_budget"] = llm_budget
 
         for ae in auto_events:
             entries.append(
