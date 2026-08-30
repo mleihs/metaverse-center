@@ -233,7 +233,9 @@ class TestEmailServiceSendRouting:
             result = await EmailService.send("to@example.com", "Test", "<p>Hi</p>")
 
         assert result is True
-        m.assert_awaited_once_with("to@example.com", "Test", "<p>Hi</p>")
+        m.assert_awaited_once_with(
+            "to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={}
+        )
         m_smtp.assert_not_called()
 
     @pytest.mark.asyncio
@@ -269,7 +271,9 @@ class TestEmailServiceSendRouting:
             result = await EmailService.send("to@example.com", "Test", "<p>Hi</p>")
 
         assert result is True
-        mock_sync.assert_called_once_with("to@example.com", "Test", "<p>Hi</p>")
+        mock_sync.assert_called_once_with(
+            "to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={}
+        )
 
     @pytest.mark.asyncio
     async def test_send_returns_false_when_no_transport(self):

@@ -120,6 +120,7 @@ from backend.routers import (
     social_trends,
     style_references,
     taxonomies,
+    unsubscribe,
     users,
     webhooks,
     world_map,
@@ -370,6 +371,7 @@ app.include_router(admin_content_packs.router)
 app.include_router(admin_ops.router)
 app.include_router(dungeon_content_admin.router)
 app.include_router(users.router)
+app.include_router(unsubscribe.router)
 app.include_router(simulations.router)
 app.include_router(agents.router)
 app.include_router(buildings.router)

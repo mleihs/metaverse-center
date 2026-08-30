@@ -25,6 +25,7 @@ from backend.services.email_templates import (
 from backend.services.scoring_service import ScoringService
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
+from backend.utils.unsubscribe_tokens import unsubscribe_url
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -734,10 +735,15 @@ class CycleNotificationService:
                 briefing["simulation_name"] = recipient["simulation_name"]
 
                 email_locale = recipient.get("email_locale")
-                html_body = render_cycle_briefing(briefing, email_locale=email_locale)
+                opt_out = unsubscribe_url(recipient["user_id"], "cycle_resolved")
+                html_body = render_cycle_briefing(
+                    briefing, email_locale=email_locale, unsubscribe_url=opt_out
+                )
                 subject = f"CLASSIFIED // SITREP \u2014 {epoch_name} \u2014 Cycle {cycle_number}"
 
-                if await EmailService.send(recipient["email"], subject, html_body):
+                if await EmailService.send(
+                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                ):
                     sent_count += 1
 
                 # Rate limit: 200ms between sends
@@ -821,6 +827,7 @@ class CycleNotificationService:
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")
 
+                opt_out = unsubscribe_url(recipient["user_id"], "phase_changed")
                 html_body = render_phase_change(
                     epoch_name=epoch_name,
                     old_phase=old_phase,
@@ -830,9 +837,12 @@ class CycleNotificationService:
                     email_locale=email_locale,
                     accent_color=accent,
                     standing_data=standing,
+                    unsubscribe_url=opt_out,
                 )
 
-                if await EmailService.send(recipient["email"], subject, html_body):
+                if await EmailService.send(
+                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                ):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
             except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
@@ -891,6 +901,7 @@ class CycleNotificationService:
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")
 
+                opt_out = unsubscribe_url(recipient["user_id"], "epoch_completed")
                 html_body = render_epoch_completed(
                     epoch_name=epoch_name,
                     leaderboard=leaderboard,
@@ -900,10 +911,13 @@ class CycleNotificationService:
                     email_locale=email_locale,
                     accent_color=accent,
                     campaign_stats=campaign_stats,
+                    unsubscribe_url=opt_out,
                 )
                 subject = f"CLASSIFIED // OPERATION COMPLETE \u2014 {epoch_name}"
 
-                if await EmailService.send(recipient["email"], subject, html_body):
+                if await EmailService.send(
+                    recipient["email"], subject, html_body, unsubscribe_url=opt_out
+                ):
                     sent_count += 1
                 await asyncio.sleep(_SEND_DELAY_MS / 1000)
             except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):

@@ -13,6 +13,7 @@ import colorsys
 import logging
 from collections import Counter
 from functools import lru_cache
+from html.parser import HTMLParser
 
 from backend.config import settings
 
@@ -95,6 +96,7 @@ def render_epoch_invitation(
     email_locale: str | None = None,
     accent_color: str | None = None,
     cycle_hours: int = 8,
+    unsubscribe_url: str | None = None,
 ) -> str:
     """Render the epoch invitation email.
 
@@ -127,7 +129,7 @@ def render_epoch_invitation(
         )
         blocks.append(_cta_button(invite_url, _nt("inv_cta", lang), accent=accent))
 
-    blocks.append(_footer_row(email_locale))
+    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
 
     content = "\n".join(blocks)
     return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content, lang=langs[0])
@@ -338,6 +340,111 @@ _AMBER = "#f59e0b"
 _GREEN = "#4ade80"
 _RED = "#ef4444"
 _GRAY = "#666"
+
+
+# ── Plain-text alternative ────────────────────────────────────────────────
+
+
+class _TextExtractor(HTMLParser):
+    """Turn one of this module's mails into a readable plain-text part.
+
+    Written rather than pulled in: the input is not arbitrary web HTML but our
+    own table-based mail, so a small parser over the stdlib is both sufficient
+    and dependency-free.
+
+    What it has to get right:
+
+    * ``<style>`` and ``<head>`` content must not leak into the body — otherwise
+      the text part opens with a wall of CSS, which reads as spam to both the
+      filter and the human.
+    * A link is useless in plain text without its target, so ``<a href>`` prints
+      as ``text (url)``. A link whose text already IS the url prints once.
+    * The invisible preheader must be skipped: it exists to be shown *instead*
+      of body text in the inbox list, so repeating it at the top of the body is
+      a stutter.
+    * Table cells are the layout of every mail here; each row therefore ends a
+      line, or the whole message collapses into one paragraph.
+    """
+
+    # A blank line separates blocks; a table ROW is just the next line. Treating
+    # them alike doubles the height of every stat table in the mail.
+    _BLOCK = {"p", "div", "h1", "h2", "h3", "h4", "table", "hr"}
+    _LINE = {"tr", "br", "li"}
+    _SKIP = {"style", "script", "head", "title"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self._parts: list[str] = []
+        self._skip_depth = 0
+        self._hidden_depth = 0
+        self._href: str | None = None
+        self._link_text: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in self._SKIP:
+            self._skip_depth += 1
+            return
+        attr = dict(attrs)
+        if self._hidden_depth or "display:none" in (attr.get("style") or "").replace(" ", ""):
+            self._hidden_depth += 1
+            return
+        if tag == "a":
+            self._href = attr.get("href")
+            self._link_text = []
+        elif tag in self._BLOCK:
+            self._parts.append("\n")
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in self._SKIP:
+            self._skip_depth = max(0, self._skip_depth - 1)
+            return
+        if self._hidden_depth:
+            self._hidden_depth -= 1
+            return
+        if tag == "a":
+            text = "".join(self._link_text).strip()
+            href = self._href or ""
+            if href and href != text:
+                self._parts.append(f"{text} ({href})" if text else href)
+            else:
+                self._parts.append(text)
+            self._href = None
+            self._link_text = []
+        elif tag in self._BLOCK or tag in self._LINE:
+            self._parts.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth or self._hidden_depth:
+            return
+        if self._href is not None:
+            self._link_text.append(data)
+        else:
+            self._parts.append(data)
+
+    def text(self) -> str:
+        raw = "".join(self._parts)
+        # Collapse runs of spaces, then runs of blank lines — the table markup
+        # produces a great many of both.
+        lines = [" ".join(line.split()) for line in raw.split("\n")]
+        cleaned: list[str] = []
+        for line in lines:
+            if line or (cleaned and cleaned[-1]):
+                cleaned.append(line)
+        return "\n".join(cleaned).strip()
+
+
+def html_to_text(html: str) -> str:
+    """Plain-text alternative for an HTML mail.
+
+    Every message this module sends was HTML-only: ``MIMEMultipart("alternative")``
+    was constructed and then given a single part, and the Resend payload had no
+    ``text`` field at all. That costs deliverability with every major filter, and
+    leaves plain-text readers with nothing.
+    """
+    extractor = _TextExtractor()
+    extractor.feed(html)
+    extractor.close()
+    return extractor.text()
 
 
 # ── Contrast floor ────────────────────────────────────────────────────────
@@ -1611,7 +1718,9 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     return "\n".join(sections)
 
 
-def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str:
+def render_cycle_briefing(
+    data: dict, *, email_locale: str | None = None, unsubscribe_url: str | None = None
+) -> str:
     """Render the cycle briefing email.
 
     If email_locale is "en" or "de", renders single-language.
@@ -1688,7 +1797,7 @@ def render_cycle_briefing(data: dict, *, email_locale: str | None = None) -> str
         blocks.append(_render_briefing_block(data, lang, accent=accent))
         blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
 
-    blocks.append(_footer_row(email_locale))
+    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
 
     content = "\n".join(blocks)
     return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content, lang=langs[0])
@@ -1776,6 +1885,7 @@ def render_phase_change(
     email_locale: str | None = None,
     accent_color: str | None = None,
     standing_data: dict | None = None,
+    unsubscribe_url: str | None = None,
 ) -> str:
     """Render the phase change notification email.
 
@@ -1846,7 +1956,7 @@ def render_phase_change(
         )
         blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
 
-    blocks.append(_footer_row(email_locale))
+    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
 
     content = "\n".join(blocks)
     return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content, lang=langs[0])
@@ -2066,6 +2176,7 @@ def render_epoch_completed(
     email_locale: str | None = None,
     accent_color: str | None = None,
     campaign_stats: dict | None = None,
+    unsubscribe_url: str | None = None,
 ) -> str:
     """Render the epoch completed notification email.
 
@@ -2127,7 +2238,7 @@ def render_epoch_completed(
         )
         blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
 
-    blocks.append(_footer_row(email_locale))
+    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
 
     content = "\n".join(blocks)
     winner = leaderboard[0] if leaderboard else None
