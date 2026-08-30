@@ -11,18 +11,16 @@ from uuid import UUID
 import httpx
 import sentry_sdk
 import structlog
-from pydantic_ai import Agent
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
-    get_openrouter_model,
+    create_forge_agent,
     run_ai,
 )
 from backend.services.forge_feature_service import ForgeFeatureService
-from backend.services.platform_model_config import get_platform_model
 from backend.services.prompt_contracts import (
     PromptContract,
     SanitizeResult,
@@ -240,11 +238,7 @@ class ForgeThemeService:
             f"style do these buildings have? What is the dominant mood of this world?"
         )
 
-        agent = Agent(
-            get_openrouter_model(openrouter_key, model_id=get_platform_model("forge")),
-            system_prompt=THEME_ARCHITECT_PROMPT,
-            retries=3,
-        )
+        agent = create_forge_agent(THEME_ARCHITECT_PROMPT, api_key=openrouter_key, purpose="theme", retries=3)
 
         # Bureau Ops Deferral A.2 — global + purpose enforcement only.
         # `generate_theme` is called pre-materialization and has no
@@ -455,8 +449,11 @@ class ForgeThemeService:
         )
 
         try:
-            model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
-            agent = Agent(model, system_prompt="You are a visual style director. Be specific, bold, distinctive.")
+            agent = create_forge_agent(
+                "You are a visual style director. Be specific, bold, distinctive.",
+                api_key=openrouter_key,
+                purpose="style_refine",
+            )
             # Bureau Ops Deferral A.2 — simulation_id in scope; user_id is
             # not available on this path (Phase A orchestration, not a user
             # request). Enforce global + purpose + simulation budgets.
@@ -637,14 +634,14 @@ class ForgeThemeService:
         )
 
         try:
-            model = get_openrouter_model(openrouter_key, model_id=get_platform_model("forge"))
-            agent = Agent(
-                model,
-                system_prompt=(
+            agent = create_forge_agent(
+                (
                     "You are a worldbuilding narrative architect. Generate prompt templates "
                     "as valid JSON. Each template must be deeply specific to the world's "
                     "identity — never generic. Return ONLY the JSON object, no markdown."
                 ),
+                api_key=openrouter_key,
+                purpose="templates",
                 retries=3,
             )
             # Bureau Ops Deferral A.2 — simulation_id in scope; user_id not
@@ -814,8 +811,6 @@ class ForgeThemeService:
                         }
                     )
             else:
-                model = get_openrouter_model(or_key, model_id=get_platform_model("forge"))
-
                 for i in range(3):
                     variant_prompt = f"""Generate a COMPLETELY DIFFERENT visual theme variant (#{i + 1}/3)
 for the world "{sim["name"]}": {sim.get("description", "")}
@@ -829,7 +824,7 @@ font={current_theme.get("font_heading", "?")}
 Create a dramatically different interpretation. Different color palette, different mood,
 different typography. Same world, radically different visual identity."""
 
-                    agent = Agent(model, system_prompt=THEME_ARCHITECT_PROMPT)
+                    agent = create_forge_agent(THEME_ARCHITECT_PROMPT, api_key=or_key, purpose="theme")
                     # Bureau Ops Deferral A.2 — full 4-axis enforcement:
                     # admin_supabase, simulation_id, and user_id are all on
                     # this method's signature. Per-user budgets now gate

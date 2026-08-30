@@ -98,7 +98,7 @@ class ForgeEntityTranslationService:
             "with the name field matching the original exactly.\n\n" + "\n".join(sections)
         )
 
-        agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key)
+        agent = create_forge_agent(ENTITY_TRANSLATOR_PROMPT, api_key=openrouter_key, purpose="translation")
 
         # Bureau Ops Deferral A.2 — inherit global + purpose budget enforcement.
         # simulation_id is not threaded down to this static method today;

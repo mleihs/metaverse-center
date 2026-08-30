@@ -309,14 +309,45 @@ class ModelResolver:
             # Flux parameters
             ar_key = "portrait" if is_portrait else "building"
             default_ar = str(PLATFORM_DEFAULT_PARAMS.get(f"flux_aspect_ratio_{ar_key}", "3:4"))
-            guidance = min(
-                self._get_float(
-                    ai_settings,
-                    "image_guidance_scale",
-                    float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5)),
-                ),
-                10.0,  # Flux-dev hard max
-            )
+            flux_default = float(PLATFORM_DEFAULT_PARAMS.get("flux_guidance", 3.5))
+            stored_guidance = self._get_float(ai_settings, "image_guidance_scale", flux_default)
+            # `image_guidance_scale` is ONE settings key read by two branches
+            # whose scales differ: Stable Diffusion wants ~7.5, flux wants ~3.5.
+            # When the platform switched its default image model to flux, the
+            # per-simulation rows written in the SD era stayed behind in the SD
+            # scale, and nothing looked at them again. Measured on production
+            # 2026-08-30: of 41 worlds, 14 carry exactly 7.5 (the SD-era platform
+            # default, last written 2026-04-10) and ALL 14 resolve to a flux
+            # model — 11 of them because they have no `image_model_*` row at all
+            # and inherit `PLATFORM_DEFAULT_IMAGE_MODELS`, which is flux-2-pro.
+            # 16 more carry 5.0, which is no platform default in either family
+            # and therefore someone's choice; 11 carry the flux default.
+            #
+            # This does NOT clamp the value down. Picking a "sane flux ceiling"
+            # would be inventing a threshold no measurement here supports, and
+            # it would change how 30 worlds look without anyone deciding to. It
+            # reports the one value that is provably residue rather than a
+            # choice — a row equal to the SD default, resolving for flux — so
+            # the repair is a decision someone makes, with a number in front of
+            # them. See finding 14.
+            sd_default = float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5))
+            if stored_guidance == sd_default and "image_guidance_scale" in ai_settings:
+                logger.warning(
+                    "Simulation %s resolves a flux model with guidance %.1f — that is the "
+                    "Stable-Diffusion-era platform default, not a flux value (flux default %.1f). "
+                    "Most likely an un-migrated row from before the image model family switch.",
+                    self._simulation_id,
+                    stored_guidance,
+                    flux_default,
+                    extra={
+                        "simulation_id": str(self._simulation_id),
+                        "purpose": purpose,
+                        "model": sim_model,
+                        "guidance": stored_guidance,
+                        "flux_default": flux_default,
+                    },
+                )
+            guidance = min(stored_guidance, 10.0)  # Flux-dev hard max
             steps = self._get_int(
                 ai_settings,
                 "image_num_inference_steps",

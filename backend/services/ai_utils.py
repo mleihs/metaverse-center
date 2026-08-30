@@ -17,11 +17,17 @@ from pydantic_ai.models.openrouter import OpenRouterModel
 from pydantic_ai.providers.openrouter import OpenRouterProvider
 
 from backend.config import settings
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import (
     BudgetEnforcementService,
     BudgetExceededError,
 )
-from backend.services.platform_model_config import get_platform_model, get_platform_reasoning
+from backend.services.platform_model_config import (
+    get_platform_max_tokens,
+    get_platform_model,
+    get_platform_reasoning,
+    get_platform_timeout,
+)
 from backend.utils.errors import (
     bad_gateway,
     gateway_timeout,
@@ -29,44 +35,26 @@ from backend.utils.errors import (
     service_unavailable,
     too_many_requests,
 )
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-# ── Centralized max_tokens budgets for all Pydantic AI agent calls ───
-# Prevents the default 65536 from exhausting OpenRouter credits.
-PYDANTIC_AI_MAX_TOKENS: dict[str, int] = {
-    "research": 2048,  # ~3 sections of citations
-    "anchors": 3072,  # 3 compact structured objects (bilingual EN+DE)
-    "chunk": 12288,  # geography/agents/buildings structured output (bilingual EN+DE)
-    "lore": 8192,  # 5-7 section lore scroll
-    "lore_translation": 8192,  # mirrors lore output
-    "dossier": 16384,  # ~9000 words across 6 sections
-    "theme": 2048,  # flat structured object ~30 fields
-    "translation": 4096,  # entity translation batch
-    "dossier_evolution": 1024,  # short 100-250 word addenda
-    "entity": 3072,  # single agent/building (character + background + DE)
-    "ascii_art": 1024,  # terminal boot art (monospace scene)
-}
-
-# ── Centralized timeout budgets (seconds) ────────────────────────────
-# pydantic-ai passes model_settings["timeout"] to the OpenAI SDK's
-# create() call, which sets it as an httpx timeout.  When it fires,
-# openai.APITimeoutError is raised → caught by existing except blocks.
-# Values are 2-3x expected duration to avoid false timeouts.
-PYDANTIC_AI_TIMEOUTS: dict[str, int] = {
-    "research": 90,
-    "anchors": 120,
-    "chunk": 180,
-    "lore": 180,
-    "lore_translation": 180,
-    "dossier": 300,
-    "theme": 90,
-    "translation": 120,
-    "dossier_evolution": 60,
-    "entity": 120,
-    "ascii_art": 60,
-}
+# ── Budgets, timeouts and models per purpose ─────────────────────────
+#
+# All three used to live here as two dicts keyed by the `run_ai` purpose, while
+# the MODEL came from a third mapping keyed by the string passed to
+# `create_forge_agent` — which defaulted to "forge" and therefore disagreed with
+# the purpose at 8 of 9 call sites. They are now one declaration in
+# `backend/services/ai_purposes.py`, read through `platform_model_config` so an
+# operator can override a single purpose from Admin > Models without a redeploy.
+#
+# Two defects the move made visible, both fixed in the declaration:
+#   * `style_refine`, `templates` and `ops_forecast` had NO budget and NO
+#     timeout — production logged `timeout=None max_tokens=None`.
+#   * `ascii_art` had both and makes no model call at all (pyfiglet + Pillow).
+#
+# See findings 11, 13, 15 in docs/analysis/forge-prod-run-2026-08-30.md.
 
 
 # ── What a model call can actually fail with ─────────────────────────
@@ -160,6 +148,80 @@ def get_openrouter_model(
 _RATE_LIMIT_BACKOFFS = (5, 10)  # seconds to wait on 429 before retry
 
 
+async def _record_usage(
+    result: Any,
+    *,
+    purpose: str,
+    model_id: str,
+    elapsed_s: float,
+    admin_supabase: Client | None,
+    simulation_id: UUID | None,
+    user_id: UUID | None,
+    key_source: str,
+) -> None:
+    """Write one ``ai_usage_log`` row for a completed model call.
+
+    **Finding 34.** Every ``run_ai`` call site passed ``admin_supabase`` so that
+    ``BudgetEnforcementService.pre_check`` could weigh the call against
+    ``ai_budget`` — and nothing ever wrote the other half. ``pre_check`` reads
+    ``get_budget_states``, which aggregates ``ai_usage_log``; ``AIUsageService``
+    was called from exactly four places (chat, generation, forge images, and
+    nothing else). Measured by AST on 2026-08-30, the intersection of the 13
+    purposes passed to ``run_ai`` with the purposes ever passed to
+    ``AIUsageService.log`` was **empty**, and production agreed: 603 ledger rows,
+    293 of them OpenRouter, **0** for any ``run_ai`` purpose, $10.5311 recorded
+    in total.
+
+    So the entire Forge text pipeline — the most expensive thing the platform
+    does — was pre-checked against a number that was structurally always zero. A
+    per-purpose cap on ``chunk`` could not trip, and the global cap under-counted
+    by everything the Forge spent on text. (``ai_budget`` on production even
+    carries a ``purpose:forge`` row: a scope key no call site passes, so it could
+    not have matched even with a fed ledger.)
+
+    Logging belongs here rather than at the call sites: this is the one place
+    that already knows the purpose, the elapsed time, the budget context and
+    which model actually answered — including after a fallback, where the model
+    is not the one the caller built.
+
+    ``AIUsageService.log`` never raises; the client is a process-wide singleton,
+    so the added cost is one insert. ``key_source`` is not knowable from here —
+    the agent has already been constructed and ``run_ai`` cannot see whether the
+    key behind it was a BYOK key. It records ``"platform"``, matching the
+    column's own default, and threading the real origin down from the key
+    resolver is listed in the analysis rather than guessed at.
+    """
+    try:
+        usage = result.usage()
+        input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
+        output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
+    except Exception:  # noqa: BLE001 — usage accounting must never fail a served call
+        logger.debug("Could not read usage from AI result", exc_info=True, extra={"purpose": purpose})
+        return
+
+    client = admin_supabase
+    if client is None:
+        # `ops_forecast` is budget-exempt by design (AD-6) and passes no client.
+        # Exempt from the budget is not the same as absent from the ledger.
+        client = await get_admin_supabase_client()
+
+    await AIUsageService.log(
+        client,
+        simulation_id=simulation_id,
+        user_id=user_id,
+        provider="openrouter",
+        model=model_id,
+        purpose=purpose,
+        usage={
+            "prompt_tokens": input_tokens,
+            "completion_tokens": output_tokens,
+            "total_tokens": input_tokens + output_tokens,
+            "duration_ms": int(elapsed_s * 1000),
+        },
+        key_source=key_source,
+    )
+
+
 async def run_ai(
     agent: Agent,
     prompt: str,
@@ -177,6 +239,11 @@ async def run_ai(
     admin_supabase: Client | None = None,
     simulation_id: UUID | None = None,
     user_id: UUID | None = None,
+    # Where the OpenRouter key behind ``agent`` came from, for the cost ledger.
+    # ``run_ai`` cannot see this itself — the agent is already built by the time
+    # it arrives — so a caller that knows it used a simulation or BYOK key says
+    # so here. See ``_record_usage``.
+    key_source: str = "platform",
 ) -> Any:
     """Central wrapper for every agent.run() call.
 
@@ -201,8 +268,8 @@ async def run_ai(
         )
 
     ms = dict(model_settings) if model_settings else {}
-    ms.setdefault("timeout", PYDANTIC_AI_TIMEOUTS.get(purpose))
-    ms.setdefault("max_tokens", PYDANTIC_AI_MAX_TOKENS.get(purpose))
+    ms.setdefault("timeout", get_platform_timeout(purpose))
+    ms.setdefault("max_tokens", get_platform_max_tokens(purpose))
 
     # Reasoning tokens are spent from `max_tokens` and billed as output, so the
     # thinking level is not independent of the budget above it — it decides how
@@ -252,6 +319,16 @@ async def run_ai(
             result = await agent.run(prompt, **kwargs)
             elapsed = time.monotonic() - t0
             logger.info("AI call completed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)})
+            await _record_usage(
+                result,
+                purpose=purpose,
+                model_id=getattr(agent.model, "model_name", "unknown"),
+                elapsed_s=elapsed,
+                admin_supabase=admin_supabase,
+                simulation_id=simulation_id,
+                user_id=user_id,
+                key_source=key_source,
+            )
             return result
         except ModelHTTPError as exc:
             if exc.status_code != 429:
@@ -302,6 +379,18 @@ async def run_ai(
         logger.info(
             "AI call completed (fallback model)",
             extra={"purpose": purpose, "elapsed_s": round(elapsed, 1), "fallback_model": fallback_model_id},
+        )
+        # The fallback model is the one that answered and the one that is
+        # billed — logging the caller's model here would misattribute the cost.
+        await _record_usage(
+            result,
+            purpose=purpose,
+            model_id=fallback_model_id,
+            elapsed_s=elapsed,
+            admin_supabase=admin_supabase,
+            simulation_id=simulation_id,
+            user_id=user_id,
+            key_source=key_source,
         )
         return result
     except Exception:
@@ -456,7 +545,8 @@ def report_delivery_count(
 def create_forge_agent(
     system_prompt: str,
     api_key: str | None = None,
-    purpose: str = "forge",
+    *,
+    purpose: str,
     retries: int = 1,
 ) -> Agent:
     """Create a Pydantic AI Agent configured for OpenRouter with sensible defaults.
@@ -466,6 +556,14 @@ def create_forge_agent(
     and the provider-fallback chain, so pydantic-ai retries=3 would multiply
     up to 12 attempts per logical call. Callers that specifically need more
     inner retries (e.g. transient tool-output validation) can still opt in.
+
+    ``purpose`` is REQUIRED and keyword-only, and it must be the same string the
+    matching :func:`run_ai` call passes. It used to default to ``"forge"``, which
+    meant the model came from one name and the budget, timeout and thinking level
+    from another; at 8 of 9 call sites those two names differed (finding 11). A
+    default here cannot be right — there is no such thing as a call whose model
+    should be chosen by a different purpose than its budget — so there is none.
+    ``backend/tests/unit/test_ai_purposes.py`` checks the agreement by AST.
     """
     return Agent(
         get_openrouter_model(api_key, model_id=get_platform_model(purpose)),
