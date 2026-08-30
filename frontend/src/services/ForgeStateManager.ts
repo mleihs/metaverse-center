@@ -613,7 +613,9 @@ class ForgeStateManager {
     simulationId?: string;
     slug?: string;
     name?: string;
+    nameDe?: string;
     description?: string;
+    descriptionDe?: string;
   }> {
     const draftId = this.draft.value?.id;
     if (!draftId) return {};
@@ -629,7 +631,9 @@ class ForgeStateManager {
           simulationId: resp.data.simulation_id,
           slug: resp.data.slug ?? resp.data.simulation_id,
           name: resp.data.name ?? '',
+          nameDe: resp.data.name_de ?? '',
           description: resp.data.description ?? '',
+          descriptionDe: resp.data.description_de ?? '',
         };
       }
       this.error.value = resp.error?.message ?? 'Ignition failed';

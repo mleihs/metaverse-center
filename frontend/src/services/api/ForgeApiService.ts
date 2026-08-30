@@ -267,10 +267,18 @@ export class ForgeApiService extends BaseApiService {
     return this.post(`/forge/drafts/${id}/generate-theme`);
   }
 
-  ignite(
-    id: string,
-  ): Promise<
-    ApiResponse<{ simulation_id: string; slug: string | null; name?: string; description?: string }>
+  ignite(id: string): Promise<
+    ApiResponse<{
+      simulation_id: string;
+      slug: string | null;
+      name?: string;
+      // Empty for a world whose anchor carried no German title; `t()` then
+      // falls back to `name`. Before migration 287 nothing wrote this at all
+      // and every world was named in English in every language (finding 16).
+      name_de?: string;
+      description?: string;
+      description_de?: string;
+    }>
   > {
     return this.post(`/forge/drafts/${id}/ignite`);
   }

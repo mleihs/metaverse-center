@@ -5,6 +5,7 @@ import { customElement, state } from 'lit/decorators.js';
 import type { ForgeDraft } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
+import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import {
   forgeBackButtonStyles,
@@ -238,7 +239,9 @@ export class VelgForgeIgnition extends LitElement {
       only place the id is in hand. */
   @state() private _materializedId = '';
   @state() private _materializedName = '';
+  @state() private _materializedNameDe = '';
   @state() private _materializedDescription = '';
+  @state() private _materializedDescriptionDe = '';
   @state() private _error: string | null = null;
 
   private _disposeEffects: (() => void)[] = [];
@@ -270,7 +273,9 @@ export class VelgForgeIgnition extends LitElement {
         this._materializedSlug = result.slug;
         this._materializedId = result.simulationId ?? '';
         this._materializedName = result.name ?? '';
+        this._materializedNameDe = result.nameDe ?? '';
         this._materializedDescription = result.description ?? '';
+        this._materializedDescriptionDe = result.descriptionDe ?? '';
         VelgToast.success(msg('Shard ignited! Materializing assets...'));
       } else {
         // ignite() returns {} on API failure and sets forgeStateManager.error
@@ -363,13 +368,26 @@ export class VelgForgeIgnition extends LitElement {
       const draft = forgeStateManager.draft.value;
       const anchor = draft?.philosophical_anchor?.selected;
       const zones = (draft?.geography as { zones?: unknown[] })?.zones ?? [];
+      // The ceremony is the first time a person sees the world's name, and it
+      // renders under the viewer's locale — so the name has to arrive in that
+      // locale. All three of these used to be passed raw: the ceremony showed
+      // "STATE PATHOGRAPHY: LEGIBILITY AS BIOPOLITICAL METABOLISM" under a
+      // German interface, while "Staatspathographie: Leserlichkeit als
+      // biopolitischer Stoffwechsel" sat unread in the draft. `t()` falls back
+      // to the English side when a German one is missing, which is what the
+      // 24 worlds with no German title still get. See finding 16a.
+      const shard = { name: this._materializedName, name_de: this._materializedNameDe };
+      const blurb = {
+        description: this._materializedDescription,
+        description_de: this._materializedDescriptionDe,
+      };
       return html`
         <velg-forge-ceremony
-          .shardName=${this._materializedName || this._materializedSlug}
+          .shardName=${t(shard, 'name') || this._materializedSlug}
           .slug=${this._materializedSlug}
           .simulationId=${this._materializedId}
-          .seedPrompt=${this._materializedDescription || draft?.seed_prompt || ''}
-          .anchorTitle=${anchor?.title ?? ''}
+          .seedPrompt=${t(blurb, 'description') || draft?.seed_prompt || ''}
+          .anchorTitle=${anchor ? t(anchor, 'title') : ''}
           .agents=${draft?.agents ?? []}
           .buildings=${draft?.buildings ?? []}
           .zoneCount=${zones.length}
