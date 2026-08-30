@@ -264,6 +264,18 @@ jobs:
           PGPASSWORD: postgres
         run: bash scripts/lint-no-secdef-public-grant.sh
 
+      # Seeds run AFTER migrations, and their INSERTs are ON CONFLICT DO NOTHING,
+      # so an `UPDATE prompt_templates … simulation_id IS NULL` in a migration
+      # matches zero rows on a fresh database and is silently discarded. This
+      # replays those statements against the state the step above produced and
+      # fails if any of them would still change a value — which means the seed
+      # does not carry that migration. Migration 027 was inert this way for six
+      # months. Must run AFTER migrations and seeds have both been applied.
+      - name: Seed carries every platform prompt-template migration
+        env:
+          PGPASSWORD: postgres
+        run: PGHOST=localhost PGPORT=54322 bash scripts/lint-seed-carries-migration-effects.sh
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
