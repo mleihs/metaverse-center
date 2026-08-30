@@ -42,11 +42,11 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 8 | No retry on image failure; one empty completion = permanently image-less building | High | **Fixed** (W3) |
 | 9 | Partial success reported as success (departments, materialization) | High | **Fixed** (W3) |
 | 10 | List length is never enforced — the model may short-deliver silently | High | **Fixed** (W2) |
-| 11 | `purpose=` set at zero call sites — `model_research` is dead configuration | High | Open |
+| 11 | One call named its purpose twice; at 8 of 9 sites the two names differed | High | **Fixed** (W4) |
 | 12 | English fields never declare that they are English | High | **Fixed** (W2) |
-| 13 | Two purposes have no token budget and no timeout at all | Medium | Open |
-| 14 | Image-quality fallback on the main path is Stable Diffusion, not flux | Medium | Open |
-| 15 | Only model ids are admin-configurable; budgets, timeouts, effort are not | Medium | Open |
+| 13 | Two purposes have no token budget and no timeout at all (+ one dead entry: `ascii_art`) | Medium | **Fixed** (W4) |
+| 14 | Image parameters survived a model-family switch — 14 worlds feed flux an SD-era guidance | Medium | **Re-measured** (W4); repair is a decision |
+| 15 | Only model ids are admin-configurable; budgets, timeouts, effort are not | Medium | **Fixed** (W4, migration 283) |
 | 16 | The world is *named* in English, permanently — `simulations.name_de` never written | High | Open |
 | 17 | Citations are free text, bound to nothing — one misattribution measured | Medium | Open |
 | 18 | Four minutes of `0 / 16 · 0 %` before the first image | Medium | Open |
@@ -61,10 +61,12 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
 | 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
 | 29 | Stored `agents.portrait_description` rows still carry the defective template's output | High | Open |
-| 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | Open |
+| 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | **Fixed** (W4, migration 284) |
 | 31 | Seeds run **after** migrations, so every platform-template `UPDATE` is discarded on a fresh database — migration 027 inert since February | **Critical** | **Fixed** (seed back-port + CI gate) |
-| 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | Open |
+| 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | **Fixed** (migration 282, on production 2026-08-30) |
 | 33 | Every configured timeout is unhandled — a firing timeout raises `ModelAPIError`, a name that appeared nowhere in the backend | **Critical** | **Fixed** (W3) |
+| 34 | The Forge is pre-checked against a cost ledger nothing ever wrote to — 0 of 603 rows | **Critical** | **Fixed** (W4) |
+| 35 | 42 of 258 agents have no `agent_mood` / `agent_needs` row — the Forge never bootstraps autonomy | High | Open |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -693,10 +695,61 @@ English value — so the badge shows whatever German the model invented. It inve
 strings for five values; `fair` alone came back as *mittelmässig, mässig, befriedigend, akzeptabel,
 mittel, ordentlich, in Ordnung, brauchbar* and *angemessen*, and 22 rows have no German at all.
 
-**Fix (W4).** Feed each simulation's own `building_condition` values into the building prompt and
-validate the answer against them — the same shape as the list count in finding 10, dynamic per
-world rather than frozen in the type. The German label then comes from the taxonomy's `label->>'de'`
-and `building_condition_de` stops being model output, which is the surface half and belongs with W5.
+**The finding was right about the symptom and wrong about the cause, and the cause is worse.**
+It is not that the generator ignores each world's taxonomy. Measured on production 2026-08-30:
+
+- **All 26 forge drafts carry `taxonomies = {}`.**
+- `fn_materialize_shard` step 8 has always inserted one `simulation_taxonomies` row per value in
+  that column. It loops zero times and inserts nothing, faithfully.
+- **16 of 41 simulations have no `building_condition` taxonomy at all** — including
+  `state-pathography-legibility-as-biopolitical-metabolism`, the world this whole document is
+  about.
+
+So the taxonomy a Forge world is supposed to be validated against **does not exist**, and the
+column meant to carry it has been dead since it was added. The 25 worlds that do have one got it
+from a hand-written seed migration. And it is not only `building_condition`: the RPC loops over
+*every* key in `taxonomies`, so `building_type`, `zone_type`, `profession`, `system` and `gender`
+are missing for those worlds too.
+
+**Fixed (W4), by deriving rather than dictating.** The obvious repair — generate the vocabulary
+first, then constrain the buildings to it — costs a second model call and adds a second thing
+that can fail. But the model *already* produces the thematic vocabulary the design wants: a world
+about sealed archives says `sealed`, where the hardcoded list said `fair`. So
+`backend/services/forge_taxonomies.py` derives each world's six vocabularies from the entities it
+actually generated, and `materialize_shard` writes them to the draft immediately before the RPC —
+the last moment at which the roster is final, since the Table can still edit, top up or
+regenerate it.
+
+That makes the defect **unrepresentable**: a building cannot carry a value its own world does not
+define, because the world's values *are* the ones its buildings carry. No extra call, no new
+failure mode, no prompt change. Where a collection is empty it yields no key and the RPC writes
+nothing — the same as today, rather than a plausible default nobody chose.
+
+The German half is fixed in the same pass. The derivation canonicalises: the English value is
+casefolded to become the taxonomy `value`, and the label keeps the most common surface form
+(ties by first appearance, so it is deterministic). `normalize_entity_terms` then rewrites the
+entities onto that vocabulary — which is what turns nine German words for `fair` into one.
+`gender` and `system` have no `_de` sibling on the draft model, so their label carries the
+English form in both slots: a missing translation is a visible gap, a fabricated one is not.
+
+Migration 284 supplies the half that was missing in SQL. The RPC built its label as
+`jsonb_build_object('en', val)` — English only, while the frontend reads `label->>'de'`. It now
+accepts both entry shapes, decided **per entry** so a mixed list cannot fail on its first element:
+
+```
+alt : {"building_conditions": ["sealed", "fair"]}
+neu : {"building_conditions": [{"value": "sealed", "label": {"en": "Sealed", "de": "Versiegelt"}}]}
+```
+
+The string form still behaves exactly as before — necessary, not sentimental: a draft left open
+across the deploy was written under the old rule and must still materialize. The function body is
+taken from the **live** `pg_proc.prosrc` on production, not reconstructed from the
+highest-numbered migration file, because it has been replaced several times since 112 and the
+newest file is not necessarily the one that runs.
+
+*Still open, and deliberately:* the 115 existing buildings keep their values. Backfilling them
+means deciding what `fair` should become in a world that never had the word — an editorial call,
+not a restoration, and it belongs to whoever owns the surface.
 
 ### 31. The seed runs after the migrations, so migrations to platform templates are discarded — **Critical**
 
@@ -936,14 +989,44 @@ production.
 
 ## E. Configuration that is not configurable, or not wired
 
-### 11. `purpose=` set at zero call sites — High
+### 11. One call, two purposes, and nothing compared them — High ✅ FIXED (W4)
 
-Measured: `grep -A6 create_forge_agent\( backend/services/*.py | grep -c purpose=` → **0**.
-Every `create_forge_agent(...)` falls back to `"forge"`. Consequence: **`model_research` is dead
-configuration** — the admin UI offers the switch, `get_platform_model` supports it, and the
-research/anchor calls (`research_service.py:269` and `:404`) run on `model_forge` regardless.
+**The original measurement here was wrong, and the way it was wrong is the point.** It read:
 
-### 13. Two purposes have no budget and no timeout — Medium
+> Measured: `grep -A6 create_forge_agent\( backend/services/*.py | grep -c purpose=` → **0**.
+> Consequence: `model_research` is dead configuration.
+
+`grep -A6` is a six-line window, and the `system_prompt` argument at the research call site is
+twenty-five lines long. The window, not the code, is why the one real usage went missing.
+Re-measured by AST over all of `backend/` on 2026-08-30:
+
+| | count |
+|:--|--:|
+| `create_forge_agent` call sites | 9 |
+| …passing `purpose=` | **1** (`research_service.py:283`, since `2aa58b8d`, 2026-03-14) |
+| `run_ai` call sites | 20, across **13** distinct purposes |
+| sites where the agent's purpose and the call's purpose **differed** | **8 of 9** |
+
+So `model_research` was never dead — it has resolved the research brief all along. The real
+defect is bigger and was hidden underneath the wrong number: **one logical model call named its
+purpose twice**, once at `create_forge_agent` (which chose the model, defaulting to `"forge"`)
+and once at `run_ai` (which chose the budget, the timeout and the thinking level). At 8 of 9
+sites those two names were different, and nothing anywhere compared them.
+
+*A `grep` window is a measuring instrument, and this one had a range of six lines.*
+
+**Fixed.** `backend/services/ai_purposes.py` declares all thirteen purposes once — model key,
+budget, timeout, reasoning — and `create_forge_agent`'s `purpose` is now required and
+keyword-only, because there is no such thing as a call whose model should be chosen by a
+different purpose than its budget. Seven hand-rolled `Agent(...)` constructions that bypassed the
+helper entirely (four in `forge_theme_service`, two in `translation_service`, one in
+`dossier_evolution_service`) were literal copies of it and now go through it.
+`backend/tests/unit/test_ai_purposes.py` binds the declaration to the call sites by AST and was
+run against both real defects before being trusted: red on a missing `purpose=`, red on a
+disagreeing one, green on the repaired tree. Model resolution is unchanged for every purpose —
+the declaration records what each one resolved to already, so what was accidental is now stated.
+
+### 13. Two purposes have no budget and no timeout — Medium ✅ FIXED (W4)
 
 `style_refine` and `templates` appear in neither `PYDANTIC_AI_MAX_TOKENS` nor
 `PYDANTIC_AI_TIMEOUTS`. Confirmed in the production log:
@@ -951,35 +1034,135 @@ research/anchor calls (`research_service.py:269` and `:404`) run on `model_forge
 at all, against a model whose output ceiling is 384 000 tokens. Both completed in this run —
 this is an open flank, not the cause of anything observed.
 
-### 14. Image-quality fallback on the main path is Stable Diffusion — Medium
+**A third purpose was nearly filed here and does not belong.** `ops_forecast` is also absent from
+both tables, but its call site passes `model_settings={"timeout": 10, "max_tokens": 200}` and
+`run_ai` uses `setdefault`, so those win: it was never unbounded. Filing it with the other two
+would have been the same mistake as finding 11's `grep` window — reading a table's silence as the
+system's behaviour. Its numbers moved to the declaration unchanged, so all thirteen are in one
+place; only their location changed.
 
-The presets **are** wired end to end: `_QUALITY_PRESETS` (2.5/18 · 3.5/28 · 6/42) →
-`_applyPreset` → `_updateSettings` → `ai_settings.image_guidance_scale` /
-`image_num_inference_steps` → `model_resolver` → Replicate. On screen: `GUIDANCE: 3.5 |
-SCHRITTE: 28`.
+**Fixed**, with budgets derived from production rather than chosen:
 
-The defect is the **fallback**, on the path that normally runs:
+| purpose | max_tokens | timeout | where the number comes from |
+|:--|--:|--:|:--|
+| `style_refine` | 2048 | 90s | One answer is four style prompts. Across the 41 worlds on production, as stored in `simulation_settings`: median **947** characters for all four together, p95 1936, max **2155** ≈ 616 tokens. 2048 is 3.3× the observed maximum and equals `theme` — same service, same kind of answer. Timeout against the one observed duration, 21s. |
+| `templates` | 8192 | 180s | One answer is every prompt template for a world, as JSON. Across the 12 worlds that own templates: median **3015** characters, p95 and max both **12369** ≈ 3500 tokens before escaping. 8192 is ~2× that, and equals `lore`. Those 12 were produced with **no cap at all**, so the maximum is a real ceiling of the task, not an artefact of a previous limit. |
+| `ops_forecast` | 200 | 10s | Carried over from the call site unchanged. |
 
-| Method | Used when | Fallback | Clamps flux |
-|:--|:--|:--|:--|
-| `resolve_image_model` (:288) | **no style reference — the normal case** | **7.5 / 50** (SD) | **no** |
-| `resolve_img2img_model` (:398) | style reference present | 3.5 / 28 (flux) | yes, at 10 |
+**And one dead entry in the other direction.** `ascii_art` carried a 1024-token budget and a 60s
+timeout for a code path that makes **no model call**: `ForgeAsciiArtService.generate_boot_art` is
+pyfiglet plus a Pillow image-to-ASCII conversion. Removed. `test_ai_purposes.py` now fails on a
+declared purpose that no `run_ai` call site uses, so configuration-shaped decoration cannot come
+back.
 
-Two methods in one file disagree. It bites exactly when the user never opened the Darkroom and
-is relying on the default. This is the same defect the Darkroom's own comment describes — removed
-from the slider, left standing in the default table.
+### 14. The image parameters survived a model-family switch — Medium ⚠ RE-MEASURED (W4)
 
-### 15. Only model ids are admin-configurable — Medium
+**This finding's stated mechanism is wrong, and the real one is worse.** It read:
+
+> | `resolve_image_model` (:288) | no style reference — the normal case | **7.5 / 50** (SD) | no |
+>
+> It bites exactly when the user never opened the Darkroom and is relying on the default.
+
+Reading the code the other way round: `PLATFORM_DEFAULT_IMAGE_MODELS` is `flux-2-pro` for all five
+keys, so a world with no `image_model_*` row resolves **flux**, takes the flux branch, and gets
+`flux_guidance` 3.5 / 28 steps with the clamp. The 7.5 / 50 pair is the Stable Diffusion branch,
+and on production it never runs — measured 2026-08-30, **every** `image_model_*` value across all
+41 worlds is a flux model (49 rows: 43 flux-dev, 6 flux-2-pro). The fallback the finding names is
+unreachable.
+
+What is real is in the data, and the code is only how it got there. `image_guidance_scale` is
+**one settings key read by two branches whose scales differ** — SD wants ~7.5, flux wants ~3.5 —
+and when the platform switched its default image model to flux, the rows written in the SD era
+stayed behind in the SD scale. Measured across all 41 worlds:
+
+| stored guidance | worlds | resolve to flux | own `image_model_*` row | last written |
+|--:|--:|--:|--:|:--|
+| **7.5** | 14 | **14** | 3 (11 inherit flux-2-pro) | 2026-04-10 |
+| 5.0 | 16 | 16 | 16 | 2026-03-20 |
+| 3.5 | 11 | 11 | 9 | 2026-08-29 |
+
+**30 of 41 worlds feed a flux model a guidance value above its default**, and the 10.0 clamp —
+flux-dev's API maximum, not its usable range — catches none of them.
+
+The two cohorts are not the same kind of thing, and only one of them is a defect:
+
+- **7.5 (14 worlds)** is exactly `PLATFORM_DEFAULT_PARAMS["image_guidance_scale"]`, the SD-era
+  platform default. Nobody chose it; it is residue from before the family switch.
+- **5.0 (16 worlds)** is no platform default in either family. Somebody or something chose it,
+  and rewriting it would be an aesthetic decision, not a repair.
+
+**What shipped is the detector, not a repair.** Picking a "sane flux ceiling" would mean inventing
+a threshold no measurement here supports, and it would change how 30 worlds look without anyone
+deciding to — the same error as the exact-list-length constraint in W2. `resolve_image_model` now
+logs a warning naming the simulation when a flux resolve reads exactly the SD-era default, which
+is the one value provably residue rather than choice. **The repair of those 14 rows is a decision
+for the project owner, listed here rather than taken.**
+
+### 15. Only model ids are admin-configurable — Medium ✅ FIXED (W4)
 
 In `platform_settings` and therefore in the admin UI: the model id per key. Not configurable,
 though it must be: `max_tokens` per purpose (hardcoded, and the number that broke this run),
 `timeout` per purpose (hardcoded), and — until finding 1 — reasoning effort. The resolver knows
 only four keys, so the thirteen purposes cannot be addressed individually.
 
-*Partially addressed:* finding 1 shipped `reasoning_*` as admin-editable. Budgets and timeouts
-remain hardcoded.
+**Fixed.** Migration 283 seeds 41 rows: `max_tokens_<purpose>` and `timeout_<purpose>` for all
+thirteen, `reasoning_<purpose>` for the eight migration 279 did not cover, and `model_forecast`
+(+ `_dev`). `get_platform_max_tokens` / `get_platform_timeout` read them through the same
+five-minute cache as the model ids, so an operator's change takes effect on the next invalidate
+rather than on a redeploy.
 
----
+Two details that are load-bearing:
+
+- **A bad value fails closed.** A non-integer, a zero or a negative logs and falls back to the
+  declared default. `max_tokens=0` is not a small budget and a negative timeout is not a short
+  one; both are ways of switching the guard off, which is what a typo in an admin field would
+  otherwise do. Same reasoning as the `parse_setting_bool` hardening in F32.
+- **The row and the code cannot drift.** The row wins at runtime, so a default lowered in code
+  alone would never take effect on any database that has the row — which is every database.
+  Migration 283 is *generated* from `ai_purposes.py`, and
+  `backend/tests/unit/test_ai_purposes_migration.py` compares both sides value by value.
+
+`model_forecast` closes a smaller version of the same complaint: `_FORECAST_MODEL` held
+`anthropic/claude-haiku-4.5` as a `Final` constant in `ops_forecast_service`, which is the one
+place an operator cannot reach — so the one model they might most want to swap for a cheaper one
+was the only one they could not. Same id, seeded as a row.
+
+### 34. The Forge is checked against a ledger it never writes to — **Critical** ✅ FIXED (W4)
+
+**Found while wiring finding 15, by asking `ai_usage_log` what a `chunk` call costs.** It had
+never heard of one.
+
+Every `run_ai` call site passes `admin_supabase` so `BudgetEnforcementService.pre_check` can weigh
+the call against `ai_budget`. `pre_check` reads `get_budget_states`, which aggregates
+`ai_usage_log`. Nothing wrote the other half: `AIUsageService.log` is called from exactly four
+places — chat, generation, forge **images**, and nothing else.
+
+Measured by AST, then confirmed against production 2026-08-30:
+
+| | |
+|:--|--:|
+| `run_ai` purposes that pre-check a budget | 12 of 13 |
+| intersection of `run_ai` purposes with purposes ever logged | **∅** |
+| `ai_usage_log` rows on production | 603 (293 OpenRouter) |
+| …for any `run_ai` purpose | **0** |
+| total spend recorded | $10.5311 |
+
+So the entire Forge **text** pipeline — the most expensive thing the platform does, up to 16384
+tokens a call — was pre-checked on every call against a number that was structurally always zero.
+A per-purpose cap on `chunk` could not trip. The global cap under-counted by everything the Forge
+spent on text; only its images were ever counted.
+
+Production carries the joke's punchline: `ai_budget` has an enabled `purpose:forge` row. No call
+site passes `"forge"` as a `run_ai` purpose, so it could not have matched even with a fed ledger.
+
+**Fixed** at the choke point rather than at twenty call sites: `run_ai` writes one row per
+completed call, on both the primary and the 429-fallback path — the fallback logs the model that
+actually answered, since logging the caller's model would misattribute the cost. `AIUsageService`
+never raises and the admin client is a process-wide singleton, so the added cost is one insert.
+
+*Known limit, stated rather than papered over:* `key_source` records `"platform"` because
+`run_ai` receives an already-constructed agent and cannot see whether a BYOK key is behind it.
+Threading the real origin down from the key resolver is listed, not guessed at.
 
 ## F. What the user sees
 
@@ -1061,6 +1244,44 @@ After each of the three departments the result appears well below the fold (zone
 operative cadre, structures). The page does not follow. The department card flips to "✓ done"
 and the user has to go looking. Observed across the whole run: manual scrolling was needed after
 **every** department.
+
+---
+
+### 35. Every Forge world's agents are created without an inner life — High, NOT FIXED
+
+**Reported by the parallel session's system review, verified here independently before being
+written down.** Not W4, and not fixed in it — recorded because the fix's location is a line in
+`materialize_shard`, which W4 touches, so the next person there should know.
+
+`fn_initialize_agent_autonomy` (migration 145) is the idempotent bootstrap that gives an agent its
+`agent_mood` and `agent_needs` rows. Measured on production 2026-08-30:
+
+| | |
+|:--|--:|
+| agents | 258 |
+| without an `agent_mood` row | **42** |
+| without an `agent_needs` row | **42** |
+| simulations affected | 7 |
+
+`grep` finds exactly one caller in the whole backend: `PersonalityExtractionService`. The Forge's
+creation path does not call it, and neither does the epoch clone.
+
+The consequence is silent by construction: heartbeat phase 9 (needs and mood),
+`fn_apply_dungeon_outcome` (mood and stress after a run) and the epoch mood modifier all issue
+`UPDATE`s that match zero rows. `UPDATE 0` is not an error — the same shape as finding 31, one
+layer up.
+
+Verification query, so the next reader does not have to trust this table:
+
+```sql
+select count(*) from agents a
+  left join agent_mood m on m.agent_id = a.id
+ where m.agent_id is null;
+```
+
+Full write-up with the second half (only 5 of 35 worlds have `agent_aptitudes` rows, so
+`DEFAULT_APTITUDE_LEVEL = 6` unlocks every ability and every gate — party composition is not a
+decision) in `docs/analysis/system-review-2026-08-30.md`.
 
 ---
 
@@ -1149,7 +1370,7 @@ Grouped so that each step is independently shippable and verifiable.
 | **W1** ✅ | 5, 6, 23 | Highest leverage. Until the generated templates are validated, **every future world** is born with invented variables and no compositional guardrails. Nothing else prevents that. Done in `36fe1b8b` + migration 280; finding 23 was uncovered by the work and folded in. |
 | **W2** ✅ | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. Done; the exact-count constraint was measured and rejected, and finding 30 was uncovered by the work. |
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
-| **W4** | 11, 13, 14, 15, 30 | Configuration: wire `purpose=`, give the two orphan purposes budgets, unify the image defaults, lift budgets/timeouts into `platform_settings`, and feed each world's own condition taxonomy into the building prompt. |
+| **W4** ✅ | 11, 13, 15, **34**, 30 (+14 re-measured) | Configuration. One declaration for all thirteen purposes (`ai_purposes.py`), budgets and timeouts admin-editable (migration 283), the cost ledger finally fed (34), and each world's vocabularies derived from its own entities (migration 284). Finding 14's stated mechanism did not survive measurement — the SD branch is unreachable on production; the real defect is 14 worlds carrying SD-era guidance, listed for decision rather than rewritten. |
 | **W5** | 16, 17, 18, 19, 21, 25 | Surface: language, provenance, progress, scrolling, the unused chat system prompt. |
 | **W6** | 28, 29 | The rest of the AI's output that no contract covers: style prompts that are pictures, and stored descriptions produced by defective templates. Both are list-and-decide, not auto-repair. |
 
