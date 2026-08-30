@@ -346,3 +346,141 @@ class TestEmailServiceLogging:
         warning_records = [r for r in caplog.records if r.levelno == logging.WARNING]
         assert len(warning_records) >= 1
         assert warning_records[0].recipient == "to@example.com"
+
+
+# ── Send log ──────────────────────────────────────────────────────────────
+#
+# Finding B15 / handoff item 25. Resend is send-only: there is no list to look
+# at there, and the backend kept nothing but a log line, which rotates. "I did
+# not get the mail" was therefore not hard to answer but IMPOSSIBLE to answer —
+# there was no place the answer could have been (migration 291).
+
+
+class TestEmailLog:
+    @staticmethod
+    def _admin() -> tuple[MagicMock, MagicMock]:
+        table = MagicMock()
+        table.insert = MagicMock(return_value=table)
+        table.execute = AsyncMock(return_value=MagicMock(data=[{"id": "row"}]))
+        admin = MagicMock()
+        admin.table = MagicMock(return_value=table)
+        return admin, table
+
+    @pytest.mark.asyncio
+    async def test_a_successful_send_is_recorded(self):
+        from backend.services.email_service import MailRecord
+
+        admin, table = self._admin()
+        with (
+            patch("backend.services.email_service.settings") as mock_settings,
+            patch.object(EmailService, "_send_via_resend", new=AsyncMock(return_value=True)),
+            patch(
+                "backend.services.email_service.get_admin_supabase_client",
+                new=AsyncMock(return_value=admin),
+            ),
+        ):
+            mock_settings.resend_api_key = "re_test"
+            await EmailService.send(
+                "to@example.com", "Subject", "<p>Hi</p>",
+                record=MailRecord(template="cycle_briefing", user_id="u1", epoch_id="e1", cycle_number=7),
+            )
+
+        row = table.insert.call_args.args[0]
+        assert row["ok"] is True
+        assert row["template"] == "cycle_briefing"
+        assert row["recipient_user_id"] == "u1"
+        assert row["cycle_number"] == 7
+        assert row["transport"] == "resend"
+
+    @pytest.mark.asyncio
+    async def test_a_failed_send_is_recorded_too(self):
+        """The failure IS the answer to "I got nothing", not the absence of one."""
+        from backend.services.email_service import MailRecord
+
+        admin, table = self._admin()
+        with (
+            patch("backend.services.email_service.settings") as mock_settings,
+            patch.object(EmailService, "_send_via_resend", new=AsyncMock(return_value=False)),
+            patch(
+                "backend.services.email_service.get_admin_supabase_client",
+                new=AsyncMock(return_value=admin),
+            ),
+        ):
+            mock_settings.resend_api_key = "re_test"
+            result = await EmailService.send(
+                "to@example.com", "Subject", "<p>Hi</p>", record=MailRecord(template="epoch_invitation")
+            )
+
+        assert result is False
+        assert table.insert.call_args.args[0]["ok"] is False
+
+    @pytest.mark.asyncio
+    async def test_no_transport_is_recorded_as_such(self):
+        """Otherwise a misconfigured deployment looks like an empty inbox."""
+        from backend.services.email_service import MailRecord
+
+        admin, table = self._admin()
+        with (
+            patch("backend.services.email_service.settings") as mock_settings,
+            patch(
+                "backend.services.email_service.get_admin_supabase_client",
+                new=AsyncMock(return_value=admin),
+            ),
+        ):
+            mock_settings.resend_api_key = ""
+            mock_settings.smtp_host = ""
+            await EmailService.send(
+                "to@example.com", "Subject", "<p>Hi</p>", record=MailRecord(template="phase_change")
+            )
+
+        row = table.insert.call_args.args[0]
+        assert row["transport"] == "none"
+        assert row["error"] == "no transport configured"
+
+    @pytest.mark.asyncio
+    async def test_a_broken_log_does_not_cost_the_send(self):
+        """The mail already left. Recording it is bookkeeping, not the deed."""
+        from backend.services.email_service import MailRecord
+
+        with (
+            patch("backend.services.email_service.settings") as mock_settings,
+            patch.object(EmailService, "_send_via_resend", new=AsyncMock(return_value=True)),
+            patch(
+                "backend.services.email_service.get_admin_supabase_client",
+                new=AsyncMock(side_effect=OSError("db down")),
+            ),
+            patch("backend.services.email_service.sentry_sdk"),
+        ):
+            mock_settings.resend_api_key = "re_test"
+            result = await EmailService.send(
+                "to@example.com", "Subject", "<p>Hi</p>", record=MailRecord(template="cycle_briefing")
+            )
+
+        assert result is True
+
+    def test_every_send_call_site_labels_its_mail(self):
+        """An unlabelled row answers "did anything go out" but not "did the
+        SITREP go out", and the second question is the one people ask.
+
+        Measured by AST over the services: every EmailService.send call passes
+        a `record=`. A new send that forgets one turns this red.
+        """
+        import ast
+        import pathlib
+
+        root = pathlib.Path(__file__).resolve().parents[2] / "services"
+        unlabelled: list[str] = []
+        for path in sorted(root.rglob("*.py")):
+            tree = ast.parse(path.read_text())
+            for node in ast.walk(tree):
+                if (
+                    isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "send"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "EmailService"
+                ):
+                    if not any(kw.arg == "record" for kw in node.keywords):
+                        unlabelled.append(f"{path.name}:{node.lineno}")
+
+        assert not unlabelled, f"EmailService.send without a record=: {unlabelled}"

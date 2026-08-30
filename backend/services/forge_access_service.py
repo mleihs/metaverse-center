@@ -16,7 +16,7 @@ import httpx
 from postgrest.exceptions import APIError
 
 from backend.config import settings
-from backend.services.email_service import EmailService
+from backend.services.email_service import EmailService, MailRecord
 from backend.services.email_templates import (
     render_clearance_denied,
     render_clearance_granted,
@@ -86,6 +86,7 @@ class ForgeAccessService:
                     to=admin_email,
                     subject="BUREAU ALERT // NEW CLEARANCE REQUEST",
                     html_body=html_body,
+                    record=MailRecord(template="clearance_request_admin"),
                 )
             logger.info("Admin clearance notification sent for %s to %d recipients", user_email, len(admin_emails))
         except (OSError, httpx.HTTPError):
@@ -220,6 +221,10 @@ class ForgeAccessService:
                 to=user_email,
                 subject=subject,
                 html_body=html_body,
+                record=MailRecord(
+                    template="clearance_granted" if action == "approve" else "clearance_denied",
+                    user_id=str(result["user_id"]) if result.get("user_id") else None,
+                ),
             )
             logger.info("Clearance %s email sent to %s", action, user_email)
         except (OSError, httpx.HTTPError):

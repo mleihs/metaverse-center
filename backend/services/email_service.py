@@ -16,14 +16,34 @@ ambiguous timeout (the API may have accepted the message before the client timed
 import asyncio
 import logging
 import smtplib
+from dataclasses import dataclass
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import httpx
 import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.services.email_templates import html_to_text
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
+
+
+@dataclass(frozen=True, slots=True)
+class MailRecord:
+    """What to write into ``email_log`` about one send.
+
+    Grouped into an object rather than five more keyword arguments, because it
+    travels together and is filed together. ``template`` is required: an
+    unlabelled row answers "did anything go out" but not "did the SITREP go
+    out", and the second question is the one people ask.
+    """
+
+    template: str
+    user_id: str | None = None
+    epoch_id: str | None = None
+    simulation_id: str | None = None
+    cycle_number: int | None = None
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +196,55 @@ class EmailService:
                 sentry_sdk.capture_exception(exc)
             return False
 
+    @staticmethod
+    async def _record(
+        to: str,
+        subject: str,
+        record: MailRecord | None,
+        *,
+        transport: str,
+        ok: bool,
+        message_id: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        """Write one row to ``email_log``. Never raises.
+
+        Resend is send-only: there is no list to look at there, and the backend
+        kept nothing but a log line, which rotates. "I did not get the mail" was
+        therefore not hard to answer but IMPOSSIBLE to answer — there was no
+        place the answer could have been (migration 291).
+
+        Failures are recorded too: a send that failed IS the answer, not the
+        absence of one.
+
+        A failure to record must never cost the send that already happened, so
+        everything here is swallowed into a warning.
+        """
+        try:
+            admin = await get_admin_supabase_client()
+            await (
+                admin.table("email_log")
+                .insert(
+                    {
+                        "recipient_email": to,
+                        "recipient_user_id": record.user_id if record else None,
+                        "template": record.template if record else "unspecified",
+                        "subject": subject[:200],
+                        "epoch_id": record.epoch_id if record else None,
+                        "simulation_id": record.simulation_id if record else None,
+                        "cycle_number": record.cycle_number if record else None,
+                        "transport": transport,
+                        "message_id": message_id,
+                        "ok": ok,
+                        "error": (error or None) and error[:500],
+                    }
+                )
+                .execute()
+            )
+        except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
+            logger.warning("Could not write email_log row", extra={"recipient": to}, exc_info=True)
+            sentry_sdk.capture_exception()
+
     @classmethod
     async def send(
         cls,
@@ -185,6 +254,7 @@ class EmailService:
         *,
         text_body: str | None = None,
         unsubscribe_url: str | None = None,
+        record: MailRecord | None = None,
     ) -> bool:
         """Send an email asynchronously.
 
@@ -212,15 +282,22 @@ class EmailService:
             extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
         if cls._resend_configured():
-            return await cls._send_via_resend(
+            ok = await cls._send_via_resend(
                 to, subject, html_body, text_body=text_body, extra_headers=extra_headers
             )
+            await cls._record(to, subject, record, transport="resend", ok=ok)
+            return ok
 
         if cls._smtp_configured():
-            return await asyncio.to_thread(
+            ok = await asyncio.to_thread(
                 cls._send_sync, to, subject, html_body,
                 text_body=text_body, extra_headers=extra_headers,
             )
+            await cls._record(to, subject, record, transport="smtp", ok=ok)
+            return ok
 
         logger.warning("No email transport configured, skipping email", extra={"recipient": to})
+        await cls._record(
+            to, subject, record, transport="none", ok=False, error="no transport configured"
+        )
         return False
