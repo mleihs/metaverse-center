@@ -1532,6 +1532,12 @@ class TestRecoverFromCheckpoint:
 # ── _build_loot_items_for_rpc ────────────────────────────────────────────
 
 
+def _dumped(loot: list[LootItem]) -> list[dict]:
+    """The loot pipeline works on dicts from the moment a drop is recorded
+    (``DungeonInstance.record_loot``); the builder takes that same shape."""
+    return [item.model_dump(mode="json") for item in loot]
+
+
 class TestBuildLootItemsForRpc:
     def test_stress_heal_goes_to_all_operational(self):
         a1 = _make_agent("A1")
@@ -1549,7 +1555,7 @@ class TestBuildLootItemsForRpc:
                 effect_params={"amount": 50},
             )
         ]
-        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, _dumped(loot))
 
         # stress_heal → one entry per operational agent (a1, a2), not a3 (captured)
         assert len(items) == 2
@@ -1564,7 +1570,7 @@ class TestBuildLootItemsForRpc:
         instance = _make_instance(party=[a1, a2])
 
         loot = [LootItem(id="mem_1", name_en="Memory", name_de="Erinnerung", tier=2, effect_type="memory")]
-        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, _dumped(loot))
 
         assert len(items) == 1
         assert items[0]["agent_id"] == str(a1.agent_id)
@@ -1572,7 +1578,7 @@ class TestBuildLootItemsForRpc:
     def test_dungeon_buff_skipped(self):
         instance = _make_instance()
         loot = [LootItem(id="buff_1", name_en="Buff", name_de="Buff", tier=1, effect_type="dungeon_buff")]
-        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, _dumped(loot))
         assert len(items) == 0
 
     def test_all_captured_falls_back_to_first(self):
@@ -1581,7 +1587,7 @@ class TestBuildLootItemsForRpc:
         instance = _make_instance(party=[a1, a2])
 
         loot = [LootItem(id="heal_1", name_en="Heal", name_de="Heilung", tier=1, effect_type="stress_heal")]
-        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, _dumped(loot))
 
         # Falls back to first agent
         assert len(items) == 1
@@ -1598,7 +1604,7 @@ class TestBuildLootItemsForRpc:
             LootItem(id="buff_1", name_en="Buff", name_de="Buff", tier=1, effect_type="dungeon_buff"),
             LootItem(id="apt_1", name_en="Boost", name_de="Boost", tier=2, effect_type="aptitude_boost"),
         ]
-        items = DungeonDistributionService._build_loot_items_for_rpc(instance, loot)
+        items = DungeonDistributionService._build_loot_items_for_rpc(instance, _dumped(loot))
 
         # stress_heal → 2 agents, memory → 1, dungeon_buff → skipped, aptitude_boost → 1
         assert len(items) == 4

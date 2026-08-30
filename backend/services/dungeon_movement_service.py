@@ -885,14 +885,14 @@ class DungeonMovementService:
                 archetype_state=instance.archetype_state,
                 archetype=instance.archetype,
             )
-            # Add loot to instance pending loot
-            for item in loot:
-                instance.loot.append(item)
+            # `instance.loot` never existed — this raised AttributeError on every
+            # successful salvage (Befund D1). Loot is kept on the run now (D3).
+            recorded = instance.record_loot(loot)
 
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
             return SalvageResponse(
                 success=True,
-                loot=[item.model_dump(mode="json") for item in loot],
+                loot=recorded,
                 check_result=outcome.result,
                 check_value=outcome.check_value,
                 state=DungeonCheckpointService.build_client_state(instance),
@@ -1041,7 +1041,7 @@ class DungeonMovementService:
         return {
             "treasure": True,
             "auto_loot": True,
-            "loot": [item.model_dump() for item in loot],
+            "loot": instance.record_loot(loot),
         }
 
     # ── Threshold Room ─────────────────────────────────────────────────────

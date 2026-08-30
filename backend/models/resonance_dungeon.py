@@ -159,6 +159,12 @@ class DungeonInstance(BaseModel):
     # Phase timer metadata (set during combat planning for client countdown)
     phase_timer: PhaseTimer | None = None
 
+    # Loot found while the run is still going (combat victories, treasure rooms,
+    # salvage). Held here until the run ends, then merged into the distribution
+    # or the completion RPC — previously every non-boss drop was rolled, shown
+    # to the player and dropped on the floor (Befund D3).
+    run_loot: list[dict] = Field(default_factory=list)
+
     # Loot distribution (populated during 'distributing' phase after boss victory)
     pending_loot: list[dict] = Field(default_factory=list)
     loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
@@ -174,6 +180,24 @@ class DungeonInstance(BaseModel):
     # Resonanz-Barometer (Variation B — archetype state → prose)
     # Last displayed barometer tier (0-based). -1 = never shown.
     last_barometer_tier: int = -1
+
+    def record_loot(self, items: list[LootItem]) -> list[dict]:
+        """Keep loot found mid-run until the run ends, and return it for display.
+
+        Every drop gets an occurrence-unique ``id`` (``<content id>@<n>``)
+        because ``roll_loot`` hands back shared registry objects: the same item
+        found twice would otherwise collapse into one entry in
+        ``loot_assignments``/``loot_suggestions``, both of which are keyed by
+        loot id. The content id stays readable as the prefix, which is all
+        ``source_loot_id`` is ever used for.
+        """
+        recorded: list[dict] = []
+        for item in items:
+            data = item.model_dump(mode="json")
+            data["id"] = f"{item.id}@{len(self.run_loot) + 1}"
+            self.run_loot.append(data)
+            recorded.append(data)
+        return recorded
 
     def to_checkpoint(self) -> dict:
         """Serialize only mutable state for DB checkpoint (Review #17).
@@ -202,6 +226,7 @@ class DungeonInstance(BaseModel):
             "used_banter_ids": self.used_banter_ids,
             "used_encounter_ids": self.used_encounter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
+            "run_loot": self.run_loot,
             "pending_loot": self.pending_loot,
             "loot_assignments": self.loot_assignments,
             "auto_apply_loot": self.auto_apply_loot,
@@ -224,6 +249,7 @@ class DungeonInstance(BaseModel):
         self.used_encounter_ids = checkpoint.get("used_encounter_ids", [])
         timer_data = checkpoint.get("phase_timer")
         self.phase_timer = PhaseTimer(**timer_data) if timer_data else None
+        self.run_loot = checkpoint.get("run_loot", [])
         self.pending_loot = checkpoint.get("pending_loot", [])
         self.loot_assignments = checkpoint.get("loot_assignments", {})
         self.auto_apply_loot = checkpoint.get("auto_apply_loot", [])
