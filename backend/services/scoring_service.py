@@ -86,6 +86,47 @@ class ScoringService:
     # ── Leaderboard ───────────────────────────────────────
 
     @classmethod
+    async def resolve_latest_scored_cycle(
+        cls,
+        supabase: Client,
+        epoch_id: UUID,
+        *,
+        epoch: dict | None = None,
+    ) -> int:
+        """Return the highest cycle that actually carries score rows.
+
+        ``epoch_scores`` is the only honest source: ``game_epochs.current_cycle``
+        points one past the last resolved cycle, so reading it directly yields an
+        empty set for a completed epoch. Any surface that ranks players without
+        naming a cycle must go through here — a query across ALL cycles returns
+        one row per player per cycle and produces "rank 7 of 20" in a four-player
+        epoch (E5).
+
+        ``epoch`` may be passed by callers that already fetched the row.
+        """
+        max_resp = await (
+            supabase.table("epoch_scores")
+            .select("cycle_number")
+            .eq("epoch_id", str(epoch_id))
+            .order("cycle_number", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if max_resp.data:
+            return int(max_resp.data[0]["cycle_number"])
+
+        # No scores exist — fall back to the last resolved cycle.
+        if epoch is None:
+            epoch = await EpochService.get(supabase, epoch_id)
+        cycle_number = max(1, epoch.get("current_cycle", 1) - 1)
+        logger.warning(
+            "No epoch_scores found — falling back to cycle %d",
+            cycle_number,
+            extra={"epoch_id": str(epoch_id)},
+        )
+        return cycle_number
+
+    @classmethod
     async def get_leaderboard(
         cls,
         supabase: Client,
@@ -107,29 +148,8 @@ class ScoringService:
         """
         epoch = await EpochService.get(supabase, epoch_id)
 
-        # Use the latest *scored* cycle if not specified. current_cycle
-        # points one past the last resolved cycle, so querying it directly
-        # returns empty for completed epochs.
         if cycle_number is None:
-            max_resp = await (
-                supabase.table("epoch_scores")
-                .select("cycle_number")
-                .eq("epoch_id", str(epoch_id))
-                .order("cycle_number", desc=True)
-                .limit(1)
-                .execute()
-            )
-            if max_resp.data:
-                cycle_number = max_resp.data[0]["cycle_number"]
-            else:
-                # No scores exist — fall back to last resolved cycle.
-                # current_cycle points one past the last resolved, so use -1.
-                cycle_number = max(1, epoch.get("current_cycle", 1) - 1)
-                logger.warning(
-                    "No epoch_scores found — falling back to cycle %d",
-                    cycle_number,
-                    extra={"epoch_id": str(epoch_id)},
-                )
+            cycle_number = await cls.resolve_latest_scored_cycle(supabase, epoch_id, epoch=epoch)
 
         resp = await (
             supabase.table("epoch_scores")
