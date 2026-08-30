@@ -21,6 +21,8 @@ from backend.models.generation import (
     MemoryObservationBatch,
     MemoryReflection,
     MemoryReflectionBatch,
+    SentimentAnalysis,
+    SocialTransformDraft,
 )
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
@@ -36,7 +38,7 @@ from backend.services.external.openrouter import (
 )
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
-from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
+from backend.services.prompt_service import LOCALE_NAMES, PromptResolver, PromptSource
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -497,10 +499,31 @@ class GenerationService:
         post_content: str,
         transform_type: str = "dystopian",
         locale: str = "de",
-    ) -> dict:
-        """Transform a social media post into the simulation context."""
-        return await self._generate(
-            template_type=f"social_media_transform_{transform_type}",
+    ) -> SocialTransformDraft:
+        """Transform a social media post into the simulation context.
+
+        The template name is built from `transform_type`, and a name that matches
+        nothing does NOT fail: `PromptResolver` falls through five levels to a
+        generic "Generate content for social_media_transform_propaganda", logs a
+        warning, and returns it. Measured on production: `TransformPostRequest`
+        accepts `dystopian|propaganda|surveillance` and exactly ONE of the three
+        has a template. Two of the accepted values would have shipped a generic
+        prompt to a paying model and stored the result as world content.
+
+        So the resolution is checked before the call rather than after, and an
+        unconfigured transformation is refused by name. Which types exist is a
+        question for the templates, not for a list in this file. See finding 24.
+        """
+        template_type = f"social_media_transform_{transform_type}"
+        resolved = await self._prompt_resolver.resolve(template_type, locale)
+        if resolved.source is PromptSource.HARDCODED_FALLBACK:
+            raise ValueError(
+                f"No prompt template for transformation '{transform_type}' "
+                f"({template_type}). Configure it before using it.",
+            )
+
+        result = await self._generate(
+            template_type=template_type,
             model_purpose="social_trends",
             variables={
                 "post_content": post_content,
@@ -508,6 +531,37 @@ class GenerationService:
                 "locale_name": LOCALE_NAMES.get(locale, locale),
             },
             locale=locale,
+        )
+        return SocialTransformDraft(
+            transformed_content=result["content"],
+            transform_type=transform_type,
+            model_used=result.get("model_used", ""),
+        )
+
+    async def generate_social_media_sentiment(
+        self,
+        post_content: str,
+        locale: str = "de",
+    ) -> SentimentAnalysis:
+        """Analyse the sentiment of a social-media post.
+
+        `social_media_sentiment` is one of the platform template types that no
+        code rendered: the endpoint whose own comment named it called the
+        trends-campaign method instead, with parameter names that method does not
+        have. This is the façade the comment described. See finding 24.
+        """
+        result = await self._generate(
+            template_type="social_media_sentiment",
+            model_purpose="social_trends",
+            variables={"post_content": post_content},
+            locale=locale,
+        )
+        parsed = self._parse_json_content(result.get("content", "")) or {}
+        return SentimentAnalysis(
+            sentiment=parsed.get("sentiment", "neutral"),
+            confidence=float(parsed.get("confidence", 0.0)),
+            summary=parsed.get("summary", "").strip() or "No summary returned.",
+            model_used=result.get("model_used", ""),
         )
 
     async def generate_social_trends_campaign(
@@ -1087,11 +1141,15 @@ class GenerationService:
             if backoff:
                 logger.warning(
                     "Rate limited on %s, retrying in %ds (attempt %d/%d)",
-                    model.model_id, backoff, attempt + 1, len(self._BACKOFFS) + 1,
+                    model.model_id,
+                    backoff,
+                    attempt + 1,
+                    len(self._BACKOFFS) + 1,
                     extra={"purpose": purpose},
                 )
                 sentry_sdk.add_breadcrumb(
-                    category="ai", level="warning",
+                    category="ai",
+                    level="warning",
                     message=f"429 retry #{attempt} for {purpose}, waiting {backoff}s",
                 )
                 await asyncio.sleep(backoff)
@@ -1126,7 +1184,8 @@ class GenerationService:
             extra={"purpose": purpose, "original_model": model.model_id},
         )
         sentry_sdk.add_breadcrumb(
-            category="ai", level="warning",
+            category="ai",
+            level="warning",
             message=f"429 fallback for {purpose}",
         )
         try:

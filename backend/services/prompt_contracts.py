@@ -273,6 +273,10 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             ("post_content", "simulation_name", "locale_name"),
         ),
         _contract(
+            "social_media_sentiment",
+            ("post_content",),
+        ),
+        _contract(
             "social_trends_campaign",
             ("trend_title", "trend_description", "simulation_name", "locale_name"),
         ),

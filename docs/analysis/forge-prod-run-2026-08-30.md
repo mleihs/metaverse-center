@@ -55,7 +55,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 21 | The Table never scrolls to what it just produced | Low | Open |
 | 22 | Three German errors in one localized string | Low | **Fixed** (`a5cb9b73`) |
 | 23 | Sixteen rows in four worlds are written in Mustache syntax and never substitute | **Critical** | **Fixed** (`36fe1b8b`, migration 280) |
-| 24 | Two `social_media.py` endpoints call `GenerationService` with parameter names that do not exist | High | Open |
+| 24 | **Three** `social_media.py` endpoints call `GenerationService` with parameter names that do not exist | High | **Fixed** |
 | 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | Open |
 | 26 | Generated themes had no contrast floor — one world shipped text and header at ratio 1.00 | **Critical** | **Fixed** (`4a9b43e8`) |
 | 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
@@ -379,6 +379,45 @@ of four platform template types no code renders (with `chat_with_memory`,
 Found while sweeping every template consumer for W1. Not fixed there: the return-shape
 mismatch (`result.get("transformed_text")` against `_generate`'s `{"content", …}`) means the
 endpoints need a decision about intent, not a rename.
+
+**It was three endpoints, not two, and the third is the worst.** A test written to bind the call
+sites to the signatures found `generate_reactions` at `social_media.py:257` calling
+`generate_agent_reaction(agent_name=…, agent_system=…, event_title=…, event_description=…)` against
+`(agent_data: dict, event_data: dict, locale, game_context)`, and then reading `result.get("reaction")`
+from a method that returns a **string**. Two errors — and the loop sat inside a bare
+`except Exception` with a `logger.warning`, so every agent failed silently and the endpoint returned
+**200 with an empty list**. Production has **zero rows** in `social_media_agent_reactions`.
+
+**Two more defects the reading turned up.** `TransformPostRequest` accepts
+`dystopian|propaganda|surveillance`; exactly **one** of the three has a template. A missing template
+does not raise — `PromptResolver` falls through five levels to
+*"Generate content for social_media_transform_propaganda"*, logs a warning, and returns it. Two of
+the three accepted values would have sent a generic prompt to a paid model and stored the answer as
+world content. And the sentiment endpoint's own comment named `social_media_sentiment`, a template
+**no code rendered**.
+
+**Fixed.**
+
+- `generate_social_media_transform` returns a typed `SocialTransformDraft` and **resolves the
+  template before calling the model**, refusing an unconfigured transformation by name rather than
+  shipping a generic prompt. Which transformations exist is a question for the templates, not for a
+  second list in Python.
+- `generate_social_media_sentiment` is the façade the comment described: it renders
+  `social_media_sentiment`, parses its JSON, and returns a validated `SentimentAnalysis`
+  (`sentiment` from a closed set, `confidence` 0.0-1.0, `summary`) — the value goes into a `jsonb`
+  column, so it is worth validating before it becomes a row. Its contract is declared in
+  `prompt_contracts.py`, so the type stops being unmanaged.
+- The reactions loop passes dicts, stores the returned prose, and omits `reaction_intensity`
+  (nullable, and nothing generates it — a constant 5 would have been a number nobody measured). The
+  bare `except Exception` is now a named tuple including `MODEL_CALL_ERRORS`, with a Sentry capture:
+  one agent's failure still must not stop the others, but it must be observed. Too-narrow handlers
+  hid finding 33; a too-broad one hid this.
+
+**Recurrence guard.** `backend/tests/unit/test_generation_service_call_sites.py` walks the AST of
+every backend file, matches each call to a public `GenerationService` method against that method's
+real signature, and parametrises one test per call site. Python reports this class of error only when
+the line executes, and nothing in the suite executed these three. It found the third defect on its
+first run.
 
 ### 25. The chat `system_prompt` phase A.6 writes is never used — Medium
 
