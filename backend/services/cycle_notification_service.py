@@ -8,6 +8,7 @@ via email_locale and per-simulation accent colors.
 
 import asyncio
 import logging
+from uuid import UUID
 
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
@@ -154,8 +155,20 @@ class CycleNotificationService:
         epoch_config: dict | None = None,
         command_center_url: str = "",
         simulation_slug: str = "",
+        participation: dict | None = None,
     ) -> dict:
         """Gather fog-of-war compliant briefing data for a single player.
+
+        ``cycle_number`` is the **resolved** cycle — the one whose actions just
+        played out. Every query below (scores, spy intel, public events, AFK
+        events, auto-resolve check) is filed under that number by
+        ``resolve_cycle_full``; passing the freshly incremented cycle instead
+        returns empty sets across the board (E1).
+
+        ``participation`` is the acted/total count captured before the cycle
+        advanced. Without it the live ``has_acted_this_cycle`` flags are read —
+        and those are reset by ``fn_advance_epoch_cycle``, so the briefing would
+        always claim "0 of N acted".
 
         Returns dict with: rank, composite, delta, dimensions, operatives, rp, public_events,
         threats, spy_intel, missions, rank_gap, alliance info, next cycle preview
@@ -483,9 +496,12 @@ class CycleNotificationService:
             acted = sum(1 for p in humans if p.get("has_acted_this_cycle"))
             return {"acted": acted, "total": len(humans)}
 
-        afk_events, auto_resolved, participation = await asyncio.gather(
-            _afk_events(), _auto_resolve_check(), _participation_counts(),
-        )
+        if participation is None:
+            afk_events, auto_resolved, participation = await asyncio.gather(
+                _afk_events(), _auto_resolve_check(), _participation_counts(),
+            )
+        else:
+            afk_events, auto_resolved = await asyncio.gather(_afk_events(), _auto_resolve_check())
 
         player_was_afk = any(e["event_type"] == "player_afk" for e in afk_events)
         afk_penalty_rp = sum(
@@ -555,21 +571,30 @@ class CycleNotificationService:
         admin_supabase: Client,
         epoch_id: str,
         simulation_id: str,
+        *,
+        scored_cycle: int | None = None,
     ) -> dict | None:
-        """Build a lightweight standing snapshot for phase change emails."""
+        """Build a lightweight standing snapshot for phase change emails.
+
+        Scoped to a single cycle. Without the filter the query returned one row
+        per player PER CYCLE — four players over five cycles ranked as
+        "rank 7 of 20", and the `LIMIT 50` silently truncated longer epochs (E5).
+        """
+        if scored_cycle is None:
+            scored_cycle = await ScoringService.resolve_latest_scored_cycle(admin_supabase, UUID(epoch_id))
+
         scores_resp = await (
             admin_supabase.table("epoch_scores")
             .select("simulation_id, composite_score")
             .eq("epoch_id", epoch_id)
+            .eq("cycle_number", scored_cycle)
             .order("composite_score", desc=True)
-            .limit(50)
             .execute()
         )
         scores = extract_list(scores_resp)
         if not scores:
             return None
 
-        # Find latest cycle scores (they're already sorted by composite desc)
         rank = 0
         composite = 0.0
         for idx, s in enumerate(scores, start=1):
@@ -630,8 +655,13 @@ class CycleNotificationService:
         admin_supabase: Client,
         epoch_id: str,
         cycle_number: int,
+        *,
+        participation: dict | None = None,
     ) -> int:
         """Send cycle-resolved briefing emails to all human participants.
+
+        ``cycle_number`` is the resolved cycle (see ``_build_player_briefing``).
+        ``participation`` is the acted/total snapshot taken before the advance.
 
         Returns the number of emails successfully sent.
         """
@@ -667,6 +697,7 @@ class CycleNotificationService:
                     epoch_config=epoch_config,
                     command_center_url=cta_url,
                     simulation_slug=recipient.get("simulation_slug", ""),
+                    participation=participation,
                 )
                 briefing["simulation_name"] = recipient["simulation_name"]
 
@@ -722,6 +753,10 @@ class CycleNotificationService:
 
         cta_url = f"{settings.site_url}/epoch/{epoch_id}"
 
+        # Resolve the ranked cycle ONCE, not per recipient — every player in an
+        # epoch is ranked against the same cycle.
+        scored_cycle = await ScoringService.resolve_latest_scored_cycle(admin_supabase, UUID(epoch_id))
+
         # Phase-scaled subject urgency (C2)
         if new_phase == "reckoning":
             subject = f"URGENT // FINAL PHASE \u2014 {epoch_name}"
@@ -738,6 +773,7 @@ class CycleNotificationService:
                     admin_supabase,
                     epoch_id,
                     recipient["simulation_id"],
+                    scored_cycle=scored_cycle,
                 )
                 accent = get_sim_accent(recipient.get("simulation_slug"))
                 email_locale = recipient.get("email_locale")

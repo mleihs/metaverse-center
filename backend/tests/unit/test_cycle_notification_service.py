@@ -385,13 +385,61 @@ class TestBuildStandingSnapshot:
         admin_sb.table.return_value = scores_chain
 
         result = await CycleNotificationService._build_standing_snapshot(
-            admin_sb, EPOCH_ID, SIM_A,
+            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
         )
 
         assert result is not None
         assert result["rank"] == 1
         assert result["total_players"] == 2
         assert result["composite"] == 80.0
+
+    @pytest.mark.asyncio
+    async def test_scopes_query_to_a_single_cycle(self):
+        """E5: the standing must be ranked within ONE cycle, not across all of them.
+
+        Without the filter the query returned one epoch_scores row per player
+        PER CYCLE, so four players over five cycles read as "rank 7 of 20".
+        """
+        admin_sb = MagicMock()
+
+        scores_chain = _make_chain()
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
+            {"simulation_id": SIM_A, "composite_score": 80.0},
+        ]))
+        admin_sb.table.return_value = scores_chain
+
+        await CycleNotificationService._build_standing_snapshot(
+            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
+        )
+
+        eq_calls = {call.args[0]: call.args[1] for call in scores_chain.eq.call_args_list}
+        assert eq_calls["cycle_number"] == 5
+        assert eq_calls["epoch_id"] == EPOCH_ID
+
+    @pytest.mark.asyncio
+    async def test_resolves_the_latest_scored_cycle_when_none_given(self):
+        """Called without a cycle, the snapshot asks ScoringService — one source."""
+        admin_sb = MagicMock()
+
+        scores_chain = _make_chain()
+        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
+            {"simulation_id": SIM_A, "composite_score": 80.0},
+        ]))
+        admin_sb.table.return_value = scores_chain
+
+        with patch(
+            "backend.services.scoring_service.ScoringService.resolve_latest_scored_cycle",
+            new_callable=AsyncMock,
+        ) as resolve:
+            resolve.return_value = 7
+            result = await CycleNotificationService._build_standing_snapshot(
+                admin_sb, EPOCH_ID, SIM_A,
+            )
+
+        resolve.assert_awaited_once()
+        assert result is not None
+        eq_calls = {call.args[0]: call.args[1] for call in scores_chain.eq.call_args_list}
+        assert eq_calls["cycle_number"] == 7
 
     @pytest.mark.asyncio
     async def test_returns_none_when_no_scores(self):
@@ -403,7 +451,7 @@ class TestBuildStandingSnapshot:
         admin_sb.table.return_value = scores_chain
 
         result = await CycleNotificationService._build_standing_snapshot(
-            admin_sb, EPOCH_ID, SIM_A,
+            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
         )
 
         assert result is None

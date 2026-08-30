@@ -14,6 +14,7 @@ from backend.services.game_instance_service import GameInstanceService
 from backend.services.journal.hooks import enqueue_epoch_signature
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, not_found
+from backend.utils.responses import extract_list
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
@@ -222,6 +223,37 @@ class CycleResolutionService:
     # ── Cycle Resolution ─────────────────────────────────────
 
     @classmethod
+    async def _snapshot_participation(
+        cls,
+        db: Client,
+        epoch_id: UUID,
+    ) -> dict[str, int]:
+        """Count how many human participants acted in the cycle being resolved.
+
+        A pure read, taken before ``fn_advance_epoch_cycle`` clears the flags.
+        Best-effort: the number decorates a briefing, it must never abort a
+        resolution.
+        """
+        try:
+            resp = await (
+                db.table("epoch_participants")
+                .select("has_acted_this_cycle, is_bot")
+                .eq("epoch_id", str(epoch_id))
+                .execute()
+            )
+            humans = [p for p in extract_list(resp) if not p.get("is_bot")]
+            return {
+                "acted": sum(1 for p in humans if p.get("has_acted_this_cycle")),
+                "total": len(humans),
+            }
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.warning(
+                "Participation snapshot failed", extra={"epoch_id": str(epoch_id)}, exc_info=True
+            )
+            sentry_sdk.capture_exception()
+            return {"acted": 0, "total": 0}
+
+    @classmethod
     async def resolve_cycle_full(
         cls,
         supabase: Client,
@@ -255,7 +287,21 @@ class CycleResolutionService:
         from backend.services.operative_service import OperativeService
         from backend.services.scoring_service import ScoringService
 
-        data = await cls.resolve_cycle(supabase, epoch_id, admin_supabase=admin_supabase)
+        # Who actually acted in the cycle we are about to resolve. Must be read
+        # BEFORE fn_advance_epoch_cycle, which resets has_acted_this_cycle for
+        # the new cycle (migration 263 §"Reset cycle_ready + has_acted"). Read
+        # afterwards — as the briefing used to — it is always "0 of N acted".
+        participation = await cls._snapshot_participation(admin_supabase or supabase, epoch_id)
+
+        # Phase-change / completion mails are collected here and sent at the end
+        # of the pipeline, after scoring (E6).
+        pending_transitions: list[dict] = []
+
+        data = await cls.resolve_cycle(
+            supabase, epoch_id,
+            admin_supabase=admin_supabase,
+            deferred_notifications=pending_transitions,
+        )
         config = {**DEFAULT_CONFIG, **data.get("config", {})}
 
         # Two distinct cycle numbers, previously conflated into one.
@@ -382,16 +428,27 @@ class CycleResolutionService:
                 extra={"epoch_id": str(epoch_id)},
             )
 
-        # Send cycle notification emails (best-effort, non-blocking)
+        # Send cycle notification emails (best-effort, non-blocking).
+        # `resolved_cycle`, not `cycle_number`: the briefing reports what just
+        # happened. Since 202e350c scores, mission log, tension and journal are
+        # all filed under the resolved cycle, while the mail kept asking for the
+        # new one — an empty row set, hence "RANK #0 / 0" with no dimensions and
+        # no mission results (E1).
         try:
             await CycleNotificationService.send_cycle_notifications(
                 admin_supabase,
                 str(epoch_id),
-                cycle_number,
+                resolved_cycle,
+                participation=participation,
             )
         except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
             logger.warning("Cycle notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
+
+        # Deferred phase-change / completion mails — after scoring, so the
+        # winner named in the mail is the winner shown on the results page (E6).
+        if pending_transitions:
+            await cls._send_phase_notifications(admin_supabase or supabase, epoch_id, pending_transitions)
 
         # Clear team_ids for dissolved alliances (AFTER notifications have read them)
         # DEPENDENCY: requires tension computation to have run
@@ -418,14 +475,22 @@ class CycleResolutionService:
         old_status: str,
         new_status: str,
         admin_supabase: Client | None = None,
+        deferred_notifications: list[dict] | None = None,
     ) -> None:
         """Handle side effects of a phase transition (archive, log, notify).
 
         Extracted from resolve_cycle() to eliminate duplication between the
         atomic and legacy cycle advancement paths.
-        """
-        from backend.services.cycle_notification_service import CycleNotificationService
 
+        ``deferred_notifications``: when a list is passed, the phase/completion
+        email is NOT sent here — a descriptor is appended to the list instead,
+        and the caller sends it later. The phase transition happens inside
+        ``fn_advance_epoch_cycle``, i.e. BEFORE this cycle's scores exist, so a
+        completion mail sent from here names a winner computed from the
+        second-to-last cycle and can contradict the results page (E6). The
+        archive + battle-log side effects stay here: they are not score-dependent
+        and later steps of the pipeline read the archived state.
+        """
         effective_admin = admin_supabase or db
 
         if new_status == "completed":
@@ -433,18 +498,43 @@ class CycleResolutionService:
 
         await BattleLogService.log_phase_change(db, epoch_id, cycle_number, old_status, new_status)
 
-        try:
-            if new_status == "completed":
-                await CycleNotificationService.send_epoch_completed_notifications(
-                    effective_admin, str(epoch_id),
-                )
-            else:
-                await CycleNotificationService.send_phase_change_notifications(
-                    effective_admin, str(epoch_id), old_status, new_status,
-                )
-        except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
-            logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
-            sentry_sdk.capture_exception()
+        descriptor = {"old_status": old_status, "new_status": new_status}
+        if deferred_notifications is not None:
+            deferred_notifications.append(descriptor)
+            return
+
+        await cls._send_phase_notifications(effective_admin, epoch_id, [descriptor])
+
+    @classmethod
+    async def _send_phase_notifications(
+        cls,
+        effective_admin: Client,
+        epoch_id: UUID,
+        transitions: list[dict],
+    ) -> None:
+        """Send the mail for each recorded phase transition (best-effort).
+
+        Split out of ``_apply_phase_transition`` so ``resolve_cycle_full`` can
+        run it AFTER scoring (E6). Never raises — a mail failure must not undo
+        a resolved cycle.
+        """
+        from backend.services.cycle_notification_service import CycleNotificationService
+
+        for transition in transitions:
+            old_status = transition["old_status"]
+            new_status = transition["new_status"]
+            try:
+                if new_status == "completed":
+                    await CycleNotificationService.send_epoch_completed_notifications(
+                        effective_admin, str(epoch_id),
+                    )
+                else:
+                    await CycleNotificationService.send_phase_change_notifications(
+                        effective_admin, str(epoch_id), old_status, new_status,
+                    )
+            except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
+                logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
+                sentry_sdk.capture_exception()
 
     @classmethod
     async def resolve_cycle(
@@ -452,6 +542,8 @@ class CycleResolutionService:
         supabase: Client,
         epoch_id: UUID,
         admin_supabase: Client | None = None,
+        *,
+        deferred_notifications: list[dict] | None = None,
     ) -> dict:
         """Resolve a cycle: grant RP, reset flags, advance timers, increment cycle.
 
@@ -529,6 +621,7 @@ class CycleResolutionService:
             await cls._apply_phase_transition(
                 db, epoch_id, new_cycle_num, old_status, new_status,
                 admin_supabase=admin_supabase,
+                deferred_notifications=deferred_notifications,
             )
 
         # Re-fetch full epoch row for downstream consumers
