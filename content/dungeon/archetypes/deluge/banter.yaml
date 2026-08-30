@@ -70,13 +70,13 @@ banter:
   text_de: Kampf im Wasser. Jede Aktion kostet doppelt – einmal für die Tat, einmal für das Medium.
   water_tier: 1
 - id: db_11
-  trigger: combat_victory
+  trigger: combat_won
   personality_filter: {}
   text_en: The current relents. Not defeated – redirected. It will find another path.
   text_de: Die Strömung gibt nach. Nicht besiegt – umgelenkt. Sie wird einen anderen Weg finden.
   water_tier: 0
 - id: db_12
-  trigger: combat_victory
+  trigger: combat_won
   personality_filter: {}
   text_en: Quiet. The water level drops 2cm. The flood acknowledges the party's right to this room.
     Temporarily.
@@ -148,7 +148,7 @@ banter:
   text_de: Halb überflutet. Das operative Vokabular schrumpft. Bergen. Abdichten. Aufsteigen.
   water_tier: 2
 - id: db_22
-  trigger: chest_threshold
+  trigger: flood_imminent
   personality_filter: {}
   text_en: »Der Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.«
   text_de: »Der Pegel steigt. Nicht schnell. Er hat Zeit. Er hatte immer Zeit.«
@@ -168,13 +168,13 @@ banter:
     der Verfolgung – nur das Geräusch des Pegels.
   water_tier: 0
 - id: db_25
-  trigger: submerged_room_entered
+  trigger: submerged
   personality_filter: {}
   text_en: The submerged corridor is beautiful. {agent} was not prepared for that.
   text_de: Der überflutete Korridor ist schön. {agent} war darauf nicht vorbereitet.
   water_tier: 2
 - id: db_26
-  trigger: submerged_room_entered
+  trigger: submerged
   personality_filter: {}
   text_en: Under the surface, the room has reorganized itself. What was ceiling is now a mirror. What
     was door is now a passage to somewhere the map does not name.

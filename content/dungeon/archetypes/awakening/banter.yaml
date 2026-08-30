@@ -70,7 +70,7 @@ banter:
     die sie nicht einordnen kann.
   awareness_tier: 2
 - id: ab_11
-  trigger: combat_victory
+  trigger: combat_won
   personality_filter: {}
   text_en: The memory disperses. Not destroyed – returned to the substrate. The dungeon absorbs what
     the party released.
@@ -78,7 +78,7 @@ banter:
     absorbiert, was die Gruppe freigesetzt hat.
   awareness_tier: 0
 - id: ab_12
-  trigger: combat_victory
+  trigger: combat_won
   personality_filter: {}
   text_en: Victory. But the gap where the enemy was? The gap is informative.
   text_de: Sieg. Aber die Lücke, wo der Feind war? Die Lücke ist informativ.

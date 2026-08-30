@@ -33,11 +33,15 @@ from backend.models.resonance_dungeon import (
 )
 from backend.services.combat.condition_tracks import CONDITION_SEVERITY, apply_condition_damage, can_act
 from backend.services.combat.skill_checks import SkillCheckContext, resolve_skill_check
-from backend.services.combat.stress_system import REST_STRESS_HEAL, calculate_ambient_stress
+from backend.services.combat.stress_system import (
+    REST_STRESS_HEAL,
+    STRESS_THRESHOLD_CRITICAL,
+    calculate_ambient_stress,
+)
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon.dungeon_achievements import DungeonAchievementService
 from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
-from backend.services.dungeon.dungeon_banter import select_banter
+from backend.services.dungeon.dungeon_banter import emit_banter
 from backend.services.dungeon.dungeon_combat import check_ambush, spawn_enemies
 from backend.services.dungeon.dungeon_encounters import get_encounter_by_id, select_encounter
 from backend.services.dungeon.dungeon_loot import roll_loot
@@ -273,39 +277,34 @@ class DungeonMovementService:
             deja_vu = True
             banter_trigger = "deja_vu"
 
-        # Override banter trigger for boss rooms
+        # Room-entry banter has ONE slot, so the trigger is chosen by precedence.
+        # Before the Systemprüfung the chain stopped at boss rooms, which left
+        # `elite_spotted` (8 lines), `loot_found` (17) and `combat_start` (10)
+        # unreachable — authored, translated, seeded, never asked for (D6).
+        # Order runs from the most specific moment to the least.
         if target_room.room_type == "boss":
             banter_trigger = "boss_approach"
+        elif target_room.room_type == "elite":
+            banter_trigger = "elite_spotted"
+        elif target_room.room_type == "treasure":
+            banter_trigger = "loot_found"
+        elif target_room.room_type == "combat":
+            banter_trigger = "combat_start"
 
-        # Generate banter
-        banter = select_banter(
-            banter_trigger,
-            [{"personality": a.personality} for a in instance.party],
-            instance.used_banter_ids,
-            instance.archetype,
-            archetype_state=instance.archetype_state,
-            depth=target_room.depth,
+        # A party past the CRITICAL display threshold (the same 500 the UI uses
+        # to escalate, not a number invented here) has something to say about
+        # that rather than about the room — 14 `agent_stressed` lines.
+        if banter_trigger in ("room_entered", "depth_change") and any(
+            a.stress >= STRESS_THRESHOLD_CRITICAL and can_act(a.condition) for a in instance.party
+        ):
+            banter_trigger = "agent_stressed"
+
+        # Generate banter — one helper, so every trigger gets the same treatment
+        # (recorded as used, witness achievement, {agent} substitution). Room
+        # entry used to do all three and retreat none of them.
+        banter_text = await emit_banter(
+            admin_supabase, instance, banter_trigger, depth=target_room.depth
         )
-        banter_text = None
-        if banter:
-            instance.used_banter_ids.append(banter["id"])
-            await DungeonAchievementService.on_banter_witnessed(admin_supabase, instance, banter["id"])
-            alive = [a for a in instance.party if can_act(a.condition)]
-            if alive:
-                agent = random.choice(alive)
-                for key in ("text_en", "text_de"):
-                    if key in banter:
-                        banter[key] = banter[key].replace("{agent}", agent.agent_name)
-                if len(alive) >= 2:
-                    pair = random.sample(alive, 2)
-                    for key in ("text_en", "text_de"):
-                        if key in banter:
-                            banter[key] = (
-                                banter[key]
-                                .replace("{agent_a}", pair[0].agent_name)
-                                .replace("{agent_b}", pair[1].agent_name)
-                            )
-            banter_text = banter
 
         # Anchor Object Text
         anchor_texts = select_anchor_text(instance, target_room)
@@ -367,8 +366,8 @@ class DungeonMovementService:
             room_index,
             "room_entered",
             {"room_type": target_room.room_type, "phase": instance.phase},
-            narrative_en=banter.get("text_en", "") if banter else None,
-            narrative_de=banter.get("text_de", "") if banter else None,
+            narrative_en=banter_text.get("text_en", "") if banter_text else None,
+            narrative_de=banter_text.get("text_de", "") if banter_text else None,
         )
 
         # Track peak stress after all room-entry mutations (for flawless_run badge)
@@ -1004,6 +1003,7 @@ class DungeonMovementService:
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
             return RestResponse(
                 ambushed=True,
+                banter=await emit_banter(admin_supabase, instance, "rest_ambush"),
                 state=DungeonCheckpointService.build_client_state(instance),
             )
 
@@ -1037,6 +1037,7 @@ class DungeonMovementService:
         return RestResponse(
             healed=True,
             ambushed=False,
+            banter=await emit_banter(admin_supabase, instance, "rest_start"),
             state=DungeonCheckpointService.build_client_state(instance),
         )
 

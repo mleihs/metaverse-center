@@ -358,7 +358,7 @@ banter:
     Labyrinth rechnet damit.
   attachment_tier: 1
 - id: mb_40
-  trigger: ambush
+  trigger: rest_ambush
   personality_filter: {}
   text_en: Something approaches. Not from the shadows – from the walls. The tissue parts and a shape
     emerges, trailing filaments. It did not ambush you. It arrived, bearing gifts. The gifts have
@@ -368,7 +368,7 @@ banter:
     brachte Geschenke. Die Geschenke haben Zähne.
   attachment_tier: 0
 - id: mb_41
-  trigger: ambush
+  trigger: rest_ambush
   personality_filter: {}
   text_en: A visitor. The walls open like a throat and something warm spills through. Not an attack.
     A delivery. The delivery does not care about your schedule.

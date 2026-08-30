@@ -52,7 +52,7 @@ from backend.services.dungeon.dungeon_archetypes import (
     ARCHETYPE_CONFIGS,
     get_depth_for_difficulty,
 )
-from backend.services.dungeon.dungeon_banter import select_banter
+from backend.services.dungeon.dungeon_banter import emit_banter
 from backend.services.dungeon.dungeon_generator import generate_dungeon_graph
 from backend.services.dungeon.dungeon_loot import roll_loot
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
@@ -454,15 +454,13 @@ class DungeonEngineService:
         instance.phase = "retreated"
         instance.phase_timer = None
 
-        # Select retreat banter (archetype-specific farewell)
-        retreat_banter = select_banter(
-            "retreat",
-            [{"personality": a.personality} for a in instance.party],
-            instance.used_banter_ids,
-            instance.archetype,
-            instance.archetype_state,
-            depth=instance.depth,
-        )
+        # Retreat banter (archetype-specific farewell). This used to call
+        # `select_banter` directly and therefore skipped all three things the
+        # room-entry path did: the line was never recorded as used (so it could
+        # repeat within a run), no witness achievement fired, and `{agent}` was
+        # never substituted — two authored retreat lines (`sb_39`, `tb_35`) show
+        # the player a literal "{agent}: …". `emit_banter` is the one place now.
+        retreat_banter = await emit_banter(admin_supabase, instance, "retreat")
 
         # Partial loot: Tier 1 for rooms cleared
         loot = []

@@ -67,6 +67,7 @@ from backend.services.dungeon_loot_contracts import (  # noqa: E402
     LOOT_EFFECT_CONTRACTS,
     unknown_params,
 )
+from backend.services.dungeon.dungeon_banter import BANTER_TRIGGERS  # noqa: E402
 
 
 REQUIRED_ROOM_TYPES_AT_LEAST_ONCE: tuple[str, ...] = ("boss", "rest", "treasure")
@@ -90,8 +91,10 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     violations.extend(_check_archetype_completeness(result))
     violations.extend(_check_enemy_art_paths(result))
     violations.extend(_check_loot_effect_contract(result))
+    violations.extend(_check_banter_triggers(result))
     warnings.extend(_check_choice_narrative_coverage(result))
     warnings.extend(_check_enemy_art_coverage(result))
+    warnings.extend(_check_banter_trigger_coverage(result))
 
     return violations, warnings
 
@@ -182,6 +185,43 @@ def _check_global_id_uniqueness(result: PackLoadResult) -> list[str]:
             violations.append(f"ability id '{dup}' appears {count}× (must be globally unique)")
 
     return violations
+
+
+def _check_banter_triggers(result: PackLoadResult) -> list[str]:
+    """No line may answer a trigger the runtime never sends.
+
+    131 of 302 lines did exactly that until 2026-08-30 — written, translated,
+    seeded and unreachable, because nothing compared the authored triggers with
+    the emitted ones (Befund D6). Several were near-miss spellings of a live
+    trigger (`combat_victory` for `combat_won`, `ambush` for `rest_ambush`),
+    which is precisely the kind of drift a diff of two sets catches and a
+    reader does not.
+    """
+    violations: list[str] = []
+    for archetype, lines in result.banter.items():
+        for line in lines:
+            trigger = line.get("trigger")
+            if trigger not in BANTER_TRIGGERS:
+                violations.append(
+                    f"banter '{line.get('id')}' ({archetype}) answers trigger "
+                    f"'{trigger}', which nothing emits — either wire an emitter "
+                    f"and declare it in BANTER_TRIGGERS, or use one of the "
+                    f"existing triggers"
+                )
+    return violations
+
+
+def _check_banter_trigger_coverage(result: PackLoadResult) -> list[str]:
+    """The other direction: a trigger the runtime sends into silence.
+
+    Advisory, not a failure — it is a content gap (an archetype's dramatic
+    moment with nothing to say), not a broken pipeline.
+    """
+    used = {line.get("trigger") for lines in result.banter.values() for line in lines}
+    return [
+        f"trigger '{trigger}' is emitted by the runtime but no archetype has a line for it"
+        for trigger in sorted(BANTER_TRIGGERS - used)
+    ]
 
 
 def _check_loot_effect_contract(result: PackLoadResult) -> list[str]:

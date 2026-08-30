@@ -1178,7 +1178,11 @@ export function formatScoutResult(
 
 // ── Rest Result ──────────────────────────────────────────────────────────────
 
-export function formatRestResult(healed: boolean, ambushed: boolean): TerminalLine[] {
+export function formatRestResult(
+  healed: boolean,
+  ambushed: boolean,
+  banter?: Record<string, string> | null,
+): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
   if (ambushed) {
@@ -1192,12 +1196,24 @@ export function formatRestResult(healed: boolean, ambushed: boolean): TerminalLi
     lines.push(responseLine(msg('The party rests, but tension lingers.')));
   }
 
+  // 18 `rest_start` and 4 `rest_ambush` lines were authored and had no emitter
+  // until the Systemprüfung. Emitting them without rendering them would only
+  // move the same defect one layer up.
+  const banterText = banter ? localized(banter, 'text') : null;
+  if (banterText) {
+    lines.push(responseLine(''));
+    lines.push(responseLine(banterText));
+  }
+
   return lines;
 }
 
 // ── Retreat Result ───────────────────────────────────────────────────────────
 
-export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
+export function formatRetreatResult(
+  loot: LootItem[],
+  banter?: Record<string, string> | null,
+): TerminalLine[] {
   const lines: TerminalLine[] = [];
 
   lines.push(systemLine(`\u2550\u2550\u2550 ${msg('RETREAT')} \u2550\u2550\u2550`));
@@ -1210,6 +1226,14 @@ export function formatRetreatResult(loot: LootItem[]): TerminalLine[] {
       const marker = LOOT_TIER_MARKERS[item.tier] ?? '\u25C6';
       lines.push(responseLine(`  ${marker} ${localized(item, 'name')}`));
     }
+  }
+
+  // The archetype's farewell. `RetreatResponse.banter` existed in the type and
+  // was sent by the backend, and nothing ever rendered it.
+  const farewell = banter ? localized(banter, 'text') : null;
+  if (farewell) {
+    lines.push(responseLine(''));
+    lines.push(responseLine(farewell));
   }
 
   return lines;

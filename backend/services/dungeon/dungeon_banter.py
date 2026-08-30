@@ -20,6 +20,48 @@ from collections.abc import Callable
 
 from backend.services.dungeon_content_service import get_banter_registry
 
+#: Every trigger the runtime can emit — the vocabulary content is held to.
+#:
+#: Before the Systemprüfung of 2026-08-30, 131 of 302 authored banter lines
+#: answered a trigger no code path ever sent, and six triggers the code DID send
+#: had no line at all. Both directions were invisible because nothing compared
+#: the two sets. `scripts/validate_content_packs.py` compares them now:
+#: a content line naming an undeclared trigger is a hard failure, a declared
+#: trigger with no line anywhere is a warning (a content gap, not a defect).
+#:
+#: `backend/tests/unit/test_dungeon_banter_triggers.py` binds this list to the
+#: code by AST, so a trigger emitted but not declared — or declared but no
+#: longer emitted — turns red.
+BANTER_TRIGGERS: frozenset[str] = frozenset({
+    # Movement and exploration
+    "room_entered", "depth_change", "deja_vu", "boss_approach",
+    "elite_spotted", "loot_found", "combat_start",
+    # Combat outcomes
+    "combat_won", "party_wipe", "agent_downed",
+    "agent_afflicted", "agent_virtue", "agent_stressed",
+    # Rest
+    "rest_start", "rest_ambush",
+    # Run outcomes
+    "dungeon_completed", "retreat",
+    # The Shadow
+    "visibility_zero", "whispers",
+    # The Tower
+    "stability_critical", "stability_collapse", "total_fracture",
+    # The Entropy
+    "decay_degraded", "decay_critical", "dissolution",
+    # The Devouring Mother
+    "attachment_dependent", "attachment_critical", "incorporation",
+    # The Prometheus
+    "insight_inspired", "insight_feverish", "insight_breakthrough", "insight_cold",
+    # The Deluge
+    "ankle_threshold", "waist_threshold", "flood_imminent", "submerged",
+    "tidal_recession", "tidal_surge",
+    # The Awakening
+    "stirring", "liminal", "lucid", "awakened",
+    # The Overthrow
+    "schism", "revolution", "new_regime",
+})
+
 
 def _entropy_decay_tier(archetype_state: dict) -> int:
     """Map Entropy decay counter to banter degradation tier (0-3)."""
@@ -177,3 +219,71 @@ def select_banter(
         return None
 
     return random.choice(candidates)
+
+
+# ── One place that speaks ───────────────────────────────────────────────────
+
+
+async def emit_banter(
+    admin_supabase,
+    instance,
+    trigger: str,
+    *,
+    depth: int | None = None,
+) -> dict | None:
+    """Select, personalise and record one banter line for ``trigger``.
+
+    Before the Systemprüfung of 2026-08-30 the party only ever spoke on room
+    entry and on retreat. 131 of 302 authored lines answered triggers nobody
+    ever sent — `combat_won` (29), `rest_start` (18), `loot_found` (17),
+    `agent_stressed` (14) and eleven more were written, translated, seeded and
+    unreachable (Befund D6).
+
+    The two call sites that DID exist had drifted apart: room entry recorded the
+    line as used, awarded the witness achievement and substituted ``{agent}``;
+    retreat did none of the three, so two authored retreat lines showed the
+    player a literal ``{agent}:`` and could repeat within one run. Hence one
+    function rather than a tenth copy of the block.
+
+    Returns the line with placeholders filled, or ``None`` when the archetype
+    has nothing to say for this trigger.
+    """
+    # Imported here rather than at module level: the achievement service reaches
+    # into the journal hooks, and this module is imported by the content loader.
+    from backend.services.combat.condition_tracks import can_act
+    from backend.services.dungeon.dungeon_achievements import DungeonAchievementService
+
+    banter = select_banter(
+        trigger,
+        [{"personality": a.personality} for a in instance.party],
+        instance.used_banter_ids,
+        instance.archetype,
+        archetype_state=instance.archetype_state,
+        depth=instance.depth if depth is None else depth,
+    )
+    if not banter:
+        return None
+
+    instance.used_banter_ids.append(banter["id"])
+    await DungeonAchievementService.on_banter_witnessed(admin_supabase, instance, banter["id"])
+
+    alive = [a for a in instance.party if can_act(a.condition)]
+    if not alive:
+        # Everyone is down: the line still exists, but nobody can be named. Strip
+        # the placeholders rather than showing them raw.
+        alive = list(instance.party)
+    if alive:
+        speaker = random.choice(alive)
+        for key in ("text_en", "text_de"):
+            if key in banter:
+                banter[key] = banter[key].replace("{agent}", speaker.agent_name)
+        if len(alive) >= 2:
+            pair = random.sample(alive, 2)
+            for key in ("text_en", "text_de"):
+                if key in banter:
+                    banter[key] = (
+                        banter[key]
+                        .replace("{agent_a}", pair[0].agent_name)
+                        .replace("{agent_b}", pair[1].agent_name)
+                    )
+    return banter

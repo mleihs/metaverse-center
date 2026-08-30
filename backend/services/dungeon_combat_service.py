@@ -43,6 +43,7 @@ from backend.services.combat.condition_tracks import can_act
 from backend.services.combat.stress_system import apply_stress
 from backend.services.dungeon.archetype_strategies import get_archetype_strategy
 from backend.services.dungeon.dungeon_achievements import DungeonAchievementService
+from backend.services.dungeon.dungeon_banter import emit_banter
 from backend.services.dungeon.dungeon_combat import (
     check_ambush,
     get_enemy_templates_dict,
@@ -211,6 +212,7 @@ class DungeonCombatService:
             archetype_state=instance.archetype_state,
             trap_deployed=instance.combat.trap_deployed,
         )
+        conditions_before = {a.agent_id: a.condition for a in instance.party}
         round_result = resolve_combat_round(context, agent_actions, enemy_actions, enemy_templates)
 
         # Sync mutable context state back to CombatState
@@ -271,8 +273,42 @@ class DungeonCombatService:
 
         return CombatSubmitResponse(
             round_result=round_data,
+            banter=await cls._round_banter(admin_supabase, instance, round_result, conditions_before),
             state=DungeonCheckpointService.build_client_state(instance),
         )
+
+    @classmethod
+    async def _round_banter(
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        round_result: CombatRoundResult,
+        conditions_before: dict,
+    ) -> dict | None:
+        """The line for what the round did to the party, if anything did.
+
+        Three triggers had lines and no emitter (Befund D6): `agent_downed` (2),
+        `agent_afflicted` (4) and `agent_virtue` (4). All three are readable
+        from the round that just resolved — a condition that fell to `captured`,
+        or a `resolve_result` on one of the events — so they are decided here
+        rather than guessed anywhere else.
+
+        Most specific first: a fall outranks an affliction, an affliction
+        outranks a virtue. A quiet round says nothing.
+        """
+        fell = any(
+            agent.condition == "captured" and conditions_before.get(agent.agent_id) != "captured"
+            for agent in instance.party
+        )
+        if fell:
+            return await emit_banter(admin_supabase, instance, "agent_downed")
+
+        resolutions = {event.resolve_result for event in round_result.events if event.resolve_result}
+        if "affliction" in resolutions:
+            return await emit_banter(admin_supabase, instance, "agent_afflicted")
+        if "virtue" in resolutions:
+            return await emit_banter(admin_supabase, instance, "agent_virtue")
+        return None
 
     @staticmethod
     def _build_round_result(round_result: CombatRoundResult) -> CombatRoundResultResponse:
@@ -352,9 +388,20 @@ class DungeonCombatService:
             instance.phase = "room_clear"
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
+        # 29 `combat_won` lines and 7 `dungeon_completed` lines had been written
+        # and were unreachable: nothing but room entry and retreat ever asked for
+        # a line (Befund D6). The boss room speaks the run's last word, an
+        # ordinary room the victory line.
+        victory_banter = await emit_banter(
+            admin_supabase,
+            instance,
+            "dungeon_completed" if current_room.room_type == "boss" else "combat_won",
+        )
+
         return {
             "victory": True,
             "loot": loot_payload,
+            "banter": victory_banter,
             "state": DungeonCheckpointService.build_client_state(instance),
         }
 
@@ -426,8 +473,14 @@ class DungeonCombatService:
         # after the wipe is fully persisted.
         await enqueue_dungeon_imprint(admin_supabase, instance, outcome="defeat")
 
+        # Nobody can act at this point, which is precisely when the two authored
+        # `party_wipe` lines belong. `emit_banter` names a speaker from the
+        # fallen party rather than leaving `{agent}` on screen.
+        wipe_banter = await emit_banter(admin_supabase, instance, "party_wipe")
+
         return {
             "wipe": True,
+            "banter": wipe_banter,
             "state": DungeonCheckpointService.build_client_state(instance),
         }
 

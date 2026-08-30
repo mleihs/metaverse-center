@@ -593,6 +593,9 @@ export interface CombatSubmitResponse {
   /** Loot items rolled on combat victory. Empty/absent on wipe or stalemate. */
   loot?: LootItem[];
 
+  /** Archetype line for what the round did: a fall, an affliction, a victory. */
+  banter?: Record<string, string> | null;
+
   // RPC failure fallback (graceful degradation)
   rpc_failed?: boolean;
   rpc_error_message?: string;
@@ -695,6 +698,8 @@ export interface ScoutResponse {
 export interface RestResponse {
   healed: boolean;
   ambushed: boolean;
+  /** Archetype line for the rest — or for the ambush that interrupted it. */
+  banter?: Record<string, string> | null;
   state: DungeonClientState;
 }
 
