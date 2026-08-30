@@ -6,6 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 
+from backend.config import settings
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
@@ -62,7 +63,12 @@ async def create_invitation(
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[EpochInvitationResponse]:
     """Create an epoch invitation and send email."""
-    base_url = str(request.base_url).rstrip("/")
+    # `settings.site_url`, not `request.base_url` (E16). The latter is derived
+    # from the incoming request, and `FORWARDED_ALLOW_IPS` is NOT set on
+    # production — so behind the proxy the scheme can come back as `http` and
+    # the invitation link in the mail would be plain HTTP. A link a user is
+    # asked to trust must not be assembled from a header.
+    base_url = settings.site_url.rstrip("/")
 
     invitation = await EpochInvitationService.create_and_send(
         supabase,
