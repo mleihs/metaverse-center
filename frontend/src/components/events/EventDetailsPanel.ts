@@ -27,6 +27,7 @@ import '../shared/VelgAvatar.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgSidePanel.js';
+import '../heartbeat/BureauResponsePanel.js';
 import './EchoCard.js';
 import './EchoTriggerModal.js';
 
@@ -1526,6 +1527,17 @@ export class VelgEventDetailsPanel extends LitElement {
                       ${msg(str`Reactions (${this._reactions.length})`)}
                     </velg-section-header>
                     ${this._renderReactions()}
+                  </div>
+
+                  <!-- Bureau Dispatch -->
+                  <div class="panel__section">
+                    <velg-bureau-response-panel
+                      .simulationId=${this.simulationId}
+                      .eventId=${evt.id}
+                      .impactLevel=${evt.impact_level ?? 5}
+                      .eventStatus=${evt.event_status ?? ''}
+                      .reactionCount=${this._reactions.length}
+                    ></velg-bureau-response-panel>
                   </div>
 
                   <!-- Bleed Provenance -->
