@@ -57,6 +57,10 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 23 | Sixteen rows in four worlds are written in Mustache syntax and never substitute | **Critical** | **Fixed** (`36fe1b8b`, migration 280) |
 | 24 | Two `social_media.py` endpoints call `GenerationService` with parameter names that do not exist | High | Open |
 | 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | Open |
+| 26 | Generated themes had no contrast floor — one world shipped text and header at ratio 1.00 | **Critical** | **Fixed** (`4a9b43e8`) |
+| 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
+| 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
+| 29 | Stored `agents.portrait_description` rows still carry the defective template's output | High | Open |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -244,6 +248,10 @@ Generated `portrait_description`, full text:
 twice; the Aktenlampe visible top right; badge reading "Leserlichkeit: 9%". The craft is there
 (scriptural scars on the face, handwriting on the hands) — the control is not.
 
+> **Superseded in part by finding 27.** Restoring the guardrails was necessary but not
+> sufficient: the dominant cause was `image_style_prompt_portrait`, which is appended after
+> everything below and fixed the subject as well as the style. Read this together with 27.
+
 **Fixed in `36fe1b8b` (W1).** The generated template owns the style; the platform keeps a
 `frame` per template type — composition and subject count for an image, the JSON shape for
 the chronicle, staying in character for chat — appended by `PromptResolver` at render time
@@ -329,6 +337,100 @@ is written, stored, and discarded.
 Deliberately not changed in W1: chat is the most user-visible surface, `prompt_content`
 already sets a persona, and concatenating both without measuring the result would be a
 guess. It belongs with W5.
+
+### 26. Generated themes had no contrast floor — **Critical**
+
+**Found by the project owner, looking at a screenshot.** The agent lightbox had a dark blue bar
+across the top with a counter and a close button, and nothing else. The question was whether the
+name should not be in there.
+
+It was. Measured in the browser: title colour `rgb(26,26,46)` on header background
+`rgb(26,26,46)`. Contrast ratio **1.00**. The world's own name was rendered in navy on navy.
+
+In the data: the generated theme set `color_text` **and** `color_surface_header` to the same
+`#1a1a2e`. That token is used in 37 places in the component layer, all of which treat it as a
+near-surface tone carrying normal text — three components even override it to
+`var(--color-surface)`. So the theme was wrong, not the components.
+
+Recomputed across all 37 themed production simulations: **36 sound** (8.4 to 19.6), **one at
+1.00**. Not a systemic token problem — one generation nobody checked. The only thing between the
+model and production was a line in the prompt: *"Ensure sufficient contrast between text and
+background (WCAG AA)."* Asking is not checking.
+
+Nobody had seen it for a day, because a header that renders nothing looks like a header that was
+designed empty.
+
+**Fixed.** `backend/services/theme_contrast.py` enforces 4.5:1 for every surface that carries
+primary text, falling back to the theme's own `color_background` so the repair stays inside the
+palette the model chose. It never rewrites the text colour, and it reports secondary/muted text
+without changing it — several shipped themes are deliberately below 4.5 there, and a floor would
+be a redesign. Wired into `apply_theme_settings`, the single point where any theme reaches the
+database.
+
+### 27. The style prompt was the picture — **Critical**, and the true root of finding 6
+
+**Reported three times by the project owner:** *"leserlichkeit steht noch immer auf der badge, das
+geht GAR NICHT"*. The template had been repaired, the description regenerated, and the portrait
+frame given an explicit prohibition on readable text. The badge came back every time.
+
+`image_style_prompt_portrait` is a **simulation setting**, appended verbatim to every image the
+world generates, and it is the *last* thing the image model reads — so it outranks the entity
+description, the template and the platform frame together. The generated value was not a style:
+
+> *"Kalotyp-Positivverfahren of **a Verwaltungsbeamter** posed for **his** Salzzitat … the shallow
+> plane of focus isolating a diagnosis pinned to his lapel: **\*Leserlichkeit: 93%\*** and declining"*
+
+One string, and it accounts for all three symptoms at once: every portrait in that world male
+regardless of the agent; every one wearing the same badge with the same invented number; and *"the
+images all look the same"* — the observation that opened finding 6 — because the style fixed the
+entire subject, not the style.
+
+**Finding 6's diagnosis was half right.** The generated template had indeed dropped the platform's
+compositional guardrails, and restoring them was necessary. It was not sufficient, and it was not
+the dominant cause. The chain has four stages, and W1 addressed the first:
+
+    prompt_templates  ->  agents.portrait_description  ->  image_style_prompt_*  ->  the image
+
+**Fixed.** The generation prompt now forbids the shape explicitly (a style, not a picture; never a
+subject or a gendered word, because the subject comes from the entity being drawn and a subject
+here overwrites every one of them; no measurement, no readable text; at most 45 words).
+`audit_style_prompts` reports the four ways it goes wrong, wired into the same chokepoint as the
+contrast floor. Not auto-repaired: rewriting a world's visual identity is an editorial act. The
+four style prompts of the affected world were rewritten by hand.
+
+**Verified at the image.** One person, female as the record says, head and shoulders, centred, no
+badge, no numeral — with the world intact: script on skin and coat, iron-gall-blackened
+fingertips, the Aktenlampe beam, the silver-nitrate palette, plate damage at the edges.
+
+**A general rule fell out of this, about prompts rather than portraits.** The frame first read
+*"…no numerals on clothing or background: any figure a portrait shows is invented, and the platform
+computes none."* The output format for that template is *comma-separated descriptors*, and the
+model dutifully turned the **rationale** into descriptors: a rendered prompt ended
+`…no numerals, figure is invented, computed`. **Where the output is a descriptor list, a frame
+states prohibitions and explains nothing.** Where the output is prose, a rationale is harmless.
+
+### 28. Most style prompts describe a picture rather than a style — High
+
+Audited all **123** style prompts across **41** production worlds: **29 in 18 worlds** are flagged
+— 26 describe a whole scene, 4 ask for readable text, 3 name a subject. Probably the reason other
+worlds also produce uniform imagery. Not repaired: editorial.
+
+**A measurement that corrected the tool itself.** The first version of the check flagged any
+numeral, and hit 42. Looking at what the numerals actually are: 13× `1970s`, 12× `35mm`, 12× `1979`,
+`16:9`, `f/8`, `f/2.8`, `85mm`, `24mm`, `CP437`, `80x25` — precisely the vocabulary a style is
+written in. A gate that fires on nearly every world is switched off within a week, and then it
+misses the real case too. The rule now catches only a numeral presented as a *measurement*: a
+percentage, or a label with a value after a colon. Four tests hold the legitimate vocabulary as
+legal so the rule cannot drift wide again.
+
+### 29. The repair chain stops at the template — High
+
+`scripts/repair_simulation_prompt_templates.py` writes `prompt_templates` only. Measured over the
+114 stored portrait descriptions on production: **2 still contain a literal `{placeholder}`** and
+**3 name the invented legibility index** — five agents across two worlds whose stored description
+was produced by a defective template and still says so. Regenerating them costs image-model money,
+which makes it an operational decision rather than a repair; the intended shape is a
+`--rescan-descriptions` mode that lists the affected rows and changes nothing.
 
 ---
 
@@ -615,6 +717,19 @@ Two lessons from this run that belong in the same list, because they cost real t
   "reasoning-off breaks the dossier" was an upstream provider error hitting both modes). State
   the measurement, not the inference.
 - **A green gate is not a measurement.** The 502s ran for months under a full test suite.
+- **Measure the gate before trusting it.** Two checks written on this day pointed the wrong way
+  and were corrected only by looking: a style-prompt rule that flagged any numeral hit 42 times,
+  all of them legitimate style vocabulary (`1970s`, `35mm`, `f/8`); a parallel session's simile
+  detector found zero similes in a text full of them. A rule that fires everywhere is switched off,
+  and then it misses the real case too. Measure the threshold against the real corpus, and record
+  the number in the gate so the next author does not read it as arbitrary.
+- **Where the output is a descriptor list, a frame states prohibitions and explains nothing.** A
+  rationale appended to a comma-separated-descriptor prompt comes back as descriptors: `…no
+  numerals, figure is invented, computed` was rendered into a production image prompt. Prose output
+  tolerates a rationale; descriptor output does not.
+- **Position beats wording in a prompt.** Measured over 6 generations: the same floor placed in the
+  system prompt left 0 of 6 closing sentences clean; placed at the end of the user prompt, 4-5 of 6.
+  Whatever comes last wins — which is also why finding 27 outranked everything W1 had fixed.
 
 ---
 
@@ -628,7 +743,8 @@ Grouped so that each step is independently shippable and verifiable.
 | **W2** | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. |
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
 | **W4** | 11, 13, 14, 15 | Configuration: wire `purpose=`, give the two orphan purposes budgets, unify the image defaults, lift budgets/timeouts into `platform_settings`. |
-| **W5** | 16, 17, 18, 19, 21 | Surface: language, provenance, progress, scrolling. |
+| **W5** | 16, 17, 18, 19, 21, 25 | Surface: language, provenance, progress, scrolling, the unused chat system prompt. |
+| **W6** | 28, 29 | The rest of the AI's output that no contract covers: style prompts that are pictures, and stored descriptions produced by defective templates. Both are list-and-decide, not auto-repair. |
 
 W1 before W2 because W1 stops the bleeding on new worlds; W2 hardens the contract that would
 have caught it. W3 is independent and can run in parallel.
