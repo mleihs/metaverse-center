@@ -450,13 +450,58 @@ class DungeonMovementService:
         if not choice:
             raise bad_request(f"Unknown choice: {action.choice_id}")
 
-        # Resolve skill check
+        # Resolve skill check.
+        #
+        # `result_tier` defaults to "success", and until the Systemprüfung the
+        # whole check below was simply skipped when no acting agent could be
+        # found — so a client that omitted `agent_id` passed EVERY check for
+        # free, and so did a party in which nobody could act (Befund D8). The
+        # two cases are different and are answered differently:
+        #
+        #   * an agent_id that names nobody in the party is a broken client → 400
+        #   * no agent able to act is a legitimate game state → the check FAILS
+        #     rather than being skipped; the run continues down the fail branch
+        #     instead of soft-locking.
         result_tier = "success"
         check_result = None
         acting_agent = (
             next((a for a in instance.party if a.agent_id == action.agent_id), None) if action.agent_id else None
         )
-        if choice.check_aptitude and acting_agent:
+        if action.agent_id and acting_agent is None:
+            raise bad_request("Agent not in party")
+
+        if acting_agent is not None and choice.requires_aptitude:
+            missing = {
+                aptitude: minimum
+                for aptitude, minimum in choice.requires_aptitude.items()
+                if acting_agent.aptitudes.get(aptitude, 0) < minimum
+            }
+            if missing:
+                raise bad_request(
+                    "Agent does not meet the required aptitude: "
+                    + ", ".join(f"{a} >= {m}" for a, m in sorted(missing.items()))
+                )
+
+        if choice.check_aptitude and (acting_agent is None or not can_act(acting_agent.condition)):
+            result_tier = "fail"
+            check_result = {
+                "aptitude": choice.check_aptitude,
+                "level": 0,
+                "chance": 0,
+                "roll": 0,
+                "result": result_tier,
+                "breakdown": {"reason": "no_capable_agent"},
+            }
+            logger.info(
+                "Skill check without a capable agent — resolved as failure",
+                extra=log_extra(
+                    instance,
+                    choice_id=choice.id,
+                    aptitude=choice.check_aptitude,
+                    agent_supplied=bool(action.agent_id),
+                ),
+            )
+        elif choice.check_aptitude and acting_agent:
             # Apply debris check bonuses from The Current Carries
             debris_bonus = instance.archetype_state.get("_debris_check_bonuses", {}).get(
                 choice.check_aptitude,
