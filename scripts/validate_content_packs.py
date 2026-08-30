@@ -92,9 +92,11 @@ def validate(result: PackLoadResult) -> tuple[list[str], list[str]]:
     violations.extend(_check_enemy_art_paths(result))
     violations.extend(_check_loot_effect_contract(result))
     violations.extend(_check_banter_triggers(result))
+    violations.extend(_check_archetype_minimums(result))
     warnings.extend(_check_choice_narrative_coverage(result))
     warnings.extend(_check_enemy_art_coverage(result))
     warnings.extend(_check_banter_trigger_coverage(result))
+    warnings.extend(_check_unreachable_content(result))
 
     return violations, warnings
 
@@ -185,6 +187,94 @@ def _check_global_id_uniqueness(result: PackLoadResult) -> list[str]:
             violations.append(f"ability id '{dup}' appears {count}× (must be globally unique)")
 
     return violations
+
+
+#: Floors against an archetype shipping nearly empty — NOT a quota.
+#:
+#: Two of them are runtime requirements and not a judgement at all:
+#:   spawns  >= 3  `FALLBACK_SPAWNS` needs boss, default and rest_ambush.
+#:   anchors >= 2  a run samples two (`random.sample(pool, min(2, …))`).
+#:
+#: The other four sit well below the leanest archetype in the pack today
+#: (enemies 4, encounters 13, banter 26, loot 11), so ordinary editing never
+#: trips them. They exist because nothing noticed that an archetype could ship
+#: with almost no content at all (Befund D17).
+ARCHETYPE_MINIMUMS: dict[str, int] = {
+    "enemies": 3,
+    "encounters": 6,
+    "banter": 10,
+    "loot": 4,
+    "spawns": 3,
+    "anchors": 2,
+}
+
+
+def _check_archetype_minimums(result: PackLoadResult) -> list[str]:
+    """No archetype may ship with almost nothing."""
+    violations: list[str] = []
+    counts = {
+        archetype: {
+            "enemies": len(result.enemies.get(archetype, {})),
+            "encounters": len(result.encounters.get(archetype, [])),
+            "banter": len(result.banter.get(archetype, [])),
+            "loot": sum(len(tier) for tier in result.loot.get(archetype, {}).values()),
+            "spawns": len(result.spawns.get(archetype, {})),
+            "anchors": len(result.anchors.get(archetype, [])),
+        }
+        for archetype in result.enemies
+    }
+    if not counts:
+        return ["no archetypes loaded — the pack scan found nothing"]
+
+    for archetype, per_kind in sorted(counts.items()):
+        for kind, minimum in ARCHETYPE_MINIMUMS.items():
+            if per_kind[kind] < minimum:
+                violations.append(
+                    f"{archetype}: only {per_kind[kind]} {kind} (minimum {minimum})"
+                )
+    return violations
+
+
+def _check_unreachable_content(result: PackLoadResult) -> list[str]:
+    """Enemies and spawn configs the runtime can never reach.
+
+    Spawns are chosen in exactly two ways — `encounter.combat_encounter_id`, or
+    `FALLBACK_SPAWNS` when an encounter names none (`dungeon_combat_service`,
+    `enter_combat_room`). Anything referenced by neither cannot appear, and an
+    enemy in no spawn config cannot appear either.
+
+    Advisory: writing an enemy into a spawn config is a balance decision, not a
+    repair. The point is that the gap has a name.
+    """
+    from backend.services.dungeon_shared import FALLBACK_SPAWNS  # noqa: PLC0415
+
+    warnings: list[str] = []
+
+    for archetype, templates in sorted(result.enemies.items()):
+        spawned: set[str] = set()
+        for config in result.spawns.get(archetype, {}).values():
+            for entry in config:
+                if isinstance(entry, dict) and entry.get("template_id"):
+                    spawned.add(entry["template_id"])
+        for orphan in sorted(set(templates) - spawned):
+            warnings.append(
+                f"enemy '{orphan}' ({archetype}) appears in no spawn config — it can never be fought"
+            )
+
+    for archetype, configs in sorted(result.spawns.items()):
+        referenced = {
+            encounter.combat_encounter_id
+            for encounter in result.encounters.get(archetype, [])
+            if getattr(encounter, "combat_encounter_id", None)
+        }
+        referenced |= set(FALLBACK_SPAWNS.get(archetype, {}).values())
+        for orphan in sorted(set(configs) - referenced):
+            warnings.append(
+                f"spawn config '{orphan}' ({archetype}) is referenced by no encounter "
+                f"and is no fallback — it can never be used"
+            )
+
+    return warnings
 
 
 def _check_banter_triggers(result: PackLoadResult) -> list[str]:
