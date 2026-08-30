@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from dataclasses import dataclass
 
 import httpx
 import sentry_sdk
@@ -184,11 +185,27 @@ def _emulate_tavily_phase4(seed: str, anchor: dict) -> str:
     return "\n\n".join(parts)
 
 
+@dataclass(frozen=True, slots=True)
+class ThematicResearch:
+    """What Phase 1 found: the prose the model reads, and what was fetched.
+
+    The two are deliberately separate. ``context`` is prose and goes to the
+    model; ``sources`` are the rows Tavily actually returned, so the claim
+    "research grounded in web sources" on the anchor card has something behind
+    it that a reader can open. Nothing in ``sources`` passes through a model.
+    Empty on the emulator path, which ``research_context.source`` already
+    reports. See finding 17.
+    """
+
+    context: str
+    sources: list[dict[str, str]]
+
+
 class ResearchService:
     """Service for autonomous thematic research."""
 
     @classmethod
-    async def search_thematic_context(cls, seed: str) -> str:
+    async def search_thematic_context(cls, seed: str) -> ThematicResearch:
         """Phase 1: Dual-axis web research using Tavily (or emulator fallback).
 
         Runs 2 parallel searches:
@@ -200,7 +217,7 @@ class ResearchService:
                 "Tavily unavailable — using deterministic emulator",
                 extra={"seed_preview": seed[:60], "source": "emulator"},
             )
-            return _emulate_tavily_phase1(seed)
+            return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
 
         # Build English gloss for non-English seeds: strip to key nouns + context suffix
         english_gloss = f"{seed} philosophical literary context"
@@ -235,9 +252,10 @@ class ResearchService:
                     "Tavily fully unavailable in Phase 1 — emulator fallback",
                     level="warning",
                 )
-            return _emulate_tavily_phase1(seed)
+            return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
 
         context = TavilySearchService.format_results(results)
+        sources = TavilySearchService.collect_sources(results)
         if not context:
             context = f"Web search returned no usable results for '{seed}'."
 
@@ -248,9 +266,10 @@ class ResearchService:
                 "source": "tavily",
                 "axes_completed": len(results),
                 "result_length": len(context),
+                "sources": len(sources),
             },
         )
-        return context
+        return ThematicResearch(context=context, sources=sources)
 
     @classmethod
     async def research_for_lore(

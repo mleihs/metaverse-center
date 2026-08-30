@@ -212,6 +212,36 @@ class TavilySearchService:
         return results
 
     @classmethod
+    def collect_sources(cls, results: list[TavilySearchResult], *, per_axis: int = 5) -> list[dict[str, str]]:
+        """The retrieved sources as structured rows, for provenance.
+
+        ``format_results`` renders the same rows into prose that goes to the
+        model, and prose is where they stop being checkable: the model reads
+        them, writes its citation from memory, and nothing downstream can be
+        reconciled against what was actually fetched. Measured on one production
+        anchor, that produced three correct citations and one classic
+        misattribution (Foucault's 1978/79 course, which is famously *not*
+        mainly about biopolitics) — right shelf, wrong book, and structurally
+        unnoticeable. See finding 17.
+
+        These rows are what Tavily returned. No model touches them, which is the
+        point: asking a model for URLs is the one change that would make this
+        worse, because a fabricated URL carries more authority than a fabricated
+        book title. Deduplicated by URL, first axis wins.
+        """
+        seen: set[str] = set()
+        collected: list[dict[str, str]] = []
+        for result in results:
+            for src in result.sources[:per_axis]:
+                url = str(src.get("url", "")).strip()
+                title = str(src.get("title", "")).strip()
+                if not url or url in seen:
+                    continue
+                seen.add(url)
+                collected.append({"axis": result.axis, "title": title or url, "url": url})
+        return collected
+
+    @classmethod
     def format_result(cls, result: TavilySearchResult, *, snippet_len: int = 500) -> str:
         """Format a single search result into labeled text block."""
         parts: list[str] = []

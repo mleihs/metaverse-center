@@ -902,6 +902,24 @@ export class VelgForgeAstrolabe extends LitElement {
     return forgeStateManager.draft.value?.research_context?.source ?? null;
   }
 
+  /**
+   * What the web search actually returned, for the footer's claim.
+   *
+   * Finding 17: the card prints the model's `literary_influence` with a file
+   * number and a classification stamp, under a line saying the research is
+   * grounded in web sources — and nothing behind that line could be opened.
+   * Measured on one production anchor: Scott 1998 correct, the two Foucault
+   * lecture courses one right and one the classic misattribution, and the
+   * canonical locus absent. Right shelf, wrong book, and structurally
+   * unnoticeable, because no field could be reconciled with anything fetched.
+   *
+   * These rows are Tavily's, not the model's. They do not verify the citation.
+   * They say what was read — which is all the footer ever claimed.
+   */
+  private get _researchSources(): { axis: string; title: string; url: string }[] {
+    return forgeStateManager.draft.value?.research_context?.sources ?? [];
+  }
+
   private _handleNext() {
     if (this._selectedIdx !== null) {
       forgeStateManager.updateDraft({ current_phase: 'drafting' });
@@ -1173,7 +1191,33 @@ export class VelgForgeAstrolabe extends LitElement {
                     ? msg('Research grounded in web sources + AI analysis')
                     : msg('Research based on AI analysis (web search unavailable)')
                 }
-              </div>`
+              </div>
+              ${
+                this._researchSources.length > 0
+                  ? html`
+                <details class="research-sources">
+                  <summary class="research-sources__summary">
+                    ${msg(str`${this._researchSources.length} sources consulted`)}
+                  </summary>
+                  <ul class="research-sources__list">
+                    ${this._researchSources.map(
+                      (src) => html`
+                        <li class="research-sources__item">
+                          <span class="research-sources__axis">${src.axis}</span>
+                          <a
+                            class="research-sources__link"
+                            href=${src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            >${src.title}</a
+                          >
+                        </li>
+                      `,
+                    )}
+                  </ul>
+                </details>`
+                  : nothing
+              }`
               : nothing
           }
 

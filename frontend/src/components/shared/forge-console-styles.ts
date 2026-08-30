@@ -347,7 +347,94 @@ export const forgeResearchHintStyles = css`
 
   .research-source-hint--tavily .research-source-hint__dot {
     background: var(--color-success);
-    box-shadow: 0 0 4px rgba(74 222 128 / 0.4);
+    /* Was a raw rgba(74 222 128 / 0.4) — literally the success green, spelled
+       out. lint-color-tokens.sh did not miss it: its rgba check runs only over
+       RGBA_ENFORCED_DIRS ("add dirs here as they're cleaned"), and this file is
+       not in that set yet. The other eight in this module are the reason it is
+       not; this one is fixed because the rule is fixed here. */
+    box-shadow: 0 0 4px color-mix(in srgb, var(--color-success) 40%, transparent);
+  }
+
+  /*
+    Finding 17: the line above claims "research grounded in web sources", and
+    until now nothing behind that claim could be opened. The anchor card prints
+    the model's literary_influence with a file number and a classification
+    stamp, with the authority of a citation — and measured on one production
+    anchor, three of its four references were right and one was the classic
+    Foucault misattribution. Nothing could be reconciled with anything.
+
+    These are the rows Tavily actually returned: title and URL, no model in
+    between. They do not verify the citation — they say what was read, which is
+    what the claim above actually promises. Folded shut by default: it is a
+    footnote, not a feature.
+  */
+  .research-sources {
+    border: 1px solid var(--color-border-light);
+    border-top: none;
+    background: var(--color-surface-sunken);
+    font-family: var(--font-mono, monospace);
+    font-size: 10px;
+    color: var(--color-text-muted);
+  }
+
+  .research-sources__summary {
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider, 0.05em);
+    list-style: none;
+  }
+
+  .research-sources__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .research-sources__summary::before {
+    content: '+';
+    display: inline-block;
+    width: 1.2em;
+    color: var(--color-text-secondary);
+  }
+
+  .research-sources[open] .research-sources__summary::before {
+    content: '\2013';
+  }
+
+  .research-sources__summary:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  .research-sources__list {
+    margin: 0;
+    padding: 0 var(--space-3) var(--space-3);
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1-5, 0.375rem);
+  }
+
+  .research-sources__item {
+    display: flex;
+    gap: var(--space-2);
+    align-items: baseline;
+  }
+
+  .research-sources__axis {
+    flex-shrink: 0;
+    color: var(--color-text-secondary);
+    letter-spacing: var(--tracking-wide, 0.025em);
+  }
+
+  .research-sources__link {
+    color: var(--color-text-link);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .research-sources__link:hover,
+  .research-sources__link:focus-visible {
+    text-decoration: underline;
   }
 `;
 

@@ -436,6 +436,7 @@ class ForgeOrchestratorService:
         if settings.forge_mock_mode:
             logger.debug("FORGE_MOCK_MODE: using mock research + anchors")
             context = mock.mock_research_context(seed)
+            research_sources: list[dict[str, str]] = []
             anchors = [PhilosophicalAnchor(**a) for a in mock.mock_anchors(seed)]
         else:
             or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
@@ -443,11 +444,13 @@ class ForgeOrchestratorService:
             try:
                 # 1. Scrape web context
                 logger.debug("Scraping thematic context for seed: %s", seed[:50])
-                context = await ResearchService.search_thematic_context(seed)
+                research = await ResearchService.search_thematic_context(seed)
+                context = research.context
 
                 # 2. Generate 3 Philosophical Anchors
                 logger.debug("Generating philosophical anchors...")
                 anchors = await ResearchService.generate_anchors(seed, context, or_key)
+                research_sources = research.sources
             except ModelAPIError as exc:
                 raise ai_error_to_http(exc) from exc
 
@@ -462,7 +465,17 @@ class ForgeOrchestratorService:
             user_id,
             draft_id,
             ForgeDraftUpdate(
-                research_context={"raw_data": context, "source": research_source},
+                # `sources` are the rows Tavily actually returned — title and
+                # URL, deduplicated, no model in between. The card's footer
+                # claims "research grounded in web sources"; until now nothing
+                # behind that claim could be opened, and the citations the model
+                # wrote from memory could not be reconciled with anything. See
+                # finding 17. Empty on the emulator path, which `source` says.
+                research_context={
+                    "raw_data": context,
+                    "source": research_source,
+                    "sources": research_sources,
+                },
                 # `selected` is deliberately not carried over: a re-scan
                 # replaces the three anchors, so a selection pointing at one of
                 # the old ones would name something that no longer exists.
