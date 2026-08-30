@@ -17,17 +17,39 @@
 --
 --   token_economy_stats  → token_purchases  ("Users read own purchases",
 --                                            "Admins read all purchases")
---                          user_wallets     ("Users can view their own wallet")
+--                          user_wallets     ("Users can view their own wallet",
+--                                            "Admins can manage all wallets")
 --       Gibt heraus: Gesamtumsatz in Cent, Tokens im Umlauf, Zahl der Käufer.
 --       Aggregate, keine Personendaten — aber Geschäftszahlen der Plattform.
 --
---   v_instagram_queue    → instagram_posts  (RLS an, KEINE SELECT-Richtlinie)
---   v_bluesky_queue      → bluesky_posts    (RLS an, KEINE SELECT-Richtlinie)
+--   v_instagram_queue    → instagram_posts  (RLS an; einzige Richtlinie
+--   v_bluesky_queue      → bluesky_posts     `ig_posts_admin_all` bzw.
+--                                            `bsky_posts_admin_all`, ALL,
+--                                            Bedingung `is_platform_admin()`)
+--
+--       ACHTUNG, die Unterscheidung ist wichtig: es ist NICHT „keine
+--       Richtlinie", sondern „eine Richtlinie, die für anon nie zutrifft".
+--       Der Unterschied entscheidet, was ein späterer Leser tut: wer „keine
+--       Richtlinie" liest, könnte auf die Idee kommen, eine hinzuzufügen — und
+--       damit genau den Zugang öffnen, den diese Migration schließt.
+--       (Meine erste Messung sah die Richtlinie nicht, weil die Abfrage auf
+--       `polcmd = 'r'` filterte; eine ALL-Richtlinie trägt `'*'`.
+--       Von der Parallelsitzung berichtigt.)
 --       Gibt heraus: die vollständige Warteschlange samt UNVERÖFFENTLICHTER
 --       Beiträge — Bildtexte, Hashtags, Bild-URLs, Terminplanung — und
 --       `unlock_code`, den Code des Cipher-ARG je Beitrag. 13 bzw. 2 Zeilen.
 --       Wer die Codes vor der Veröffentlichung lesen kann, löst das ARG, ohne
 --       es zu spielen.
+--
+-- BELEG (Parallelsitzung, lesend auf Prod in BEGIN … ROLLBACK, `SET LOCAL ROLE
+-- anon`, beide Seiten unter DERSELBEN Rolle gemessen):
+--
+--       als Rolle anon      Basistabelle   Sicht
+--       instagram_posts            0         13
+--       bluesky_posts              0          2
+--
+-- Die Basistabelle gibt anon nichts, die Sicht dreizehn Zeilen. Genau die
+-- Differenz ist die Lücke.
 --
 -- Alle drei werden im Betrieb AUSSCHLIESSLICH über den service_role-Client
 -- hinter `require_platform_admin()` gelesen (`forge_draft_service.py:466`,

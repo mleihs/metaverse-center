@@ -12,6 +12,10 @@ access anyway. For three it is not:
   v_instagram_queue    → the full queue including UNPUBLISHED posts and
   v_bluesky_queue        `unlock_code`, the Cipher ARG code per post
 
+The two queue tables are not policy-free: each carries one `*_admin_all` policy
+gated on `is_platform_admin()`, which simply never matches for `anon`. The
+distinction matters — "no policy" invites someone to add one.
+
 All three are read in operation only through the service-role client behind
 `require_platform_admin()`, so revoking anon/authenticated cannot reach a
 caller. Migration 294 revokes the grant AND sets `security_invoker` — the first
