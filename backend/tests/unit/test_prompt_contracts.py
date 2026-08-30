@@ -488,12 +488,15 @@ class TestPlatformFrame:
         assert filled == "A portrait of Almandine."
 
     def test_a_type_without_a_frame_gets_nothing_appended(self):
+        """memory_extraction is structured observation, deliberately unframed."""
+        contract = get_contract("memory_extraction")
+        assert contract is not None and not contract.frame, "pick a type that still has no frame"
         resolver = PromptResolver(supabase=None)  # type: ignore[arg-type]
         filled = resolver.fill_template(
-            self._resolved("event_generation", "An event of type {event_type}.", PromptSource.SIMULATION_LOCALE),
-            {"event_type": "political"},
+            self._resolved("memory_extraction", "Analyze {agent_name}.", PromptSource.SIMULATION_LOCALE),
+            {"agent_name": "Almandine"},
         )
-        assert filled == "An event of type political."
+        assert filled == "Analyze Almandine."
 
     def test_system_prompt_is_filled(self):
         """The platform chronicle system prompt names {simulation_name}."""

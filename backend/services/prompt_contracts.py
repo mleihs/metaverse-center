@@ -151,6 +151,28 @@ _FRAME_CHRONICLE = (
     'title", "headline": "one-line hook", "content": "full article"}'
 )
 
+# The prose floor. Images got a composition floor in W1 and the chronicle got a
+# JSON floor; the text a reader actually reads — every agent card, every detail
+# panel — got nothing. Measured on the ATRAMENT agents: 235 words with not one
+# plain sentence, a simile in nearly every one, and a colon-introduced thesis
+# ("Ihr größter Widerspruch:") standing in for characterisation. The seed's own
+# system prompts ordered it: "RICH ... DEPTH AND NUANCE", "ATMOSPHERIC",
+# "COMPELLING". Written by the parallel session, which measured the register
+# before proposing the remedy.
+_FRAME_PROSE = (
+    "STYLE (platform requirement, overrides anything above): write plainly. Most sentences "
+    "state a fact and stop. Ration figurative language to at most one image per paragraph, "
+    "and only where a plain sentence cannot carry it — a simile in every sentence reads as "
+    "effort, not as observation.\n"
+    'Do not sum the subject up in a formula: no "Their greatest contradiction:", no "Their '
+    'private heresy:", no colon-introduced thesis about who or what this is. State the facts '
+    "and let them imply it.\n"
+    "No signature quirk invented to make the subject memorable, and no closing epigram — end "
+    "on the last fact, not on a short dramatic sentence.\n"
+    "Ordinary registers are allowed and usually right: a clerk may be described in the "
+    "language of clerks."
+)
+
 _FRAME_CHAT = (
     "Stay in character at all times. Never break character, never acknowledge being an AI or a "
     "language model. Never prefix your reply with your own name in brackets. Never include "
@@ -179,6 +201,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
         _contract(
             "agent_generation_full",
             ("agent_name", "agent_system", "agent_gender", "simulation_name", "locale_name"),
+            frame=_FRAME_PROSE,
         ),
         _contract(
             "agent_generation_partial",
@@ -190,6 +213,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "simulation_name",
                 "locale_name",
             ),
+            frame=_FRAME_PROSE,
         ),
         # Both building types are served by one call site that builds one dict,
         # so both declare the same names. `building_name` is what selects the
@@ -204,6 +228,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "simulation_name",
                 "locale_name",
             ),
+            frame=_FRAME_PROSE,
         ),
         _contract(
             "building_generation_named",
@@ -215,6 +240,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "simulation_name",
                 "locale_name",
             ),
+            frame=_FRAME_PROSE,
         ),
         _contract(
             "agent_reactions",
@@ -228,7 +254,11 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "locale_name",
             ),
         ),
-        _contract("event_generation", ("event_type", "simulation_name", "locale_name")),
+        _contract(
+            "event_generation",
+            ("event_type", "simulation_name", "locale_name"),
+            frame=_FRAME_PROSE,
+        ),
         _contract(
             "news_transformation",
             ("news_title", "news_content", "simulation_name", "locale_name"),
@@ -250,6 +280,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "simulation_name",
                 "locale_name",
             ),
+            frame=_FRAME_PROSE,
         ),
         _contract(
             "event_echo_transformation",
