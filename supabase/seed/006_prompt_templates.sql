@@ -200,11 +200,9 @@ Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
 - At most one simile or image per paragraph.
-- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
-- No signature quirk invented to make them memorable.
-- The LAST sentence of each field is a fact, not an epigram and not a comparison.
-- Sentences may be long; they should just not all share one shape.
-- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+- No formula that sums the subject up in a single clause.
+- The LAST sentence is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.',
     'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
@@ -228,11 +226,9 @@ Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Hoechstens ein Vergleich oder Bild je Absatz.
-- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
-- Keine erfundene Marotte, die sie merkwuerdig machen soll.
-- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
-- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
-- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
+- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
     'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
@@ -255,11 +251,9 @@ Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
 - At most one simile or image per paragraph.
-- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
-- No signature quirk invented to make them memorable.
-- The LAST sentence of each field is a fact, not an epigram and not a comparison.
-- Sentences may be long; they should just not all share one shape.
-- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+- No formula that sums the subject up in a single clause.
+- The LAST sentence is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.',
     'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
@@ -282,11 +276,9 @@ Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Hoechstens ein Vergleich oder Bild je Absatz.
-- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
-- Keine erfundene Marotte, die sie merkwuerdig machen soll.
-- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
-- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
-- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
+- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
     'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
