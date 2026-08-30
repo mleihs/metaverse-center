@@ -797,7 +797,13 @@ class IgnitionResponse(BaseModel):
     simulation_id: str
     slug: str | None = None
     name: str
+    # Empty until migration 287 gave the materialization a German name to write,
+    # and still empty for a world whose anchor carried no `title_de`. The
+    # frontend's `t()` falls back to `name`, so an empty value renders the
+    # English name rather than nothing — a missing translation is a visible gap.
+    name_de: str = ""
     description: str
+    description_de: str = ""
     anchor: dict[str, Any]
     seed_prompt: str
 

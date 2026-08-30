@@ -832,12 +832,24 @@ class ForgeOrchestratorService:
             sim_id = response.data
 
             # Resolve slug + name for frontend navigation and ceremony
+            # `name_de` rides along with `name`: the ceremony renders under the
+            # viewer's locale, and until migration 287 there was nothing German
+            # to render — the column was empty on all 41 worlds. Selecting it
+            # here is what lets the ignition screen say the world's German name
+            # instead of its English one. See finding 16.
             slug_resp = await (
-                supabase.table("simulations").select("slug, name, description").eq("id", str(sim_id)).single().execute()
+                supabase.table("simulations")
+                .select("slug, name, name_de, description, description_de")
+                .eq("id", str(sim_id))
+                .single()
+                .execute()
             )
-            slug = slug_resp.data["slug"] if slug_resp.data else None
-            sim_name = slug_resp.data.get("name", "") if slug_resp.data else ""
-            sim_description = slug_resp.data.get("description", "") if slug_resp.data else ""
+            row = slug_resp.data or {}
+            slug = row.get("slug")
+            sim_name = row.get("name", "") or ""
+            sim_name_de = row.get("name_de", "") or ""
+            sim_description = row.get("description", "") or ""
+            sim_description_de = row.get("description_de", "") or ""
 
             # Fetch draft for theme_config and lore context
             draft_data = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
@@ -869,7 +881,9 @@ class ForgeOrchestratorService:
                 "simulation_id": sim_id,
                 "slug": slug,
                 "name": sim_name,
+                "name_de": sim_name_de,
                 "description": sim_description,
+                "description_de": sim_description_de,
                 "anchor": anchor,
                 "seed_prompt": seed,
                 "draft_data": draft_data,
