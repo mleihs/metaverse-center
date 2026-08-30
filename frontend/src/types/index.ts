@@ -790,12 +790,31 @@ export interface UserProfile {
   updated_at: string;
 }
 
+/**
+ * What `GET /users/me` actually returns.
+ *
+ * `UserProfile` above describes a row shape the endpoint has never sent
+ * (`display_name`, `avatar_url`, `created_at`, `updated_at` are not on it, and
+ * `memberships` is), which is how the profile page came to call two endpoints
+ * that do not exist. The display name lives in Supabase Auth's `user_metadata`,
+ * not in `user_profiles` - it is written directly through the auth client, per
+ * the hybrid pattern in CLAUDE.md.
+ */
+export interface UserAccount {
+  id: UUID;
+  email: string;
+  memberships: MembershipInfo[];
+  onboarding_completed: boolean;
+  academy_epochs_played: number;
+  is_platform_admin: boolean;
+}
+
 export interface MembershipInfo {
   simulation_id: UUID;
   simulation_name: string;
   simulation_slug: string;
   member_role: SimulationRole;
-  joined_at: string;
+  joined_at?: string;
 }
 
 export interface ActiveEpochParticipation {

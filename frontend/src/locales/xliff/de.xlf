@@ -1142,57 +1142,13 @@
   <source>Sign Out</source>
   <target>Abmelden</target>
 </trans-unit>
-<trans-unit id="sa424cdcf6b0993d0">
-  <source>Failed to load memberships.</source>
-  <target>Fehler beim Laden der Mitgliedschaften.</target>
-</trans-unit>
-<trans-unit id="s0662a5787019c2e4">
-  <source>An unexpected error occurred while loading memberships.</source>
-  <target>Ein unerwarteter Fehler beim Laden der Mitgliedschaften.</target>
-</trans-unit>
-<trans-unit id="s0dbf648c666584d8">
-  <source>Profile updated successfully.</source>
-  <target>Profil erfolgreich aktualisiert.</target>
-</trans-unit>
-<trans-unit id="s40826b781c6feddb">
-  <source>Failed to update profile.</source>
-  <target>Fehler beim Aktualisieren des Profils.</target>
-</trans-unit>
-<trans-unit id="s3f665d5e5aaa691c">
-  <source>Profile Information</source>
-  <target>Profilinformationen</target>
-</trans-unit>
 <trans-unit id="s11b2e9ecce28690c">
   <source>Display Name</source>
   <target>Anzeigename</target>
 </trans-unit>
-<trans-unit id="sc74ee0064461b7db">
-  <source>Your display name...</source>
-  <target>Dein Anzeigename...</target>
-</trans-unit>
-<trans-unit id="s926aa9b3bc94e298">
-  <source>Use the reset password flow to change your password. A password reset email will be sent to your registered email address.</source>
-  <target>Nutze die Passwort-Zurücksetzung, um dein Passwort zu ändern. Eine E-Mail wird an deine registrierte Adresse gesendet.</target>
-</trans-unit>
 <trans-unit id="saa99d0d8a89d0b2f">
   <source>Simulation Memberships</source>
   <target>Simulationsmitgliedschaften</target>
-</trans-unit>
-<trans-unit id="s750c25de7ef6f80c">
-  <source>Loading memberships...</source>
-  <target>Mitgliedschaften werden geladen...</target>
-</trans-unit>
-<trans-unit id="s0ebf265c41f3ac03">
-  <source>You are not a member of any simulations yet.</source>
-  <target>Du bist noch kein Mitglied einer Simulation.</target>
-</trans-unit>
-<trans-unit id="s0561bb86953cba6a">
-  <source>Joined <x id="0" equiv-text="${formatDate(m.joined_at)}"/></source>
-  <target>Beigetreten <x id="0" equiv-text="${this._formatDate(m.joined_at)}"/></target>
-</trans-unit>
-<trans-unit id="sb061ff5a347a296e">
-  <source>Profile</source>
-  <target>Profil</target>
 </trans-unit>
 <trans-unit id="sccaedcb32fe56dbc">
   <source>Failed to load access settings</source>
@@ -28822,6 +28778,135 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sf5aad5bfbed8ab1f">
   <source>effectiveness <x id="0" equiv-text="${r.effectiveness.toFixed(2)}"/></source>
 <target>Wirksamkeit <x id="0" equiv-text="${r.effectiveness.toFixed(2)}"/></target></trans-unit>
+<trans-unit id="s80e6ddd3c68f14d6">
+  <source><x id="0" equiv-text="${this._researchSources.length}"/> sources consulted</source>
+<target><x id="0" equiv-text="${this._researchSources.length}"/> Quellen herangezogen</target></trans-unit>
+<trans-unit id="sc75b368eb649f56f">
+  <source>Structures</source>
+<target>Bauten</target></trans-unit>
+<trans-unit id="s9197896e152a5130">
+  <source>Plates</source>
+<target>Tafeln</target></trans-unit>
+<trans-unit id="s9b5614d089c5dfff">
+  <source>Personnel File</source>
+<target>Personalakte</target></trans-unit>
+<trans-unit id="sedb4c3ecdc958667">
+  <source>The file could not be retrieved.</source>
+<target>Die Akte konnte nicht geholt werden.</target></trans-unit>
+<trans-unit id="s5919c31b37fa8721">
+  <source>Retrieving the file</source>
+<target>Die Akte wird geholt</target></trans-unit>
+<trans-unit id="s6444d581fbf93c13">
+  <source>The name could not be entered.</source>
+<target>Der Name konnte nicht eingetragen werden.</target></trans-unit>
+<trans-unit id="s4774aa9d745aca4f">
+  <source>Name entered in the file.</source>
+<target>Name in die Akte eingetragen.</target></trans-unit>
+<trans-unit id="s781e6fd29e47e750">
+  <source>Correspondence preferences saved.</source>
+<target>Einstellungen zum Schriftverkehr gespeichert.</target></trans-unit>
+<trans-unit id="s5c46de043e8bcb39">
+  <source>The preference could not be saved.</source>
+<target>Die Einstellung konnte nicht gespeichert werden.</target></trans-unit>
+<trans-unit id="s66f9710cd645ebd5">
+  <source>Platform admin</source>
+<target>Plattform-Verwaltung</target></trans-unit>
+<trans-unit id="s7a24d81d25cd47f4">
+  <source>Architect</source>
+<target>Architekt</target></trans-unit>
+<trans-unit id="sed8e753d3747d228">
+  <source><x id="0" equiv-text="${this._account?.memberships.length ?? 0}"/> postings</source>
+<target><x id="0" equiv-text="${this._account?.memberships.length ?? 0}"/> Zuweisungen</target></trans-unit>
+<trans-unit id="sfbb9e54def553781">
+  <source>Registered address</source>
+<target>Hinterlegte Anschrift</target></trans-unit>
+<trans-unit id="s7d7b6b6563968149">
+  <source>The address the Bureau writes to. It cannot be changed here.</source>
+<target>Die Anschrift, an die das Büro schreibt. Sie lässt sich hier nicht ändern.</target></trans-unit>
+<trans-unit id="se724e8e0ccb7f52c">
+  <source>Display name</source>
+<target>Anzeigename</target></trans-unit>
+<trans-unit id="sfd4d4bf5410cc5f8">
+  <source>How others see you</source>
+<target>Wie andere dich sehen</target></trans-unit>
+<trans-unit id="s3efc5d5877bb5c03">
+  <source>Shown beside your entries. Leave it empty to appear under your address.</source>
+<target>Steht neben deinen Einträgen. Leer lassen, um unter der Anschrift zu erscheinen.</target></trans-unit>
+<trans-unit id="s8636b581f94d993f">
+  <source>Entering...</source>
+<target>Wird eingetragen...</target></trans-unit>
+<trans-unit id="sf7d14d8c7894ff74">
+  <source>Enter name</source>
+<target>Namen eintragen</target></trans-unit>
+<trans-unit id="s2311736c60d7c75f">
+  <source>Unsaved change</source>
+<target>Nicht gespeicherte Änderung</target></trans-unit>
+<trans-unit id="seece7ab50b3c4ebb">
+  <source>Correspondence</source>
+<target>Schriftverkehr</target></trans-unit>
+<trans-unit id="s06e0d79711c1c5ef">
+  <source>the post, not the interface</source>
+<target>die Post, nicht die Oberfläche</target></trans-unit>
+<trans-unit id="s66c27350bdc028bf">
+  <source>Language of the post</source>
+<target>Sprache der Post</target></trans-unit>
+<trans-unit id="s26c79a9ca048edf2">
+  <source>Cycle briefings, invitations and epoch reports arrive in this language. The language of this interface follows the switch in the header.</source>
+<target>Zyklusberichte, Einladungen und Epochenberichte kommen in dieser Sprache. Die Sprache dieser Oberfläche folgt dem Schalter in der Kopfzeile.</target></trans-unit>
+<trans-unit id="s4cf4bc9ec3d61d0f">
+  <source>Which letters reach you</source>
+<target>Welche Briefe dich erreichen</target></trans-unit>
+<trans-unit id="sd5ae2a8d03a28080">
+  <source>A cycle has been resolved</source>
+<target>Ein Zyklus wurde aufgelöst</target></trans-unit>
+<trans-unit id="sd558aa68b8242dd6">
+  <source>An epoch has entered a new phase</source>
+<target>Eine Epoche ist in eine neue Phase getreten</target></trans-unit>
+<trans-unit id="s73587f302fdc202d">
+  <source>An epoch has closed</source>
+<target>Eine Epoche ist abgeschlossen</target></trans-unit>
+<trans-unit id="sb3ab1b26d3094486">
+  <source>These hold for every world at once – the Bureau keeps one register per person, not one per posting.</source>
+<target>Sie gelten für alle Welten zugleich – das Büro führt ein Register je Person, nicht eines je Zuweisung.</target></trans-unit>
+<trans-unit id="s2828a768946ba6d2">
+  <source>Save preferences</source>
+<target>Einstellungen speichern</target></trans-unit>
+<trans-unit id="s950e9197f6335ea6">
+  <source>Postings</source>
+<target>Zuweisungen</target></trans-unit>
+<trans-unit id="s0b88c5c710a76a4c">
+  <source><x id="0" equiv-text="${postings.length}"/> on file</source>
+<target><x id="0" equiv-text="${postings.length}"/> in der Akte</target></trans-unit>
+<trans-unit id="s6b2b80bb4f47ac75">
+  <source>No postings on file. Join a world, or found one, and it is entered here.</source>
+<target>Keine Zuweisungen in der Akte. Tritt einer Welt bei oder gründe eine, dann wird sie hier eingetragen.</target></trans-unit>
+<trans-unit id="s8b008e2f652cbddb">
+  <source>since <x id="0" equiv-text="${formatDate(m.joined_at)}"/></source>
+<target>seit <x id="0" equiv-text="${formatDate(m.joined_at)}"/></target></trans-unit>
+<trans-unit id="s8a4ff2bd9c13498c">
+  <source>Record</source>
+<target>Aktenvermerk</target></trans-unit>
+<trans-unit id="s18d1120b1eaa18ac">
+  <source>Academy epochs played</source>
+<target>Gespielte Akademie-Epochen</target></trans-unit>
+<trans-unit id="sd96ccdcd4c8bbe71">
+  <source>Induction completed</source>
+<target>Einführung abgeschlossen</target></trans-unit>
+<trans-unit id="s96ec76ba1a8c7165">
+  <source>The letter could not be sent.</source>
+<target>Der Brief konnte nicht abgeschickt werden.</target></trans-unit>
+<trans-unit id="sf082c24b6f884b0d">
+  <source>A reset letter is on its way to your address.</source>
+<target>Ein Brief zum Zurücksetzen ist an deine Anschrift unterwegs.</target></trans-unit>
+<trans-unit id="sacd3b44b585cac25">
+  <source>Passphrase</source>
+<target>Kennwort</target></trans-unit>
+<trans-unit id="scd4b5e2bd1920839">
+  <source>The Bureau does not hold your passphrase and cannot show it. It can send a letter that lets you set a new one.</source>
+<target>Das Büro verwahrt dein Kennwort nicht und kann es nicht zeigen. Es kann einen Brief schicken, mit dem du ein neues setzt.</target></trans-unit>
+<trans-unit id="s1a507007ff4e9068">
+  <source>Send reset letter</source>
+<target>Brief zum Zurücksetzen schicken</target></trans-unit>
 </body>
 </file>
 </xliff>

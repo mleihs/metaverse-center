@@ -1,4 +1,5 @@
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -7,7 +8,7 @@ import { navigate } from '../../utils/navigation.js';
 
 @localized()
 @customElement('velg-user-menu')
-export class VelgUserMenu extends LitElement {
+export class VelgUserMenu extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: inline-flex;
@@ -44,7 +45,7 @@ export class VelgUserMenu extends LitElement {
       min-width: 180px;
       background: var(--color-surface);
       border: 1px solid var(--color-surface-raised);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+      box-shadow: var(--shadow-lg);
       z-index: var(--z-dropdown, 300);
       display: none;
     }
@@ -68,9 +69,11 @@ export class VelgUserMenu extends LitElement {
                   color var(--transition-fast);
     }
 
-    .dropdown__item:hover {
+    .dropdown__item:hover,
+    .dropdown__item:focus-visible {
       background: color-mix(in srgb, var(--color-primary) 8%, transparent);
       color: var(--color-primary);
+      outline: none;
     }
 
     .dropdown__divider {
@@ -84,12 +87,20 @@ export class VelgUserMenu extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener('click', this._handleOutsideClick);
+    document.addEventListener('keydown', this._handleEscape);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     document.removeEventListener('click', this._handleOutsideClick);
+    document.removeEventListener('keydown', this._handleEscape);
   }
+
+  private _handleEscape = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && this._open) {
+      this._open = false;
+    }
+  };
 
   private _handleOutsideClick = (e: Event): void => {
     if (!e.composedPath().includes(this)) {
@@ -107,17 +118,38 @@ export class VelgUserMenu extends LitElement {
     navigate('/login');
   }
 
+  private _handleProfile(): void {
+    this._open = false;
+    navigate('/profile');
+  }
+
   protected render() {
     const user = appState.user.value;
-    const email = user?.email || msg('User');
+    // The display name if one is set, the address otherwise. Until 30.08.2026
+    // this only ever read the address - the field existed on the profile page,
+    // but its Save button called a route that was never written, so no account
+    // had a display name to show.
+    const label =
+      (user?.user_metadata?.display_name as string | undefined)?.trim() ||
+      user?.email ||
+      msg('User');
 
     return html`
-      <button class="user-btn" @click=${this._toggleMenu}>
-        ${email}
+      <button
+        class="user-btn"
+        aria-haspopup="menu"
+        aria-expanded=${this._open}
+        @click=${this._toggleMenu}
+      >
+        ${label}
       </button>
 
-      <div class="dropdown ${this._open ? 'dropdown--open' : ''}">
-        <button class="dropdown__item" @click=${this._handleSignOut}>
+      <div class="dropdown ${this._open ? 'dropdown--open' : ''}" role="menu">
+        <button class="dropdown__item" role="menuitem" @click=${this._handleProfile}>
+          ${msg('Personnel File')}
+        </button>
+        <div class="dropdown__divider"></div>
+        <button class="dropdown__item" role="menuitem" @click=${this._handleSignOut}>
           ${msg('Sign Out')}
         </button>
       </div>

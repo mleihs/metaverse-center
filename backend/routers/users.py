@@ -47,6 +47,7 @@ async def get_me(
                 simulation_name=sim_data.get("name", ""),
                 simulation_slug=sim_data.get("slug", ""),
                 member_role=row["member_role"],
+                joined_at=row.get("joined_at"),
             )
         )
 
