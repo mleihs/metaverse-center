@@ -112,3 +112,63 @@ class TestInvitationSurvivesALoreOutage:
             sb = _supabase()
             with pytest.raises(OpenRouterError):
                 await EpochInvitationService.regenerate_lore(sb, EPOCH_ID)
+
+
+class TestTheInviteeLanguageIsUsed:
+    """E9: `locale` was collected, stored and ignored.
+
+    `render_epoch_invitation` carried TWO language parameters - a positional
+    `locale` that nothing read, and the keyword `email_locale` that the body
+    actually resolved. The send path filled the dead one.
+    """
+
+    @pytest.mark.asyncio
+    async def test_the_german_invitee_gets_a_german_invitation(self):
+        send = AsyncMock(return_value=True)
+        with (
+            patch.object(
+                EpochInvitationService, "create_invitation",
+                new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
+            ),
+            patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(return_value="Lore.")),
+            patch("backend.services.epoch_invitation_service.EmailService.send", new=send),
+        ):
+            await EpochInvitationService.create_and_send(
+                _supabase(), EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "de",
+            )
+
+        html = send.await_args.args[2]
+        assert 'lang="de"' in html
+        assert "EPOCHEN-EINBERUFUNG" in html
+
+    @pytest.mark.asyncio
+    async def test_the_cycle_length_comes_from_the_epoch(self):
+        """The mission parameters said "8-hour cycles" for every epoch."""
+        send = AsyncMock(return_value=True)
+        chain = MagicMock()
+        for method in ("select", "eq", "single", "limit"):
+            setattr(chain, method, MagicMock(return_value=chain))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"name": "Op", "config": {"cycle_hours": 24}})
+        )
+        sb = MagicMock()
+        sb.table = MagicMock(return_value=chain)
+
+        with (
+            patch.object(
+                EpochInvitationService, "create_invitation",
+                new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
+            ),
+            patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(return_value="Lore.")),
+            patch("backend.services.epoch_invitation_service.EmailService.send", new=send),
+        ):
+            await EpochInvitationService.create_and_send(
+                sb, EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "en",
+            )
+
+        # The exact sentence, not "24 appears somewhere" — the number occurs in
+        # the message for other reasons and a loose assertion would be green
+        # against a hard-wired 8.
+        html = send.await_args.args[2]
+        assert "24-hour cycles" in html
+        assert "8-hour cycles" not in html

@@ -585,7 +585,9 @@ class TestRenderEpochInvitation:
             "epoch_name": "Test Epoch",
             "lore_text": "The shadows gather in the void...",
             "invite_url": "https://metaverse.center/epoch/join?token=abc",
-            "locale": "en",
+            # `locale` used to be a second, dead language parameter next to
+            # `email_locale` (E9). One concept, one parameter.
+            "email_locale": "en",
         }
         defaults.update(overrides)
         return render_epoch_invitation(**defaults)

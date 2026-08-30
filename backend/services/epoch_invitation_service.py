@@ -102,9 +102,15 @@ class EpochInvitationService:
 
         invite_url = f"{base_url}/epoch/join?token={invitation['invite_token']}"
 
-        # Fetch epoch name for email subject
-        epoch_response = await supabase.table("game_epochs").select("name").eq("id", str(epoch_id)).single().execute()
-        epoch_name = epoch_response.data["name"] if epoch_response.data else "Unknown"
+        # Name AND cycle length: the invitation states "N-hour cycles" in its
+        # mission parameters, and that sentence was hard-wired to 8 — a 24-hour
+        # epoch invited people to something it is not (E9).
+        epoch_response = await (
+            supabase.table("game_epochs").select("name, config").eq("id", str(epoch_id)).single().execute()
+        )
+        epoch_row = epoch_response.data or {}
+        epoch_name = epoch_row.get("name") or "Unknown"
+        cycle_hours = int((epoch_row.get("config") or {}).get("cycle_hours", 8))
 
         email_sent = await EpochInvitationService.send_email(
             epoch_name=epoch_name,
@@ -112,6 +118,7 @@ class EpochInvitationService:
             lore_text=lore_text,
             invite_url=invite_url,
             locale=locale,
+            cycle_hours=cycle_hours,
         )
         invitation["email_sent"] = email_sent
 
@@ -371,13 +378,21 @@ class EpochInvitationService:
         lore_text: str,
         invite_url: str,
         locale: str = "en",
+        *,
+        cycle_hours: int = 8,
     ) -> bool:
-        """Send invitation email via SMTP."""
+        """Send invitation email.
+
+        ``locale`` reaches the renderer as ``email_locale`` now. It used to be
+        passed to a positional parameter of the same name that nothing read, so
+        the invitee's language choice was collected, stored and ignored (E9).
+        """
         html_body = render_epoch_invitation(
             epoch_name=epoch_name,
             lore_text=lore_text,
             invite_url=invite_url,
-            locale=locale,
+            email_locale=locale,
+            cycle_hours=cycle_hours,
         )
 
         subject = epoch_invitation_subject(epoch_name, locale)
