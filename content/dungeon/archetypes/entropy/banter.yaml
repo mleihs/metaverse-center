@@ -321,7 +321,7 @@ banter:
     Nächstes dran.
   decay_tier: 0
 - id: eb_42
-  trigger: rest_safe
+  trigger: rest_start
   personality_filter: {}
   text_en: No ambush. The decay pauses. Not stops – pauses. The difference is everything. The difference
     is also decaying.
@@ -329,7 +329,7 @@ banter:
     Der Unterschied verfällt ebenfalls.
   decay_tier: 0
 - id: eb_43
-  trigger: rest_safe
+  trigger: rest_start
   personality_filter:
     agreeableness:
     - 0.7

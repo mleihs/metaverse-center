@@ -572,7 +572,7 @@ async function handleDungeonRest(): Promise<TerminalLine[]> {
 
     dungeonState.applyState(resp.data.state);
     if (resp.data.healed) dungeonAudio.play('healing');
-    const lines = formatRestResult(resp.data.healed, resp.data.ambushed);
+    const lines = formatRestResult(resp.data.healed, resp.data.ambushed, resp.data.banter);
 
     // If ambushed, combat starts
     if (resp.data.ambushed && resp.data.state.combat) {
@@ -601,7 +601,7 @@ async function handleDungeonRetreat(): Promise<TerminalLine[]> {
       return [errorLine(resp.error?.message ?? msg('Retreat failed.'))];
     }
 
-    const lines = formatRetreatResult(resp.data.loot);
+    const lines = formatRetreatResult(resp.data.loot, resp.data.banter);
     if (resp.data.rpc_failed) {
       lines.push(
         errorLine(
@@ -1021,6 +1021,15 @@ async function handleDungeonSubmit(): Promise<TerminalLine[]> {
       // SFX: play dominant combat sound from round events
       _playCombatRoundSfx(resp.data.round_result.events, new Set(partyNames));
       lines.push(...formatCombatResolution(resp.data.round_result, partyNames));
+
+      // The archetype's line for what the round did — a fall, an affliction, a
+      // victory. Emitted since the Systemprüfung; without this it would be
+      // computed and dropped, which is the defect it was meant to fix.
+      const roundBanter = resp.data.banter ? localized(resp.data.banter, 'text') : null;
+      if (roundBanter) {
+        lines.push(combatSystemLine(''));
+        lines.push(combatSystemLine(roundBanter));
+      }
 
       // Victory → show loot
       if (resp.data.round_result.victory && resp.data.state.phase === 'room_clear') {

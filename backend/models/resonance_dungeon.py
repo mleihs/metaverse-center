@@ -737,6 +737,9 @@ class CombatSubmitResponse(BaseModel):
     stalemate: bool | None = None
     loot: list[dict] | None = None
 
+    # Archetype-specific line for what just happened (victory, wipe, a fall).
+    banter: dict | None = None
+
     # RPC failure fallback (graceful degradation)
     rpc_failed: bool | None = None
     rpc_error_message: str | None = None
@@ -781,6 +784,7 @@ class RestResponse(BaseModel):
 
     healed: bool = False
     ambushed: bool = False
+    banter: dict | None = None
     state: DungeonClientState
 
 

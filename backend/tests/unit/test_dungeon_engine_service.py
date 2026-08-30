@@ -708,7 +708,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -730,7 +730,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -746,7 +746,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -763,7 +763,7 @@ class TestMoveToRoom:
         banter = {"id": "banter_test_01", "text_en": "Watch your step!", "text_de": "Pass auf!"}
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=banter),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=banter),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -782,7 +782,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -798,7 +798,7 @@ class TestMoveToRoom:
         _register_instance(instance)
 
         with (
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
         ):
             result = await DungeonEngineService.move_to_room(
                 _make_mock_supabase(), instance.run_id, 1, user_id=_TEST_PLAYER
@@ -815,7 +815,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -835,7 +835,7 @@ class TestMoveToRoom:
 
         with (
             patch("backend.services.dungeon_movement_service.select_encounter", return_value=None),
-            patch("backend.services.dungeon_movement_service.select_banter", return_value=None),
+            patch("backend.services.dungeon.dungeon_banter.select_banter", return_value=None),
             patch("backend.services.dungeon_movement_service.check_ambush", return_value=False),
             patch("backend.services.dungeon_movement_service.spawn_enemies", return_value=[]),
         ):
@@ -1373,9 +1373,12 @@ class TestRetreat:
         with patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]):
             await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
 
-        mock_sb.rpc.assert_called_once()
-        rpc_name, rpc_args = mock_sb.rpc.call_args[0]
-        assert rpc_name == "fn_abandon_dungeon_run"
+        # Retreat makes more than one RPC call since the banter path was unified:
+        # `emit_banter` awards the witness achievement, which room entry always
+        # did and retreat never did. Assert on the call we mean, not on the count.
+        calls = {call.args[0]: call.args[1] for call in mock_sb.rpc.call_args_list}
+        assert "fn_abandon_dungeon_run" in calls, f"nur gerufen: {sorted(calls)}"
+        rpc_args = calls["fn_abandon_dungeon_run"]
         assert rpc_args["p_run_id"] == str(instance.run_id)
         assert rpc_args["p_simulation_id"] == str(instance.simulation_id)
         assert rpc_args["p_outcome"]["rooms_cleared"] == 2

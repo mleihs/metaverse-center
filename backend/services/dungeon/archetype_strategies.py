@@ -896,7 +896,15 @@ class DelugeStrategy(ArchetypeStrategy):
 
         # Tidal recession banter takes priority over threshold banter
         if recession_triggered:
+            state["_receded_last_room"] = True
             return "tidal_recession"
+
+        # The room AFTER a recession is the tide coming back — which is exactly
+        # what the one authored `tidal_surge` line says ("The tide returns.
+        # Higher. It always returns higher."). It had no emitter at all until
+        # the Systemprüfung (Befund D6).
+        if state.pop("_receded_last_room", False):
+            return "tidal_surge"
 
         if water >= self.mechanic_config["chest_threshold"]:
             return "flood_imminent"
