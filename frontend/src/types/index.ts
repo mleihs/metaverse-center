@@ -1526,6 +1526,14 @@ export interface DraftPresenceUser {
 export interface ApiError {
   code: string;
   message: string;
+  /**
+   * The HTTP status, when the failure came from a response rather than the
+   * network. `code` carries the backend's own error code where it sends one and
+   * falls back to `HTTP_<status>`, which is a string a caller should not have to
+   * parse: a component that must tell "you may not read this" (403) from "this
+   * broke" needs the number, not a prefix match.
+   */
+  status?: number;
 }
 
 export type ApiResponse<T> =

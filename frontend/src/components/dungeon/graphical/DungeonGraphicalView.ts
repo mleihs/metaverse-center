@@ -81,6 +81,7 @@ import {
   terminalComponentTokens,
   terminalTokens,
 } from '../../shared/terminal-theme-styles.js';
+import '../DungeonExpeditionLog.js';
 import '../DungeonCombatBar.js';
 import '../DungeonEnemyPanel.js';
 import '../DungeonHeader.js';
@@ -863,6 +864,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             ? html`<div class="lobby-hint">${msg('Select an archetype to begin the descent.')}</div>`
             : nothing
         }
+        <div class="lobby-register">
+          <velg-dungeon-expedition-log
+            .simulationId=${_simulationId}
+          ></velg-dungeon-expedition-log>
+        </div>
       </div>
     `;
   }
