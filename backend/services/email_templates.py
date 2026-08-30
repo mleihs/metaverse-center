@@ -9,8 +9,10 @@ Per-simulation accent colors thread through all templates via accent_color param
 
 from __future__ import annotations
 
+import colorsys
 import logging
 from collections import Counter
+from functools import lru_cache
 
 from backend.config import settings
 
@@ -53,8 +55,19 @@ _SIM_HEADERS: dict[str, dict[str, str]] = {
 
 
 def get_sim_accent(slug: str | None) -> str:
-    """Return accent color for a simulation slug, falling back to amber."""
-    return _SIM_EMAIL_COLORS.get(slug or "", _AMBER)
+    """Return a readable accent color for a simulation slug, falling back to amber.
+
+    The stored value is the world's brand colour; what leaves this function is
+    that colour raised until it is legible on ``_BG``. Two of the five entries
+    were below WCAG AA when measured (2026-08-30): ``cite-des-dames`` #1E3A8A at
+    **1.91:1** and ``the-gaslit-reach`` #0d7377 at **3.52:1**. The first is the
+    worse of the two because the CTA paints the accent as a BACKGROUND and sets
+    ``color:{_BG}`` on top — dark blue on black, an invisible button.
+
+    The lift happens here rather than in the table so that a colour added later
+    cannot reintroduce the defect: every new world is corrected on the way out.
+    """
+    return _ensure_readable(_SIM_EMAIL_COLORS.get(slug or "", _AMBER))
 
 
 def get_sim_header(slug: str | None, lang: str) -> str:
@@ -196,7 +209,9 @@ def _render_invitation_block(
             </td>
           </tr>"""
 
-    # Operation name (dramatic stamp-in)
+    # Operation name. The stamp animation is gone with its keyframe: the project
+    # forbids stamp aesthetics and rotated elements, and `rotate(-4deg)` was
+    # exactly that. A static name in the accent colour carries the same weight.
     op_name = f"""\
 {urgency}
           <tr>
@@ -204,7 +219,7 @@ def _render_invitation_block(
               <p style="margin:0 0 2px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("inv_operation", lang)}
               </p>
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {epoch_name}
               </{heading_tag}>
               <p style="margin:4px 0 0;font-size:11px;color:{_BORDER};letter-spacing:1px;">
@@ -315,11 +330,75 @@ _BORDER = "#333"
 _BORDER_SUBTLE = "#222"
 _TEXT = "#ccc"
 _TEXT_DIM = "#888"
-_TEXT_DARK = "#666"
+# 5.73:1 on _BG. Was #666 at 3.45:1 — below WCAG AA, and used for the whole
+# footer at 10px, i.e. the smallest text in the mail carried the worst contrast.
+# The footer size moves to 12px with it (handoff P0.2).
+_TEXT_DARK = "#8a8a8a"
 _AMBER = "#f59e0b"
 _GREEN = "#4ade80"
 _RED = "#ef4444"
 _GRAY = "#666"
+
+
+# ── Contrast floor ────────────────────────────────────────────────────────
+#
+# Email cannot use the design tokens: Outlook and Gmail do not resolve CSS
+# variables, so this module keeps its own palette as constants (see the handoff,
+# "Hex ist hier korrekt"). What it must not inherit from that exemption is the
+# freedom to be unreadable — hence a measured floor rather than hand-picked
+# replacements.
+
+_CONTRAST_FLOOR = 4.5  # WCAG AA for normal text
+
+
+def _relative_luminance(hex_color: str) -> float:
+    """WCAG relative luminance of an #rgb / #rrggbb colour."""
+    raw = hex_color.lstrip("#")
+    if len(raw) == 3:
+        raw = "".join(ch * 2 for ch in raw)
+    channels = []
+    for offset in (0, 2, 4):
+        value = int(raw[offset : offset + 2], 16) / 255
+        channels.append(value / 12.92 if value <= 0.04045 else ((value + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+
+
+def contrast_ratio(foreground: str, background: str) -> float:
+    """WCAG contrast ratio between two colours (1.0 … 21.0)."""
+    a, b = _relative_luminance(foreground), _relative_luminance(background)
+    lighter, darker = max(a, b), min(a, b)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+@lru_cache(maxsize=64)
+def _ensure_readable(hex_color: str, background: str = "#0a0a0a") -> str:
+    """Raise a colour's lightness until it clears the contrast floor.
+
+    Hue and saturation are preserved — the world keeps its colour, it only stops
+    being a colour nobody can see. Lightness climbs in 1 % steps, which converges
+    in well under a hundred iterations and lands on the FIRST value that passes
+    rather than washing the colour out to white.
+
+    ``background`` defaults to the mail background instead of referencing ``_BG``
+    so this helper stays usable before that constant is read, and so a caller can
+    check against a panel surface.
+    """
+    if contrast_ratio(hex_color, background) >= _CONTRAST_FLOOR:
+        return hex_color
+
+    raw = hex_color.lstrip("#")
+    if len(raw) == 3:
+        raw = "".join(ch * 2 for ch in raw)
+    r, g, b = (int(raw[i : i + 2], 16) / 255 for i in (0, 2, 4))
+    hue, lightness, saturation = colorsys.rgb_to_hls(r, g, b)
+
+    while lightness < 1.0:
+        lightness = min(1.0, lightness + 0.01)
+        nr, ng, nb = colorsys.hls_to_rgb(hue, lightness, saturation)
+        candidate = f"#{round(nr * 255):02x}{round(ng * 255):02x}{round(nb * 255):02x}"
+        if contrast_ratio(candidate, background) >= _CONTRAST_FLOOR:
+            return candidate
+    return "#ffffff"
 
 
 def _delta_arrow(delta: float) -> str:
@@ -396,11 +475,6 @@ def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
       from {{ opacity: 0; transform: translateY(6px); }}
       to {{ opacity: 1; transform: translateY(0); }}
     }}
-    @keyframes stamp-in {{
-      0% {{ opacity: 0; transform: scale(1.5) rotate(-4deg); }}
-      60% {{ opacity: 1; transform: scale(0.97) rotate(0deg); }}
-      100% {{ opacity: 1; transform: scale(1) rotate(0deg); }}
-    }}
   </style>
 </head>
 <body class="email-bg" style="margin:0;padding:0;background-color:{_BG};font-family:{_MONO};">
@@ -460,27 +534,45 @@ def _language_divider() -> str:
           </tr>"""
 
 
-def _footer_row(email_locale: str | None = None) -> str:
-    """Render the standard footer with notification management link."""
-    if email_locale == "de":
-        manage_link = f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
-    elif email_locale == "en":
-        manage_link = f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
-    else:
-        manage_link = (
-            f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Manage notifications</a>'
-            f"&nbsp;&middot;&nbsp;"
-            f'<a href="{settings.site_url}/settings" style="color:{_TEXT_DARK};text-decoration:underline;">Benachrichtigungen verwalten</a>'
-        )
+def _footer_row(email_locale: str | None = None, *, unsubscribe_url: str | None = None) -> str:
+    """Render the standard footer.
 
+    Three obligations meet here, and all three were unmet (handoff P0.2/4/6):
+
+    * **Readability.** The whole block ran at 10px in ``#666`` — 3.45:1 on the
+      mail background, below WCAG AA, and the smallest type in the message
+      carried the worst contrast of anything in it. Now 12px in ``_TEXT_DARK``
+      (5.73:1).
+    * **A way out.** The single link pointed at ``{site_url}/settings``, a route
+      that does not exist. There are now two, as required: leave THIS kind of
+      mail (one click, no login — ``unsubscribe_url``), and manage everything.
+    * **Provider identification.** Mail sent to German-speaking recipients has
+      to name its operator. The line mirrors what the privacy page already
+      publishes; it invents nothing.
+    """
     footer_lang = email_locale if email_locale in ("en", "de") else "en"
+    link_style = f"color:{_TEXT_DARK};text-decoration:underline;"
+
+    links = []
+    if unsubscribe_url:
+        links.append(f'<a href="{unsubscribe_url}" style="{link_style}">{_nt("footer_unsubscribe", footer_lang)}</a>')
+    links.append(
+        f'<a href="{settings.site_url}/settings/notifications" style="{link_style}">'
+        f'{_nt("footer_manage", footer_lang)}</a>'
+    )
+    links.append(f'<a href="{settings.site_url}/privacy" style="{link_style}">{_nt("footer_legal", footer_lang)}</a>')
+    link_row = "&nbsp;&middot;&nbsp;".join(links)
+
     return f"""\
           <tr>
-            <td style="padding:16px 32px;border-top:1px solid {_BORDER_SUBTLE};">
-              <p style="margin:0 0 4px;font-size:10px;color:{_TEXT_DARK};">
-                {manage_link}
+            <td style="padding:20px 32px;border-top:1px solid {_BORDER_SUBTLE};">
+              <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:{_TEXT_DARK};">
+                {link_row}
               </p>
-              <p style="margin:0;font-size:10px;letter-spacing:2px;color:{_TEXT_DARK};text-transform:uppercase;">
+              <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:{_TEXT_DARK};">
+                {_nt("footer_operator", footer_lang)}
+              </p>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DARK};text-transform:uppercase;">
                 {_nt("footer_origin", footer_lang)}
               </p>
             </td>
@@ -896,6 +988,22 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "footer_origin": {
         "en": "TRANSMISSION ORIGIN: metaverse.center",
         "de": "ÜBERTRAGUNGSURSPRUNG: metaverse.center",
+    },
+    "footer_unsubscribe": {
+        "en": "Unsubscribe from these emails",
+        "de": "Diese Benachrichtigungen abbestellen",
+    },
+    "footer_manage": {
+        "en": "Manage all notifications",
+        "de": "Alle Benachrichtigungen verwalten",
+    },
+    "footer_operator": {
+        "en": "metaverse.center is operated by Ing. Mag. Matthias Leihs, BSc, Austria.",
+        "de": "metaverse.center wird betrieben von Ing. Mag. Matthias Leihs, BSc, Österreich.",
+    },
+    "footer_legal": {
+        "en": "Legal notice &amp; privacy",
+        "de": "Impressum &amp; Datenschutz",
     },
     "subject_urgent_final": {
         "en": "URGENT // FINAL PHASE",
@@ -1705,7 +1813,7 @@ def render_phase_change(
           </tr>
           <tr>
             <td style="padding:24px 32px 16px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
+              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {safe_name}
               </{heading_tag}>
             </td>
@@ -1769,11 +1877,11 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:3px solid {accent};padding:24px 20px;background-color:{_SURFACE};text-align:center;animation:glow-breathe 2.5s ease-in-out infinite;">
-                <p style="margin:0 0 8px;font-size:24px;color:{accent};letter-spacing:8px;animation:stamp-in 0.6s ease both;">&#9733;&#9733;&#9733;</p>
+                <p style="margin:0 0 8px;font-size:24px;color:{accent};letter-spacing:8px;">&#9733;&#9733;&#9733;</p>
                 <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{accent};text-transform:uppercase;font-weight:bold;">
                   {_nt("winner_you", lang)}
                 </p>
-                <p style="margin:0 0 12px;font-size:24px;font-weight:900;color:{accent};letter-spacing:3px;text-transform:uppercase;font-family:{_MONO};animation:stamp-in 0.5s ease both;">
+                <p style="margin:0 0 12px;font-size:24px;font-weight:900;color:{accent};letter-spacing:3px;text-transform:uppercase;font-family:{_MONO};">
                   {winner_name}
                 </p>
                 <p style="margin:0 0 8px;font-size:14px;color:{_TEXT};font-style:italic;">
@@ -1794,7 +1902,7 @@ def _render_completed_block(
                 <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
                   {_nt("winner", lang)}
                 </p>
-                <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;animation:stamp-in 0.5s ease both;">
+                <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;">
                   &#9733; {winner_name}
                 </p>
                 <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};">
