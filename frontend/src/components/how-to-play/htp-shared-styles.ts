@@ -171,27 +171,22 @@ export const htpMobileHeroStyles = css`
   }
 `;
 
-// ── Responsive: 1440p+ ──────────────────────────────────────────────────────
-
-export const htp1440pHeroStyles = css`
-  @media (min-width: 1440px) {
-    .hero__title {
-      font-size: var(--text-5xl);
-    }
-  }
-`;
-
-// ── Responsive: 4K (2560px+) ────────────────────────────────────────────────
-
-export const htp4kHeroStyles = css`
-  @media (min-width: 2560px) {
-    .hero__title {
-      font-size: var(--text-6xl);
-    }
-
-    .hero__subtitle {
-      font-size: var(--text-xl);
-      max-width: 64ch;
-    }
-  }
-`;
+// ── Responsive: 1440p+ and 4K — removed, deliberately ───────────────────────
+//
+// Two exports lived here, `htp1440pHeroStyles` and `htp4kHeroStyles`, raising
+// the hero title to --text-5xl above 1440px and --text-6xl above 2560px. Neither
+// was ever imported by any component, so neither step has ever rendered.
+//
+// They were not wired in, because wiring them in would break the contract this
+// module documents at the top of the file. `htpHeroStyles` deliberately writes
+// `font-size: var(--_hero-title-size, var(--text-4xl))` so a component can size
+// its own hero; both removed exports set `font-size` DIRECTLY, at the same
+// specificity and later in the cascade, so importing them would have overridden
+// every component's --_hero-title-size — including the smaller one
+// HowToPlayTopic sets on purpose.
+//
+// If the how-to-play hero should grow on wide screens, it belongs here as an
+// override of --_hero-title-size, not of font-size. The same flaw sits in
+// `htpMobileHeroStyles` above, which is likewise unimported; it is kept because
+// HowToPlayTopic.ts carries a comment explaining why it does not import it, and
+// removing the export would orphan that explanation.

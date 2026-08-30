@@ -304,32 +304,28 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Archivist",
             "primary_profession_de": "Archivarin",
             "character": (
-                "Meticulous, sardonic, and quietly furious."
-                " Vesper catalogues what others forget, which"
-                " means she remembers everything \u2014 a condition"
-                " she considers a disability."
+                "Meticulous, sardonic, and quietly furious. Vesper catalogues what others forget, which means "
+                "she remembers everything — a condition she considers a disability. She keeps a second index of "
+                "her own errors, seventeen entries long, updated in a different hand. Her desk holds four lamps "
+                "and no chair."
             ),
             "character_de": (
-                "Akribisch, sarkastisch und leise w\u00fctend."
-                " Vesper katalogisiert, was andere vergessen,"
-                " was bedeutet, dass sie sich an alles"
-                " erinnert \u2014 ein Zustand, den sie als"
-                " Behinderung betrachtet."
+                "Akribisch, sarkastisch und leise wütend. Vesper katalogisiert, was andere vergessen, was "
+                "bedeutet, dass sie sich an alles erinnert — ein Zustand, den sie als Behinderung betrachtet. "
+                "Sie führt ein zweites Verzeichnis der eigenen Fehler, siebzehn Einträge lang, in anderer "
+                "Handschrift nachgetragen. Auf ihrem Schreibtisch stehen vier Lampen und kein Stuhl."
             ),
             "background": (
-                "Former census-taker who discovered that three"
-                " districts had been removed from official"
-                " records. Her investigation cost her a"
-                " promotion and a husband. She considers"
-                " this a fair trade."
+                "Former census-taker who discovered that three districts had been removed from official "
+                "records. Her investigation cost her a promotion and a husband. She considers this a fair "
+                "trade. She still receives the districts' mail, forwarded by a clerk who has never signed a "
+                "note. The boxes are stacked unopened along the north wall of her office."
             ),
             "background_de": (
-                "Ehemalige Volksz\u00e4hlerin, die entdeckte, dass"
-                " drei Bezirke aus den offiziellen Akten"
-                " entfernt worden waren. Ihre Ermittlungen"
-                " kosteten sie eine Bef\u00f6rderung und einen"
-                " Ehemann. Sie h\u00e4lt das f\u00fcr einen fairen"
-                " Tausch."
+                "Ehemalige Volkszählerin, die entdeckte, dass drei Bezirke aus den offiziellen Akten entfernt "
+                "worden waren. Ihre Ermittlungen kosteten sie eine Beförderung und einen Ehemann. Sie hält das "
+                "für einen fairen Tausch. Die Post der Bezirke erreicht sie weiterhin, weitergeleitet von einem "
+                "Schreiber, der nie unterzeichnet. Die Kartons stehen ungeoeffnet an der Nordwand ihres Büros."
             ),
         },
         {
@@ -339,29 +335,28 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Forgewright",
             "primary_profession_de": "Schmiedemeister",
             "character": (
-                "Laconic and burn-scarred. Speaks mostly to"
-                " metal. Believes that everything worth saying"
-                " has already been hammered into shape by"
-                " someone with better tools."
+                "Laconic and burn-scarred. Speaks mostly to metal. Believes that everything worth saying has "
+                "already been hammered into shape by someone with better tools. He rewelds the same bracket "
+                "every third shift, though nothing is wrong with it, and keeps the offcuts in a crate by the "
+                "door. His left hand has no fingerprints."
             ),
             "character_de": (
-                "Wortkarg und brandvernarbt. Spricht"
-                " haupts\u00e4chlich mit Metall. Glaubt, dass alles"
-                " Sagenswerte bereits von jemandem mit"
-                " besserem Werkzeug in Form geh\u00e4mmert wurde."
+                "Wortkarg und brandvernarbt. Spricht hauptsächlich mit Metall. Glaubt, dass alles Sagenswerte "
+                "bereits von jemandem mit besserem Werkzeug in Form gehämmert wurde. Jede dritte Schicht "
+                "schweißt er dieselbe Halterung neu, obwohl sie in Ordnung ist, und sammelt die Verschnitte in "
+                "einer Kiste neben der Tür. Seine linke Hand hat keine Fingerabdrücke."
             ),
             "background": (
-                "Third-generation furnace operator who"
-                " discovered that the factory's output is"
-                " consumed by something beneath the building."
-                " He feeds it anyway. What else would he do?"
+                "Third-generation furnace operator who discovered that the factory's output is consumed by "
+                "something beneath the building. He feeds it anyway. What else would he do? He logs the "
+                "discrepancy every month in a ledger nobody collects, in pencil, with the weights rounded down. "
+                "The ledger is in its ninth volume."
             ),
             "background_de": (
-                "Hochofenbediener in dritter Generation, der"
-                " entdeckte, dass die Produktion der Fabrik"
-                " von etwas unter dem Geb\u00e4ude verschlungen"
-                " wird. Er f\u00fcttert es trotzdem. Was sollte er"
-                " auch sonst tun?"
+                "Hochofenbediener in dritter Generation, der entdeckte, dass die Produktion der Fabrik von "
+                "etwas unter dem Gebäude verschlungen wird. Er füttert es trotzdem. Was sollte er auch sonst "
+                "tun? Jeden Monat trägt er die Abweichung in ein Buch ein, das niemand abholt, mit Bleistift "
+                "und abgerundeten Gewichten. Das Buch ist beim neunten Band angelangt."
             ),
         },
         {
@@ -371,30 +366,28 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Resonance Broker",
             "primary_profession_de": "Resonanzmakler",
             "character": (
-                "Silver-tongued and ethically flexible."
-                " Sable trades in echoes \u2014 recorded"
-                " conversations, ambient emotions, the"
-                " acoustic fingerprints of rooms where"
-                " important things happened."
+                "Silver-tongued and ethically flexible. Sable trades in echoes — recorded conversations, "
+                "ambient emotions, the acoustic fingerprints of rooms where important things happened. They "
+                "price a recording by the number of people who were in the room and never mention it again. "
+                "Their ledger is kept in a shorthand two other brokers can read."
             ),
             "character_de": (
-                "Redegewandt und ethisch flexibel. Sable"
-                " handelt mit Echos \u2014 aufgezeichneten"
-                " Gespr\u00e4chen, Umgebungsemotionen, den"
-                " akustischen Fingerabdr\u00fccken von R\u00e4umen,"
-                " in denen Wichtiges geschah."
+                "Redegewandt und ethisch flexibel. Sable handelt mit Echos — aufgezeichneten Gesprächen, "
+                "Umgebungsemotionen, den akustischen Fingerabdrücken von Räumen, in denen Wichtiges geschah. "
+                "Sie berechnen eine Aufnahme nach der Zahl der Anwesenden und erwähnen sie danach nie wieder. "
+                "Ihr Hauptbuch führen sie in einer Kurzschrift, die zwei andere Makler lesen können."
             ),
             "background": (
-                "Grew up in the Hollows, where sound carries"
-                " strangely. Learned early that a whisper in"
-                " the right corridor is worth more than a"
-                " shout in the square."
+                "Grew up in the Hollows, where sound carries strangely. Learned early that a whisper in the "
+                "right corridor is worth more than a shout in the square. They have never entered the upper "
+                "city without an appointment. Three of their clients are civil servants who pay in permits "
+                "rather than coin."
             ),
             "background_de": (
-                "Aufgewachsen in den Hollows, wo Schall sich"
-                " seltsam fortpflanzt. Lernte fr\u00fch, dass ein"
-                " Fl\u00fcstern im richtigen Korridor mehr wert"
-                " ist als ein Schrei auf dem Platz."
+                "Aufgewachsen in den Hollows, wo Schall sich seltsam fortpflanzt. Lernte früh, dass ein "
+                "Flüstern im richtigen Korridor mehr wert ist als ein Schrei auf dem Platz. Die Oberstadt haben "
+                "sie nie ohne Termin betreten. Drei ihrer Kunden sind Beamte, die in Genehmigungen statt in "
+                "Münzen zahlen."
             ),
         },
         {
@@ -404,31 +397,28 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Tide Clerk",
             "primary_profession_de": "Gezeitenschreiber",
             "character": (
-                "Pedantic, anxious, secretly romantic. Orin"
-                " measures the canal's non-directional flow"
-                " with instruments of his own devising. His"
-                " reports are beautiful and incomprehensible."
+                "Pedantic, anxious, secretly romantic. Orin measures the canal's non-directional flow with "
+                "instruments of his own devising. His reports are beautiful and incomprehensible. He owns nine "
+                "instruments and has named seven of them, the two unnamed ones being borrowed. He eats at the "
+                "same canal-side table every day at eleven."
             ),
             "character_de": (
-                "Pedantisch, \u00e4ngstlich, insgeheim romantisch."
-                " Orin misst den richtungslosen Fluss des"
-                " Kanals mit selbst erfundenen Instrumenten."
-                " Seine Berichte sind sch\u00f6n und"
-                " unverst\u00e4ndlich."
+                "Pedantisch, ängstlich, insgeheim romantisch. Orin misst den richtungslosen Fluss des Kanals "
+                "mit selbst erfundenen Instrumenten. Seine Berichte sind schön und unverständlich. Er besitzt "
+                "neun Instrumente und hat sieben davon benannt; die beiden namenlosen sind geliehen. Er isst "
+                "täglich um elf am selben Tisch am Kanal."
             ),
             "background": (
-                "Applied to the Bureau of Hydrology seven"
-                " times before being accepted. His thesis"
-                " \u2014 'On the Emotional Viscosity of Municipal"
-                " Water' \u2014 remains the department's most"
-                " borrowed text."
+                "Applied to the Bureau of Hydrology seven times before being accepted. His thesis — 'On the "
+                "Emotional Viscosity of Municipal Water' — remains the department's most borrowed text. He has "
+                "filed a correction to every report he has ever submitted, including the corrections. His "
+                "office is a converted lock-keeper's hut."
             ),
             "background_de": (
-                "Bewarb sich sieben Mal beim B\u00fcro f\u00fcr"
-                " Hydrologie, bevor er angenommen wurde."
-                " Seine Abhandlung \u2014 \u201e\u00dcber die emotionale"
-                " Viskosit\u00e4t st\u00e4dtischen Wassers\u201c \u2014 bleibt"
-                " der meistentliehene Text der Abteilung."
+                "Bewarb sich sieben Mal beim Büro für Hydrologie, bevor er angenommen wurde. Seine Abhandlung — "
+                "„Über die emotionale Viskosität städtischen Wassers“ — bleibt der meistentliehene Text der "
+                "Abteilung. Zu jedem Bericht, den er je einreichte, hat er eine Berichtigung nachgereicht, auch "
+                "zu den Berichtigungen. Sein Büro ist eine umgebaute Schleusenwärterhütte."
             ),
         },
         {
@@ -438,31 +428,29 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Story Distiller",
             "primary_profession_de": "Geschichtendestillateurin",
             "character": (
-                "Warm, pragmatic, and slightly dangerous."
-                " Elara converts narratives into consumable"
-                " liquid form. She insists the process is"
-                " purely chemical. Her customers report"
-                " hallucinations anyway."
+                "Warm, pragmatic, and slightly dangerous. Elara converts narratives into consumable liquid "
+                "form. She insists the process is purely chemical. Her customers report hallucinations anyway. "
+                "She tastes every batch herself and writes the date on her forearm. Her stock ledger lists "
+                "forty-one narratives and two she refuses to name."
             ),
             "character_de": (
-                "Warmherzig, pragmatisch und leicht"
-                " gef\u00e4hrlich. Elara wandelt Erz\u00e4hlungen in"
-                " trinkbare Fl\u00fcssigkeit um. Sie besteht"
-                " darauf, der Vorgang sei rein chemisch."
-                " Ihre Kunden berichten trotzdem von"
-                " Halluzinationen."
+                "Warmherzig, pragmatisch und leicht gefährlich. Elara wandelt Erzählungen in trinkbare "
+                "Flüssigkeit um. Sie besteht darauf, der Vorgang sei rein chemisch. Ihre Kunden berichten "
+                "trotzdem von Halluzinationen. Jede Charge kostet sie selbst und schreibt sich das Datum auf "
+                "den Unterarm. Ihr Bestandsbuch führt einundvierzig Erzählungen und zwei, die sie nicht "
+                "benennt."
             ),
             "background": (
-                "Trained as a chemist, retrained as a"
-                " bartender, finally found her calling at"
-                " the intersection. Her shop, 'The Final"
-                " Draft', is both a pun and a threat."
+                "Trained as a chemist, retrained as a bartender, finally found her calling at the intersection. "
+                "Her shop, 'The Final Draft', is both a pun and a threat. She buys her ingredients from four "
+                "suppliers and pays all of them in advance, in cash, on the first of the month. The shop has "
+                "been searched twice and closed once."
             ),
             "background_de": (
-                "Ausgebildete Chemikerin, umgeschult zur"
-                " Barkeeperin, fand schlie\u00dflich ihre Berufung"
-                " an der Schnittstelle. Ihr Laden, \u201eThe Final"
-                " Draft\u201c, ist Wortspiel und Drohung zugleich."
+                "Ausgebildete Chemikerin, umgeschult zur Barkeeperin, fand schließlich ihre Berufung an der "
+                "Schnittstelle. Ihr Laden, „The Final Draft“, ist Wortspiel und Drohung zugleich. Ihre Zutaten "
+                "bezieht sie von vier Lieferanten und bezahlt alle im Voraus, bar, am Monatsersten. Der Laden "
+                "wurde zweimal durchsucht und einmal geschlossen."
             ),
         },
         {
@@ -472,30 +460,28 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Orchardist-Militant",
             "primary_profession_de": "Obstbauer-Soldat",
             "character": (
-                "Gentle with plants, lethal with everything"
-                " else. Wick tends the ammunition trees with"
-                " the reverence of a monk and the precision"
-                " of an engineer."
+                "Gentle with plants, lethal with everything else. Wick tends the ammunition trees with the "
+                "reverence of a monk and the precision of an engineer. He grafts by hand and refuses gloves, "
+                "and the scars on his forearms follow the rows. He keeps a rifle in the tool shed and cleans it "
+                "on the same schedule as the pruning shears."
             ),
             "character_de": (
-                "Sanft zu Pflanzen, t\u00f6dlich f\u00fcr alles andere."
-                " Wick pflegt die Munitionsb\u00e4ume mit der"
-                " Ehrfurcht eines M\u00f6nchs und der Pr\u00e4zision"
-                " eines Ingenieurs."
+                "Sanft zu Pflanzen, tödlich für alles andere. Wick pflegt die Munitionsbäume mit der Ehrfurcht "
+                "eines Mönchs und der Präzision eines Ingenieurs. Er veredelt von Hand und lehnt Handschuhe ab; "
+                "die Narben auf seinen Unterarmen folgen den Reihen. Im Geräteschuppen liegt ein Gewehr, das er "
+                "nach demselben Plan reinigt wie die Baumschere."
             ),
             "background": (
-                "Deserted from the city guard after being"
-                " ordered to prune the ancient oak in"
-                " Ashgrove. The oak, he insists, spoke to"
-                " him. The court-martial transcript is"
-                " classified."
+                "Deserted from the city guard after being ordered to prune the ancient oak in Ashgrove. The "
+                "oak, he insists, spoke to him. The court-martial transcript is classified. He returns to the "
+                "oak on the first of every month and stays until dark. The orchard has produced no fruit for "
+                "two seasons."
             ),
             "background_de": (
-                "Desertierte von der Stadtwache, nachdem ihm"
-                " befohlen wurde, die uralte Eiche in"
-                " Ashgrove zu beschneiden. Die Eiche,"
-                " behauptet er, habe zu ihm gesprochen. Das"
-                " Kriegsgerichtsprotokoll ist geheim."
+                "Desertierte von der Stadtwache, nachdem ihm befohlen wurde, die uralte Eiche in Ashgrove zu "
+                "beschneiden. Die Eiche, behauptet er, habe zu ihm gesprochen. Das Kriegsgerichtsprotokoll ist "
+                "geheim. Am Ersten jedes Monats kehrt er zur Eiche zurück und bleibt bis zur Dunkelheit. Der "
+                "Obstgarten hat zwei Saisons lang keine Frucht getragen."
             ),
         },
         {
@@ -505,27 +491,26 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Debt Cartographer",
             "primary_profession_de": "Schuldenkartograph",
             "character": (
-                "Cheerful, relentless, and morally ambiguous."
-                " Maps the intricate web of secrets-as-currency"
-                " that sustains the underground economy."
+                "Cheerful, relentless, and morally ambiguous. Maps the intricate web of secrets-as-currency "
+                "that sustains the underground economy. They redraw the map weekly and burn the previous "
+                "version in the same grate. Their coat has eleven pockets, four of them sewn shut."
             ),
             "character_de": (
-                "Fr\u00f6hlich, unerbittlich und moralisch"
-                " zweideutig. Kartiert das verschlungene Netz"
-                " der Geheimnisse-als-W\u00e4hrung, das die"
-                " Untergrundwirtschaft am Leben h\u00e4lt."
+                "Fröhlich, unerbittlich und moralisch zweideutig. Kartiert das verschlungene Netz der "
+                "Geheimnisse-als-Währung, das die Untergrundwirtschaft am Leben hält. Wöchentlich zeichnen sie "
+                "die Karte neu und verbrennen die vorige Fassung im selben Rost. Ihr Mantel hat elf Taschen, "
+                "vier davon zugenäht."
             ),
             "background": (
-                "Born on the surface, moved underground"
-                " voluntarily. Claims to prefer 'honest"
-                " darkness to dishonest light.' Has never"
-                " been seen paying for anything."
+                "Born on the surface, moved underground voluntarily. Claims to prefer 'honest darkness to "
+                "dishonest light.' Has never been seen paying for anything. They hold markers on nine "
+                "households and have called in none of them. They sleep in a different corridor each week."
             ),
             "background_de": (
-                "An der Oberfl\u00e4che geboren, freiwillig in den"
-                " Untergrund gezogen. Behauptet, \u201eehrliche"
-                " Dunkelheit unehrlichem Licht\u201c vorzuziehen."
-                " Wurde nie beim Bezahlen gesehen."
+                "An der Oberfläche geboren, freiwillig in den Untergrund gezogen. Behauptet, „ehrliche "
+                "Dunkelheit unehrlichem Licht“ vorzuziehen. Wurde nie beim Bezahlen gesehen. Sie halten "
+                "Schuldscheine auf neun Haushalte und haben keinen einzigen eingefordert. Sie schlafen jede "
+                "Woche in einem anderen Korridor."
             ),
         },
         {
@@ -535,30 +520,29 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Reflection Inspector",
             "primary_profession_de": "Spiegelungsinspektorin",
             "character": (
-                "Calm, observant, and deeply unsettling."
-                " Maren ensures that shopfront reflections"
-                " maintain their mandated deviation from"
-                " reality \u2014 no more, no less."
+                "Calm, observant, and deeply unsettling. Maren ensures that shopfront reflections maintain "
+                "their mandated deviation from reality — no more, no less. She carries a folding rule and a "
+                "sealed comparison plate on every round, and signs each entry twice. She has issued four "
+                "hundred citations and withdrawn none."
             ),
             "character_de": (
-                "Ruhig, aufmerksam und zutiefst beunruhigend."
-                " Maren stellt sicher, dass"
-                " Schaufensterreflexionen ihre vorgeschriebene"
-                " Abweichung von der Realit\u00e4t einhalten \u2014"
-                " nicht mehr und nicht weniger."
+                "Ruhig, aufmerksam und zutiefst beunruhigend. Maren stellt sicher, dass Schaufensterreflexionen "
+                "ihre vorgeschriebene Abweichung von der Realität einhalten — nicht mehr und nicht weniger. Auf "
+                "jedem Rundgang trägt sie einen Klappmaßstab und eine versiegelte Vergleichsplatte und zeichnet "
+                "jeden Eintrag zweimal. Sie hat vierhundert Beanstandungen ausgestellt und keine "
+                "zurückgenommen."
             ),
             "background": (
-                "Discovered her aptitude during a childhood"
-                " incident involving a funhouse mirror. What"
-                " she saw made her cry. What she did about"
-                " it made the papers."
+                "Discovered her aptitude during a childhood incident involving a funhouse mirror. What she saw "
+                "made her cry. What she did about it made the papers. The mirror was removed from the "
+                "fairground the following week. She has kept the same route through Mirrorside for eleven "
+                "years."
             ),
             "background_de": (
-                "Entdeckte ihre Begabung bei einem"
-                " Kindheitserlebnis mit einem Zerrspiegel."
-                " Was sie sah, brachte sie zum Weinen. Was"
-                " sie dagegen tat, schaffte es in die"
-                " Zeitung."
+                "Entdeckte ihre Begabung bei einem Kindheitserlebnis mit einem Zerrspiegel. Was sie sah, "
+                "brachte sie zum Weinen. Was sie dagegen tat, schaffte es in die Zeitung. Der Spiegel wurde in "
+                "der Woche darauf vom Rummelplatz entfernt. Seit elf Jahren geht sie dieselbe Runde durch "
+                "Mirrorside."
             ),
         },
     ]
@@ -572,17 +556,16 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "tavern",
             "building_type_de": "Taverne",
             "description": (
-                "A narrative distillery where stories are"
-                " served in liquid form. The house special"
-                " causes vivid memories of events that"
-                " never happened."
+                "A narrative distillery where stories are served in liquid form. The house special causes vivid "
+                "memories of events that never happened. Two storeys of brick over a vaulted cellar, with a "
+                "copper still running the length of the back wall. The taproom seats thirty and the licence is "
+                "renewed annually."
             ),
             "description_de": (
-                "Eine Erz\u00e4hldestillerie, in der Geschichten"
-                " in fl\u00fcssiger Form serviert werden. Die"
-                " Hausspezialit\u00e4t verursacht lebhafte"
-                " Erinnerungen an Ereignisse, die nie"
-                " stattfanden."
+                "Eine Erzähldestillerie, in der Geschichten in flüssiger Form serviert werden. Die "
+                "Hausspezialität verursacht lebhafte Erinnerungen an Ereignisse, die nie stattfanden. Zwei "
+                "Geschosse Backstein über einem Gewölbekeller, an der Rückwand eine kupferne Brennanlage über "
+                "die volle Länge. Der Schankraum fasst dreißig Gäste, die Konzession wird jährlich erneuert."
             ),
             "building_condition": "good",
             "building_condition_de": "gut",
@@ -592,15 +575,15 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "archive",
             "building_type_de": "Archiv",
             "description": (
-                "A soundproofed library that stores not books"
-                " but acoustic recordings. Visitors wear"
-                " tuning forks instead of library cards."
+                "A soundproofed library that stores not books but acoustic recordings. Visitors wear tuning "
+                "forks instead of library cards. Poured concrete with a felt-lined inner shell, no windows, and "
+                "a single door on a mechanical timer. The catalogue runs to eleven thousand cylinders."
             ),
             "description_de": (
-                "Eine schallisolierte Bibliothek, die keine"
-                " B\u00fccher, sondern akustische Aufnahmen"
-                " aufbewahrt. Besucher tragen Stimmgabeln"
-                " statt Bibliotheksausweisen."
+                "Eine schallisolierte Bibliothek, die keine Bücher, sondern akustische Aufnahmen aufbewahrt. "
+                "Besucher tragen Stimmgabeln statt Bibliotheksausweisen. Gegossener Beton mit filzverkleideter "
+                "Innenschale, keine Fenster, eine einzige Tür an einer mechanischen Zeitschaltung. Der Katalog "
+                "umfasst elftausend Walzen."
             ),
             "building_condition": "good",
             "building_condition_de": "gut",
@@ -610,33 +593,34 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "factory",
             "building_type_de": "Fabrik",
             "description": (
-                "The oldest continuously operating furnace"
-                " in the city. What it produces has never"
-                " been identified. The output is consumed"
-                " by something in the sub-basement."
+                "The oldest continuously operating furnace in the city. What it produces has never been "
+                "identified. The output is consumed by something in the sub-basement. Riveted iron and "
+                "firebrick, four storeys, with a chimney that has not been swept since the war. The east wall "
+                "is braced with timber."
             ),
             "description_de": (
-                "Der \u00e4lteste durchgehend betriebene Hochofen"
-                " der Stadt. Was er produziert, wurde nie"
-                " identifiziert. Die Erzeugnisse werden von"
-                " etwas im Untergeschoss verschlungen."
+                "Der älteste durchgehend betriebene Hochofen der Stadt. Was er produziert, wurde nie "
+                "identifiziert. Die Erzeugnisse werden von etwas im Untergeschoss verschlungen. Genietetes "
+                "Eisen und Schamottstein, vier Geschosse, mit einem Schornstein, der seit dem Krieg nicht "
+                "gefegt wurde. Die Ostwand ist mit Holz abgestützt."
             ),
             "building_condition": "fair",
-            "building_condition_de": "m\u00e4\u00dfig",
+            "building_condition_de": "mäßig",
         },
         {
             "name": "The Absent Embassy",
             "building_type": "government",
-            "building_type_de": "Regierungsgeb\u00e4ude",
+            "building_type_de": "Regierungsgebäude",
             "description": (
-                "Embassy of a nation that no longer exists."
-                " Staff continue to process visas. The visas"
-                " are accepted everywhere."
+                "Embassy of a nation that no longer exists. Staff continue to process visas. The visas are "
+                "accepted everywhere. A stone-fronted villa with iron railings and a flagpole that stands "
+                "empty, set back from the road behind a gravel court. Four of its nine rooms are kept locked."
             ),
             "description_de": (
-                "Botschaft einer Nation, die nicht mehr"
-                " existiert. Das Personal bearbeitet weiterhin"
-                " Visa. Die Visa werden \u00fcberall akzeptiert."
+                "Botschaft einer Nation, die nicht mehr existiert. Das Personal bearbeitet weiterhin Visa. Die "
+                "Visa werden überall akzeptiert. Eine Villa mit Steinfassade, Eisengeländer und einem "
+                "Fahnenmast, der leer bleibt, von der Straße zurückgesetzt hinter einem Kiesplatz. Vier ihrer "
+                "neun Räume bleiben verschlossen."
             ),
             "building_condition": "good",
             "building_condition_de": "gut",
@@ -646,27 +630,33 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "residence",
             "building_type_de": "Wohnhaus",
             "description": (
-                "A townhouse in Thornwalk where the load-bearing hedges have developed opinions about the residents."
+                "A townhouse in Thornwalk where the load-bearing hedges have developed opinions about the "
+                "residents. Three storeys of brick, part-rendered, with a slate roof missing tiles above the "
+                "stairwell. The hedges are cut twice a year by a contractor from outside the district."
             ),
             "description_de": (
-                "Ein Stadthaus in Thornwalk, dessen tragende Hecken Meinungen \u00fcber die Bewohner entwickelt haben."
+                "Ein Stadthaus in Thornwalk, dessen tragende Hecken Meinungen über die Bewohner entwickelt "
+                "haben. Drei Geschosse Backstein, teils verputzt, mit einem Schieferdach, dem über dem "
+                "Treppenhaus Ziegel fehlen. Die Hecken schneidet zweimal im Jahr eine Firma von außerhalb des "
+                "Bezirks."
             ),
             "building_condition": "fair",
-            "building_condition_de": "m\u00e4\u00dfig",
+            "building_condition_de": "mäßig",
         },
         {
             "name": "The Plumb House",
             "building_type": "observatory",
             "building_type_de": "Observatorium",
             "description": (
-                "Municipal hydrological station where the"
-                " canal's non-directional flow is measured"
-                " with increasingly desperate instruments."
+                "Municipal hydrological station where the canal's non-directional flow is measured with "
+                "increasingly desperate instruments. A single-storey brick station on piles over the water, "
+                "with a zinc roof and a cracked observation window. The instruments are repaired in-house."
             ),
             "description_de": (
-                "St\u00e4dtische Hydrologiestation, in der der"
-                " richtungslose Fluss des Kanals mit zunehmend"
-                " verzweifelten Instrumenten gemessen wird."
+                "Städtische Hydrologiestation, in der der richtungslose Fluss des Kanals mit zunehmend "
+                "verzweifelten Instrumenten gemessen wird. Eine eingeschossige Backsteinstation auf Pfählen "
+                "über dem Wasser, mit Zinkdach und gesprungenem Beobachtungsfenster. Die Instrumente werden im "
+                "Haus repariert."
             ),
             "building_condition": "poor",
             "building_condition_de": "schlecht",
@@ -676,12 +666,14 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "building_type": "inn",
             "building_type_de": "Gasthof",
             "description": (
-                "An inn that occupies a different location each morning. Regulars navigate by the smell of breakfast."
+                "An inn that occupies a different location each morning. Regulars navigate by the smell of "
+                "breakfast. Timber-framed, two storeys, with twelve rooms and a kitchen that never moves with "
+                "the rest of it. The sign is repainted whenever the building settles."
             ),
             "description_de": (
-                "Ein Gasthof, der jeden Morgen einen anderen"
-                " Standort einnimmt. Stammg\u00e4ste orientieren"
-                " sich am Fr\u00fchst\u00fccksduft."
+                "Ein Gasthof, der jeden Morgen einen anderen Standort einnimmt. Stammgäste orientieren sich am "
+                "Frühstücksduft. Fachwerk, zwei Geschosse, zwölf Zimmer und eine Küche, die als Einzige nie "
+                "mitwandert. Das Schild wird neu gestrichen, sobald sich das Gebäude gesetzt hat."
             ),
             "building_condition": "good",
             "building_condition_de": "gut",
@@ -690,27 +682,35 @@ def mock_buildings(seed: str, count: int = 7) -> list[dict]:
             "name": "The Hollow Market",
             "building_type": "market",
             "building_type_de": "Markt",
-            "description": ("An underground bazaar where prices are quoted in secrets of equivalent weight."),
+            "description": (
+                "An underground bazaar where prices are quoted in secrets of equivalent weight. Brick vaults "
+                "under the old grain exchange, lit by gas and drained by a pump that runs continuously. Ninety "
+                "stalls are let, of which sixty are occupied. Rent is collected weekly by two clerks who share "
+                "one ledger."
+            ),
             "description_de": (
-                "Ein unterirdischer Basar, auf dem Preise in Geheimnissen gleichen Gewichts angegeben werden."
+                "Ein unterirdischer Basar, auf dem Preise in Geheimnissen gleichen Gewichts angegeben werden. "
+                "Backsteingewölbe unter der alten Kornbörse, mit Gas beleuchtet und von einer ständig laufenden "
+                "Pumpe entwässert. Neunzig Stände sind vergeben, sechzig davon belegt. Die Standmiete kassieren "
+                "wöchentlich zwei Schreiber, die sich ein Buch teilen."
             ),
             "building_condition": "fair",
-            "building_condition_de": "m\u00e4\u00dfig",
+            "building_condition_de": "mäßig",
         },
         {
             "name": "The Silent Theatre",
             "building_type": "entertainment",
             "building_type_de": "Unterhaltung",
             "description": (
-                "A performance venue where shows are"
-                " experienced through vibration alone."
-                " The audience is always blindfolded."
+                "A performance venue where shows are experienced through vibration alone. The audience is "
+                "always blindfolded. Rendered brick with a sprung floor and no proscenium, seating two hundred "
+                "on benches bolted to the joists. The roof was replaced eleven years ago."
             ),
             "description_de": (
-                "Eine Auff\u00fchrungsst\u00e4tte, in der Vorstellungen"
-                " ausschlie\u00dflich durch Vibration erlebt"
-                " werden. Das Publikum tr\u00e4gt stets"
-                " Augenbinden."
+                "Eine Aufführungsstätte, in der Vorstellungen ausschließlich durch Vibration erlebt werden. Das "
+                "Publikum trägt stets Augenbinden. Verputzter Backstein mit Schwingboden und ohne Proszenium, "
+                "zweihundert Plätze auf Bänken, die an die Balken geschraubt sind. Das Dach wurde vor elf "
+                "Jahren erneuert."
             ),
             "building_condition": "good",
             "building_condition_de": "gut",

@@ -23,9 +23,16 @@ from backend.models.forge import (
     ForgeGenerationConfig,
     ForgeGeographyDraft,
     PhilosophicalAnchor,
+    counted_list,
 )
 from backend.services import forge_mock_service as mock
-from backend.services.ai_utils import ai_error_to_http, create_forge_agent, run_ai, validate_bilingual_output
+from backend.services.ai_utils import (
+    ai_error_to_http,
+    create_forge_agent,
+    report_delivery_count,
+    run_ai,
+    validate_bilingual_output,
+)
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external.replicate import ReplicateBillingError, ReplicateError
 from backend.services.forge_ascii_art_service import ForgeAsciiArtService
@@ -51,6 +58,11 @@ logger = logging.getLogger(__name__)
 #: three attempts get past an unlucky set without turning the phase into a slot
 #: machine. Enforced server-side because a client-side counter resets on reload.
 MAX_ANCHOR_SCANS = 3
+
+# How many agents one purchased recruitment delivers. Stated once: it is
+# interpolated into the recruitment prompt AND handed to the output type, so the
+# number the user is promised cannot drift from the number that is validated.
+_RECRUIT_COUNT = 3
 
 
 WORLD_ARCHITECT_PROMPT = (
@@ -532,6 +544,16 @@ class ForgeOrchestratorService:
                 geo_data = result.output.model_dump()
                 if not geo_data.get("zones"):
                     raise bad_gateway("AI model returned no zones. Please try again.")
+                # `zones` and `streets` sit INSIDE ForgeGeographyDraft, so their
+                # counts cannot be carried by a per-call output type the way the
+                # agent and building lists are. They are still compared against
+                # what was ordered, so a short city is named rather than silent.
+                report_delivery_count(
+                    "zone", gen_config.zone_count, len(geo_data.get("zones", [])), draft_id=str(draft_id)
+                )
+                report_delivery_count(
+                    "street", gen_config.street_count, len(geo_data.get("streets", [])), draft_id=str(draft_id)
+                )
                 validate_bilingual_output(
                     geo_data.get("zones", []),
                     ["zone_type_de", "description_de"],
@@ -550,13 +572,19 @@ class ForgeOrchestratorService:
                     dynamic_agent,
                     prompt,
                     "chunk",
-                    output_type=list[ForgeAgentDraft],
+                    # The configured count is now the CEILING in the schema the
+                    # model sees, not only a sentence in the prompt. The floor
+                    # stays at one: the wizard can top a short roster up one
+                    # entity at a time, so a short delivery is worth keeping and
+                    # is reported rather than raised. The `if not agents_list`
+                    # guard this replaces lived in the service; it belongs in the
+                    # type. See finding 10.
+                    output_type=counted_list(ForgeAgentDraft, gen_config.agent_count, minimum=1),
                     admin_supabase=admin_supabase,
                     user_id=user_id,
                 )
                 agents_list = [a.model_dump() for a in result.output]
-                if not agents_list:
-                    raise bad_gateway("AI model returned no agents. Please try again.")
+                report_delivery_count("agent", gen_config.agent_count, len(agents_list), draft_id=str(draft_id))
                 validate_bilingual_output(
                     agents_list,
                     ["character_de", "background_de", "primary_profession_de"],
@@ -570,13 +598,14 @@ class ForgeOrchestratorService:
                     dynamic_agent,
                     prompt,
                     "chunk",
-                    output_type=list[ForgeBuildingDraft],
+                    output_type=counted_list(ForgeBuildingDraft, gen_config.building_count, minimum=1),
                     admin_supabase=admin_supabase,
                     user_id=user_id,
                 )
                 buildings_list = [b.model_dump() for b in result.output]
-                if not buildings_list:
-                    raise bad_gateway("AI model returned no buildings. Please try again.")
+                report_delivery_count(
+                    "building", gen_config.building_count, len(buildings_list), draft_id=str(draft_id)
+                )
                 validate_bilingual_output(
                     buildings_list,
                     ["description_de", "building_type_de", "building_condition_de"],
@@ -1731,7 +1760,7 @@ ZONES:
 {"RECRUITMENT FOCUS: " + focus if focus else ""}
 {"TARGET ZONE: " + next((z["name"] for z in zones if z["id"] == str(zone_id)), "any") if zone_id else ""}
 
-Generate exactly 3 new agents. Requirements:
+Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
 - Each agent MUST have an ARRIVAL NARRATIVE woven into their background (how/why they arrived)
 - Each agent MUST have 1-2 relationships with EXISTING agents (mention by name)
 - Varied genders, professions, and temperaments
@@ -1758,12 +1787,19 @@ Generate exactly 3 new agents. Requirements:
                     agent,
                     prompt,
                     "chunk",
-                    output_type=list[ForgeAgentDraft],
+                    output_type=counted_list(ForgeAgentDraft, _RECRUIT_COUNT, minimum=1),
                     admin_supabase=admin_supabase,
                     simulation_id=simulation_id,
                     user_id=user_id,
                 )
                 generated = result.output
+                report_delivery_count(
+                    "recruit",
+                    _RECRUIT_COUNT,
+                    len(generated),
+                    simulation_id=str(simulation_id),
+                    purchase_id=purchase_id,
+                )
 
             # 3. Insert agents into the simulation (batch insert — single round-trip)
             agent_rows = [

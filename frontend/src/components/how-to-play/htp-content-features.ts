@@ -45,14 +45,14 @@ export function getForgeGuideSteps(): ForgeStep[] {
       phase: 'astrolabe',
       title: msg('Phase I \u2013 The Astrolabe'),
       narration: msg(
-        'Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards \u2013 each offers a distinct thematic interpretation of your seed.',
+        'Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate up to three philosophical anchor cards \u2013 each offers a distinct thematic interpretation of your seed.',
       ),
       detail: msg(
-        'The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently \u2013 the same seed with different anchors creates radically different worlds.',
+        'The AI analyzes your seed and produces up to three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently \u2013 the same seed with different anchors creates radically different worlds.',
       ),
       readout: [
         { label: msg('Input'), value: msg('Seed prompt (free text)') },
-        { label: msg('Output'), value: msg('3 anchor cards') },
+        { label: msg('Output'), value: msg('Up to 3 anchor cards') },
         { label: msg('Selection'), value: msg('Choose 1 anchor') },
       ],
       image: tutorialImage('htp-forge-02-anchors.avif'),

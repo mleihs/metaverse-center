@@ -217,11 +217,7 @@ async def run_ai(
                 # Credit/quota-exhaustion (402/403) and provider-unavailability (503)
                 # are ops signals, not programmer errors — warning level keeps them
                 # out of Sentry error budget while still logging.
-                log_fn = (
-                    logger.warning
-                    if exc.status_code in (402, 403, 503)
-                    else logger.error
-                )
+                log_fn = logger.warning if exc.status_code in (402, 403, 503) else logger.error
                 log_fn(
                     "AI call failed",
                     extra={
@@ -301,6 +297,7 @@ def safe_background(func):
     result pattern, but the operator does NOT get a Sentry alert for an
     event they themselves triggered.
     """
+
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         task_name = func.__qualname__
@@ -314,8 +311,7 @@ def safe_background(func):
             # Deliberate admin action — info-level, no Sentry capture.
             elapsed = time.monotonic() - t0
             logger.info(
-                "Background task skipped (AI budget blocked): %s (after %.1fs) — "
-                "%s:%s %s $%.4f/$%.4f",
+                "Background task skipped (AI budget blocked): %s (after %.1fs) — %s:%s %s $%.4f/$%.4f",
                 task_name,
                 elapsed,
                 exc.scope,
@@ -366,6 +362,53 @@ def validate_bilingual_output(
             extra={"entity_type": entity_type, "incomplete": incomplete, "total": len(entities)},
         )
     return incomplete
+
+
+def report_delivery_count(
+    kind: str,
+    requested: int,
+    delivered: int,
+    **context: Any,
+) -> int:
+    """Compare what was ordered against what arrived. Returns the shortfall (0 when exact).
+
+    A short list used to be structurally unnoticeable. ``generate_anchors``
+    returned ``result.output`` unfiltered, the two chunk paths only checked for
+    *empty*, and the recruitment path checked nothing at all -- so the number the
+    user configured and the number they received were never compared anywhere, and
+    a short delivery cost them a billed call without ever being named. Measured on
+    production: of 92 list deliveries stored in ``forge_drafts``, 87 were exact,
+    4 short and 1 long.
+
+    This does not raise. ``counted_list`` already refuses a delivery that is
+    worthless and lets pydantic-ai retry it once; what remains is a delivery that
+    is usable but smaller than ordered, and the right answer to that is to keep it
+    and say so. See finding 10.
+    """
+    shortfall = max(0, requested - delivered)
+    if shortfall:
+        logger.warning(
+            "Short delivery: %d of %d %s(s) returned",
+            delivered,
+            requested,
+            kind,
+            extra={"kind": kind, "requested": requested, "delivered": delivered, **context},
+        )
+        sentry_sdk.add_breadcrumb(
+            category="ai",
+            message=f"short delivery: {delivered}/{requested} {kind}",
+            level="warning",
+            data={"kind": kind, "requested": requested, "delivered": delivered, **context},
+        )
+    elif delivered > requested:
+        logger.warning(
+            "Over-delivery: %d of %d %s(s) returned",
+            delivered,
+            requested,
+            kind,
+            extra={"kind": kind, "requested": requested, "delivered": delivered, **context},
+        )
+    return shortfall
 
 
 def create_forge_agent(
