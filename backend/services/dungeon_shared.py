@@ -39,7 +39,12 @@ _RPC_MAX_ATTEMPTS = 2
 AUTO_APPLY_EFFECT_TYPES = frozenset({"stress_heal", "event_modifier", "arc_modifier", "dungeon_buff"})
 
 # ── Archetype Fallback Spawns ──────────────────────────────────────────────
-# Used when no encounter template matches (shouldn't happen, but safety net).
+# Used when no encounter template matches. This is not hypothetical: until the
+# Systemprüfung of 2026-08-30 "The Overthrow" was missing here, so a rest ambush
+# in the Spiegelpalast spawned SHADOW enemies — the `.get(archetype, …)` default
+# silently handed out another archetype's monsters (Befund D7).
+# `test_dungeon_shared.py` now binds this table to ARCHETYPE_CONFIGS and to the
+# spawn ids the content packs actually define.
 
 FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
     "The Shadow": {
@@ -76,6 +81,11 @@ FALLBACK_SPAWNS: dict[str, dict[str, str]] = {
         "boss": "awakening_sentinel_spawn",
         "default": "awakening_echo_drift_spawn",
         "rest_ambush": "awakening_rest_ambush_spawn",
+    },
+    "The Overthrow": {
+        "boss": "overthrow_pretender_spawn",
+        "default": "overthrow_informer_patrol_spawn",
+        "rest_ambush": "overthrow_rest_ambush_spawn",
     },
 }
 
