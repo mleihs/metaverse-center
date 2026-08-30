@@ -109,30 +109,25 @@ def render_epoch_invitation(
     """
     safe_name = _esc(epoch_name)
     safe_lore = _esc(lore_text)
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
     accent = accent_color or _AMBER
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        if i > 0:
-            blocks.append(_language_divider())
-        blocks.append(
-            _render_invitation_block(
-                safe_name,
-                safe_lore,
-                invite_url,
-                lang,
-                is_primary=(i == 0),
-                accent=accent,
-                cycle_hours=cycle_hours,
-            )
-        )
-        blocks.append(_cta_button(invite_url, _nt("inv_cta", lang), accent=accent))
-
-    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
+    blocks: list[str] = [
+        _render_invitation_block(
+            safe_name,
+            safe_lore,
+            invite_url,
+            lang,
+            is_primary=True,
+            accent=accent,
+            cycle_hours=cycle_hours,
+        ),
+        _cta_button(invite_url, _nt("inv_cta", lang), accent=accent),
+        _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
+    ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content, lang=langs[0])
+    return _email_shell(f"CLASSIFIED // EPOCH SUMMONS \u2014 {safe_name}", content, lang=lang)
 
 
 def _render_invitation_block(
@@ -156,8 +151,8 @@ def _render_invitation_block(
         header = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("inv_header", lang)}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                {_nt("inv_header", lang)}
               </p>
             </td>
           </tr>"""
@@ -165,7 +160,7 @@ def _render_invitation_block(
         header = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px 8px;">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("inv_header", lang)}
               </p>
             </td>
@@ -175,17 +170,15 @@ def _render_invitation_block(
     intro = f"""\
           <tr>
             <td style="padding:{"24px" if is_primary else "8px"} 32px 8px;">
-              <div style="border:1px solid {_RED};padding:8px 14px;background-color:#1e1414;text-align:center;">
-                <p style="margin:0;font-size:10px;letter-spacing:3px;color:{_RED};text-transform:uppercase;font-weight:bold;">
-                  &#9608; {_nt("inv_intro_1", lang)} &#9608;
-                </p>
-              </div>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;text-align:center;">
+                {_nt("inv_intro_1", lang)}
+              </p>
             </td>
           </tr>
           <tr>
             <td style="padding:16px 32px;">
               <div style="border-left:3px solid {accent};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};font-weight:bold;">
+                <p style="margin:0;font-size:15px;line-height:1.8;color:{_TEXT};font-weight:bold;">
                   {_nt("inv_summons", lang)}
                 </p>
               </div>
@@ -193,7 +186,7 @@ def _render_invitation_block(
           </tr>
           <tr>
             <td style="padding:4px 32px 16px;">
-              <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT_DIM};">
+              <p style="margin:0;font-size:15px;line-height:1.8;color:{_TEXT_DIM};">
                 {_nt("inv_intro_2", lang)}
               </p>
             </td>
@@ -203,8 +196,8 @@ def _render_invitation_block(
     urgency = f"""\
           <tr>
             <td style="padding:8px 32px 0;">
-              <div style="border-left:3px solid {accent};padding:4px 12px;animation:accent-pulse 3s ease-in-out infinite;">
-                <p style="margin:0;font-size:10px;letter-spacing:3px;color:{accent};text-transform:uppercase;font-weight:bold;">
+              <div style="border-left:3px solid {accent};padding:4px 12px;">
+                <p style="margin:0;font-size:12px;letter-spacing:2px;color:{accent};text-transform:uppercase;font-weight:bold;">
                   &#9888; {_nt("inv_urgency", lang)}
                 </p>
               </div>
@@ -218,15 +211,12 @@ def _render_invitation_block(
 {urgency}
           <tr>
             <td style="padding:12px 32px 4px;">
-              <p style="margin:0 0 2px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0 0 2px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("inv_operation", lang)}
               </p>
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <{heading_tag} style="margin:0 0 8px;padding-bottom:8px;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};border-bottom:2px solid {_BORDER};">
                 {epoch_name}
               </{heading_tag}>
-              <p style="margin:4px 0 0;font-size:11px;color:{_BORDER};letter-spacing:1px;">
-                &#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;&#9473;
-              </p>
             </td>
           </tr>"""
 
@@ -237,7 +227,7 @@ def _render_invitation_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};border-left:3px solid {accent};padding:20px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;line-height:1.8;color:{_TEXT};font-style:italic;">
+                <p style="margin:0;font-size:15px;line-height:1.8;color:{_TEXT};font-style:italic;">
                   {lore_text}
                 </p>
               </div>
@@ -265,7 +255,7 @@ def _render_invitation_block(
     mp_items = ""
     for bullet in mp_bullets:
         mp_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {bullet}
                 </p>"""
 
@@ -289,7 +279,7 @@ def _render_invitation_block(
     roe_items = ""
     for bullet in roe_bullets:
         roe_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {bullet}
                 </p>"""
 
@@ -306,16 +296,20 @@ def _render_invitation_block(
     return f"{header}\n{intro}\n{op_name}\n{intel}\n{mission}\n{rules}"
 
 
-def _resolve_langs(email_locale: str | None) -> list[str]:
-    """Resolve which language(s) to render based on user preference.
+def _resolve_lang(email_locale: str | None) -> str:
+    """Resolve the ONE language a message is written in.
 
-    Returns ["en"] or ["de"] for single-language, ["en", "de"] for bilingual.
+    It used to return a list, and an unset locale meant both: every section of
+    every mail rendered twice, back to back, separated by a divider. The cycle
+    briefing has nine sections, so an unset locale produced eighteen — the
+    reader scrolled past a full copy of the message in a language they had not
+    asked for before reaching the end of the one they had.
+
+    A locale is now always resolved to a single language, English when nothing
+    is known. The other language belongs on the web view, behind a link, not
+    stapled underneath (handoff P1.9).
     """
-    if email_locale == "en":
-        return ["en"]
-    if email_locale == "de":
-        return ["de"]
-    return ["en", "de"]
+    return email_locale if email_locale in ("en", "de") else "en"
 
 
 def _esc(text: str) -> str:
@@ -514,7 +508,7 @@ def _delta_arrow(delta: float) -> str:
         return f'<span style="color:{_GREEN};">&#9650; +{delta:.1f}</span>'
     if delta < 0:
         return f'<span style="color:{_RED};">&#9660; {delta:.1f}</span>'
-    return f'<span style="color:{_GRAY};">&#9472; 0.0</span>'
+    return f'<span style="color:{_GRAY};">&ndash; 0.0</span>'
 
 
 def _rank_arrow(current: int, previous: int) -> str:
@@ -526,7 +520,7 @@ def _rank_arrow(current: int, previous: int) -> str:
         return f'<span style="color:{_GREEN};">&#9650; (+{diff})</span>'
     if diff < 0:
         return f'<span style="color:{_RED};">&#9660; ({diff})</span>'
-    return f'<span style="color:{_GRAY};">&#9472;</span>'
+    return f'<span style="color:{_GRAY};">&ndash;</span>'
 
 
 def _score_bar(value: float, max_val: float = 100.0, accent: str = _AMBER) -> str:
@@ -562,26 +556,6 @@ def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
     }}
     [data-ogsc] body, [data-ogsc] .email-bg {{ background-color: {_BG} !important; }}
     [data-ogsc] .email-text {{ color: {_TEXT} !important; }}
-    @keyframes scanline-drift {{
-      from {{ background-position: 0 0; }}
-      to {{ background-position: 0 4px; }}
-    }}
-    @keyframes accent-pulse {{
-      0%, 100% {{ border-left-color: {_AMBER}; }}
-      50% {{ border-left-color: {_BORDER}; }}
-    }}
-    @keyframes cursor-blink {{
-      0%, 100% {{ opacity: 1; }}
-      50% {{ opacity: 0; }}
-    }}
-    @keyframes glow-breathe {{
-      0%, 100% {{ box-shadow: 0 0 0 0 rgba(245,158,11,0); }}
-      50% {{ box-shadow: 0 0 14px 2px rgba(245,158,11,0.12); }}
-    }}
-    @keyframes reveal-up {{
-      from {{ opacity: 0; transform: translateY(6px); }}
-      to {{ opacity: 1; transform: translateY(0); }}
-    }}
   </style>
 </head>
 <body class="email-bg" style="margin:0;padding:0;background-color:{_BG};font-family:{_MONO};">
@@ -599,44 +573,61 @@ def _email_shell(title: str, content: str, *, lang: str = "en") -> str:
 
 
 def _section_header(label: str) -> str:
-    """Render a dossier section header row with reveal animation."""
+    """Render a dossier section header row.
+
+    The rule used to be fifteen box-drawing glyphs padded around the label.
+    A screen reader announces every one of them by name, and on a narrow phone
+    they wrapped. It is a border now: same line, no text (handoff P1.10).
+    """
     return f"""\
           <tr>
-            <td style="padding:20px 32px 8px;animation:reveal-up 0.4s ease both;">
-              <p style="margin:0;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;border-bottom:1px dashed {_BORDER_SUBTLE};padding-bottom:6px;">
-                &#9472;&#9472; {_esc(label)} &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;
+            <td style="padding:20px 32px 8px;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;border-bottom:1px dashed {_BORDER_SUBTLE};padding-bottom:6px;">
+                {_esc(label)}
               </p>
             </td>
           </tr>"""
 
 
 def _cta_button(url: str, label: str, *, accent: str = _AMBER) -> str:
-    """Render the CTA button row with per-simulation accent color."""
+    """Render the call-to-action row.
+
+    Built as a table cell with a ``bgcolor`` ATTRIBUTE rather than a padded
+    ``<a>``: Outlook's word-processor renderer drops padding on inline anchors,
+    which left the button as bare underlined text on the one client most likely
+    to be reading this at work. The ``mso`` conditional gives that renderer a
+    VML rectangle instead, so it draws the same shape.
+
+    The block characters that framed the label are gone — they were read out
+    one by one by screen readers and said nothing (handoff P1.10, P1.13).
+    """
+    safe_url = _esc(url)
+    safe_label = _esc(label)
     return f"""\
           <tr>
             <td align="center" style="padding:24px 32px 32px;">
-              <a href="{_esc(url)}"
-                 style="display:inline-block;padding:14px 32px;background-color:{accent};color:{_BG};font-family:{_MONO};font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-decoration:none;border:2px solid {accent};animation:glow-breathe 2.5s ease-in-out infinite;">
-                &#9608; {_esc(label)} &#9608;
-              </a>
-            </td>
-          </tr>"""
-
-
-def _language_divider() -> str:
-    """Render the EN/DE language divider."""
-    return f"""\
-          <tr>
-            <td style="padding:32px 32px 8px;">
-              <p style="margin:0;font-size:11px;letter-spacing:3px;color:{_TEXT_DIM};text-align:center;">
-                &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
-              </p>
-              <p style="margin:4px 0 0;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;text-align:center;">
-                DEUTSCHE VERSION
-              </p>
-              <p style="margin:4px 0 0;font-size:11px;letter-spacing:3px;color:{_TEXT_DIM};text-align:center;">
-                &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;
-              </p>
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                           href="{safe_url}" style="height:48px;v-text-anchor:middle;width:280px;" arcsize="0%"
+                           strokecolor="{accent}" fillcolor="{accent}">
+                <w:anchorlock/>
+                <center style="color:{_BG};font-family:{_MONO};font-size:14px;font-weight:bold;letter-spacing:2px;">
+                  {safe_label}
+                </center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-- -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                <tr>
+                  <td align="center" bgcolor="{accent}" style="border:2px solid {accent};">
+                    <a href="{safe_url}"
+                       style="display:block;padding:14px 32px;color:{_BG};font-family:{_MONO};font-size:14px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-decoration:none;">
+                      {safe_label}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!--<![endif]-->
             </td>
           </tr>"""
 
@@ -703,7 +694,7 @@ def _bullet_list(items: list[str]) -> str:
     html = ""
     for item in items:
         html += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {item}
                 </p>"""
     return html
@@ -1324,7 +1315,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             gap_color = _GREEN if data.get("rank") == 1 else _TEXT
             rank_gap_html = f"""\
                   <tr>
-                    <td colspan="2" style="font-size:11px;color:{gap_color};padding:2px 0 4px;text-align:right;font-style:italic;">
+                    <td colspan="2" style="font-size:12px;color:{gap_color};padding:2px 0 4px;text-align:right;font-style:italic;">
                       {gap_text}
                     </td>
                   </tr>"""
@@ -1333,7 +1324,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:16px 20px;background-color:{_SURFACE};">
-                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+                <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                   {_nt("your_standing", lang)}
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:8px;">
@@ -1393,7 +1384,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         consecutive = data.get("consecutive_afk", 0)
         if consecutive > 0:
             afk_items += f"""\
-                <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
+                <p style="margin:4px 0 0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
                   {_nt("afk_consecutive_label", lang, n=str(consecutive))}
                 </p>"""
 
@@ -1416,7 +1407,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
             participation_html = f"""\
           <tr>
             <td style="padding:0 32px 8px;">
-              <p style="margin:0;font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;">
+              <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:1px;">
                 {_nt("participation_summary", lang, acted=str(acted), total=str(total))}
               </p>
             </td>
@@ -1428,7 +1419,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         deadline_html = f"""\
           <tr>
             <td style="padding:0 32px 12px;">
-              <p style="margin:0;font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;">
+              <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:1px;">
                 {_nt("deadline_info", lang, minutes=str(deadline_minutes))}
               </p>
             </td>
@@ -1448,10 +1439,10 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         bar = _score_bar(d["value"], accent=accent)
         dim_rows += f"""\
                   <tr>
-                    <td style="font-size:11px;color:{_TEXT_DIM};letter-spacing:1px;text-transform:uppercase;padding:5px 0;white-space:nowrap;width:100px;">{label}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:1px;text-transform:uppercase;padding:5px 0;white-space:nowrap;width:100px;">{label}</td>
                     <td style="padding:5px 8px;">{bar}</td>
                     <td style="font-size:12px;color:{_TEXT};text-align:right;padding:5px 0;white-space:nowrap;width:50px;">{d["value"]:.1f}</td>
-                    <td style="font-size:11px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d["delta"])}</td>
+                    <td style="font-size:12px;text-align:right;padding:5px 0;white-space:nowrap;width:60px;">{_delta_arrow(d["delta"])}</td>
                   </tr>"""
 
     dims_html = f"""\
@@ -1480,8 +1471,8 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
 
             mission_rows += f"""\
                   <tr>
-                    <td style="font-size:11px;color:{accent};font-weight:bold;padding:4px 8px 4px 0;white-space:nowrap;">{op_label}</td>
-                    <td style="font-size:11px;color:{_TEXT};padding:4px 0;">{target}</td>
+                    <td style="font-size:12px;color:{accent};font-weight:bold;padding:4px 8px 4px 0;white-space:nowrap;">{op_label}</td>
+                    <td style="font-size:12px;color:{_TEXT};padding:4px 0;">{target}</td>
                     <td style="font-size:13px;color:{status_color};text-align:right;padding:4px 0 4px 8px;">{status_icon}</td>
                   </tr>"""
 
@@ -1492,9 +1483,9 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
                 <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
                   <tr>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 8px 6px 0;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_type_header", lang)}</td>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_target", lang)}</td>
-                    <td style="font-size:9px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px 8px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_outcome", lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 8px 6px 0;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_type_header", lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_target", lang)}</td>
+                    <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:0 0 6px 8px;text-align:right;border-bottom:1px solid {_BORDER_SUBTLE};">{_nt("mission_outcome", lang)}</td>
                   </tr>
 {mission_rows}
                 </table>
@@ -1513,13 +1504,13 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.8;">
+                <p style="margin:0;font-size:15px;color:{_TEXT};line-height:1.8;">
                   {_nt("active", lang)}: <strong style="color:{accent};">{data["active_ops"]}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("resolved", lang)}: <strong>{data["resolved_ops"]}</strong>
                   ({data["success_ops"]}&#10003; {data["detected_ops"]}&#10007;)
                 </p>
-                <p style="margin:4px 0 0;font-size:14px;color:{_TEXT};line-height:1.8;">
+                <p style="margin:4px 0 0;font-size:15px;color:{_TEXT};line-height:1.8;">
                   {_nt("guardians", lang)}: <strong>{data["guardians"]}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("counter_intel", lang)}: <strong>{data["counter_intel"]}</strong>
@@ -1575,18 +1566,18 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                         parts.append(f"{level_counts[lv]} {zone_word} {lv_label}")
                 breakdown = ", ".join(parts)
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_nt("intel_zone_analysis", lang, target=target_name, breakdown=breakdown)}
                 </p>"""
             if guardian_ct is not None and target_name:
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_nt("intel_guardian_count", lang, target=target_name, count=str(guardian_ct))}
                 </p>"""
             # Fallback: raw narrative if no structured metadata
             if not zone_sec and guardian_ct is None:
                 intel_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_esc(si.get("narrative", ""))}
                 </p>"""
         intel_html = f"{_section_header(_nt('spy_intel', lang))}\n{_dashed_box(intel_items)}"
@@ -1596,7 +1587,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     if alliance_name:
         ally_names = ", ".join(_esc(n) for n in data.get("ally_names", []))
         bonus_tag = (
-            f' <span style="color:{_GREEN};font-size:10px;">&#9679; {_nt("alliance_bonus", lang)}</span>'
+            f' <span style="color:{_GREEN};font-size:12px;">&#9679; {_nt("alliance_bonus", lang)}</span>'
             if data.get("alliance_bonus_active")
             else ""
         )
@@ -1621,7 +1612,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         if detail_parts:
             alliance_details = "<br>".join(detail_parts)
             alliance_details = f"""
-                <p style="margin:8px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.8;">
+                <p style="margin:8px 0 0;font-size:12px;color:{_TEXT_DIM};line-height:1.8;">
                   {alliance_details}
                 </p>"""
 
@@ -1650,7 +1641,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
                 <p style="margin:0;font-size:14px;color:{_RED};font-weight:bold;line-height:1.6;">
                   &#9888; {_nt("alliance_dissolved", lang, name=_esc(dissolved_name))}
                 </p>
-                <p style="margin:4px 0 0;font-size:11px;color:{_TEXT_DIM};line-height:1.6;">
+                <p style="margin:4px 0 0;font-size:12px;color:{_TEXT_DIM};line-height:1.6;">
                   {_nt("alliance_dissolved_hint", lang)}
                 </p>
               </div>
@@ -1675,12 +1666,12 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         preview_items = ""
         if next_missions:
             preview_items += f"""\
-                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   {_nt("pending_missions", lang)}: <strong style="color:{accent};">{next_missions}</strong>
                 </p>"""
         if rp_projection:
             preview_items += f"""\
-                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0;font-size:15px;color:{_TEXT};line-height:1.6;">
                   {_nt("rp_projection", lang)}: <strong>{rp_projection}</strong>
                 </p>"""
         next_cycle_html = f"{_section_header(_nt('next_cycle', lang))}\n{_dashed_box(preview_items)}"
@@ -1691,7 +1682,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
         event_items = ""
         for ev in events[:5]:
             event_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {_esc(ev["narrative"])}
                 </p>"""
         events_html += _dashed_box(event_items)
@@ -1744,63 +1735,42 @@ def render_cycle_briefing(
     cta_url = data.get("command_center_url", f"{settings.site_url}/epoch")
     accent = data.get("accent_color", _AMBER)
     sim_slug = data.get("simulation_slug")
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
 
     # Phase name translation key mapping
     _phase_key = f"phase_{raw_phase}"
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        is_primary = i == 0
-        heading_tag = "h1" if is_primary else "h2"
-        heading_size = "22px" if is_primary else "20px"
-        sim_header = get_sim_header(sim_slug, lang)
-        status_display = _nt(_phase_key, lang) if _phase_key in _NOTIF_STRINGS else raw_phase.upper()
+    sim_header = get_sim_header(sim_slug, lang)
+    status_display = _nt(_phase_key, lang) if _phase_key in _NOTIF_STRINGS else raw_phase.upper()
 
-        if is_primary:
-            header = f"""\
+    header = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {sim_header}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                {sim_header}
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 8px;">
-              <{heading_tag} style="margin:0 0 4px;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <h1 style="margin:0 0 4px;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {epoch_name}
-              </{heading_tag}>
-              <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;">
-                {_nt("cycle_resolved", lang, n=cycle_number)} &middot; {_nt("phase_label", lang)}: {status_display}
-              </p>
-            </td>
-          </tr>"""
-        else:
-            blocks.append(_language_divider())
-            header = f"""\
-          <tr>
-            <td lang="{lang}" style="padding:24px 32px 8px;">
-              <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {sim_header}
-              </p>
-              <{heading_tag} style="margin:0 0 4px;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {epoch_name}
-              </{heading_tag}>
+              </h1>
               <p style="margin:0;font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;">
                 {_nt("cycle_resolved", lang, n=cycle_number)} &middot; {_nt("phase_label", lang)}: {status_display}
               </p>
             </td>
           </tr>"""
 
-        blocks.append(header)
-        blocks.append(_render_briefing_block(data, lang, accent=accent))
-        blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
-
-    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
+    blocks: list[str] = [
+        header,
+        _render_briefing_block(data, lang, accent=accent),
+        _cta_button(cta_url, _nt("cta", lang), accent=accent),
+        _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
+    ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content, lang=langs[0])
+    return _email_shell(f"CLASSIFIED // SITREP \u2014 {epoch_name}", content, lang=lang)
 
 
 # ── Phase Change Template ────────────────────────────────────────────────
@@ -1831,7 +1801,7 @@ def _render_phase_block(
     desc_items = ""
     for desc in descriptions:
         desc_items += f"""\
-                <p style="margin:0 0 6px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 6px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; {desc}
                 </p>"""
 
@@ -1895,71 +1865,49 @@ def render_phase_change(
     safe_name = _esc(epoch_name)
     cta_url = command_center_url
     accent = accent_color or _AMBER
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
 
-    # Phase-scaled subject urgency (C2) — use first lang for subject line
-    primary_lang = langs[0]
+    # Phase-scaled subject urgency (C2)
     if new_phase == "reckoning":
-        subject_prefix = _nt("subject_urgent_final", primary_lang)
+        subject_prefix = _nt("subject_urgent_final", lang)
     elif old_phase == "lobby":
-        subject_prefix = _nt("subject_ops_commence", primary_lang)
+        subject_prefix = _nt("subject_ops_commence", lang)
     else:
-        subject_prefix = _nt("subject_phase_transition", primary_lang)
+        subject_prefix = _nt("subject_phase_transition", lang)
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        is_primary = i == 0
-        heading_tag = "h1" if is_primary else "h2"
-        heading_size = "22px" if is_primary else "20px"
-
-        if is_primary:
-            header = f"""\
+    header = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("phase_change_header", lang)}<span style="animation:cursor-blink 1s step-end infinite;color:{_TEXT_DIM};">&#9612;</span>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                {_nt("phase_change_header", lang)}
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 16px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {safe_name}
-              </{heading_tag}>
-            </td>
-          </tr>"""
-        else:
-            blocks.append(_language_divider())
-            header = f"""\
-          <tr>
-            <td lang="{lang}" style="padding:24px 32px 16px;">
-              <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("phase_change_header", lang)}
-              </p>
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {safe_name}
-              </{heading_tag}>
+              </h1>
             </td>
           </tr>"""
 
-        blocks.append(header)
-        blocks.append(
-            _render_phase_block(
-                safe_name,
-                old_phase,
-                new_phase,
-                cycle_count,
-                lang,
-                accent=accent,
-                standing_data=standing_data,
-            )
-        )
-        blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
-
-    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
+    blocks: list[str] = [
+        header,
+        _render_phase_block(
+            safe_name,
+            old_phase,
+            new_phase,
+            cycle_count,
+            lang,
+            accent=accent,
+            standing_data=standing_data,
+        ),
+        _cta_button(cta_url, _nt("cta", lang), accent=accent),
+        _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
+    ]
 
     content = "\n".join(blocks)
-    return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content, lang=langs[0])
+    return _email_shell(f"{subject_prefix} \u2014 {safe_name}", content, lang=lang)
 
 
 # ── Epoch Completed Template ─────────────────────────────────────────────
@@ -1986,12 +1934,12 @@ def _render_completed_block(
         winner_html = f"""\
           <tr>
             <td style="padding:0 32px 16px;">
-              <div style="border:3px solid {accent};padding:24px 20px;background-color:{_SURFACE};text-align:center;animation:glow-breathe 2.5s ease-in-out infinite;">
+              <div style="border:3px solid {accent};padding:24px 20px;background-color:{_SURFACE};text-align:center;">
                 <p style="margin:0 0 8px;font-size:24px;color:{accent};letter-spacing:8px;">&#9733;&#9733;&#9733;</p>
-                <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{accent};text-transform:uppercase;font-weight:bold;">
+                <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{accent};text-transform:uppercase;font-weight:bold;">
                   {_nt("winner_you", lang)}
                 </p>
-                <p style="margin:0 0 12px;font-size:24px;font-weight:900;color:{accent};letter-spacing:3px;text-transform:uppercase;font-family:{_MONO};">
+                <p style="margin:0 0 12px;font-size:24px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                   {winner_name}
                 </p>
                 <p style="margin:0 0 8px;font-size:14px;color:{_TEXT};font-style:italic;">
@@ -2009,7 +1957,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:2px solid {accent};padding:16px 20px;background-color:{_SURFACE};text-align:center;">
-                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+                <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                   {_nt("winner", lang)}
                 </p>
                 <p style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;">
@@ -2043,9 +1991,9 @@ def _render_completed_block(
             <td style="padding:0 32px 16px;">
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:{_SURFACE};border:1px dashed {_BORDER};">
                 <tr>
-                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:center;border-bottom:1px solid {_BORDER};">#</td>
-                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;border-bottom:1px solid {_BORDER};">{_nt("leaderboard_sim", lang)}</td>
-                  <td style="font-size:10px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:right;border-bottom:1px solid {_BORDER};">{_nt("composite", lang)}</td>
+                  <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:center;border-bottom:1px solid {_BORDER};">#</td>
+                  <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;border-bottom:1px solid {_BORDER};">{_nt("leaderboard_sim", lang)}</td>
+                  <td style="font-size:12px;color:{_TEXT_DIM};letter-spacing:2px;text-transform:uppercase;padding:8px 4px;text-align:right;border-bottom:1px solid {_BORDER};">{_nt("composite", lang)}</td>
                 </tr>
 {lb_rows}
               </table>
@@ -2064,7 +2012,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.8;">
+                <p style="margin:0;font-size:15px;color:{_TEXT};line-height:1.8;">
                   {_nt("rank", lang)}: <strong style="color:{accent};">#{player_entry["rank"]}</strong> / {len(leaderboard)}
                   &nbsp;&middot;&nbsp;
                   {_nt("composite", lang)}: <strong style="color:{accent};">{player_entry["composite"]:.1f}</strong>
@@ -2094,7 +2042,7 @@ def _render_completed_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   {_nt("ops_deployed", lang)}: <strong style="color:{accent};">{total_ops}</strong>
                   &nbsp;&middot;&nbsp;
                   {_nt("success_rate", lang)}: <strong>{success_rate:.0f}%</strong>
@@ -2131,7 +2079,7 @@ def _render_completed_block(
                         player_pos = f" | {_nt('you_label', lang)}: {float(player_val):.1f}"
                 highlight = f"color:{accent};" if is_player else ""
                 title_items += f"""\
-                <p style="margin:0 0 4px;font-size:14px;color:{_TEXT};line-height:1.6;">
+                <p style="margin:0 0 4px;font-size:15px;color:{_TEXT};line-height:1.6;">
                   &#9656; <strong style="color:{accent};">{translated_title}</strong> ({dim_label}) &mdash; <span style="{highlight}">{sim_name}</span>{player_pos}
                 </p>"""
 
@@ -2186,59 +2134,38 @@ def render_epoch_completed(
     safe_name = _esc(epoch_name)
     cta_url = command_center_url
     accent = accent_color or _AMBER
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        is_primary = i == 0
-        heading_tag = "h1" if is_primary else "h2"
-        heading_size = "22px" if is_primary else "20px"
-
-        if is_primary:
-            header = f"""\
+    header = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 {_nt("epoch_complete_header", lang)}
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 16px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {safe_name}
-              </{heading_tag}>
-            </td>
-          </tr>"""
-        else:
-            blocks.append(_language_divider())
-            header = f"""\
-          <tr>
-            <td lang="{lang}" style="padding:24px 32px 16px;">
-              <p style="margin:0 0 4px;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
-                {_nt("epoch_complete_header", lang)}
-              </p>
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {safe_name}
-              </{heading_tag}>
+              </h1>
             </td>
           </tr>"""
 
-        blocks.append(header)
-        blocks.append(
-            _render_completed_block(
-                safe_name,
-                leaderboard,
-                player_simulation_id,
-                cycle_count,
-                lang,
-                accent=accent,
-                campaign_stats=campaign_stats,
-            )
-        )
-        blocks.append(_cta_button(cta_url, _nt("cta", lang), accent=accent))
-
-    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
+    blocks: list[str] = [
+        header,
+        _render_completed_block(
+            safe_name,
+            leaderboard,
+            player_simulation_id,
+            cycle_count,
+            lang,
+            accent=accent,
+            campaign_stats=campaign_stats,
+        ),
+        _cta_button(cta_url, _nt("cta", lang), accent=accent),
+        _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
+    ]
 
     content = "\n".join(blocks)
     winner = leaderboard[0] if leaderboard else None
@@ -2246,7 +2173,7 @@ def render_epoch_completed(
     subject = f"CLASSIFIED // OPERATION COMPLETE \u2014 {safe_name}"
     if is_winner:
         subject += " \u2605\u2605\u2605"
-    return _email_shell(subject, content, lang=langs[0])
+    return _email_shell(subject, content, lang=lang)
 
 
 # ── Clearance Upgrade Templates ──────────────────────────────────────────
@@ -2266,7 +2193,7 @@ def _render_clearance_block(
     header = f"""\
           <tr>
             <td style="padding:20px 32px 8px;">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 // {_nt("clearance_tier_label", lang)} //
               </p>
             </td>
@@ -2291,7 +2218,7 @@ def _render_clearance_block(
     intro = f"""\
           <tr>
             <td style="padding:8px 32px 16px;">
-              <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};">
+              <p style="margin:0;font-size:15px;line-height:1.7;color:{_TEXT};">
                 {_nt(intro_key, lang)}
               </p>
             </td>
@@ -2305,7 +2232,7 @@ def _render_clearance_block(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:12px 16px;background-color:{_SURFACE};">
-                <p style="margin:0;font-size:14px;color:{_TEXT};line-height:1.6;font-style:italic;">
+                <p style="margin:0;font-size:15px;color:{_TEXT};line-height:1.6;font-style:italic;">
                   &ldquo;{_esc(admin_notes)}&rdquo;
                 </p>
               </div>
@@ -2338,54 +2265,36 @@ def render_clearance_granted(
     starter_tokens: int | None = None,
 ) -> str:
     """Render the clearance granted email (bilingual or single-language)."""
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
     accent = _AMBER
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        is_primary = i == 0
-        heading_tag = "h1" if is_primary else "h2"
-        heading_size = "22px" if is_primary else "20px"
-
-        if is_primary:
-            top = f"""\
+    top = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 BUREAU OF MULTIVERSE OBSERVATION
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 8px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {_nt("clearance_granted_header", lang)}
-              </{heading_tag}>
-            </td>
-          </tr>"""
-        else:
-            blocks.append(_language_divider())
-            top = f"""\
-          <tr>
-            <td lang="{lang}" style="padding:24px 32px 8px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt("clearance_granted_header", lang)}
-              </{heading_tag}>
+              </h1>
             </td>
           </tr>"""
 
-        blocks.append(top)
-        blocks.append(
-            _render_clearance_block(
-                lang, approved=True, admin_notes=admin_notes, accent=accent, starter_tokens=starter_tokens
-            )
-        )
-        blocks.append(_cta_button(forge_url, _nt("clearance_granted_cta", lang), accent=accent))
-
-    blocks.append(_footer_row(email_locale))
+    blocks: list[str] = [
+        top,
+        _render_clearance_block(
+            lang, approved=True, admin_notes=admin_notes, accent=accent, starter_tokens=starter_tokens
+        ),
+        _cta_button(forge_url, _nt("clearance_granted_cta", lang), accent=accent),
+        _footer_row(email_locale),
+    ]
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content, lang=langs[0])
+    return _email_shell("CLASSIFIED // CLEARANCE GRANTED", content, lang=lang)
 
 
 def render_clearance_denied(
@@ -2394,48 +2303,32 @@ def render_clearance_denied(
     admin_notes: str | None = None,
 ) -> str:
     """Render the clearance denied email (bilingual or single-language)."""
-    langs = _resolve_langs(email_locale)
+    lang = _resolve_lang(email_locale)
 
-    blocks: list[str] = []
-    for i, lang in enumerate(langs):
-        is_primary = i == 0
-        heading_tag = "h1" if is_primary else "h2"
-        heading_size = "22px" if is_primary else "20px"
-
-        if is_primary:
-            top = f"""\
+    top = f"""\
           <tr>
             <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {_BORDER};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 BUREAU OF MULTIVERSE OBSERVATION
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 8px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
                 {_nt("clearance_denied_header", lang)}
-              </{heading_tag}>
-            </td>
-          </tr>"""
-        else:
-            blocks.append(_language_divider())
-            top = f"""\
-          <tr>
-            <td lang="{lang}" style="padding:24px 32px 8px;">
-              <{heading_tag} style="margin:0;font-size:{heading_size};font-weight:900;color:{_TEXT};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
-                {_nt("clearance_denied_header", lang)}
-              </{heading_tag}>
+              </h1>
             </td>
           </tr>"""
 
-        blocks.append(top)
-        blocks.append(_render_clearance_block(lang, approved=False, admin_notes=admin_notes))
-
-    blocks.append(_footer_row(email_locale))
+    blocks: list[str] = [
+        top,
+        _render_clearance_block(lang, approved=False, admin_notes=admin_notes),
+        _footer_row(email_locale),
+    ]
 
     content = "\n".join(blocks)
-    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content, lang=langs[0])
+    return _email_shell("CLASSIFIED // CLEARANCE REVIEW", content, lang=lang)
 
 
 def render_clearance_request_admin_notification(
@@ -2457,7 +2350,7 @@ def render_clearance_request_admin_notification(
     top = f"""\
           <tr>
             <td style="padding:24px 32px;border-bottom:2px solid {accent};">
-              <p style="margin:0;font-size:11px;letter-spacing:4px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                 BUREAU OF MULTIVERSE OBSERVATION
               </p>
             </td>
@@ -2473,11 +2366,11 @@ def render_clearance_request_admin_notification(
     body = f"""\
           <tr>
             <td style="padding:16px 32px;">
-              <p style="margin:0 0 16px;font-size:14px;line-height:1.7;color:{_TEXT};">
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:{_TEXT};">
                 A new clearance upgrade request has been submitted.
               </p>
-              <div style="border:1px solid {_BORDER};border-left:3px solid {accent};animation:accent-pulse 3s ease-in-out infinite;padding:16px;background:{_SURFACE};">
-                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+              <div style="border:1px solid {_BORDER};border-left:3px solid {accent};padding:16px;background:{_SURFACE};">
+                <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                   APPLICANT
                 </p>
                 <p style="margin:0;font-size:14px;color:{accent};font-family:{_MONO};">
@@ -2492,10 +2385,10 @@ def render_clearance_request_admin_notification(
           <tr>
             <td style="padding:0 32px 16px;">
               <div style="border:1px dashed {_BORDER};padding:16px;background:{_SURFACE};margin-top:8px;">
-                <p style="margin:0 0 4px;font-size:10px;letter-spacing:3px;color:{_TEXT_DIM};text-transform:uppercase;">
+                <p style="margin:0 0 4px;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
                   OPERATIONAL JUSTIFICATION
                 </p>
-                <p style="margin:0;font-size:14px;line-height:1.7;color:{_TEXT};font-style:italic;">
+                <p style="margin:0;font-size:15px;line-height:1.7;color:{_TEXT};font-style:italic;">
                   {safe_message}
                 </p>
               </div>

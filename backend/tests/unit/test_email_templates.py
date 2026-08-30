@@ -1,5 +1,7 @@
 """Unit tests for email templates — structure and content verification."""
 
+import re
+
 from backend.config import settings
 from backend.services.email_templates import (
     _BG,
@@ -142,8 +144,8 @@ class TestRenderCycleBriefing:
         assert "MILITARY" in html
 
     def test_contains_dimension_names_de(self):
-        """German section should contain translated dimension names."""
-        html = render_cycle_briefing(self._sample_data())
+        """A German reader gets German dimension names - and only those."""
+        html = render_cycle_briefing(self._sample_data(), email_locale="de")
         assert "STABILIT" in html  # STABILITÄT
         assert "EINFLUSS" in html
         assert "DIPLOMATIE" in html
@@ -171,9 +173,21 @@ class TestRenderCycleBriefing:
         html = render_cycle_briefing(self._sample_data())
         assert "https://metaverse.center/epoch" in html
 
-    def test_contains_german_section(self):
-        html = render_cycle_briefing(self._sample_data())
-        assert "DEUTSCHE VERSION" in html
+    def test_one_language_per_message(self):
+        """P1.9: an unset locale used to send BOTH languages, one after the other.
+
+        The briefing has nine sections, so it went out with eighteen: the reader
+        scrolled past a complete copy in a language they had not asked for.
+        Measured, an unset locale halved the message (29 604 -> 14 815 bytes).
+        """
+        default = render_cycle_briefing(self._sample_data())
+        assert "STABILITY" in default
+        assert "STABILIT\u00c4T" not in default
+        assert "DEUTSCHE VERSION" not in default
+
+        german = render_cycle_briefing(self._sample_data(), email_locale="de")
+        assert "STABILIT\u00c4T" in german
+        assert "DEUTSCHE VERSION" not in german
 
     def test_contains_footer_links(self):
         html = render_cycle_briefing(self._sample_data())
@@ -322,6 +336,7 @@ class TestRenderPhaseChange:
             new_phase="reckoning",
             cycle_count=10,
             command_center_url="https://metaverse.center/epoch",
+            email_locale="de",
         )
         assert "WETTBEWERB" in html
         assert "ABRECHNUNG" in html
@@ -346,7 +361,7 @@ class TestRenderPhaseChange:
         )
         assert "Standard RP allocation" in html
 
-    def test_bilingual(self):
+    def test_one_language_per_message(self):
         html = render_phase_change(
             epoch_name="Test",
             old_phase="foundation",
@@ -354,7 +369,8 @@ class TestRenderPhaseChange:
             cycle_count=5,
             command_center_url="https://metaverse.center/epoch",
         )
-        assert "DEUTSCHE VERSION" in html
+        assert "DEUTSCHE VERSION" not in html
+        assert 'lang="en"' in html
 
     # ── New phase change tests (C1, C2, A1) ──
 
@@ -483,12 +499,12 @@ class TestRenderEpochCompleted:
             player_simulation_id="sim-b",
             cycle_count=15,
             command_center_url="https://metaverse.center/epoch",
+            email_locale="de",
         )
-        # German section
         assert "Der Unersch" in html  # Der Unerschütterliche
         assert "Der Einflussreiche" in html
 
-    def test_bilingual(self):
+    def test_one_language_per_message(self):
         html = render_epoch_completed(
             epoch_name="Test",
             leaderboard=self._sample_leaderboard(),
@@ -496,7 +512,8 @@ class TestRenderEpochCompleted:
             cycle_count=15,
             command_center_url="https://metaverse.center/epoch",
         )
-        assert "DEUTSCHE VERSION" in html
+        assert "DEUTSCHE VERSION" not in html
+        assert 'lang="en"' in html
 
     def test_total_cycles(self):
         html = render_epoch_completed(
@@ -580,13 +597,15 @@ class TestRenderEpochInvitation:
         assert "<body" in html
         assert "EPOCH SUMMONS" in html
 
-    def test_bilingual_en_and_de(self):
-        html = self._render()
-        assert "DEUTSCHE VERSION" in html
-        # EN header
-        assert "CLASSIFIED // EPOCH SUMMONS" in html
-        # DE header
-        assert "EPOCHEN-EINBERUFUNG" in html
+    def test_one_language_per_message(self):
+        """The invitation used to arrive in both languages, stacked."""
+        en = self._render()
+        assert "DEUTSCHE VERSION" not in en
+        assert "CLASSIFIED // EPOCH SUMMONS" in en
+        assert "EPOCHEN-EINBERUFUNG" not in en
+
+        de = self._render(email_locale="de")
+        assert "EPOCHEN-EINBERUFUNG" in de
 
     def test_contains_intro_en(self):
         html = self._render()
@@ -594,7 +613,7 @@ class TestRenderEpochInvitation:
         assert "deployment" in html.lower()
 
     def test_contains_intro_de(self):
-        html = self._render()
+        html = self._render(email_locale="de")
         assert "GEHEIM eingestuft" in html
         assert "Kommando" in html
 
@@ -605,14 +624,14 @@ class TestRenderEpochInvitation:
     def test_contains_intel_dossier(self):
         html = self._render()
         assert "INTEL DISPATCH" in html
-        assert "GEHEIMDIENSTBERICHT" in html
         assert "The shadows gather" in html
+        assert "GEHEIMDIENSTBERICHT" in self._render(email_locale="de")
 
     def test_contains_mission_parameters(self):
         """Updated for v2.3 game mechanics."""
         html = self._render()
         assert "MISSION PARAMETERS" in html
-        assert "MISSIONSPARAMETER" in html
+        assert "MISSIONSPARAMETER" in self._render(email_locale="de")
         assert "Draft your agents" in html
         assert "Deploy 6 operative types" in html
         assert "Forge alliances" in html
@@ -622,7 +641,7 @@ class TestRenderEpochInvitation:
         """Updated for v2.3 game mechanics."""
         html = self._render()
         assert "RULES OF ENGAGEMENT" in html
-        assert "EINSATZREGELN" in html
+        assert "EINSATZREGELN" in self._render(email_locale="de")
         assert "Each player commands one simulation" in html
         assert "5 dimensions" in html
         assert "Agent aptitudes" in html
@@ -631,8 +650,9 @@ class TestRenderEpochInvitation:
     def test_contains_cta_buttons(self):
         html = self._render()
         assert "TAKE COMMAND" in html
-        assert "KOMMANDO" in html
-        # URL appears in both CTA buttons
+        assert "KOMMANDO" in self._render(email_locale="de")
+        # One button, rendered twice: once as VML for Outlook's word-processor
+        # renderer, once as a table cell for everything else.
         assert html.count("token=abc") >= 2
 
     def test_contains_footer(self):
@@ -659,11 +679,17 @@ class TestRenderEpochInvitation:
         html = self._render()
         assert "border:1px dashed" in html
 
-    def test_section_header_pattern(self):
-        """Section headers use box-drawing characters."""
+    def test_section_headers_use_a_border_not_glyphs(self):
+        """P1.10: the rule was fifteen box-drawing characters of text.
+
+        A screen reader announces each one by name, and on a narrow phone they
+        wrapped. It is a CSS border now - same line, nothing to read aloud.
+        """
         html = self._render()
-        # Section headers use ── pattern (U+9472 horizontal box)
-        assert "&#9472;&#9472;" in html
+        assert "&#9472;" not in html
+        assert "&#9473;" not in html
+        assert "&#9608;" not in html
+        assert "border-bottom:1px dashed" in html
 
     # ── New invitation tests (A1, F1, E1, E2) ──
 
@@ -900,3 +926,68 @@ class TestCycleBriefingPhase7:
         import re
         outside_style = re.sub(r"<style>.*?</style>", "", html, flags=re.DOTALL)
         assert "rgba(" not in outside_style
+
+# ── Shell hygiene ─────────────────────────────────────────────
+#
+# Handoff item 28: the properties below are contracts, not preferences, and
+# every one of them was violated by the shell that shipped.
+
+
+class TestShellHygiene:
+    def _every_template(self) -> dict[str, str]:
+        lb = [
+            {"simulation_id": "sim-a", "simulation_name": "A", "composite_score": 80.0,
+             "composite": 80.0, "rank": 1, "name": "A"},
+        ]
+        return {
+            "briefing": render_cycle_briefing(TestRenderCycleBriefing()._sample_data()),
+            "invitation": render_epoch_invitation("Op", "Lore.", "https://x/j"),
+            "phase": render_phase_change(
+                epoch_name="Op", old_phase="foundation", new_phase="competition",
+                cycle_count=4, command_center_url="https://x",
+            ),
+            "completed": render_epoch_completed(
+                epoch_name="Op", leaderboard=lb, player_simulation_id="sim-a",
+                cycle_count=9, command_center_url="https://x",
+            ),
+        }
+
+    def test_no_css_animation_survives(self):
+        """Outlook ignores them; Apple Mail makes them restless.
+
+        Five keyframes ran in every message, one of them a permanent pulse on
+        the call-to-action. `reveal-up` carried an identical delay on every
+        section header, so it did not even stagger - it was motion for its own
+        sake, on a medium that mostly cannot show it.
+        """
+        for name, html in self._every_template().items():
+            assert "@keyframes" not in html, name
+            assert "animation:" not in html, name
+
+    def test_nothing_is_rotated(self):
+        """Project rule: no stamp aesthetics, no rotated elements."""
+        for name, html in self._every_template().items():
+            assert "rotate(" not in html, name
+
+    def test_no_type_below_twelve_pixels(self):
+        """The footer ran at 10px in the worst contrast in the message."""
+        for name, html in self._every_template().items():
+            sizes = {int(px) for px in re.findall(r"font-size:(\d+)px", html)}
+            assert sizes, name
+            assert min(sizes) >= 12, f"{name}: {sorted(sizes)}"
+
+    def test_uppercase_tracking_stays_readable(self):
+        """3-4px of tracking on 10px uppercase text is a legibility problem.
+
+        8px is allowed once, on the row of victory stars in the closing mail -
+        that is spacing between three glyphs, not between letters of a word.
+        """
+        for name, html in self._every_template().items():
+            tracking = {int(px) for px in re.findall(r"letter-spacing:(\d+)px", html)}
+            assert tracking - {8} <= {1, 2}, f"{name}: {sorted(tracking)}"
+
+    def test_the_call_to_action_survives_outlook(self):
+        """A padded inline anchor renders as bare underlined text there."""
+        for name, html in self._every_template().items():
+            assert "[if mso]" in html, name
+            assert "bgcolor=" in html, name
