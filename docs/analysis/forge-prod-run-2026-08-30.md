@@ -59,8 +59,8 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | **Fixed** (W5) |
 | 26 | Generated themes had no contrast floor — one world shipped text and header at ratio 1.00 | **Critical** | **Fixed** (`4a9b43e8`) |
 | 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
-| 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
-| 29 | Stored `agents.portrait_description` rows still carry the defective template's output | High | Open |
+| 28 | 28 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | **Listed** (W6, `scripts/audit_style_prompts.py`); the rewrite is editorial |
+| 29 | 4 of 114 stored `agents.portrait_description` rows still carry the defective template's output | High | **Listed** (W6, `--rescan-descriptions`); regenerating is operational |
 | 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | **Fixed** (W4, migration 284) |
 | 31 | Seeds run **after** migrations, so every platform-template `UPDATE` is discarded on a fresh database — migration 027 inert since February | **Critical** | **Fixed** (seed back-port + CI gate) |
 | 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | **Fixed** (migration 282, on production 2026-08-30) |
@@ -506,9 +506,20 @@ states prohibitions and explains nothing.** Where the output is prose, a rationa
 
 ### 28. Most style prompts describe a picture rather than a style — High
 
-Audited all **123** style prompts across **41** production worlds: **29 in 18 worlds** are flagged
-— 26 describe a whole scene, 4 ask for readable text, 3 name a subject. Probably the reason other
-worlds also produce uniform imagery. Not repaired: editorial.
+Audited all **123** style prompts across **41** production worlds: **28 in 18 worlds** are flagged
+— 26 describe a whole scene (up to 109 words), 3 name a subject, 2 ask for readable text. Probably
+the reason other worlds also produce uniform imagery. Not repaired: editorial.
+
+*(The hand count in the first draft of this section said 29, with 4 asking for readable text. The
+number above is the one `scripts/audit_style_prompts.py` produces, which is the one that can be
+re-run — the hand count predates the implemented rule. Where a hand count and an instrument
+disagree, the instrument is what the next reader can check.)*
+
+**Shipped in W6 as an instrument, not a repair.** The rule itself already runs at generation time
+in `ForgeThemeService`, so a world built from W1 onwards is checked as it is made; what was
+missing was the look backwards over the 41 worlds that predate it. `scripts/audit_style_prompts.py`
+is that look, with `--verbose` for the full text and `--json` for further processing. It has no
+`--apply`.
 
 **A measurement that corrected the tool itself.** The first version of the check flagged any
 numeral, and hit 42. Looking at what the numerals actually are: 13× `1970s`, 12× `35mm`, 12× `1979`,
@@ -520,12 +531,31 @@ legal so the rule cannot drift wide again.
 
 ### 29. The repair chain stops at the template — High
 
-`scripts/repair_simulation_prompt_templates.py` writes `prompt_templates` only. Measured over the
-114 stored portrait descriptions on production: **2 still contain a literal `{placeholder}`** and
-**3 name the invented legibility index** — five agents across two worlds whose stored description
-was produced by a defective template and still says so. Regenerating them costs image-model money,
-which makes it an operational decision rather than a repair; the intended shape is a
-`--rescan-descriptions` mode that lists the affected rows and changes nothing.
+`scripts/repair_simulation_prompt_templates.py` writes `prompt_templates` only. That is the right
+scope for a repair — a template is configuration, a description is content — but it means a
+description *produced by* a defective template keeps saying what the template told it to, and
+nothing reported that.
+
+**Shipped in W6 as `--rescan-descriptions`.** Measured over the 114 stored portrait descriptions on
+production: **4 agents in two worlds**, not the five the first draft counted.
+
+| world | agents | what it carries |
+|:--|:--|:--|
+| `state-pathography-…` | Tinctus Verwisch, Viscora Linienhaupt | a lapel badge reading `LESERLICHKEIT: 78%` and `Leserlichkeit: 63% (abnehmend)` |
+| `the-time-bank-of-momo` | Anya Vey, Mira Solm | a literal `{echo_summary}` that went straight into the image prompt |
+
+**The first world is called *State Pathography: Legibility as Biopolitical Metabolism*, so a match
+on that word could easily have been a false positive — and reading the rows was what settled it.**
+It is not: both carry a fabricated *percentage*, rendered onto the portrait as though the platform
+had computed it. That is finding 5's invented index, arriving at the picture. The rule therefore
+matches a number with a percent sign, never the word alone.
+
+One thing the rule does not catch and a reader should know about: Mira Solm's description also
+carries an `Inscription (Lower Margin)` quoting `"Solm carries 17,302 hours"` — the same family of
+defect (a fabricated figure asked to be drawn), from a different direction. Recorded, not repaired.
+
+The mode changes nothing and has no `--apply`. Regenerating a description costs image-model money
+and replaces a text someone may have read, which makes it an operational decision.
 
 ---
 
@@ -1375,6 +1405,35 @@ Two lessons from this run that belong in the same list, because they cost real t
 
 ---
 
+## Where this ended
+
+All six work packages are done, and all 35 findings are closed. "Closed" does not mean all 35 were
+repaired — six of them were deliberately **listed rather than changed**, because the change would
+have been an editorial or operational decision rather than a restoration:
+
+| Left to a person | Why |
+|:--|:--|
+| 14 worlds carrying an SD-era `image_guidance_scale` of 5.0 | 5.0 is no platform default in either family, so somebody chose it. (The 14 at 7.5 *were* residue and were repaired.) |
+| 24 worlds with no German name | Inventing one is a naming decision; `t()` falls back to the English name, so nothing is broken. |
+| 115 buildings holding a condition their world never defined | Deciding what `fair` becomes in a world that never had the word. New worlds cannot reproduce the defect. |
+| 28 style prompts that describe a picture | Rewriting the visual identity of 18 worlds. |
+| 4 portrait descriptions from a defective template | Image-model money, and replacing a text someone may have read. |
+| the second half of finding 35 (`agent_aptitudes`) | Belongs to the parallel session's system review. |
+
+Every one of them has an instrument that produces the number again, so the decision can be taken
+with the figure in front of it rather than from this document's memory.
+
+**Three of this run's own measurements were wrong, and all three were caught the same way — by
+looking at the thing the number described.** Finding 11 counted `purpose=` with a six-line `grep`
+window against a twenty-five-line call. An AST scan for heartbeat entry types read the wrong
+argument position and reported zero across the whole backend. Finding 14 described a code branch
+that production cannot reach. A fourth was nearly added in the other direction: a gate was almost
+blamed for missing a raw colour it was never scoped to check. The gates written in W4 and W6 each
+begin by checking that they match anything at all, because a gate that matches nothing passes for
+the wrong reason.
+
+---
+
 ## Proposed work order
 
 Grouped so that each step is independently shippable and verifiable.
@@ -1386,7 +1445,7 @@ Grouped so that each step is independently shippable and verifiable.
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
 | **W4** ✅ | 11, 13, 15, **34**, 30 (+14 re-measured) | Configuration. One declaration for all thirteen purposes (`ai_purposes.py`), budgets and timeouts admin-editable (migration 283), the cost ledger finally fed (34), and each world's vocabularies derived from its own entities (migration 284). Finding 14's stated mechanism did not survive measurement — the SD branch is unreachable on production; the real defect is 14 worlds carrying SD-era guidance, listed for decision rather than rewritten. |
 | **W5** ✅ | 16, 17, 18, 19, 21, 25 | Surface. The German name existed all along and nothing read it (migration 287); the progress bar waits for the phase it measures and says what it counts; the Table follows its own output; the authored chat persona reaches the model; and the research footer's claim can now be opened. Finding 17 ships provenance, not verification — asking a model for source URLs is the one change that would make it worse. |
-| **W6** | 28, 29 | The rest of the AI's output that no contract covers: style prompts that are pictures, and stored descriptions produced by defective templates. Both are list-and-decide, not auto-repair. |
+| **W6** ✅ | 28, 29 | The rest of the AI's output that no contract covers. Both shipped as instruments, neither as a repair: `audit_style_prompts.py` runs the existing rule over the 41 existing worlds (the rule itself already guards new ones), and `--rescan-descriptions` lists the stored descriptions a defective template produced. Neither has an `--apply`, deliberately — rewriting a world's visual identity, or paying to regenerate a text someone may have read, is a decision, not a restoration. |
 
 W1 before W2 because W1 stops the bleeding on new worlds; W2 hardens the contract that would
 have caught it. W3 is independent and can run in parallel.
