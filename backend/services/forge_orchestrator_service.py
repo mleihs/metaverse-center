@@ -17,6 +17,7 @@ from pydantic_ai.exceptions import ModelAPIError, UnexpectedModelBehavior
 
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
+from backend.models.aptitude import OPERATIVE_TYPES
 from backend.models.forge import (
     ForgeAgentDraft,
     ForgeBuildingDraft,
@@ -35,6 +36,7 @@ from backend.services.ai_utils import (
     run_ai,
     validate_bilingual_output,
 )
+from backend.services.aptitude_derivation import derive_aptitude_set
 from backend.services.external.openrouter import OpenRouterError
 from backend.services.external.replicate import ReplicateBillingError, ReplicateError
 from backend.services.forge_ascii_art_service import ForgeAsciiArtService
@@ -759,6 +761,62 @@ class ForgeOrchestratorService:
         return entity
 
     @staticmethod
+    async def _seed_agent_aptitudes(supabase: Client, simulation_id: str) -> None:
+        """Give every agent of a freshly materialized world its six aptitudes.
+
+        Derived from the agent's own disposition — see
+        `backend/services/aptitude_derivation.py` for where the signal comes
+        from and why the budget is spent the way it is.
+
+        MEASURED CAVEAT, and the reason this logs rather than staying quiet: on
+        production all 258 `agents.personality_profile` values are `{}`, because
+        `PersonalityExtractionService` has no caller anywhere in the backend.
+        With an empty disposition the derivation returns an even generalist —
+        correct, but indistinguishable from the state it was meant to replace.
+        The count below is what makes that visible instead of silent; a world
+        whose agents all come out generalist is a world whose personalities were
+        never extracted, not a world whose agents happen to be balanced.
+        """
+        agents_resp = await (
+            supabase.table("agents")
+            .select("id, personality_profile")
+            .eq("simulation_id", str(simulation_id))
+            .is_("deleted_at", "null")
+            .execute()
+        )
+        agents = agents_resp.data or []
+        if not agents:
+            return
+
+        rows: list[dict] = []
+        generalists = 0
+        for agent in agents:
+            personality = agent.get("personality_profile") or {}
+            if not personality:
+                generalists += 1
+            aptitudes = derive_aptitude_set(personality)
+            rows.extend(
+                {
+                    "agent_id": agent["id"],
+                    "simulation_id": str(simulation_id),
+                    "operative_type": operative,
+                    "aptitude_level": getattr(aptitudes, operative),
+                }
+                for operative in OPERATIVE_TYPES
+            )
+
+        await supabase.table("agent_aptitudes").upsert(rows, on_conflict="agent_id,operative_type").execute()
+        logger.info(
+            "Seeded agent aptitudes",
+            extra={
+                "simulation_id": str(simulation_id),
+                "agents": len(agents),
+                "rows": len(rows),
+                "without_personality": generalists,
+            },
+        )
+
+    @staticmethod
     async def materialize_shard(
         supabase: Client,
         user_id: UUID,
@@ -869,6 +927,23 @@ class ForgeOrchestratorService:
 
             # Use admin client for service-role writes (lore + theme settings)
             write_client = admin_supabase or supabase
+
+            # Aptitudes for the world's new agents (Befund D15). The Forge never
+            # wrote `agent_aptitudes`, so every agent it made stood flat on the
+            # generalist baseline of 6 — and since the highest `min_aptitude` in
+            # the ability content is 5, an agent with no assignment unlocked
+            # every ability. Party composition was not a decision in 30 of 36
+            # worlds. Best-effort: a materialized world must not be lost because
+            # the aptitudes failed.
+            try:
+                await ForgeOrchestratorService._seed_agent_aptitudes(write_client, sim_id)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "materialize")
+                    scope.set_tag("step", "agent_aptitudes")
+                    scope.set_context("forge", {"simulation_id": str(sim_id)})
+                    sentry_sdk.capture_exception()
+                logger.exception("Aptitude seeding failed", extra={"simulation_id": str(sim_id)})
 
             # Apply theme settings (generated in Darkroom phase)
             theme_config = draft_data.get("theme_config") or {}
