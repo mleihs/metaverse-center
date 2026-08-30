@@ -40,6 +40,10 @@ from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
+from backend.services.simulation_setting_contracts import (
+    HEARTBEAT_OVERRIDE_KEYS,
+    heartbeat_override_categories,
+)
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
@@ -229,19 +233,30 @@ class HeartbeatService(BaseSchedulerMixin):
 
     @classmethod
     async def _load_sim_overrides(cls, admin: Client, sim_id: UUID) -> dict:
-        """Load per-simulation heartbeat overrides from simulation_settings."""
+        """Load per-simulation heartbeat overrides from simulation_settings.
+
+        The categories are read from ``HEARTBEAT_OVERRIDE_KEYS``, not guessed. A
+        hard-coded ``category = 'heartbeat'`` here is what made every control on
+        the Autonomy screen and the bond whisper budget inert: the panels write
+        ``'autonomy'`` and ``'bonds'``, the rows were saved, and the tick used
+        its defaults without a word. Only declared ``(key, category)`` pairs are
+        kept, so a key can never be picked up out of the wrong drawer.
+        """
         overrides: dict = {}
         try:
             _resp = await (
                 admin.table("simulation_settings")
-                .select("setting_key, setting_value")
+                .select("setting_key, setting_value, category")
                 .eq("simulation_id", str(sim_id))
-                .eq("category", "heartbeat")
+                .in_("category", heartbeat_override_categories())
                 .execute()
             )
             rows = extract_list(_resp)
             for row in rows:
-                overrides[row["setting_key"]] = row["setting_value"]
+                key = row["setting_key"]
+                if HEARTBEAT_OVERRIDE_KEYS.get(key) != row.get("category"):
+                    continue
+                overrides[key] = row["setting_value"]
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
             logger.warning(
                 "Failed to load sim heartbeat overrides for %s",
