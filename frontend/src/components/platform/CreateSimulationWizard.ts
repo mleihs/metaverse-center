@@ -5,6 +5,7 @@ import { simulationsApi } from '../../services/api/index.js';
 import { captureError } from '../../services/SentryService.js';
 import type { SimulationTheme } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
+import { formStyles } from '../shared/form-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/BaseModal.js';
@@ -24,7 +25,9 @@ interface SimulationFormData {
 @localized()
 @customElement('velg-create-simulation-wizard')
 export class VelgCreateSimulationWizard extends LitElement {
-  static styles = css`
+  static styles = [
+    formStyles,
+    css`
     :host {
       display: block;
     }
@@ -283,38 +286,8 @@ export class VelgCreateSimulationWizard extends LitElement {
       gap: var(--space-3);
     }
 
-    .footer__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-2) var(--space-4);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      border: var(--border-default);
-      box-shadow: var(--shadow-md);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-
-    .footer__btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .footer__btn:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
-    }
-
-    .footer__btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
+    /* .footer__btn plus its :hover / :active / :disabled states come from
+       formStyles; only this wizard's own modifiers stay here. */
     .footer__btn--back {
       background: var(--color-surface-raised);
       color: var(--color-text-primary);
@@ -334,7 +307,8 @@ export class VelgCreateSimulationWizard extends LitElement {
       background: var(--color-success);
       color: var(--color-text-inverse);
     }
-  `;
+    `,
+  ];
 
   @property({ type: Boolean, reflect: true }) open = false;
 

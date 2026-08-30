@@ -17,6 +17,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { epochsApi } from '../../services/api/EpochsApiService.js';
 import { captureError } from '../../services/SentryService.js';
 import type { EpochScoreWeights } from '../../types/index.js';
+import { forgeRangeStyles } from '../shared/forge-console-styles.js';
 import '../shared/BaseModal.js';
 import {
   computePhaseCycles,
@@ -158,6 +159,7 @@ function getStepLabels(): Record<Step, string> {
 export class VelgEpochCreationWizard extends LitElement {
   static styles = [
     formStyles,
+    forgeRangeStyles,
     infoBubbleStyles,
     css`
       :host {
@@ -330,68 +332,7 @@ export class VelgEpochCreationWizard extends LitElement {
 
       /* ── Range Slider ────────────────────── */
 
-      .range-field {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-      }
-
-      .range-field__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-      }
-
-      .range-field__label {
-        font-family: var(--font-mono, monospace);
-        font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--color-text-muted);
-      }
-
-      .range-field__readout {
-        font-family: var(--font-brutalist);
-        font-weight: var(--font-black);
-        font-size: var(--text-base);
-        color: var(--color-success);
-        min-width: 40px;
-        text-align: right;
-      }
-
-      .range-field input[type="range"] {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 100%;
-        height: 6px;
-        background: var(--color-surface-raised);
-        border: 1px solid var(--color-border);
-        cursor: pointer;
-      }
-
-      .range-field input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 14px;
-        height: 14px;
-        background: var(--color-success);
-        border: 2px solid var(--color-surface-sunken);
-        cursor: pointer;
-        transition: transform 0.15s;
-      }
-
-      .range-field input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.3);
-      }
-
-      .range-field input[type="range"]::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
-        background: var(--color-success);
-        border: 2px solid var(--color-surface-sunken);
-        border-radius: 0;
-        cursor: pointer;
-      }
+      /* .range-field and its input chrome come from forgeRangeStyles. */
 
       /* ── Two-column row ──────────────────── */
 

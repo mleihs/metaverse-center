@@ -86,6 +86,12 @@ jobs:
       # components/shared/marker-styles.ts.
       - name: Marker lint (no coloured edge bars)
         run: bash frontend/scripts/lint-no-accent-edge-bar.sh
+
+      # Binds the class the marker gate could not: a shared style module that is
+      # copied by hand instead of imported. See the script header for the
+      # measurement that set its thresholds.
+      - name: Shared-style lint (no hand-copied style modules)
+        run: bash frontend/scripts/lint-no-shared-style-copy.sh
         working-directory: .
 
       # Guards the guards: a lint script whose grep target does not exist under
