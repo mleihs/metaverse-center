@@ -134,10 +134,8 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'agent_generation_partial', 'generation', 'en', 'Partial Agent Generation (EN)',
     'Complete the character profile for "{agent_name}" in "{simulation_name}".
-
 Existing data:
 {existing_data}
-
 Fill in any missing fields while staying consistent with the existing data.
 Return a JSON object with only the newly generated fields.
 Respond in {locale_name}.
@@ -162,10 +160,8 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'agent_generation_partial', 'generation', 'de', 'Teilweise Agenten-Generierung (DE)',
     'Vervollständige das Charakterprofil von "{agent_name}" in "{simulation_name}".
-
 Vorhandene Daten:
 {existing_data}
-
 Fülle fehlende Felder aus und bleibe dabei konsistent mit den vorhandenen Daten.
 Gib ein JSON-Objekt mit nur den neu generierten Feldern zurück.
 Antworte auf {locale_name}.
@@ -416,13 +412,11 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'event_generation', 'generation', 'en', 'Event Generation (EN)',
     'Create an event of type "{event_type}" for the simulation "{simulation_name}".
-
 Generate a JSON object with:
 - "title": Event headline (max 255 chars)
 - "description": Detailed event description (200-400 words)
 - "impact_level": 1-10
 - "urgency_level": One of: low, medium, high, critical
-
 Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
@@ -444,13 +438,11 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'event_generation', 'generation', 'de', 'Ereignis-Generierung (DE)',
     'Erstelle ein Ereignis vom Typ "{event_type}" für die Simulation "{simulation_name}".
-
 Generiere ein JSON-Objekt mit:
 - "title": Ereignis-Überschrift (max 255 Zeichen)
 - "description": Detaillierte Ereignisbeschreibung (200-400 Wörter)
 - "impact_level": 1-10
 - "urgency_level": Eines von: low, medium, high, critical
-
 Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
