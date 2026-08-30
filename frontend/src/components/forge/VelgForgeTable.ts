@@ -1241,13 +1241,24 @@ export class VelgForgeTable extends LitElement {
     await forgeStateManager.generateChunk(type);
     this._generatingChunk = null;
 
-    if (!forgeStateManager.error.value) {
+    const shortfall = forgeStateManager.lastGenerationShortfall.value;
+    if (forgeStateManager.error.value) {
+      VelgToast.error(msg('Failed to generate blueprint chunk.'));
+    } else if (shortfall) {
+      // A short delivery is not a success. It used to draw one, because the
+      // toast only asked whether `error` was set — and `error` is set only on a
+      // RUN of failures, never on a single scattered one.
+      VelgToast.warning(
+        msg(
+          str`The Bureau delivered ${shortfall.delivered} of ${shortfall.requested}. Re-draft to fill the gap.`,
+          { id: 'forge-partial-delivery' },
+        ),
+      );
+    } else {
       const toastMsg = forgeStateManager.lastGenerationRecovered.value
         ? msg('Signal recovered – blueprints retrieved from Bureau archives')
         : msg('Blueprint expanded successfully.');
       VelgToast.success(toastMsg);
-    } else {
-      VelgToast.error(msg('Failed to generate blueprint chunk.'));
     }
   }
 

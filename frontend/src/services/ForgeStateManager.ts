@@ -76,6 +76,17 @@ class ForgeStateManager {
   readonly generationStartedAt = signal<number | null>(null);
   /** True if last generation completed via timeout recovery. Reset on next generation. */
   readonly lastGenerationRecovered = signal(false);
+  /**
+   * How many entities the last incremental run actually delivered, when that is
+   * fewer than asked for.
+   *
+   * `error` was the only report before, and it is set ONLY when
+   * MAX_CONSECUTIVE_FAILURES trips. A single scattered failure — one of sixteen,
+   * with the rest succeeding — set nothing, so the run ended with a success
+   * toast and a department card stamped "Recruited" over fifteen cards. This
+   * signal carries the shortfall for cases that are not a hard stop.
+   */
+  readonly lastGenerationShortfall = signal<{ requested: number; delivered: number } | null>(null);
   /** True while actively polling the backend for recovery after a timeout. */
   readonly isRecovering = signal(false);
   /** Per-entity generation progress (null when not in entity loop). */
@@ -431,6 +442,7 @@ class ForgeStateManager {
     this.isRecovering.value = false;
     this.generationStartedAt.value = Date.now();
     this.lastGenerationRecovered.value = false;
+    this.lastGenerationShortfall.value = null;
     this.generationProgress.value = {
       entityType,
       current: 0,
@@ -439,6 +451,7 @@ class ForgeStateManager {
     };
 
     let consecutiveFailures = 0;
+    let delivered = 0;
     const MAX_RETRIES = 3;
     const MAX_CONSECUTIVE_FAILURES = 2;
 
@@ -472,6 +485,7 @@ class ForgeStateManager {
                 Date.now() - (this.generationProgress.value?.currentEntityStartedAt ?? Date.now());
               this._recordTiming(`${entityType}_entity`, elapsed);
               consecutiveFailures = 0;
+              delivered++;
               success = true;
               break;
             }
@@ -495,6 +509,13 @@ class ForgeStateManager {
             break;
           }
         }
+      }
+
+      // A short delivery is reported whether or not it was a hard stop. The
+      // consecutive-failure guard only fires on a RUN of failures; scattered
+      // ones used to leave no trace at all.
+      if (delivered < total) {
+        this.lastGenerationShortfall.value = { requested: total, delivered };
       }
 
       // Reconcile with server state
