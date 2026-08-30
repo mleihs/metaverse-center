@@ -167,7 +167,7 @@ class TestStylePrompts:
         assert len(findings) == 1
         problems = findings[0].problems
         assert "names a subject" in problems
-        assert "contains a numeral" in problems
+        assert "states a measurement" in problems
         assert "asks for readable text" in problems
         assert any("not a style" in p for p in problems)
 
@@ -186,6 +186,32 @@ class TestStylePrompts:
     def test_the_prompt_examples_all_pass(self, value: str):
         """The four examples the generation prompt itself offers must be legal."""
         assert audit_style_prompts({"image_style_prompt_portrait": value}) == ()
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "1970s Kodachrome, 35mm grain, warm cast",
+            "16:9 anamorphic, f/8, deep focus, overcast",
+            "85mm portrait lens, f/2.8, shallow falloff",
+            "CP437 terminal phosphor, 80x25 grid, scanlines",
+        ],
+    )
+    def test_the_vocabulary_of_style_is_not_a_measurement(self, value: str):
+        """Measured over 123 production prompts: nearly every numeral is legitimate.
+
+        A first version of this rule flagged all 42 numeral hits — film stocks,
+        decades, focal lengths, aspect ratios — and would have been ignored
+        within a week. Only a numeral presented as a value is a defect.
+        """
+        assert audit_style_prompts({"image_style_prompt_portrait": value}) == ()
+
+    @pytest.mark.parametrize(
+        "value",
+        ["a diagnosis reading Leserlichkeit: 93%", "opacity 40% overlay label", "Index: 12 stamped"],
+    )
+    def test_a_numeral_presented_as_a_value_is_caught(self, value: str):
+        findings = audit_style_prompts({"image_style_prompt_portrait": value})
+        assert findings and "states a measurement" in findings[0].problems
 
     def test_a_gendered_word_alone_is_enough(self):
         findings = audit_style_prompts({"image_style_prompt_building": "warm light on her face"})
