@@ -328,21 +328,32 @@ class DungeonCombatService:
         if current_room.room_type == "boss":
             await DungeonAchievementService.on_boss_victory(admin_supabase, instance)
 
-            distributable = [item for item in loot if item.effect_type not in AUTO_APPLY_EFFECT_TYPES]
+            # The boss drop joins everything the run collected on the way in;
+            # before D3 that earlier loot was shown to the player and dropped.
+            boss_loot = [item.model_dump(mode="json") for item in loot]
+            all_loot = instance.run_loot + boss_loot
+            distributable = [
+                item for item in all_loot if item.get("effect_type") not in AUTO_APPLY_EFFECT_TYPES
+            ]
             operational_count = sum(1 for a in instance.party if can_act(a.condition))
 
             if not distributable or operational_count <= 1:
                 instance.phase = "completed"
-                await DungeonDistributionService.complete_run(admin_supabase, instance, loot)
+                await DungeonDistributionService.complete_run(admin_supabase, instance, all_loot)
             else:
-                await DungeonDistributionService.begin_distribution(admin_supabase, instance, loot)
+                await DungeonDistributionService.begin_distribution(admin_supabase, instance, all_loot)
+            loot_payload = boss_loot
         else:
+            # Non-boss victory: the drop is kept on the run and distributed with
+            # the boss loot at the end. It used to be rolled, shown and dropped
+            # (Befund D3).
+            loot_payload = instance.record_loot(loot)
             instance.phase = "room_clear"
             await DungeonCheckpointService.checkpoint(admin_supabase, instance)
 
         return {
             "victory": True,
-            "loot": [item.model_dump() for item in loot],
+            "loot": loot_payload,
             "state": DungeonCheckpointService.build_client_state(instance),
         }
 

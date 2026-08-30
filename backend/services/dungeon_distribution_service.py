@@ -89,14 +89,14 @@ class DungeonDistributionService:
         cls,
         admin_supabase: Client,
         instance: DungeonInstance,
-        loot: list,
+        loot: list[dict],
     ) -> None:
         """Complete a dungeon run atomically via fn_complete_dungeon_run RPC.
 
         Single transaction: status update + agent outcomes + loot effects + event.
         """
         outcome = {
-            "loot": [item.model_dump() for item in loot],
+            "loot": list(loot),
             "rooms_cleared": instance.rooms_cleared,
             "depth_reached": instance.depth,
             "party_state": [a.model_dump(mode="json") for a in instance.party],
@@ -157,15 +157,18 @@ class DungeonDistributionService:
         cls,
         admin_supabase: Client,
         instance: DungeonInstance,
-        loot: list,
+        loot: list[dict],
     ) -> None:
         """Enter loot distribution phase after boss victory.
 
         Applies agent outcomes (mood, stress, moodlets) immediately,
         but holds loot for player assignment via the debrief terminal.
+
+        ``loot`` carries the boss drop *and* everything the run collected on the
+        way in (``instance.run_loot``); the caller merges the two.
         """
         instance.phase = "distributing"
-        instance.pending_loot = [item.model_dump() for item in loot]
+        instance.pending_loot = list(loot)
         instance.loot_assignments = {}
 
         # Pre-build auto-apply items (stress_heal → all agents, sim-wide → first agent)
@@ -176,32 +179,33 @@ class DungeonDistributionService:
 
         auto_items: list[dict] = []
         for item in loot:
-            if item.effect_type == "dungeon_buff":
+            effect_type = item.get("effect_type")
+            if effect_type == "dungeon_buff":
                 continue
-            if item.effect_type == "stress_heal":
+            if effect_type == "stress_heal":
                 for agent in operational_agents:
                     auto_items.append(
                         {
-                            "loot_id": item.id,
+                            "loot_id": item["id"],
                             "agent_id": str(agent.agent_id),
-                            "effect_type": item.effect_type,
-                            "effect_params": item.effect_params,
+                            "effect_type": effect_type,
+                            "effect_params": item.get("effect_params", {}),
                         }
                     )
-            elif item.effect_type in ("event_modifier", "arc_modifier") and first_agent_id:
+            elif effect_type in ("event_modifier", "arc_modifier") and first_agent_id:
                 auto_items.append(
                     {
-                        "loot_id": item.id,
+                        "loot_id": item["id"],
                         "agent_id": first_agent_id,
-                        "effect_type": item.effect_type,
-                        "effect_params": item.effect_params,
+                        "effect_type": effect_type,
+                        "effect_params": item.get("effect_params", {}),
                     }
                 )
         instance.auto_apply_loot = auto_items
 
         # Build agent outcomes (same as complete_run)
         outcome = {
-            "loot": [item.model_dump() for item in loot],
+            "loot": list(loot),
             "rooms_cleared": instance.rooms_cleared,
             "depth_reached": instance.depth,
             "party_state": [a.model_dump(mode="json") for a in instance.party],
@@ -510,7 +514,7 @@ class DungeonDistributionService:
         return outcomes
 
     @classmethod
-    def _build_loot_items_for_rpc(cls, instance: DungeonInstance, loot: list) -> list[dict]:
+    def _build_loot_items_for_rpc(cls, instance: DungeonInstance, loot: list[dict]) -> list[dict]:
         """Assign loot effects to agents for the fn_apply_dungeon_loot RPC.
 
         Phase 0 assignment strategy:
@@ -529,7 +533,7 @@ class DungeonDistributionService:
 
         items: list[dict] = []
         for loot_item in loot:
-            effect_type = loot_item.effect_type
+            effect_type = loot_item.get("effect_type", "")
 
             # Skip runtime-only effects (no DB persistence needed)
             if effect_type == "dungeon_buff":
@@ -540,15 +544,15 @@ class DungeonDistributionService:
                 for agent in operational_agents:
                     items.append(
                         {
-                            "loot_id": loot_item.id,
+                            "loot_id": loot_item["id"],
                             "agent_id": str(agent.agent_id),
                             "effect_type": effect_type,
-                            "effect_params": loot_item.effect_params,
+                            "effect_params": loot_item.get("effect_params", {}),
                         }
                     )
             else:
                 # Assign to first operational agent
-                params = dict(loot_item.effect_params)
+                params = dict(loot_item.get("effect_params", {}))
                 # Resolve pipe-separated aptitude to single value (R1)
                 raw_apt = params.get("aptitude", "")
                 if "|" in raw_apt:
@@ -557,7 +561,7 @@ class DungeonDistributionService:
                     )
                 items.append(
                     {
-                        "loot_id": loot_item.id,
+                        "loot_id": loot_item["id"],
                         "agent_id": first_agent_id,
                         "effect_type": effect_type,
                         "effect_params": params,
