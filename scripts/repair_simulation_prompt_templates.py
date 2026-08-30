@@ -59,6 +59,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -234,6 +235,76 @@ async def _load_rows(supabase, simulation_id: str | None) -> list[dict]:
     return rows
 
 
+# ── Where the repair chain stops (finding 29) ────────────────────────────────
+#
+# This script writes `prompt_templates` and nothing else. That was always the
+# right scope for a repair — a template is configuration, a description is
+# content — but it means a description PRODUCED by a defective template keeps
+# saying what the template told it to, and nothing here reports that.
+#
+# Measured on production 2026-08-30 across 114 stored portrait descriptions:
+# FOUR agents in two worlds. Two carry a literal `{echo_summary}` that went
+# straight into an image prompt; two carry a lapel badge with a fabricated
+# legibility percentage ("LESERLICHKEIT: 78%", "Leserlichkeit: 63% (abnehmend)")
+# — the same invented index finding 5 traced to an invented template variable,
+# rendered onto the portrait as though the platform had computed it.
+#
+# This mode LISTS them and changes nothing, on purpose. Regenerating a portrait
+# description costs image-model money and replaces a text a person may have
+# read, which makes it an operational decision rather than a repair.
+_LITERAL_PLACEHOLDER_RE = re.compile(r"\{[a-z_]{2,}\}")
+_INVENTED_INDEX_RE = re.compile(r"\b(leserlichkeit|legibility)\b\s*:?\s*\d+\s*%", re.IGNORECASE)
+
+
+async def _rescan_descriptions(supabase) -> int:
+    """Report stored descriptions that still carry a defective template's output."""
+    rows = extract_list(
+        await supabase.table("agents")
+        .select("id, name, portrait_description, simulation_id, simulations(name, slug)")
+        .not_.is_("portrait_description", "null")
+        .execute()
+    )
+
+    flagged: list[tuple[str, str, list[str]]] = []
+    for row in rows:
+        text = row.get("portrait_description") or ""
+        if not text.strip():
+            continue
+        problems: list[str] = []
+        if _LITERAL_PLACEHOLDER_RE.search(text):
+            found = sorted(set(_LITERAL_PLACEHOLDER_RE.findall(text)))
+            problems.append(f"literal placeholder ({', '.join(found)})")
+        if _INVENTED_INDEX_RE.search(text):
+            problems.append("states the invented legibility index")
+        if problems:
+            joined = row.get("simulations") or {}
+            world = joined.get("slug") or joined.get("name") or str(row.get("simulation_id"))
+            flagged.append((str(world), str(row.get("name", "?")), problems))
+
+    counted = sum(1 for row in rows if (row.get("portrait_description") or "").strip())
+    print(f"{counted} stored portrait descriptions")
+    if not flagged:
+        print(Colour.green("Nothing flagged."))
+        return 0
+
+    worlds = {world for world, _, _ in flagged}
+    print(Colour.bold(f"\n{len(flagged)} carry a defective template's output, in {len(worlds)} worlds:\n"))
+    current = ""
+    for world, name, problems in sorted(flagged):
+        if world != current:
+            current = world
+            print(Colour.bold(f"  {world}"))
+        print(f"    {name:<28} {'; '.join(problems)}")
+
+    print(
+        Colour.dim(
+            "\nNothing was written. Regenerating a description costs image-model money and\n"
+            "replaces a text someone may have read — an operational decision, not a repair."
+        )
+    )
+    return 0
+
+
 def _write_backup(plans: list[dict], directory: Path) -> Path:
     directory.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -289,6 +360,12 @@ async def main() -> int:
     parser.add_argument("--verbose", action="store_true", help="print the full before/after text")
     parser.add_argument("--restore", type=Path, help="put back a backup file written by --apply")
     parser.add_argument(
+        "--rescan-descriptions",
+        action="store_true",
+        help="list stored portrait descriptions produced by a defective template, and change "
+        "nothing (finding 29 — the repair chain stops at the template)",
+    )
+    parser.add_argument(
         "--backup-dir",
         type=Path,
         default=PROJECT_ROOT / "backups" / "prompt-templates",
@@ -307,6 +384,9 @@ async def main() -> int:
         return 2
 
     print(Colour.bold(f"TARGET: {host}"))
+
+    if args.rescan_descriptions:
+        return await _rescan_descriptions(supabase)
 
     if args.restore:
         return 1 if await _restore(supabase, args.restore) else 0
