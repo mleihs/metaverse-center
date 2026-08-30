@@ -1317,6 +1317,54 @@ class TestRest:
 
 class TestRetreat:
     @pytest.mark.asyncio
+    async def test_retreat_costs_what_the_run_cost(self, noop_checkpoint):
+        """D5: withdrawing used to be free, and therefore always correct.
+
+        `fn_abandon_dungeon_run` applied no outcomes at all — the stress a party
+        accumulated over a whole run lived only in this process and evaporated.
+        The RPC now carries the outcomes, so the numbers leave memory.
+        """
+        instance = _make_instance(phase="exploring")
+        instance.rooms_cleared = 2
+        for agent in instance.party:
+            agent.stress = 420
+        _register_instance(instance)
+
+        mock_sb = _make_mock_supabase()
+        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=[]):
+            await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
+
+        calls = {call.args[0]: call.args[1] for call in mock_sb.rpc.call_args_list}
+        assert "fn_abandon_dungeon_run" in calls
+        outcomes = calls["fn_abandon_dungeon_run"]["p_agent_outcomes"]
+        assert outcomes, "Der Rückzug übergibt keine Agenten-Ergebnisse — er kostet wieder nichts"
+        for entry in outcomes:
+            assert entry["stress_delta"] == 420, "Der angesammelte Stress muss mitgehen"
+            assert entry["moodlets"][0]["moodlet_type"] == "dungeon_retreat"
+            assert entry["mood_delta"] < 0, "Ein Rückzug ist kein Triumph"
+
+    @pytest.mark.asyncio
+    async def test_retreat_loot_is_not_listed_twice(self, noop_checkpoint):
+        """`record_and_apply` mutates `run_loot` AND returns the new entries.
+
+        Concatenating the two would list every fresh drop twice; the existing
+        `test_retreat_partial_loot_if_rooms_cleared` caught exactly that during
+        the E4 work. This pins the shape rather than the count.
+        """
+        instance = _make_instance(phase="exploring")
+        instance.rooms_cleared = 2
+        _register_instance(instance)
+
+        drop = LootItem(id="probe_1", name_en="Shard", name_de="Scherbe", tier=1, effect_type="memory")
+        mock_sb = _make_mock_supabase()
+        with patch("backend.services.dungeon_engine_service.roll_loot", return_value=[drop]):
+            resp = await DungeonEngineService.retreat(mock_sb, instance.run_id, user_id=_TEST_PLAYER)
+
+        ids = [item["id"] for item in resp.loot]
+        assert len(ids) == len(set(ids)), f"Beute doppelt aufgeführt: {ids}"
+        assert len(ids) == 1
+
+    @pytest.mark.asyncio
     async def test_retreat_updates_phase(self, noop_checkpoint):
         instance = _make_instance(phase="exploring")
         _register_instance(instance)

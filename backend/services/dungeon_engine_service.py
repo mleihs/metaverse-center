@@ -55,6 +55,7 @@ from backend.services.dungeon.dungeon_archetypes import (
 from backend.services.dungeon.dungeon_banter import emit_banter
 from backend.services.dungeon.dungeon_generator import generate_dungeon_graph
 from backend.services.dungeon.dungeon_loot import roll_loot
+from backend.services.dungeon.dungeon_run_buffs import record_and_apply
 from backend.services.dungeon_checkpoint_service import DungeonCheckpointService
 from backend.services.dungeon_combat_service import DungeonCombatService
 from backend.services.dungeon_content_service import (
@@ -462,13 +463,27 @@ class DungeonEngineService:
         # the player a literal "{agent}: …". `emit_banter` is the one place now.
         retreat_banter = await emit_banter(admin_supabase, instance, "retreat")
 
-        # Partial loot: Tier 1 for rooms cleared
+        # Partial loot: Tier 1 for rooms cleared, joined by whatever the run
+        # collected on the way in. Both used to go into the outcome blob and
+        # nowhere else — shown to the player and never applied (Befund D3).
         loot = []
         if instance.rooms_cleared > 0:
             loot = roll_loot(1, instance.difficulty, instance.depth, instance.archetype_state, instance.archetype)
+        # `record_and_apply` APPENDS to `instance.run_loot` and also returns the
+        # new entries, so `run_loot + record_and_apply(...)` would list the fresh
+        # drops twice — the left operand is the very list the call mutates.
+        record_and_apply(instance, loot)
+        partial_loot = list(instance.run_loot)
+
+        # A withdrawal now costs what the run cost: the accumulated stress is
+        # written through and a "retreat" moodlet is left behind. Until the
+        # Systemprüfung `fn_abandon_dungeon_run` applied no outcomes at all, so
+        # retreating was free and therefore always correct (Befund D5).
+        agent_outcomes = DungeonDistributionService._build_agent_outcomes(instance, outcome="retreat")
+        loot_items = DungeonDistributionService._build_loot_items_for_rpc(instance, partial_loot)
 
         outcome = {
-            "partial_loot": [item.model_dump() for item in loot],
+            "partial_loot": partial_loot,
             "rooms_cleared": instance.rooms_cleared,
         }
 
@@ -482,6 +497,8 @@ class DungeonEngineService:
                     "p_outcome": outcome,
                     "p_depth": instance.depth,
                     "p_room_index": instance.current_room,
+                    "p_agent_outcomes": agent_outcomes,
+                    "p_loot_items": loot_items,
                 },
                 run_id=run_id,
                 context="retreat",
@@ -491,7 +508,7 @@ class DungeonEngineService:
                 retreated=True,
                 rpc_failed=True,
                 rpc_error_message="Failed to save retreat. Your progress will be recovered on next visit.",
-                loot=[item.model_dump() for item in loot],
+                loot=partial_loot,
             )
 
         _store.remove(run_id)
@@ -512,7 +529,7 @@ class DungeonEngineService:
             }
         return RetreatResponse(
             retreated=True,
-            loot=[item.model_dump() for item in loot],
+            loot=partial_loot,
             banter=banter_data,
         )
 
