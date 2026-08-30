@@ -54,17 +54,15 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'agent_generation_full', 'generation', 'en', 'Full Agent Generation (EN)',
     'Create a detailed character for the simulation "{simulation_name}".
-
 Name: {agent_name}
 System/Faction: {agent_system}
 Gender: {agent_gender}
-
+The character is shaped by the conditions of this world: they uphold them, quietly resist them, or have been broken by them.
 Generate the following fields as a JSON object:
-- "character": A paragraph describing personality, traits, motivations (200-300 words)
-- "background": A paragraph describing history, origin, key life events (200-300 words)
-- "description": A brief one-line physical description
-
-The character should fit the {agent_system} faction and the overall tone of {simulation_name}.
+- "character": Personality, motivations, relationship to the powers that hold this world (200-300 words)
+- "background": History, origin, key experiences under these conditions (200-300 words)
+- "description": Brief physical description (1 sentence, fitting this world)
+The character should fit the {agent_system} faction.
 Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
@@ -94,17 +92,15 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'agent_generation_full', 'generation', 'de', 'Vollständige Agenten-Generierung (DE)',
     'Erstelle einen detaillierten Charakter für die Simulation "{simulation_name}".
-
 Name: {agent_name}
 System/Fraktion: {agent_system}
 Geschlecht: {agent_gender}
-
+Die Figur ist von den Verhältnissen dieser Welt geprägt: sie trägt sie mit, stellt sich ihnen leise entgegen, oder ist an ihnen zerbrochen.
 Generiere folgende Felder als JSON-Objekt:
-- "character": Ein Absatz über Persönlichkeit, Eigenschaften, Motivationen (200-300 Wörter)
-- "background": Ein Absatz über Geschichte, Herkunft, Schlüsselerlebnisse (200-300 Wörter)
-- "description": Eine kurze einzeilige physische Beschreibung
-
-Der Charakter sollte zur Fraktion {agent_system} und zum Grundton von {simulation_name} passen.
+- "character": Persönlichkeit, Motivationen, Verhältnis zu den herrschenden Kräften (200-300 Wörter)
+- "background": Geschichte, Herkunft, Schlüsselerlebnisse unter diesen Verhältnissen (200-300 Wörter)
+- "description": Kurze physische Beschreibung (1 Satz, passend zu dieser Welt)
+Der Charakter sollte zur Fraktion {agent_system} passen.
 Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
@@ -894,6 +890,85 @@ Antworte auf {locale_name}.',
 
 RAISE NOTICE 'Inserted 32 platform-default prompt templates (16 types × 2 locales)';
 
+END;
+$$;
+
+-- =============================================================================
+-- Velgarien-eigene agent_generation_full — der Rahmen, der EINER Welt gehoert
+-- =============================================================================
+-- Bis Migration 282 stand dieser Text in der PLATTFORM-Zeile, also im Rueckfall
+-- fuer jede Simulation ohne eigene. Gemessen auf Produktion 2026-08-30: 41
+-- Welten, 0 eigene Zeilen — 37 Welten, die nicht Velgarien sind, bekamen
+-- „Velgarien ist ein autoritaerer Staat" in den Prompt.
+--
+-- Er ist nicht geloescht, sondern umgezogen: hierher, wo er hingehoert. Genau
+-- wofuer `prompt_templates.simulation_id` da ist.
+--
+-- Nur `velgarien` selbst — die Epochenklone (`velgarien-e3/-e4/-e5`) entstehen
+-- zur Laufzeit und existieren in einer frischen Datenbank nicht. Migration 282
+-- versorgt alle vier auf Produktion.
+DO $$
+DECLARE
+    velgarien_id uuid;
+BEGIN
+    SELECT id INTO velgarien_id FROM simulations WHERE slug = 'velgarien';
+    IF velgarien_id IS NULL THEN
+        RAISE NOTICE 'Seed 006: simulation velgarien not found, skipping its own templates';
+        RETURN;
+    END IF;
+
+    INSERT INTO prompt_templates (
+        simulation_id, template_type, prompt_category, locale, template_name,
+        prompt_content, system_prompt, variables, default_model,
+        temperature, max_tokens, is_system_default, created_by_id
+    ) VALUES
+    (velgarien_id, 'agent_generation_full', 'generation', 'en', 'Velgarien Agent Generation (EN)',
+     'Create a detailed character for the dystopian simulation "{simulation_name}".
+Name: {agent_name}
+System/Faction: {agent_system}
+Gender: {agent_gender}
+Velgarien is an authoritarian state: total control, propaganda, surveillance, brutalist architecture. Characters are shaped by this system — as supporters, quiet rebels, or broken citizens.
+Generate the following fields as a JSON object:
+- "character": Personality, motivations, relationship with the regime (200-300 words)
+- "background": History, origin, key experiences within the system (200-300 words)
+- "description": Brief physical description (1 sentence, fitting the dystopian world)
+The character should fit the {agent_system} faction.
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
+- No signature quirk invented to make them memorable.
+- The LAST sentence of each field is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.
+- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+     'You are a character designer for a dystopian simulation. Velgarien is an authoritarian state under total control. Create characters that exist within this dark, oppressive world — shaped by propaganda, surveillance, resistance, or submission.',
+     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
+     'deepseek/deepseek-chat-v3-0324', 0.8, 800, false, '00000000-0000-0000-0000-000000000001'),
+    (velgarien_id, 'agent_generation_full', 'generation', 'de', 'Velgarien Agent Generation (DE)',
+     'Erstelle einen detaillierten Charakter für die dystopische Simulation "{simulation_name}".
+Name: {agent_name}
+System/Fraktion: {agent_system}
+Geschlecht: {agent_gender}
+Velgarien ist ein autoritärer Staat: totale Kontrolle, Propaganda, Überwachung, brutalistische Architektur. Charaktere sind von diesem System geprägt — sei es als Unterstützer, stille Rebellen oder gebrochene Bürger.
+Generiere folgende Felder als JSON-Objekt:
+- "character": Persönlichkeit, Motivationen, Beziehung zum Regime (200-300 Wörter)
+- "background": Geschichte, Herkunft, Schlüsselerlebnisse im System (200-300 Wörter)
+- "description": Kurze physische Beschreibung (1 Satz, passend zur dystopischen Welt)
+Der Charakter sollte zur Fraktion {agent_system} passen.
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
+- Keine erfundene Marotte, die sie merkwuerdig machen soll.
+- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
+- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+     'Du bist ein Charakterdesigner für eine dystopische Simulation. Velgarien ist ein autoritärer Staat unter totaler Kontrolle. Erstelle Charaktere, die in dieser düsteren, oppressiven Welt leben — geprägt von Propaganda, Überwachung, Widerstand oder Unterwerfung.',
+     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
+     'deepseek/deepseek-chat-v3-0324', 0.8, 800, false, '00000000-0000-0000-0000-000000000001')
+    ON CONFLICT DO NOTHING;
 END;
 $$;
 
