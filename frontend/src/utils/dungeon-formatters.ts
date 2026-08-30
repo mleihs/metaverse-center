@@ -1338,14 +1338,20 @@ export function formatDungeonComplete(state: DungeonClientState, loot: LootItem[
 
 // ── Party Wipe ───────────────────────────────────────────────────────────────
 
+// The old text read "THE DARKNESS TAKES THEM" / "All agents have fallen. The
+// dungeon claims its due." — and nobody is taken. `fn_wipe_dungeon_run` applies
+// -20 mood, +200 stress and one moodlet; the party comes back (Befund D12). The
+// wording now matches the mechanic, in the same words as the SQL narrative.
 export function formatPartyWipe(): TerminalLine[] {
   return [
     systemLine(''),
     systemLine('\u2591'.repeat(50)),
-    systemLine(`\u2591\u2591       ${msg('THE DARKNESS TAKES THEM')}       \u2591\u2591`),
+    systemLine(`\u2591\u2591       ${msg('THE PARTY IS OVERCOME')}       \u2591\u2591`),
     systemLine('\u2591'.repeat(50)),
     systemLine(''),
-    responseLine(msg('All agents have fallen. The dungeon claims its due.')),
+    responseLine(
+      msg('No one is lost. The party returns marked \u2013 and the darkness keeps the rest.'),
+    ),
     systemLine(''),
   ];
 }

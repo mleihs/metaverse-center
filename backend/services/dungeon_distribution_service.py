@@ -488,27 +488,58 @@ class DungeonDistributionService:
     # ── Helpers ────────────────────────────────────────────────────────────
 
     @classmethod
-    def _build_agent_outcomes(cls, instance: DungeonInstance) -> list[dict]:
-        """Build agent outcomes for the completion RPC (mood, stress, moodlets, activities)."""
+    def _build_agent_outcomes(
+        cls,
+        instance: DungeonInstance,
+        *,
+        outcome: str = "completed",
+    ) -> list[dict]:
+        """Build agent outcomes for the RPCs (mood, stress, moodlets, activities).
+
+        ``outcome="retreat"`` is the same shape with a different verdict. Until
+        the Systemprüfung there was no retreat branch at all, because
+        `fn_abandon_dungeon_run` never applied outcomes: the stress a party
+        accumulated over a whole run lived only in memory and evaporated when
+        the player withdrew (Befund D5). With free loot on top (D3), the
+        dominant strategy was to explore until it got dangerous and restart.
+        """
+        retreating = outcome == "retreat"
         outcomes = []
         for agent in instance.party:
+            afflicted = agent.condition == "afflicted"
             outcomes.append(
                 {
                     "agent_id": str(agent.agent_id),
-                    "mood_delta": -10 if agent.stress > 500 else 10,
+                    # A withdrawal is neither a triumph nor a disaster: the mood
+                    # cost is small, but the stress the run inflicted stays.
+                    "mood_delta": (-5 if retreating else (-10 if agent.stress > 500 else 10)),
                     "stress_delta": agent.stress,
                     "moodlets": [
                         {
-                            "moodlet_type": "dungeon_survivor",
-                            "emotion": "pride" if agent.condition != "afflicted" else "dread",
-                            "strength": 10 if agent.condition != "afflicted" else -10,
-                            "source_description": f"Survived {instance.archetype} dungeon",
+                            "moodlet_type": "dungeon_retreat" if retreating else "dungeon_survivor",
+                            "emotion": (
+                                "unease" if retreating else ("dread" if afflicted else "pride")
+                            ),
+                            "strength": -5 if retreating else (-10 if afflicted else 10),
+                            "source_description": (
+                                f"Withdrew from {instance.archetype} dungeon"
+                                if retreating
+                                else f"Survived {instance.archetype} dungeon"
+                            ),
                             "decay_type": "timed",
                         }
                     ],
-                    "activity_narrative_en": f"Explored {instance.archetype} resonance dungeon and prevailed.",
-                    "activity_narrative_de": f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand.",
-                    "significance": 8,
+                    "activity_narrative_en": (
+                        f"Withdrew from {instance.archetype} resonance dungeon."
+                        if retreating
+                        else f"Explored {instance.archetype} resonance dungeon and prevailed."
+                    ),
+                    "activity_narrative_de": (
+                        f"Zog sich aus dem {instance.archetype}-Resonanz-Dungeon zurück."
+                        if retreating
+                        else f"Erkundete {instance.archetype} Resonanz-Dungeon und bestand."
+                    ),
+                    "significance": 5 if retreating else 8,
                 }
             )
         return outcomes
