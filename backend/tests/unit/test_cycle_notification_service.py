@@ -43,56 +43,50 @@ def _make_chain(**kwargs):
 
 
 class TestResolveRecipients:
-    @pytest.mark.asyncio
-    async def test_filters_out_bots(self):
-        """Bot participants should not receive email notifications."""
+    """E7: the post goes to the PLAYER, not to the owner of the world played.
+
+    ``epoch_participants.user_id`` (migration 049) is the participant's identity
+    and carries a CHECK that makes it non-null for every human. The old chain
+    ignored it and walked ``simulations.source_template_id → simulation_members``
+    instead, so the briefings — spy intel included — went to whoever owned the
+    template, while the person actually playing received nothing.
+    """
+
+    @staticmethod
+    def _client(*, participants, emails, prefs=None, templates=None):
+        """Assemble a Supabase mock for the recipient chain."""
         admin_sb = MagicMock()
 
-        # Participants: 1 human, 1 bot
-        participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {
-                "simulation_id": SIM_A,
-                "is_bot": False,
-                "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
-            },
-        ]))
-
-        members_chain = _make_chain()
-        members_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"user_id": USER_A, "simulation_id": TEMPLATE_A},
-        ]))
+        chains = {
+            "epoch_participants": _make_chain(
+                execute=AsyncMock(return_value=MagicMock(data=participants))
+            ),
+            "notification_preferences": _make_chain(
+                execute=AsyncMock(return_value=MagicMock(data=prefs or []))
+            ),
+            "simulations": _make_chain(
+                execute=AsyncMock(return_value=MagicMock(data=templates or []))
+            ),
+        }
+        admin_sb.table.side_effect = lambda name: chains.get(name, _make_chain())
 
         rpc_mock = MagicMock()
-        rpc_mock.execute = AsyncMock(return_value=MagicMock(data=[
-            {"id": USER_A, "email": "player@test.com"},
-        ]))
-
-        prefs_chain = _make_chain()
-        prefs_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
-
-        # Slugs for template sims
-        slug_chain = _make_chain()
-        slug_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"id": TEMPLATE_A, "slug": "velgarien"},
-        ]))
-
-        call_count = {"table": 0}
-
-        def table_side_effect(name):
-            call_count["table"] += 1
-            if name == "epoch_participants":
-                return participants_chain
-            if name == "simulation_members":
-                return members_chain
-            if name == "notification_preferences":
-                return prefs_chain
-            if name == "simulations":
-                return slug_chain
-            return _make_chain()
-
-        admin_sb.table.side_effect = table_side_effect
+        rpc_mock.execute = AsyncMock(return_value=MagicMock(data=emails))
         admin_sb.rpc.return_value = rpc_mock
+        admin_sb.chains = chains
+        return admin_sb
+
+    @pytest.mark.asyncio
+    async def test_the_player_receives_the_post(self):
+        admin_sb = self._client(
+            participants=[
+                {"user_id": USER_A, "simulation_id": SIM_A,
+                 "simulations": {"name": "Velgarien (Epoch 15)", "slug": "velgarien-e15",
+                                 "source_template_id": TEMPLATE_A}},
+            ],
+            emails=[{"id": USER_A, "email": "player@test.com"}],
+            templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
+        )
 
         recipients = await CycleNotificationService._resolve_recipients(
             admin_sb, EPOCH_ID, notification_type="cycle_resolved",
@@ -100,61 +94,113 @@ class TestResolveRecipients:
 
         assert len(recipients) == 1
         assert recipients[0]["email"] == "player@test.com"
+        assert recipients[0]["user_id"] == USER_A
+        # Accent colour and world name come from the TEMPLATE, not from the
+        # game instance, which is named "Velgarien (Epoch 15)".
         assert recipients[0]["simulation_slug"] == "velgarien"
+        assert recipients[0]["simulation_name"] == "Velgarien"
+
+    @pytest.mark.asyncio
+    async def test_simulation_members_is_never_consulted(self):
+        """The owner chain must be gone, not merely outvoted.
+
+        Asserting only on the returned addresses would stay green if the code
+        still walked simulation_members and happened to find the same person.
+        """
+        admin_sb = self._client(
+            participants=[
+                {"user_id": USER_A, "simulation_id": SIM_A,
+                 "simulations": {"name": "Velgarien", "slug": "velgarien",
+                                 "source_template_id": TEMPLATE_A}},
+            ],
+            emails=[{"id": USER_A, "email": "player@test.com"}],
+            templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
+        )
+
+        await CycleNotificationService._resolve_recipients(admin_sb, EPOCH_ID)
+
+        tables = [call.args[0] for call in admin_sb.table.call_args_list]
+        assert "simulation_members" not in tables
+
+    @pytest.mark.asyncio
+    async def test_bot_participants_are_excluded_at_the_query(self):
+        admin_sb = self._client(participants=[], emails=[])
+
+        await CycleNotificationService._resolve_recipients(admin_sb, EPOCH_ID)
+
+        eq_calls = {c.args[0]: c.args[1] for c in admin_sb.chains["epoch_participants"].eq.call_args_list}
+        assert eq_calls["is_bot"] is False
 
     @pytest.mark.asyncio
     async def test_respects_notification_preference_opt_out(self):
-        """Users who opt out of cycle_resolved should not receive cycle emails."""
-        admin_sb = MagicMock()
-
-        participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {
-                "simulation_id": SIM_A,
-                "is_bot": False,
-                "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
-            },
-        ]))
-
-        members_chain = _make_chain()
-        members_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"user_id": USER_A, "simulation_id": TEMPLATE_A},
-        ]))
-
-        rpc_mock = MagicMock()
-        rpc_mock.execute = AsyncMock(return_value=MagicMock(data=[
-            {"id": USER_A, "email": "player@test.com"},
-        ]))
-
-        prefs_chain = _make_chain()
-        prefs_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"user_id": USER_A, "cycle_resolved": False, "phase_changed": True, "epoch_completed": True, "email_locale": "en"},
-        ]))
-
-        slug_chain = _make_chain()
-        slug_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"id": TEMPLATE_A, "slug": "velgarien"},
-        ]))
-
-        def table_side_effect(name):
-            if name == "epoch_participants":
-                return participants_chain
-            if name == "simulation_members":
-                return members_chain
-            if name == "notification_preferences":
-                return prefs_chain
-            if name == "simulations":
-                return slug_chain
-            return _make_chain()
-
-        admin_sb.table.side_effect = table_side_effect
-        admin_sb.rpc.return_value = rpc_mock
-
-        recipients = await CycleNotificationService._resolve_recipients(
-            admin_sb, EPOCH_ID, notification_type="cycle_resolved",
+        admin_sb = self._client(
+            participants=[
+                {"user_id": USER_A, "simulation_id": SIM_A,
+                 "simulations": {"name": "Velgarien", "slug": "velgarien",
+                                 "source_template_id": TEMPLATE_A}},
+            ],
+            emails=[{"id": USER_A, "email": "player@test.com"}],
+            prefs=[{"user_id": USER_A, "cycle_resolved": False, "phase_changed": True,
+                    "epoch_completed": True, "email_locale": "en"}],
+            templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
         )
 
-        assert len(recipients) == 0
+        optee = await CycleNotificationService._resolve_recipients(
+            admin_sb, EPOCH_ID, notification_type="cycle_resolved",
+        )
+        assert optee == []
+
+        # The same person still gets the mail types they did not opt out of —
+        # otherwise the test above would pass on a broken chain that drops
+        # everybody.
+        still = await CycleNotificationService._resolve_recipients(
+            admin_sb, EPOCH_ID, notification_type="epoch_completed",
+        )
+        assert len(still) == 1
+        assert still[0]["email_locale"] == "en"
+
+    @pytest.mark.asyncio
+    async def test_participant_without_an_address_is_skipped(self):
+        """A deleted account leaves a participant row behind."""
+        admin_sb = self._client(
+            participants=[
+                {"user_id": USER_A, "simulation_id": SIM_A,
+                 "simulations": {"name": "A", "slug": "a", "source_template_id": TEMPLATE_A}},
+                {"user_id": USER_B, "simulation_id": SIM_B,
+                 "simulations": {"name": "B", "slug": "b", "source_template_id": TEMPLATE_B}},
+            ],
+            emails=[{"id": USER_B, "email": "b@test.com"}],
+            templates=[
+                {"id": TEMPLATE_A, "slug": "a", "name": "A"},
+                {"id": TEMPLATE_B, "slug": "b", "name": "B"},
+            ],
+        )
+
+        recipients = await CycleNotificationService._resolve_recipients(admin_sb, EPOCH_ID)
+
+        assert [r["user_id"] for r in recipients] == [USER_B]
+
+
+class TestAcademyDeliveryPolicy:
+    """E8/B8: an academy run resolves 18 cycles in an afternoon.
+
+    It stays silent except for the closing report.
+    """
+
+    def test_cycle_and_phase_mail_are_suppressed(self):
+        academy = {"epoch_type": "academy"}
+        assert CycleNotificationService._suppressed_for_epoch(academy, "cycle_resolved")
+        assert CycleNotificationService._suppressed_for_epoch(academy, "phase_changed")
+
+    def test_the_closing_report_still_goes_out(self):
+        academy = {"epoch_type": "academy"}
+        assert not CycleNotificationService._suppressed_for_epoch(academy, "epoch_completed")
+
+    def test_a_normal_epoch_is_never_suppressed(self):
+        for kind in ({"epoch_type": "standard"}, {"epoch_type": None}, {}):
+            for notification in ("cycle_resolved", "phase_changed", "epoch_completed"):
+                assert not CycleNotificationService._suppressed_for_epoch(kind, notification)
+
 
     @pytest.mark.asyncio
     async def test_empty_participants_returns_empty(self):

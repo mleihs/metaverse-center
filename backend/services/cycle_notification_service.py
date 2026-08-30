@@ -46,56 +46,46 @@ class CycleNotificationService:
         *,
         notification_type: str = "cycle_resolved",
     ) -> list[dict]:
-        """Resolve human participants to email addresses with preference checks.
+        """Resolve the human players of an epoch to email addresses.
 
-        Chain: epoch_participants → source_template_id → simulation_members → auth.users → preferences
+        Chain: ``epoch_participants.user_id`` → ``auth.users`` → preferences.
+
+        The recipient is **the player**, not whoever owns the world they play.
+        The old chain went ``epoch_participants → simulations.source_template_id
+        → simulation_members(editor+)``, i.e. it mailed the template's owners and
+        never read ``epoch_participants.user_id`` (migration 049) at all. Since
+        any signed-in user may enter any public template into an epoch
+        (migration 214, no membership test), a stranger could play your world
+        while *you* received the fog-of-war briefings including their spy intel —
+        and they received nothing (E7).
+
+        Measured on production before the change: of six epochs, one lost a
+        single non-playing owner, while in three academy runs the actual player
+        had not been on the list at all — two bystanders got the post instead.
+
+        ``user_id`` is safe to rely on: migration 049 backfills it and pins it
+        with ``CHECK (is_bot = true OR user_id IS NOT NULL)`` plus a unique index
+        on ``(epoch_id, user_id)``, so every human participant has exactly one.
 
         Returns list of dicts: {user_id, email, simulation_id, simulation_name, simulation_slug, email_locale}
         """
-        # 1. Get human participants (not bots) with simulation info
         participants_resp = await (
             admin_supabase.table("epoch_participants")
-            .select("simulation_id, is_bot, simulations(name, slug, source_template_id)")
+            .select("user_id, simulation_id, simulations(name, slug, source_template_id)")
             .eq("epoch_id", epoch_id)
             .eq("is_bot", False)
             .execute()
         )
-        participants = extract_list(participants_resp)
+        participants = [p for p in extract_list(participants_resp) if p.get("user_id")]
         if not participants:
             return []
 
-        # 2. Resolve template simulation IDs → user_ids via simulation_members
-        # Game instances point to their template via source_template_id
-        template_to_participant: dict[str, dict] = {}
-        for p in participants:
-            sim_info = p.get("simulations") or {}
-            template_id = sim_info.get("source_template_id") or p["simulation_id"]
-            template_to_participant[template_id] = {
-                "simulation_id": p["simulation_id"],
-                "simulation_name": sim_info.get("name", "Unknown"),
-                "simulation_slug": sim_info.get("slug", ""),
-            }
+        user_ids = list({p["user_id"] for p in participants})
 
-        template_ids = list(template_to_participant.keys())
-
-        # Batch fetch members (editors+) for all template simulations
-        members_resp = await (
-            admin_supabase.table("simulation_members")
-            .select("user_id, simulation_id")
-            .in_("simulation_id", template_ids)
-            .in_("member_role", ["editor", "admin", "owner"])
-            .execute()
-        )
-        members = extract_list(members_resp)
-        if not members:
-            return []
-
-        # 3. Get email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
-        user_ids = list({m["user_id"] for m in members})
+        # Email addresses via SECURITY DEFINER RPC (get_user_emails_batch, migration 044)
         email_resp = await admin_supabase.rpc("get_user_emails_batch", {"user_ids": user_ids}).execute()
         email_map: dict[str, str] = {row["id"]: row["email"] for row in (extract_list(email_resp))}
 
-        # 4. Get notification preferences (batch)
         prefs_resp = await (
             admin_supabase.table("notification_preferences")
             .select("user_id, cycle_resolved, phase_changed, epoch_completed, email_locale")
@@ -104,19 +94,32 @@ class CycleNotificationService:
         )
         prefs_map: dict[str, dict] = {row["user_id"]: row for row in (extract_list(prefs_resp))}
 
-        # 5. Resolve template simulation slugs for accent colors
-        # The game instance slug may not be the right one — get the template slug
-        template_slugs: dict[str, str] = {}
+        # Template name + slug: the accent colour is keyed on the template slug,
+        # and the player knows their world by its template name — the game
+        # instance is called "Conventional Memory (Epoch 15)".
+        template_ids = list(
+            {
+                (p.get("simulations") or {}).get("source_template_id")
+                for p in participants
+                if (p.get("simulations") or {}).get("source_template_id")
+            }
+        )
+        templates: dict[str, dict] = {}
         if template_ids:
-            slug_resp = await admin_supabase.table("simulations").select("id, slug").in_("id", template_ids).execute()
-            template_slugs = {s["id"]: s.get("slug", "") for s in (extract_list(slug_resp))}
+            tpl_resp = await (
+                admin_supabase.table("simulations").select("id, slug, name").in_("id", template_ids).execute()
+            )
+            templates = {s["id"]: s for s in extract_list(tpl_resp)}
 
-        # 6. Build recipient list with preference filtering
         recipients = []
-        for m in members:
-            user_id = m["user_id"]
+        for p in participants:
+            user_id = p["user_id"]
             email = email_map.get(user_id)
             if not email:
+                logger.info(
+                    "Epoch participant has no email address — skipped",
+                    extra={"epoch_id": epoch_id, "user_id": user_id},
+                )
                 continue
 
             prefs = prefs_map.get(user_id, {})
@@ -124,21 +127,39 @@ class CycleNotificationService:
             if not prefs.get(notification_type, True):
                 continue
 
-            participant_info = template_to_participant.get(m["simulation_id"], {})
-            # Get template slug for accent color
-            template_slug = template_slugs.get(m["simulation_id"], "")
+            sim_info = p.get("simulations") or {}
+            template = templates.get(sim_info.get("source_template_id") or "", {})
             recipients.append(
                 {
                     "user_id": user_id,
                     "email": email,
-                    "simulation_id": participant_info.get("simulation_id", m["simulation_id"]),
-                    "simulation_name": participant_info.get("simulation_name", "Unknown"),
-                    "simulation_slug": template_slug or participant_info.get("simulation_slug", ""),
+                    "simulation_id": p["simulation_id"],
+                    "simulation_name": template.get("name") or sim_info.get("name") or "Unknown",
+                    "simulation_slug": template.get("slug") or sim_info.get("slug", ""),
                     "email_locale": prefs.get("email_locale", "en"),
                 }
             )
 
         return recipients
+
+    # ── Delivery policy ────────────────────────────────────
+
+    # Academy runs are a training mode: three simulated days at four-hour
+    # cycles resolve in one click, i.e. 18 cycles in an afternoon. Mailing each
+    # one buries the player under 18 briefings about a practice match (E8). The
+    # decision (B8) is: academy epochs are silent except for their closing
+    # report, which is the one mail that carries a result worth keeping.
+    #
+    # The gate lives HERE, in the one service that sends the post, not at the
+    # four call sites. It used to sit at exactly one of them
+    # (``EpochLifecycleService.start_epoch``) and every later call site was
+    # written without it — a policy that only holds where someone remembered it.
+    _SILENT_FOR_ACADEMY = frozenset({"cycle_resolved", "phase_changed"})
+
+    @classmethod
+    def _suppressed_for_epoch(cls, epoch: dict, notification_type: str) -> bool:
+        """Whether this epoch type stays silent for this kind of notification."""
+        return epoch.get("epoch_type") == "academy" and notification_type in cls._SILENT_FOR_ACADEMY
 
     # ── Player Briefing Data ───────────────────────────────
 
@@ -667,13 +688,24 @@ class CycleNotificationService:
         """
         # Fetch epoch info
         epoch_resp = await (
-            admin_supabase.table("game_epochs").select("name, status, config").eq("id", epoch_id).single().execute()
+            admin_supabase.table("game_epochs")
+            .select("name, status, config, epoch_type")
+            .eq("id", epoch_id)
+            .single()
+            .execute()
         )
         if not epoch_resp.data:
             logger.warning("Epoch %s not found for cycle notifications", epoch_id)
             return 0
 
         epoch = epoch_resp.data
+        if cls._suppressed_for_epoch(epoch, "cycle_resolved"):
+            logger.info(
+                "Academy epoch — cycle briefing suppressed",
+                extra={"epoch_id": epoch_id, "cycle_number": cycle_number},
+            )
+            return 0
+
         epoch_name = epoch.get("name", "Unknown Operation")
         epoch_status = epoch.get("status", "competition")
         epoch_config = epoch.get("config") or {}
@@ -739,9 +771,20 @@ class CycleNotificationService:
     ) -> int:
         """Send phase-change emails to all human participants (per-player with standing)."""
         epoch_resp = await (
-            admin_supabase.table("game_epochs").select("name, current_cycle").eq("id", epoch_id).single().execute()
+            admin_supabase.table("game_epochs")
+            .select("name, current_cycle, epoch_type")
+            .eq("id", epoch_id)
+            .single()
+            .execute()
         )
         if not epoch_resp.data:
+            return 0
+
+        if cls._suppressed_for_epoch(epoch_resp.data, "phase_changed"):
+            logger.info(
+                "Academy epoch — phase change mail suppressed",
+                extra={"epoch_id": epoch_id, "old_status": old_phase, "new_status": new_phase},
+            )
             return 0
 
         epoch_name = epoch_resp.data.get("name", "Unknown Operation")
