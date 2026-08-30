@@ -47,16 +47,16 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 13 | Two purposes have no token budget and no timeout at all (+ one dead entry: `ascii_art`) | Medium | **Fixed** (W4) |
 | 14 | Image parameters survived a model-family switch — 14 worlds feed flux an SD-era guidance | Medium | **Re-measured** (W4); repair is a decision |
 | 15 | Only model ids are admin-configurable; budgets, timeouts, effort are not | Medium | **Fixed** (W4, migration 283) |
-| 16 | The world is *named* in English, permanently — `simulations.name_de` never written | High | Open |
-| 17 | Citations are free text, bound to nothing — one misattribution measured | Medium | Open |
-| 18 | Four minutes of `0 / 16 · 0 %` before the first image | Medium | Open |
-| 19 | The denominator 16 is never broken down; banner and lore images are counted but never shown | Medium | Open |
+| 16 | The world is *named* in English, permanently — `simulations.name_de` never written (41 of 41) | High | **Fixed** (W5, migration 287) |
+| 17 | Citations are free text, bound to nothing — one misattribution measured | Medium | **Provenance shipped** (W5); the citation itself stays prose, by design |
+| 18 | Four minutes of `0 / 16 · 0 %` before the first image | Medium | **Fixed** (W5) |
+| 19 | The denominator 16 is never broken down; banner and lore images are counted but never shown | Medium | **Fixed** (W5) |
 | 20 | Deep research fails during materialization, silently degrades | Medium | **Fixed** (W3) |
-| 21 | The Table never scrolls to what it just produced | Low | Open |
+| 21 | The Table never scrolls to what it just produced | Low | **Fixed** (W5) |
 | 22 | Three German errors in one localized string | Low | **Fixed** (`a5cb9b73`) |
 | 23 | Sixteen rows in four worlds are written in Mustache syntax and never substitute | **Critical** | **Fixed** (`36fe1b8b`, migration 280) |
 | 24 | **Three** `social_media.py` endpoints call `GenerationService` with parameter names that do not exist | High | **Fixed** |
-| 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | Open |
+| 25 | The `system_prompt` phase A.6 writes for chat is never used | Medium | **Fixed** (W5) |
 | 26 | Generated themes had no contrast floor — one world shipped text and header at ratio 1.00 | **Critical** | **Fixed** (`4a9b43e8`) |
 | 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
 | 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
@@ -66,7 +66,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | **Fixed** (migration 282, on production 2026-08-30) |
 | 33 | Every configured timeout is unhandled — a firing timeout raises `ModelAPIError`, a name that appeared nowhere in the backend | **Critical** | **Fixed** (W3) |
 | 34 | The Forge is pre-checked against a cost ledger nothing ever wrote to — 0 of 603 rows | **Critical** | **Fixed** (W4) |
-| 35 | 42 of 258 agents have no `agent_mood` / `agent_needs` row — the Forge never bootstraps autonomy | High | Open |
+| 35 | 42 of 258 agents have no `agent_mood` / `agent_needs` row (nor a zone) — the Forge never bootstraps autonomy | High | **Fixed** (migration 286, on production 2026-08-30) |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -1247,11 +1247,11 @@ and the user has to go looking. Observed across the whole run: manual scrolling 
 
 ---
 
-### 35. Every Forge world's agents are created without an inner life — High, NOT FIXED
+### 35. Every Forge world's agents are created without an inner life — High ✅ FIXED
 
 **Reported by the parallel session's system review, verified here independently before being
-written down.** Not W4, and not fixed in it — recorded because the fix's location is a line in
-`materialize_shard`, which W4 touches, so the next person there should know.
+written down.** Recorded first as out-of-scope for W4; the project owner then asked for it, and
+migration 286 shipped both halves the same evening.
 
 `fn_initialize_agent_autonomy` (migration 145) is the idempotent bootstrap that gives an agent its
 `agent_mood` and `agent_needs` rows. Measured on production 2026-08-30:
@@ -1279,9 +1279,23 @@ select count(*) from agents a
  where m.agent_id is null;
 ```
 
+**One number the original report did not have, and it makes the case stronger:** those same 42
+agents were the *only* agents on production without a `current_zone_id`.
+`fn_initialize_agent_autonomy` places an agent as well as giving it mood and needs, so the
+backfill repaired three things, not two.
+
+**Fixed (migration 286), in both halves.** `fn_materialize_shard` gained a step 11b that calls the
+function for every agent it has just inserted — in SQL rather than Python, because that is the one
+place that knows the agents exist, it needs no round trip, and it sits inside the same transaction
+as the rest of materialization: an agent now *cannot* be created without an inner life, rather than
+usually having one. The 42 existing agents were backfilled in the same migration. Measured on
+production immediately after: 258 agents, 0 without mood, 0 without needs, 0 without a zone. The
+personality parameters keep the function's neutral defaults — a starting point the heartbeat then
+moves, not a claim about who these people are.
+
 Full write-up with the second half (only 5 of 35 worlds have `agent_aptitudes` rows, so
 `DEFAULT_APTITUDE_LEVEL = 6` unlocks every ability and every gate — party composition is not a
-decision) in `docs/analysis/system-review-2026-08-30.md`.
+decision) in `docs/analysis/system-review-2026-08-30.md`. That half is **not** fixed.
 
 ---
 
@@ -1371,7 +1385,7 @@ Grouped so that each step is independently shippable and verifiable.
 | **W2** ✅ | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. Done; the exact-count constraint was measured and rejected, and finding 30 was uncovered by the work. |
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
 | **W4** ✅ | 11, 13, 15, **34**, 30 (+14 re-measured) | Configuration. One declaration for all thirteen purposes (`ai_purposes.py`), budgets and timeouts admin-editable (migration 283), the cost ledger finally fed (34), and each world's vocabularies derived from its own entities (migration 284). Finding 14's stated mechanism did not survive measurement — the SD branch is unreachable on production; the real defect is 14 worlds carrying SD-era guidance, listed for decision rather than rewritten. |
-| **W5** | 16, 17, 18, 19, 21, 25 | Surface: language, provenance, progress, scrolling, the unused chat system prompt. |
+| **W5** ✅ | 16, 17, 18, 19, 21, 25 | Surface. The German name existed all along and nothing read it (migration 287); the progress bar waits for the phase it measures and says what it counts; the Table follows its own output; the authored chat persona reaches the model; and the research footer's claim can now be opened. Finding 17 ships provenance, not verification — asking a model for source URLs is the one change that would make it worse. |
 | **W6** | 28, 29 | The rest of the AI's output that no contract covers: style prompts that are pictures, and stored descriptions produced by defective templates. Both are list-and-decide, not auto-repair. |
 
 W1 before W2 because W1 stops the bleeding on new worlds; W2 hardens the contract that would
