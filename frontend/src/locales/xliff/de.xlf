@@ -21424,14 +21424,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>SPOILS CLAIMED</source>
   <target>BEUTE EINGEFORDERT</target>
 </trans-unit>
-<trans-unit id="s0e89c30e72d0de77">
-  <source>THE DARKNESS TAKES THEM</source>
-  <target>DIE DUNKELHEIT VERSCHLINGT SIE</target>
-</trans-unit>
-<trans-unit id="s6108a4e411035804">
-  <source>All agents have fallen. The dungeon claims its due.</source>
-  <target>Alle Agenten sind gefallen. Der Dungeon fordert seinen Tribut.</target>
-</trans-unit>
 <trans-unit id="s944556e531f5162f">
   <source>Combat exceeded maximum rounds. The enemies retreat into the shadows.</source>
   <target>Kampf hat maximale Rundenzahl überschritten. Die Feinde ziehen sich in die Schatten zurück.</target>
@@ -29202,6 +29194,18 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s73157dadc0e7c10e">
   <source>Choose individually instead</source>
   <target>Lieber einzeln auswählen</target>
+</trans-unit>
+<trans-unit id="s7eeb64c72ca75b20">
+  <source>Opening the file...</source>
+  <target>Die Akte wird geöffnet …</target>
+</trans-unit>
+<trans-unit id="s0ad6103d7187f562">
+  <source>THE PARTY IS OVERCOME</source>
+  <target>DIE GRUPPE IST ÜBERWÄLTIGT</target>
+</trans-unit>
+<trans-unit id="sbbaff2728096b1fd">
+  <source>No one is lost. The party returns marked – and the darkness keeps the rest.</source>
+  <target>Niemand ist verloren. Die Gruppe kehrt gezeichnet zurück – und die Dunkelheit behält den Rest.</target>
 </trans-unit>
 </body>
 </file>

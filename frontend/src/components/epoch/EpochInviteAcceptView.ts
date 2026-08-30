@@ -447,6 +447,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
   @state() private _authLoading = false;
   @state() private _authError: string | null = null;
   @state() private _authenticated = false;
+  @state() private _entering = false;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -524,9 +525,21 @@ export class VelgEpochInviteAcceptView extends LitElement {
     }
   }
 
-  private _handleEnter(): void {
-    document.dispatchEvent(new CustomEvent('epoch-joined', { bubbles: true }));
-    navigate('/epoch');
+  private async _handleEnter(): Promise<void> {
+    // Consume the token, then open the epoch it names. Both halves were
+    // missing: nothing accepted the invitation, and the navigation went to the
+    // epoch LIST because no epoch id was ever fetched (finding E2).
+    this._entering = true;
+    try {
+      const res = await epochsApi.acceptEpochInvitation(this.token);
+      document.dispatchEvent(new CustomEvent('epoch-joined', { bubbles: true }));
+      navigate(res.success && res.data?.epoch_id ? `/epoch/${res.data.epoch_id}` : '/epoch');
+    } catch (err) {
+      captureError(err, { source: 'VelgEpochInviteAcceptView._handleEnter' });
+      navigate('/epoch');
+    } finally {
+      this._entering = false;
+    }
   }
 
   private _handleKeydown(e: KeyboardEvent): void {
@@ -658,8 +671,8 @@ export class VelgEpochInviteAcceptView extends LitElement {
             <p class="access-granted__msg">
               ${msg('Authentication verified. Proceed to the command center.')}
             </p>
-            <button class="enter-btn" @click=${this._handleEnter}>
-              ${msg('Enter the Command Center')}
+            <button class="enter-btn" ?disabled=${this._entering} @click=${this._handleEnter}>
+              ${this._entering ? msg('Opening the file...') : msg('Enter the Command Center')}
             </button>
           </div>
         </div>
