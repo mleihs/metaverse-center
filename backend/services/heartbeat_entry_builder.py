@@ -6,7 +6,54 @@ AttunementService, AnchorService.
 
 from __future__ import annotations
 
+from typing import Final
 from uuid import UUID, uuid4
+
+# ── The entry-type vocabulary ────────────────────────────────────────────────
+#
+# `heartbeat_entries.entry_type` carries a CHECK constraint. A value the CHECK
+# does not know does not fail one row — it fails the whole tick, because every
+# entry of a tick goes in ONE batch insert. The tick is marked failed,
+# `last_heartbeat_tick` does not advance, and the next attempt fails identically
+# on the same input. A world in that state is frozen, not degraded.
+#
+# THIS HAS HAPPENED BEFORE. Migration 186 exists because `resonance_mood` was
+# added to the code after the CHECK was written: Sentry METAVERSE_CENTER-27, ten
+# events, all on tick #52. Nothing was put in place afterwards to stop the next
+# one, and the next one was `bond_whisper` (migration 219 created the
+# `bond_whispers` TABLE and never touched the CHECK). Measured on production
+# 2026-08-30: the live constraint held 20 values, the code emitted 21.
+#
+# So the vocabulary is declared here, in the one module every entry is built by,
+# and the migration's CHECK list is generated from it.
+# `backend/tests/unit/test_heartbeat_entry_types.py` binds all three by AST and
+# by text: every literal type passed to `make_heartbeat_entry` must be declared,
+# and the CHECK in the migration must equal the declaration exactly.
+HEARTBEAT_ENTRY_TYPES: Final[tuple[str, ...]] = (
+    "zone_shift",
+    "event_aging",
+    "event_escalation",
+    "event_resolution",
+    "scar_tissue",
+    "resonance_pressure",
+    "resonance_mood",
+    "cascade_spawn",
+    "bureau_response",
+    "attunement_deepen",
+    "anchor_strengthen",
+    "convergence",
+    "positive_event",
+    "narrative_arc",
+    "system_note",
+    "agent_crisis",
+    "relationship_shift",
+    "social_event",
+    "autonomous_event",
+    "ambient_weather",
+    # Added 2026-08-30 (migration 285). Emitted by `HeartbeatService` phase 10
+    # since the Agent Bonds work; the CHECK never learned it.
+    "bond_whisper",
+)
 
 
 def make_heartbeat_entry(

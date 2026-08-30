@@ -75,7 +75,9 @@ async def _run_phase(
         elapsed = (datetime.now(UTC) - t0).total_seconds()
         logger.debug(
             "Heartbeat phase %s completed in %.2fs for %s",
-            phase_name, elapsed, sim_name,
+            phase_name,
+            elapsed,
+            sim_name,
             extra={
                 "simulation_id": str(sim_id),
                 "tick_number": tick_number,
@@ -88,7 +90,10 @@ async def _run_phase(
         elapsed = (datetime.now(UTC) - t0).total_seconds()
         logger.exception(
             "Heartbeat phase %s failed after %.2fs for %s (tick #%d) — continuing",
-            phase_name, elapsed, sim_name, tick_number,
+            phase_name,
+            elapsed,
+            sim_name,
+            tick_number,
             extra={
                 "simulation_id": str(sim_id),
                 "tick_number": tick_number,
@@ -99,12 +104,15 @@ async def _run_phase(
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("heartbeat.phase", phase_name)
             scope.set_tag("simulation_id", str(sim_id))
-            scope.set_context("heartbeat", {
-                "tick_number": tick_number,
-                "simulation_name": sim_name,
-                "phase": phase_name,
-                "elapsed_s": elapsed,
-            })
+            scope.set_context(
+                "heartbeat",
+                {
+                    "tick_number": tick_number,
+                    "simulation_name": sim_name,
+                    "phase": phase_name,
+                    "elapsed_s": elapsed,
+                },
+            )
             sentry_sdk.capture_exception()
         return None
 
@@ -435,7 +443,9 @@ class HeartbeatService(BaseSchedulerMixin):
                 if expired > 0:
                     entries.append(
                         make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number,
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
                             "zone_shift",
                             f"{expired} zone action(s) expired.",
                             f"{expired} Zonenaktion(en) abgelaufen.",
@@ -483,7 +493,9 @@ class HeartbeatService(BaseSchedulerMixin):
                 if resonance_moodlets > 0:
                     entries.append(
                         make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number,
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
                             "resonance_mood",
                             f"Substrate resonance affecting {resonance_moodlets} agents.",
                             f"Substratresonanz beeinflusst {resonance_moodlets} Agenten.",
@@ -557,8 +569,15 @@ class HeartbeatService(BaseSchedulerMixin):
                 autonomy_result = await _run_phase(
                     "autonomy",
                     cls._phase_autonomy(
-                        admin, sim_id, sim_name, sim, tick_number, heartbeat_id,
-                        overrides, autonomy_admin_override, entries,
+                        admin,
+                        sim_id,
+                        sim_name,
+                        sim,
+                        tick_number,
+                        heartbeat_id,
+                        overrides,
+                        autonomy_admin_override,
+                        entries,
                     ),
                     **_ctx,
                 )
@@ -573,7 +592,12 @@ class HeartbeatService(BaseSchedulerMixin):
                 weather_result = await _run_phase(
                     "weather",
                     AmbientWeatherService.process_tick(
-                        admin, sim_id, sim, heartbeat_id, tick_number, overrides=overrides,
+                        admin,
+                        sim_id,
+                        sim,
+                        heartbeat_id,
+                        tick_number,
+                        overrides=overrides,
                     ),
                     **_ctx,
                 )
@@ -589,12 +613,15 @@ class HeartbeatService(BaseSchedulerMixin):
             # _run_phase handles error isolation; key resolution is separate
             # so template whispers work even without a BYOK key.
             bw_key, bw_has_key = await cls._resolve_autonomy_key(
-                admin, sim_id, autonomy_admin_override,
+                admin,
+                sim_id,
+                autonomy_admin_override,
             )
             bond_result = await _run_phase(
                 "bond_whispers",
                 WhisperService.generate_for_simulation(
-                    admin, sim_id,
+                    admin,
+                    sim_id,
                     llm_budget=int(overrides.get("bond_whisper_budget", 3)),
                     openrouter_api_key=bw_key if bw_has_key else None,
                 ),
@@ -606,7 +633,9 @@ class HeartbeatService(BaseSchedulerMixin):
                 for bw in bond_result:
                     entries.append(
                         make_heartbeat_entry(
-                            heartbeat_id, sim_id, tick_number,
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
                             "bond_whisper",
                             f"Whisper for {bw.get('agent_name', '?')[:20]}",
                             f"Flüstern für {bw.get('agent_name', '?')[:20]}",
@@ -643,8 +672,8 @@ class HeartbeatService(BaseSchedulerMixin):
                     meta["epoch_id"] = active_epoch_id
                     entry["metadata"] = meta
 
-            # Batch insert entries
-            await admin.table("heartbeat_entries").insert(entries).execute()
+            # Batch insert entries — one bad row must not cost the whole tick
+            await cls._insert_entries(admin, entries, sim_id, tick_number)
 
             # Build dispatch summary
             dispatch_en = cls._build_dispatch(entries, tick_number, "en")
@@ -718,11 +747,14 @@ class HeartbeatService(BaseSchedulerMixin):
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("heartbeat.phase", "finalize")
                 scope.set_tag("simulation_id", str(sim_id))
-                scope.set_context("heartbeat", {
-                    "tick_number": tick_number,
-                    "simulation_name": sim_name,
-                    "entries_before_failure": len(entries),
-                })
+                scope.set_context(
+                    "heartbeat",
+                    {
+                        "tick_number": tick_number,
+                        "simulation_name": sim_name,
+                        "entries_before_failure": len(entries),
+                    },
+                )
                 sentry_sdk.capture_exception()
 
             # Mark heartbeat as failed — nested try to prevent double-fault
@@ -1099,7 +1131,9 @@ class HeartbeatService(BaseSchedulerMixin):
         for agent_id in mood_summary.get("breakdowns", []):
             entries.append(
                 make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number,
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
                     "agent_crisis",
                     f"Agent {agent_id[:8]}... is experiencing a stress breakdown.",
                     f"Agent {agent_id[:8]}... erlebt einen Stresszusammenbruch.",
@@ -1115,25 +1149,34 @@ class HeartbeatService(BaseSchedulerMixin):
             t_id = rel_event["target_agent_id"][:8]
             entries.append(
                 make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number,
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
                     "relationship_shift",
                     f"Relationship {evt_type}: {a_id}... / {t_id}...",
                     f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
-                    severity=sev, metadata=rel_event,
+                    severity=sev,
+                    metadata=rel_event,
                 )
             )
 
         # 9d: Activity selection + execution
         activity_results = await AgentActivityService.select_and_execute(
-            admin, sim_id, tick_id=heartbeat_id,
+            admin,
+            sim_id,
+            tick_id=heartbeat_id,
         )
         stats["activities"] = len(activity_results)
 
         # 9e: Social interactions
         interaction_rate = float(overrides.get("autonomy_social_interaction_rate", 1.0))
         social_results = await AgentActivityService.generate_social_interactions(
-            admin, sim_id, interaction_rate,
-            tick_id=heartbeat_id, sim_name=sim_name, sim_theme=sim.get("theme", ""),
+            admin,
+            sim_id,
+            interaction_rate,
+            tick_id=heartbeat_id,
+            sim_name=sim_name,
+            sim_theme=sim.get("theme", ""),
         )
         stats["social_interactions"] = len(social_results)
 
@@ -1141,11 +1184,14 @@ class HeartbeatService(BaseSchedulerMixin):
             if si.get("significance", 0) >= 5:
                 entries.append(
                     make_heartbeat_entry(
-                        heartbeat_id, sim_id, tick_number,
+                        heartbeat_id,
+                        sim_id,
+                        tick_number,
                         "social_event",
                         f"Social interaction: {si['type']}",
                         f"Soziale Interaktion: {si['type']}",
-                        severity="info", metadata=si,
+                        severity="info",
+                        metadata=si,
                     )
                 )
 
@@ -1159,8 +1205,11 @@ class HeartbeatService(BaseSchedulerMixin):
                 "social_interactions": [s for s in social_results if s.get("can_trigger_event")],
             }
             auto_events = await AutonomousEventService.check_and_generate(
-                admin, sim_id, tick_ctx,
-                llm_budget=llm_budget, openrouter_api_key=byok_key,
+                admin,
+                sim_id,
+                tick_ctx,
+                llm_budget=llm_budget,
+                openrouter_api_key=byok_key,
             )
         stats["autonomous_events"] = len(auto_events)
         stats["byok_available"] = owner_has_key
@@ -1168,7 +1217,9 @@ class HeartbeatService(BaseSchedulerMixin):
         for ae in auto_events:
             entries.append(
                 make_heartbeat_entry(
-                    heartbeat_id, sim_id, tick_number,
+                    heartbeat_id,
+                    sim_id,
+                    tick_number,
                     "autonomous_event",
                     ae.get("title", "Autonomous event"),
                     ae.get("title_de", "Autonomes Ereignis"),
@@ -1570,6 +1621,100 @@ class HeartbeatService(BaseSchedulerMixin):
         return entries
 
     # ── Helpers ─────────────────────────────────────────────────
+
+    @classmethod
+    async def _insert_entries(
+        cls,
+        admin: Client,
+        entries: list[dict],
+        sim_id: UUID,
+        tick_number: int,
+    ) -> None:
+        """Write a tick's chronicle entries, surviving a single bad row.
+
+        The batch is the fast path and stays the normal one. What changes is the
+        cost of failure: before, every entry of a tick went in one insert, so a
+        single row the database refused took the whole tick with it. The tick was
+        marked ``failed``, ``last_heartbeat_tick`` did not advance, and the next
+        attempt met the same input and failed the same way — a world in that
+        state is stopped, not degraded.
+
+        That is not hypothetical twice over. Migration 186 exists because
+        ``resonance_mood`` reached the code before it reached the CHECK (Sentry
+        METAVERSE_CENTER-27, ten events, all tick #52), and migration 285 exists
+        because ``bond_whisper`` did the same thing. The declaration in
+        ``heartbeat_entry_builder`` plus its test now makes a third instance a
+        red build — but a gate protects the repository, not the rows already in
+        flight, and the next rejection may not be an entry_type at all.
+
+        So on failure each row is retried alone: the tick keeps every entry the
+        database accepts, and each rejected row is logged with its ``entry_type``
+        and sent to Sentry. Nothing is dropped silently, and a defect that used
+        to freeze a world now costs one line of a chronicle.
+        """
+        if not entries:
+            return
+
+        try:
+            await admin.table("heartbeat_entries").insert(entries).execute()
+            return
+        except PostgrestAPIError as batch_err:
+            logger.warning(
+                "Heartbeat entry batch rejected (%d entries) — retrying row by row",
+                len(entries),
+                extra={
+                    "simulation_id": str(sim_id),
+                    "tick_number": tick_number,
+                    "entry_count": len(entries),
+                    "error": str(batch_err)[:300],
+                },
+            )
+
+        accepted = 0
+        rejected: list[str] = []
+        for entry in entries:
+            try:
+                await admin.table("heartbeat_entries").insert(entry).execute()
+                accepted += 1
+            except PostgrestAPIError as row_err:
+                entry_type = str(entry.get("entry_type", "<none>"))
+                rejected.append(entry_type)
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("service", "HeartbeatService")
+                    scope.set_tag("entry_type", entry_type)
+                    scope.set_context(
+                        "heartbeat_entry",
+                        {
+                            "simulation_id": str(sim_id),
+                            "tick_number": tick_number,
+                            "entry_type": entry_type,
+                            "severity": entry.get("severity"),
+                        },
+                    )
+                    sentry_sdk.capture_exception(row_err)
+                logger.error(
+                    "Heartbeat entry rejected by the database (entry_type=%s) — entry dropped, tick continues",
+                    entry_type,
+                    extra={
+                        "simulation_id": str(sim_id),
+                        "tick_number": tick_number,
+                        "entry_type": entry_type,
+                        "error": str(row_err)[:300],
+                    },
+                )
+
+        logger.warning(
+            "Heartbeat entries written individually: %d accepted, %d rejected (%s)",
+            accepted,
+            len(rejected),
+            ", ".join(sorted(set(rejected))) or "none",
+            extra={
+                "simulation_id": str(sim_id),
+                "tick_number": tick_number,
+                "accepted": accepted,
+                "rejected": len(rejected),
+            },
+        )
 
     @staticmethod
     def _build_dispatch(entries: list[dict], tick_number: int, locale: str) -> str:
