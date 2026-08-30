@@ -12,6 +12,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import type { Agent, AptitudeSet, OperativeType } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
 import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
+import { operativeOverlayStyles } from './deploy-operative-styles.js';
 import '../shared/VelgGameCard.js';
 
 const OP_TYPES: OperativeType[] = [
@@ -35,63 +36,15 @@ const OP_SHORT: Record<OperativeType, string> = {
 @localized()
 @customElement('velg-draft-roster-panel')
 export class VelgDraftRosterPanel extends LitElement {
-  static styles = css`
+  static styles = [
+    operativeOverlayStyles,
+    css`
+    /* The rules this panel writes identically to DeployOperativeModal come from
+       operativeOverlayStyles. What stays here is what it does differently. */
+
     :host {
       display: block;
       --_scanline: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
-    }
-
-    /* ══════════════════════════════════════════════════
-       OVERLAY — full-screen container
-       ══════════════════════════════════════════════════ */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      z-index: var(--z-top, 9000);
-      background: var(--color-surface-sunken);
-      display: flex;
-      flex-direction: column;
-      opacity: 0;
-      animation: overlay-in 350ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
-    }
-
-    .overlay::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        var(--_scanline) 2px,
-        var(--_scanline) 4px
-      );
-      z-index: 1;
-    }
-
-    @keyframes overlay-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* ── Header ── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-3) var(--space-5);
-      border-bottom: 2px solid var(--color-border);
-      background: var(--color-surface);
-      flex-shrink: 0;
-      z-index: 2;
-    }
-
-    .header__title {
-      font-family: var(--font-brutalist);
-      font-weight: 900;
-      font-size: var(--text-lg);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
     }
 
     .header__close {
@@ -106,12 +59,6 @@ export class VelgDraftRosterPanel extends LitElement {
       color: var(--color-text-muted);
       cursor: pointer;
       transition: all var(--transition-fast);
-    }
-
-    .header__close:hover {
-      border-color: var(--color-text-muted);
-      color: var(--color-text-primary);
-      background: var(--color-surface-raised);
     }
 
     /* ══════════════════════════════════════════════════
@@ -226,21 +173,6 @@ export class VelgDraftRosterPanel extends LitElement {
       border-radius: 8px;
       pointer-events: none;
       opacity: 0;
-    }
-
-    .slam-ring--active {
-      animation: shockwave 400ms ease-out forwards;
-    }
-
-    @keyframes shockwave {
-      from {
-        transform: scale(0.8);
-        opacity: 0.8;
-      }
-      to {
-        transform: scale(2);
-        opacity: 0;
-      }
     }
 
     /* ══════════════════════════════════════════════════
@@ -417,12 +349,6 @@ export class VelgDraftRosterPanel extends LitElement {
       z-index: 2;
     }
 
-    .hand__cards {
-      display: flex;
-      justify-content: center;
-      position: relative;
-    }
-
     .hand__card-wrapper {
       position: relative;
       transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -431,10 +357,6 @@ export class VelgDraftRosterPanel extends LitElement {
       cursor: pointer;
       /* Fan offset: negative margin for overlap */
       margin-left: -12px;
-    }
-
-    .hand__card-wrapper:first-child {
-      margin-left: 0;
     }
 
     /* Fan rotation + arc via CSS custom props set by JS */
@@ -467,25 +389,6 @@ export class VelgDraftRosterPanel extends LitElement {
       pointer-events: none;
     }
 
-    /* Deal animation */
-    .hand__card-wrapper--dealing {
-      opacity: 0;
-      animation: card-deal var(--deal-duration, 350ms)
-                 cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      animation-delay: var(--deal-delay, 0ms);
-    }
-
-    @keyframes card-deal {
-      from {
-        opacity: 0;
-        transform: translateY(-200px) rotateZ(0deg) scale(0.5);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(var(--fan-y, 0px)) rotateZ(var(--fan-rot, 0deg)) scale(1);
-      }
-    }
-
     /* ══════════════════════════════════════════════════
        FOOTER — action buttons
        ══════════════════════════════════════════════════ */
@@ -514,22 +417,6 @@ export class VelgDraftRosterPanel extends LitElement {
       border: 2px solid;
       cursor: pointer;
       transition: all var(--transition-normal);
-    }
-
-    .footer__btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .footer__btn--cancel {
-      color: var(--color-text-muted);
-      border-color: var(--color-border);
-      background: transparent;
-    }
-
-    .footer__btn--cancel:hover:not(:disabled) {
-      border-color: var(--color-text-muted);
-      background: var(--color-surface-raised);
     }
 
     .footer__btn--lock {
@@ -615,7 +502,8 @@ export class VelgDraftRosterPanel extends LitElement {
         transition: none;
       }
     }
-  `;
+    `,
+  ];
 
   @property({ type: Boolean }) open = false;
   @property({ type: Array }) agents: Agent[] = [];

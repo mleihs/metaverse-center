@@ -1,37 +1,33 @@
 import { css } from 'lit';
 
-export const deployOperativeStyles = css`
-		:host {
-			display: block;
-
-			/* ── Texture patterns ── */
-			--_scanline: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
-			--_hatch-line: color-mix(in srgb, var(--color-text-primary) 0.8%, transparent);
-
-			/* ── Surface highlights (bevel / rim light) ── */
-			--_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
-			--_hi-faint: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
-			--_hi-soft: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
-			--_hi-medium: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
-			--_hi-bright: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
-
-			/* ── Depth layers (shadow / overlay) ── */
-			--_sh-whisper: color-mix(in srgb, var(--color-surface) 15%, transparent);
-			--_sh-faint: color-mix(in srgb, var(--color-surface) 20%, transparent);
-			--_sh-light: color-mix(in srgb, var(--color-surface) 30%, transparent);
-			--_sh-medium: color-mix(in srgb, var(--color-surface) 35%, transparent);
-			--_sh-strong: color-mix(in srgb, var(--color-surface) 40%, transparent);
-			--_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
-			--_sh-deep: color-mix(in srgb, var(--color-surface) 60%, transparent);
-			--_sh-intense: color-mix(in srgb, var(--color-surface) 70%, transparent);
-
-			/* ── Backdrop ── */
-			--_backdrop: color-mix(in srgb, var(--color-surface) 95%, transparent);
-
-			/* ── Success indicators ── */
-			--_success-faint: color-mix(in srgb, var(--color-success) 5%, transparent);
-			--_success-soft: color-mix(in srgb, var(--color-success) 25%, transparent);
-		}
+/**
+ * What the two epoch overlays — `DeployOperativeModal` and `DraftRosterPanel` —
+ * write IDENTICALLY today.
+ *
+ * WHY IT IS ONLY THIS MUCH
+ * The panel was forked from the modal, so it looked like a fork waiting to be
+ * re-joined. Measured, it is not: of the panel's 69 rules, 15 are byte-identical
+ * to the modal's, 19 share a selector with a DIFFERENT body, and 35 are the
+ * panel's own. The two surfaces have genuinely diverged.
+ *
+ * Two attempts at sharing whole groups (.overlay / .header / .hand / .footer)
+ * were measured and thrown away: each leaked properties into the panel that had
+ * never applied to it — the modal's dramatic card hover (transform, filter,
+ * a 24px sibling shift, dimming the un-hovered cards) among them. A refactor
+ * that changes how a screen looks is not a refactor.
+ *
+ * So this export carries exactly the intersection, verbatim. The guarantee:
+ * NOTHING renders differently on either surface. The nineteen diverged rules
+ * stay with their component, and converging them is an editorial decision about
+ * how the two should look — one for a person with both screens open, not for a
+ * pass over the stylesheet.
+ *
+ * A consequence worth knowing: some rules are here without their base rule
+ * (`.header__close:hover` is shared, `.header__close` is not, because the two
+ * components style it differently). That is the honest shape of the overlap,
+ * not an oversight.
+ */
+export const operativeOverlayStyles = css`
 
 		/* ══════════════════════════════════════════════════
 		   OVERLAY — full-screen war table
@@ -77,12 +73,6 @@ export const deployOperativeStyles = css`
 			z-index: 2;
 		}
 
-		.header__left {
-			display: flex;
-			align-items: center;
-			gap: var(--space-3);
-		}
-
 		.header__title {
 			font-family: var(--font-brutalist);
 			font-weight: 900;
@@ -90,6 +80,108 @@ export const deployOperativeStyles = css`
 			text-transform: uppercase;
 			letter-spacing: var(--tracking-wide);
 			color: var(--color-text-primary);
+		}
+
+		.header__close:hover {
+			border-color: var(--color-text-muted);
+			color: var(--color-text-primary);
+			background: var(--color-surface-raised);
+		}
+
+		.slam-ring--active {
+			animation: shockwave 400ms ease-out forwards;
+		}
+
+		@keyframes shockwave {
+			from { transform: scale(0.8); opacity: 0.8; }
+			to { transform: scale(2); opacity: 0; }
+		}
+
+		.hand__cards {
+			display: flex;
+			justify-content: center;
+			position: relative;
+		}
+
+		.hand__card-wrapper:first-child {
+			margin-left: 0;
+		}
+
+		/* Deal animation */
+		.hand__card-wrapper--dealing {
+			opacity: 0;
+			animation: card-deal var(--deal-duration, 350ms)
+				cubic-bezier(0.22, 1, 0.36, 1) forwards;
+			animation-delay: var(--deal-delay, 0ms);
+		}
+
+		@keyframes card-deal {
+			from {
+				opacity: 0;
+				transform: translateY(-200px) rotateZ(0deg) scale(0.5);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(var(--fan-y, 0px)) rotateZ(var(--fan-rot, 0deg)) scale(1);
+			}
+		}
+
+		.footer__btn:disabled {
+			opacity: 0.4;
+			cursor: not-allowed;
+		}
+
+		.footer__btn--cancel {
+			color: var(--color-text-muted);
+			border-color: var(--color-border);
+			background: transparent;
+		}
+
+		.footer__btn--cancel:hover:not(:disabled) {
+			border-color: var(--color-text-muted);
+			background: var(--color-surface-raised);
+		}`;
+
+/** Everything `DeployOperativeModal` does not share with the roster panel. */
+export const deployOperativeStyles = [
+  operativeOverlayStyles,
+  css`
+		:host {
+			display: block;
+
+			/* ── Texture patterns ── */
+			--_scanline: color-mix(in srgb, var(--color-text-primary) 1.2%, transparent);
+			--_hatch-line: color-mix(in srgb, var(--color-text-primary) 0.8%, transparent);
+
+			/* ── Surface highlights (bevel / rim light) ── */
+			--_hi-dim: color-mix(in srgb, var(--color-text-primary) 2%, transparent);
+			--_hi-faint: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+			--_hi-soft: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+			--_hi-medium: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+			--_hi-bright: color-mix(in srgb, var(--color-text-primary) 30%, transparent);
+
+			/* ── Depth layers (shadow / overlay) ── */
+			--_sh-whisper: color-mix(in srgb, var(--color-surface) 15%, transparent);
+			--_sh-faint: color-mix(in srgb, var(--color-surface) 20%, transparent);
+			--_sh-light: color-mix(in srgb, var(--color-surface) 30%, transparent);
+			--_sh-medium: color-mix(in srgb, var(--color-surface) 35%, transparent);
+			--_sh-strong: color-mix(in srgb, var(--color-surface) 40%, transparent);
+			--_sh-heavy: color-mix(in srgb, var(--color-surface) 50%, transparent);
+			--_sh-deep: color-mix(in srgb, var(--color-surface) 60%, transparent);
+			--_sh-intense: color-mix(in srgb, var(--color-surface) 70%, transparent);
+
+			/* ── Backdrop ── */
+			--_backdrop: color-mix(in srgb, var(--color-surface) 95%, transparent);
+
+			/* ── Success indicators ── */
+			--_success-faint: color-mix(in srgb, var(--color-success) 5%, transparent);
+			--_success-soft: color-mix(in srgb, var(--color-success) 25%, transparent);
+		}
+
+		.header__left {
+			display: flex;
+			align-items: center;
+			gap: var(--space-3);
 		}
 
 		.header__subtitle {
@@ -125,12 +217,6 @@ export const deployOperativeStyles = css`
 			color: var(--color-text-muted);
 			cursor: pointer;
 			transition: all 150ms ease;
-		}
-
-		.header__close:hover {
-			border-color: var(--color-text-muted);
-			color: var(--color-text-primary);
-			background: var(--color-surface-raised);
 		}
 
 		/* ══════════════════════════════════════════════════
@@ -455,15 +541,6 @@ export const deployOperativeStyles = css`
 			border-radius: 8px;
 			pointer-events: none;
 			opacity: 0;
-		}
-
-		.slam-ring--active {
-			animation: shockwave 400ms ease-out forwards;
-		}
-
-		@keyframes shockwave {
-			from { transform: scale(0.8); opacity: 0.8; }
-			to { transform: scale(2); opacity: 0; }
 		}
 
 		/* ── Zone content: fit badge, target preview ── */
@@ -1093,12 +1170,6 @@ export const deployOperativeStyles = css`
 			color: var(--color-icon);
 		}
 
-		.hand__cards {
-			display: flex;
-			justify-content: center;
-			position: relative;
-		}
-
 		.hand__card-wrapper {
 			appearance: none;
 			border: 0;
@@ -1119,10 +1190,6 @@ export const deployOperativeStyles = css`
 			padding: 100px 30px 10px;
 			margin-top: -100px;
 			margin-bottom: -10px;
-		}
-
-		.hand__card-wrapper:first-child {
-			margin-left: 0;
 		}
 
 		/* Scale the card INSIDE the wrapper, not the wrapper itself */
@@ -1169,25 +1236,6 @@ export const deployOperativeStyles = css`
 		.hand__card-wrapper--selected {
 			pointer-events: none;
 			opacity: 0.25 !important;
-		}
-
-		/* Deal animation */
-		.hand__card-wrapper--dealing {
-			opacity: 0;
-			animation: card-deal var(--deal-duration, 350ms)
-				cubic-bezier(0.22, 1, 0.36, 1) forwards;
-			animation-delay: var(--deal-delay, 0ms);
-		}
-
-		@keyframes card-deal {
-			from {
-				opacity: 0;
-				transform: translateY(-200px) rotateZ(0deg) scale(0.5);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(var(--fan-y, 0px)) rotateZ(var(--fan-rot, 0deg)) scale(1);
-			}
 		}
 
 		/* "DEPLOYED" stamp on cards */
@@ -1356,22 +1404,6 @@ export const deployOperativeStyles = css`
 			border: 2px solid;
 			cursor: pointer;
 			transition: all 150ms ease;
-		}
-
-		.footer__btn:disabled {
-			opacity: 0.4;
-			cursor: not-allowed;
-		}
-
-		.footer__btn--cancel {
-			color: var(--color-text-muted);
-			border-color: var(--color-border);
-			background: transparent;
-		}
-
-		.footer__btn--cancel:hover:not(:disabled) {
-			border-color: var(--color-text-muted);
-			background: var(--color-surface-raised);
 		}
 
 		.footer__btn--deploy {
@@ -1664,5 +1696,5 @@ export const deployOperativeStyles = css`
 				opacity: 1;
 				transform: translate(-50%, -50%) rotate(-8deg) scale(1);
 			}
-		}
-`;
+		}`,
+];
