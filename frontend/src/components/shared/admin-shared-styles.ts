@@ -1,10 +1,13 @@
 import { css } from 'lit';
+import { markerCornerStyles } from './marker-styles.js';
 
 /**
  * Shared admin panel CSS modules.
  *
- * Each export is a self-contained `CSSResult` so tabs can compose exactly
- * what they need via `static styles = [adminButtonStyles, css\`...\`]`.
+ * Each export is a `CSSResult` — or, where it builds on another module, an
+ * array of them — so tabs can compose exactly what they need via
+ * `static styles = [adminButtonStyles, css\`...\`]`. Lit flattens nested
+ * arrays, so an array export composes exactly like a single one.
  *
  * Accent-color customization uses Tier 3 component-local `--_*` variables
  * that tabs override in their `:host` block:
@@ -303,28 +306,32 @@ export const adminButtonStyles = css`
 
 /* ─── Forge / Bureau Section Panel ────────────────────────────────── */
 
-export const adminForgeSectionStyles = css`
+/**
+ * The Forge/Bureau section panel.
+ *
+ * Its identity marker used to be a 3px amber bar down the left edge, drawn as
+ * `.forge-section::before`. The accent-bar sweep missed it because its gate
+ * only recognised the `border-left` construction — this one is a pseudo-element,
+ * which is the shape an author reaches for when the bar needs a gradient. So
+ * the bar outlived the sweep in the one file that puts it on every admin tab.
+ *
+ * It is now the corner brackets from `markerCornerStyles`, which is the
+ * vocabulary's answer for job 1 (identity/category). Markup carries both
+ * classes: `class="forge-section marker-corners"`.
+ */
+export const adminForgeSectionStyles = [
+  markerCornerStyles,
+  css`
   .forge-section {
     position: relative;
     background: var(--color-surface-sunken);
     border: 1px solid var(--color-border);
-    padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+    /* Even padding: the extra left step only existed to clear the old bar. */
+    padding: var(--space-5);
     margin-bottom: var(--space-5);
     animation: panel-enter 0.4s ease both;
-  }
-
-  .forge-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    background: linear-gradient(
-      180deg,
-      var(--color-accent-amber) 0%,
-      var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3)) 100%
-    );
+    --marker-color: var(--color-accent-amber);
+    --marker-arm: 18px;
   }
 
   .forge-section__header {
@@ -375,7 +382,8 @@ export const adminForgeSectionStyles = css`
       animation: none !important;
     }
   }
-`;
+`,
+];
 
 /* ─── Loading / Empty States ──────────────────────────────────────── */
 

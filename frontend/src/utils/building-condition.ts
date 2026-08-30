@@ -10,8 +10,10 @@
  * the class of drift that produced that bug.
  */
 
-/** The condition vocabulary the generator is allowed to produce. */
-export type BuildingCondition = 'pristine' | 'good' | 'fair' | 'poor' | 'ruined';
+/** The condition vocabulary the generator is allowed to produce. Internal:
+ * both public functions take the backend's raw string and normalise it here, so
+ * no caller ever holds this type. */
+type BuildingCondition = 'pristine' | 'good' | 'fair' | 'poor' | 'ruined';
 
 /** Badge colour role, matching `CardBadge.variant` on `<velg-game-card>`. */
 export type ConditionVariant = 'success' | 'warning' | 'danger' | 'default';
@@ -33,7 +35,7 @@ const CONDITION_VARIANT: Readonly<Record<BuildingCondition, ConditionVariant>> =
 };
 
 /** Normalise free-text condition into the known vocabulary, or `null`. */
-export function normalizeCondition(value: string | null | undefined): BuildingCondition | null {
+function normalizeCondition(value: string | null | undefined): BuildingCondition | null {
   const key = value?.trim().toLowerCase();
   if (!key) return null;
   return key in CONDITION_DOTS ? (key as BuildingCondition) : null;

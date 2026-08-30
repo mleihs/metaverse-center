@@ -489,7 +489,7 @@ export class VelgAdminResearchTab extends LitElement {
     }
 
     return html`
-      <div class="forge-section">
+      <div class="forge-section marker-corners">
         <div class="forge-section__header">
           <span class="forge-section__code">SEC-02</span>
           <h3 class="forge-section__title">${msg('Research Domains')}</h3>

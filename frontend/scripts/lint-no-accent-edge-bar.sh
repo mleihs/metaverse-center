@@ -6,8 +6,15 @@
 #
 # Exit code: 0 = pass, 1 = violations found.
 #
-# WHAT IS REJECTED
-#   A `border-left` of 2px or more in a STATUS or ACCENT colour.
+# WHAT IS REJECTED — the device, in BOTH shapes it is built in
+#   1. A `border-left` of 2px or more in a STATUS or ACCENT colour.
+#   2. An absolutely positioned ::before/::after pinned to an edge, <=6px in one
+#      axis and 100%/calc in the other, painted in a status or accent colour.
+#
+#   Shape 2 is not a footnote. It looks identical on screen, it is the ONLY one
+#   that can carry a gradient — so it is the shape an author is pushed towards —
+#   and while this gate knew only shape 1 it reported PASS while an amber bar sat
+#   in `admin-shared-styles.ts`, i.e. on every admin tab in the platform.
 #
 # WHY
 #   The bar had spread to 110 declarations across 66 files. It carried four
@@ -32,13 +39,17 @@
 #     nowhere else.
 #   - A panel's own edge against the page (a fixed drawer's seam).
 #     Add such a case to ALLOWLIST in lint-accent-edge-bar.py with a reason.
+#   - A pseudo-element bar that declares a NAMED animation. A sweep line and a
+#     progress bar are the same geometry doing a different job: they say
+#     "working", not "this is a card of kind X", and they are recognisable
+#     because they move. That is a property of the rule, not a filename, which
+#     is why it needs no allowlist entry.
 #
-# NOTE ON COVERAGE: this gate catches the CSS-rule form. Two other build forms
-# exist and are NOT machine-checkable here — an inline
-# `style="border-left: 3px solid ${x}"` in a template, and a narrow absolutely
-# positioned ::before/::after painted in an accent colour. Both were found by
-# hand during the sweep (SimulationsDashboard, .dossier-card). If you are
-# reviewing a new component, look for those two by eye.
+# NOTE ON COVERAGE: both CSS-rule shapes are now checked. One build form is
+# still not machine-checkable here: an inline
+# `style="border-left: 3px solid ${x}"` in a template, found by hand during the
+# sweep (SimulationsDashboard, .dossier-card). Look for that one by eye when
+# reviewing a new component.
 
 set -euo pipefail
 
@@ -58,7 +69,7 @@ cd "$SCRIPT_DIR/.."
 FILTERED=$(python3 "$SCRIPT_DIR/lint-accent-edge-bar.py" || true)
 
 if [ -n "$FILTERED" ]; then
-  echo "ERROR: coloured edge bar (>=2px accent border-left):"
+  echo "ERROR: coloured edge bar (border-left >=2px, or a pinned pseudo-element):"
   echo ""
   echo "$FILTERED"
   echo ""
@@ -78,5 +89,5 @@ if [ -n "$FILTERED" ]; then
   exit 1
 fi
 
-echo "PASS: no coloured edge bars (accent border-left >= 2px)."
+echo "PASS: no coloured edge bars (border-left >= 2px, or pinned pseudo-element)."
 exit 0

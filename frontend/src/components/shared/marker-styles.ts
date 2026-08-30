@@ -199,6 +199,3 @@ export const markerQuoteStyles = css`
     text-indent: -1.4em;
   }
 `;
-
-/** All three, for components that need the whole vocabulary. */
-export const markerStyles = [markerCornerStyles, markerStatusStyles, markerQuoteStyles];

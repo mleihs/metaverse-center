@@ -126,7 +126,7 @@ export class VelgAdminAIUsageTab extends LitElement {
 
     return html`
       <div class="forge-admin">
-        <div class="forge-section">
+        <div class="forge-section marker-corners">
           <div class="section-header">
             <h3 class="forge-section__title">${msg('AI Usage Overview')}</h3>
             <select class="period-select" @change=${this._onPeriodChange}>
@@ -144,22 +144,22 @@ export class VelgAdminAIUsageTab extends LitElement {
         </div>
 
         <div class="two-col">
-          <div class="forge-section">
+          <div class="forge-section marker-corners">
             <h3 class="forge-section__title">${msg('By Model')}</h3>
             ${this._renderBreakdownTable(s.by_model, 'model')}
           </div>
-          <div class="forge-section">
+          <div class="forge-section marker-corners">
             <h3 class="forge-section__title">${msg('By Purpose')}</h3>
             ${this._renderBreakdownTable(s.by_purpose, 'purpose')}
           </div>
         </div>
 
         <div class="two-col">
-          <div class="forge-section">
+          <div class="forge-section marker-corners">
             <h3 class="forge-section__title">${msg('By Provider')}</h3>
             ${this._renderBreakdownTable(s.by_provider, 'provider')}
           </div>
-          <div class="forge-section">
+          <div class="forge-section marker-corners">
             <h3 class="forge-section__title">${msg('Key Sources')}</h3>
             ${this._renderKeySourcesTable(s.key_sources)}
           </div>
@@ -168,7 +168,7 @@ export class VelgAdminAIUsageTab extends LitElement {
         ${
           s.daily_trend.length > 0
             ? html`
-          <div class="forge-section">
+          <div class="forge-section marker-corners">
             <h3 class="forge-section__title">${msg('Daily Trend')}</h3>
             ${this._renderDailyTable(s.daily_trend)}
           </div>
