@@ -535,6 +535,11 @@ class CycleNotificationService:
         )
         replaced_by_ai = any(e["event_type"] == "player_afk_ai_takeover" for e in afk_events)
         afk_ai_personality = config.get("afk_ai_personality", "sentinel")
+        # Read, never assumed: `afk_penalty_enabled` defaults to FALSE and the
+        # penalty to 2 RP, so a mail that states a cost without checking would
+        # threaten most readers with a punishment their epoch does not apply.
+        afk_penalty_enabled = bool(config.get("afk_penalty_enabled", False))
+        afk_rp_penalty = int(config.get("afk_rp_penalty", 2))
         consecutive_afk = sum(
             1 for e in afk_events if e["event_type"] in ("player_afk", "player_afk_penalty", "player_afk_ai_takeover")
         )
@@ -586,6 +591,8 @@ class CycleNotificationService:
             "consecutive_afk": consecutive_afk,
             "participation_summary": participation,
             "cycle_deadline_minutes": deadline_minutes,
+            "afk_penalty_enabled": afk_penalty_enabled,
+            "afk_rp_penalty": afk_rp_penalty,
         }
 
     # ── Standing snapshot for phase change (C1) ───────────
