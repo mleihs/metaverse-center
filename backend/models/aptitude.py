@@ -30,6 +30,45 @@ APTITUDE_MAX = 9
 DEFAULT_APTITUDE_LEVEL = APTITUDE_BUDGET // len(OPERATIVE_TYPES)
 
 
+# ── Wovon die Eignung eines Agenten abhängt ─────────────────────────────────
+#
+# Bis zur Systemprüfung schrieb die Schmiede KEINE Aptitude-Zeilen. Auf Prod
+# hatten 222 von 258 Agenten keine, standen also flach auf dem Grundwert 6 —
+# und weil das höchste `min_aptitude` im Inhalt 5 ist, schaltete ein Agent OHNE
+# jede Zuweisung schlicht alles frei. Die Gruppenzusammenstellung war in 30 von
+# 36 Welten keine Entscheidung (Befund D15).
+#
+# Das PRIMÄRE Signal wird nicht hier erfunden: es entsteht aus den zwei Tabellen,
+# die `combat/skill_checks.py` ohnehin führt — `APTITUDE_CHECK_TYPE_MAP`
+# (Operativ → Prüfart) und `CHECK_TYPE_PERSONALITY_MODIFIERS` (Prüfart →
+# Merkmal). Dadurch können Eignung und Fertigkeitsprobe nicht auseinanderdriften:
+# wessen Wesen eine Prüfart begünstigt, ist auch in der zugehörigen Disziplin gut.
+#
+# Es reicht allein aber nicht: spy, infiltrator und assassin lösen alle drei zu
+# "precision"/Gewissenhaftigkeit auf und wären ununterscheidbar. Diese Tabelle
+# ist der Stichentscheid und zugleich der einzige Balance-Regler dieser
+# Herleitung — sie steht bewusst hier und nicht verstreut in einer Funktion.
+#
+#   Operativ -> (Merkmal, hoher Wert ist gut?)
+OPERATIVE_SECONDARY_TRAIT: dict[str, tuple[str, bool]] = {
+    # Der Späher lebt vom Zuhören und Einordnen, nicht vom Auftreten.
+    "spy": ("openness", True),
+    # Der Wächter hält Stellung, auch wenn er dafür unbeliebt wird.
+    "guardian": ("conscientiousness", True),
+    # Der Saboteur braucht Distanz zu dem, was er zerstört.
+    "saboteur": ("agreeableness", False),
+    # Der Propagandist braucht Menschen, die ihm glauben wollen.
+    "propagandist": ("agreeableness", True),
+    # Der Infiltrator muss unter Fremden ruhig bleiben.
+    "infiltrator": ("neuroticism", False),
+    # Der Assassine braucht die Fähigkeit, es nicht persönlich zu nehmen.
+    "assassin": ("agreeableness", False),
+}
+
+#: Wie stark das primäre Signal gegenüber dem Stichentscheid wiegt.
+PRIMARY_TRAIT_WEIGHT = 0.7
+
+
 class AptitudeSet(BaseModel):
     """Batch aptitude assignment — one level per operative type, budget = 36."""
 
