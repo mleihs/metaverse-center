@@ -62,6 +62,8 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
 | 29 | Stored `agents.portrait_description` rows still carry the defective template's output | High | Open |
 | 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | Open |
+| 31 | Seeds run **after** migrations, so every platform-template `UPDATE` is discarded on a fresh database — migration 027 inert since February | **Critical** | **Fixed** (seed back-port + CI gate) |
+| 32 | The platform agent template names Velgarien, in a template every Forge world uses | Medium | Open |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -655,6 +657,66 @@ mittel, ordentlich, in Ordnung, brauchbar* and *angemessen*, and 22 rows have no
 validate the answer against them — the same shape as the list count in finding 10, dynamic per
 world rather than frozen in the type. The German label then comes from the taxonomy's `label->>'de'`
 and `building_condition_de` stops being model output, which is the surface half and belongs with W5.
+
+### 31. The seed runs after the migrations, so migrations to platform templates are discarded — **Critical**
+
+**Found by asking why a dry run counted no-ops.** The transactional dry run of migration 281
+against production reported 6 of 18 statements as no-ops (see A.1), and the first explanation —
+production drift — was only half of it. The parallel session traced the other half:
+
+> `supabase/config.toml`: *"seeds the database after migrations during a db reset."*
+
+Every `INSERT` in `supabase/seed/006_prompt_templates.sql` is `ON CONFLICT DO NOTHING`. On a fresh
+database the table is therefore **empty while the migrations run**, so every
+
+```sql
+UPDATE prompt_templates … WHERE simulation_id IS NULL
+```
+
+matches zero rows and is silently discarded. `UPDATE 0` is not an error. Measured in a throwaway
+Postgres in the real order: **027 reports `4x UPDATE 0`, 281 reports `18x UPDATE 0`.**
+
+**Migration 027 has been inert on every database created from this repository since February.** It
+rewrote the four building templates — a 30-word cap, *"never flowery prose"*, `max_tokens` 400 →
+200/150 — for exactly the reason finding 27 later re-discovered from the other end: *"the long
+AI-generated descriptions then overwhelm the style prompt during image generation."* Production,
+migrated in place, has the fix. Every fresh database got the version 027 diagnosed as harmful.
+Six months, no signal anywhere.
+
+**Fixed in two halves.** The seed is back-ported (`eb0941c4`), and the trap is now stated in its own
+header rather than in an analysis document. The recurrence guard is
+`scripts/lint-seed-carries-migration-effects.sh`, in the CI `test-backend` job right after the
+SECDEF guard — the same slot, because it needs the same thing: a database with migrations *and*
+seeds applied.
+
+**The gate compares values, not affected-row counts, and that distinction is the gate.** Its first
+draft counted rows and reported ten violations of which six were not violations:
+`UPDATE t SET x = 'a' WHERE id = 1` reports one affected row even when `x` is already `'a'`, so
+every unguarded migration statement looked like a gap — including migration 016, which is in fact
+fully back-ported. The second draft snapshots the platform rows, replays all 24 statements in
+migration order, and reports which *column* actually changes. Proven in both directions: red on the
+defect below, green once the rows carry the right text.
+
+**It caught a defect hours old.** Run against the back-ported seed, the gate failed on all four
+building rows: the back-port had pasted the **agent** floor onto them — *"no formula that sums the
+person up"*, *"no signature quirk invented to make them memorable"*, *"the last sentence of each
+field"* — 193-210 characters about people, on a template that asks for a 30-word database entry
+about a building. Seed lengths 1115/1040/1018/963 against production's 905/847/808/770 after
+migration 281. Handed to the session that owns the seed.
+
+### 32. The platform agent template names Velgarien — Medium
+
+Uncovered while reconciling the seed with production. Production's `agent_generation_full` rows
+carry, in both the system prompt and `prompt_content`, a block naming the platform's own first
+world: *"Velgarien is an authoritarian state: total control, propaganda, surveillance, brutalist
+architecture."* It is a **platform** template, used by every Forge world that does not override it,
+so a world about an ink bureau is told it is an authoritarian state called Velgarien. That block
+explains the seed/production gap on those two rows (1107 against 1303 characters).
+
+It is in neither the migrations nor the seed — all 291 migrations and every seed file were searched
+— so it was almost certainly set through the admin UI. **Production is not reproducible from the
+repository on those two rows.** Whether the seed should adopt production's text or a world-neutral
+one is a design decision, not a restoration, and it belongs with the session that owns the seed.
 
 ---
 
