@@ -1084,6 +1084,15 @@ Two lessons from this run that belong in the same list, because they cost real t
   five stored portrait descriptions from a defective template. Moving code to where it belongs can
   be proven byte-identical. Deciding that two texts *should* be one is a judgement, and it belongs
   to the person who owns the surface — list it and hand it over, do not quietly unify it.
+- **A measurement's range is part of the measurement.** The position finding — the same floor in the
+  system prompt cleared 0 of 6 closing sentences, at the end of the user prompt 4-5 of 6 — was used
+  in this session to argue that a blank line before a prompt's last instruction should be kept,
+  because "that is where the last thing wins". It is not the same variable: the finding compared two
+  POSITIONS, not two amounts of whitespace inside one position, and calling both "distance" stretched
+  it past what it measured. The right move was the one taken: measure the actual variable. Six runs
+  per version, with and without the blank lines, on the real prompt — JSON complete 6/6 and German
+  6/6 either way. With no difference to weigh, price decided, and the seed was changed rather than
+  production. A finding quoted outside its range is an opinion wearing a number.
 - **A constraint that cannot fail is not the same as one that must not.** Twice now the tighter
   gate was the wrong one, and only a measurement said so: an exact list length raised no delivery
   rate (already 6/6) and added a total-loss failure that fired 1 in 6; a four-character floor on

@@ -27,6 +27,14 @@
 # It surfaced only when a transactional dry run of migration 281 against real
 # production counted 6 of 18 statements as no-ops and someone asked why.
 #
+# It has caught two real gaps in its first hours. The first was a back-port that
+# pasted the AGENT style floor onto the four building rows — 193-210 characters of
+# instructions about people on a template that asks for a 30-word database entry
+# about a building. The second was subtler and would never have been noticed by
+# eye: four rows carried two extra BLANK LINES the production text does not have,
+# +2 characters each. Both were invisible to a "does the block exist?" check and
+# obvious to a value comparison.
+#
 # WHY A DB-STATE CHECK AND NOT A TEXT COMPARISON
 # ----------------------------------------------
 # The same reason `lint-no-secdef-public-grant.sh` gives for grants: only the
