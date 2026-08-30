@@ -1838,6 +1838,9 @@ export interface HeartbeatOverview {
   pending_responses: number;
   active_attunements: number;
   active_anchors: number;
+  /** Platform rules the attunement console states rather than assumes. */
+  max_attunements: number;
+  attunement_switching_cooldown_ticks: number;
 }
 
 // --- Narrative Arcs ---
