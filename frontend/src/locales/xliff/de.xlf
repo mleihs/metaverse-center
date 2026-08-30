@@ -28654,6 +28654,34 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Up to 3 anchor cards</source>
   <target>Bis zu 3 Ankerkarten</target>
 </trans-unit>
+<trans-unit id="sa4ae7cfa068bacaa">
+  <source>Some images did not come back</source>
+  <target>Einige Bilder kamen nicht zurück</target>
+</trans-unit>
+<trans-unit id="s149cac08b588820e">
+  <source>The Bureau could not take the order. Try again shortly.</source>
+  <target>Das Büro konnte den Auftrag nicht annehmen. Versuche es gleich noch einmal.</target>
+</trans-unit>
+<trans-unit id="s86bc7cb5ff628a5f">
+  <source>Incomplete delivery</source>
+  <target>Unvollständige Lieferung</target>
+</trans-unit>
+<trans-unit id="forge-image-shortfall-count">
+  <source><x id="0" equiv-text="${failed}"/> of <x id="1" equiv-text="${total}"/> images did not come back.</source>
+  <target><x id="0" equiv-text="${failed}"/> von <x id="1" equiv-text="${total}"/> Bildern kamen nicht zurück.</target>
+</trans-unit>
+<trans-unit id="s9147bb8f2555cb81">
+  <source>Order placed. The images appear here as they arrive.</source>
+  <target>Auftrag erteilt. Die Bilder erscheinen hier, sobald sie eintreffen.</target>
+</trans-unit>
+<trans-unit id="sc0145ae884515e14">
+  <source>Redraw what is missing</source>
+  <target>Fehlendes nachzeichnen</target>
+</trans-unit>
+<trans-unit id="forge-partial-delivery">
+  <source>The Bureau delivered <x id="0" equiv-text="${shortfall.delivered}"/> of <x id="1" equiv-text="${shortfall.requested}"/>. Re-draft to fill the gap.</source>
+  <target>Das Büro lieferte <x id="0" equiv-text="${shortfall.delivered}"/> von <x id="1" equiv-text="${shortfall.requested}"/>. Zeichne neu, um die Lücke zu füllen.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

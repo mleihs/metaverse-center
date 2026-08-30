@@ -40,7 +40,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 6 | Generated prompt templates drop the platform template's compositional guardrails | **Critical** | **Fixed** (`36fe1b8b`, W1) |
 | 7 | No floor under content quality — a `"..."`-filled entity validates clean | **Critical** | **Fixed** (W2) |
 | 8 | No retry on image failure; one empty completion = permanently image-less building | High | **Fixed** (W3) |
-| 9 | Partial success reported as success (departments, materialization) | High | Open |
+| 9 | Partial success reported as success (departments, materialization) | High | **Fixed** (W3) |
 | 10 | List length is never enforced — the model may short-deliver silently | High | **Fixed** (W2) |
 | 11 | `purpose=` set at zero call sites — `model_research` is dead configuration | High | Open |
 | 12 | English fields never declare that they are English | High | **Fixed** (W2) |
@@ -800,6 +800,20 @@ department flips to "done" independently.
 Note the retries themselves are **not** silent and **not** unbounded (`MAX_RETRIES = 3`,
 `MAX_CONSECUTIVE_FAILURES = 2`, every attempt through `captureError` with a `source` and an
 `attempt` tag). Sentry sees everything. Only the user does not.
+
+**The paragraph above understates it, and the correction is worth recording.** It says the error is
+set but not rendered. Read again: `error.value` is set **only** when
+`consecutiveFailures >= MAX_CONSECUTIVE_FAILURES` trips — that is, only on a *run* of failures. A
+single scattered failure, one entity of sixteen with the rest succeeding, set nothing at all, and
+`_generateChunk` only ever asked "is `error` empty?". **The most common case was the invisible
+one.** Diagnosing it as "set but unrendered" would have produced a fix that still missed it.
+
+**Fixed** (`f04ce99e`): the loop counts what was actually delivered and reports any shortfall
+through its own signal, independent of the hard abort. Toast order is now hard error → shortfall →
+success. The same commit renders the `images_incomplete` state from finding 8 and wires the repair
+button — reached by holding on to the `simulationId` that `ignite()` already returned and the
+ceremony was throwing away, so no slug variant of the endpoint was needed. `entities[].error` is
+deliberately **not** shown: it is English model output and belongs in Sentry, not on the surface.
 
 ### 20. Deep research fails during materialization — Medium
 
