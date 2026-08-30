@@ -23,6 +23,7 @@ import httpx
 import sentry_sdk
 
 from backend.config import settings
+from backend.services.email_templates import html_to_text
 
 logger = logging.getLogger(__name__)
 
@@ -42,18 +43,29 @@ class EmailService:
         return bool(settings.smtp_host and settings.smtp_user and settings.smtp_password)
 
     @staticmethod
-    async def _send_via_resend(to: str, subject: str, html_body: str) -> bool:
-        """Send an HTML email via the Resend HTTP API.
+    async def _send_via_resend(
+        to: str,
+        subject: str,
+        html_body: str,
+        *,
+        text_body: str | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> bool:
+        """Send an email via the Resend HTTP API.
 
         Resend signs DKIM with ``d=metaverse.center`` (DMARC-aligned). The trusted, fixed
         API endpoint means SSRF protection (safe_fetch) does not apply here.
         """
-        payload = {
+        payload: dict = {
             "from": settings.smtp_from,
             "to": [to],
             "subject": subject,
             "html": html_body,
         }
+        if text_body:
+            payload["text"] = text_body
+        if extra_headers:
+            payload["headers"] = extra_headers
         headers = {"Authorization": f"Bearer {settings.resend_api_key}"}
 
         try:
@@ -113,7 +125,14 @@ class EmailService:
         return False
 
     @staticmethod
-    def _send_sync(to: str, subject: str, html_body: str) -> bool:
+    def _send_sync(
+        to: str,
+        subject: str,
+        html_body: str,
+        *,
+        text_body: str | None = None,
+        extra_headers: dict[str, str] | None = None,
+    ) -> bool:
         """Synchronous SMTP SSL send (fallback transport).
 
         The prossl gateway signs ``d=prossl.de`` (not DMARC-aligned with metaverse.center),
@@ -123,6 +142,15 @@ class EmailService:
         msg["From"] = settings.smtp_from
         msg["To"] = to
         msg["Subject"] = subject
+        for name, value in (extra_headers or {}).items():
+            msg[name] = value
+        # Order matters: `multipart/alternative` is read in ASCENDING preference,
+        # so the plain part goes first and the HTML part last. Reversed, a client
+        # that honours the ordering shows the text version to everyone.
+        # Until now there was only one part — the subtype promised an
+        # alternative that was never attached.
+        if text_body:
+            msg.attach(MIMEText(text_body, "plain", "utf-8"))
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
         try:
@@ -149,18 +177,50 @@ class EmailService:
             return False
 
     @classmethod
-    async def send(cls, to: str, subject: str, html_body: str) -> bool:
-        """Send an HTML email asynchronously.
+    async def send(
+        cls,
+        to: str,
+        subject: str,
+        html_body: str,
+        *,
+        text_body: str | None = None,
+        unsubscribe_url: str | None = None,
+    ) -> bool:
+        """Send an email asynchronously.
 
         Prefers the Resend API (DMARC-aligned, lands in the inbox); falls back to SMTP SSL
         only when Resend is not configured. Returns True on success, False on failure or
         when no transport is configured.
+
+        ``text_body`` defaults to a plain-text rendering of ``html_body``. Both
+        transports previously sent HTML only, which costs deliverability with
+        every major filter and leaves plain-text readers with an empty message.
+
+        ``unsubscribe_url`` adds the RFC 8058 headers. Gmail and Yahoo have
+        required one-click unsubscription from bulk senders since 2024; the pair
+        must be sent together, since ``List-Unsubscribe-Post`` is what promotes
+        the header from "a link somewhere" to the client's own button.
+        Transactional mail (a password reset, a clearance decision) passes no
+        URL and gets no header — it is not bulk mail and must not be opt-outable.
         """
+        if text_body is None:
+            text_body = html_to_text(html_body)
+
+        extra_headers: dict[str, str] = {}
+        if unsubscribe_url:
+            extra_headers["List-Unsubscribe"] = f"<{unsubscribe_url}>"
+            extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+
         if cls._resend_configured():
-            return await cls._send_via_resend(to, subject, html_body)
+            return await cls._send_via_resend(
+                to, subject, html_body, text_body=text_body, extra_headers=extra_headers
+            )
 
         if cls._smtp_configured():
-            return await asyncio.to_thread(cls._send_sync, to, subject, html_body)
+            return await asyncio.to_thread(
+                cls._send_sync, to, subject, html_body,
+                text_body=text_body, extra_headers=extra_headers,
+            )
 
         logger.warning("No email transport configured, skipping email", extra={"recipient": to})
         return False
