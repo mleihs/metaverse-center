@@ -41,9 +41,22 @@ Generate the following fields as a JSON object:
 - "description": A brief one-line physical description
 
 The character should fit the {agent_system} faction and the overall tone of {simulation_name}.
-Respond in {locale_name}.',
-    'You are a creative worldbuilder specializing in character creation for simulation worlds. '
-    || 'Create rich, believable characters with depth and nuance. '
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
+- No signature quirk invented to make them memorable.
+- The LAST sentence of each field is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.
+- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+    'You write character entries for a simulation world. '
+    || 'Be concrete: name what a person does, owns, avoids and owes, rather than interpreting '
+    || 'what it means. Images and similes are allowed, but at most one per paragraph. Do not '
+    || 'sum the character up in a formula, do not invent a signature quirk to make them '
+    || 'memorable, and do not end either field on an epigram. Sentences may be long; they '
+    || 'should just not all share one shape. Ordinary registers are allowed: a clerk may be '
+    || 'described in the language of clerks. '
     || 'Always respond with valid JSON.',
     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 800, true, admin_id
@@ -68,9 +81,22 @@ Generiere folgende Felder als JSON-Objekt:
 - "description": Eine kurze einzeilige physische Beschreibung
 
 Der Charakter sollte zur Fraktion {agent_system} und zum Grundton von {simulation_name} passen.
-Antworte auf {locale_name}.',
-    'Du bist ein kreativer Weltenbauer, spezialisiert auf Charaktererstellung für Simulationswelten. '
-    || 'Erstelle reichhaltige, glaubwürdige Charaktere mit Tiefe und Nuancen. '
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
+- Keine erfundene Marotte, die sie merkwuerdig machen soll.
+- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
+- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+    'Du legst Figuren für eine Simulationswelt an. '
+    || 'Schreibe konkret: benenne, was jemand tut, besitzt, meidet und schuldet, statt zu '
+    || 'deuten, was das bedeutet. Bilder und Vergleiche sind erlaubt, aber höchstens eines je '
+    || 'Absatz. Fasse die Figur nicht in einer Formel zusammen, erfinde keine Marotte, die sie '
+    || 'merkwürdig machen soll, und schliesse keines der Felder mit einer Pointe. Sätze dürfen '
+    || 'lang sein; sie sollen nur nicht alle dasselbe Muster haben. Gewöhnliche Register sind '
+    || 'erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden. '
     || 'Antworte immer mit validem JSON.',
     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 800, true, admin_id
@@ -90,7 +116,15 @@ Existing data:
 
 Fill in any missing fields while staying consistent with the existing data.
 Return a JSON object with only the newly generated fields.
-Respond in {locale_name}.',
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
+- No signature quirk invented to make them memorable.
+- The LAST sentence of each field is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.
+- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
     'You are a creative worldbuilder. Complete missing character details while maintaining consistency.',
     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "existing_data"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.7, 500, true, admin_id
@@ -110,7 +144,15 @@ Vorhandene Daten:
 
 Fülle fehlende Felder aus und bleibe dabei konsistent mit den vorhandenen Daten.
 Gib ein JSON-Objekt mit nur den neu generierten Feldern zurück.
-Antworte auf {locale_name}.',
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
+- Keine erfundene Marotte, die sie merkwuerdig machen soll.
+- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
+- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
     'Du bist ein kreativer Weltenbauer. Vervollständige fehlende Charakterdetails unter Beibehaltung der Konsistenz.',
     '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "existing_data"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.7, 500, true, admin_id
@@ -130,8 +172,15 @@ Generate a JSON object with:
 - "description": Detailed description of the building (150-250 words)
 - "building_condition": One of: excellent, good, fair, poor, ruined
 
-Respond in {locale_name}.',
-    'You are an architectural worldbuilder. Create atmospheric building descriptions.',
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the subject up in a single clause.
+- The LAST sentence is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.',
+    'You are an architectural worldbuilder. Describe a building by its material, its use and '
+    || 'its state of repair. Plain sentences; at most one image per description; no closing line.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -150,8 +199,15 @@ Generiere ein JSON-Objekt mit:
 - "description": Detaillierte Beschreibung des Gebäudes (150-250 Wörter)
 - "building_condition": Eines von: excellent, good, fair, poor, ruined
 
-Antworte auf {locale_name}.',
-    'Du bist ein architektonischer Weltenbauer. Erstelle atmosphärische Gebäudebeschreibungen.',
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
+- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
+    'Du bist ein architektonischer Weltenbauer. Beschreibe ein Gebäude über Material, Nutzung '
+    || 'und Zustand. Schlichte Sätze; höchstens ein Bild je Beschreibung; keine Schlusspointe.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -169,8 +225,15 @@ Generate a JSON object with:
 - "description": Detailed description (150-250 words)
 - "building_condition": One of: excellent, good, fair, poor, ruined
 
-Respond in {locale_name}.',
-    'You are an architectural worldbuilder. Create atmospheric building descriptions.',
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the subject up in a single clause.
+- The LAST sentence is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.',
+    'You are an architectural worldbuilder. Describe a building by its material, its use and '
+    || 'its state of repair. Plain sentences; at most one image per description; no closing line.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -188,8 +251,15 @@ Generiere ein JSON-Objekt mit:
 - "description": Detaillierte Beschreibung (150-250 Wörter)
 - "building_condition": Eines von: excellent, good, fair, poor, ruined
 
-Antworte auf {locale_name}.',
-    'Du bist ein architektonischer Weltenbauer. Erstelle atmosphärische Gebäudebeschreibungen.',
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
+- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
+    'Du bist ein architektonischer Weltenbauer. Beschreibe ein Gebäude über Material, Nutzung '
+    || 'und Zustand. Schlichte Sätze; höchstens ein Bild je Beschreibung; keine Schlusspointe.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -333,8 +403,15 @@ Generate a JSON object with:
 - "impact_level": 1-10
 - "urgency_level": One of: low, medium, high, critical
 
-Respond in {locale_name}.',
-    'You are a narrative events designer. Create compelling, realistic events for simulation worlds.',
+Respond in {locale_name}.
+
+STYLE (platform requirement, overrides anything above):
+- At most one simile or image per paragraph.
+- No formula that sums the subject up in a single clause.
+- The LAST sentence is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.',
+    'You are a narrative events designer. Report an event the way a record does: what happened, '
+    || 'to whom, with what consequence. Plain sentences; at most one image; no dramatic closing line.',
     '[{"name": "simulation_name"}, {"name": "event_type"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 600, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -354,8 +431,15 @@ Generiere ein JSON-Objekt mit:
 - "impact_level": 1-10
 - "urgency_level": Eines von: low, medium, high, critical
 
-Antworte auf {locale_name}.',
-    'Du bist ein narrativer Ereignis-Designer. Erstelle fesselnde, realistische Ereignisse für Simulationswelten.',
+Antworte auf {locale_name}.
+
+STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
+- Hoechstens ein Vergleich oder Bild je Absatz.
+- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
+- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
+    'Du bist ein narrativer Ereignis-Designer. Berichte ein Ereignis, wie ein Protokoll es tut: '
+    || 'was geschah, wem, mit welcher Folge. Schlichte Sätze; höchstens ein Bild; keine pointierte Schlusszeile.',
     '[{"name": "simulation_name"}, {"name": "event_type"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 600, true, admin_id
 ) ON CONFLICT DO NOTHING;
