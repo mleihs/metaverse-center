@@ -121,9 +121,13 @@ _FORMAT_DESCRIPTORS = "OUTPUT FORMAT: comma-separated visual descriptors, no sen
 _FRAME_PORTRAIT = (
     "COMPOSITION (platform requirement, overrides anything above): exactly ONE person, "
     "a single subject centered in frame. Never two people, never a pair of panels, never a "
+    # No rationale clause here on purpose. The output format is "comma-separated
+    # descriptors", and the model dutifully turned an earlier explanatory clause
+    # into descriptors: a rendered prompt ended "...no numerals, figure is
+    # invented, computed". A frame for a descriptor list states prohibitions and
+    # explains nothing.
     "diptych. Close-up head-and-shoulders, shallow depth of field. No readable text, no badges, "
-    "no numerals on clothing or background: any figure a portrait shows is invented, and the "
-    "platform computes none.\n"
+    "no numerals, no lettering on clothing or background.\n"
     f"{_FORMAT_DESCRIPTORS}"
 )
 
@@ -160,10 +164,11 @@ _FRAME_CHRONICLE = (
 # "COMPELLING". Written by the parallel session, which measured the register
 # before proposing the remedy.
 _FRAME_PROSE = (
-    "STYLE (platform requirement, overrides anything above): write plainly. Most sentences "
-    "state a fact and stop. Ration figurative language to at most one image per paragraph, "
-    "and only where a plain sentence cannot carry it — a simile in every sentence reads as "
-    "effort, not as observation.\n"
+    "STYLE (platform requirement, overrides anything above): write plainly. The LAST sentence of "
+    "each field is a fact, not an epigram and not a simile. Sentences may be long; they should "
+    "just not all share one shape. Ration figurative language to at most one image per paragraph, "
+    "and only where a plain sentence cannot carry it — a simile in every sentence reads as effort, "
+    "not as observation.\n"
     'Do not sum the subject up in a formula: no "Their greatest contradiction:", no "Their '
     'private heresy:", no colon-introduced thesis about who or what this is. State the facts '
     "and let them imply it.\n"

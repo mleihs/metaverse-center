@@ -29,13 +29,17 @@ not a repair. They are measured and reported, not changed.
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 __all__ = [
     "AA_LARGE_TEXT",
     "AA_NORMAL_TEXT",
+    "STYLE_PROMPT_KEYS",
     "ContrastRepair",
+    "StylePromptFinding",
     "ThemeContrastReport",
+    "audit_style_prompts",
     "contrast_ratio",
     "enforce_theme_contrast",
     "parse_hex",
@@ -193,3 +197,85 @@ def enforce_theme_contrast(theme: dict[str, object]) -> tuple[dict[str, object],
         advisories=tuple(advisories),
         unrepairable=tuple(unrepairable),
     )
+
+
+# ── The style prompts ────────────────────────────────────────────────────────
+#
+# `image_style_prompt_*` is appended verbatim to every image a world ever
+# generates, and it is the LAST thing the image model reads — so it outranks the
+# per-entity description, the template and the platform frame together.
+#
+# Measured on production, 2026-08-30. The generated portrait style for one world
+# was not a style at all but a finished picture, subject included:
+#
+#   "Kalotyp-Positivverfahren of a Verwaltungsbeamter posed for HIS Salzzitat …
+#    the shallow plane of focus isolating a diagnosis pinned to his lapel:
+#    *Leserlichkeit: 93%* and declining"
+#
+# One string. It made every portrait in that world male regardless of the agent,
+# gave every one of them the same badge with the same invented number, and made
+# them look alike — the user's original complaint about the Forge, traced at last
+# to its source. Repairing the template and regenerating the description did not
+# help, because this ran after both.
+#
+# Prose is not auto-repaired here: rewriting a world's visual identity is an
+# editorial act. It is reported, loudly, and the generation prompt now forbids
+# each of these shapes explicitly.
+
+STYLE_PROMPT_KEYS = (
+    "image_style_prompt_portrait",
+    "image_style_prompt_building",
+    "image_style_prompt_banner",
+    "image_style_prompt_lore",
+)
+
+# A style prompt that names a subject overwrites every entity with that subject.
+_SUBJECT_RE = re.compile(
+    r"\b(his|her|hers|he|she|him|a man|a woman|the man|the woman|an official|the sitter|"
+    r"the subject|posed|portrait of)\b",
+    re.IGNORECASE,
+)
+# A numeral becomes a numeral rendered on the picture, and it reads as a measurement.
+_NUMERAL_RE = re.compile(r"\d")
+# Emphasis and quotation marks are how a model writes text it wants drawn.
+_RENDERED_TEXT_RE = re.compile(
+    r"[*\"\u201c\u201d\u2018\u2019]|\b(reading|labell?ed|inscribed with|caption)\b",
+    re.IGNORECASE,
+)
+
+# Beyond this a "style" is a description of one finished picture.
+STYLE_PROMPT_MAX_WORDS = 60
+
+
+@dataclass(frozen=True, slots=True)
+class StylePromptFinding:
+    """One style prompt that describes a picture instead of a style."""
+
+    key: str
+    problems: tuple[str, ...]
+    word_count: int
+
+    def as_context(self) -> dict[str, object]:
+        return {"key": self.key, "problems": list(self.problems), "words": self.word_count}
+
+
+def audit_style_prompts(theme: Mapping[str, object]) -> tuple[StylePromptFinding, ...]:
+    """Report style prompts that name a subject, a number, or text to render."""
+    findings: list[StylePromptFinding] = []
+    for key in STYLE_PROMPT_KEYS:
+        value = theme.get(key)
+        if not isinstance(value, str) or not value.strip():
+            continue
+        problems: list[str] = []
+        if _SUBJECT_RE.search(value):
+            problems.append("names a subject")
+        if _NUMERAL_RE.search(value):
+            problems.append("contains a numeral")
+        if _RENDERED_TEXT_RE.search(value):
+            problems.append("asks for readable text")
+        words = len(value.split())
+        if words > STYLE_PROMPT_MAX_WORDS:
+            problems.append(f"describes a picture, not a style ({words} words)")
+        if problems:
+            findings.append(StylePromptFinding(key=key, problems=tuple(problems), word_count=words))
+    return tuple(findings)
