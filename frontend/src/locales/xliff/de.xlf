@@ -24583,11 +24583,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
         <target>Einen Dungeon betreten (per Nummer oder Name)</target>
       
 </trans-unit>
-<trans-unit id="sdc37bc1e12af1c88">
-  <source>Move to adjacent room (alias: m)</source>
-        <target>In angrenzenden Raum ziehen (Alias: m)</target>
-      
-</trans-unit>
 <trans-unit id="s6d109a3e97962c99">
   <source>Reveal adjacent rooms (alias: sc)</source>
         <target>Angrenzende Räume aufdecken (Alias: sc)</target>
@@ -24656,11 +24651,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s8edbe6bb93281814">
   <source>Seal breach (Deluge only)</source>
         <target>Siegelbruch (nur Deluge)</target>
-      
-</trans-unit>
-<trans-unit id="s7e3a9d8d43b5fb71">
-  <source>Dive for submerged loot (Deluge only)</source>
-        <target>Nach versunkener Beute tauchen (nur Deluge)</target>
       
 </trans-unit>
 <trans-unit id="sc258fc846b38c5e5">
@@ -29206,6 +29196,22 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sbbaff2728096b1fd">
   <source>No one is lost. The party returns marked – and the darkness keeps the rest.</source>
   <target>Niemand ist verloren. Die Gruppe kehrt gezeichnet zurück – und die Dunkelheit behält den Rest.</target>
+</trans-unit>
+<trans-unit id="sc87710faa91d8af2">
+  <source>Move to adjacent room (aliases: m, go)</source>
+  <target>In angrenzenden Raum ziehen (Alias: m, go)</target>
+</trans-unit>
+<trans-unit id="s117e2655e74cb949">
+  <source>Dive for submerged loot (Deluge only, alias: dive)</source>
+  <target>Nach versunkener Beute tauchen (nur in der Flut, Alias: dive)</target>
+</trans-unit>
+<trans-unit id="s3ff884cb7c047793">
+  <source>Ground a reconstructed room (Awakening only)</source>
+  <target>Einen rekonstruierten Raum erden (nur im Erwachen)</target>
+</trans-unit>
+<trans-unit id="sc7b0004b92ade2d7">
+  <source>Rally the faction (Overthrow only)</source>
+  <target>Die Fraktion sammeln (nur im Umsturz)</target>
 </trans-unit>
 </body>
 </file>
