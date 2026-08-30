@@ -98,7 +98,18 @@ export interface ForgeDraft {
   agents: ForgeAgentDraft[];
   buildings: ForgeBuildingDraft[];
   ai_settings: Record<string, unknown>;
-  research_context: { raw_data?: string; source?: 'tavily' | 'emulator' };
+  research_context: {
+    raw_data?: string;
+    source?: 'tavily' | 'emulator';
+    /**
+     * The rows the web search actually returned — title and URL, deduplicated,
+     * with no model in between. They do NOT verify a citation; they say what
+     * was read, which is what the card's footer claims. Absent on drafts made
+     * before finding 17 and empty on the emulator path. Never ask a model for
+     * these: a fabricated URL carries more authority than a fabricated title.
+     */
+    sources?: { axis: string; title: string; url: string }[];
+  };
   generation_config: ForgeGenerationConfig;
   theme_config: Record<string, string>;
   status: 'draft' | 'processing' | 'completed' | 'failed';
