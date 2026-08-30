@@ -3,7 +3,8 @@
  *
  * Controls the Living World system: agent needs, mood, opinions,
  * activity selection, social interactions, and autonomous events.
- * All settings stored in `simulation_settings` with category='autonomy'.
+ * All settings stored in `simulation_settings` with category='heartbeat'
+ * (see backend/services/simulation_setting_contracts.py).
  *
  * Every input has a detailed info bubble explaining the mechanic,
  * its range, and its gameplay impact.
@@ -142,7 +143,13 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
   private _byokLoaded = false;
 
   protected get category() {
-    return 'autonomy' as const;
+    // 'heartbeat', not 'autonomy': the tick reads its overrides out of that
+    // drawer, and this screen's rows were invisible to it until 30.08.2026 -
+    // every control here saved and then moved nothing. The tab stays "Autonomy";
+    // WeatherSettingsPanel separates tab from storage category the same way.
+    // The pairing is declared in backend/services/simulation_setting_contracts.py
+    // and held by backend/tests/unit/test_simulation_setting_contracts.py.
+    return 'heartbeat' as const;
   }
 
   protected get successMessage(): string {

@@ -60,6 +60,28 @@ _OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 _OPEN_METEO_TIMEOUT = 10.0  # seconds
 
 
+def _as_coordinate(value: object) -> float | None:
+    """Read a latitude or longitude, or ``None`` if it is not a usable number.
+
+    ``simulation_settings.setting_value`` is jsonb, so the panel's number input
+    arrives as a string; an empty field arrives as an empty string, which must
+    mean "not set" rather than the equator.
+    """
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        text = value.strip().strip('"')
+        if not text:
+            return None
+        try:
+            return float(text)
+        except ValueError:
+            return None
+    return None
+
+
 class AmbientWeatherService:
     """Generates ambient weather events from real-world conditions per heartbeat tick.
 
@@ -393,7 +415,7 @@ class AmbientWeatherService:
             - list of heartbeat entry dicts (for batch insert)
             - weather summary dict (for heartbeat summary JSONB)
         """
-        lat, lon = cls._resolve_coordinates(sim)
+        lat, lon = cls._resolve_coordinates(sim, overrides)
         sim_name = sim.get("name", "Unknown")
 
         # Load cached weather from last heartbeat (Plan B data)
@@ -678,12 +700,26 @@ class AmbientWeatherService:
     # ══════════════════════════════════════════════════════════════════════
 
     @classmethod
-    def _resolve_coordinates(cls, sim: dict) -> tuple[float, float]:
-        """Resolve weather coordinates from simulation or theme defaults."""
-        lat = sim.get("weather_lat")
-        lon = sim.get("weather_lon")
-        if lat and lon:
+    def _resolve_coordinates(cls, sim: dict, overrides: dict | None = None) -> tuple[float, float]:
+        """Resolve weather coordinates: owner's override, then column, then theme default.
+
+        The override comes first because it is the only one a person set on
+        purpose. ``WeatherSettingsPanel`` has always written ``weather_lat`` and
+        ``weather_lon`` into ``simulation_settings``, while this method read the
+        ``simulations`` columns the forge fills in — so the two coordinate fields
+        on that screen accepted a value, saved it, showed it back on reload, and
+        never once moved the weather away from the theme's default city.
+        """
+        lat = _as_coordinate(overrides.get("weather_lat")) if overrides else None
+        lon = _as_coordinate(overrides.get("weather_lon")) if overrides else None
+        if lat is not None and lon is not None:
             return lat, lon
+
+        lat = _as_coordinate(sim.get("weather_lat"))
+        lon = _as_coordinate(sim.get("weather_lon"))
+        if lat is not None and lon is not None:
+            return lat, lon
+
         theme = sim.get("theme", "custom")
         return THEME_DEFAULT_COORDS.get(theme, (50.08, 14.44))
 
