@@ -240,6 +240,31 @@ class DungeonEngineService:
         selected_anchors = random.sample(anchor_pool, min(2, len(anchor_pool)))
         anchor_object_ids = [a["id"] for a in selected_anchors]
 
+        # The resonance that opened this archetype. `available_dungeons` (Migr.
+        # 164) already carries it and the lobby already shows its figures — the
+        # run row simply never stored it, so `resonance_id` was NULL on all 15
+        # production runs and a victory could report back to nothing (Befund D9).
+        # NULL stays NULL for an admin-unlocked archetype: there is no resonance
+        # behind it, and inventing one would be worse than the gap.
+        resonance_id: UUID | None = None
+        try:
+            available = await maybe_single_data(
+                admin_supabase.table("available_dungeons")
+                .select("resonance_id")
+                .eq("simulation_id", str(simulation_id))
+                .eq("archetype", archetype)
+                .maybe_single()
+            )
+            if isinstance(available, dict) and available.get("resonance_id"):
+                resonance_id = UUID(available["resonance_id"])
+        except (PostgrestAPIError, ValueError) as exc:
+            # A run must not fail because the resonance lookup did. The relief on
+            # victory is skipped instead, and the reason is observable.
+            logger.warning(
+                "Could not resolve the resonance for this run",
+                extra={"sim_id": str(simulation_id), "archetype": archetype, "error": str(exc)},
+            )
+
         # Create DB record (unique partial index prevents concurrent runs)
         signature = config.get("signature", "conflict_wave")
         try:
@@ -255,6 +280,7 @@ class DungeonEngineService:
                 "rooms_total": len(rooms),
                 "status": "exploring",
                 "started_by_id": str(user_id),
+                "resonance_id": str(resonance_id) if resonance_id else None,
             }
             insert_resp = (
                 await admin_supabase.table(
@@ -290,6 +316,7 @@ class DungeonEngineService:
             party=party,
             player_ids=[user_id],
             archetype_state=archetype_state,
+            resonance_id=resonance_id,
             phase="exploring",
             anchor_objects=anchor_object_ids,
             anchor_phases_shown={obj_id: [] for obj_id in anchor_object_ids},
