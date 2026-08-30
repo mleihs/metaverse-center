@@ -29095,6 +29095,114 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s6940beae6a0cc68c">
   <source>Let go</source>
 <target>Loslassen</target></trans-unit>
+<trans-unit id="sf44c9fb4bafe6095">
+  <source>Post is addressed to</source>
+  <target>Die Post geht an</target>
+</trans-unit>
+<trans-unit id="sf6df4c344433044e">
+  <source>Choose which epoch emails the Bureau sends you.</source>
+  <target>Wähle, welche Epochen-Post dir das Büro schickt.</target>
+</trans-unit>
+<trans-unit id="saf323ba9060ac52b">
+  <source>Not on this list</source>
+  <target>Nicht auf dieser Liste</target>
+</trans-unit>
+<trans-unit id="s35e07794a476a8eb">
+  <source>Account and security mail - address confirmation, password reset, sign-in links - is never optional and is not affected by anything above.</source>
+  <target>Konto- und Sicherheitspost – Adressbestätigung, Passwort-Zurücksetzung, Anmeldelinks – ist nie abwählbar und bleibt von allem hier unberührt.</target>
+</trans-unit>
+<trans-unit id="sf169e6e4ff910639">
+  <source>The language of Bureau correspondence is set on your</source>
+  <target>Die Sprache der Bürokorrespondenz steht in deiner</target>
+</trans-unit>
+<trans-unit id="s8652f9629097807f">
+  <source>personnel file</source>
+  <target>Personalakte</target>
+</trans-unit>
+<trans-unit id="s83c570f7ed753ba8">
+  <source>Cycle briefings</source>
+  <target>Zyklusberichte</target>
+</trans-unit>
+<trans-unit id="scfcab69793a2aa78">
+  <source>Phase transitions</source>
+  <target>Phasenwechsel</target>
+</trans-unit>
+<trans-unit id="s2149920f59cd8777">
+  <source>Closing reports</source>
+  <target>Abschlussberichte</target>
+</trans-unit>
+<trans-unit id="s09c73b8f433d1a55">
+  <source>All epoch notifications</source>
+  <target>Alle Epochen-Benachrichtigungen</target>
+</trans-unit>
+<trans-unit id="s985deff30008eae2">
+  <source>The tactical briefing that arrives when a cycle resolves - your rank, your scores, what your operatives did.</source>
+  <target>Der Lagebericht, der bei jeder Zyklusauflösung eintrifft – dein Rang, deine Werte, was deine Operativen getan haben.</target>
+</trans-unit>
+<trans-unit id="s6e4e6aeb90d840a7">
+  <source>The short note when an epoch moves into Foundation, Competition or Reckoning.</source>
+  <target>Die kurze Meldung, wenn eine Epoche in Grundsteinlegung, Wettbewerb oder Abrechnung übergeht.</target>
+</trans-unit>
+<trans-unit id="s47e914f0ea9b0fd7">
+  <source>The final standings when an epoch ends.</source>
+  <target>Der Endstand, wenn eine Epoche endet.</target>
+</trans-unit>
+<trans-unit id="s750a9c59e31ed480">
+  <source>Every epoch email: cycle briefings, phase transitions and closing reports. Security and account emails are unaffected - those are never optional.</source>
+  <target>Jede Epochen-Post: Zyklusberichte, Phasenwechsel und Abschlussberichte. Sicherheits- und Kontopost bleibt unberührt – die ist nie abwählbar.</target>
+</trans-unit>
+<trans-unit id="sf274123d0f036aca">
+  <source>Checking the link</source>
+  <target>Der Link wird geprüft</target>
+</trans-unit>
+<trans-unit id="sae76211e66e573b0">
+  <source>This unsubscribe link is not valid. It may have been altered on the way, or the address it was issued for no longer exists. You can still change everything from your notification settings.</source>
+  <target>Dieser Abmeldelink ist ungültig. Vielleicht wurde er unterwegs verändert, oder die Adresse, für die er ausgestellt wurde, gibt es nicht mehr. Ändern kannst du trotzdem alles in deinen Benachrichtigungseinstellungen.</target>
+</trans-unit>
+<trans-unit id="s17d869f6e3d76e21">
+  <source>Open notification settings</source>
+  <target>Benachrichtigungseinstellungen öffnen</target>
+</trans-unit>
+<trans-unit id="s35a4fa5242f0d54a">
+  <source>Withdrawal recorded</source>
+  <target>Abbestellung vermerkt</target>
+</trans-unit>
+<trans-unit id="s092bfc7d9fad75dd">
+  <source>will no longer be sent to you. Nothing else about your account has changed.</source>
+  <target>wird dir nicht mehr zugestellt. Sonst hat sich an deinem Konto nichts geändert.</target>
+</trans-unit>
+<trans-unit id="sfd8a0089082242a2">
+  <source>If this was a mistake, you can switch it back on at any time - the setting lives with your account, not with this link.</source>
+  <target>War das ein Versehen, kannst du es jederzeit wieder einschalten – die Einstellung hängt an deinem Konto, nicht an diesem Link.</target>
+</trans-unit>
+<trans-unit id="scb1cd6dd60771536">
+  <source>Manage notifications</source>
+  <target>Benachrichtigungen verwalten</target>
+</trans-unit>
+<trans-unit id="s34b5816fdc490d2c">
+  <source>Stop these emails?</source>
+  <target>Diese Post einstellen?</target>
+</trans-unit>
+<trans-unit id="s8670d3505e9a9647">
+  <source>Subject of withdrawal</source>
+  <target>Gegenstand der Abbestellung</target>
+</trans-unit>
+<trans-unit id="s1f691f6f2f55b801">
+  <source>Nothing has changed yet. Press the button below and the Bureau stops writing to you about this.</source>
+  <target>Noch hat sich nichts geändert. Ein Druck auf den Knopf, und das Büro schreibt dir dazu nicht mehr.</target>
+</trans-unit>
+<trans-unit id="s0e254dfe3c6de4c2">
+  <source>Recording...</source>
+  <target>Wird vermerkt …</target>
+</trans-unit>
+<trans-unit id="sa158241d180bf01b">
+  <source>Stop these emails</source>
+  <target>Diese Post einstellen</target>
+</trans-unit>
+<trans-unit id="s73157dadc0e7c10e">
+  <source>Choose individually instead</source>
+  <target>Lieber einzeln auswählen</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

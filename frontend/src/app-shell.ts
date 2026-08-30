@@ -28,6 +28,8 @@ import './components/layout/SimulationShell.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
 import './components/platform/UserProfileView.js';
+import './components/settings/NotificationsSettingsView.js';
+import './components/settings/UnsubscribeView.js';
 import './components/shared/CookieConsent.js';
 import './components/shared/GuestBanner.js';
 // Alpha suite — entire tree tree-shakes to nothing when VITE_IS_ALPHA !== 'true'
@@ -491,6 +493,40 @@ export class VelgApp extends LitElement {
             analyticsService.trackPageView('/profile', document.title);
           }
           return ok;
+        },
+      },
+      {
+        // Every email's footer links here. Until now it linked to `/settings`,
+        // which no route has ever matched: the notification panel lived only
+        // inside a simulation's settings tab, i.e. a per-user preference was
+        // reachable only through a per-world door (finding E4).
+        path: '/settings/notifications',
+        render: () => html`<velg-notifications-settings-view></velg-notifications-settings-view>`,
+        enter: async () => {
+          const ok = await this._guardAuth();
+          if (ok) {
+            seoService.setTitle(['Correspondence']);
+            seoService.setDescription('Choose which epoch emails the Bureau sends you.');
+            seoService.setCanonical('/settings/notifications');
+            analyticsService.trackPageView('/settings/notifications', document.title);
+          }
+          return ok;
+        },
+      },
+      {
+        // Reached from an emailed unsubscribe link, by someone who may not be
+        // signed in and may not remember signing up. No auth guard on purpose:
+        // the signed token in the query string is the authorisation, and
+        // demanding a login here is what turns an unsubscribe into a spam
+        // report.
+        path: '/unsubscribe',
+        render: () => html`<velg-unsubscribe-view></velg-unsubscribe-view>`,
+        enter: async () => {
+          await this._authReady;
+          seoService.setTitle(['Unsubscribe']);
+          seoService.setDescription('Stop receiving a kind of email from the Bureau.');
+          seoService.setRobots('noindex, nofollow');
+          return true;
         },
       },
       {
