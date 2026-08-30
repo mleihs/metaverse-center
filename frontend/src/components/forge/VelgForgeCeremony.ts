@@ -1047,6 +1047,35 @@ export class VelgForgeCeremony extends LitElement {
       text-align: right;
     }
 
+    /*
+      Finding 19: the denominator was a bare number. It counts four different
+      things -- one banner, one portrait per operative, one image per structure,
+      one plate per illustrated lore section -- and three of them were never
+      named anywhere on the screen, while the cards above showed a different
+      tally entirely ("6 AGENTS / 7 BUILDINGS / 5 ZONES"). This line says what
+      the number is made of, in the same register as the rest of the readout.
+    */
+    .ceremony__progress-parts {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--_p-40);
+      max-width: min(340px, 80vw);
+    }
+
+    .ceremony__progress-part {
+      white-space: nowrap;
+    }
+
+    .ceremony__progress-part--done {
+      color: var(--_p-70);
+    }
+
     .ceremony__progress-bar {
       width: min(300px, 60vw);
       height: 6px;
@@ -1913,6 +1942,40 @@ export class VelgForgeCeremony extends LitElement {
 
   // ── Lore phase helpers ───────────────────────────
 
+  /**
+   * Has the phase this bar measures actually begun?
+   *
+   * `lore_progress` names the current text phase while one is running and is
+   * null once the batch is over. `images` and `images_incomplete` are the two
+   * states in which images are the thing happening. See finding 18.
+   */
+  private _imagePhaseStarted(): boolean {
+    const lp = this._progress?.lore_progress;
+    if (!lp) return true;
+    return lp.phase === 'images' || lp.phase === 'images_incomplete';
+  }
+
+  /**
+   * The four things the denominator is made of, each with its own tally.
+   *
+   * Read straight off the payload `get_forge_progress` already returns -- the
+   * arrays were there all along, only the total was rendered. A group with no
+   * members is dropped rather than shown as `0/0`. See finding 19.
+   */
+  private _progressParts(): { label: string; done: number; total: number }[] {
+    const p = this._progress;
+    if (!p) return [];
+    const counted = (entities: { image_url: string | null }[]) =>
+      entities.filter((e) => e.image_url).length;
+    const parts = [
+      { label: msg('Banner'), done: p.banner_url ? 1 : 0, total: 1 },
+      { label: msg('Portraits'), done: counted(p.agents), total: p.agents.length },
+      { label: msg('Structures'), done: counted(p.buildings), total: p.buildings.length },
+      { label: msg('Plates'), done: counted(p.lore), total: p.lore.length },
+    ];
+    return parts.filter((part) => part.total > 0);
+  }
+
   private _lorePhaseLabel(lp: LorePhaseProgress): string {
     switch (lp.phase) {
       case 'research':
@@ -2283,9 +2346,33 @@ export class VelgForgeCeremony extends LitElement {
             : nothing
         }
 
-        <!-- Image materialization progress -->
+        <!--
+          Image materialization progress.
+
+          Finding 18: this bar used to render from the first second of the
+          ceremony, and it counts IMAGES only. Lore, style prompts, prompt
+          templates and the world map all run before the first image is
+          requested -- measured at four minutes and one second on the
+          2026-08-29 run -- so it sat at 0 of 16, nought per cent, for all of it
+          while the denominator grew underneath it (14 to 16, as the two
+          illustrated lore sections came into being). A bar that cannot move
+          is worse than no bar: it reads as a stall, under a screen that has
+          just promised three to five minutes.
+
+          The phase label above already says what is happening during those
+          minutes ("Inscribing the Lore Scroll...", "Translating Section 3/7").
+          So the bar now waits for the phase it measures. The lore_progress
+          payload is the signal: while it names a text phase the images have
+          not started; images, images_incomplete and a null payload all mean
+          they have.
+
+          (The backticks that would normally quote those identifiers are left
+          off on purpose -- this comment sits INSIDE an html tagged template,
+          and a backtick here ends the template. Same trap as the css one the
+          repo already has a lint gate for.)
+        -->
         ${
-          this._progress
+          this._progress && this._imagePhaseStarted()
             ? html`
           <div class="ceremony__progress ${this._progress.done ? 'ceremony__progress--done' : ''}">
             <div class="ceremony__progress-text">
@@ -2301,6 +2388,14 @@ export class VelgForgeCeremony extends LitElement {
                 class="ceremony__progress-fill"
                 style="width: ${this._progress.total > 0 ? (this._progress.completed / this._progress.total) * 100 : 0}%"
               ></div>
+            </div>
+            <div class="ceremony__progress-parts">
+              ${this._progressParts().map(
+                (part) => html`<span
+                  class="ceremony__progress-part ${part.done === part.total ? 'ceremony__progress-part--done' : ''}"
+                  >${part.done}/${part.total} ${part.label}</span
+                >`,
+              )}
             </div>
           </div>
         `

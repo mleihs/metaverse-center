@@ -139,7 +139,25 @@ class ChatAIService:
         if mood_context:
             variables["agent_mood"] = mood_context
 
-        system_prompt = self._prompt_resolver.fill_template(prompt_template, variables)
+        # Finding 25. The template's OWN `system_prompt` — the persona phase A.6
+        # writes for the world ("You roleplay characters from {simulation_name},
+        # where the state is a living body and legibility its breath") — was
+        # authored, stored and then dropped: this method built the system message
+        # from `prompt_content` alone. Measured on production 2026-08-30, four
+        # simulations carry one (269-407 characters); both platform rows carry
+        # none, so for the other 37 worlds this composition is a strict no-op.
+        #
+        # The order is not a guess. `GenerationService._generate` already treats
+        # a template's `system_prompt` as the system framing and renders it with
+        # `fill_system_prompt`, which substitutes variables — without it the
+        # literal `{simulation_name}` above would reach the model, which is the
+        # exact defect that method was written for. Persona first, the concrete
+        # per-agent instructions and the platform frame after: whatever comes
+        # last carries the most weight, and the frame is what a world may not
+        # edit away.
+        persona = self._prompt_resolver.fill_system_prompt(prompt_template, variables)
+        body = self._prompt_resolver.fill_template(prompt_template, variables)
+        system_prompt = f"{persona}\n\n{body}" if persona else body
         system_prompt += PromptResolver.build_language_instruction(locale)
 
         if extra_context:
