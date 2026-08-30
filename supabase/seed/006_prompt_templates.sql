@@ -11,6 +11,30 @@
 -- Source specs:
 --   - 09_AI_INTEGRATION.md §Prompt-Templates
 --   - 14_I18N_ARCHITECTURE.md §Layer 3: AI Prompts
+--
+-- THIS FILE IS THE FINAL STATE, NOT A STARTING POINT
+-- --------------------------------------------------
+-- `config.toml` seeds AFTER migrations ("seeds the database after migrations
+-- during a db reset"), and every INSERT below is ON CONFLICT DO NOTHING. On a
+-- fresh database the table is therefore EMPTY when the migrations run: every
+-- `UPDATE prompt_templates … WHERE simulation_id IS NULL` matches zero rows and
+-- is silently discarded, and what this file writes afterwards is all there is.
+--
+-- So a migration that fixes a platform template does NOT fix it here. It must be
+-- back-ported into this file by hand, or the fix reaches production and no fresh
+-- database ever again.
+--
+-- That is not hypothetical. Migration 027 (2026-02-28) rewrote the four building
+-- templates because their 150-250-word descriptions were overwhelming the image
+-- style prompt; it set a 30-word cap, "never flowery prose", and max_tokens
+-- 400 -> 200/150. It was never back-ported. Measured on 2026-08-30 against a
+-- container in the real order (migrations, then seed): `027: 4x UPDATE 0`. Every
+-- fresh database had carried the diagnosed-harmful template for six months. The
+-- four rows below now carry 027's text, its system prompt and its max_tokens.
+-- Migration 016's portrait fix WAS back-ported at the time and is intact.
+--
+-- Before adding a migration that touches a platform row here: change this file
+-- in the same commit, and say so in the migration header.
 -- =============================================================================
 
 DO $$
@@ -165,24 +189,25 @@ INSERT INTO prompt_templates (
     temperature, max_tokens, is_system_default, created_by_id
 ) VALUES (
     NULL, 'building_generation', 'generation', 'en', 'Building Generation (EN)',
-    'Describe a {building_type} building for the simulation "{simulation_name}".
+    'Generate a {building_type} building for the simulation "{simulation_name}".
 
 Generate a JSON object with:
-- "name": A fitting name for this building
-- "description": Detailed description of the building (150-250 words)
+- "name": A fitting name for this building (in the language and style of the simulation world)
+- "description": A short, functional description (1-2 sentences, max 30 words). Write like a database entry, not a narrative. Examples: "Training facility of the armed forces", "Underground market in the old tunnels", "Abandoned factory on the river bank".
 - "building_condition": One of: excellent, good, fair, poor, ruined
 
 Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
 - At most one simile or image per paragraph.
-- No formula that sums the subject up in a single clause.
-- The LAST sentence is a fact, not an epigram and not a comparison.
-- Sentences may be long; they should just not all share one shape.',
-    'You are an architectural worldbuilder. Describe a building by its material, its use and '
-    || 'its state of repair. Plain sentences; at most one image per description; no closing line.',
+- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
+- No signature quirk invented to make them memorable.
+- The LAST sentence of each field is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.
+- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
+    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 3. building_generation (DE)
@@ -192,24 +217,25 @@ INSERT INTO prompt_templates (
     temperature, max_tokens, is_system_default, created_by_id
 ) VALUES (
     NULL, 'building_generation', 'generation', 'de', 'Gebäude-Generierung (DE)',
-    'Beschreibe ein Gebäude vom Typ {building_type} für die Simulation "{simulation_name}".
+    'Erstelle ein Gebäude vom Typ {building_type} für die Simulation "{simulation_name}".
 
 Generiere ein JSON-Objekt mit:
-- "name": Ein passender Name für dieses Gebäude
-- "description": Detaillierte Beschreibung des Gebäudes (150-250 Wörter)
+- "name": Ein passender Name für dieses Gebäude (in der Sprache und dem Stil der Simulationswelt)
+- "description": Eine kurze, funktionale Beschreibung (1-2 Sätze, max. 30 Wörter). Schreibe wie einen Datenbankeintrag, keine Erzählung. Beispiele: "Ausbildungsstätte der Streitkräfte", "Unterirdischer Markt in den alten Tunneln", "Verlassene Fabrik am Flussufer".
 - "building_condition": Eines von: excellent, good, fair, poor, ruined
 
 Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Hoechstens ein Vergleich oder Bild je Absatz.
-- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
-- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
-- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
-    'Du bist ein architektonischer Weltenbauer. Beschreibe ein Gebäude über Material, Nutzung '
-    || 'und Zustand. Schlichte Sätze; höchstens ein Bild je Beschreibung; keine Schlusspointe.',
+- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
+- Keine erfundene Marotte, die sie merkwuerdig machen soll.
+- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
+- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
+    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 4. building_generation_named (EN)
@@ -222,20 +248,21 @@ INSERT INTO prompt_templates (
     'Describe the building "{building_name}" (type: {building_type}) for "{simulation_name}".
 
 Generate a JSON object with:
-- "description": Detailed description (150-250 words)
+- "description": A short, functional description (1-2 sentences, max 30 words). Write like a database entry, not a narrative. Examples: "Headquarters of the secret police", "Crumbling residential block in the industrial quarter", "Main temple of the old faith".
 - "building_condition": One of: excellent, good, fair, poor, ruined
 
 Respond in {locale_name}.
 
 STYLE (platform requirement, overrides anything above):
 - At most one simile or image per paragraph.
-- No formula that sums the subject up in a single clause.
-- The LAST sentence is a fact, not an epigram and not a comparison.
-- Sentences may be long; they should just not all share one shape.',
-    'You are an architectural worldbuilder. Describe a building by its material, its use and '
-    || 'its state of repair. Plain sentences; at most one image per description; no closing line.',
+- No formula that sums the person up ("Their greatest contradiction:", "Their private heresy:").
+- No signature quirk invented to make them memorable.
+- The LAST sentence of each field is a fact, not an epigram and not a comparison.
+- Sentences may be long; they should just not all share one shape.
+- Ordinary registers are allowed: a clerk may be described in the language of clerks.',
+    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
+    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 4. building_generation_named (DE)
@@ -248,20 +275,21 @@ INSERT INTO prompt_templates (
     'Beschreibe das Gebäude "{building_name}" (Typ: {building_type}) für "{simulation_name}".
 
 Generiere ein JSON-Objekt mit:
-- "description": Detaillierte Beschreibung (150-250 Wörter)
+- "description": Eine kurze, funktionale Beschreibung (1-2 Sätze, max. 30 Wörter). Schreibe wie einen Datenbankeintrag, keine Erzählung. Beispiele: "Hauptquartier der Geheimpolizei", "Baufälliger Wohnblock im Industrieviertel", "Haupttempel des alten Glaubens".
 - "building_condition": Eines von: excellent, good, fair, poor, ruined
 
 Antworte auf {locale_name}.
 
 STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Hoechstens ein Vergleich oder Bild je Absatz.
-- Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
-- Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
-- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
-    'Du bist ein architektonischer Weltenbauer. Beschreibe ein Gebäude über Material, Nutzung '
-    || 'und Zustand. Schlichte Sätze; höchstens ein Bild je Beschreibung; keine Schlusspointe.',
+- Keine Formel, die die Person zusammenfasst ("Ihr groesster Widerspruch:", "Ihre private Ketzerei:").
+- Keine erfundene Marotte, die sie merkwuerdig machen soll.
+- Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
+- Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
+- Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
+    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 400, true, admin_id
+    'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 5. portrait_description (EN — generates English image-gen prompts)
