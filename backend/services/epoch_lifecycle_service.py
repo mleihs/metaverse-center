@@ -4,6 +4,10 @@ import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+import httpx
+import sentry_sdk
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG, total_cycles_for
 from backend.services.battle_log_service import BattleLogService
 from backend.services.game_instance_service import GameInstanceService
@@ -217,6 +221,35 @@ class EpochLifecycleService:
 
         if not resp.data:
             raise server_error("Failed to advance phase.")
+
+        # A manually ended epoch never handed out an achievement (E10).
+        #
+        # `trg_ach_epoch_score` (migration 190, body from 194) fires AFTER INSERT
+        # on `epoch_scores` and returns immediately unless the epoch already
+        # reads 'completed'. The automatic path satisfies that by accident:
+        # `fn_advance_epoch_cycle` flips the status, and `resolve_cycle_full`
+        # scores afterwards. This path flipped the status and scored never — so
+        # no row was ever inserted while the epoch was complete, and
+        # `master_strategist` / `undefeated` could not be earned by anyone who
+        # closed their epoch by hand.
+        #
+        # The cycle to score is `current_cycle`: the one players were acting in
+        # when the creator called it off. It carries no score row yet (only
+        # resolved cycles do), so the write is an INSERT and the trigger fires;
+        # an UPSERT onto an existing row would be an UPDATE and stay silent.
+        if next_status == "completed":
+            from backend.services.scoring_service import ScoringService
+
+            final_cycle = epoch.get("current_cycle", 1)
+            try:
+                await ScoringService.compute_cycle_scores(supabase, epoch_id, final_cycle)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, AttributeError):
+                logger.warning(
+                    "Final scoring failed on manual epoch completion",
+                    extra={"epoch_id": str(epoch_id), "cycle_number": final_cycle},
+                    exc_info=True,
+                )
+                sentry_sdk.capture_exception()
 
         # Log phase transition + notify participants
         await BattleLogService.log_phase_change(

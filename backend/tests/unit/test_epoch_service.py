@@ -210,7 +210,11 @@ class TestLifecycleTransitions:
         ])
         sb.table.return_value = chain
 
-        await EpochService.advance_phase(sb, EPOCH_ID, admin_supabase=admin_sb)
+        # Completing an epoch now also scores the final cycle so the achievement
+        # trigger has a row to fire on (E10) — its own unit cover lives in
+        # test_epoch_manual_completion.py.
+        with patch("backend.services.scoring_service.ScoringService.compute_cycle_scores", new_callable=AsyncMock):
+            await EpochService.advance_phase(sb, EPOCH_ID, admin_supabase=admin_sb)
 
         mock_gis.archive_instances.assert_called_once()
 
