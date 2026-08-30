@@ -6,17 +6,22 @@ import type { EventStatus, Event as SimEvent } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { cardStyles } from '../shared/card-styles.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgIconButton.js';
 
 @localized()
 @customElement('velg-event-card')
 export class VelgEventCard extends LitElement {
-  static styles = css`
+  static styles = [
+    cardStyles,
+    css`
     :host {
       display: block;
     }
 
+    /* Cursor, transition, entrance animation, :hover and :active come from
+       cardStyles. Only what this card adds on top lives here. */
     .card {
       appearance: none;
       font: inherit;
@@ -25,38 +30,9 @@ export class VelgEventCard extends LitElement {
       border: var(--border-default);
       box-shadow: var(--shadow-md);
       overflow: hidden;
-      cursor: pointer;
-      transition: transform var(--duration-normal) var(--ease-out),
-        box-shadow var(--duration-normal) var(--ease-out),
-        border-color var(--duration-normal) var(--ease-out);
       display: flex;
       flex-direction: column;
       height: 100%;
-
-      opacity: 0;
-      animation: card-enter var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) forwards;
-      animation-delay: calc(var(--i, 0) * var(--duration-stagger, 40ms));
-    }
-
-    .card:hover {
-      transform: var(--hover-transform, translate(-2px, -2px));
-      box-shadow: var(--shadow-lg);
-    }
-
-    .card:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
-    }
-
-    @keyframes card-enter {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     .card__header {
@@ -244,7 +220,8 @@ export class VelgEventCard extends LitElement {
       }
     }
 
-  `;
+    `,
+  ];
 
   @property({ type: Object }) event!: SimEvent;
 
