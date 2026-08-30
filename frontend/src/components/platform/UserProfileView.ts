@@ -1,443 +1,854 @@
+/**
+ * Personnel File — the account page, rebuilt around endpoints that exist.
+ *
+ * The page called two routes that were never written: `PUT /users/me` behind
+ * the Save button and `GET /users/me/memberships` behind the list. Every visit
+ * therefore produced an error banner where the memberships belonged, and a Save
+ * button whose only possible outcome was failure. Nothing in the interface said
+ * so, and no menu linked here at all - which is presumably why it stayed broken.
+ *
+ * What replaces them:
+ *   - Memberships come from `GET /users/me`, which has always returned them.
+ *   - The display name is Supabase Auth data (`user_metadata`) and is written
+ *     straight through the auth client, per the hybrid pattern in CLAUDE.md.
+ *   - The language of Bureau correspondence is a real, separate setting
+ *     (`notification_preferences.email_locale`) with a real endpoint, and is
+ *     stated as what it is: the language of the post, not of the interface.
+ *
+ * The page reads as a personnel file: a header stamp with the account's
+ * standing, a form on ruled lines, and the postings as register rows that
+ * cascade in. The two figures the platform actually keeps about a person -
+ * academy epochs played, and whether the induction was completed - are shown
+ * rather than hidden, because a file that omits its own record is decoration.
+ */
+
 import { localized, msg, str } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/index.js';
+import { notificationPreferencesApi } from '../../services/api/NotificationPreferencesApiService.js';
 import { captureError } from '../../services/SentryService.js';
-import type { MembershipInfo } from '../../types/index.js';
+import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import type { MembershipInfo, NotificationPreferences, UserAccount } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
+import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
+import { markerCornerStyles } from '../shared/marker-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../shared/ErrorState.js';
+import '../shared/LoadingState.js';
+import '../shared/VelgBadge.js';
+import '../shared/VelgToggle.js';
+
+const CORRESPONDENCE_LOCALES = [
+  { code: 'en', label: 'English' },
+  { code: 'de', label: 'Deutsch' },
+] as const;
 
 @localized()
 @customElement('velg-user-profile-view')
-export class VelgUserProfileView extends LitElement {
-  static styles = css`
+export class VelgUserProfileView extends SignalWatcher(LitElement) {
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
       padding: var(--content-padding, var(--space-6));
-      max-width: 720px;
+      max-width: 780px;
       margin: 0 auto;
+      --_ink: var(--color-text-primary);
+      --_rule: var(--color-border);
+      --_stamp: var(--color-primary);
+      --_stamp-wash: color-mix(in srgb, var(--color-primary) 8%, transparent);
     }
 
-    .profile__header {
+    /* ── File header ───────────────────────────────────────── */
+
+    .file-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      padding-bottom: var(--space-3);
       margin-bottom: var(--space-6);
+      border-bottom: var(--border-medium);
     }
 
-    .profile__title {
+    .file-head__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      font-size: var(--text-2xl);
+      font-size: clamp(1.5rem, 4vw, var(--text-2xl));
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
+      color: var(--_ink);
     }
 
-    .profile__section {
+    .file-head__subject {
+      display: block;
+      margin-top: var(--space-1);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-text-muted);
+      text-transform: none;
+      overflow-wrap: anywhere;
+    }
+
+    .file-head__marks {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    /* ── Sections ──────────────────────────────────────────── */
+
+    .section {
       background: var(--color-surface-raised);
-      border: var(--border-default);
+      border: 1px solid var(--_rule);
       box-shadow: var(--shadow-md);
       margin-bottom: var(--space-6);
+      opacity: 0;
+      animation: section-in var(--duration-entrance) var(--ease-dramatic) forwards;
+      animation-delay: calc(var(--i, 0) * var(--duration-cascade));
     }
 
-    .profile__section-header {
-      padding: var(--space-3) var(--space-6);
+    @keyframes section-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .section__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
       background: var(--color-surface-header);
-      border-bottom: var(--border-default);
+      border-bottom: 1px dashed var(--_rule);
     }
 
-    .profile__section-title {
+    .section__title {
       font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-base);
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
+      color: var(--_ink);
     }
 
-    .profile__section-body {
-      padding: var(--space-6);
+    .section__note {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
     }
 
-    .profile__form {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
+    .section__body {
+      padding: var(--space-5);
     }
 
-    .profile__field {
+    /* ── Form on ruled lines ───────────────────────────────── */
+
+    .field {
       display: flex;
       flex-direction: column;
       gap: var(--space-1-5);
+      padding-bottom: var(--space-4);
+      margin-bottom: var(--space-4);
+      border-bottom: 1px dashed var(--color-border-light);
     }
 
-    .profile__label {
+    .field:last-of-type {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .field__label {
       font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
+      font-size: var(--text-xs);
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      color: var(--color-text-primary);
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-secondary);
     }
 
-    .profile__input {
-      font-family: var(--font-sans);
-      font-size: var(--text-base);
-      padding: var(--space-2-5) var(--space-3);
-      border: var(--border-medium);
-      background: var(--color-surface);
-      color: var(--color-text-primary);
-      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    .field__hint {
+      font-size: var(--text-xs);
+      line-height: var(--leading-snug);
+      color: var(--color-text-muted);
+    }
+
+    .field__input,
+    .field__select {
       width: 100%;
       box-sizing: border-box;
+      padding: var(--space-2-5) var(--space-3);
+      min-height: 44px;
+      background: var(--color-surface);
+      border: 1px solid var(--_rule);
+      border-radius: var(--border-radius-none);
+      color: var(--_ink);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      transition: border-color var(--transition-fast);
     }
 
-    .profile__input:focus {
+    .field__input:focus-visible,
+    .field__select:focus-visible {
       outline: none;
       border-color: var(--color-border-focus);
       box-shadow: var(--ring-focus);
     }
 
-    .profile__input::placeholder {
+    .field__input--readonly {
       color: var(--color-text-muted);
-    }
-
-    .profile__input--readonly {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-secondary);
       cursor: not-allowed;
     }
 
-    .profile__actions {
+    .switches {
       display: flex;
-      justify-content: flex-end;
-      gap: var(--space-3);
-      margin-top: var(--space-2);
+      flex-direction: column;
+      gap: var(--space-2-5);
+      padding: var(--space-1) 0;
     }
 
-    .profile__btn {
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-5);
+    }
+
+    .save-btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: var(--space-2) var(--space-4);
+      gap: var(--space-2);
+      padding: var(--space-2-5) var(--space-5);
+      min-height: 44px;
+      background: var(--color-surface);
+      border: 2px solid var(--_stamp);
+      color: var(--_stamp);
       font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-sm);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      border: var(--border-default);
-      box-shadow: var(--shadow-md);
       cursor: pointer;
-      transition: all var(--transition-fast);
+      box-shadow: var(--shadow-xs);
+      transition:
+        background-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     }
 
-    .profile__btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg);
+    .save-btn:hover:not([disabled]) {
+      background: var(--_stamp-wash);
+      box-shadow: var(--shadow-sm);
     }
 
-    .profile__btn:active {
-      transform: translate(0);
+    .save-btn:active:not([disabled]) {
       box-shadow: var(--shadow-pressed);
     }
 
-    .profile__btn:disabled {
-      opacity: 0.5;
+    .save-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .save-btn[disabled] {
+      border-color: var(--_rule);
+      color: var(--color-text-muted);
       cursor: not-allowed;
-      pointer-events: none;
+      box-shadow: none;
     }
 
-    .profile__btn--save {
-      background: var(--color-primary);
-      color: var(--color-text-inverse);
+    .actions--inline {
+      margin-top: var(--space-2);
     }
 
-    .profile__info-text {
-      font-size: var(--text-sm);
+    .save-btn--quiet {
+      border-color: var(--_rule);
       color: var(--color-text-secondary);
-      line-height: var(--leading-relaxed);
     }
 
-    .profile__memberships-list {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
+    .save-btn--quiet:hover:not([disabled]) {
+      border-color: var(--_stamp);
+      color: var(--_stamp);
     }
 
-    .profile__membership {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-3) var(--space-4);
-      border: var(--border-medium);
-      transition: background var(--transition-fast);
-      cursor: pointer;
-    }
-
-    .profile__membership:hover {
-      background: var(--color-surface-sunken);
-    }
-
-    .profile__membership-name {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-base);
-    }
-
-    .profile__membership-meta {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-    }
-
-    .profile__membership-role {
-      display: inline-block;
-      padding: var(--space-0-5) var(--space-2);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      background: var(--color-info-bg);
-      border: var(--border-width-default) solid var(--color-info-border);
-      color: var(--color-info);
-    }
-
-    .profile__membership-date {
+    .actions__state {
+      font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--color-text-muted);
     }
 
-    .profile__api-error {
-      padding: var(--space-3);
-      background: var(--color-danger-bg);
-      border: var(--border-width-default) solid var(--color-danger);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      color: var(--color-danger);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      margin-bottom: var(--space-4);
+    /* ── Postings register ─────────────────────────────────── */
+
+    .register {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
     }
 
-    .loading-state {
+    .posting {
+      --marker-color: var(--_rule);
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: var(--space-6);
+      justify-content: space-between;
+      gap: var(--space-3);
+      width: 100%;
+      box-sizing: border-box;
+      padding: var(--space-3);
+      min-height: 44px;
+      text-align: left;
+      background: var(--color-surface);
+      border: 1px solid var(--_rule);
+      color: var(--_ink);
+      cursor: pointer;
+      opacity: 0;
+      animation: posting-in var(--duration-entrance) var(--ease-dramatic) forwards;
+      animation-delay: calc(var(--i, 0) * var(--duration-stagger));
+      transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast);
+    }
+
+    @keyframes posting-in {
+      from {
+        opacity: 0;
+        transform: translateX(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .posting:hover {
+      --marker-color: var(--_stamp);
+      border-color: var(--_stamp);
+      background: var(--_stamp-wash);
+    }
+
+    .posting:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .posting__name {
       font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
       font-size: var(--text-sm);
+      font-weight: var(--font-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+      overflow-wrap: anywhere;
+    }
+
+    .posting__meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      white-space: nowrap;
+    }
+
+    .posting__role {
+      color: var(--_stamp);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+    }
+
+    .empty {
+      font-size: var(--text-sm);
+      line-height: var(--leading-relaxed);
+      color: var(--color-text-muted);
+    }
+
+    .record {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .record__item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .record__value {
+      font-family: var(--font-mono);
+      font-size: var(--text-xl);
+      font-weight: var(--font-bold);
+      color: var(--_stamp);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .record__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
 
-    .empty-state {
-      padding: var(--space-4);
-      text-align: center;
-      font-size: var(--text-sm);
-      color: var(--color-text-secondary);
+    @media (max-width: 640px) {
+      .posting {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+      }
+      .posting__meta {
+        white-space: normal;
+      }
     }
-  `;
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  `,
+  ];
+
+  @state() private _account: UserAccount | null = null;
+  @state() private _loading = true;
+  @state() private _error: string | null = null;
 
   @state() private _displayName = '';
-  @state() private _saving = false;
-  @state() private _apiError: string | null = null;
-  @state() private _memberships: MembershipInfo[] = [];
-  @state() private _loadingMemberships = true;
-  @state() private _membershipsError: string | null = null;
+  @state() private _savedDisplayName = '';
+  @state() private _savingName = false;
+  @state() private _sendingReset = false;
 
-  async connectedCallback(): Promise<void> {
+  @state() private _prefs: NotificationPreferences | null = null;
+  @state() private _savedPrefs: NotificationPreferences | null = null;
+  @state() private _savingPrefs = false;
+
+  connectedCallback(): void {
     super.connectedCallback();
-    this._initForm();
-    await this._loadMemberships();
+    this._readDisplayNameFromSession();
+    void this._load();
   }
 
-  private _initForm(): void {
+  private _readDisplayNameFromSession(): void {
     const user = appState.user.value;
-    if (user) {
-      this._displayName = (user.user_metadata?.display_name as string) ?? user.email ?? '';
-    }
+    const name = (user?.user_metadata?.display_name as string | undefined) ?? '';
+    this._displayName = name;
+    this._savedDisplayName = name;
   }
 
-  private async _loadMemberships(): Promise<void> {
-    this._loadingMemberships = true;
-    this._membershipsError = null;
-
+  private async _load(): Promise<void> {
+    this._loading = true;
+    this._error = null;
     try {
-      const response = await usersApi.getMemberships();
-      if (response.success && response.data) {
-        this._memberships = response.data;
+      const [accountRes, prefsRes] = await Promise.all([
+        usersApi.getMe(),
+        notificationPreferencesApi.getPreferences(),
+      ]);
+
+      if (accountRes.success && accountRes.data) {
+        this._account = accountRes.data;
       } else {
-        this._membershipsError = response.error?.message ?? msg('Failed to load memberships.');
+        this._error = accountRes.error?.message ?? msg('The file could not be retrieved.');
+      }
+
+      if (prefsRes.success && prefsRes.data) {
+        const prefs = { ...prefsRes.data, email_locale: prefsRes.data.email_locale || 'en' };
+        this._prefs = prefs;
+        this._savedPrefs = { ...prefs };
       }
     } catch (err) {
-      captureError(err, { source: 'VelgUserProfileView._loadMemberships' });
-      this._membershipsError = msg('An unexpected error occurred while loading memberships.');
+      captureError(err, { source: 'VelgUserProfileView._load' });
+      this._error = msg('The file could not be retrieved.');
     } finally {
-      this._loadingMemberships = false;
+      this._loading = false;
     }
   }
 
-  private _handleDisplayNameInput(e: Event): void {
-    this._displayName = (e.target as HTMLInputElement).value;
+  // ── Actions ───────────────────────────────────────────────
+
+  private async _saveDisplayName(): Promise<void> {
+    const next = this._displayName.trim();
+    if (this._savingName || next === this._savedDisplayName) return;
+
+    this._savingName = true;
+    try {
+      const { error } = await authService.updateDisplayName(next);
+      if (error) {
+        captureError(error, { source: 'VelgUserProfileView._saveDisplayName' });
+        VelgToast.error(error.message || msg('The name could not be entered.'));
+        return;
+      }
+      this._savedDisplayName = next;
+      this._displayName = next;
+      VelgToast.success(msg('Name entered in the file.'));
+    } catch (err) {
+      captureError(err, { source: 'VelgUserProfileView._saveDisplayName' });
+      VelgToast.error(msg('The name could not be entered.'));
+    } finally {
+      this._savingName = false;
+    }
   }
 
-  private async _handleSave(): Promise<void> {
-    this._saving = true;
-    this._apiError = null;
+  private async _sendPasswordReset(): Promise<void> {
+    const email = this._account?.email ?? appState.user.value?.email ?? '';
+    if (!email || this._sendingReset) return;
 
+    this._sendingReset = true;
     try {
-      const response = await usersApi.updateMe({
-        display_name: this._displayName.trim(),
-      });
+      const { error } = await authService.resetPassword(email);
+      if (error) {
+        captureError(error, { source: 'VelgUserProfileView._sendPasswordReset' });
+        VelgToast.error(error.message || msg('The letter could not be sent.'));
+        return;
+      }
+      VelgToast.success(msg('A reset letter is on its way to your address.'));
+    } catch (err) {
+      captureError(err, { source: 'VelgUserProfileView._sendPasswordReset' });
+      VelgToast.error(msg('The letter could not be sent.'));
+    } finally {
+      this._sendingReset = false;
+    }
+  }
 
-      if (response.success) {
-        VelgToast.success(msg('Profile updated successfully.'));
+  private get _prefsDirty(): boolean {
+    const a = this._prefs;
+    const b = this._savedPrefs;
+    if (!a || !b) return false;
+    return (
+      a.email_locale !== b.email_locale ||
+      a.cycle_resolved !== b.cycle_resolved ||
+      a.phase_changed !== b.phase_changed ||
+      a.epoch_completed !== b.epoch_completed
+    );
+  }
+
+  private _setPref<K extends keyof NotificationPreferences>(
+    key: K,
+    value: NotificationPreferences[K],
+  ): void {
+    if (!this._prefs) return;
+    this._prefs = { ...this._prefs, [key]: value };
+  }
+
+  private async _savePrefs(): Promise<void> {
+    const prefs = this._prefs;
+    if (!prefs || this._savingPrefs || !this._prefsDirty) return;
+
+    this._savingPrefs = true;
+    try {
+      const res = await notificationPreferencesApi.updatePreferences(prefs);
+      if (res.success && res.data) {
+        const saved = { ...res.data, email_locale: res.data.email_locale || 'en' };
+        this._prefs = saved;
+        this._savedPrefs = { ...saved };
+        VelgToast.success(msg('Correspondence preferences saved.'));
       } else {
-        this._apiError = response.error?.message ?? msg('Failed to update profile.');
-        VelgToast.error(this._apiError);
+        VelgToast.error(res.error?.message ?? msg('The preference could not be saved.'));
       }
     } catch (err) {
-      captureError(err, { source: 'VelgUserProfileView._handleSave' });
-      this._apiError = msg('An unexpected error occurred.');
-      VelgToast.error(this._apiError);
+      captureError(err, { source: 'VelgUserProfileView._savePrefs' });
+      VelgToast.error(msg('The preference could not be saved.'));
     } finally {
-      this._saving = false;
+      this._savingPrefs = false;
     }
   }
 
-  private _handleMembershipClick(membership: MembershipInfo): void {
-    navigate(`/simulations/${membership.simulation_slug || membership.simulation_id}/agents`);
+  private _openPosting(m: MembershipInfo): void {
+    navigate(`/simulations/${m.simulation_slug || m.simulation_id}/agents`);
   }
 
-  private _renderProfileForm() {
-    const user = appState.user.value;
-    const email = user?.email ?? '';
+  // ── Render ────────────────────────────────────────────────
+
+  protected render() {
+    if (this._loading) {
+      return html`<velg-loading-state message=${msg('Retrieving the file')}></velg-loading-state>`;
+    }
+    if (this._error) {
+      return html`
+        <velg-error-state
+          message=${this._error}
+          show-retry
+          @retry=${() => void this._load()}
+        ></velg-error-state>
+      `;
+    }
 
     return html`
-      <div class="profile__section">
-        <div class="profile__section-header">
-          <h2 class="profile__section-title">${msg('Profile Information')}</h2>
-        </div>
-        <div class="profile__section-body">
+      ${this._renderHead()}
+      ${this._renderIdentity()}
+      ${this._renderCorrespondence()}
+      ${this._renderPostings()}
+      ${this._renderRecord()}
+    `;
+  }
+
+  private _renderHead() {
+    const email = this._account?.email ?? appState.user.value?.email ?? '';
+    return html`
+      <header class="file-head">
+        <h1 class="file-head__title">
+          ${msg('Personnel File')}
+          <span class="file-head__subject">${email}</span>
+        </h1>
+        <div class="file-head__marks">
           ${
-            this._apiError ? html`<div class="profile__api-error">${this._apiError}</div>` : nothing
+            this._account?.is_platform_admin
+              ? html`<velg-badge variant="warning">${msg('Platform admin')}</velg-badge>`
+              : nothing
           }
+          ${
+            appState.isArchitect.value
+              ? html`<velg-badge variant="primary">${msg('Architect')}</velg-badge>`
+              : nothing
+          }
+          <velg-badge variant="default">
+            ${msg(str`${this._account?.memberships.length ?? 0} postings`)}
+          </velg-badge>
+        </div>
+      </header>
+    `;
+  }
 
-          <div class="profile__form">
-            <div class="profile__field">
-              <label class="profile__label" for="profile-email">${msg('Email')}</label>
-              <input
-                class="profile__input profile__input--readonly"
-                id="profile-email"
-                type="email"
-                .value=${email}
-                readonly
-              />
-            </div>
+  private _renderIdentity() {
+    const dirty = this._displayName.trim() !== this._savedDisplayName;
+    return html`
+      <section class="section" style="--i: 0">
+        <div class="section__head">
+          <h2 class="section__title">${msg('Identity')}</h2>
+        </div>
+        <div class="section__body">
+          <div class="field">
+            <label class="field__label" for="profile-email">${msg('Registered address')}</label>
+            <input
+              class="field__input field__input--readonly"
+              id="profile-email"
+              type="email"
+              .value=${this._account?.email ?? ''}
+              readonly
+            />
+            <span class="field__hint">
+              ${msg('The address the Bureau writes to. It cannot be changed here.')}
+            </span>
+          </div>
 
-            <div class="profile__field">
-              <label class="profile__label" for="profile-display-name">
-                ${msg('Display Name')}
-              </label>
-              <input
-                class="profile__input"
-                id="profile-display-name"
-                type="text"
-                placeholder=${msg('Your display name...')}
-                .value=${this._displayName}
-                @input=${this._handleDisplayNameInput}
-              />
-            </div>
+          <div class="field">
+            <label class="field__label" for="profile-display-name">${msg('Display name')}</label>
+            <input
+              class="field__input"
+              id="profile-display-name"
+              type="text"
+              maxlength="64"
+              placeholder=${msg('How others see you')}
+              .value=${this._displayName}
+              @input=${(e: Event) => {
+                this._displayName = (e.target as HTMLInputElement).value;
+              }}
+            />
+            <span class="field__hint">
+              ${msg('Shown beside your entries. Leave it empty to appear under your address.')}
+            </span>
+          </div>
 
-            <div class="profile__actions">
+          <div class="field">
+            <span class="field__label">${msg('Passphrase')}</span>
+            <span class="field__hint">
+              ${msg('The Bureau does not hold your passphrase and cannot show it. It can send a letter that lets you set a new one.')}
+            </span>
+            <div class="actions actions--inline">
               <button
-                class="profile__btn profile__btn--save"
-                @click=${this._handleSave}
-                ?disabled=${this._saving}
+                class="save-btn save-btn--quiet"
+                ?disabled=${this._sendingReset}
+                @click=${this._sendPasswordReset}
               >
-                ${this._saving ? msg('Saving...') : msg('Save Changes')}
+                ${icons.key(16)}
+                ${this._sendingReset ? msg('Sending...') : msg('Send reset letter')}
               </button>
             </div>
           </div>
+
+          <div class="actions">
+            <button
+              class="save-btn"
+              ?disabled=${!dirty || this._savingName}
+              @click=${this._saveDisplayName}
+            >
+              ${icons.stampClassified(16)}
+              ${this._savingName ? msg('Entering...') : msg('Enter name')}
+            </button>
+            ${dirty ? html`<span class="actions__state">${msg('Unsaved change')}</span>` : nothing}
+          </div>
         </div>
-      </div>
+      </section>
     `;
   }
 
-  private _renderPasswordSection() {
+  private _renderCorrespondence() {
+    const prefs = this._prefs;
+    const dirty = this._prefsDirty;
+
     return html`
-      <div class="profile__section">
-        <div class="profile__section-header">
-          <h2 class="profile__section-title">${msg('Password')}</h2>
+      <section class="section" style="--i: 1">
+        <div class="section__head">
+          <h2 class="section__title">${msg('Correspondence')}</h2>
+          <span class="section__note">${msg('the post, not the interface')}</span>
         </div>
-        <div class="profile__section-body">
-          <p class="profile__info-text">
-            ${msg('Use the reset password flow to change your password. A password reset email will be sent to your registered email address.')}
-          </p>
+        <div class="section__body">
+          <div class="field">
+            <label class="field__label" for="profile-locale">${msg('Language of the post')}</label>
+            <select
+              class="field__select"
+              id="profile-locale"
+              ?disabled=${!prefs}
+              @change=${(e: Event) => {
+                this._setPref('email_locale', (e.target as HTMLSelectElement).value);
+              }}
+            >
+              ${CORRESPONDENCE_LOCALES.map(
+                (l) => html`
+                  <option value=${l.code} ?selected=${l.code === (prefs?.email_locale ?? 'en')}>
+                    ${l.label}
+                  </option>
+                `,
+              )}
+            </select>
+            <span class="field__hint">
+              ${msg('Cycle briefings, invitations and epoch reports arrive in this language. The language of this interface follows the switch in the header.')}
+            </span>
+          </div>
+
+          <div class="field">
+            <span class="field__label">${msg('Which letters reach you')}</span>
+            <div class="switches">
+              <velg-toggle
+                size="sm"
+                label=${msg('A cycle has been resolved')}
+                .checked=${prefs?.cycle_resolved ?? true}
+                ?disabled=${!prefs}
+                @toggle-change=${(e: CustomEvent<{ checked: boolean }>) =>
+                  this._setPref('cycle_resolved', e.detail.checked)}
+              ></velg-toggle>
+              <velg-toggle
+                size="sm"
+                label=${msg('An epoch has entered a new phase')}
+                .checked=${prefs?.phase_changed ?? true}
+                ?disabled=${!prefs}
+                @toggle-change=${(e: CustomEvent<{ checked: boolean }>) =>
+                  this._setPref('phase_changed', e.detail.checked)}
+              ></velg-toggle>
+              <velg-toggle
+                size="sm"
+                label=${msg('An epoch has closed')}
+                .checked=${prefs?.epoch_completed ?? true}
+                ?disabled=${!prefs}
+                @toggle-change=${(e: CustomEvent<{ checked: boolean }>) =>
+                  this._setPref('epoch_completed', e.detail.checked)}
+              ></velg-toggle>
+            </div>
+            <span class="field__hint">
+              ${msg('These hold for every world at once – the Bureau keeps one register per person, not one per posting.')}
+            </span>
+          </div>
+
+          <div class="actions">
+            <button
+              class="save-btn"
+              ?disabled=${!dirty || this._savingPrefs}
+              @click=${this._savePrefs}
+            >
+              ${icons.stampClassified(16)}
+              ${this._savingPrefs ? msg('Saving...') : msg('Save preferences')}
+            </button>
+            ${dirty ? html`<span class="actions__state">${msg('Unsaved change')}</span>` : nothing}
+          </div>
         </div>
-      </div>
+      </section>
     `;
   }
 
-  private _renderMemberships() {
+  private _renderPostings() {
+    const postings = this._account?.memberships ?? [];
     return html`
-      <div class="profile__section">
-        <div class="profile__section-header">
-          <h2 class="profile__section-title">${msg('Simulation Memberships')}</h2>
+      <section class="section" style="--i: 2">
+        <div class="section__head">
+          <h2 class="section__title">${msg('Postings')}</h2>
+          <span class="section__note">${msg(str`${postings.length} on file`)}</span>
         </div>
-        <div class="profile__section-body">
+        <div class="section__body">
           ${
-            this._loadingMemberships
-              ? html`<div class="loading-state">${msg('Loading memberships...')}</div>`
-              : this._membershipsError
-                ? html`<div class="profile__api-error">${this._membershipsError}</div>`
-                : this._memberships.length === 0
-                  ? html`<div class="empty-state">
-                    ${msg('You are not a member of any simulations yet.')}
-                  </div>`
-                  : html`
-                  <div class="profile__memberships-list">
-                    ${this._memberships.map(
-                      (m) => html`
-                        <div
-                          class="profile__membership"
-                          @click=${() => this._handleMembershipClick(m)}
-                        >
-                          <span class="profile__membership-name">
-                            ${m.simulation_name}
-                          </span>
-                          <div class="profile__membership-meta">
-                            <span class="profile__membership-role">
-                              ${m.member_role}
-                            </span>
-                            <span class="profile__membership-date">
-                              ${msg(str`Joined ${formatDate(m.joined_at)}`)}
-                            </span>
-                          </div>
-                        </div>
-                      `,
-                    )}
-                  </div>
-                `
+            postings.length === 0
+              ? html`<p class="empty">
+                ${msg('No postings on file. Join a world, or found one, and it is entered here.')}
+              </p>`
+              : html`
+                <div class="register">
+                  ${postings.map(
+                    (m, i) => html`
+                      <button
+                        class="posting marker-corners"
+                        style="--i: ${i}"
+                        @click=${() => this._openPosting(m)}
+                      >
+                        <span class="posting__name">${m.simulation_name}</span>
+                        <span class="posting__meta">
+                          <span class="posting__role">${m.member_role}</span>
+                          ${
+                            m.joined_at
+                              ? html`<span>${msg(str`since ${formatDate(m.joined_at)}`)}</span>`
+                              : nothing
+                          }
+                        </span>
+                      </button>
+                    `,
+                  )}
+                </div>
+              `
           }
         </div>
-      </div>
+      </section>
     `;
   }
 
-  protected render() {
+  private _renderRecord() {
+    const account = this._account;
+    if (!account) return nothing;
     return html`
-      <div class="profile__header">
-        <h1 class="profile__title">${msg('Profile')}</h1>
-      </div>
-
-      ${this._renderProfileForm()}
-      ${this._renderPasswordSection()}
-      ${this._renderMemberships()}
+      <section class="section" style="--i: 3">
+        <div class="section__head">
+          <h2 class="section__title">${msg('Record')}</h2>
+        </div>
+        <div class="section__body">
+          <div class="record">
+            <div class="record__item">
+              <span class="record__value">${account.academy_epochs_played}</span>
+              <span class="record__label">${msg('Academy epochs played')}</span>
+            </div>
+            <div class="record__item">
+              <span class="record__value">
+                ${account.onboarding_completed ? msg('Yes') : msg('No')}
+              </span>
+              <span class="record__label">${msg('Induction completed')}</span>
+            </div>
+          </div>
+        </div>
+      </section>
     `;
   }
 }

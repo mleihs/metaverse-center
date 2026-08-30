@@ -317,6 +317,27 @@ export class SupabaseAuthService {
     return { error };
   }
 
+  /**
+   * Write the display name into Supabase Auth's `user_metadata`.
+   *
+   * Directly, not through FastAPI: the display name is auth data, and the
+   * hybrid pattern in CLAUDE.md routes auth straight to Supabase. The profile
+   * page used to PUT it at `/users/me`, a route that does not exist - so the
+   * Save button had never once saved anything.
+   *
+   * `appState.setUser` is refreshed from the response so the header, the menu
+   * and anything else reading the signal follow immediately.
+   */
+  async updateDisplayName(displayName: string): Promise<{ error: AuthError | null }> {
+    const { data, error } = await supabase.auth.updateUser({
+      data: { display_name: displayName },
+    });
+    if (!error && data.user) {
+      appState.setUser(data.user);
+    }
+    return { error };
+  }
+
   async getSession(): Promise<{ session: Session | null; error: AuthError | null }> {
     const { data, error } = await supabase.auth.getSession();
     return { session: data.session, error };

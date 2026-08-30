@@ -35,11 +35,18 @@ class MemberService:
         supabase: Client,
         user_id: UUID,
     ) -> list[dict]:
-        """Get all simulation memberships for a user, including simulation names."""
+        """Get all simulation memberships for a user, including simulation names.
+
+        ``joined_at`` is selected because the profile page prints it. It was in
+        the table and in the frontend's ``MembershipInfo`` all along, and missing
+        only from the query and the Pydantic model in between - which is why the
+        profile page called a second endpoint that never existed.
+        """
         response = await (
             supabase.table(cls.table_name)
-            .select("simulation_id, member_role, simulations(name, slug)")
+            .select("simulation_id, member_role, joined_at, simulations(name, slug)")
             .eq("user_id", str(user_id))
+            .order("joined_at", desc=True)
             .execute()
         )
         return extract_list(response)

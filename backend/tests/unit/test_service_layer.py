@@ -106,11 +106,13 @@ class TestGetUserMemberships:
             {
                 "simulation_id": str(uuid4()),
                 "member_role": "owner",
+                "joined_at": "2026-03-08T10:00:00+00:00",
                 "simulations": {"name": "Shard Alpha", "slug": "shard-alpha"},
             },
             {
                 "simulation_id": str(uuid4()),
                 "member_role": "editor",
+                "joined_at": "2026-04-01T10:00:00+00:00",
                 "simulations": {"name": "Shard Beta", "slug": "shard-beta"},
             },
         ]
@@ -119,6 +121,7 @@ class TestGetUserMemberships:
             mock_sb.table.return_value
             .select.return_value
             .eq.return_value
+            .order.return_value
         )
         chain.execute = AsyncMock(return_value=MagicMock(data=rows))
 
@@ -130,7 +133,7 @@ class TestGetUserMemberships:
         # Verify correct table and select
         mock_sb.table.assert_called_once_with("simulation_members")
         mock_sb.table.return_value.select.assert_called_once_with(
-            "simulation_id, member_role, simulations(name, slug)",
+            "simulation_id, member_role, joined_at, simulations(name, slug)",
         )
 
     async def test_returns_empty_list_when_no_memberships(self):
@@ -141,6 +144,7 @@ class TestGetUserMemberships:
             mock_sb.table.return_value
             .select.return_value
             .eq.return_value
+            .order.return_value
         )
         chain.execute = AsyncMock(return_value=MagicMock(data=None))
 
@@ -156,6 +160,7 @@ class TestGetUserMemberships:
             mock_sb.table.return_value
             .select.return_value
             .eq.return_value
+            .order.return_value
         )
         chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 

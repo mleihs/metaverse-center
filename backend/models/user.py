@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -17,6 +18,7 @@ class MembershipInfo(BaseModel):
     simulation_name: str
     simulation_slug: str = ""
     member_role: str
+    joined_at: datetime | None = None
 
 
 class UserWithMemberships(BaseModel):
