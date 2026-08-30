@@ -44,6 +44,7 @@ from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_image_service import ForgeImageService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_map_service import ForgeMapService
+from backend.services.forge_taxonomies import derive_taxonomies, normalize_entity_terms
 from backend.services.forge_theme_service import ForgeThemeService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
@@ -526,7 +527,7 @@ class ForgeOrchestratorService:
         prompt = _build_chunk_prompt(chunk_type, anchor, seed, gen_config, geography)
 
         logger.debug("Instantiating dynamic Pydantic AI agent for chunk generation")
-        dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
+        dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key, purpose="chunk")
 
         # Bureau Ops Deferral A.2 — user_id is in scope (draft-owned); no
         # `simulation_id` yet because the sim isn't materialized. Enforce
@@ -671,7 +672,7 @@ class ForgeOrchestratorService:
                 existing_entities,
                 geography,
             )
-            dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key)
+            dynamic_agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=or_key, purpose="entity")
 
             # Bureau Ops Deferral A.2 — user_id in scope; pre-materialization
             # so no simulation_id. Enforce global + purpose + user budgets.
@@ -756,6 +757,43 @@ class ForgeOrchestratorService:
         Calls Postgres ``fn_materialize_shard`` RPC (migration 056, updated 058).
         """
         logger.info("Materializing shard", extra={"user_id": str(user_id), "draft_id": str(draft_id)})
+
+        # ── The world's own vocabularies, derived from what it generated ──
+        #
+        # `fn_materialize_shard` step 8 has always inserted one `simulation_taxonomies`
+        # row per value in `forge_drafts.taxonomies`. Nothing ever wrote that column:
+        # measured on production 2026-08-30, all 26 drafts carry `{}`, so the RPC
+        # looped zero times and every Forge world was created with no vocabulary at
+        # all — which is why 115 of 314 buildings hold a condition their own
+        # simulation does not define, and why `fair` came back in nine different
+        # German words. Deriving here rather than at chunk time is deliberate: a
+        # roster can still be edited, topped up or regenerated in the Table, and this
+        # is the last moment at which the draft is final. See finding 30.
+        draft = await ForgeDraftService.get_draft(supabase, user_id, draft_id)
+        taxonomies = derive_taxonomies(draft)
+        if taxonomies:
+            normalized = normalize_entity_terms(draft, taxonomies)
+            geography = dict(draft.get("geography") or {})
+            if "zones" in normalized:
+                geography["zones"] = normalized["zones"]
+            await ForgeDraftService.update_draft(
+                supabase,
+                user_id,
+                draft_id,
+                ForgeDraftUpdate(
+                    taxonomies=taxonomies,
+                    agents=normalized.get("agents"),
+                    buildings=normalized.get("buildings"),
+                    geography=geography if "zones" in normalized else None,
+                ),
+            )
+            logger.info(
+                "Derived world vocabularies from draft entities",
+                extra={
+                    "draft_id": str(draft_id),
+                    "taxonomies": {key: len(values) for key, values in taxonomies.items()},
+                },
+            )
 
         # Mark draft as processing
         await ForgeDraftService.update_draft(
@@ -1936,7 +1974,7 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
                     )
                 ]
             else:
-                agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=openrouter_key)
+                agent = create_forge_agent(WORLD_ARCHITECT_PROMPT, api_key=openrouter_key, purpose="chunk")
                 # Bureau Ops Deferral A.2 — full 4-axis enforcement.
                 # admin_supabase, simulation_id, and user_id are all on this
                 # method's signature (background task from a feature purchase).
