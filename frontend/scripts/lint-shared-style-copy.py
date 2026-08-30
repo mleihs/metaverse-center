@@ -32,8 +32,10 @@ WHY THOSE THREE CONDITIONS, MEASURED
         window 20, selector required     ->   3 pairs
 
     So the selector requirement is what separates "two files happen to set the
-    same four properties" from "someone re-typed a rule". The four real ones
-    were fixed; the gate now holds the line at one documented exception.
+    same four properties" from "someone re-typed a rule". All four were fixed —
+    the last of them, DraftRosterPanel against deploy-operative-styles, only
+    after two measured attempts at sharing whole rule groups were thrown away for
+    leaking properties into the panel. The gate stands at zero exceptions.
 
 WHAT IS NOT CHECKED HERE, AND WHY
     A shared export with ZERO importers is a related defect (six exist today:
@@ -63,18 +65,10 @@ WINDOW = 12
 # turns a run of declarations into a copied RULE.
 SELECTOR = re.compile(r"^\.[a-zA-Z][\w-]*[^{}]*\{$")
 
-# Debt, not exemption. Each entry names what is still duplicated, how much, and
-# what it would take to clear it. Do not add one to make a red build green.
-ALLOWLIST: dict[tuple[str, str], str] = {
-    ("components/epoch/DraftRosterPanel.ts", "deploy-operative-styles.ts"): (
-        "41 windows. The panel is a fork of DeployOperativeModal: same :host token "
-        "block, .overlay, .header, .hand, .hand__cards, .footer__btn. The shared module "
-        "is ONE 1668-line export, so the fix is not an import but a split into named "
-        "parts (host tokens / overlay chrome / hand / footer) that both components "
-        "compose. That needs the epoch modal on screen to verify, which is why it is "
-        "recorded here rather than done blind."
-    ),
-}
+# Empty, and meant to stay that way. An entry would be a record of known debt
+# with a plan attached — never a way to make a red build green. The last
+# occupant (DraftRosterPanel) was cleared rather than kept.
+ALLOWLIST: dict[tuple[str, str], str] = {}
 
 
 def normalise(text: str) -> tuple[list[str], list[int]]:
