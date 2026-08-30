@@ -14,8 +14,13 @@ import httpx
 import sentry_sdk
 
 from backend.dependencies import get_admin_supabase
-from backend.models.forge import PhilosophicalAnchor
-from backend.services.ai_utils import create_forge_agent, run_ai, validate_bilingual_output
+from backend.models.forge import PhilosophicalAnchor, counted_list
+from backend.services.ai_utils import (
+    create_forge_agent,
+    report_delivery_count,
+    run_ai,
+    validate_bilingual_output,
+)
 from backend.services.external.tavily_search import (
     TavilySearchRequest,
     TavilySearchService,
@@ -23,6 +28,14 @@ from backend.services.external.tavily_search import (
 from backend.services.platform_research_domains import get_research_domains
 
 logger = logging.getLogger(__name__)
+
+# How many anchors a scan offers, and the point below which a scan is not a
+# choice any more. Both live here rather than in the prompt text: the count is
+# now interpolated into the two prompts AND handed to the output type, so the
+# number cannot drift between what is asked for and what is validated.
+# See finding 10.
+_ANCHOR_COUNT = 3
+_ANCHOR_MINIMUM = 2
 
 # ── Local Tavily Emulator ───────────────────────────────────────────
 # Deterministically generates rich, seed-aware research context so the
@@ -399,12 +412,13 @@ class ResearchService:
     async def generate_anchors(
         cls, seed: str, context: str, openrouter_key: str | None = None
     ) -> list[PhilosophicalAnchor]:
-        """Generate 3 distinct philosophical angles using Pydantic AI."""
+        """Generate ``_ANCHOR_COUNT`` distinct philosophical angles using Pydantic AI."""
 
         agent = create_forge_agent(
             system_prompt=(
                 "You are a Bureau Scholar from the Bureau of Impossible Geography. "
-                "Your task is to analyze research data and propose 3 distinct 'Philosophical Anchors' "
+                f"Your task is to analyze research data and propose {_ANCHOR_COUNT} distinct "
+                "'Philosophical Anchors' "
                 "for a new simulation shard. Each anchor must ground the shard in real-world "
                 "literary, philosophical, or cultural theory. "
                 "Avoid generic tropes; aim for intellectual rigor and surrealist depth."
@@ -415,7 +429,7 @@ class ResearchService:
         prompt = (
             f"Original Seed: {seed}\n\n"
             f"Research Context: {context}\n\n"
-            "Propose 3 distinct philosophical anchors that could define this world.\n\n"
+            f"Propose {_ANCHOR_COUNT} distinct philosophical anchors that could define this world.\n\n"
             "BILINGUAL OUTPUT: For every text field, also produce a German equivalent "
             "in the corresponding _de field (title_de, literary_influence_de, "
             "core_question_de, description_de). The German text should read as if "
@@ -429,12 +443,15 @@ class ResearchService:
             agent,
             prompt,
             "anchors",
-            output_type=list[PhilosophicalAnchor],
+            # Two anchors are a choice the user can still make; one is not. The
+            # ceiling stops a fourth from costing a scan's tokens. See finding 10.
+            output_type=counted_list(PhilosophicalAnchor, _ANCHOR_COUNT, minimum=_ANCHOR_MINIMUM),
             admin_supabase=admin_supabase,
         )
         # Patch empty _de fields with EN fallback so downstream never sees blanks
         anchor_de_fields = ["title_de", "literary_influence_de", "core_question_de", "description_de"]
         incomplete = validate_bilingual_output(result.output, anchor_de_fields, "anchor")
+        report_delivery_count("anchor", _ANCHOR_COUNT, len(result.output))
         logger.info(
             "Anchors generated",
             extra={"count": len(result.output), "bilingual_complete": incomplete == 0},

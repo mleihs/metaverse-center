@@ -38,12 +38,12 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 4 | Admin `DEFAULTS` still wrote the dead `claude-sonnet-4-6` id into production | High | **Fixed** (same commit) |
 | 5 | Generated prompt templates invent variables no code supplies (8 across 4 templates) | **Critical** | **Fixed** (`36fe1b8b`, W1) |
 | 6 | Generated prompt templates drop the platform template's compositional guardrails | **Critical** | **Fixed** (`36fe1b8b`, W1) |
-| 7 | No floor under content quality — a `"..."`-filled entity validates clean | **Critical** | Open |
+| 7 | No floor under content quality — a `"..."`-filled entity validates clean | **Critical** | **Fixed** (W2) |
 | 8 | No retry on image failure; one empty completion = permanently image-less building | High | Open |
 | 9 | Partial success reported as success (departments, materialization) | High | Open |
-| 10 | List length is never enforced — the model may short-deliver silently | High | Open |
+| 10 | List length is never enforced — the model may short-deliver silently | High | **Fixed** (W2) |
 | 11 | `purpose=` set at zero call sites — `model_research` is dead configuration | High | Open |
-| 12 | English fields never declare that they are English | High | Open |
+| 12 | English fields never declare that they are English | High | **Fixed** (W2) |
 | 13 | Two purposes have no token budget and no timeout at all | Medium | Open |
 | 14 | Image-quality fallback on the main path is Stable Diffusion, not flux | Medium | Open |
 | 15 | Only model ids are admin-configurable; budgets, timeouts, effort are not | Medium | Open |
@@ -61,6 +61,7 @@ tags: [forge, ai, openrouter, prompt-templates, production-run, findings]
 | 27 | The image style prompt was a picture, not a style — the true root of finding 6 | **Critical** | **Fixed** (`73ce73be`) |
 | 28 | 29 of 123 style prompts across 18 of 41 worlds describe a picture rather than a style | High | Open |
 | 29 | Stored `agents.portrait_description` rows still carry the defective template's output | High | Open |
+| 30 | `building_condition` is generated from a hardcoded five-word list while every world already has its own condition taxonomy | High | Open |
 
 Non-findings (checked, sound): the ETA tilde, the honest `REKALIBRIERUNG…` overrun label,
 the department mutual-exclusion locks, the destructive-action guards, the SPA catch-all
@@ -497,8 +498,37 @@ Measured: `deepseek-v4-flash-0731` returned an object whose **every field was li
 Equally, had the *English* `character` been empty instead of the German one, the hollow object
 would have passed too.
 
-**Fix.** Real minimums on the long-form fields on both sides, derived from the word counts the
-field descriptions already state.
+**Fixed in W2, and the threshold was measured before it was set.** The floors are not a quality
+bar; they reject a field that is not an answer at all. Each sits at roughly HALF the shortest value
+the Forge has ever written on production, read on 2026-08-30 out of the raw `forge_drafts` rows —
+115 agent drafts, 117 building drafts, 88 zones, 62 anchors — with the corpus minimum recorded
+beside each constant in `backend/models/forge.py`:
+
+| floor | applies to | prod minimum (n) |
+|:--|:--|--:|
+| 250 | agent `character`/`background`, building `description`, all `_de` twins | 515 · 452 (115), 464 · 470 (117) |
+| 60 | anchor `description` | 134 · 155 (62) |
+| 40 | zone `description` | 81 · 94 (88) |
+| 20 | anchor `core_question`, `bleed_signature_suggestion` | 42 · 46 (62) |
+| 10 | anchor `literary_influence` | 21 (62) |
+| 8 | anchor `title` | 17 (62) |
+
+**A floor that was written, measured, and withdrawn.** A minimum of 4 on the short identifier
+fields was written first. Measured against the corpus it refuses the German enum word `gut` and the
+building type `inn` — both three characters, exactly the length of the `"..."` it was meant to
+catch. On a short field, length does not separate a placeholder from an answer. There is no floor
+there, and `test_three_letter_values_still_pass` says so out loud. The hollow object that prompted
+this finding carried `"..."` in *every* field, so the long-form floors refuse it whole.
+
+**The mock had to follow, and that turned out to be the second half of the finding.**
+`forge_mock_service.py` validates every fixture through its model on the way out — its docstring
+promises that mock data "cannot drift out of sync with model constraints" — so the floors broke it
+immediately. They were right to. The fixtures ran 78-211 characters where production writes
+452-1981, which means `FORGE_MOCK_MODE` has always laid out the Table, the roster cards and the
+review step against text a quarter of real length: any layout fault that only appears at 900
+characters was invisible there. Fifty prose blocks were extended in the same voice (8 agents x 4
+fields, 9 buildings x 2), and the change is provably additive — every non-prose field byte-identical,
+every old prose string still a prefix of its new one. Mock lengths now run 251-380.
 
 ### 10. List length is never enforced — High
 
@@ -519,9 +549,38 @@ Repo-wide there are four `output_type=list[...]` sites:
 | `forge_orchestrator_service.py:541` | same |
 | `forge_orchestrator_service.py:1729` | **none**, and the prompt says *"Generate exactly 3 new agents"* |
 
-**Fix.** The count belongs in the type (`Annotated[list[X], Len(3, 3)]`), which is both what
-becomes the schema and what the retry validates. After an exhausted retry, do **not** 500 — two
-good anchors beat an error — but log at warning and drop the "three" claim from the strings.
+**Fixed in W2 — and the obvious fix was measured and rejected.** The count does belong in the type:
+`conlist` becomes `minItems`/`maxItems` in the JSON schema pydantic-ai hands the model, and it is
+what the validation retry fires on. But `Len(3, 3)` — the exact demand — was measured against the
+real anchor path before being trusted (deepseek-v4-pro, the production `model_forge`, six runs per
+variant, `retries=1` as `create_forge_agent` sets it):
+
+| variant | three anchors | failures | median |
+|:--|--:|--:|--:|
+| no length constraint (today) | **6 / 6** | 0 | 51 s |
+| exactly three | 5 / 6 | **1 total loss after 90.4 s, billed twice** | 45 s |
+| at least two, at most three | **6 / 6** | 0 | 57 s |
+
+Demanding the exact count did not raise the delivery rate — it was already 6 of 6 without any
+constraint — it only added a way to lose the whole answer. The stored corpus agrees: across 92 list
+deliveries in `forge_drafts`, **87 were exact, 4 short, 1 long**. So the ceiling is what earns its
+place, and the floor sits where a delivery stops being worth keeping, never at the number ordered.
+
+`counted_list(item, requested, *, minimum)` in `backend/models/forge.py` carries both numbers and
+the measurement that chose them. Applied at all four sites: anchors `(3, minimum=2)` — two anchors
+are still a choice, one is not; the agent and building chunks `(gen_config.count, minimum=1)`, whose
+hand-rolled `if not agents_list: raise` moved into the type where it belongs; recruitment
+`(3, minimum=1)`. The gap between ordered and delivered is reported by `report_delivery_count` in
+`ai_utils.py` — a warning log plus a Sentry breadcrumb, next to `validate_bilingual_output`, which
+is the same shape of check. Geography is reported too, though its counts sit inside
+`ForgeGeographyDraft` and cannot ride on a per-call output type.
+
+The count also stopped being written twice. `_ANCHOR_COUNT` and `_RECRUIT_COUNT` are now
+interpolated into the prompts *and* handed to the output type, so what is asked for cannot drift
+from what is validated. The UI claims were corrected: three strings in
+`htp-content-features.ts` said "three anchors" / "3 anchor cards" and now say "up to three"
+(two of them had never had a German target at all — supplied). One string in `VelgForgeAstrolabe.ts`
+remains, handed to the session that owns that path.
 
 ### 12. English fields never declare that they are English — High
 
@@ -540,8 +599,62 @@ This retroactively explains two earlier measurements: `primary_profession` came 
 "Tintenbad-Aufseher Erster Klasse", and gpt-4.1-mini wrote "Schriftregulation" into the English
 field. Same root, not model weakness.
 
-**Fix.** Name the language on every base field. Like the count in finding 10, the language
-belongs in the type.
+**Fixed in W2.** Two statements cover every field of every Forge output type, defined once in
+`backend/models/forge.py`: `_IN_ENGLISH` for fields that pair with a `_de` twin, and `_WORLD_TONGUE`
+for the proper names that are the same string in every locale and must not be rendered into English
+at all — an agent's name, a faction, a city, a district, a street. That distinction is the part the
+finding did not name: not every unnamed field is English, and telling the model that a name is
+English would be a different bug. `test_every_field_names_its_language` walks
+`ForgeAgentDraft.model_fields` and fails on any field whose description names no language, so a
+field added later cannot slip back into silence.
+
+Two related observations recorded rather than fixed: `ForgeZoneDraft.characteristics` has no `_de`
+twin, so the German UI shows English tags verbatim (surface, W5); and `ForgeStreetDraft.description`
+keeps no floor because it is genuinely optional — a floor there would turn an omission into a hard
+failure.
+
+### 30. The building condition is hardcoded while every world already has its own — High
+
+**Found while doing W2, by nearly getting it wrong.** `ForgeBuildingDraft.building_condition` was
+about to become a `Literal` of the five words its own description lists — the textbook "put the
+contract in the type" move. The corpus said not to.
+
+Every simulation carries its own `building_condition` taxonomy in `simulation_taxonomies`, with a
+bilingual `label` jsonb, and Forge worlds get thematic ones: `sealed`, `anomalous`, `thriving`,
+`preserved`, `compromised`, `illuminated`. The building generator ignores all of it and writes the
+platform's five words instead. Measured on production:
+
+| condition written | buildings | of those, absent from their own world's taxonomy |
+|:--|--:|--:|
+| `fair` | 78 | **68** |
+| `good` | 189 | 20 |
+| `poor` | 20 | **15** |
+| `pristine` | 6 | **6** |
+| `ruined` | 4 | **4** |
+| `excellent` | 10 | 2 |
+| the eleven thematic values | 15 | **0** |
+
+**115 of 314 buildings hold a condition value their own simulation does not define.** Every value
+that came from a world's own taxonomy is defined; every gap comes from the hardcoded list. Freezing
+those five words into the type would have cemented exactly the wrong vocabulary, against the project
+rule *"never hardcode mappings that should be configurable"*. So the field stays `str`, with a
+comment carrying this measurement.
+
+A smaller, plainer bug sits inside it: the platform prompt template has said `excellent` since
+migration 027 while `ForgeBuildingDraft` said `pristine`. The two disagreeing is why six buildings
+in five worlds carry a value no taxonomy anywhere defines. The model description now says
+`excellent`.
+
+And the German side is worse than the English one. The frontend prints `t(b, 'building_condition')`,
+which reads `building_condition_de` off the row, while `_getConditionVariant` branches on the
+English value — so the badge shows whatever German the model invented. It invented **thirteen**
+strings for five values; `fair` alone came back as *mittelmässig, mässig, befriedigend, akzeptabel,
+mittel, ordentlich, in Ordnung, brauchbar* and *angemessen*, and 22 rows have no German at all.
+
+**Fix (W4).** Feed each simulation's own `building_condition` values into the building prompt and
+validate the answer against them — the same shape as the list count in finding 10, dynamic per
+world rather than frozen in the type. The German label then comes from the taxonomy's `label->>'de'`
+and `building_condition_de` stops being model output, which is the surface half and belongs with W5.
 
 ---
 
@@ -780,6 +893,18 @@ Two lessons from this run that belong in the same list, because they cost real t
 - **Position beats wording in a prompt.** Measured over 6 generations: the same floor placed in the
   system prompt left 0 of 6 closing sentences clean; placed at the end of the user prompt, 4-5 of 6.
   Whatever comes last wins — which is also why finding 27 outranked everything W1 had fixed.
+- **Extracting is mechanical; MERGING is editorial.** Both sessions stopped at that line five times
+  in one day and it stopped being a coincidence: 19 divergent panel rules that looked like a fork
+  waiting to be rejoined, three admin tabs with drifted copies of one card style, ~1988 lines of
+  dungeon CSS moved but deliberately not generalised, 29 style prompts that describe a picture, and
+  five stored portrait descriptions from a defective template. Moving code to where it belongs can
+  be proven byte-identical. Deciding that two texts *should* be one is a judgement, and it belongs
+  to the person who owns the surface — list it and hand it over, do not quietly unify it.
+- **A constraint that cannot fail is not the same as one that must not.** Twice now the tighter
+  gate was the wrong one, and only a measurement said so: an exact list length raised no delivery
+  rate (already 6/6) and added a total-loss failure that fired 1 in 6; a four-character floor on
+  short fields refused `gut` and `inn` at exactly the length of the `"..."` it was aimed at. Write
+  the strict version first, measure it against the real corpus, then decide what it costs.
 
 ---
 
@@ -790,9 +915,9 @@ Grouped so that each step is independently shippable and verifiable.
 | Step | Findings | Why here |
 |:--|:--|:--|
 | **W1** ✅ | 5, 6, 23 | Highest leverage. Until the generated templates are validated, **every future world** is born with invented variables and no compositional guardrails. Nothing else prevents that. Done in `36fe1b8b` + migration 280; finding 23 was uncovered by the work and folded in. |
-| **W2** | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. |
+| **W2** ✅ | 7, 10, 12 | One class: the contract belongs in the type. Minimums, list length, language — all three are schema work in `backend/models/forge.py` plus the output types. Done; the exact-count constraint was measured and rejected, and finding 30 was uncovered by the work. |
 | **W3** | 8, 9, 20 | Failures that report success. Explicit user requirement on 8. |
-| **W4** | 11, 13, 14, 15 | Configuration: wire `purpose=`, give the two orphan purposes budgets, unify the image defaults, lift budgets/timeouts into `platform_settings`. |
+| **W4** | 11, 13, 14, 15, 30 | Configuration: wire `purpose=`, give the two orphan purposes budgets, unify the image defaults, lift budgets/timeouts into `platform_settings`, and feed each world's own condition taxonomy into the building prompt. |
 | **W5** | 16, 17, 18, 19, 21, 25 | Surface: language, provenance, progress, scrolling, the unused chat system prompt. |
 | **W6** | 28, 29 | The rest of the AI's output that no contract covers: style prompts that are pictures, and stored descriptions produced by defective templates. Both are list-and-decide, not auto-repair. |
 

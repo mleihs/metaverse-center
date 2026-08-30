@@ -6,7 +6,88 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, conlist
+
+# ── The contract the model is held to ─────────────────────────────────
+#
+# Two things every Forge output field states in its own type, because neither
+# can be recovered downstream once the model has guessed.
+#
+# LANGUAGE (finding 12). Only the ``_de`` fields ever named a language. The
+# English side was unnamed, so the model inferred it from the context — and the
+# context is a German seed. Measured on production: ``primary_profession`` came
+# back once as "Tintenbad-Aufseher Erster Klasse", and gpt-4.1-mini wrote
+# "Schriftregulation" into the English field. Same root, not model weakness.
+# Two statements cover every field: one for the fields that pair with a ``_de``
+# twin, one for the proper names that are the same string in every locale.
+#
+# FLOOR (finding 7). ``min_length=1`` let an object whose every field was
+# literally ``"..."`` validate clean — measured, returned by ``model_default``.
+# The floors below are not a quality bar. They reject a field that is not an
+# answer at all, and nothing more. Each sits at roughly HALF the shortest value
+# the Forge has ever written on production, read on 2026-08-30 out of the raw
+# ``forge_drafts`` rows — 115 agent drafts, 117 building drafts, 88 zones,
+# 62 anchors. The corpus minimum is recorded beside each constant so the next
+# author reads a measurement rather than a preference.
+#
+# There is deliberately NO floor on the short identifier fields -- name, system,
+# profession, gender, building/zone/street type, building condition. A floor of 4
+# was written first and measured against the corpus before being trusted: it
+# rejects the German enum word "gut" and the building type "inn", both three
+# characters, which is exactly the length of the "..." it was meant to catch. On a
+# short field, length does not separate a placeholder from an answer. The hollow
+# object that prompted finding 7 had "..." in EVERY field, so the long-form floors
+# below catch it whole; a placeholder in a short field alone is a different
+# problem, and the instrument for it is each world's own taxonomy (finding 30).
+#
+#   floor                     applies to                        prod minimum (n)
+_MIN_TITLE = 8  #             anchor title                             17  (62)
+_MIN_PHRASE = 10  #           literary influence                       21  (62)
+_MIN_LINE = 20  #             core question, bleed signature      42 · 46  (62)
+_MIN_SHORT_PROSE = 40  #      zone description (1-2 sentences)    81 · 94  (88)
+_MIN_ANCHOR_PROSE = 60  #     anchor description                134 · 155  (62)
+_MIN_LONG_PROSE = 250  #      agent character + background,      515 · 452 (115)
+#                             building description               464 · 470 (117)
+
+_IN_ENGLISH = "Written in English."
+_WORLD_TONGUE = (
+    "A proper name in the world's own language. It is never translated -- the same "
+    "string is shown in every locale -- so do not write an English rendering of it."
+)
+
+
+def counted_list(item_type: type[BaseModel], requested: int, *, minimum: int) -> Any:
+    """The requested length, carried by the output type the model is handed.
+
+    ``requested`` becomes ``maxItems`` and ``minimum`` becomes ``minItems`` in the
+    JSON schema pydantic-ai builds for the output tool, and both are what its
+    validation retry fires on. The two numbers are deliberately different.
+
+    The ceiling is nearly free. Over-delivery silently changes a roster the user
+    configured and is paid for by the token; across 92 list deliveries read out of
+    ``forge_drafts`` on production, one came back longer than ordered.
+
+    The floor is NOT the requested count, and that is the point. Measured against
+    the real anchor path (deepseek-v4-pro, the production ``model_forge``, six runs
+    per variant, ``retries=1`` as ``create_forge_agent`` sets it):
+
+        no length constraint    three anchors in 6/6 runs, 0 failures
+        exactly three           three anchors in 5/6 runs, 1 TOTAL LOSS after
+                                90.4 s, the call billed twice
+        at least two, at most   three anchors in 6/6 runs, 0 failures
+        three
+
+    Demanding the exact count did not raise the delivery rate -- it was already
+    6 of 6 without any constraint -- it only added a way to lose the entire answer.
+    The stored corpus agrees: of 92 list deliveries, 87 were exact, 4 short, 1 long.
+    So the floor sits where a delivery stops being worth keeping, never at the
+    number ordered, and the gap between the two is reported by
+    ``report_delivery_count`` instead of raised. See finding 10.
+    """
+    if not 1 <= minimum <= requested:
+        raise ValueError(f"counted_list: minimum {minimum} must be between 1 and requested {requested}")
+    return conlist(item_type, min_length=minimum, max_length=requested)
+
 
 # ── Token Store Models ────────────────────────────────────────────────
 
@@ -405,29 +486,47 @@ class ImageRegenRequest(BaseModel):
 class PhilosophicalAnchor(BaseModel):
     """A proposed thematic anchor for a simulation."""
 
-    title: str
+    title: str = Field(
+        min_length=_MIN_TITLE,
+        description=f"Name of the anchor, a short evocative phrase. {_IN_ENGLISH}",
+    )
     title_de: str = Field(
         default="",
-        min_length=1,
+        min_length=_MIN_TITLE,
         description="German equivalent of title, written as if originally German.",
     )
-    literary_influence: str
+    literary_influence: str = Field(
+        min_length=_MIN_PHRASE,
+        description=(f"The real author, work or school of thought this anchor grounds itself in. {_IN_ENGLISH}"),
+    )
     literary_influence_de: str = Field(
         default="",
-        min_length=1,
+        min_length=_MIN_PHRASE,
         description="German equivalent of literary_influence -- use published German title if it exists.",
     )
-    core_question: str
+    core_question: str = Field(
+        min_length=_MIN_LINE,
+        description=f"The single question the world exists to ask, phrased as a question. {_IN_ENGLISH}",
+    )
     core_question_de: str = Field(
         default="",
-        min_length=1,
+        min_length=_MIN_LINE,
         description="German equivalent of core_question.",
     )
-    bleed_signature_suggestion: str
-    description: str
+    bleed_signature_suggestion: str = Field(
+        min_length=_MIN_LINE,
+        description=(
+            "Short sensory phrase naming how this world's bleed manifests "
+            f"(e.g. 'fading ink on wet parchment'). {_IN_ENGLISH}"
+        ),
+    )
+    description: str = Field(
+        min_length=_MIN_ANCHOR_PROSE,
+        description=f"What this world is and how the anchor shapes it. {_IN_ENGLISH}",
+    )
     description_de: str = Field(
         default="",
-        min_length=1,
+        min_length=_MIN_ANCHOR_PROSE,
         description="German equivalent of description.",
     )
 
@@ -435,41 +534,61 @@ class PhilosophicalAnchor(BaseModel):
 class ForgeAgentDraft(BaseModel):
     """Draft of an agent entity."""
 
-    name: str = Field(max_length=100)
-    gender: str = Field(max_length=30)
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        description=f"The person's name. {_WORLD_TONGUE}",
+    )
+    gender: str = Field(
+        min_length=1,
+        max_length=30,
+        description=(
+            "Gender as a lowercase English descriptor -- 'male', 'female', 'non-binary' "
+            "and the like. The set is open, the spelling is not: lowercase, hyphenated, "
+            f"no capitals. {_IN_ENGLISH}"
+        ),
+    )
     system: str = Field(
+        min_length=1,
+        max_length=80,
         description=(
             "Short faction or organization name (1-5 words). "
             "Must be a concise identifier like 'Gildenrat' or 'Kanalgrund Widerstand', "
-            "NOT a full description or sentence."
+            f"NOT a full description or sentence. {_WORLD_TONGUE}"
         ),
-        max_length=80,
     )
-    primary_profession: str = Field(max_length=100)
+    primary_profession: str = Field(
+        min_length=1,
+        max_length=100,
+        description=f"The person's occupation, as a short noun phrase. {_IN_ENGLISH}",
+    )
     primary_profession_de: str = Field(
         min_length=1,
-        description="German equivalent of primary_profession.",
         max_length=100,
+        description="German equivalent of primary_profession.",
     )
     character: str = Field(
+        min_length=_MIN_LONG_PROSE,
         description=(
             "Personality portrait in 200-300 words. Include temperament, mannerisms, "
             "contradictions, one memorable quirk, and a brief physical impression "
-            "(build, distinguishing feature, typical clothing) to aid later portrait generation."
+            "(build, distinguishing feature, typical clothing) to aid later portrait generation. "
+            f"{_IN_ENGLISH}"
         ),
     )
     character_de: str = Field(
-        min_length=1,
+        min_length=_MIN_LONG_PROSE,
         description="German equivalent of character.",
     )
     background: str = Field(
+        min_length=_MIN_LONG_PROSE,
         description=(
             "Backstory in 200-300 words. Include origin, formative event, current motivation, "
-            "and a secret or unresolved tension."
+            f"and a secret or unresolved tension. {_IN_ENGLISH}"
         ),
     )
     background_de: str = Field(
-        min_length=1,
+        min_length=_MIN_LONG_PROSE,
         description="German equivalent of background.",
     )
 
@@ -477,35 +596,59 @@ class ForgeAgentDraft(BaseModel):
 class ForgeBuildingDraft(BaseModel):
     """Draft of a building entity."""
 
-    name: str = Field(max_length=100)
-    building_type: str = Field(max_length=100)
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        description=f"The building's name. {_WORLD_TONGUE}",
+    )
+    building_type: str = Field(
+        min_length=1,
+        max_length=100,
+        description=f"What kind of building this is, as a short noun. {_IN_ENGLISH}",
+    )
     building_type_de: str = Field(
         min_length=1,
-        description="German equivalent of building_type.",
         max_length=100,
+        description="German equivalent of building_type.",
     )
     description: str = Field(
+        min_length=_MIN_LONG_PROSE,
         description=(
             "Atmospheric description in 150-250 words. Include architectural style, "
             "dominant materials (stone, iron, glass, wood), sensory details (sounds, smells, light), "
             "and what makes this place remarkable or unsettling. "
-            "These details will feed into image generation."
+            f"These details will feed into image generation. {_IN_ENGLISH}"
         ),
     )
     description_de: str = Field(
-        min_length=1,
+        min_length=_MIN_LONG_PROSE,
         description="German equivalent of description.",
     )
+    # NOT a Literal, deliberately, and not for lack of a vocabulary: every world
+    # carries its OWN `building_condition` taxonomy in `simulation_taxonomies`
+    # (thematic values like `sealed`, `anomalous`, `thriving`), and this generator
+    # ignores it. Measured on production: 115 of 314 buildings hold a condition
+    # their own simulation's taxonomy does not contain -- including all six
+    # `pristine` and all four `ruined`. Freezing the platform's five words into the
+    # type would cement the wrong vocabulary; the fix is to feed each world's own
+    # values into the prompt, which is finding 30 and belongs to W4.
+    #
+    # `excellent`, not `pristine`: the platform prompt template has said `excellent`
+    # since migration 027, this model said `pristine`, and the two disagreeing is
+    # why six buildings in five worlds carry a value no taxonomy anywhere defines.
     building_condition: str = Field(
         default="good",
+        min_length=1,
+        max_length=40,
         description=(
-            "Physical condition: pristine, good, fair, poor, or ruined. "
+            "Physical condition: excellent, good, fair, poor, or ruined. "
             "Vary across buildings in the set. "
-            "A 'ruined' building shows structural damage; 'poor' shows neglect and decay."
+            f"A 'ruined' building shows structural damage; 'poor' shows neglect and decay. {_IN_ENGLISH}"
         ),
     )
     building_condition_de: str = Field(
         min_length=1,
+        max_length=40,
         description="German equivalent of building_condition.",
     )
 
@@ -513,45 +656,73 @@ class ForgeBuildingDraft(BaseModel):
 class ForgeZoneDraft(BaseModel):
     """Draft of a single zone/district."""
 
-    name: str
+    name: str = Field(
+        min_length=1,
+        description=f"The district's name. {_WORLD_TONGUE}",
+    )
     zone_type: str = Field(
+        min_length=1,
         description="Zone classification (e.g. residential, industrial,"
-        " cultural, commercial, government, military, slum, entertainment).",
+        f" cultural, commercial, government, military, slum, entertainment). {_IN_ENGLISH}",
     )
     zone_type_de: str = Field(
         default="",
         description="German equivalent of zone_type.",
     )
-    description: str = Field(description="1-2 sentence atmospheric description of the zone's character and purpose.")
+    description: str = Field(
+        min_length=_MIN_SHORT_PROSE,
+        description=f"1-2 sentence atmospheric description of the zone's character and purpose. {_IN_ENGLISH}",
+    )
     description_de: str = Field(
         default="",
         description="German equivalent of description.",
     )
+    # No `_de` twin exists for these tags, so the German UI shows the English
+    # strings verbatim. Naming the language at least stops the model from
+    # answering in whichever language the seed happened to be written in; the
+    # missing translation is a surface question and belongs to W5.
     characteristics: list[str] = Field(
         description="2-4 evocative tags capturing the zone's essence"
-        " (e.g. 'perpetual twilight', 'echoing walls', 'overgrown machinery').",
+        f" (e.g. 'perpetual twilight', 'echoing walls', 'overgrown machinery'). {_IN_ENGLISH}",
     )
 
 
 class ForgeStreetDraft(BaseModel):
     """Draft of a single named street."""
 
-    name: str
-    zone_name: str = Field(description="Name of the zone this street belongs to.")
+    name: str = Field(
+        min_length=1,
+        description=f"The street's name. {_WORLD_TONGUE}",
+    )
+    zone_name: str = Field(
+        min_length=1,
+        description="Name of the zone this street belongs to. Must match one of the zone names "
+        "exactly -- it is the join key, not a description.",
+    )
     street_type: str = Field(
-        description="Street classification (e.g. alley, boulevard, lane, avenue, road, street, stairway).",
+        min_length=1,
+        description="Street classification (e.g. alley, boulevard, lane, avenue, road, street, "
+        f"stairway). {_IN_ENGLISH}",
     )
     street_type_de: str = Field(
         default="",
         description="German equivalent of street_type.",
     )
-    description: str = Field(default="", description="Optional 1-sentence atmospheric detail about this street.")
+    # Genuinely optional -- it defaults to empty and the map renders without it,
+    # so no floor here: a floor would turn an omission into a hard failure.
+    description: str = Field(
+        default="",
+        description=f"Optional 1-sentence atmospheric detail about this street. {_IN_ENGLISH}",
+    )
 
 
 class ForgeGeographyDraft(BaseModel):
     """Draft of city geography."""
 
-    city_name: str
+    city_name: str = Field(
+        min_length=1,
+        description=f"The city's name. {_WORLD_TONGUE}",
+    )
     zones: list[ForgeZoneDraft]
     streets: list[ForgeStreetDraft]
 

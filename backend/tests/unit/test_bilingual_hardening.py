@@ -21,7 +21,7 @@ from backend.models.forge import (
     ForgeStreetTranslation,
     ForgeZoneTranslation,
 )
-from backend.services.ai_utils import validate_bilingual_output
+from backend.services.ai_utils import report_delivery_count, validate_bilingual_output
 from backend.services.forge_entity_translation_service import ForgeEntityTranslationService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.tests.conftest import make_chain_mock
@@ -184,7 +184,9 @@ class TestEntityPersistTranslationLogging:
         )
         with caplog.at_level(logging.WARNING):
             await ForgeEntityTranslationService.persist_translations(
-                supabase, uuid4(), translations,
+                supabase,
+                uuid4(),
+                translations,
             )
         assert "empty simulation description_de" in caplog.text
 
@@ -204,7 +206,9 @@ class TestEntityPersistTranslationLogging:
         )
         with caplog.at_level(logging.WARNING):
             await ForgeEntityTranslationService.persist_translations(
-                supabase, uuid4(), translations,
+                supabase,
+                uuid4(),
+                translations,
             )
         assert "1/2 agents have no _de" in caplog.text
 
@@ -223,7 +227,9 @@ class TestEntityPersistTranslationLogging:
         )
         with caplog.at_level(logging.WARNING):
             await ForgeEntityTranslationService.persist_translations(
-                supabase, uuid4(), translations,
+                supabase,
+                uuid4(),
+                translations,
             )
         assert "1/1 buildings have no _de" in caplog.text
 
@@ -248,7 +254,9 @@ class TestEntityPersistTranslationLogging:
         )
         with caplog.at_level(logging.WARNING):
             await ForgeEntityTranslationService.persist_translations(
-                supabase, uuid4(), translations,
+                supabase,
+                uuid4(),
+                translations,
             )
         # No warnings expected
         assert "have no _de" not in caplog.text
@@ -270,10 +278,7 @@ class TestTranslateSimulationDescriptionDe:
         untranslated_streets = []
 
         total_untranslated = (
-            len(untranslated_agents)
-            + len(untranslated_buildings)
-            + len(untranslated_zones)
-            + len(untranslated_streets)
+            len(untranslated_agents) + len(untranslated_buildings) + len(untranslated_zones) + len(untranslated_streets)
         )
         sim_needs_description_de = not sim.get("description_de")
 
@@ -304,3 +309,40 @@ class TestTranslateSimulationDescriptionDe:
 
         should_translate = total_untranslated > 0 or sim_needs_description_de
         assert should_translate is True
+
+
+# ── W2 / finding 10: the count the user ordered is compared to what arrived ──
+
+
+class TestReportDeliveryCount:
+    """A short list used to be structurally unnoticeable.
+
+    ``generate_anchors`` returned ``result.output`` unfiltered, the two chunk
+    paths only checked for *empty*, and the recruitment path checked nothing --
+    so the number configured and the number delivered were never compared
+    anywhere. Measured on production: of 92 list deliveries stored in
+    ``forge_drafts``, 87 were exact, 4 short and 1 long.
+    """
+
+    def test_exact_delivery_is_silent(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            assert report_delivery_count("agent", 6, 6) == 0
+        assert caplog.records == []
+
+    def test_short_delivery_is_named(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            assert report_delivery_count("anchor", 3, 2) == 1
+        assert len(caplog.records) == 1
+        assert "2 of 3 anchor(s)" in caplog.records[0].getMessage()
+
+    def test_over_delivery_is_named_too(self, caplog):
+        """One of the 92 production deliveries came back longer than ordered."""
+        with caplog.at_level(logging.WARNING):
+            assert report_delivery_count("agent", 6, 7) == 0
+        assert len(caplog.records) == 1
+        assert "7 of 6 agent(s)" in caplog.records[0].getMessage()
+
+    def test_context_reaches_the_log_record(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            report_delivery_count("building", 7, 6, draft_id="abc")
+        assert caplog.records[0].draft_id == "abc"

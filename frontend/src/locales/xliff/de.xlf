@@ -8929,10 +8929,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Seed prompt (free text)</source>
   <target>Ausgangsprompt (Freitext)</target>
 </trans-unit>
-<trans-unit id="s6907bd053066c984">
-  <source>3 anchor cards</source>
-  <target>3 Ankerkarten</target>
-</trans-unit>
 <trans-unit id="s0380652457f8ba15">
   <source>Selection</source>
   <target>Auswahl</target>
@@ -20006,14 +20002,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s8f14d12f5d0d5ecc">
   <source>Phase I – The Astrolabe</source>
 <target>Phase I – Das Astrolabium</target></trans-unit>
-<trans-unit id="s5f5ea18c91607fba">
-  <source>Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards – each offers a distinct thematic interpretation of your seed.</source>
-<target>Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate three philosophical anchor cards – each offers a distinct thematic interpretation of your seed.</target>
-</trans-unit>
-<trans-unit id="sbdd954f9c67a2d8d">
-  <source>The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently – the same seed with different anchors creates radically different worlds.</source>
-<target>The AI analyzes your seed and produces three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently – the same seed with different anchors creates radically different worlds.</target>
-</trans-unit>
 <trans-unit id="sc780a7da4b1b7e61">
   <source>Phase II – The Drafting Table</source>
 <target>Phase II – Der Zeichentisch</target></trans-unit>
@@ -28653,6 +28641,18 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sdf5357d627d3d4f1">
   <source>The same run can be played two ways. The terminal war room is the original: everything as text, typed commands, full command history. The rendered view draws the same dungeon – the node map with fog of war, enemy portraits in the scene, the party along the bottom, and a chronicle that keeps the narration you would otherwise read in the terminal. Switch with the toggle in the dungeon header; your choice is remembered on this device. Nothing about the run changes – the same engine, the same rolls, the same loot.</source>
   <target>Derselbe Durchgang lässt sich auf zwei Arten spielen. Der Terminal-Gefechtsstand ist das Original: alles als Text, getippte Befehle, vollständige Befehlshistorie. Die gezeichnete Ansicht zeigt denselben Dungeon – die Knotenkarte mit Nebel des Krieges, Gegnerbilder in der Szene, die Gruppe am unteren Rand und eine Chronik, die jene Schilderung festhält, die man sonst im Terminal liest. Umgeschaltet wird über den Schalter in der Dungeon-Kopfzeile; die Wahl bleibt auf diesem Gerät erhalten. Am Durchgang selbst ändert sich nichts – dieselbe Maschine, dieselben Würfe, dieselbe Beute.</target>
+</trans-unit>
+<trans-unit id="s742ba104a7c890b8">
+  <source>Enter a seed prompt describing the world you want to create. This can be as simple as "a cyberpunk megacity" or as evocative as "a floating archipelago where memories solidify into islands." Click Scan Multiverse to generate up to three philosophical anchor cards – each offers a distinct thematic interpretation of your seed.</source>
+  <target>Gib eine Saat ein, die die Welt beschreibt, die du erschaffen willst. Das kann so schlicht sein wie „eine Cyberpunk-Megastadt" oder so bildhaft wie „ein schwebender Archipel, in dem Erinnerungen zu Inseln erstarren". Mit „Multiversum abtasten" entstehen bis zu drei philosophische Ankerkarten – jede bietet eine eigene thematische Lesart deiner Saat.</target>
+</trans-unit>
+<trans-unit id="s1a5f7adb59b583a7">
+  <source>The AI analyzes your seed and produces up to three anchors with names, philosophical tenets, and worldbuilding implications. Each anchor shapes the entire simulation differently – the same seed with different anchors creates radically different worlds.</source>
+  <target>Die KI wertet deine Saat aus und erzeugt bis zu drei Anker mit Namen, philosophischen Leitsätzen und Folgen für den Weltenbau. Jeder Anker formt die Simulation anders – dieselbe Saat ergibt mit verschiedenen Ankern grundverschiedene Welten.</target>
+</trans-unit>
+<trans-unit id="sfa216feba905c03a">
+  <source>Up to 3 anchor cards</source>
+  <target>Bis zu 3 Ankerkarten</target>
 </trans-unit>
 </body>
 </file>
