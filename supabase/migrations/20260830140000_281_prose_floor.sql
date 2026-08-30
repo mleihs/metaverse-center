@@ -53,6 +53,19 @@
 -- `_build_chunk_prompt` in forge_orchestrator_service.py, which never touch
 -- prompt_templates at all — is corrected in the same commit.
 
+-- VERIFIED, before any production apply
+-- --------------------------------------
+-- Run against a throwaway PostgreSQL 16 (docker), seeded with the PRE-migration
+-- text of all ten platform rows plus one simulation-owned row reading
+-- 'HANDGESCHRIEBEN' to stand in for a template an admin edited by hand:
+--
+--   * all 18 statements execute; no SQL error;
+--   * the ten rows come out md5-identical to supabase/seed/006_prompt_templates.sql
+--     (10 of 10, prompt_content and system_prompt both);
+--   * the style block appears EXACTLY ONCE per row after two consecutive runs;
+--   * a third run reports `UPDATE 0` for all 18 statements — idempotent;
+--   * the simulation-owned row is byte-identical afterwards — untouched.
+
 BEGIN;
 
 -- agent_generation_full (EN) — Boden anhaengen
