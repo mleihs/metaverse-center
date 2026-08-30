@@ -162,6 +162,56 @@ Also repaired: `sd02a9432614df2f5` had *"Einstellungen gespeichert."* twice in i
 
 ---
 
+## A.1 Production apply record — migration 281 (prose floor)
+
+Applied to production 2026-08-30 12:40 UTC, after a transactional dry run
+(`BEGIN … verify … ROLLBACK`) against the real production state. Backup of all ten rows before
+the write: `backups/prompt-templates/platform_prose_before_281_20260830T123954Z.json`.
+
+**What the dry run found that the container verification could not.** The migration was verified
+against a throwaway Postgres seeded from `supabase/seed/006_prompt_templates.sql`. Production has
+diverged from that seed, so the counters differ:
+
+| Statement group | Fires on prod | No-op |
+|:--|--:|--:|
+| 10 floor appends (`prompt_content`) | **10** | 0 |
+| 8 system-prompt replacements | 2 (`event_generation` en/de) | **6** |
+
+The six no-ops are benign and were checked individually: the ornament-ordering text the migration
+was written to delete is **not on production**. The four building rows have carried migration
+027's stricter *"Descriptions must be brief and functional — never flowery prose"* since April;
+the two `agent_generation_full` rows carry a dystopian-Velgarien designer prompt, not the seeded
+*"rich, believable characters with depth and nuance"*. Only `event_generation` still had the
+seeded text, and those are the two that fired.
+
+**A hypothesis that was half wrong, measured rather than argued.** The floor block is headed
+*"overrides anything above"* and contains *"Sentences may be long"* — appended to a template that
+migration 027 caps at *"max 30 words, like a database entry, not a narrative"*, and 027 exists
+because long building descriptions overwhelmed the image style prompt. Six runs per variant
+against `deepseek-v4-flash-0731` (= production `model_default`), T=0.7, `max_tokens` 200:
+
+| Variant | Median | Max | Over 30 words |
+|:--|--:|--:|--:|
+| Production today | 13 w | 15 w | 0 / 6 |
+| Production + 281 | 16 w | 26 w | **0 / 6** |
+
+The cap holds; 027 is not reintroduced. What does change is the register: the median grows by
+three words, and one of six runs produced a simile (*"Risse, die wie Straßenkarten wirken"*) where
+the pre-281 prompt produced none in six. That is the floor's *"at most one image per paragraph"*
+acting as a ceiling where *"keine Erzählung"* had been a prohibition. Recorded as an observation,
+not repaired — forking the platform floor into a short building variant would trade one text for
+two, and the measurement says it is not needed.
+
+**Post-apply verification.** Style block present exactly once in all ten rows (10/10). A second
+run of all 18 statements inside a rolled-back transaction reports `0` affected rows for all 18 —
+idempotent. Ledger row `20260830140000 / 281_prose_floor` written in the same transaction.
+
+**Left open, deliberately.** `supabase/seed/006_prompt_templates.sql` still carries the
+pre-027 system prompts, so a freshly reset local database ends up with text production has not had
+since April. The seed is the parallel session's path; flagged there, not changed here.
+
+---
+
 ## B. The template class — two findings, one root
 
 Phase A.6 (`ForgeThemeService.generate_simulation_templates`) asks a model to write the
