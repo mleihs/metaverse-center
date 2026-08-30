@@ -28702,6 +28702,126 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>agent reports</source>
   <target>Agentenmeldungen</target>
 </trans-unit>
+<trans-unit id="sa31ac6cba7e492bf">
+  <source>Containment</source>
+<target>Eindämmung</target></trans-unit>
+<trans-unit id="s9280dac9a1a77bc6">
+  <source>Remediation</source>
+<target>Sanierung</target></trans-unit>
+<trans-unit id="s1854bd18b83fb444">
+  <source>Adaptation</source>
+<target>Anpassung</target></trans-unit>
+<trans-unit id="sa9873d3986813802">
+  <source>Lowers the event's pressure for this cycle.</source>
+<target>Senkt den Druck des Ereignisses für diesen Zyklus.</target></trans-unit>
+<trans-unit id="s45a22cca4ebe0cf4">
+  <source>Lowers pressure and can move the event into "resolving" above 0.50 effectiveness.</source>
+<target>Senkt den Druck und kann das Ereignis ab 0,50 Wirksamkeit in „klingt ab“ überführen.</target></trans-unit>
+<trans-unit id="s1daf5dcd4667bb17">
+  <source>Reduces the scar tissue of the event's narrative arc.</source>
+<target>Verringert das Narbengewebe des zugehörigen Erzählbogens.</target></trans-unit>
+<trans-unit id="s7d7ca36ecef354a5">
+  <source>In progress</source>
+<target>In Bearbeitung</target></trans-unit>
+<trans-unit id="s1651bd4ce75011e9">
+  <source>Dispatch order filed. It resolves at the next pulse.</source>
+<target>Einsatzbefehl abgelegt. Er wird beim nächsten Puls aufgelöst.</target></trans-unit>
+<trans-unit id="sd68a25b2e6a28399">
+  <source>The Bureau refused the order.</source>
+<target>Das Büro hat den Befehl abgewiesen.</target></trans-unit>
+<trans-unit id="sb28f9b0f5e30dbbf">
+  <source>Order withdrawn.</source>
+<target>Befehl zurückgezogen.</target></trans-unit>
+<trans-unit id="s7081b34f7211e86d">
+  <source>The order could not be withdrawn.</source>
+<target>Der Befehl ließ sich nicht zurückziehen.</target></trans-unit>
+<trans-unit id="s528aa5cb11ab4ae3">
+  <source>Consulting the register</source>
+<target>Das Register wird eingesehen</target></trans-unit>
+<trans-unit id="s2c9f5199038233bf">
+  <source>PULSE #<x id="0" equiv-text="${this._overview?.last_tick ?? 0}"/></source>
+<target>PULS #<x id="0" equiv-text="${this._overview?.last_tick ?? 0}"/></target></trans-unit>
+<trans-unit id="sbe32a49ea53b011b">
+  <source>This event is closed. The Bureau files no further orders against it.</source>
+<target>Dieses Ereignis ist abgeschlossen. Das Büro legt keinen weiteren Befehl dagegen ab.</target></trans-unit>
+<trans-unit id="sef661a96d7d97206">
+  <source>No order stands against this event. Filing one requires editor rights in this world.</source>
+<target>Gegen dieses Ereignis steht kein Befehl. Einen abzulegen erfordert Schreibrechte in dieser Welt.</target></trans-unit>
+<trans-unit id="s9e28c93c12d29b7a">
+  <source>Response protocol</source>
+<target>Antwortprotokoll</target></trans-unit>
+<trans-unit id="s5ebefd992339b75a">
+  <source>Filing...</source>
+<target>Wird abgelegt...</target></trans-unit>
+<trans-unit id="s62c95c8ca7f4324f">
+  <source>File dispatch order</source>
+<target>Einsatzbefehl ablegen</target></trans-unit>
+<trans-unit id="s6dbd4aa9de8f96a9">
+  <source>Resolves at pulse #<x id="0" equiv-text="${(this._overview?.last_tick ?? 0) + spec.durationTicks}"/>.</source>
+<target>Wird bei Puls #<x id="0" equiv-text="${(this._overview?.last_tick ?? 0) + spec.durationTicks}"/> aufgelöst.</target></trans-unit>
+<trans-unit id="se614b98bcdc4b84d">
+  <source>Choose a protocol.</source>
+<target>Wähle ein Protokoll.</target></trans-unit>
+<trans-unit id="sa86fd880dd5883d8">
+  <source>no agents</source>
+<target>keine Agenten</target></trans-unit>
+<trans-unit id="s19f9ef8f8ab59ce0">
+  <source><x id="0" equiv-text="${p.minAgents}"/> agent</source>
+<target><x id="0" equiv-text="${p.minAgents}"/> Agent</target></trans-unit>
+<trans-unit id="s25be8232ad28ae44">
+  <source><x id="0" equiv-text="${p.minAgents}"/>-<x id="1" equiv-text="${p.maxAgents}"/> agents</source>
+<target><x id="0" equiv-text="${p.minAgents}"/>–<x id="1" equiv-text="${p.maxAgents}"/> Agenten</target></trans-unit>
+<trans-unit id="s7a742407baa4a7b5">
+  <source>1 pulse</source>
+<target>1 Puls</target></trans-unit>
+<trans-unit id="s8a7554a1f693425d">
+  <source><x id="0" equiv-text="${p.durationTicks}"/> pulses</source>
+<target><x id="0" equiv-text="${p.durationTicks}"/> Pulse</target></trans-unit>
+<trans-unit id="s0aeb2807b73b3ff8">
+  <source>×<x id="0" equiv-text="${p.multiplier.toFixed(2)}"/></source>
+<target>×<x id="0" equiv-text="${p.multiplier.toFixed(2)}"/></target></trans-unit>
+<trans-unit id="sf4aca4f5fbc78328">
+  <source>Needs <x id="0" equiv-text="${ADAPT_MIN_REACTIONS}"/> reactions – <x id="1" equiv-text="${this.reactionCount}"/> on file.</source>
+<target>Benötigt <x id="0" equiv-text="${ADAPT_MIN_REACTIONS}"/> Reaktionen – <x id="1" equiv-text="${this.reactionCount}"/> liegen vor.</target></trans-unit>
+<trans-unit id="s9b0b1f06ae3ffe33">
+  <source>Assign officers</source>
+<target>Kräfte zuteilen</target></trans-unit>
+<trans-unit id="sb7300ec20b96a7c4">
+  <source><x id="0" equiv-text="${n}"/> of <x id="1" equiv-text="${spec.maxAgents}"/> assigned</source>
+<target><x id="0" equiv-text="${n}"/> von <x id="1" equiv-text="${spec.maxAgents}"/> zugeteilt</target></trans-unit>
+<trans-unit id="s752a008d4502e4ce">
+  <source>This world has no agents to assign.</source>
+<target>Diese Welt hat keine Agenten zum Zuteilen.</target></trans-unit>
+<trans-unit id="s025238d56eb8c4d1">
+  <source>Projected effectiveness</source>
+<target>Erwartete Wirksamkeit</target></trans-unit>
+<trans-unit id="s6a53b10413cde2bd">
+  <source>Adaptation is a flat ×<x id="0" equiv-text="${spec.multiplier.toFixed(2)}"/> – staffing does not change it.</source>
+<target>Anpassung wirkt pauschal ×<x id="0" equiv-text="${spec.multiplier.toFixed(2)}"/> – die Zuteilung ändert daran nichts.</target></trans-unit>
+<trans-unit id="s692b08315af63c91">
+  <source>min(1, <x id="0" equiv-text="${agentCount}"/> agents / <x id="1" equiv-text="${required.toFixed(1)}"/> needed at impact <x id="2" equiv-text="${this.impactLevel}"/>) × <x id="3" equiv-text="${spec.multiplier.toFixed(2)}"/></source>
+<target>min(1, <x id="0" equiv-text="${agentCount}"/> Agenten / <x id="1" equiv-text="${required.toFixed(1)}"/> nötig bei Wirkung <x id="2" equiv-text="${this.impactLevel}"/>) × <x id="3" equiv-text="${spec.multiplier.toFixed(2)}"/></target></trans-unit>
+<trans-unit id="sf1e1401b9222a4ea">
+  <source>Understaffed: this event needs <x id="0" equiv-text="${Math.ceil(required)}"/> agents for full effect.</source>
+<target>Unterbesetzt: dieses Ereignis braucht <x id="0" equiv-text="${Math.ceil(required)}"/> Agenten für volle Wirkung.</target></trans-unit>
+<trans-unit id="sc03ad92fa6e41172">
+  <source>Filed before pulse #<x id="0" equiv-text="${order.submitted_before_tick}"/></source>
+<target>Abgelegt vor Puls #<x id="0" equiv-text="${order.submitted_before_tick}"/></target></trans-unit>
+<trans-unit id="s7f1ae54c9f903293">
+  <source>Assigned: <x id="0" equiv-text="${names.join(', ')}"/></source>
+<target>Zugeteilt: <x id="0" equiv-text="${names.join(', ')}"/></target></trans-unit>
+<trans-unit id="se8d56d56563f6fff">
+  <source>No officers assigned – this protocol needs none.</source>
+<target>Keine Kräfte zugeteilt – dieses Protokoll braucht keine.</target></trans-unit>
+<trans-unit id="s45e87ce59a0ceba7">
+  <source>Withdraw order</source>
+<target>Befehl zurückziehen</target></trans-unit>
+<trans-unit id="s241439366eedd1f0">
+  <source>· pulse #<x id="0" equiv-text="${r.resolved_at_tick}"/></source>
+<target>· Puls #<x id="0" equiv-text="${r.resolved_at_tick}"/></target></trans-unit>
+<trans-unit id="sf5aad5bfbed8ab1f">
+  <source>effectiveness <x id="0" equiv-text="${r.effectiveness.toFixed(2)}"/></source>
+<target>Wirksamkeit <x id="0" equiv-text="${r.effectiveness.toFixed(2)}"/></target></trans-unit>
 </body>
 </file>
 </xliff>
