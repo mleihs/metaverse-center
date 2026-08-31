@@ -186,3 +186,26 @@ class ResonanceProfileResponse(BaseModel):
     umsturz: float = 0.0
     fragment_count: int = 0
     updated_at: datetime
+
+
+class JournalPublicState(BaseModel):
+    """Public gate snapshot returned by GET /api/v1/public/journal/state.
+
+    Warum es diesen Zustand nach außen gibt: der Leerzustand des Journals sagte
+    „Fragmente sammeln sich, während du spielst". Gemessen auf Prod am
+    31.08.2026: 0 Fragmente, 0 Konstellationen — und ``journal_enabled`` ist
+    überhaupt nicht gesetzt, der Erzeuger (``fragment_generation_scheduler``)
+    läuft also fail-closed nie. Die Zusage konnte sich nicht erfüllen, und die
+    Oberfläche konnte es nicht wissen.
+
+    Ein Leerzustand, der ein Versprechen gibt, das der Server nicht halten
+    kann, ist schlechter als einer, der schweigt: er lässt die Nutzerin
+    warten. Deshalb bekommt die Oberfläche den Zustand, nicht eine schönere
+    Formulierung.
+
+    Schmale Projektion nach dem Muster von ``DriftPublicState`` und
+    ``AlphaStatePublic``: nur das Tor, nichts sonst. Weitere Journal-Flags
+    kommen additiv auf DIESES Modell, nicht als weiterer Endpunkt.
+    """
+
+    enabled: bool

@@ -152,6 +152,20 @@ export interface CrystallizeResult {
 export class JournalApiService extends BaseApiService {
   private readonly base = '/journal';
 
+  // ── Gate ──────────────────────────────────────────────────────────────
+
+  /**
+   * Läuft der Fragment-Erzeuger? Öffentlich, ohne JWT — der Leerzustand des
+   * Journals braucht die Antwort, bevor er ein Versprechen gibt.
+   *
+   * Ohne diesen Wert sagte er „Fragmente sammeln sich, während du spielst",
+   * während `journal_enabled` auf Prod gar nicht gesetzt ist und der
+   * Zeitgeber fail-closed nie läuft: 0 Fragmente seit jeher.
+   */
+  getPublicState(): Promise<ApiResponse<{ enabled: boolean }>> {
+    return this.getPublic(`${this.base}/state`);
+  }
+
   // ── Fragments ─────────────────────────────────────────────────────────
 
   /** List fragments for the authenticated user with optional filters. */
