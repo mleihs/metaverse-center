@@ -87,6 +87,27 @@ export class VelgOperativeDashboard extends LitElement {
         padding-block: var(--space-12);
       }
 
+      /*
+       * Solange keine Welt gewählt ist, gibt es die Schiene nicht — und dann
+       * darf sie auch keine Spalte belegen.
+       *
+       * Gemessen auf Prod (1600 px) im unteren Band von 855 px Höhe:
+       *
+       *     Schiene LEER (keine Welt gewählt)    79 px  →  776 px reserviert
+       *     Schiene VOLL (sechs Agenten)        477 px  →  378 px reserviert
+       *
+       * Die volle Schiene rechtfertigt ihre Spalte; sie trägt das Dossier der
+       * gewählten Welt. Die leere rechtfertigt gar nichts: 356 px Breite über
+       * die volle Bandhöhe für eine Statuszeile, während das Register daneben
+       * seine Karten in zwei Spalten quetscht.
+       *
+       * Und es ist genau der Zustand, in dem die Seite AUFGEHT — wer sie zum
+       * ersten Mal sieht, sieht die schlechteste Fassung des Layouts.
+       */
+      .lower--solo {
+        grid-template-columns: 1fr;
+      }
+
       .ops {
         display: flex;
         flex-wrap: wrap;
@@ -241,6 +262,13 @@ export class VelgOperativeDashboard extends LitElement {
     // Kein eigener Einsatz und keine eigene Welt: dann ist der Einstieg die
     // Akademie und nicht ein leeres Raster.
     const isNewcomer = Boolean(data) && !worlds.length && !participations.length;
+    /*
+     * Die Schiene traegt das Dossier der gewaehlten Welt und den
+     * Substratmonitor. Ohne Agenten UND ohne Beben ist sie eine Ueberschrift
+     * mit der Zeile „keine Beben verzeichnet" — dafuer wird keine Spalte
+     * freigehalten, siehe .lower--solo.
+     */
+    const hatSchiene = this._agents.length > 0 || this._tremors.length > 0;
 
     return html`
       <velg-dashboard-command-strip
@@ -277,13 +305,20 @@ export class VelgOperativeDashboard extends LitElement {
           : nothing
       }
 
-      <div class="lower stage-container">
+      <div class="lower stage-container ${hatSchiene ? '' : 'lower--solo'}">
         ${
           this._registry.length
             ? html`<velg-dashboard-registry .worlds=${this._registry}></velg-dashboard-registry>`
             : html`<div></div>`
         }
-        <velg-dashboard-rail .agents=${this._agents} .resonances=${this._tremors}></velg-dashboard-rail>
+        ${
+          hatSchiene
+            ? html`<velg-dashboard-rail
+                .agents=${this._agents}
+                .resonances=${this._tremors}
+              ></velg-dashboard-rail>`
+            : nothing
+        }
       </div>
 
       <div class="ops stage-bleed-row">
