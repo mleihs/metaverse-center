@@ -442,6 +442,61 @@ def shared_tier3(root: Path) -> dict[str, str]:
     return {k: next(iter(v)) for k, v in seen.items() if len(v) == 1}
 
 
+IMPORT_RE = re.compile(r"import\s*\{([^}]*)\}\s*from\s*['\"]([^'\"]+)['\"]")
+STYLES_ARRAY_RE = re.compile(r"static\s+styles\s*=\s*\[(.*?)\]", re.S)
+
+
+def composed_tokens(path: Path, source: str, tokens: dict[str, str]) -> dict[str, str]:
+    """Tier-3 tokens from the style modules this component COMPOSES.
+
+    `static styles = [terminalTokens, dungeonLegibility, css`...`]` is a
+    cascade: each module's `:host` block can redefine what an earlier one set,
+    and the component's own block wins last. Reading only `components/shared/`
+    missed this entirely — a legibility overlay that lives beside the
+    components it corrects (`dungeon/dungeon-legibility.ts`) was invisible,
+    so the tool kept reporting the OLD value and called a fixed file broken.
+    Following the array in ITS OWN ORDER is the only honest way to read it.
+    """
+    m = STYLES_ARRAY_RE.search(source)
+    if not m:
+        return tokens
+    order = [x.strip() for x in m.group(1).split(",")]
+    order = [x for x in order if re.fullmatch(r"[A-Za-z_$][\w$]*", x)]
+    if not order:
+        return tokens
+
+    source_of: dict[str, str] = {}
+    for names, mod in IMPORT_RE.findall(source):
+        for n in names.split(","):
+            n = n.strip().split(" as ")[-1].strip()
+            if n:
+                source_of[n] = mod
+
+    out = dict(tokens)
+    for ident in order:
+        mod = source_of.get(ident)
+        if not mod or not mod.startswith("."):
+            continue
+        target = (path.parent / mod).resolve()
+        cand = target.with_suffix(".ts") if target.suffix in ("", ".js") else target
+        if str(cand).endswith(".js.ts"):
+            cand = Path(str(cand)[:-6] + ".ts")
+        if not cand.exists():
+            continue
+        try:
+            mod_src = cand.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for block in css_blocks(mod_src):
+            for sel, decls, _ in parse_rules(block):
+                if not sel.startswith(":host"):
+                    continue
+                for prop, val in decls.items():
+                    if prop.startswith("--"):
+                        out[prop[2:]] = val
+    return out
+
+
 def local_tokens(rules, tokens: dict[str, str]) -> dict[str, str]:
     """Tier-3 tokens a component declares for itself.
 
@@ -463,9 +518,16 @@ def local_tokens(rules, tokens: dict[str, str]) -> dict[str, str]:
 def scan_file(path: Path, tokens: dict[str, str]):
     findings, skips = [], []
     source = path.read_text(encoding="utf-8")
+    composed = composed_tokens(path, source, tokens)
+    # A pure style MODULE (no `static styles` array of its own) is composed
+    # into components that may redefine the very tokens it paints with. It is
+    # measured here with the shared defaults, which is the worst case but not
+    # necessarily the shipped one - so its findings carry that caveat instead
+    # of pretending to a certainty the file cannot have.
+    standalone_module = STYLES_ARRAY_RE.search(source) is None
     for block in css_blocks(source):
         rules = parse_rules(block)
-        tokens_here = local_tokens(rules, tokens)
+        tokens_here = local_tokens(rules, composed)
         for idx, (sel, decls, off) in enumerate(rules):
             if "color" not in decls:
                 continue
@@ -535,6 +597,7 @@ def scan_file(path: Path, tokens: dict[str, str]):
                         "fg": fg_raw.strip(), "bg": bg_raw.strip(),
                         "ratio": r, "need": need,
                         "size": size_note, "ground_via": ground_via,
+                        "module": standalone_module,
                     }
                 )
     return findings, skips
@@ -565,6 +628,8 @@ def main(argv: list[str]) -> int:
         print(f"{f['ratio']:5.2f}:1  need {f['need']}  {rel}:{f['line']}  {f['sel']}")
         print(f"           fg {f['fg']}")
         same = "  [fg == bg: likely a decorative block, not text]" if f["ratio"] < 1.005 else ""
+        if f.get("module"):
+            same += "  [style module: measured with shared defaults, a consumer may override]"
         print(f"           bg {f['bg']}   ({f['ground_via']}, {f['size']}){same}")
 
     print()
