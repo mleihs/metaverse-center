@@ -95,6 +95,68 @@ def admin_client() -> Client:
     return create_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
+#: Plattform-Tore, die Integrationstests umlegen. Sie stehen in einer ECHTEN
+#: Datenbank, nicht in einer Attrappe — was ein Test hier hinterlässt, findet
+#: der nächste vor, und zwar über den pytest-Lauf hinaus.
+_MUTABLE_PLATFORM_GATES = ("drift_fun_core_enabled",)
+
+
+@pytest.fixture(autouse=True, scope="module")
+def restore_platform_gates(request):
+    """Jede Testdatei gibt die Plattform-Tore so zurück, wie sie sie vorfand.
+
+    DER BEFUND, DER DAZU GEFÜHRT HAT (T7, gemessen 31.08.2026)
+    ----------------------------------------------------------
+    `test_travel_economy.py` stellt das Fun-Kern-Tor in JEDEM `finally` auf
+    **False** — nicht auf den Wert, den es vorfand. `test_travel_sondierung.py`
+    importiert denselben Helfer und schliesst es an drei weiteren Stellen, ohne
+    es je zurückzustellen. Beide behandeln „Tor zu" als Ruhezustand.
+
+    Alphabetisch läuft `economy` vor `sondierung`. Gemessen:
+
+        sondierung allein, Tor offen        26 grün
+        sondierung allein, Tor geschlossen  11 rot   (GATE_CLOSED)
+        economy, dann sondierung           15 rot
+
+    Und der Schaden überlebt den Lauf: nach `sondierung` stand das Tor wieder
+    auf `false`, also fiel derselbe Test beim NÄCHSTEN Aufruf schon „allein"
+    durch. Das ist die schlechtere Sorte Fehler — in CI zufällig, lokal
+    scheinbar dauerhaft, und in beiden Fällen verdächtigt man die falsche
+    Änderung.
+
+    WARUM DIE REPARATUR HIER STEHT UND NICHT IN DEN TESTS
+    -----------------------------------------------------
+    Man könnte in beide Dateien ein sauberes `finally` schreiben. Dann müsste
+    die dritte Datei daran denken — und die vierte. Ein Zustand, den ein Test
+    ändern DARF, gehört von der Vorrichtung zurückgesetzt, nicht von der
+    Disziplin der Schreibenden. Modulweit, weil das die Grenze ist, an der der
+    Schaden übertritt: innerhalb einer Datei setzen die Tests das Tor selbst,
+    zwischen Dateien tut es niemand.
+
+    Zwei Abfragen je Testdatei. Ein Lauf über die ganze Mappe kostet damit rund
+    sechzig — gemessen unter einer Zehntelsekunde, und dafür ist die Mappe in
+    jeder Reihenfolge grün.
+    """
+    if not _supabase_available():
+        yield
+        return
+    client = create_client(settings.supabase_url, settings.supabase_service_role_key)
+    rows = (
+        client.table("platform_settings")
+        .select("setting_key, setting_value")
+        .in_("setting_key", list(_MUTABLE_PLATFORM_GATES))
+        .execute()
+    ).data or []
+    before = {row["setting_key"]: row["setting_value"] for row in rows}
+    try:
+        yield
+    finally:
+        for key, value in before.items():
+            client.table("platform_settings").upsert(
+                {"setting_key": key, "setting_value": value}, on_conflict="setting_key"
+            ).execute()
+
+
 @pytest.fixture()
 async def async_admin_client() -> AsyncClient:
     """Async Supabase client with service_role — for calling async services.
