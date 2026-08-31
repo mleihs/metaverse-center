@@ -29811,10 +29811,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Choosing a target…</source>
   <target>Wählt ein Ziel …</target>
 </trans-unit>
-<trans-unit id="s698be9b3bf2b3136">
-  <source>Defends</source>
-  <target>Verteidigt</target>
-</trans-unit>
 <trans-unit id="s9cd933ed62dc5c25">
   <source>Withdraw this order</source>
   <target>Befehl zurücknehmen</target>
@@ -29946,6 +29942,54 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sd1e6dd84eea8e7c1">
   <source>Fig.</source>
   <target>Abb.</target>
+</trans-unit>
+<trans-unit id="sfd35af42227daeaa">
+  <source>Well used</source>
+  <target>Gut belegt</target>
+</trans-unit>
+<trans-unit id="sd02a0f7128e41203">
+  <source>Half taken</source>
+  <target>Halb belegt</target>
+</trans-unit>
+<trans-unit id="sdeafd9a1046b43f1">
+  <source>Nearly empty</source>
+  <target>Fast leer</target>
+</trans-unit>
+<trans-unit id="s0e73a27597c51052">
+  <source>Well used – two thirds of its places or more</source>
+  <target>Gut belegt – zwei Drittel der Plätze oder mehr</target>
+</trans-unit>
+<trans-unit id="s61f51934c38cf24f">
+  <source>Half taken – a third of its places or more</source>
+  <target>Halb belegt – ein Drittel der Plätze oder mehr</target>
+</trans-unit>
+<trans-unit id="s772674750b4d6a97">
+  <source>Nearly empty – below a third</source>
+  <target>Fast leer – unter einem Drittel</target>
+</trans-unit>
+<trans-unit id="s35fa0687e4315bb6">
+  <source>A ruin – its places are not counted</source>
+  <target>Eine Ruine – ihre Plätze werden nicht gezählt</target>
+</trans-unit>
+<trans-unit id="s565579eb627ac5e2">
+  <source>How to read the occupancy marks</source>
+  <target>Wie die Belegungsmarken zu lesen sind</target>
+</trans-unit>
+<trans-unit id="sc8933f3cd3649667">
+  <source>Auto-defence</source>
+  <target>Auto-Verteidigung</target>
+</trans-unit>
+<trans-unit id="sb0e97584dc715a5c">
+  <source>Full</source>
+  <target>Voll belegt</target>
+</trans-unit>
+<trans-unit id="s083ba71e12037cba">
+  <source>Partly held</source>
+  <target>Teils belegt</target>
+</trans-unit>
+<trans-unit id="s5015a8fb33b98872">
+  <source>Thin</source>
+  <target>Dünn belegt</target>
 </trans-unit>
 </body>
 </file>
