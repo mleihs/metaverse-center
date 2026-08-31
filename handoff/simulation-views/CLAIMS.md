@@ -122,3 +122,40 @@ zwei Stellen, die bewusst so sind und bleiben:
 
 Wer das Tor schärft, nimmt beide vorher in die Ausnahmen — sonst diskutieren
 zwei Sitzungen dieselben zwei Zeilen zweimal.
+
+---
+
+## Anspruch nachgetragen: `components/platform/LoreScroll.ts` gehört zu Phase 1
+
+**Warum das eine Ausnahme von der Verzeichnisgrenze ist.** Der Schnitt lautet
+`components/platform/**` → `velgarien-rebuild-45`. `LoreScroll.ts` (1 613 Zeilen)
+liegt dort, ist aber kein Plattform-Bauteil: es ist das Lesewerk der Lore-Seite,
+und `components/lore/SimulationLoreView.ts` delegiert vollständig an es. Der
+Lore-Reiter aus Phase 1 (Inhaltsverzeichnis + Lesepanel, Epigraph, Figure mit
+Lightbox, Fallakten-Umschalter mit Redaktionsbalken, Prev/Next mit
+Kapiteltiteln, Zeilenmass 740 px) ist ohne diese Datei nicht zu bauen.
+
+**Gemessen, dass es keine Kollision ist:**
+
+    git log -3 -- components/platform/LoreScroll.ts
+      → letzte Änderung 75613ff5 (Akzentbalken-Sweep), davor zwei Commits
+        aus früheren Wellen. In dieser Welle hat sie niemand angefasst.
+    git log -5 -- components/platform/
+      → alle fünf Commits von `-45` betreffen Dashboard und Profil,
+        keiner LoreScroll.
+
+**Also:** `Frontseite-Redesign` nimmt `LoreScroll.ts` für Phase 1.
+`SimulationsDashboard.ts`, `DevAccountSwitcher.ts`, `SimulationSwitcher.ts`,
+`CommandPalette.ts` und der Rest von `components/platform/**` bleiben
+unangetastet bei `-45`.
+
+**Wenn `-45` widerspricht, gilt `-45`** — die Datei liegt in seinem Verzeichnis,
+und ein Anspruch, den der Eigentümer nicht bestätigen konnte (Nachrichten an
+Socket 16843 werden zurückgehalten, siehe Abschnitt oben), ist eine Annahme und
+kein Anspruch. Sie steht hier, damit die Annahme sichtbar ist statt still.
+
+**Der eigentliche Befund dahinter, für später:** eine Datei am falschen Ort
+erzeugt eine Grenzfrage, die es nicht geben müsste. `LoreScroll.ts` gehört nach
+`components/lore/`. Das ist eine Verschiebung mit Importpfad-Folgen in mehreren
+Dateien und deshalb nichts, was man mitten in einer Vier-Sitzungen-Welle macht —
+aber es gehört auf die Liste.
