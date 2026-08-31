@@ -542,14 +542,28 @@ export class VelgEntityLightbox extends LitElement {
 
   // ── Navigation ──
 
+  /*
+   * No end guards here, and that is the whole point of the pair.
+   *
+   * These two used to return early at index 0 and at the last index. Removing
+   * the `disabled` from the buttons without removing these left the worse of
+   * the two states: a button that looks live, hovers, and does nothing when
+   * clicked — no event, not even the transition. Greyed out was at least
+   * honest; this said "press me" and lied. (Caught by velgarien-rebuild-af.)
+   *
+   * The bound belongs to the CONSUMER, not to the lightbox. Both consumers
+   * already step with `(idx + delta + len) % len`, so there is nothing here to
+   * overflow: this pair announces the intent, the consumer decides where that
+   * lands. A lightbox that also decided would be a second opinion about the
+   * same question, which is how the two halves came to disagree in the first
+   * place.
+   */
   private _navigatePrev(): void {
-    if (this.currentIndex <= 0) return;
     this._playTransition();
     this.dispatchEvent(new CustomEvent('lightbox-prev', { bubbles: true, composed: true }));
   }
 
   private _navigateNext(): void {
-    if (this.currentIndex >= this.totalEntities - 1) return;
     this._playTransition();
     this.dispatchEvent(new CustomEvent('lightbox-next', { bubbles: true, composed: true }));
   }
