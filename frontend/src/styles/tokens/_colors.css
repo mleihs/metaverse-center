@@ -188,6 +188,21 @@
      helle Schrift auf Amber ergibt 1,89. Die Fuellung ist nie gethemt, also ist
      ihre Beschriftung es auch nicht: 9,22 gegen Amber, in jedem Theme. */
   --color-on-accent-amber: #0a0a0a;
+
+  /* Ink for the constant inverse surface.
+   *
+   * Same rule as --color-on-accent-amber, second case: where a SURFACE is not
+   * themeable, its ink must not be either. --color-surface-inverse is a
+   * platform constant (#ffffff, absent from THEME_TOKEN_MAP), so neither
+   * themeable ink works across the range — and the two fail in opposite halves:
+   *
+   *   --color-text-inverse   white in the 6 LIGHT themes   -> 1.00-1.19:1
+   *   --color-text-primary   light in the 5 DARK themes    -> 1.04-2.32:1
+   *
+   * Every theme fails one of them. The component that paints here today
+   * (shared/VelgKillSwitch .switch__cover) had picked the second, which is
+   * right for a light theme and unreadable in every dark one. */
+  --color-on-surface-inverse: #0a0a0a;
   --color-accent-green: #4ade80;
   --color-mint-brass: #b8860b;
 
