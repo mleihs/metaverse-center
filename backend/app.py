@@ -144,6 +144,7 @@ from backend.services.instagram_scheduler import InstagramScheduler
 from backend.services.journal.fragment_generation_scheduler import (
     FragmentGenerationScheduler,
 )
+from backend.services.lifecycle_mail_scheduler import LifecycleMailScheduler
 from backend.services.ops_ledger_service import OpsLedgerService
 from backend.services.platform_model_config import ensure_loaded as ensure_model_config
 from backend.services.platform_research_domains import ensure_loaded as ensure_research_domains
@@ -221,6 +222,7 @@ async def lifespan(app: FastAPI):
             await CircuitRevertSweeper.start(),
             await SentryRuleCacheRefresher.start(),
             await FragmentGenerationScheduler.start(),
+            await LifecycleMailScheduler.start(),
             await start_instance_cleanup(),
         ]
 

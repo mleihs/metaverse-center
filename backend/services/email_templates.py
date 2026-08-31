@@ -1552,6 +1552,53 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "If you did not expect this, reply to this message.",
         "de": "Wenn du damit nicht gerechnet hast, antworte auf diese Nachricht.",
     },
+    # ── Welcome (P2.21) ──
+    # Die erste Nachricht, die ein neues Konto je bekommt. Sie darf genau EINEN
+    # ersten Schritt nennen; zwei gleichrangige Knöpfe wählen nichts aus. Kein
+    # Freigabe-Vokabular: `clearance` ist eine echte Mechanik im Spiel, und wer
+    # sie hier benutzt, verspricht etwas, das noch niemand erteilt hat.
+    "welcome_header": {
+        "en": "YOUR ACCOUNT IS READY",
+        "de": "DEIN KONTO IST BEREIT",
+    },
+    "pre_welcome": {
+        "en": "Your account is ready. Here is the shortest way in.",
+        "de": "Dein Konto ist bereit. Hier ist der kürzeste Weg hinein.",
+    },
+    "welcome_subject": {
+        "en": "Welcome to metaverse.center",
+        "de": "Willkommen bei metaverse.center",
+    },
+    "welcome_lead": {
+        "en": "metaverse.center runs simulated worlds. Each one has its own inhabitants, its own history and its own rules, and it keeps moving whether or not anyone is watching.",
+        "de": "metaverse.center betreibt simulierte Welten. Jede hat eigene Bewohner, eine eigene Geschichte und eigene Regeln, und sie läuft weiter, ob jemand zusieht oder nicht.",
+    },
+    "welcome_start_header": {
+        "en": "WHERE TO START",
+        "de": "WO DU ANFÄNGST",
+    },
+    "welcome_step": {
+        "en": "The quickstart takes about five minutes and ends with you standing inside a world.",
+        "de": "Der Schnelleinstieg dauert etwa fünf Minuten und endet damit, dass du in einer Welt stehst.",
+    },
+    "welcome_cta": {
+        "en": "OPEN THE QUICKSTART",
+        "de": "SCHNELLEINSTIEG ÖFFNEN",
+    },
+    "welcome_browse": {
+        "en": "You can also just look around first. The multiverse lists every public world, and reading them needs no account at all.",
+        "de": "Du kannst dich auch erst umsehen. Das Multiversum listet jede öffentliche Welt, und zum Lesen brauchst du gar kein Konto.",
+    },
+    "welcome_pace": {
+        "en": "Nothing here demands a daily visit. Worlds advance on their own; you decide when you take part.",
+        "de": "Nichts hier verlangt einen täglichen Besuch. Die Welten laufen von allein weiter, du entscheidest, wann du mitspielst.",
+    },
+    # Erwartungen ehrlich setzen ist der Unterschied zwischen einer Willkommens-
+    # mail und dem Beginn einer Belästigung.
+    "welcome_mail_note": {
+        "en": "This is the only automatic message you get for signing up. Everything else is optional and you can switch it off at any time.",
+        "de": "Das ist die einzige automatische Nachricht, die du fürs Anmelden bekommst. Alles Weitere ist freiwillig und jederzeit abschaltbar.",
+    },
     # ── Deadline reminder (P2.17) ──
     # Das System zog RP ab und ersetzte den Spieler durch eine KI, OHNE vorher
     # zu warnen — der Nutzer erfuhr von der Strafe erst im nächsten Lagebericht.
@@ -2823,6 +2870,100 @@ def render_account_deleted(
         "\n".join(blocks),
         lang=lang,
         preheader=_nt("pre_deleted", lang),
+    )
+
+
+def welcome_subject(email_locale: str | None = None) -> str:
+    """Subject of the welcome mail (P2.21)."""
+    return _nt("welcome_subject", _resolve_lang(email_locale))
+
+
+def render_welcome(*, email_locale: str | None = None) -> str:
+    """Greet a new account and name exactly one first step (Handoff P2.21).
+
+    Registering produced no message of any kind. The confirmation link comes
+    from GoTrue and says nothing about the place it confirms; after clicking it
+    a new account stood in a lobby with no indication of where to go.
+
+    Three decisions worth stating, because the easy version of this mail gets
+    all three wrong:
+
+    * **One call to action.** ``/how-to-play/quickstart`` and nothing else in
+      button form. A welcome mail with three equal buttons has chosen nothing
+      and hands the choice back to someone who has no basis for making it.
+    * **No name.** ``user_profiles`` holds ``id`` and ``email`` and no display
+      name, so there is nothing to greet by. An invented "Hi there" is worse
+      than the plain address.
+    * **No clearance vocabulary.** ``clearance`` is a real mechanic with its own
+      grant and denial mail. Borrowing the word here would promise a thing
+      nobody has granted yet.
+
+    The closing line says this is the only automatic mail signing up produces.
+    Setting that expectation is the difference between a welcome and the
+    opening move of a nuisance.
+    """
+    lang = _resolve_lang(email_locale)
+    accent = _AMBER
+    base = settings.site_url.rstrip("/")
+
+    top = f"""\
+          <tr>
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                metaverse.center
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <h1 style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt("welcome_header", lang)}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 32px 8px;">
+              <p style="margin:0;font-size:15px;line-height:1.65;color:{_TEXT};">
+                {_esc(_nt("welcome_lead", lang))}
+              </p>
+            </td>
+          </tr>"""
+
+    blocks = [
+        top,
+        _section_header(_nt("welcome_start_header", lang)),
+        f"""\
+          <tr>
+            <td style="padding:4px 32px 4px;">
+              <p style="margin:0;font-size:14px;line-height:1.65;color:{_TEXT};">
+                {_esc(_nt("welcome_step", lang))}
+              </p>
+            </td>
+          </tr>""",
+        _cta_button(f"{base}/how-to-play/quickstart", _nt("welcome_cta", lang)),
+        f"""\
+          <tr>
+            <td style="padding:0 32px 16px;">
+              <p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:{_TEXT_DIM};">
+                {_esc(_nt("welcome_browse", lang))}
+                <a href="{_esc(base)}/multiverse" style="color:{accent};">{_esc(base)}/multiverse</a>
+              </p>
+              <p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:{_TEXT_DIM};">
+                {_esc(_nt("welcome_pace", lang))}
+              </p>
+              <p style="margin:0;font-size:13px;line-height:1.65;color:{_TEXT_DIM};">
+                {_esc(_nt("welcome_mail_note", lang))}
+              </p>
+            </td>
+          </tr>""",
+        _footer_row(email_locale),
+    ]
+
+    return _email_shell(
+        "WELCOME",
+        "\n".join(blocks),
+        lang=lang,
+        preheader=_nt("pre_welcome", lang),
     )
 
 
