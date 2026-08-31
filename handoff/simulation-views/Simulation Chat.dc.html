@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes rise { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+    @keyframes bubble-in { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+    @keyframes typing-dot { 0%,60%,100%{opacity:.25; transform:translateY(0)} 30%{opacity:1; transform:translateY(-3px)} }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .hv-amber { transition:background .2s, transform .2s, box-shadow .2s; cursor:pointer; }
+    .hv-amber:hover { background:#fbbf24 !important; transform:translate(-1px,-1px); box-shadow:3px 3px 0 #000 !important; }
+    .conv { transition:background .18s, border-color .18s; cursor:pointer; }
+    .conv:hover { background:#101010 !important; }
+    .nav-tab { transition:background .18s, color .18s; cursor:pointer; flex:0 0 auto; white-space:nowrap; }
+    .nav-tab:hover { background:#111111; color:#e5e5e5 !important; }
+    .icbtn { transition:color .15s, border-color .15s; cursor:pointer; }
+    .icbtn:hover { color:#f59e0b !important; border-color:#f59e0b !important; }
+    .feed-scroll { scrollbar-width:thin; scrollbar-color:#2a2a2a #0a0a0a; }
+    .feed-scroll::-webkit-scrollbar { width:8px; }
+    .feed-scroll::-webkit-scrollbar-thumb { background:#2a2a2a; }
+    .feed-scroll::-webkit-scrollbar-track { background:#0a0a0a; }
+    .composer-input { field-sizing:content; }
+    .composer-input:focus { border-color:#f59e0b !important; }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1b — 4K-PROBE (2560px) ═══════════════ -->
+  <div id="1b" data-screen-label="1b Simulation Chat 2560" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">4K-Probe — <a href="#1a">1a</a> bei 2560px: Cockpit-Regel: Sidebar fix links, Fenster nimmt die volle Breite — Feed &amp; Composer zentrieren ihr Lesemaß (1080px), Bubbles bleiben bei 560px</span>
+    </div>
+
+    <div style="position:relative; width:2560px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>Chat</span>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:7px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#4ade80;"><span style="width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:rec-blink 2.2s ease-in-out infinite;"></span>3 Agenten erreichbar</span>
+      </div>
+
+      <!-- Kanon-Nav: Chat aktiv (aus dem Mehr-Register nach vorn gepinnt) -->
+      <div style="display:flex; align-items:stretch; background:#060606; border-bottom:1px solid #222; overflow:hidden;">
+        <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="10">
+          <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+        </sc-for>
+        <span style="flex:1;"></span>
+        <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+      </div>
+
+      <!-- Chat layout -->
+      <div style="display:grid; grid-template-columns:340px 1fr; height:760px;">
+
+        <!-- Sidebar -->
+        <div style="display:flex; flex-direction:column; border-right:1px solid #222; overflow:hidden; background:#0a0a0a;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#0d0d0d; border-bottom:1px solid #222; flex:0 0 auto;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;">Gespräche <span style="color:#555;">4</span></span>
+            <span class="hv-amber" style="display:inline-flex; padding:6px 12px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000;">+ Neu</span>
+          </div>
+          <div class="feed-scroll" style="flex:1; overflow-y:auto;">
+            <sc-for list="{{ convs }}" as="c" hint-placeholder-count="4">
+              <div class="conv" onClick="{{ c.go }}" style="{{ c.style }}">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:7px;">
+                  <div style="display:flex; flex:0 0 auto;">
+                    <sc-for list="{{ c.thumbs }}" as="th" hint-placeholder-count="1">
+                      <span style="{{ th.style }}">{{ th.mono }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <span style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; letter-spacing:.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</span>
+                      <sc-if value="{{ c.pinned }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; color:#f59e0b;" title="Angepinnt">⚲</span></sc-if>
+                      <sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}"><span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; flex:0 0 auto;"></span></sc-if>
+                    </div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:2px;">{{ c.role }}</div>
+                  </div>
+                  <span style="font-size:8.5px; color:#555; flex:0 0 auto;">{{ c.badge }}</span>
+                </div>
+                <div style="font-family:'Spectral',Georgia,serif; font-size:12px; line-height:1.45; color:#888; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">{{ c.preview }}</div>
+                <div style="font-size:8.5px; letter-spacing:1px; color:#555; margin-top:7px;">{{ c.time }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Window -->
+        <div style="display:flex; flex-direction:column; min-width:0; background:#060606;">
+          <!-- Window header -->
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 18px; background:#0d0d0d; border-bottom:1px solid #222; flex:0 0 auto;">
+            <span style="{{ hdThumb }}">{{ hdMono }}</span>
+            <div style="min-width:0; flex:1;">
+              <div style="display:flex; align-items:baseline; gap:10px;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5;">{{ hdName }}</span>
+                <span style="display:inline-flex; align-items:center; gap:5px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80;"><span style="width:5px; height:5px; border-radius:50%; background:#4ade80;"></span>{{ hdStatus }}</span>
+              </div>
+              <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-top:2px;">{{ hdRole }}</div>
+            </div>
+            <span class="icbtn" title="Ereignis referenzieren" style="display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border:1px solid #2a2a2a; color:#888; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;">⚡ Ereignis</span>
+            <span class="icbtn" title="Archivieren" style="display:inline-flex; padding:6px 11px; border:1px solid #2a2a2a; color:#888; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;">Archiv</span>
+          </div>
+
+          <!-- Feed -->
+          <div class="feed-scroll" style="flex:1; overflow-y:auto; padding:24px max(26px, calc((100% - 1080px) / 2)); display:flex; flex-direction:column; gap:12px;">
+            <sc-for list="{{ feed }}" as="m" hint-placeholder-count="8">
+              <div style="{{ m.row }}">
+                <sc-if value="{{ m.isDivider }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1; display:flex; align-items:center; gap:10px;">
+                    <span style="flex:1; border-top:1px dashed #222;"></span>
+                    <span style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">{{ m.text }}</span>
+                    <span style="flex:1; border-top:1px dashed #222;"></span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isEvent }}" hint-placeholder-val="{{ false }}">
+                  <div style="max-width:520px; border:1px dashed rgba(245,158,11,.45); background:rgba(245,158,11,.05); padding:9px 13px; display:flex; align-items:center; gap:9px;">
+                    <span style="color:#f59e0b; font-size:12px;">⚡</span>
+                    <div>
+                      <div style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:3px;">Referenziertes Ereignis</div>
+                      <div style="font-family:'Spectral',Georgia,serif; font-size:12.5px; color:#c9c9c9;">{{ m.text }}</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isMsg }}" hint-placeholder-val="{{ true }}">
+                  <div style="{{ m.bubble }}">
+                    <div style="{{ m.meta }}">{{ m.who }} · {{ m.time }}</div>
+                    <div style="{{ m.body }}">{{ m.text }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; justify-content:flex-start;">
+                <div style="display:inline-flex; align-items:center; gap:5px; background:#111; border:1px solid #222; padding:10px 14px;">
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out infinite;"></span>
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out .2s infinite;"></span>
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out .4s infinite;"></span>
+                  <span style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-left:6px;">{{ hdName }} schreibt…</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Composer -->
+          <div style="flex:0 0 auto; border-top:1px solid #222; background:#0a0a0a; padding:12px max(18px, calc((100% - 1080px) / 2)) 10px;">
+            <div style="display:flex; gap:10px; align-items:flex-end;">
+              <textarea class="composer-input" onKeyDown="{{ composerKey }}" placeholder="{{ composerPh }}" rows="1" style="flex:1; resize:none; min-height:40px; max-height:120px; box-sizing:border-box; background:#060606; border:1px solid #2a2a2a; color:#e5e5e5; font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.5; padding:10px 14px; outline:none; transition:border-color .15s;"></textarea>
+              <span class="hv-amber" onClick="{{ sendClick }}" style="display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; font-size:15px; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000; flex:0 0 auto;">➤</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:7px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">
+              <span>Shift+Enter für Zeilenumbruch</span>
+              <span>Antwortet in der Stimme der Simulation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1a — SIMULATION CHAT (1440) ═══════════════ -->
+  <div id="1a" data-screen-label="1a Simulation Chat" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Chat mit Agenten — nach ChatView.ts (Sidebar + Fenster, Bubbles, Composer, Event-Referenz, Typing) · Simulation View v4-Rahmen</span>
+    </div>
+
+    <div style="position:relative; width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>Chat</span>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:7px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#4ade80;"><span style="width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:rec-blink 2.2s ease-in-out infinite;"></span>3 Agenten erreichbar</span>
+      </div>
+
+      <!-- Kanon-Nav: Chat aktiv (aus dem Mehr-Register nach vorn gepinnt) -->
+      <div style="display:flex; align-items:stretch; background:#060606; border-bottom:1px solid #222; overflow:hidden;">
+        <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="10">
+          <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+        </sc-for>
+        <span style="flex:1;"></span>
+        <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+      </div>
+
+      <!-- Chat layout -->
+      <div style="display:grid; grid-template-columns:300px 1fr; height:660px;">
+
+        <!-- Sidebar -->
+        <div style="display:flex; flex-direction:column; border-right:1px solid #222; overflow:hidden; background:#0a0a0a;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#0d0d0d; border-bottom:1px solid #222; flex:0 0 auto;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;">Gespräche <span style="color:#555;">4</span></span>
+            <span class="hv-amber" style="display:inline-flex; padding:6px 12px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000;">+ Neu</span>
+          </div>
+          <div class="feed-scroll" style="flex:1; overflow-y:auto;">
+            <sc-for list="{{ convs }}" as="c" hint-placeholder-count="4">
+              <div class="conv" onClick="{{ c.go }}" style="{{ c.style }}">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:7px;">
+                  <div style="display:flex; flex:0 0 auto;">
+                    <sc-for list="{{ c.thumbs }}" as="th" hint-placeholder-count="1">
+                      <span style="{{ th.style }}">{{ th.mono }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:7px;">
+                      <span style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; letter-spacing:.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</span>
+                      <sc-if value="{{ c.pinned }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; color:#f59e0b;" title="Angepinnt">⚲</span></sc-if>
+                      <sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}"><span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; flex:0 0 auto;"></span></sc-if>
+                    </div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:2px;">{{ c.role }}</div>
+                  </div>
+                  <span style="font-size:8.5px; color:#555; flex:0 0 auto;">{{ c.badge }}</span>
+                </div>
+                <div style="font-family:'Spectral',Georgia,serif; font-size:12px; line-height:1.45; color:#888; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">{{ c.preview }}</div>
+                <div style="font-size:8.5px; letter-spacing:1px; color:#555; margin-top:7px;">{{ c.time }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Window -->
+        <div style="display:flex; flex-direction:column; min-width:0; background:#060606;">
+          <!-- Window header -->
+          <div style="display:flex; align-items:center; gap:12px; padding:11px 18px; background:#0d0d0d; border-bottom:1px solid #222; flex:0 0 auto;">
+            <span style="{{ hdThumb }}">{{ hdMono }}</span>
+            <div style="min-width:0; flex:1;">
+              <div style="display:flex; align-items:baseline; gap:10px;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5;">{{ hdName }}</span>
+                <span style="display:inline-flex; align-items:center; gap:5px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80;"><span style="width:5px; height:5px; border-radius:50%; background:#4ade80;"></span>{{ hdStatus }}</span>
+              </div>
+              <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-top:2px;">{{ hdRole }}</div>
+            </div>
+            <span class="icbtn" title="Ereignis referenzieren" style="display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border:1px solid #2a2a2a; color:#888; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;">⚡ Ereignis</span>
+            <span class="icbtn" title="Archivieren" style="display:inline-flex; padding:6px 11px; border:1px solid #2a2a2a; color:#888; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;">Archiv</span>
+          </div>
+
+          <!-- Feed -->
+          <div class="feed-scroll" style="flex:1; overflow-y:auto; padding:20px 26px; display:flex; flex-direction:column; gap:12px;">
+            <sc-for list="{{ feed }}" as="m" hint-placeholder-count="8">
+              <div style="{{ m.row }}">
+                <sc-if value="{{ m.isDivider }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1; display:flex; align-items:center; gap:10px;">
+                    <span style="flex:1; border-top:1px dashed #222;"></span>
+                    <span style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">{{ m.text }}</span>
+                    <span style="flex:1; border-top:1px dashed #222;"></span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isEvent }}" hint-placeholder-val="{{ false }}">
+                  <div style="max-width:520px; border:1px dashed rgba(245,158,11,.45); background:rgba(245,158,11,.05); padding:9px 13px; display:flex; align-items:center; gap:9px;">
+                    <span style="color:#f59e0b; font-size:12px;">⚡</span>
+                    <div>
+                      <div style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:3px;">Referenziertes Ereignis</div>
+                      <div style="font-family:'Spectral',Georgia,serif; font-size:12.5px; color:#c9c9c9;">{{ m.text }}</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isMsg }}" hint-placeholder-val="{{ true }}">
+                  <div style="{{ m.bubble }}">
+                    <div style="{{ m.meta }}">{{ m.who }} · {{ m.time }}</div>
+                    <div style="{{ m.body }}">{{ m.text }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; justify-content:flex-start;">
+                <div style="display:inline-flex; align-items:center; gap:5px; background:#111; border:1px solid #222; padding:10px 14px;">
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out infinite;"></span>
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out .2s infinite;"></span>
+                  <span style="width:5px; height:5px; border-radius:50%; background:#a68a2e; animation:typing-dot 1.2s ease-in-out .4s infinite;"></span>
+                  <span style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-left:6px;">{{ hdName }} schreibt…</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Composer -->
+          <div style="flex:0 0 auto; border-top:1px solid #222; background:#0a0a0a; padding:12px 18px 10px;">
+            <div style="display:flex; gap:10px; align-items:flex-end;">
+              <textarea class="composer-input" onKeyDown="{{ composerKey }}" placeholder="{{ composerPh }}" rows="1" style="flex:1; resize:none; min-height:40px; max-height:120px; box-sizing:border-box; background:#060606; border:1px solid #2a2a2a; color:#e5e5e5; font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.5; padding:10px 14px; outline:none; transition:border-color .15s;"></textarea>
+              <span class="hv-amber" onClick="{{ sendClick }}" style="display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; font-size:15px; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000; flex:0 0 auto;">➤</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:7px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">
+              <span>Shift+Enter für Zeilenumbruch</span>
+              <span>Antwortet in der Stimme der Simulation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1536, &quot;height&quot;: 860 }
+}">
+class Component extends DCLogic {
+  state = {
+    conv: 0, typing: false,
+    extra: { 0: [], 1: [], 2: [], 3: [] },
+  };
+
+  componentWillUnmount() { clearTimeout(this._replyT); }
+
+  _agents() {
+    return {
+      aquila: { name: 'Sister Aquila', role: 'Pheromon-Schreiberin · Pheromon-Viertel', img: 'assets/p-voss.png', status: 'Erreichbar', reply: 'Ich habe das Dekret dreimal gerochen, bevor ich es signierte. Beim dritten Mal roch es nach Ihrer Handschrift, nicht nach meiner. Wir sollten darüber sprechen, wessen Gesetz hier eigentlich atmet.' },
+      vosk: { name: 'Praetor Vosk', role: 'Molt-Registrator · Obere Waben', img: 'assets/p-wolf.png', status: 'Im Amt', reply: 'Das Register schließt bei Lampenstunde. Wenn Sie eine Häutung genehmigt haben wollen, bringen Sie zwei Zeugen und einen Panzer ohne Schulden.' },
+      ysold: { name: 'Ysold Crane', role: 'Ketzer-Imkerin · Unterwabe', img: 'assets/p-fenn.png', status: 'Unterwegs', reply: 'Meine Bienen haben Ihre Nachricht vor mir gelesen. Sie sagen, Sie meinen es ernst. Kommen Sie allein, und riechen Sie nach nichts.' },
+      k9: { name: 'Ledger-Drone K-9', role: 'Zensus-Drohne · Ledger-Distrikt', img: null, status: 'Zählt', reply: 'Anfrage protokolliert unter Randnotiz 4.112. Frage: Wenn ich alles zähle, was zählt — wer zählt mich? Bitte um Dienstanweisung.' },
+    };
+  }
+
+  _convs() {
+    const A = this._agents();
+    return [
+      { key: 0, agents: [A.aquila], base: [
+        { d: 'Zyklus 7 · Morgen' },
+        { a: true, t: 'Das Dekret #114 ist in den Waben. Die unteren Bezirke atmen es bereits — und gehorchen langsamer, als der Kanon vorschreibt.', time: '08:12' },
+        { e: 'Duft-Dekret #114 in die Waben entlassen — Zyklus 7, Pheromon-Archiv' },
+        { a: false, t: 'Langsamer? Wie viel langsamer — und wer genau?', time: '08:15' },
+        { a: true, t: 'Die Unterwabe. Ysolds Nachbarschaft. Dort hält man die Luft an, wenn ein Gesetz vorbeizieht — wörtlich. Ich habe das nicht gemeldet. Noch nicht.', time: '08:21' },
+      ], preview: 'Die Unterwabe. Ysolds Nachbarschaft. Dort hält man die Luft an…', time: 'vor 2 Std.', badge: '12', unread: false, pinned: false },
+      { key: 1, agents: [A.vosk], base: [
+        { d: 'Zyklus 6' },
+        { a: false, t: 'Praetor, der Antrag von Marn Tell liegt seit zwei Zyklen. Woran hängt es?', time: 'Zyklus 6' },
+        { a: true, t: 'An seinem Klang. Ein Panzer, der bei der Prüfung zweimal anders klingt, bekommt keine dritte Gelegenheit — er bekommt eine Akte.', time: 'Zyklus 6' },
+      ], preview: 'An seinem Klang. Ein Panzer, der bei der Prüfung zweimal anders klingt…', time: 'vor 1 Tag', badge: '8', unread: false, pinned: false },
+      { key: 2, agents: [A.ysold], base: [
+        { d: 'Zyklus 7' },
+        { a: true, t: 'Zwei Ihrer Leute standen heute vor meinem Stand. Sie rochen nach Registratur. Wenn Sie etwas wissen wollen, fragen Sie selbst.', time: '11:40' },
+        { a: true, t: 'Und bringen Sie keinen Stempel mit.', time: '11:41' },
+      ], preview: 'Zwei Ihrer Leute standen heute vor meinem Stand. Sie rochen nach…', time: 'vor 20 Min.', badge: '2', unread: true, pinned: true },
+      { key: 3, agents: [A.vosk, A.aquila, A.k9], base: [
+        { d: 'Krisenstab · Zyklus 7' },
+        { a: true, who: 'Praetor Vosk', t: 'Der Bestand: eine unregistrierte Häutung, gemeldet aus der Unterwabe. K-9, die Zahlen.', time: '14:02' },
+        { a: true, who: 'Ledger-Drone K-9', t: 'Zählung: 1 Häutung ohne Signatur. Wahrscheinlichkeit einer zweiten binnen eines Zyklus: 34%. Randnotiz: Die erste fühlte sich beobachtet.', time: '14:03' },
+      ], preview: 'Zählung: 1 Häutung ohne Signatur. Wahrscheinlichkeit einer zweiten…', time: 'vor 4 Std.', badge: '31', unread: true, pinned: false },
+    ];
+  }
+
+  _thumb(a, size, ring) {
+    return 'display:inline-flex;align-items:center;justify-content:center;width:' + size + 'px;height:' + size + 'px;box-sizing:border-box;border:1px solid ' + (ring || '#333') + ';font-family:\'Courier New\',monospace;font-weight:700;font-size:' + Math.round(size * 0.32) + 'px;color:#a0a0a0;flex:0 0 auto;' + (a.img ? 'background:url(\'' + a.img + '\') center 15%/cover;' : 'background:#111;');
+  }
+
+  _send(val) {
+    const text = (val || '').trim();
+    if (!text || this.state.typing) return;
+    const ci = this.state.conv;
+    const now = 'jetzt';
+    this.setState((s) => ({
+      typing: true,
+      extra: { ...s.extra, [ci]: s.extra[ci].concat([{ a: false, t: text, time: now }]) },
+    }));
+    clearTimeout(this._replyT);
+    this._replyT = setTimeout(() => {
+      const agent = this._convs()[ci].agents[0];
+      this.setState((s) => ({
+        typing: false,
+        extra: { ...s.extra, [ci]: s.extra[ci].concat([{ a: true, t: agent.reply, time: 'jetzt' }]) },
+      }));
+    }, 1900);
+  }
+
+  renderVals() {
+    const NAV = ['◈ Übersicht', 'Lore', 'Agenten', 'Gebäude', 'Blatt', 'Chronik', 'Ereignisse', 'Terminal', 'Dungeon', 'Chat', 'Mehr (8) ▾'];
+    const navTabs = NAV.map((label) => ({
+      label,
+      style: 'padding:13px 15px;font-size:10px;letter-spacing:2px;text-transform:uppercase;' + (label === 'Chat' ? 'color:#f59e0b;background:#0a0a0a;box-shadow:inset 0 -2px 0 #f59e0b;' : 'color:#888;'),
+    }));
+
+    const convs = this._convs();
+    const ci = this.state.conv;
+    const active = convs[ci];
+    const lead = active.agents[0];
+
+    const convVals = convs.map((c, i) => ({
+      go: () => this.setState({ conv: i, typing: false }),
+      style: 'padding:12px 14px;border-bottom:1px solid #1a1a1a;' + (i === ci ? 'background:rgba(245,158,11,.06);outline:1px solid rgba(245,158,11,.45);outline-offset:-1px;' : 'background:transparent;'),
+      thumbs: c.agents.slice(0, 3).map((a, j) => ({
+        mono: a.img ? '' : 'K9',
+        style: this._thumb(a, 30, i === ci ? '#f59e0b66' : '#333') + (j > 0 ? 'margin-left:-9px;' : ''),
+      })),
+      name: c.agents.length > 1 ? c.agents.map((a) => a.name.split(' ').pop()).join(' · ') : c.agents[0].name,
+      role: c.agents.length > 1 ? c.agents.length + ' Agenten' : c.agents[0].role.split(' · ')[0],
+      preview: c.preview, time: c.time, badge: c.badge,
+      unread: c.unread, pinned: c.pinned,
+    }));
+
+    const msgs = active.base.concat(this.state.extra[ci]);
+    const feed = msgs.map((m, i) => {
+      if (m.d) return { isDivider: true, isEvent: false, isMsg: false, text: m.d, row: 'display:flex;' };
+      if (m.e) return { isDivider: false, isEvent: true, isMsg: false, text: m.e, row: 'display:flex; justify-content:flex-start;' };
+      const mine = m.a === false;
+      const who = mine ? 'Du' : (m.who || active.agents[0].name);
+      return {
+        isDivider: false, isEvent: false, isMsg: true,
+        text: m.t, who, time: m.time,
+        row: 'display:flex; justify-content:' + (mine ? 'flex-end' : 'flex-start') + ';' + (i >= active.base.length ? 'animation:bubble-in .3s ease both;' : ''),
+        bubble: 'max-width:560px;padding:10px 14px 11px;border:1px solid ' + (mine ? 'rgba(245,158,11,.4);background:rgba(245,158,11,.07);' : '#222;background:#101010;'),
+        meta: 'font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:' + (mine ? '#c9962e' : '#666') + ';margin-bottom:5px;',
+        body: 'font-family:Spectral,Georgia,serif;font-size:14px;line-height:1.6;color:' + (mine ? '#e8d6a8' : '#c9c9c9') + ';',
+      };
+    });
+
+    return {
+      navTabs, convs: convVals, feed,
+      typing: this.state.typing,
+      hdName: lead.name, hdRole: active.agents.length > 1 ? active.agents.map((a) => a.name).join(' · ') : lead.role,
+      hdStatus: lead.status,
+      hdMono: lead.img ? '' : 'K9',
+      hdThumb: this._thumb(lead, 36, '#f59e0b66'),
+      composerPh: 'Nachricht an ' + lead.name + '…',
+      composerKey: (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this._send(e.target.value);
+          e.target.value = '';
+        }
+      },
+      sendClick: (e) => {
+        const ta = e.currentTarget.parentElement.querySelector('textarea');
+        if (ta) { this._send(ta.value); ta.value = ''; }
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>
