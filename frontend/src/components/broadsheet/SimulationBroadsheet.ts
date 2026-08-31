@@ -123,6 +123,13 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         border: 1px solid var(--color-border);
         background: var(--color-surface);
         color: var(--color-text-primary);
+        /* These are type="date". The calendar glyph and the whole native
+           picker are drawn by the BROWSER, not by this stylesheet, and the
+           browser draws them for a LIGHT page unless told otherwise: a dark
+           icon on our dark field, and a white calendar popping out of a black
+           interface. color-scheme is the only thing that reaches that chrome
+           - no colour token can. */
+        color-scheme: dark;
       }
 
       .editorial__input:focus {
@@ -614,7 +621,11 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         tickerItems.length > 0
           ? html`
             <div class="broadsheet__ticker">
-              <velg-dispatch-ticker .items=${tickerItems}></velg-dispatch-ticker>
+              <!-- 36s per the handoff, not the component's 40s default. Set here
+                   rather than in the shared ticker: the landing page's chronicle
+                   feed uses the same element and has no reason to change. The
+                   component already stops under prefers-reduced-motion. -->
+              <velg-dispatch-ticker speed="36" .items=${tickerItems}></velg-dispatch-ticker>
             </div>
           `
           : nothing
