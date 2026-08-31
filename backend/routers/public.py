@@ -6,6 +6,7 @@ Delegates to existing service layer where possible (keeps query logic in sync).
 """
 
 import logging
+from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID
 
@@ -48,6 +49,7 @@ from backend.models.game_mechanics import (
 )
 from backend.models.gazette import GazetteEntry
 from backend.models.journal import JournalPublicState
+from backend.models.landing import LandingSnapshotResponse
 from backend.models.location import CityResponse, StreetResponse, ZoneResponse
 from backend.models.lore import LoreSectionResponse
 from backend.models.memory import MemoryResponse
@@ -91,6 +93,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.journal.fragment_generation_scheduler import journal_enabled
+from backend.services.landing_service import LandingService
 from backend.services.location_service import LocationService
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.relationship_service import RelationshipService
@@ -132,6 +135,47 @@ async def get_platform_stats(
         logger.warning("Platform stats unavailable", exc_info=True)
         sentry_sdk.capture_exception()
         data = {"simulation_count": 0, "active_epoch_count": 0, "resonance_count": 0}
+    return SuccessResponse(data=data)
+
+
+# ── Landing Snapshot ─────────────────────────────────────────────────────
+
+
+@router.get("/landing")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_landing_snapshot(
+    request: Request,
+    http_response: Response,
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[LandingSnapshotResponse]:
+    """Zahlen, vier Welten und drei Bürger für die Frontseite — in einem Aufruf.
+
+    Getrennt von ``/platform-stats``, das bleibt: dessen drei Zähler haben
+    andere Aufrufer, und einer davon misst anders (er filtert `status` nicht
+    mit und zählt Epochen allein am Status, also auf Prod 7 statt 0). Die
+    Frontseite darf nicht an einem Zähler hängen, der für einen anderen Zweck
+    geschnitten wurde.
+
+    Zweisprachig wie ``SimulationResponse``: die Antwort trägt `name` UND
+    `name_de`, der Client wählt. Deshalb kein `locale`-Parameter.
+
+    Fällt etwas aus, degradiert der Endpunkt auf einen leeren Schnappschuss.
+    Public-First: Browsen darf nie einen Fehler erzeugen — und eine erfundene
+    Zahl wäre schlimmer als eine fehlende.
+    """
+    max_age = get_ttl("cache_http_simulations_max_age")
+    http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
+    try:
+        data = await LandingService.get_snapshot(anon)
+    except Exception:  # noqa: BLE001 — die Frontseite zeigt nie einen Fehler
+        logger.warning("Landing-Schnappschuss nicht verfügbar", exc_info=True)
+        sentry_sdk.capture_exception()
+        data = {
+            "counts": {},
+            "worlds": [],
+            "citizens": [],
+            "measured_at": datetime.now(UTC),
+        }
     return SuccessResponse(data=data)
 
 
