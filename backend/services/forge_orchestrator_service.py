@@ -938,9 +938,7 @@ class ForgeOrchestratorService:
             # `personality_extraction` budget and falling back to a neutral
             # profile when there is no key — the world is never lost over it.
             try:
-                await PersonalityExtractionService.initialize_simulation_agents(
-                    write_client, sim_id
-                )
+                await PersonalityExtractionService.initialize_simulation_agents(write_client, sim_id)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "materialize")
@@ -1264,7 +1262,17 @@ class ForgeOrchestratorService:
                 )
                 mat_streets = extract_list(mat_streets_resp)
                 sim_desc = geography.get("description", "") or seed
-                mock_trans = mock.mock_entity_translations(mat_agents, mat_buildings, mat_zones, mat_streets, sim_desc)
+                mock_sim_row = await maybe_single_data(
+                    supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single()
+                )
+                mock_trans = mock.mock_entity_translations(
+                    mat_agents,
+                    mat_buildings,
+                    mat_zones,
+                    mat_streets,
+                    (mock_sim_row or {}).get("name", "") or "",
+                    sim_desc,
+                )
                 await ForgeEntityTranslationService.persist_translations(supabase, simulation_id, mock_trans)
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError):
                 logger.exception("Mock entity translation failed", extra={"simulation_id": str(simulation_id)})
@@ -1420,11 +1428,20 @@ class ForgeOrchestratorService:
                 mat_streets = extract_list(mat_streets_resp)
                 sim_desc = geography.get("description", "") or seed
 
+                # Den Titel aus der ZEILE lesen, nicht aus dem Entwurf: die
+                # Materialisierung hängt bei Namenskollisionen ein „ (2)" an,
+                # und übersetzt werden soll der Name, der nachher dasteht.
+                sim_row = await maybe_single_data(
+                    supabase.table("simulations").select("name").eq("id", str(simulation_id)).maybe_single()
+                )
+                sim_name = (sim_row or {}).get("name", "") or ""
+
                 entity_translations = await ForgeEntityTranslationService.translate_entities(
                     agents=mat_agents,
                     buildings=mat_buildings,
                     zones=mat_zones,
                     streets=mat_streets,
+                    simulation_name=sim_name,
                     simulation_description=sim_desc,
                     openrouter_key=or_key,
                 )

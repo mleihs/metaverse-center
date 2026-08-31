@@ -16,7 +16,13 @@ import logging
 
 from pydantic import BaseModel
 
-from backend.models.forge import ForgeAgentDraft, ForgeBuildingDraft, ForgeGeographyDraft, PhilosophicalAnchor
+from backend.models.forge import (
+    ForgeAgentDraft,
+    ForgeBuildingDraft,
+    ForgeEntityTranslationOutput,
+    ForgeGeographyDraft,
+    PhilosophicalAnchor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1231,35 +1237,63 @@ def mock_recruits(
     return _validate_mock_list(pool[:3], ForgeAgentDraft)
 
 
-def mock_entity_translations(agents: list, buildings: list, zones: list, streets: list, sim_desc: str) -> dict:
-    """Return minimal DE translations for all entity types."""
-    return {
-        "agents": [
-            {
-                "name": a.get("name", "?"),
-                "character_de": f"[DE Mock] {a.get('character', '')[:80]}...",
-                "background_de": f"[DE Mock] {a.get('background', '')[:80]}...",
-                "primary_profession_de": a.get("primary_profession", ""),
-            }
-            for a in agents
-        ],
-        "buildings": [
-            {
-                "name": b.get("name", "?"),
-                "description_de": f"[DE Mock] {b.get('description', '')[:80]}...",
-                "building_type_de": b.get("building_type", ""),
-                "building_condition_de": b.get("building_condition", ""),
-            }
-            for b in buildings
-        ],
-        "zones": [
-            {
-                "name": z.get("name", "?"),
-                "description_de": f"[DE Mock] {z.get('description', '')[:80]}...",
-                "zone_type_de": z.get("zone_type", ""),
-            }
-            for z in zones
-        ],
-        "streets": [{"name": s.get("name", "?"), "street_type_de": s.get("street_type", "")} for s in streets],
-        "simulation": {"description_de": f"[DE Mock] {sim_desc[:100]}..."},
-    }
+def mock_entity_translations(
+    agents: list,
+    buildings: list,
+    zones: list,
+    streets: list,
+    sim_name: str,
+    sim_desc: str,
+) -> ForgeEntityTranslationOutput:
+    """Return minimal DE translations for all entity types.
+
+    LIEFERT DAS MODELL, NICHT EIN DICT — und das ist eine Reparatur, kein
+    Stil. Diese Funktion gab ein ``dict`` zurück, ihr einziger Abnehmer ist
+    ``ForgeEntityTranslationService.persist_translations``, und der greift
+    per ATTRIBUT zu (``translations.simulation.description_de``). Auf einem
+    ``dict`` ist das ein ``AttributeError`` — und der steht nicht im
+    ``except``-Tupel der Aufrufstelle (``PostgrestAPIError``, ``httpx``,
+    ``KeyError``, ``TypeError``). Der Mock-Pfad der Schmiede stürzte also
+    ungefangen ab, sobald er die Übersetzungen schreiben wollte.
+
+    Die Typannotation sagte ``-> dict``, die Gegenseite verlangte das Modell,
+    und nichts hat die beiden je verglichen: Python prüft nicht, und ``ruff``
+    prüft keine Typen. Dieselbe Familie wie „Rückgabetyp verbreitert = Cast
+    ohne Schlüsselwort" — nur dass hier gar nicht verbreitert, sondern schlicht
+    etwas anderes zurückgegeben wurde.
+    """
+    return ForgeEntityTranslationOutput.model_validate(
+        {
+            "agents": [
+                {
+                    "name": a.get("name", "?"),
+                    "character_de": f"[DE Mock] {a.get('character', '')[:80]}...",
+                    "background_de": f"[DE Mock] {a.get('background', '')[:80]}...",
+                    "primary_profession_de": a.get("primary_profession", ""),
+                }
+                for a in agents
+            ],
+            "buildings": [
+                {
+                    "name": b.get("name", "?"),
+                    "description_de": f"[DE Mock] {b.get('description', '')[:80]}...",
+                    "building_type_de": b.get("building_type", ""),
+                    "building_condition_de": b.get("building_condition", ""),
+                }
+                for b in buildings
+            ],
+            "zones": [
+                {
+                    "name": z.get("name", "?"),
+                    "description_de": f"[DE Mock] {z.get('description', '')[:80]}...",
+                    "zone_type_de": z.get("zone_type", ""),
+                }
+                for z in zones
+            ],
+            "streets": [{"name": s.get("name", "?"), "street_type_de": s.get("street_type", "")} for s in streets],
+            "simulation": {
+                "name_de": f"[DE Mock] {sim_name}",
+                "description_de": f"[DE Mock] {sim_desc[:100]}...",
+            },
+        }
+    )

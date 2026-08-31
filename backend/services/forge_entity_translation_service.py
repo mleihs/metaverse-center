@@ -25,7 +25,13 @@ ENTITY_TRANSLATOR_PROMPT = (
     "- For short fields like building_type or zone_type, translate concisely "
     "(e.g., 'residential' → 'Wohngebiet', 'good' → 'gut', 'tavern' → 'Taverne').\n"
     "- The translation should read as if originally written in German.\n"
-    "- Match the name field EXACTLY so translations can be merged back by name."
+    "- Match the name field EXACTLY so translations can be merged back by name.\n"
+    "- ONE EXCEPTION to the proper-noun rule: the SIMULATION TITLE itself. Localise it "
+    "the way a book or film title is localised for a German edition \u2014 keep invented "
+    "words and personal names inside it (Momo, Velgarien), translate the rest, and let "
+    "the result sound like a German title rather than a gloss "
+    "('The Time Bank of Momo' \u2192 'Die Momo-Zeitbank'). If the title is a single "
+    "invented word with nothing to translate, return it unchanged."
 )
 
 
@@ -38,6 +44,7 @@ class ForgeEntityTranslationService:
         buildings: list[dict[str, Any]],
         zones: list[dict[str, Any]],
         streets: list[dict[str, Any]],
+        simulation_name: str,
         simulation_description: str,
         openrouter_key: str | None = None,
     ) -> ForgeEntityTranslationOutput:
@@ -52,6 +59,7 @@ class ForgeEntityTranslationService:
         sections: list[str] = []
 
         sections.append("=== SIMULATION ===")
+        sections.append(f"Title: {simulation_name}")
         sections.append(f"Description: {simulation_description}")
 
         sections.append("\n=== AGENTS ===")
@@ -130,18 +138,34 @@ class ForgeEntityTranslationService:
         """Write _de fields back to the entity tables."""
         sim_id = str(simulation_id)
 
-        # Update simulation description_de
-        if translations.simulation.description_de:
-            await (
-                supabase.table("simulations")
-                .update({"description_de": translations.simulation.description_de})
-                .eq("id", sim_id)
-                .execute()
-            )
-            logger.debug("Updated simulation description_de", extra={"simulation_id": sim_id})
-        else:
-            logger.warning(
-                "Entity translation returned empty simulation description_de",
+        # Titel und Beschreibung der Welt in EINEM Update.
+        #
+        # `name_de` kam bis zum 31.08.2026 gar nicht vor: 31 von 36 Welten auf
+        # Prod hatten keinen deutschen Titel, obwohl die Oberfläche ihn seit
+        # langem anzeigen WÜRDE — `t(sim, 'name')` steht an sechs Stellen. Die
+        # Anzeige war sprachbewusst, der Erzeuger fehlte. Dieselbe Bauart wie
+        # eine Ansicht ohne Schreiber, nur eine Ebene tiefer.
+        #
+        # Jedes leere Feld wird EINZELN gemeldet: ein gemeinsames „irgendwas
+        # fehlt" hätte nicht unterschieden, ob das Modell den Titel oder die
+        # Beschreibung schuldig blieb — und genau das ist die Information, mit
+        # der man den Prompt nachbessert.
+        sim_update: dict[str, str] = {}
+        for field in ("name_de", "description_de"):
+            value = getattr(translations.simulation, field, "")
+            if value:
+                sim_update[field] = value
+            else:
+                logger.warning(
+                    "Entity translation returned empty simulation %s",
+                    field,
+                    extra={"simulation_id": sim_id, "field": field},
+                )
+        if sim_update:
+            await supabase.table("simulations").update(sim_update).eq("id", sim_id).execute()
+            logger.debug(
+                "Updated simulation %s",
+                ", ".join(sorted(sim_update)),
                 extra={"simulation_id": sim_id},
             )
 

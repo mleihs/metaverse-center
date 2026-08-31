@@ -764,8 +764,28 @@ class ForgeStreetTranslation(BaseModel):
 
 
 class ForgeSimulationTranslation(BaseModel):
-    """German translation for the simulation description."""
+    """German title and description for the simulation itself.
 
+    ``name_de`` ist bewusst KEIN Widerspruch zur Regel „Eigennamen bleiben
+    unübersetzt": diese Regel schützt Namen INNERHALB der Welt (Figuren,
+    Gebäude, Zonen, Straßen). Der Titel der Welt selbst ist keiner davon — er
+    ist ein Werktitel und wird lokalisiert wie einer.
+
+    Belegt an den fünf Welten, die am 31.08.2026 bereits ein ``name_de``
+    trugen; jemand hat sie von Hand gesetzt, und zwar als Titel, nicht als
+    Rohübersetzung:
+
+        The Time Bank of Momo        → Die Momo-Zeitbank
+        The Metamorphosis of Memory  → Die Verwandlung der Erinnerung
+        The Chitinous Mandate        → Das Chitinöse Mandat
+
+    Die zweite Zeile trifft sogar den deutschen Kafka-Titel. Das ist die
+    Messlatte für das Modell, nicht „Wort für Wort".
+
+    Der Slug bleibt englisch — er ist eine Adresse, kein Text.
+    """
+
+    name_de: str = ""
     description_de: str = ""
 
 
