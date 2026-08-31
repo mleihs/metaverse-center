@@ -46,6 +46,7 @@ from backend.models.game_mechanics import (
     ZoneStabilityResponse,
 )
 from backend.models.gazette import GazetteEntry
+from backend.models.journal import JournalPublicState
 from backend.models.location import CityResponse, StreetResponse, ZoneResponse
 from backend.models.lore import LoreSectionResponse
 from backend.models.memory import MemoryResponse
@@ -86,6 +87,7 @@ from backend.services.event_service import EventService
 from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
+from backend.services.journal.fragment_generation_scheduler import journal_enabled
 from backend.services.location_service import LocationService
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.relationship_service import RelationshipService
@@ -1133,6 +1135,30 @@ async def get_alpha_state(
     return SuccessResponse(data=payload)
 
 
+# ── Journal (öffentliches Tor, damit der Leerzustand nicht lügt — G6) ───────
+
+
+@router.get("/journal/state")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_journal_state(
+    request: Request, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
+) -> SuccessResponse[JournalPublicState]:
+    """Läuft der Fragment-Erzeuger? Ein Boolescher Wert, sonst nichts.
+
+    Der Leerzustand des Journals versprach „Fragmente sammeln sich, während du
+    spielst". Gemessen auf Prod: 0 Fragmente, 0 Konstellationen, und
+    ``journal_enabled`` ist gar nicht gesetzt — der Zeitgeber läuft fail-closed
+    nie. Die Oberfläche gab also eine Zusage, die der Server nicht halten kann,
+    und konnte es nicht wissen.
+
+    Immer 200 (nie 404): ein geschlossenes Tor ist eine Antwort, keine
+    Abwesenheit — dieselbe Regel wie bei ``/drift/state``. Der Admin-Client,
+    weil ``platform_settings`` keine anon-Richtlinie hat; die DTO gibt nur das
+    Tor heraus.
+    """
+    return SuccessResponse(data=JournalPublicState(enabled=await journal_enabled(admin_supabase)))
+
+
 # ── DRIFT (public face — phase-gate state + chart topology, plan §11/§22.2) ──
 
 
@@ -1198,6 +1224,9 @@ async def list_public_bonds(
     remediation).
     """
     data, total = await BondService.get_public_bonds(
-        anon, simulation_id, limit=limit, offset=offset,
+        anon,
+        simulation_id,
+        limit=limit,
+        offset=offset,
     )
     return paginated(data, total, limit, offset)

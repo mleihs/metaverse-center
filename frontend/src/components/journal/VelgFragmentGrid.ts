@@ -15,6 +15,7 @@
  */
 
 import { localized, msg, str } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { journalApi } from '../../services/api/index.js';
@@ -25,6 +26,7 @@ import type {
   FragmentSourceType,
   FragmentType,
 } from '../../services/api/JournalApiService.js';
+import { journalStatus } from '../../services/JournalStatusService.js';
 import { captureError } from '../../services/SentryService.js';
 import { VelgToast } from '../shared/Toast.js';
 import './VelgFragmentCard.js';
@@ -33,7 +35,7 @@ const PAGE_SIZE = 25;
 
 @localized()
 @customElement('velg-fragment-grid')
-export class VelgFragmentGrid extends LitElement {
+export class VelgFragmentGrid extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -203,6 +205,10 @@ export class VelgFragmentGrid extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    // Das Tor mitladen: der Leerzustand darf nichts versprechen, was der
+    // Erzeuger nicht einloesen kann (G6). SignalWatcher zeichnet neu, sobald
+    // die Antwort da ist.
+    void journalStatus.ensureLoaded();
     void this._load();
   }
 
@@ -342,6 +348,19 @@ export class VelgFragmentGrid extends LitElement {
             message=${msg('No fragments match these filters.')}
             cta-label=${msg('Clear filters')}
             @cta-click=${this._clearFilters}
+          ></velg-empty-state>
+        `;
+      }
+      // Zwei verschiedene Leeren, und der Unterschied ist keine Nuance: die
+      // eine wartet auf DICH, die andere auf die Plattform. Solange
+      // journal_enabled aus ist, sammelt sich nichts – egal wie viel
+      // gespielt wird. Das zu verschweigen hiesse, jemanden warten zu lassen.
+      if (!journalStatus.enabled.value) {
+        return html`
+          <velg-empty-state
+            message=${msg(
+              'Fragment collection is not running on this platform yet. Nothing accumulates in the meantime – when it is switched on, your dungeon runs, epoch cycles and bonded agents begin to leave traces here.',
+            )}
           ></velg-empty-state>
         `;
       }

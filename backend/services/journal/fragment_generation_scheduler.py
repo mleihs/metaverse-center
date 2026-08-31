@@ -21,7 +21,25 @@ from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
 
-_SETTING_ENABLED = "journal_enabled"
+JOURNAL_ENABLED_SETTING = "journal_enabled"
+_SETTING_ENABLED = JOURNAL_ENABLED_SETTING
+
+
+async def journal_enabled(admin: Client) -> bool:
+    """Läuft der Fragment-Erzeuger gerade?
+
+    EINE Quelle für zwei Leser: dieser Zeitgeber und der öffentliche Endpunkt
+    ``GET /api/v1/public/journal/state``, den der Leerzustand des Journals
+    befragt. Zwei getrennte Leser desselben Schlüssels wären auf Dauer zwei
+    Antworten — und die Oberfläche würde dann behaupten, der Erzeuger laufe,
+    während er es nicht tut. Genau diese Lücke war der Befund G6.
+
+    Fail-closed über ``parse_setting_bool``: fehlende Zeile → False. Das ist
+    der Zustand auf Prod (31.08.2026), und deshalb sind dort 0 Fragmente.
+    """
+    settings = await load_platform_settings(admin, [JOURNAL_ENABLED_SETTING])
+    return parse_setting_bool(settings.get(JOURNAL_ENABLED_SETTING))
+
 
 # Per plan §3: "every ~60s". Tight enough that active players see fragments
 # arrive within 1-2 minutes of the triggering event; loose enough to keep
@@ -40,9 +58,8 @@ class FragmentGenerationScheduler(BaseSchedulerMixin):
 
     @classmethod
     async def _load_config(cls, admin: Client) -> dict:
-        settings = await load_platform_settings(admin, [_SETTING_ENABLED])
         return {
-            "enabled": parse_setting_bool(settings.get(_SETTING_ENABLED)),
+            "enabled": await journal_enabled(admin),
             "interval": _TICK_INTERVAL_S,
         }
 
