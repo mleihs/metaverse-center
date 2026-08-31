@@ -44,7 +44,10 @@ export class ChatMessage extends LitElement {
     .row {
       display: flex;
       gap: var(--space-3);
-      max-width: 80%;
+      /* 80% was a ratio in a boxed view. In the cockpit the window has no
+         cap, so 80% of 2560px is a 2000px line - unreadable. The ceiling
+         is now absolute; the ratio still governs the narrow case. */
+      max-width: min(80%, 560px);
       margin-top: var(--space-4);
       position: relative;
       /* Entrance animation via @starting-style */

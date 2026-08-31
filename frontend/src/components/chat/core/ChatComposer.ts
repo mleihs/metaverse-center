@@ -41,7 +41,12 @@ export class ChatComposer extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--space-1);
-      padding: var(--space-4);
+      /* Cockpit rule, same measure as the feed above it: the bar spans the
+         window edge to edge, the writing area sits on the reading measure.
+         If these two ever disagree, the caret stops lining up with the
+         message it produces. */
+      padding-block: var(--space-4);
+      padding-inline: max(var(--space-4), calc((100% - 1080px) / 2));
       border-top: var(--border-medium);
       background: var(--_composer-bg);
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
@@ -90,7 +95,9 @@ export class ChatComposer extends LitElement {
       color: var(--color-text-primary);
       background: var(--color-surface-sunken);
       border: var(--border-medium);
-      font-family: var(--font-body);
+      /* What is typed here becomes a message in the world's voice, so it
+         is set in the same face it will be read in. */
+      font-family: var(--font-bureau, var(--font-prose));
       font-size: var(--text-sm);
       line-height: var(--leading-normal);
     }
