@@ -49,6 +49,10 @@ class AgentResponse(BaseModel):
     data_source: str | None = None
     created_by_id: UUID | None = None
     is_ambassador: bool = False
+    #: Serverseitig berechneter Einfluss (0–1), angereichert auf allen drei
+    #: Lesewegen. `None`, wenn die Anreicherung ausfiel — die Oberfläche zeigt
+    #: dann kein Symbol, statt eine Null zu behaupten, die niemand gemessen hat.
+    influence: float | None = None
     character_de: str | None = None
     background_de: str | None = None
     primary_profession_de: str | None = None

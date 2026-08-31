@@ -1013,40 +1013,11 @@ export class VelgAgentDetailsPanel extends LitElement {
       .slice(0, 5);
   }
 
-  private _computeInfluence(): {
-    score: number;
-    relationshipWeight: number;
-    professionWeight: number;
-    ambassadorWeight: number;
-  } {
-    const agent = this.agent;
-    if (!agent)
-      return { score: 0, relationshipWeight: 0, professionWeight: 0, ambassadorWeight: 0 };
-
-    // Relationship influence: mean intensity of the STRONGEST five.
-    // `fn_compute_agent_influence` orders by intensity DESC before its LIMIT 5;
-    // this used to slice the first five in whatever order the list arrived in.
-    // On today's data no agent holds more than two relationships, so the two
-    // readings cannot differ yet — which is exactly why it would have gone
-    // unnoticed until the day they do.
-    const strongest = this._strongestRelationships();
-    const relCount = strongest.length;
-    const relIntensitySum = strongest.reduce((sum, r) => sum + (r.intensity ?? 5), 0);
-    const relationshipWeight = relCount > 0 ? relIntensitySum / (relCount * 10) : 0;
-
-    // Profession influence: avg qualification / 10
-    const profs = agent.professions ?? [];
-    const professionWeight =
-      profs.length > 0
-        ? profs.reduce((sum, p) => sum + (p.qualification_level ?? 1), 0) / (profs.length * 10)
-        : 0;
-
-    // Ambassador bonus
-    const ambassadorWeight = agent.is_ambassador ? 1.0 : 0;
-
-    const score = relationshipWeight * 0.4 + professionWeight * 0.3 + ambassadorWeight * 0.3;
-    return { score, relationshipWeight, professionWeight, ambassadorWeight };
-  }
+  // `_computeInfluence` stand hier: eine zweite Fassung von
+  // `fn_compute_agent_influence` in TypeScript. Sie ist mit Migration 300
+  // entfallen — der Server liefert den Wert jetzt als Feld `influence` an allen
+  // drei Lesewegen, und die Agentenkarte kann ihn damit ebenfalls zeigen, was
+  // ihr vorher unmöglich war: sie lädt keine Beziehungen.
 
   private _influenceColor(value: number): string {
     if (value < 0.25) return 'var(--color-text-muted)';
@@ -1058,7 +1029,14 @@ export class VelgAgentDetailsPanel extends LitElement {
   private _renderInfluence() {
     if (!this.agent) return nothing;
 
-    const { score } = this._computeInfluence();
+    // Der Serverwert, nicht der nachgerechnete. `fn_compute_agent_influence` ist
+    // die Formel, mit der das Spiel arbeitet; sie hier ein zweites Mal zu
+    // schreiben war die vierte Kopie im Werk, von denen eine bereits abgewichen
+    // ist (S21). Fehlt der Wert, weil die Anreicherung ausfiel, zeigt der
+    // Abschnitt gar nichts — eine Aufschlüsselung ohne die Zahl, die sie
+    // aufschlüsselt, erklärt nichts.
+    const score = this.agent.influence;
+    if (score === undefined || score === null) return nothing;
     const pct = Math.round(score * 100);
     const color = this._influenceColor(score);
     const tier = score < 0.25 ? 'weak' : score <= 0.55 ? 'average' : 'strong';

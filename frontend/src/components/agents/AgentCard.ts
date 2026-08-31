@@ -6,6 +6,7 @@ import type { Agent, AptitudeSet, Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import type { CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
+import { INFLUENCE_FORMULA } from '../../utils/metric-formulas.js';
 
 @localized()
 @customElement('velg-agent-card')
@@ -87,6 +88,20 @@ export class VelgAgentCard extends LitElement {
     return { level: best };
   }
 
+  /** Die Einfluss-Stufe als Abzeichen, oder nichts, wenn der Wert fehlt. */
+  private _influenceBadge(): CardBadge | null {
+    const score = this.agent?.influence;
+    if (score === undefined || score === null) return null;
+    const pct = Math.round(score * 100);
+    if (pct < INFLUENCE_FORMULA.tiers.weak) {
+      return { label: msg('Influence weak'), variant: 'default' };
+    }
+    if (pct <= INFLUENCE_FORMULA.tiers.average) {
+      return { label: msg('Influence average'), variant: 'info' };
+    }
+    return { label: msg('Influence strong'), variant: 'primary' };
+  }
+
   private _getBadges(): CardBadge[] {
     const badges: CardBadge[] = [];
     const agent = this.agent;
@@ -94,6 +109,14 @@ export class VelgAgentCard extends LitElement {
 
     if (agent.gender) badges.push({ label: agent.gender, variant: 'default' });
     if (agent.system) badges.push({ label: agent.system, variant: 'primary' });
+    // Einfluss-Stufe (B1-B3, H7). Der Wert kommt vom Server (Migr. 300); die
+    // Karte lädt keine Beziehungen und konnte ihn deshalb nie selbst rechnen.
+    // Die Stufe steht ausgeschrieben mit ihrem Gegenstand: ein Abzeichen, auf
+    // dem nur SCHWACH steht, ist genau die unerklärte Zahl, die H7 abschafft.
+    // Jede Stufe ist eine eigene vollständige Nachricht, weil sie in anderen
+    // Sprachen anders gebeugt wird.
+    const influenceBadge = this._influenceBadge();
+    if (influenceBadge) badges.push(influenceBadge);
     if (agent.is_ambassador) badges.push({ label: msg('Ambassador'), variant: 'warning' });
     if (agent.ambassador_blocked_until && new Date(agent.ambassador_blocked_until) > new Date()) {
       badges.push({ label: msg('Blocked'), variant: 'danger' });

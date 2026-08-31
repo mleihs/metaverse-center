@@ -179,6 +179,14 @@ export interface Agent {
   updated_at: string;
   deleted_at?: string;
   is_ambassador?: boolean;
+  /**
+   * Serverseitig berechneter Einfluss (0–1), angereichert von
+   * `AgentService._enrich_influence` (Migr. 300). Fehlt, wenn die Anreicherung
+   * ausfiel — dann zeigt die Oberfläche kein Symbol, statt eine Zahl zu
+   * behaupten, die niemand gemessen hat. NIE im Browser nachrechnen: die Formel
+   * steht in `fn_compute_agent_influence` und hatte bereits eine Kopie zu viel.
+   */
+  influence?: number;
   ambassador_blocked_until?: string;
   current_zone_id?: UUID;
   current_building_id?: UUID;

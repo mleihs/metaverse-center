@@ -10,6 +10,7 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import BaseService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
@@ -57,6 +58,7 @@ class AgentService(BaseService):
         total = response.count if response.count is not None else len(extract_list(response))
         agents = extract_list(response)
         await cls._enrich_ambassador_flag(supabase, simulation_id, agents)
+        await cls._enrich_influence(supabase, simulation_id, agents)
         return agents, total
 
     @classmethod
@@ -163,6 +165,7 @@ class AgentService(BaseService):
         """Get an agent by slug with ambassador enrichment."""
         agent = await super().get_by_slug(supabase, simulation_id, slug, select=select)
         await cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
+        await cls._enrich_influence(supabase, simulation_id, [agent])
         return agent
 
     @classmethod
@@ -177,7 +180,7 @@ class AgentService(BaseService):
         Uses a single Supabase query with foreign-key joins to fetch the agent
         and all related data in one round-trip, replacing 4 sequential queries.
         """
-        response = await (
+        query = (
             supabase.table(cls.table_name)
             .select(
                 "*, "
@@ -188,11 +191,15 @@ class AgentService(BaseService):
             .eq("simulation_id", str(simulation_id))
             .eq("id", str(agent_id))
             .is_("deleted_at", "null")
-            .single()
-            .execute()
+            .maybe_single()
         )
-
-        agent = response.data
+        # `.single()` stand hier und macht den Zweig darunter UNERREICHBAR:
+        # postgrest wirft bei null Treffern einen APIError, statt `data=None`
+        # zurückzugeben — aus einem gemeinten 404 wurde also ein 500. Der
+        # Projektwegweiser verlangt ohnehin `maybe_single_data`, weil
+        # `.maybe_single().execute()` bei null Treffern das GANZE
+        # Antwortobjekt als `None` liefert.
+        agent = await maybe_single_data(query)
         if not agent:
             raise not_found(detail=f"agents '{agent_id}' not found in simulation '{simulation_id}'.")
 
@@ -202,7 +209,62 @@ class AgentService(BaseService):
         agent["building_relations"] = agent.pop("building_agent_relations", []) or []
 
         await cls._enrich_ambassador_flag(supabase, simulation_id, [agent])
+        await cls._enrich_influence(supabase, simulation_id, [agent])
         return agent
+
+    @classmethod
+    async def _enrich_influence(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        agents: list[dict],
+    ) -> None:
+        """Set ``influence`` from the server's own formula (Migr. 300).
+
+        Until now the number existed only inside `mv_building_readiness`, so the
+        frontend recomputed `fn_compute_agent_influence` in the browser — the
+        fourth hand-copied formula in this codebase, of which one has already
+        drifted (S21). The agent CARD could not compute it at all: it never
+        loads relationships.
+
+        One RPC per list, not one per agent. A list of twenty cards would
+        otherwise be twenty round trips for a number one STABLE query returns.
+
+        A failure here costs the badge, not the list. Reading an agent must not
+        depend on a derived figure being available.
+        """
+        if not agents:
+            return
+        ids = [str(a["id"]) for a in agents if a.get("id")]
+        if not ids:
+            return
+        try:
+            response = await supabase.rpc(
+                "fn_agent_influence_batch",
+                {"p_simulation_id": str(simulation_id), "p_agent_ids": ids},
+            ).execute()
+        except (PostgrestAPIError, httpx.HTTPError):
+            logger.warning(
+                "Influence enrichment failed; agents keep influence=None",
+                extra={"simulation_id": str(simulation_id)},
+                exc_info=True,
+            )
+            # Ausdrücklich setzen statt den Schlüssel wegzulassen: alle drei
+            # Lesewege sollen dieselbe Form liefern, ob die Anreicherung nun
+            # gelang oder nicht. `None` heißt „nicht gemessen"; eine 0 hieße
+            # „gemessen, und zwar null", und darauf zeigt die Karte ein
+            # Abzeichen, das niemand belegen kann.
+            for agent in agents:
+                agent.setdefault("influence", None)
+            return
+
+        scores = {
+            str(row["agent_id"]): float(row["influence"])
+            for row in extract_list(response)
+            if row.get("agent_id") is not None and row.get("influence") is not None
+        }
+        for agent in agents:
+            agent["influence"] = scores.get(str(agent.get("id")))
 
     @classmethod
     async def _enrich_ambassador_flag(

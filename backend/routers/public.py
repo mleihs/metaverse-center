@@ -240,8 +240,17 @@ async def get_agent_by_slug(
 async def get_agent(
     request: Request, simulation_id: SimId, agent_id: UUID, supabase: Annotated[Client, Depends(get_anon_supabase)]
 ) -> SuccessResponse[AgentResponse]:
-    """Get a single agent (public)."""
-    data = await AgentService.get(supabase, simulation_id, agent_id)
+    """Get a single agent (public).
+
+    `get_with_details` statt des geerbten `get`: der Mitgliederweg lieferte
+    Professionen, Reaktionen, Gebäudebeziehungen, das Botschafterfeld und den
+    Einfluss, der öffentliche Weg die nackte Zeile. Derselbe Agent sah also
+    anders aus, je nachdem WER hinsieht — und `is_ambassador` fiel dabei auf
+    seinen Vorgabewert `False` zurück, was für einen echten Botschafter nicht
+    „unbekannt" heißt, sondern schlicht falsch ist. Alle fünf mitgelesenen
+    Tabellen tragen eine anon-Lesepolicy, gemessen am 31.08.2026.
+    """
+    data = await AgentService.get_with_details(supabase, simulation_id, agent_id)
     return SuccessResponse(data=data)
 
 
