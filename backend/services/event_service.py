@@ -619,6 +619,7 @@ class EventService(BaseService):
                         )
                         buildings = extract_list(_resp)
                         degraded = 0
+                        off_ladder = 0
                         for bldg in buildings:
                             if "__all__" in protected_building_ids or bldg["id"] in protected_building_ids:
                                 continue  # Building protected by elemental warding
@@ -626,16 +627,29 @@ class EventService(BaseService):
                                 "fn_degrade_building",
                                 {"p_building_id": bldg["id"]},
                             ).execute()
-                            if (degrade_resp.data or {}).get("changed"):
+                            outcome = degrade_resp.data or {}
+                            if outcome.get("changed"):
                                 degraded += 1
+                            elif outcome.get("reason") == "condition_off_ladder":
+                                # The building carries a world-specific condition
+                                # ("anomalous", "sealed", …) that is not a rung on
+                                # the shared ladder, so a crisis cannot touch it.
+                                # Counted rather than passed over in silence:
+                                # until migration 303 this was indistinguishable
+                                # from "already ruined", and it hid the fact that
+                                # a third of all buildings were immune to crisis.
+                                off_ladder += 1
                         logger.info(
-                            "Crisis event degraded %d of %d building(s) by one condition step",
+                            "Crisis event degraded %d of %d building(s) by one condition step "
+                            "(%d untouched: condition not on the shared ladder)",
                             degraded,
                             len(buildings),
+                            off_ladder,
                             extra={
                                 "simulation_id": str(simulation_id),
                                 "event_id": ev["id"],
                                 "buildings_affected": degraded,
+                                "buildings_off_ladder": off_ladder,
                             },
                         )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
