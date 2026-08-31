@@ -24,6 +24,7 @@ def _supabase_available() -> bool:
         return False
     try:
         import httpx
+
         resp = httpx.get(
             f"{settings.supabase_url}/rest/v1/",
             headers={"apikey": settings.supabase_anon_key},
@@ -164,10 +165,7 @@ def test_user_ids(admin_client: Client) -> list[UUID]:
             # resolution failed", email confirmation required). Skip
             # rather than raise a cryptic KeyError — the response body
             # tells us why.
-            pytest.skip(
-                f"Could not resolve test auth user {email} "
-                f"(HTTP {resp.status_code}): {resp.text[:200]}"
-            )
+            pytest.skip(f"Could not resolve test auth user {email} (HTTP {resp.status_code}): {resp.text[:200]}")
         user_ids.append(UUID(uid))
 
     return user_ids
@@ -239,35 +237,41 @@ def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
         }
         now = datetime.now(UTC)
 
-        admin_client.table("game_epochs").insert({
-            "id": str(epoch_id),
-            "name": f"Test Epoch {epoch_id.hex[:8]}",
-            "status": status,
-            "current_cycle": cycle,
-            "config": config,
-            "created_by_id": str(test_user_ids[0]),
-            "starts_at": (now - timedelta(days=5)).isoformat(),
-            "ends_at": (now + timedelta(days=9)).isoformat(),
-        }).execute()
+        admin_client.table("game_epochs").insert(
+            {
+                "id": str(epoch_id),
+                "name": f"Test Epoch {epoch_id.hex[:8]}",
+                "status": status,
+                "current_cycle": cycle,
+                "config": config,
+                "created_by_id": str(test_user_ids[0]),
+                "starts_at": (now - timedelta(days=5)).isoformat(),
+                "ends_at": (now + timedelta(days=9)).isoformat(),
+            }
+        ).execute()
 
         participants = []
         for i, sim_id in enumerate(sim_ids):
             pid = uuid4()
             user_id = test_user_ids[i]
-            admin_client.table("epoch_participants").insert({
-                "id": str(pid),
-                "epoch_id": str(epoch_id),
-                "simulation_id": str(sim_id),
-                "user_id": str(user_id),
-                "current_rp": rp,
-                "cycle_ready": False,
-            }).execute()
-            participants.append(ParticipantFixture(
-                participant_id=pid,
-                user_id=user_id,
-                simulation_id=sim_id,
-                initial_rp=rp,
-            ))
+            admin_client.table("epoch_participants").insert(
+                {
+                    "id": str(pid),
+                    "epoch_id": str(epoch_id),
+                    "simulation_id": str(sim_id),
+                    "user_id": str(user_id),
+                    "current_rp": rp,
+                    "cycle_ready": False,
+                }
+            ).execute()
+            participants.append(
+                ParticipantFixture(
+                    participant_id=pid,
+                    user_id=user_id,
+                    simulation_id=sim_id,
+                    initial_rp=rp,
+                )
+            )
 
         created_ids.append(epoch_id)
         return EpochFixture(
@@ -293,10 +297,7 @@ def epoch_factory(admin_client: Client, test_user_ids: list[UUID]):
 
 def _broadcast_homes(admin_client: Client) -> dict[str, dict]:
     """The active chart version's broadcast_rand nodes, keyed by stable_key."""
-    versions = (
-        admin_client.table("chart_versions")
-        .select("version").order("version", desc=True).limit(1).execute()
-    )
+    versions = admin_client.table("chart_versions").select("version").order("version", desc=True).limit(1).execute()
     if not versions.data:
         pytest.skip("no chart version seeded")
     version = versions.data[0]["version"]
@@ -326,23 +327,114 @@ def chart_foreign(admin_client: Client, chart_home: dict) -> dict:
     pytest.skip("chart has only one broadcast home — a foreign dock is required")
 
 
-@pytest.fixture(scope="session")
-def home_neighbor(admin_client: Client, chart_home: dict) -> str:
-    """Any node adjacent to home — the one legal move a collapsing run still has."""
-    versions = (
-        admin_client.table("chart_versions")
-        .select("version").order("version", desc=True).limit(1).execute()
-    )
+# Die Bänder von nah nach fern. Die Reihenfolge ist die Rangfolge, nach der
+# `_home_neighbors` sortiert — ein unbekanntes Band landet hinten, nicht vorn.
+_BAND_ORDER = ("near", "mid", "deep")
+
+
+def _home_neighbors(admin_client: Client, chart_home: dict) -> list[dict]:
+    """Alle Nachbarn des Heimatknotens, DETERMINISTISCH sortiert (nah zuerst).
+
+    ── Warum das eine eigene Funktion mit einer Sortierung ist ──────────────
+
+    Hier stand eine Schleife, die die ERSTE passende Kante einer Abfrage OHNE
+    ``ORDER BY`` nahm. PostgREST gibt dann die physische Zeilenreihenfolge
+    zurück, und die ist keine Zusage: sie verschiebt sich nach Schreibvorgängen,
+    einem anderen Plan, einem VACUUM.
+
+    Gemessen am 31.08.2026 auf der lokalen Instanz: ``home-velgarien`` hat
+    **vier Nachbarn — drei ``mid`` und einen ``near``**. Welcher zurückkam, war
+    also ein Würfelwurf mit 1:3, und ER entschied über ZWEI Tests gleichzeitig:
+
+      * ``test_travel_signals``: ``survey_value_by_band`` ist
+        ``{near: 0, mid: 2, deep: 3}``. Bei ``near`` überspringt der Test sich
+        selbst („no survey to lose"), bei ``mid`` läuft er.
+      * ``test_travel_havarie``: der Hinweg kostet nach Band. Bei ``mid``
+        strandete der Lauf schon auf dem Hinweg, und die Zusicherung
+        ``status == "active"`` („the outbound hop must not already strand it")
+        schlug fehl.
+
+    Das erklärt beide gemeldeten Symptome von J1 mit EINER Ursache, und es
+    erklärt ihre Kopplung: die Zahl der übersprungenen Tests schwankte zwischen
+    3 und 4, und der Havarie-Test fiel **genau in den Läufen** um, in denen sie
+    3 war. Gemessen: ohne Zufallsreihenfolge 4 Skips und grün, mit 3 Skips und
+    rot.
+
+    Es war also NICHT Zustandsverschmutzung zwischen Tests, wie J1 vermutete —
+    keine Sitzung hinterließ etwas. Es war eine Vorrichtung, die nie eine
+    Antwort hatte, sondern eine Auswahl traf, ohne es zu sagen.
+
+    ── Was die Sortierung leistet und was nicht ────────────────────────────
+
+    Die Sortierung macht die Wahl reproduzierbar; die zweite Hälfte des Fixes
+    ist, dass die beiden Tests jetzt VERSCHIEDENE Nachbarn verlangen, weil sie
+    Verschiedenes brauchen. Eine Vorrichtung, die zwei unvereinbare Zwecke
+    bedient und den Konflikt per Zufall auflöst, ist der eigentliche Defekt.
+    """
+    versions = admin_client.table("chart_versions").select("version").order("version", desc=True).limit(1).execute()
     version = versions.data[0]["version"]
-    edges = (
-        admin_client.table("drift_chart_edges")
-        .select("from_node, to_node")
-        .eq("chart_version", version)
-        .execute()
-    )
+    edges = admin_client.table("drift_chart_edges").select("from_node, to_node").eq("chart_version", version).execute()
+    neighbor_ids: set[str] = set()
     for e in edges.data:
         if e["from_node"] == chart_home["id"]:
-            return e["to_node"]
-        if e["to_node"] == chart_home["id"]:
-            return e["from_node"]
-    pytest.skip("home node has no edges on the active chart")
+            neighbor_ids.add(e["to_node"])
+        elif e["to_node"] == chart_home["id"]:
+            neighbor_ids.add(e["from_node"])
+    if not neighbor_ids:
+        return []
+
+    nodes = (
+        admin_client.table("drift_chart_nodes")
+        .select("id, stable_key, distance_band")
+        .in_("id", sorted(neighbor_ids))
+        .execute()
+    )
+    # Zweistufig sortiert: Band zuerst, danach die Kennung. Ohne den zweiten
+    # Schlüssel wäre die Wahl innerhalb eines Bandes wieder ungeordnet — drei
+    # der vier Nachbarn teilen sich hier ein Band.
+    return sorted(
+        nodes.data,
+        key=lambda n: (
+            _BAND_ORDER.index(n["distance_band"]) if n["distance_band"] in _BAND_ORDER else len(_BAND_ORDER),
+            str(n["id"]),
+        ),
+    )
+
+
+@pytest.fixture(scope="session")
+def home_neighbor(admin_client: Client, chart_home: dict) -> str:
+    """Der NÄCHSTGELEGENE Nachbar — die eine legale Bewegung, die ein
+    zusammenbrechender Lauf noch hat.
+
+    Das ist, was der Docstring hier immer versprach; er hielt es nur nicht.
+    Der billigste Nachbar ist der einzige, der die Zusage „ein Sprung hin und
+    wieder zurück, ohne unterwegs zu stranden" trägt.
+    """
+    neighbors = _home_neighbors(admin_client, chart_home)
+    if not neighbors:
+        pytest.skip("home node has no edges on the active chart")
+    return neighbors[0]["id"]
+
+
+@pytest.fixture(scope="session")
+def home_neighbor_surveyable(admin_client: Client, chart_home: dict) -> str:
+    """Ein Nachbar, dessen Band eine Erstvermessung ÜBERHAUPT bezahlt.
+
+    Der Signal-Test will prüfen, dass die Vermessung nicht vom Ziehungsergebnis
+    aufgefressen wird. Bei einem ``near``-Nachbarn ist der erwartete Wert 0, und
+    die Prüfung wäre inhaltsleer — deshalb übersprang sie sich selbst. Das war
+    richtig gedacht und am falschen Ort gelöst: nicht der Test soll sich
+    wegdrücken, wenn die Vorrichtung den falschen Knoten zieht, sondern die
+    Vorrichtung soll den richtigen liefern.
+
+    Übersprungen wird nur noch, wenn die Karte WIRKLICH keinen zahlenden
+    Nachbarn hat — dann ist es eine Aussage über die Karte, keine über den
+    Würfel.
+    """
+    values = (
+        admin_client.table("drift_tuning").select("value").eq("setting_key", "survey_value_by_band").execute()
+    ).data[0]["value"]
+    for node in _home_neighbors(admin_client, chart_home):
+        if values.get(node["distance_band"], 0):
+            return node["id"]
+    pytest.skip("no neighbour of home sits in a band that pays a survey")
