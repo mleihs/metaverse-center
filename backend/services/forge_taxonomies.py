@@ -82,13 +82,23 @@ class TaxonomySource:
     ``building_condition`` taxonomy_type, matching what production already holds.
     """
 
-    __slots__ = ("collection", "draft_key", "de_field", "en_field")
+    __slots__ = ("collection", "de_field", "draft_key", "en_field", "rung_field")
 
-    def __init__(self, draft_key: str, collection: str, en_field: str, de_field: str | None) -> None:
+    def __init__(
+        self,
+        draft_key: str,
+        collection: str,
+        en_field: str,
+        de_field: str | None,
+        rung_field: str | None = None,
+    ) -> None:
         self.draft_key = draft_key
         self.collection = collection
         self.en_field = en_field
         self.de_field = de_field
+        # Nur `building_condition` hat eine Ordnung. Die übrigen fünf Vokabulare
+        # sind Mengen ohne Rangfolge — ein Beruf steht nicht ueber einem anderen.
+        self.rung_field = rung_field
 
 
 # The six vocabularies the draft can supply. `gender` and `system` have no `_de`
@@ -96,7 +106,13 @@ class TaxonomySource:
 # in both slots rather than a German string invented here — a missing
 # translation is a visible gap; a fabricated one is not.
 TAXONOMY_SOURCES: tuple[TaxonomySource, ...] = (
-    TaxonomySource("building_conditions", "buildings", "building_condition", "building_condition_de"),
+    TaxonomySource(
+        "building_conditions",
+        "buildings",
+        "building_condition",
+        "building_condition_de",
+        rung_field="condition_rung",
+    ),
     TaxonomySource("building_types", "buildings", "building_type", "building_type_de"),
     TaxonomySource("zone_types", "zones", "zone_type", "zone_type_de"),
     TaxonomySource("professions", "agents", "primary_profession", "primary_profession_de"),
@@ -119,6 +135,23 @@ def _get(entity: Any, field: str) -> str:
     return _as_text(getattr(entity, field, None))
 
 
+def _get_int(entity: Any, field: str) -> int | None:
+    """Read ``field`` off a dict or a pydantic model as a whole number, or None.
+
+    Deliberately strict about text: a rung that arrives as ``"about 30"`` is not a
+    rung, and guessing one from it would put a building on a position nobody
+    chose. None means "said nothing", which the caller can still act on honestly.
+    """
+    raw = entity.get(field) if isinstance(entity, Mapping) else getattr(entity, field, None)
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, int):
+        return raw
+    if isinstance(raw, str) and raw.strip().lstrip("-").isdigit():
+        return int(raw.strip())
+    return None
+
+
 def _canonical(surface_forms: Sequence[str]) -> str:
     """Pick the label for a value: most common form, ties by first appearance.
 
@@ -132,11 +165,30 @@ def _canonical(surface_forms: Sequence[str]) -> str:
     return max(counts, key=lambda form: (counts[form], first_seen[form]))
 
 
-def _collect(entities: Iterable[Any], en_field: str, de_field: str | None) -> list[dict[str, Any]]:
-    """One taxonomy's entries, in order of first appearance."""
+def _collect(
+    entities: Iterable[Any],
+    en_field: str,
+    de_field: str | None,
+    rung_field: str | None = None,
+) -> list[dict[str, Any]]:
+    """One taxonomy's entries, in order of first appearance.
+
+    A ``rung`` is carried only when ``rung_field`` names one AND at least one
+    entity supplied a number for that value. Two buildings may disagree about
+    where the same word sits; the most common number wins, ties by first
+    appearance — the same rule the label uses, for the same reason: the result
+    must not depend on dictionary order.
+
+    What this does NOT do is decide whether the number counts. A value the
+    platform already places (``good``, ``fair``, …) keeps the platform's rung;
+    that comparison lives in `fn_materialize_shard`, against
+    `fn_building_condition_rungs()`, because the map is SQL and a second copy
+    here would be the very duplication migration 322 removed.
+    """
     order: list[str] = []
     english: dict[str, list[str]] = {}
     german: dict[str, list[str]] = {}
+    rungs: dict[str, list[int]] = {}
 
     for entity in entities:
         surface = _get(entity, en_field)
@@ -147,18 +199,33 @@ def _collect(entities: Iterable[Any], en_field: str, de_field: str | None) -> li
             order.append(value)
             english[value] = []
             german[value] = []
+            rungs[value] = []
         english[value].append(surface)
         if de_field:
             de_surface = _get(entity, de_field)
             if de_surface:
                 german[value].append(de_surface)
+        if rung_field:
+            rung = _get_int(entity, rung_field)
+            if rung is not None:
+                rungs[value].append(rung)
 
     entries: list[dict[str, Any]] = []
     for value in order:
         label_en = _canonical(english[value])
         label_de = _canonical(german[value]) if german[value] else label_en
-        entries.append({"value": value, "label": {"en": label_en, "de": label_de}})
+        entry: dict[str, Any] = {"value": value, "label": {"en": label_en, "de": label_de}}
+        if rungs.get(value):
+            entry["rung"] = _canonical_int(rungs[value])
+        entries.append(entry)
     return entries
+
+
+def _canonical_int(values: Sequence[int]) -> int:
+    """Same rule as :func:`_canonical`, for numbers: most common, ties by first."""
+    counts = Counter(values)
+    first_seen = {v: i for i, v in enumerate(reversed(values))}
+    return max(counts, key=lambda v: (counts[v], first_seen[v]))
 
 
 def _collection(draft: Mapping[str, Any], name: str) -> list[Any]:
@@ -183,7 +250,12 @@ def derive_taxonomies(draft: Mapping[str, Any]) -> dict[str, list[dict[str, Any]
     """
     taxonomies: dict[str, list[dict[str, Any]]] = {}
     for source in TAXONOMY_SOURCES:
-        entries = _collect(_collection(draft, source.collection), source.en_field, source.de_field)
+        entries = _collect(
+            _collection(draft, source.collection),
+            source.en_field,
+            source.de_field,
+            source.rung_field,
+        )
         if entries:
             taxonomies[source.draft_key] = entries
     return taxonomies

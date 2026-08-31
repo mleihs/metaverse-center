@@ -670,6 +670,38 @@ class ForgeBuildingDraft(BaseModel):
         max_length=40,
         description="German equivalent of building_condition.",
     )
+    # WHY THE MODEL IS ASKED WHERE ITS OWN WORD SITS
+    #
+    # A world's condition vocabulary is DERIVED from what the model wrote
+    # (`forge_taxonomies`, finding 30) — consistent by construction, because the
+    # world's values ARE the ones its buildings carry. But a derivation yields a
+    # SET, and decay needs a SEQUENCE: `fn_degrade_building` moves a building
+    # DOWN a ladder, and a word with no place on it cannot move at all.
+    #
+    # Measured on production before migration 320: 17 buildings in 6 worlds
+    # carried a word that sat on no rung, and they never decayed — sabotage and
+    # crisis events passed them by. 320 placed the 13 words that existed then;
+    # this field is what keeps the NEXT invented word from repeating it.
+    #
+    # Asking the same call that invents the word is the cheapest correct answer:
+    # no second model call, no failure mode of its own, and the model already
+    # knows what it meant. Nothing here can distort the platform's own scale —
+    # `fn_materialize_shard` stores this number ONLY for a value the platform
+    # rung map does not already know, so a draft that claims `good` sits at 45
+    # is ignored rather than obeyed.
+    condition_rung: int = Field(
+        default=30,
+        ge=1,
+        le=59,
+        description=(
+            "Where this condition word sits on a decay ladder from 1 (untouched) "
+            "to 59 (a ruin). Anchors: pristine 5, excellent 10, good 20, fair 30, "
+            "poor 40, ruined 50. A thematic word takes the number nearest its "
+            "meaning: 'thriving' about 18, 'sealed' about 36, 'critical' about 45. "
+            "Decay moves a building to HIGHER numbers, so a word that sounds "
+            "healthier than another must carry a lower number than it."
+        ),
+    )
 
 
 class ForgeZoneDraft(BaseModel):
