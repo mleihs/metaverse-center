@@ -15654,7 +15654,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 </trans-unit>
 <trans-unit id="s4b65cdd1f283460d">
   <source>The heartbeat is the autonomous pulse that drives every simulation forward. Each tick evaluates agent attunement bonds, decays accumulated scar tissue, grows anchor stability points, and ages active events according to their decay curves. Bureau containment, remediation, and adaptation responses are triggered automatically when simulation health drops below critical thresholds. When the heartbeat is disabled, all of this stops: simulations freeze in their current state, no new attunement events fire, scar tissue persists indefinitely, and Bureau agents stand down. Disable during maintenance windows or when you need to inspect simulation state without it changing under observation.</source>
-  <target>The heartbeat is the autonomous pulse that drives every simulation forward. Each tick evaluates agent attunement bonds, decays accumulated scar tissue, grows anchor stability points, and ages active events according to their decay curves. Bureau containment, remediation, and adaptation responses are triggered automatically when simulation health drops below critical thresholds. When the heartbeat is disabled, all of this stops: simulations freeze in their current state, no new attunement events fire, scar tissue persists indefinitely, and Bureau agents stand down. Disable during maintenance windows or when you need to inspect simulation state without it changing under observation.</target>
+  <target>Der Herzschlag ist der eigenständige Puls, der jede Simulation vorantreibt. Jeder Tick wertet die Attunement-Bindungen der Agenten aus, baut angesammeltes Narbengewebe ab, lässt die Stabilitätspunkte der Anker wachsen und altert laufende Ereignisse entlang ihrer Zerfallskurven. Eindämmung, Behebung und Anpassung des Bureaus lösen von selbst aus, sobald die Gesundheit einer Simulation unter kritische Schwellen fällt. Ist der Herzschlag abgeschaltet, hört all das auf: Simulationen frieren in ihrem gegenwärtigen Zustand ein, keine neuen Attunement-Ereignisse feuern, Narbengewebe bleibt unbegrenzt bestehen, und die Agenten des Bureaus treten ab. Schalte ihn während Wartungsfenstern ab, oder wenn du den Zustand einer Simulation prüfen willst, ohne dass er sich unter der Beobachtung verändert.</target>
 </trans-unit>
 <trans-unit id="s67e1375d08904e71">
   <source>Toggle heartbeat engine</source>
@@ -19677,7 +19677,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Kriegsraum: Taktik &amp; Daten</target></trans-unit>
 <trans-unit id="sa5431f4599ef2490">
   <source>Learn how to play metaverse.center: quick start guide, game mechanics reference, and competitive strategy resources.</source>
-<target>Learn how to play metaverse.center: quick start guide, game mechanics reference, and competitive strategy resources.</target>
+<target>Lerne, metaverse.center zu spielen: Schnellstart, Nachschlagewerk zu den Spielmechaniken und Wettbewerbsstrategie.</target>
 </trans-unit>
 <trans-unit id="s6353ddf9dd67ea98">
   <source>Quick Start</source>
@@ -19726,14 +19726,14 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Beliebt</target></trans-unit>
 <trans-unit id="se2a17b28bffa9469">
   <source>Get started with metaverse.center in 5 minutes. Create AI-driven worlds, chat with agents, and compete in epochs.</source>
-<target>Get started with metaverse.center in 5 minutes. Create AI-driven worlds, chat with agents, and compete in epochs.</target>
+<target>Steig in fünf Minuten in metaverse.center ein. Erschaffe KI-getriebene Welten, sprich mit Agenten und tritt in Epochen an.</target>
 </trans-unit>
 <trans-unit id="s5c8fa7fd5b4d5a08">
   <source>This is metaverse.center</source>
 <target>Das ist metaverse.center</target></trans-unit>
 <trans-unit id="saf0d46207d49dda9">
   <source>AI-driven simulations – fictional worlds where agents have personalities, memories, and opinions. Everything is generated: dialogue, newspapers, weather reports, even the lore. Each world is alive.</source>
-<target>AI-driven simulations – fictional worlds where agents have personalities, memories, and opinions. Everything is generated: dialogue, newspapers, weather reports, even the lore. Each world is alive.</target>
+<target>KI-getriebene Simulationen – erfundene Welten, in denen Agenten Persönlichkeiten, Erinnerungen und Meinungen haben. Alles wird erzeugt: Dialoge, Zeitungen, Wetterberichte, sogar die Lore. Jede Welt lebt.</target>
 </trans-unit>
 <trans-unit id="s5d5f3483f67f3a43">
   <source>Browse a simulation</source>
@@ -19743,7 +19743,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Erstelle deine Welt</target></trans-unit>
 <trans-unit id="s0ab65196e20dcd8c">
   <source>The Simulation Forge turns a single seed idea into a complete world – geography, agents, buildings, lore, and a visual identity – in about 15 minutes. No coding, no setup.</source>
-<target>The Simulation Forge turns a single seed idea into a complete world – geography, agents, buildings, lore, and a visual identity – in about 15 minutes. No coding, no setup.</target>
+<target>Die Simulationsschmiede macht aus einem einzigen Saatgedanken eine vollständige Welt – Geografie, Agenten, Bauten, Lore und ein eigenes Erscheinungsbild – in etwa 15 Minuten. Kein Programmieren, kein Einrichten.</target>
 </trans-unit>
 <trans-unit id="sf37c7845cafddccd">
   <source>Open the Forge</source>
@@ -19753,14 +19753,14 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Sprich mit jedem</target></trans-unit>
 <trans-unit id="s1c83a0301ea2ebb4">
   <source>Every agent remembers your conversations. They reference past events, form opinions about you, and develop richer personalities over time. Chat is persistent across sessions.</source>
-<target>Every agent remembers your conversations. They reference past events, form opinions about you, and develop richer personalities over time. Chat is persistent across sessions.</target>
+<target>Jeder Agent erinnert sich an eure Gespräche. Sie beziehen sich auf frühere Ereignisse, bilden sich eine Meinung über dich und werden mit der Zeit vielschichtiger. Der Chat bleibt über Sitzungen hinweg bestehen.</target>
 </trans-unit>
 <trans-unit id="sdf2e30a1ee5b1c09">
   <source>Compete in Epochs</source>
 <target>Kämpfe in Epochen</target></trans-unit>
 <trans-unit id="sf7f37cf9adb41a7e">
   <source>Epochs are time-limited PvP seasons scored across five dimensions. Deploy operatives, forge alliances, sabotage rivals. Your original world is never modified – gameplay happens on a balanced clone.</source>
-<target>Epochs are time-limited PvP seasons scored across five dimensions. Deploy operatives, forge alliances, sabotage rivals. Your original world is never modified – gameplay happens on a balanced clone.</target>
+<target>Epochen sind zeitlich begrenzte Spielersaisons, gewertet über fünf Dimensionen. Setze Operative ein, schmiede Bündnisse, sabotiere Rivalen. Deine ursprüngliche Welt wird dabei nie verändert – gespielt wird auf einem ausgeglichenen Klon.</target>
 </trans-unit>
 <trans-unit id="s165ad29d1f867726">
   <source>Learn about Epochs</source>
@@ -19836,7 +19836,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Verwandt</target></trans-unit>
 <trans-unit id="s844c2eabacbac2c3">
   <source>Competitive tactics, worked-out match replays, and 200-game balance analytics for metaverse.center epochs.</source>
-<target>Competitive tactics, worked-out match replays, and 200-game balance analytics for metaverse.center epochs.</target>
+<target>Wettbewerbstaktik, durchgespielte Partien und Balance-Auswertungen aus 200 Spielen für die Epochen von metaverse.center.</target>
 </trans-unit>
 <trans-unit id="s4311d548ec4b7be6">
   <source>Tactics</source>
@@ -19853,7 +19853,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s2bce8ec6fb1bfa27">
   <source>The Forge uses real AI generation at every step. Each scan, draft, and calibration is a live API call – results are unique every time. Budget 10–15 minutes for a full forge run.</source>
-<target>The Forge uses real AI generation at every step. Each scan, draft, and calibration is a live API call – results are unique every time. Budget 10–15 minutes for a full forge run.</target>
+<target>Die Schmiede erzeugt bei jedem Schritt wirklich mit KI. Jeder Scan, jeder Entwurf, jede Abstimmung ist ein echter Modellaufruf – die Ergebnisse sind jedes Mal andere. Rechne mit 10 bis 15 Minuten für einen vollständigen Schmiedelauf.</target>
 </trans-unit>
 <trans-unit id="s8f14d12f5d0d5ecc">
   <source>Phase I – The Astrolabe</source>
@@ -19866,58 +19866,58 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Phase III – Die Dunkelkammer</target></trans-unit>
 <trans-unit id="s37a3b73754026733">
   <source>A live preview panel on the right shows how your theme will look in practice – color swatches, sample headings, buttons, and a mock agent card. Every parameter is editable if you want to fine-tune the AI’s choices.</source>
-<target>A live preview panel on the right shows how your theme will look in practice – color swatches, sample headings, buttons, and a mock agent card. Every parameter is editable if you want to fine-tune the AI’s choices.</target>
+<target>Eine Vorschau rechts zeigt, wie dein Thema in der Praxis aussieht – Farbfelder, Beispielüberschriften, Knöpfe und eine Musterkarte eines Agenten. Jeder Wert ist änderbar, wenn du die Wahl der KI nachjustieren willst.</target>
 </trans-unit>
 <trans-unit id="s47ed8898ea34e670">
   <source>Phase IV – The Ignition</source>
 <target>Phase IV – Die Zündung</target></trans-unit>
 <trans-unit id="s12276e8b1c4f34e6">
   <source>The Substrate Pulse is the heartbeat of every simulation. Every 4 hours, the system ticks – updating zone stability, progressing narrative arcs, triggering bureau responses, and recording entries in the pulse chronicle. The Pulse tab shows this activity as a battle-log-style ticker, grouped by tick number, with color-coded severity and type indicators.</source>
-<target>The Substrate Pulse is the heartbeat of every simulation. Every 4 hours, the system ticks – updating zone stability, progressing narrative arcs, triggering bureau responses, and recording entries in the pulse chronicle. The Pulse tab shows this activity as a battle-log-style ticker, grouped by tick number, with color-coded severity and type indicators.</target>
+<target>Der Substratpuls ist der Herzschlag jeder Simulation. Alle 4 Stunden tickt das System – es aktualisiert die Zonenstabilität, treibt Erzählbögen voran, löst Bureau-Antworten aus und trägt Einträge in die Pulschronik ein. Der Reiter Puls zeigt diese Tätigkeit als Laufband im Stil eines Gefechtsprotokolls, nach Tick gruppiert, mit farbcodierter Schwere und Typkennzeichnung.</target>
 </trans-unit>
 <trans-unit id="s6bbea267350ed02b">
   <source>When you visit a simulation for the first time each day, a classified intelligence briefing appears – the Daily Substrate Dispatch. Styled as a Bureau report handed to an operative, it summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators.</source>
-<target>When you visit a simulation for the first time each day, a classified intelligence briefing appears – the Daily Substrate Dispatch. Styled as a Bureau report handed to an operative, it summarizes the last 24 hours: overall health status with a color-coded bar, counts of critical and positive events, total pulse entries, and active narrative arcs with pressure indicators.</target>
+<target>Beim ersten Besuch einer Simulation an einem Tag erscheint ein Lagebericht unter Verschluss – die Tägliche Substrat-Depesche. Aufgemacht wie ein Bureau-Bericht, den man einem Operativen in die Hand drückt, fasst sie die letzten 24 Stunden zusammen: den Gesundheitsstand mit farbcodiertem Balken, die Zahl kritischer und positiver Ereignisse, die Gesamtzahl der Pulseinträge und die laufenden Erzählbögen samt Druckanzeige.</target>
 </trans-unit>
 <trans-unit id="se3750308d4a7f0ff">
   <source>The dispatch auto-dismisses after 30 seconds (pause by hovering) or can be acknowledged immediately. Click "View Chronicle" to jump straight to the Pulse tab. The briefing only appears when there are new entries to report – if nothing happened in 24 hours, no briefing is shown.</source>
-<target>The dispatch auto-dismisses after 30 seconds (pause by hovering) or can be acknowledged immediately. Click "View Chronicle" to jump straight to the Pulse tab. The briefing only appears when there are new entries to report – if nothing happened in 24 hours, no briefing is shown.</target>
+<target>Die Depesche schließt sich nach 30 Sekunden von selbst (mit dem Zeiger darüber hältst du sie an) oder lässt sich sofort bestätigen. Ein Klick auf „Chronik ansehen“ springt direkt in den Reiter Puls. Der Bericht erscheint nur, wenn es Neues zu melden gibt – ist in 24 Stunden nichts geschehen, erscheint keiner.</target>
 </trans-unit>
 <trans-unit id="sba304300170660d5">
   <source>The Chronicle is a living newspaper generated by AI after each epoch cycle. Styled as a Victorian-era broadsheet, it reports on in-game events through the lens of fictional journalism – complete with dramatic headlines, editorial commentary, and intelligence dispatches.</source>
-<target>The Chronicle is a living newspaper generated by AI after each epoch cycle. Styled as a Victorian-era broadsheet, it reports on in-game events through the lens of fictional journalism – complete with dramatic headlines, editorial commentary, and intelligence dispatches.</target>
+<target>Die Chronik ist eine lebende Zeitung, die nach jedem Epochenzyklus von einer KI verfasst wird. Aufgemacht als viktorianisches Großblatt berichtet sie über die Ereignisse im Spiel durch die Linse eines erfundenen Journalismus – mit dramatischen Schlagzeilen, Leitartikeln und Nachrichtendepeschen.</target>
 </trans-unit>
 <trans-unit id="s1a3b6b870822eaff">
   <source>The Chronicle is publicly visible – anyone browsing the simulation can read it. Use it to understand the narrative arc of an epoch, even as a spectator.</source>
-<target>The Chronicle is publicly visible – anyone browsing the simulation can read it. Use it to understand the narrative arc of an epoch, even as a spectator.</target>
+<target>Die Chronik ist öffentlich – jeder, der die Simulation durchsieht, kann sie lesen. Nutze sie, um den Erzählbogen einer Epoche zu verstehen, auch als Zuschauer.</target>
 </trans-unit>
 <trans-unit id="s6916c73f6ed14f2b">
   <source>Substrate Resonances are emergent phenomena that arise when a simulation’s substrate – its underlying computational fabric – vibrates in response to in-game activity. Think of them as the world’s immune system: when events cluster too densely or score dimensions become imbalanced, the substrate begins to resonate.</source>
-<target>Substrate Resonances are emergent phenomena that arise when a simulation’s substrate – its underlying computational fabric – vibrates in response to in-game activity. Think of them as the world’s immune system: when events cluster too densely or score dimensions become imbalanced, the substrate begins to resonate.</target>
+<target>Substratresonanzen sind Erscheinungen, die entstehen, wenn das Substrat einer Simulation – ihr zugrundeliegendes rechnerisches Gewebe – auf das Geschehen im Spiel zu schwingen beginnt. Denk sie dir als das Immunsystem der Welt: Häufen sich Ereignisse zu dicht oder geraten die Wertungsdimensionen aus dem Gleichgewicht, fängt das Substrat an mitzuschwingen.</target>
 </trans-unit>
 <trans-unit id="sc1d615e996a1b344">
   <source>The Substrate Tremor Monitor displays all active resonances in real time. Each resonance is shown as a card with its signature label, magnitude bar, and remaining decay cycles. The monitor also shows the simulation’s overall substrate stability – a composite measure of how far the world’s fabric has been stressed.</source>
-<target>The Substrate Tremor Monitor displays all active resonances in real time. Each resonance is shown as a card with its signature label, magnitude bar, and remaining decay cycles. The monitor also shows the simulation’s overall substrate stability – a composite measure of how far the world’s fabric has been stressed.</target>
+<target>Der Substrat-Bebenmonitor zeigt alle laufenden Resonanzen in Echtzeit. Jede erscheint als Karte mit ihrer Signatur, einem Stärkebalken und den verbleibenden Zerfallszyklen. Der Monitor zeigt außerdem die Substratstabilität der Simulation insgesamt – ein zusammengesetztes Maß dafür, wie weit das Gewebe der Welt beansprucht wurde.</target>
 </trans-unit>
 <trans-unit id="s57ca8d9ebd57d1be">
   <source>High substrate instability means resonances are more likely to trigger and cascade. Plan your deployments carefully during unstable periods – a single saboteur mission could trigger a resonance that rebounds against you.</source>
-<target>High substrate instability means resonances are more likely to trigger and cascade. Plan your deployments carefully during unstable periods – a single saboteur mission could trigger a resonance that rebounds against you.</target>
+<target>Hohe Substratinstabilität heißt: Resonanzen lösen leichter aus und schlagen leichter Kaskaden. Plane deine Einsätze in unruhigen Zeiten mit Bedacht – ein einziger Saboteur kann eine Resonanz auslösen, die auf dich zurückschlägt.</target>
 </trans-unit>
 <trans-unit id="se7159f1836007ae9">
   <source>Resonances are not just atmospheric – they have direct mechanical impact. A "Military Surge" resonance might increase assassin success rates by 10% for 3 cycles, while a "Diplomatic Dampener" could reduce embassy effectiveness. Understanding which actions trigger which resonances is key to advanced strategy.</source>
-<target>Resonances are not just atmospheric – they have direct mechanical impact. A "Military Surge" resonance might increase assassin success rates by 10% for 3 cycles, while a "Diplomatic Dampener" could reduce embassy effectiveness. Understanding which actions trigger which resonances is key to advanced strategy.</target>
+<target>Resonanzen sind nicht bloß Stimmung – sie greifen unmittelbar in die Mechanik ein. Eine Resonanz „Militärischer Aufwuchs“ kann die Erfolgsrate von Assassinen für 3 Zyklen um 10 Prozent heben, während ein „Diplomatischer Dämpfer“ die Wirksamkeit von Botschaften senkt. Zu wissen, welche Handlungen welche Resonanz auslösen, ist der Schlüssel zum fortgeschrittenen Spiel.</target>
 </trans-unit>
 <trans-unit id="sb041eb0e968f3dcf">
   <source>Every simulation tracks event pressure across its zones through the Event Seismograph – an SVG visualization that plots event intensity over time. The seismograph shows spikes when missions resolve, guardians deploy, or bleed events cascade. Hover over any point to see the exact event details.</source>
-<target>Every simulation tracks event pressure across its zones through the Event Seismograph – an SVG visualization that plots event intensity over time. The seismograph shows spikes when missions resolve, guardians deploy, or bleed events cascade. Hover over any point to see the exact event details.</target>
+<target>Jede Simulation verfolgt den Ereignisdruck ihrer Zonen über den Ereignis-Seismografen – eine SVG-Darstellung, die die Ereignisstärke über die Zeit aufträgt. Der Seismograf schlägt aus, wenn Einsätze auflösen, Wächter aufziehen oder Bleed-Ereignisse kaskadieren. Fahre über einen Punkt, um die genauen Einzelheiten zu sehen.</target>
 </trans-unit>
 <trans-unit id="s706e2c058f57a34a">
   <source>Zone security is the primary defensive mechanic. A zone at Critical security reduces enemy operative success by up to 25%. Conversely, a Low security zone is a soft target – spy intel that reveals zone security levels is enormously valuable for planning strikes.</source>
-<target>Zone security is the primary defensive mechanic. A zone at Critical security reduces enemy operative success by up to 25%. Conversely, a Low security zone is a soft target – spy intel that reveals zone security levels is enormously valuable for planning strikes.</target>
+<target>Die Zonensicherheit ist die wichtigste Verteidigungsmechanik. Eine Zone auf kritischer Sicherheitsstufe senkt den Erfolg feindlicher Operativer um bis zu 25 Prozent. Umgekehrt ist eine Zone mit niedriger Sicherheit ein weiches Ziel – Spionageerkenntnisse über die Sicherheitsstufen einer Welt sind für die Planung von Schlägen außerordentlich wertvoll.</target>
 </trans-unit>
 <trans-unit id="s5e7d3a24c2e295f2">
   <source>Agent memory uses a dual-layer architecture: observations are raw factual records ("I deployed as a spy against The Gaslit Reach"), while reflections are synthesized interpretations ("My infiltration revealed a pattern of weak northern defenses – the enemy is concentrating forces in the south"). Reflections are AI-generated from accumulated observations.</source>
-<target>Agent memory uses a dual-layer architecture: observations are raw factual records ("I deployed as a spy against The Gaslit Reach"), while reflections are synthesized interpretations ("My infiltration revealed a pattern of weak northern defenses – the enemy is concentrating forces in the south"). Reflections are AI-generated from accumulated observations.</target>
+<target>Das Gedächtnis eines Agenten hat zwei Schichten: Beobachtungen sind rohe Tatsachenprotokolle („Ich war als Spion gegen The Gaslit Reach im Einsatz“), Reflexionen sind daraus verdichtete Deutungen („Meine Infiltration hat ein Muster schwacher Nordverteidigung offengelegt – der Gegner ballt seine Kräfte im Süden“). Reflexionen entstehen per KI aus den angesammelten Beobachtungen.</target>
 </trans-unit>
 <trans-unit id="sddbe4dfeb15b6b1a">
   <source>Critical – never decays</source>
@@ -19937,11 +19937,11 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s89e748482d92be0e">
   <source>The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs – useful for spectators following multiple matches.</source>
-<target>The battle feed ticker at the bottom of the map shows a scrolling log of public battle events across all active epochs – useful for spectators following multiple matches.</target>
+<target>Das Gefechtsband am unteren Rand der Karte zeigt ein laufendes Protokoll öffentlicher Kampfereignisse aus allen aktiven Epochen – nützlich für Zuschauer, die mehreren Partien folgen.</target>
 </trans-unit>
 <trans-unit id="s2e7543305c4c3ec1">
   <source>Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior – from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.</source>
-<target>Bot players are AI opponents that can be added to any epoch. Each bot has a personality archetype that determines its strategic behavior – from defensive fortress-builders to chaotic wild cards. Bots use the exact same deployment and scoring mechanics as human players, ensuring fair competition.</target>
+<target>Bot-Spieler sind KI-Gegner, die sich jeder Epoche hinzufügen lassen. Jeder Bot hat einen Persönlichkeitsarchetyp, der sein strategisches Verhalten bestimmt – vom defensiven Festungsbauer bis zur chaotischen Wundertüte. Bots benutzen genau dieselbe Einsatz- und Wertungsmechanik wie menschliche Spieler; der Wettbewerb bleibt fair.</target>
 </trans-unit>
 <trans-unit id="sc4ccd0ec7b3afb3b">
   <source>Defensive – guardians + sweeps</source>
@@ -19960,63 +19960,63 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Unberechenbar – zufälliger Mix</target></trans-unit>
 <trans-unit id="sac0b1e906d79fe60">
   <source>Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages – bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.</source>
-<target>Bots can participate in epoch chat with two modes. Template mode generates instant, cost-free responses based on personality templates. LLM mode uses OpenRouter to produce context-aware, strategically nuanced messages – bots will taunt, negotiate, and bluff based on the game state. The mode is configurable per simulation in AI Settings.</target>
+<target>Bots können am Epochenchat teilnehmen, in zwei Betriebsarten. Der Vorlagenmodus erzeugt sofortige, kostenfreie Antworten aus Persönlichkeitsvorlagen. Der Modellmodus nutzt OpenRouter für Nachrichten, die den Zusammenhang kennen und strategisch abgestuft sind – Bots sticheln, verhandeln und bluffen dann je nach Spielstand. Die Betriebsart ist je Simulation in den KI-Einstellungen wählbar.</target>
 </trans-unit>
 <trans-unit id="s914939b163bc45c0">
   <source>When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent’s system prompt, so their responses reflect what they’ve experienced – events they witnessed, missions they participated in, and reflections they’ve formed.</source>
-<target>When an agent responds, the system retrieves their most relevant memories using a Stanford Generative Agents-style retrieval formula that balances semantic similarity, importance, and recency. These memories are injected into the agent’s system prompt, so their responses reflect what they’ve experienced – events they witnessed, missions they participated in, and reflections they’ve formed.</target>
+<target>Antwortet ein Agent, holt das System seine einschlägigsten Erinnerungen über eine Abrufformel nach dem Vorbild der Stanford Generative Agents, die inhaltliche Nähe, Bedeutung und Aktualität gegeneinander abwägt. Diese Erinnerungen gehen in den Systemprompt des Agenten ein, seine Antworten spiegeln also, was er erlebt hat – Ereignisse, deren Zeuge er war, Einsätze, an denen er teilnahm, und Reflexionen, die er sich gebildet hat.</target>
 </trans-unit>
 <trans-unit id="s383766057047d81e">
   <source>Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread – you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.</source>
-<target>Navigate to the Chat tab in your simulation and select an agent from the agent selector. Each conversation is a separate thread – you can maintain multiple ongoing conversations with different agents. Messages appear with directional animations, and AI responses are generated in real time via OpenRouter.</target>
+<target>Wechsle in den Reiter Chat deiner Simulation und wähle einen Agenten aus der Liste. Jedes Gespräch ist ein eigener Strang – du kannst mehrere Unterhaltungen mit verschiedenen Agenten gleichzeitig führen. Nachrichten erscheinen mit gerichteten Bewegungen, und die KI-Antworten entstehen in Echtzeit über OpenRouter.</target>
 </trans-unit>
 <trans-unit id="s7eabe74725124dc5">
   <source>Events are the narrative heartbeat of every simulation. They represent things that happen in the world – political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.</source>
-<target>Events are the narrative heartbeat of every simulation. They represent things that happen in the world – political upheavals, economic crises, military conflicts, cultural shifts, natural disasters. Events can be created manually, generated by AI, or produced automatically through game mechanics like operative missions and bleed echoes.</target>
+<target>Ereignisse sind der erzählerische Herzschlag jeder Simulation. Sie stehen für das, was in der Welt geschieht – politische Umbrüche, Wirtschaftskrisen, militärische Konflikte, kulturelle Verschiebungen, Naturkatastrophen. Ereignisse lassen sich von Hand anlegen, per KI erzeugen oder entstehen von selbst aus Spielmechaniken wie Operativeinsätzen und Bleed-Echos.</target>
 </trans-unit>
 <trans-unit id="s5f49bccf615b03ee">
   <source>Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags – all contextually appropriate to your simulation’s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.</source>
-<target>Generate complete events using AI through the event creation modal. The AI produces a title, description, impact level, and tags – all contextually appropriate to your simulation’s theme and current state. Each simulation can configure its own AI model and prompt templates to control the tone and style of generated events.</target>
+<target>Erzeuge vollständige Ereignisse per KI über das Anlegefenster. Die KI liefert Titel, Beschreibung, Wirkungsstufe und Schlagworte – alles passend zum Thema deiner Simulation und ihrem gegenwärtigen Zustand. Jede Simulation kann ihr eigenes Modell und ihre eigenen Promptvorlagen einstellen, um Ton und Stil der erzeugten Ereignisse zu steuern.</target>
 </trans-unit>
 <trans-unit id="s974f0ba4a651b0e9">
   <source>After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses – a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.</source>
-<target>After an event occurs, agents can react to it based on their personality, profession, and background. Agent reactions are AI-generated character-driven responses – a military general reacts differently to an invasion than a merchant or a priest. Reactions appear as expandable cards below the event details.</target>
+<target>Nach einem Ereignis können Agenten darauf reagieren – nach ihrer Persönlichkeit, ihrem Beruf und ihrer Herkunft. Agentenreaktionen sind KI-erzeugte, aus dem Charakter heraus geschriebene Antworten: Ein General reagiert auf eine Invasion anders als ein Händler oder ein Priester. Die Reaktionen erscheinen als aufklappbare Karten unter den Einzelheiten des Ereignisses.</target>
 </trans-unit>
 <trans-unit id="s7d94caadcdeafec9">
   <source>Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They’re not just narrative – they have real mechanical consequences.</source>
-<target>Events with high impact levels (8+) can trigger bleed echoes to connected simulations, cascade events in stressed zones, and shift epoch scoring dimensions. They’re not just narrative – they have real mechanical consequences.</target>
+<target>Ereignisse mit hoher Wirkungsstufe (8 und darüber) können Bleed-Echos in verbundene Simulationen auslösen, in belasteten Zonen Kaskaden anstoßen und die Wertungsdimensionen einer Epoche verschieben. Sie sind nicht nur Erzählung – sie haben echte mechanische Folgen.</target>
 </trans-unit>
 <trans-unit id="s999dd3726bc1b584">
   <source>Every simulation has a dedicated Lore section – an in-world narrative of 3,000–5,000 words organized into six chapters. Lore describes the world’s history, geography, political systems, culture, and defining tensions. It’s the first thing visitors see when entering a simulation, setting the tone for everything that follows.</source>
-<target>Every simulation has a dedicated Lore section – an in-world narrative of 3,000–5,000 words organized into six chapters. Lore describes the world’s history, geography, political systems, culture, and defining tensions. It’s the first thing visitors see when entering a simulation, setting the tone for everything that follows.</target>
+<target>Jede Simulation hat einen eigenen Lore-Bereich – eine Erzählung aus der Welt heraus, 3 000 bis 5 000 Wörter in sechs Kapiteln. Die Lore beschreibt Geschichte, Geografie, politische Ordnung, Kultur und die prägenden Spannungen der Welt. Sie ist das Erste, was Besucher beim Betreten sehen, und setzt den Ton für alles Weitere.</target>
 </trans-unit>
 <trans-unit id="sba4d21ab9b53381a">
   <source>Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation’s theme – dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.</source>
-<target>Lore is displayed through the LoreScroll component: an elegantly typeset reading experience using the Bureau font (Spectral serif) with themed section headers, paragraph spacing, and optional lore illustrations. The visual design adapts to each simulation’s theme – dark brutalist for Velgarien, Victorian gaslight for The Gaslit Reach, deep-space horror for Station Null.</target>
+<target>Die Lore erscheint über die Komponente LoreScroll: ein sorgfältig gesetztes Leseerlebnis in der Bureau-Schrift (Spectral, eine Serife), mit thematischen Kapitelköpfen, großzügigem Absatzabstand und wahlweise Illustrationen. Die Gestaltung folgt dem Thema der jeweiligen Simulation – dunkler Brutalismus für Velgarien, viktorianisches Gaslicht für The Gaslit Reach, Weltraumhorror für Station Null.</target>
 </trans-unit>
 <trans-unit id="s2ceb44ec6c69965d">
   <source>Lore is publicly visible – anyone can browse a simulation’s lore without logging in. It serves as the world’s identity and helps players understand the thematic context before joining an epoch.</source>
-<target>Lore is publicly visible – anyone can browse a simulation’s lore without logging in. It serves as the world’s identity and helps players understand the thematic context before joining an epoch.</target>
+<target>Die Lore ist öffentlich – jeder kann sie ohne Anmeldung lesen. Sie ist die Identität der Welt und hilft Spielern, den thematischen Zusammenhang zu verstehen, bevor sie einer Epoche beitreten.</target>
 </trans-unit>
 <trans-unit id="s3e7c571b8bad3611">
   <source>The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring – they’re not just flavor, they determine your score.</source>
-<target>The Simulation Health dashboard shows the mechanical state of your world through four computed metrics: Building Readiness, Zone Stability, Embassy Effectiveness, and overall Simulation Health. These metrics directly feed into epoch scoring – they’re not just flavor, they determine your score.</target>
+<target>Die Gesundheitsübersicht zeigt den mechanischen Zustand deiner Welt über vier berechnete Kennzahlen: Gebäudebereitschaft, Zonenstabilität, Botschaftswirksamkeit und die Gesamtgesundheit der Simulation. Diese Zahlen gehen unmittelbar in die Epochenwertung ein – sie sind keine Zierde, sie bestimmen deinen Punktestand.</target>
 </trans-unit>
 <trans-unit id="s9f7a655b94af0ea2">
   <source>The workflow is: Fetch → Transform → Integrate. First, browse or search real-world articles. Then, select an article and transform it – the AI rewrites the story through your simulation’s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.</source>
-<target>The workflow is: Fetch → Transform → Integrate. First, browse or search real-world articles. Then, select an article and transform it – the AI rewrites the story through your simulation’s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.</target>
+<target>Der Ablauf lautet: Holen → Umformen → Einfügen. Erst durchsuchst du echte Zeitungsartikel. Dann wählst du einen aus und formst ihn um – die KI schreibt die Geschichte durch die Linse deiner Simulation neu, ihrem Thema, ihrem Ton und ihrer inneren Logik folgend. Zuletzt fügst du den umgeformten Text als neues Ereignis ein, wahlweise an eine Kampagne gebunden.</target>
 </trans-unit>
 <trans-unit id="sdf8a1a4056757bd7">
   <source>The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket – no page refresh needed.</source>
-<target>The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket – no page refresh needed.</target>
+<target>Die COMMS-Leiste auf der Epochen-Einsatztafel trägt die Verständigung während des Wettbewerbs. Zwei Kanäle stehen offen: ALLE KANÄLE sendet an jeden Teilnehmer, TEAM-FREQUENZ nur an deine Bündnispartner. Die Nachrichten laufen in Echtzeit über WebSocket – ohne die Seite neu zu laden.</target>
 </trans-unit>
 <trans-unit id="sd1b3f2a3344bf870">
   <source>Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players – use TEAM FREQ for sensitive coordination.</source>
-<target>Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players – use TEAM FREQ for sensitive coordination.</target>
+<target>Nutze COMMS, um die Bündnisstrategie abzustimmen, Waffenruhen auszuhandeln oder über deinen nächsten Zug zu bluffen. Alles auf ALLE KANÄLE ist für jeden sichtbar – für heikle Absprachen nimm die TEAM-FREQUENZ.</target>
 </trans-unit>
 <trans-unit id="s241e3f99ef9de21b">
   <source>After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences – opt out anytime in Settings.</source>
-<target>After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences – opt out anytime in Settings.</target>
+<target>Nach der Auflösung jedes Zyklus erhalten alle Teilnehmer eine taktische Lagemail. Sie ist zweisprachig (DE/EN), hält den Nebel des Krieges ein (du siehst nur deine eigenen Operationen) und enthält deinen Rang, die Punktabstände, die Einsatzergebnisse, die Spionageerkenntnisse, eine Bedrohungseinschätzung und einen Ausblick auf die nächste Zyklusphase. Die Mails achten deine Benachrichtigungseinstellungen – du kannst jederzeit in den Einstellungen abbestellen.</target>
 </trans-unit>
 <trans-unit id="sff82f765b81eb6e2">
   <source>Tier 4: Epoch Operations</source>
@@ -20038,31 +20038,31 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Abfangen</target></trans-unit>
 <trans-unit id="sef7903de47ce63d5">
   <source>Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP – enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.</source>
-<target>Deploy only 1 guardian during foundation, save the rest. You enter competition with 35+ RP – enough for an assassin + saboteur on cycle 4. Risky: undefended zones are vulnerable. Best with Warmonger preset where early military points compound.</target>
+<target>Setze in der Gründungsphase nur 1 Wächter ein und spare den Rest. Du gehst mit 35+ FP in den Wettbewerb – genug für einen Assassinen und einen Saboteur in Zyklus 4. Riskant: ungeschützte Zonen sind angreifbar. Am besten mit der Voreinstellung Kriegstreiber, wo frühe Militärpunkte sich verzinsen.</target>
 </trans-unit>
 <trans-unit id="sdeb50ec0c05820ea">
   <source>Deploy 2–3 guardians, keep a moderate RP reserve (15–20). Covers key zones without sacrificing offensive capability. The safest opener – works with any preset and adapts to opponent behavior.</source>
-<target>Deploy 2–3 guardians, keep a moderate RP reserve (15–20). Covers key zones without sacrificing offensive capability. The safest opener – works with any preset and adapts to opponent behavior.</target>
+<target>Setze 2 bis 3 Wächter ein und halte eine mittlere FP-Reserve (15 bis 20). Deckt die Schlüsselzonen ab, ohne die Angriffskraft zu opfern. Die sicherste Eröffnung – sie passt zu jeder Voreinstellung und lässt sich an das Verhalten des Gegners anpassen.</target>
 </trans-unit>
 <trans-unit id="sadce688519b83c6a">
   <source>A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs – not every cycle. A detected enemy mission costs THEM −3 military AND negates their effect. One well-timed sweep can swing 10+ points.</source>
-<target>A sweep costs 4 RP. Use it when you suspect incoming propagandists or saboteurs – not every cycle. A detected enemy mission costs THEM −3 military AND negates their effect. One well-timed sweep can swing 10+ points.</target>
+<target>Eine Abwehrsuche kostet 4 FP. Setze sie ein, wenn du Propagandisten oder Saboteure erwartest – nicht in jedem Zyklus. Ein aufgedeckter Einsatz kostet den GEGNER −3 Militär und hebt seine Wirkung auf. Eine gut gesetzte Suche kann 10 Punkte und mehr drehen.</target>
 </trans-unit>
 <trans-unit id="s399c2478116a5cf3">
   <source>Each guardian reduces enemy success by 6% (capped at −15% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense – only stack when protecting high-value buildings.</source>
-<target>Each guardian reduces enemy success by 6% (capped at −15% total). Three guardians reach the cap. Forces enemies to target undefended zones instead. But 12 RP on defense is 12 RP not spent on offense – only stack when protecting high-value buildings.</target>
+<target>Jeder Wächter senkt den gegnerischen Erfolg um 6 Prozent (gedeckelt bei −15 Prozent insgesamt). Drei Wächter erreichen den Deckel. Sie zwingen den Gegner, ungeschützte Zonen anzugreifen. Aber 12 FP in der Verteidigung sind 12 FP, die im Angriff fehlen – stapele nur, wenn du wertvolle Bauten schützt.</target>
 </trans-unit>
 <trans-unit id="s57c9e65e164369ff">
   <source>Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy – mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.</source>
-<target>Infiltrators reduce your embassy effectiveness by 65% for 3 cycles. Counter by deploying your own infiltrator against their embassy – mutual neutralization. Or stack guardians near embassy zones to prevent infiltration entirely.</target>
+<target>Infiltratoren senken deine Botschaftswirksamkeit für 3 Zyklen um 65 Prozent. Kontere, indem du deinen eigenen Infiltrator gegen ihre Botschaft schickst – gegenseitige Aufhebung. Oder staple Wächter in den Botschaftszonen und verhindere die Infiltration von vornherein.</target>
 </trans-unit>
 <trans-unit id="s0900badb6ae813b4">
   <source>With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (−3 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses – stability only counts for 10%.</source>
-<target>With 40% military weight, every successful mission is massive (+5 saboteur, +8 assassin, +6 infiltrator). But detected missions (−3 each) hurt double. Go all-in on offense with spies for intel, then targeted strikes. Accept defensive losses – stability only counts for 10%.</target>
+<target>Bei 40 Prozent Militärgewicht ist jeder gelungene Einsatz gewaltig (+5 Saboteur, +8 Assassin, +6 Infiltrator). Aufgedeckte Einsätze (−3 je Stück) tun dafür doppelt weh. Geh voll in den Angriff, mit Spionen für die Aufklärung und dann gezielten Schlägen. Nimm Verluste in der Verteidigung hin – Stabilität zählt nur zu 10 Prozent.</target>
 </trans-unit>
 <trans-unit id="sdb610f657d5d5ed7">
   <source>Special agent status – targeted by assassins</source>
-<target>Special agent status – targeted by assassins</target>
+<target>Besonderer Agentenstatus – Ziel von Assassinen</target>
 </trans-unit>
 <trans-unit id="s6589be2091c2f363">
   <source>New intro: What is metaverse.center? – sandbox vs competitive modes</source>
@@ -20075,7 +20075,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Keine Simulationsmitgliedschaft erforderlich – wähle eine Fraktion und spiele</target></trans-unit>
 <trans-unit id="sc76afe2f683f676f">
   <source>Game-theoretic optimal play is pure ci_defensive. The meta is solved – defensive play dominates all alternatives at 64% win rate.</source>
-<target>Game-theoretic optimal play is pure ci_defensive. The meta is solved – defensive play dominates all alternatives at 64% win rate.</target>
+<target>Spieltheoretisch optimal ist reines ci_defensive. Die Meta gilt als gelöst – defensives Spiel schlägt bei 64 Prozent Siegquote jede Alternative.</target>
 </trans-unit>
 <trans-unit id="s81b2c624c09b758f">
   <source>The Simulation World</source>
@@ -20100,18 +20100,18 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Der Substrat-Puls tickt alle 4 Stunden und treibt Erzählbögen und Zonendynamik voran</target></trans-unit>
 <trans-unit id="s8c7f8ab1f2e2a6da">
   <source>metaverse.center is a platform for creating and managing AI-driven simulations – fictional worlds with agents, buildings, events, geography, and lore. Each simulation is a living sandbox: agents have personalities and memories, events shape the narrative, and AI generates everything from character dialogue to newspaper editions.</source>
-<target>metaverse.center is a platform for creating and managing AI-driven simulations – fictional worlds with agents, buildings, events, geography, and lore. Each simulation is a living sandbox: agents have personalities and memories, events shape the narrative, and AI generates everything from character dialogue to newspaper editions.</target>
+<target>metaverse.center ist eine Plattform, um KI-getriebene Simulationen zu erschaffen und zu führen – erfundene Welten mit Agenten, Bauten, Ereignissen, Geografie und Lore. Jede Simulation ist ein lebender Sandkasten: Agenten haben Persönlichkeiten und Erinnerungen, Ereignisse formen die Erzählung, und die KI erzeugt alles, vom Dialog bis zur Zeitungsausgabe.</target>
 </trans-unit>
 <trans-unit id="sa236a595f1d50454">
   <source>In sandbox mode, you build and explore your world – create agents, generate events, chat with characters, import real-world news, and craft lore. In competitive mode, simulations enter Epochs: time-limited PvP matches where players deploy operatives, form alliances, and compete across five scoring dimensions.</source>
-<target>In sandbox mode, you build and explore your world – create agents, generate events, chat with characters, import real-world news, and craft lore. In competitive mode, simulations enter Epochs: time-limited PvP matches where players deploy operatives, form alliances, and compete across five scoring dimensions.</target>
+<target>Im Sandkastenmodus baust und erkundest du deine Welt – Agenten anlegen, Ereignisse erzeugen, mit Figuren sprechen, echte Nachrichten einführen, Lore verfassen. Im Wettbewerbsmodus treten Simulationen in Epochen ein: zeitlich begrenzte Partien, in denen Spieler Operative einsetzen, Bündnisse schließen und über fünf Wertungsdimensionen gegeneinander antreten.</target>
 </trans-unit>
 <trans-unit id="s1a8d41e0acdae5b2">
   <source>The Substrate Pulse</source>
 <target>Der Substrat-Puls</target></trans-unit>
 <trans-unit id="s493bcd6174e3f7c4">
   <source>Create a complete AI-generated world from a single seed idea in 15 minutes.</source>
-<target>Create a complete AI-generated world from a single seed idea in 15 minutes.</target>
+<target>Erschaffe in 15 Minuten eine vollständige, KI-erzeugte Welt aus einem einzigen Saatgedanken.</target>
 </trans-unit>
 <trans-unit id="sd87a6891e7681ad7">
   <source>8 min</source>
@@ -20122,15 +20122,15 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s7eb1ba9ea64be2c4">
   <source>AI generates geography, agents, buildings, lore, and a visual identity</source>
-<target>AI generates geography, agents, buildings, lore, and a visual identity</target>
+<target>Die KI erzeugt Geografie, Agenten, Bauten, Lore und ein eigenes Erscheinungsbild</target>
 </trans-unit>
 <trans-unit id="s3bf56baecc9a3b2a">
   <source>Every result is unique – same seed, different anchor, radically different world</source>
-<target>Every result is unique – same seed, different anchor, radically different world</target>
+<target>Jedes Ergebnis ist einzigartig – gleiche Saat, anderer Anker, völlig andere Welt</target>
 </trans-unit>
 <trans-unit id="s6243afbef4d730c9">
   <source>Ignition is permanent and consumes 1 Forge Token</source>
-<target>Ignition is permanent and consumes 1 Forge Token</target>
+<target>Die Zündung ist endgültig und verbraucht 1 Forge-Token</target>
 </trans-unit>
 <trans-unit id="s101837f5e8d3bc16">
   <source>The Forge Process</source>
@@ -20140,14 +20140,14 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Agenten &amp; Chat</target></trans-unit>
 <trans-unit id="s12a1c698e762f719">
   <source>Talk to AI agents who remember your conversations and develop over time.</source>
-<target>Talk to AI agents who remember your conversations and develop over time.</target>
+<target>Sprich mit KI-Agenten, die sich an eure Gespräche erinnern und sich mit der Zeit entwickeln.</target>
 </trans-unit>
 <trans-unit id="s4df753bc41500676">
   <source>7 min</source>
 <target>7 Min.</target></trans-unit>
 <trans-unit id="s587c31ea7ec4f362">
   <source>Agents have personalities, memories, and opinions that evolve</source>
-<target>Agents have personalities, memories, and opinions that evolve</target>
+<target>Agenten haben Persönlichkeiten, Erinnerungen und Meinungen, die sich wandeln</target>
 </trans-unit>
 <trans-unit id="s86c3a443ea9608f6">
   <source>Chat uses 50-message context + semantic memory retrieval (pgvector)</source>
@@ -20155,30 +20155,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s0777a2be3cbba9ad">
   <source>Observations and reflections build a living psychological profile</source>
-<target>Observations and reflections build a living psychological profile</target>
+<target>Beobachtungen und Reflexionen bauen ein lebendes seelisches Profil</target>
 </trans-unit>
 <trans-unit id="sc6d2a3d8ecfc1e44">
   <source>Memory importance (1–5 pips) determines persistence and decay</source>
-<target>Memory importance (1–5 pips) determines persistence and decay</target>
+<target>Die Bedeutung einer Erinnerung (1 bis 5 Punkte) bestimmt, wie lange sie hält und wie schnell sie verblasst</target>
 </trans-unit>
 <trans-unit id="sc0c68636bc0883dc">
   <source>Events &amp; Dynamics</source>
 <target>Ereignisse &amp; Dynamik</target></trans-unit>
 <trans-unit id="s01626fd36843e168">
   <source>Events drive the narrative: manual, AI-generated, or spawned by game mechanics.</source>
-<target>Events drive the narrative: manual, AI-generated, or spawned by game mechanics.</target>
+<target>Ereignisse treiben die Erzählung: von Hand, per KI oder aus der Spielmechanik geboren.</target>
 </trans-unit>
 <trans-unit id="scbcc3739f5a03f6b">
   <source>Events have impact levels (1–10), types, tags, and a status lifecycle</source>
-<target>Events have impact levels (1–10), types, tags, and a status lifecycle</target>
+<target>Ereignisse haben Wirkungsstufen (1 bis 10), Arten, Schlagworte und einen Statusverlauf</target>
 </trans-unit>
 <trans-unit id="s618d3208c3448bca">
   <source>High-impact events trigger zone pressure, cascades, and cross-simulation bleed</source>
-<target>High-impact events trigger zone pressure, cascades, and cross-simulation bleed</target>
+<target>Ereignisse hoher Wirkung erzeugen Zonendruck, Kaskaden und Bleed über Simulationsgrenzen hinweg</target>
 </trans-unit>
 <trans-unit id="s269535be2ea43ae3">
   <source>Social Trends imports real-world news and transforms it into simulation events</source>
-<target>Social Trends imports real-world news and transforms it into simulation events</target>
+<target>Soziale Trends führen echte Nachrichten ein und formen sie zu Simulationsereignissen um</target>
 </trans-unit>
 <trans-unit id="s90ff4acaf0217bad">
   <source>Zone security levels (Low–Critical) directly affect operative success rates</source>
@@ -20186,7 +20186,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s284d0a5ea289b085">
   <source>Agent autonomy: moods, needs, opinions, relationships, and autonomous events.</source>
-<target>Agent autonomy: moods, needs, opinions, relationships, and autonomous events.</target>
+<target>Autonomie der Agenten: Stimmungen, Bedürfnisse, Meinungen, Beziehungen und selbsttätige Ereignisse.</target>
 </trans-unit>
 <trans-unit id="s5eae6f9545251360">
   <source>10 min</source>
@@ -20209,37 +20209,37 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s0a6fc496229f91db">
   <source>Interactive force-directed graph of the entire multiverse and active epochs.</source>
-<target>Interactive force-directed graph of the entire multiverse and active epochs.</target>
+<target>Ein bewegliches Kräftediagramm des ganzen Multiversums und der laufenden Epochen.</target>
 </trans-unit>
 <trans-unit id="sa6ba107bde4828d3">
   <source>4 min</source>
 <target>4 Min.</target></trans-unit>
 <trans-unit id="s8184d6c8afa1d4b5">
   <source>Nodes are simulations, edges are cross-dimensional connections</source>
-<target>Nodes are simulations, edges are cross-dimensional connections</target>
+<target>Knoten sind Simulationen, Kanten sind Verbindungen zwischen den Dimensionen</target>
 </trans-unit>
 <trans-unit id="s084f7971143ea36a">
   <source>Game instances orbit their parent template during active epochs</source>
-<target>Game instances orbit their parent template during active epochs</target>
+<target>Spielinstanzen umkreisen während einer laufenden Epoche ihre Ursprungsvorlage</target>
 </trans-unit>
 <trans-unit id="s44afebe9456f3592">
   <source>Health arcs, sparklines, and operative trails visualize live game state</source>
-<target>Health arcs, sparklines, and operative trails visualize live game state</target>
+<target>Gesundheitsbögen, Verlaufslinien und Spuren der Operativen zeigen den Spielstand in Echtzeit</target>
 </trans-unit>
 <trans-unit id="s4966fffbc3c4e865">
   <source>Battle feed ticker shows public events across all active epochs</source>
-<target>Battle feed ticker shows public events across all active epochs</target>
+<target>Das Gefechtsband zeigt öffentliche Ereignisse aus allen laufenden Epochen</target>
 </trans-unit>
 <trans-unit id="s491adb71d83eb710">
   <source>The Cartographer’s Map</source>
-<target>The Cartographer’s Map</target>
+<target>Die Karte des Kartografen</target>
 </trans-unit>
 <trans-unit id="s21ede82e936d6b7b">
   <source>Epochs: The Basics</source>
 <target>Epochen: Die Grundlagen</target></trans-unit>
 <trans-unit id="s21dab827168a2b1a">
   <source>Time-limited PvP seasons scored across five dimensions. The competitive core.</source>
-<target>Time-limited PvP seasons scored across five dimensions. The competitive core.</target>
+<target>Zeitlich begrenzte Spielersaisons, gewertet über fünf Dimensionen. Der Kern des Wettbewerbs.</target>
 </trans-unit>
 <trans-unit id="sae9fb7b6f71e709f">
   <source>Epochs clone simulations into balanced game instances – originals stay untouched</source>
@@ -20251,33 +20251,33 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="sb514d8d460b8d369">
   <source>All simulations normalized at start: 6 agents, 8 buildings, balanced security</source>
-<target>All simulations normalized at start: 6 agents, 8 buildings, balanced security</target>
+<target>Alle Simulationen starten gleichgestellt: 6 Agenten, 8 Bauten, ausgeglichene Sicherheit</target>
 </trans-unit>
 <trans-unit id="saa68d18b82f42ec8">
   <source>Academy Mode: solo sprint training against AI bots with compressed cycles</source>
-<target>Academy Mode: solo sprint training against AI bots with compressed cycles</target>
+<target>Akademiemodus: Alleintraining gegen KI-Bots in gestauchten Zyklen</target>
 </trans-unit>
 <trans-unit id="s32a532ceb2a99b8e">
   <source>Open the Epoch Command Center from your simulation, choose a scoring preset, set the cycle duration, and launch. You can invite players via email – each invitation includes a lore-flavored dossier generated by AI.</source>
-<target>Open the Epoch Command Center from your simulation, choose a scoring preset, set the cycle duration, and launch. You can invite players via email – each invitation includes a lore-flavored dossier generated by AI.</target>
+<target>Öffne die Epochen-Kommandozentrale aus deiner Simulation heraus, wähle eine Wertungsvoreinstellung, lege die Zyklusdauer fest und starte. Du kannst Spieler per Mail einladen – jede Einladung trägt eine von der KI verfasste Akte im Ton der Lore.</target>
 </trans-unit>
 <trans-unit id="sbac7f31afb7cc4a1">
   <source>Normalization Rules</source>
 <target>Normalisierungsregeln</target></trans-unit>
 <trans-unit id="sff402cd27bd2ae1b">
   <source>Solo training against 2–4 AI bot opponents in a sprint format. Academy epochs use a compressed timeline (3-day duration, 4-hour cycles) so you can experience a full competitive season in a single afternoon. Launch from your Dashboard with a single click.</source>
-<target>Solo training against 2–4 AI bot opponents in a sprint format. Academy epochs use a compressed timeline (3-day duration, 4-hour cycles) so you can experience a full competitive season in a single afternoon. Launch from your Dashboard with a single click.</target>
+<target>Alleintraining gegen 2 bis 4 KI-Bots im Kurzformat. Akademie-Epochen laufen auf gestauchter Zeitachse (3 Tage Dauer, 4-Stunden-Zyklen), du erlebst eine ganze Wettbewerbssaison also an einem Nachmittag. Start über dein Dashboard, mit einem Klick.</target>
 </trans-unit>
 <trans-unit id="s3d7e264210af49a5">
   <source>Academy mode uses the same mechanics as full competitive epochs – the same operative types, scoring dimensions, alliance systems, and fog of war. Use it to experiment with strategies, test agent draft compositions, and learn how different bot personalities respond to pressure.</source>
-<target>Academy mode uses the same mechanics as full competitive epochs – the same operative types, scoring dimensions, alliance systems, and fog of war. Use it to experiment with strategies, test agent draft compositions, and learn how different bot personalities respond to pressure.</target>
+<target>Der Akademiemodus benutzt dieselbe Mechanik wie eine volle Wettbewerbsepoche – dieselben Operativtypen, Wertungsdimensionen, Bündnissysteme und denselben Nebel des Krieges. Nutze ihn, um Strategien auszuprobieren, Draft-Aufstellungen zu testen und zu lernen, wie verschiedene Bot-Persönlichkeiten unter Druck reagieren.</target>
 </trans-unit>
 <trans-unit id="s64ac33babd2babb0">
   <source>Operatives &amp; Missions</source>
 <target>Agenten &amp; Missionen</target></trans-unit>
 <trans-unit id="s6b7c0b84dd6151a6">
   <source>Six operative types with unique costs, timings, and effects. Deploy wisely.</source>
-<target>Six operative types with unique costs, timings, and effects. Deploy wisely.</target>
+<target>Sechs Operativtypen mit eigenen Kosten, Zeiten und Wirkungen. Setze sie klug ein.</target>
 </trans-unit>
 <trans-unit id="s90f4258d3715db0b">
   <source>Six types: Spy, Saboteur, Propagandist, Assassin, Guardian, Infiltrator</source>
@@ -20285,7 +20285,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s0a8290254d91b0ce">
   <source>Each costs RP, takes deploy + mission cycles, and has a score value on success</source>
-<target>Each costs RP, takes deploy + mission cycles, and has a score value on success</target>
+<target>Jeder kostet FP, braucht Einsatz- und Missionszyklen und trägt bei Erfolg einen Punktwert</target>
 </trans-unit>
 <trans-unit id="s9b01d298fc6cbd22">
   <source>Success probability: 55% base + aptitude bonus − zone security − guardian defense</source>
@@ -20293,29 +20293,29 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="scb9ab6c503039672">
   <source>Detected missions cost −3 military and negate the effect</source>
-<target>Detected missions cost −3 military and negate the effect</target>
+<target>Aufgedeckte Einsätze kosten −3 Militär und heben die Wirkung auf</target>
 </trans-unit>
 <trans-unit id="s10fa03a770c01de7">
   <source>Operatives are the instruments of warfare in an epoch. Deploy them to gather intelligence, sabotage infrastructure, spread propaganda, eliminate targets, defend zones, or compromise embassies. Each type has unique costs, timings, and effects.</source>
-<target>Operatives are the instruments of warfare in an epoch. Deploy them to gather intelligence, sabotage infrastructure, spread propaganda, eliminate targets, defend zones, or compromise embassies. Each type has unique costs, timings, and effects.</target>
+<target>Operative sind die Werkzeuge der Kriegführung in einer Epoche. Setze sie ein, um Erkenntnisse zu sammeln, Infrastruktur zu sabotieren, Propaganda zu streuen, Ziele auszuschalten, Zonen zu verteidigen oder Botschaften zu unterwandern. Jeder Typ hat eigene Kosten, Zeiten und Wirkungen.</target>
 </trans-unit>
 <trans-unit id="s490cbb081271ba03">
   <source>Operative Types</source>
 <target>Agententypen</target></trans-unit>
 <trans-unit id="s6304618f21a139b1">
   <source>Success: the operative completes its mission and earns score value. Failed: the mission has no effect but is not detected. Detected: the mission fails AND you lose 3 military score. Counter-intelligence sweeps (4 RP) increase detection chance.</source>
-<target>Success: the operative completes its mission and earns score value. Failed: the mission has no effect but is not detected. Detected: the mission fails AND you lose 3 military score. Counter-intelligence sweeps (4 RP) increase detection chance.</target>
+<target>Erfolg: Der Operative führt seinen Auftrag aus und trägt seinen Punktwert ein. Fehlschlag: Der Auftrag bleibt wirkungslos, wird aber nicht entdeckt. Aufgedeckt: Der Auftrag scheitert UND du verlierst 3 Militärpunkte. Abwehrsuchen (4 FP) erhöhen die Entdeckungswahrscheinlichkeit.</target>
 </trans-unit>
 <trans-unit id="s082ef8d1eeb690b8">
   <source>Ambassadors are special agent statuses that boost embassy effectiveness and feed into the diplomatic scoring formula. They are prime targets for assassins.</source>
-<target>Ambassadors are special agent statuses that boost embassy effectiveness and feed into the diplomatic scoring formula. They are prime targets for assassins.</target>
+<target>Botschafter sind ein besonderer Agentenstatus; sie heben die Wirksamkeit einer Botschaft und gehen in die diplomatische Wertungsformel ein. Sie sind bevorzugte Ziele für Assassinen.</target>
 </trans-unit>
 <trans-unit id="s91fe0a436f96fc74">
   <source>Scoring &amp; Economy</source>
 <target>Wertung &amp; Ökonomie</target></trans-unit>
 <trans-unit id="sf218e108752b439d">
   <source>Five scoring dimensions, RP economy, weighted presets, and the composite formula.</source>
-<target>Five scoring dimensions, RP economy, weighted presets, and the composite formula.</target>
+<target>Fünf Wertungsdimensionen, die FP-Wirtschaft, gewichtete Voreinstellungen und die zusammengesetzte Formel.</target>
 </trans-unit>
 <trans-unit id="sc343e780a17365a4">
   <source>Five dimensions: Stability, Influence, Sovereignty, Diplomatic, Military</source>
@@ -20331,7 +20331,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="sd1af85225405de81">
   <source>Each dimension has a title awarded to its leader (The Unshaken, The Resonant, etc.)</source>
-<target>Each dimension has a title awarded to its leader (The Unshaken, The Resonant, etc.)</target>
+<target>Jede Dimension verleiht ihrem Anführer einen Titel (Der Unerschütterte, Der Klingende und andere)</target>
 </trans-unit>
 <trans-unit id="sc785a73a96b70d83">
   <source>Scoring Dimensions</source>
@@ -20341,44 +20341,44 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Wertungsvorlagen</target></trans-unit>
 <trans-unit id="s0af4f58e673fcb70">
   <source>Form alliances, share intelligence, manage tension, and risk betrayal.</source>
-<target>Form alliances, share intelligence, manage tension, and risk betrayal.</target>
+<target>Schließe Bündnisse, teile Erkenntnisse, halte die Spannung im Zaum – und riskiere den Verrat.</target>
 </trans-unit>
 <trans-unit id="s62366f52f4e1194c">
   <source>5 min</source>
 <target>5 Min.</target></trans-unit>
 <trans-unit id="sc539ccacb0bbcacf">
   <source>Each ally gives +15% diplomatic score; a 3-member alliance means +30% each</source>
-<target>Each ally gives +15% diplomatic score; a 3-member alliance means +30% each</target>
+<target>Jeder Verbündete bringt +15 Prozent diplomatische Wertung; ein Dreierbund also +30 Prozent für jeden</target>
 </trans-unit>
 <trans-unit id="s96b0fb3adba1ff12">
   <source>Alliance upkeep: 1 RP per member per cycle (scales with size)</source>
-<target>Alliance upkeep: 1 RP per member per cycle (scales with size)</target>
+<target>Unterhalt eines Bündnisses: 1 FP je Mitglied und Zyklus (wächst mit der Größe)</target>
 </trans-unit>
 <trans-unit id="sd44da081ff1dda7e">
   <source>Tension rises on target overlap (+10) and decays naturally (−5/cycle); at 80 the alliance dissolves</source>
-<target>Tension rises on target overlap (+10) and decays naturally (−5/cycle); at 80 the alliance dissolves</target>
+<target>Die Spannung steigt bei überschneidenden Zielen (+10) und fällt von allein (−5 je Zyklus); bei 80 zerfällt das Bündnis</target>
 </trans-unit>
 <trans-unit id="sbc2d28b59dec4715">
   <source>Betrayal risk: detected attack on ally = −25% diplomatic score penalty</source>
-<target>Betrayal risk: detected attack on ally = −25% diplomatic score penalty</target>
+<target>Verratsrisiko: ein aufgedeckter Angriff auf einen Verbündeten kostet 25 Prozent der diplomatischen Wertung</target>
 </trans-unit>
 <trans-unit id="s79807973a251c451">
   <source>Alliance tension rises when allies attack the same target (+10 per overlap). It decays naturally each cycle (−5). If tension reaches 80, the alliance automatically dissolves and all members become unaligned. Coordinate your targets to keep tension low.</source>
-<target>Alliance tension rises when allies attack the same target (+10 per overlap). It decays naturally each cycle (−5). If tension reaches 80, the alliance automatically dissolves and all members become unaligned. Coordinate your targets to keep tension low.</target>
+<target>Die Bündnisspannung steigt, wenn Verbündete dasselbe Ziel angreifen (+10 je Überschneidung). Sie fällt jeden Zyklus von allein (−5). Erreicht sie 80, zerfällt das Bündnis von selbst und alle Mitglieder stehen wieder allein. Stimmt eure Ziele ab, um die Spannung niedrig zu halten.</target>
 </trans-unit>
 <trans-unit id="s61e22e7b0a4bca40">
   <source>Advanced Mechanics</source>
 <target>Fortgeschrittene Mechaniken</target></trans-unit>
 <trans-unit id="s0219aca095be3ae2">
   <source>Bleed, echoes, resonances, results screen, and cross-simulation warfare.</source>
-<target>Bleed, echoes, resonances, results screen, and cross-simulation warfare.</target>
+<target>Bleed, Echos, Resonanzen, der Ergebnisschirm und der Krieg über Simulationsgrenzen hinweg.</target>
 </trans-unit>
 <trans-unit id="sfd1f0764b0d87a10">
   <source>9 min</source>
 <target>9 Min.</target></trans-unit>
 <trans-unit id="s856e9e6191a5c55a">
   <source>Events above impact threshold bleed into connected simulations as echoes</source>
-<target>Events above impact threshold bleed into connected simulations as echoes</target>
+<target>Ereignisse über der Wirkungsschwelle bluten als Echos in verbundene Simulationen hinüber</target>
 </trans-unit>
 <trans-unit id="sd5c4a1f10984ba2b">
   <source>Seven bleed vectors (Commerce, Language, Memory, Resonance, Architecture, Dream, Desire)</source>
@@ -20390,11 +20390,11 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="sb33773224084ba80">
   <source>Results screen reveals all operations with podium, commendations, and dimension breakdowns</source>
-<target>Results screen reveals all operations with podium, commendations, and dimension breakdowns</target>
+<target>Der Ergebnisschirm legt alle Operationen offen, mit Siegertreppe, Auszeichnungen und Aufschlüsselung nach Dimensionen</target>
 </trans-unit>
 <trans-unit id="s0b4becfaa2e2aa34">
   <source>When events in one simulation exceed the bleed threshold, they echo into connected worlds through dimensional vectors. Resonances emerge from event clustering. The results screen lifts the fog of war. These systems create emergent cross-simulation warfare.</source>
-<target>When events in one simulation exceed the bleed threshold, they echo into connected worlds through dimensional vectors. Resonances emerge from event clustering. The results screen lifts the fog of war. These systems create emergent cross-simulation warfare.</target>
+<target>Übersteigen Ereignisse in einer Simulation die Bleed-Schwelle, hallen sie über dimensionale Vektoren in verbundene Welten hinüber. Aus der Häufung von Ereignissen entstehen Resonanzen. Der Ergebnisschirm hebt den Nebel des Krieges. Aus diesen Systemen entsteht ein Krieg, der Simulationsgrenzen überschreitet.</target>
 </trans-unit>
 <trans-unit id="sd98481b60e398123">
   <source>Bleed Threshold Rules</source>
@@ -20404,30 +20404,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Echo-Lebenszyklus</target></trans-unit>
 <trans-unit id="s77614ae8f16ecf01">
   <source>Echoes can cascade: an echo arriving in a simulation may trigger events above the threshold in that simulation, generating secondary echoes. Cascade depth is limited to prevent infinite loops but increases during Reckoning phase.</source>
-<target>Echoes can cascade: an echo arriving in a simulation may trigger events above the threshold in that simulation, generating secondary echoes. Cascade depth is limited to prevent infinite loops but increases during Reckoning phase.</target>
+<target>Echos können kaskadieren: Ein Echo, das in einer Simulation ankommt, kann dort Ereignisse über der Schwelle auslösen und damit weitere Echos erzeugen. Die Kaskadentiefe ist begrenzt, um endlose Ketten zu verhindern, steigt in der Abrechnungsphase aber an.</target>
 </trans-unit>
 <trans-unit id="s7fb8f6057412c7ee">
   <source>During Reckoning phase, the bleed threshold drops by 2 and cascade depth increases by 1. This means more events bleed, and bleed chains go deeper. The multiverse becomes more volatile just when scores matter most.</source>
-<target>During Reckoning phase, the bleed threshold drops by 2 and cascade depth increases by 1. This means more events bleed, and bleed chains go deeper. The multiverse becomes more volatile just when scores matter most.</target>
+<target>In der Abrechnungsphase sinkt die Bleed-Schwelle um 2 und die Kaskadentiefe steigt um 1. Es bluten also mehr Ereignisse hinüber, und die Ketten reichen tiefer. Das Multiversum wird gerade dann unruhiger, wenn die Punkte am meisten zählen.</target>
 </trans-unit>
 <trans-unit id="s93839032ebbb79d2">
   <source>Results: Top-3 Podium</source>
 <target>Ergebnisse: Top-3 Podium</target></trans-unit>
 <trans-unit id="scd08736caa660714">
   <source>Gold, silver, and bronze placements with animated score count-ups and dimension titles. Each winner’s strongest scoring dimension is highlighted – "Master of Influence" or "Sovereign Defender" – giving flavor to the final standings.</source>
-<target>Gold, silver, and bronze placements with animated score count-ups and dimension titles. Each winner’s strongest scoring dimension is highlighted – "Master of Influence" or "Sovereign Defender" – giving flavor to the final standings.</target>
+<target>Gold, Silber und Bronze mit hochzählenden Punkteanzeigen und Dimensionstiteln. Die stärkste Wertungsdimension jedes Siegers wird hervorgehoben – „Meister des Einflusses“ oder „Souveräner Verteidiger“ – und gibt der Schlusstafel ihren Charakter.</target>
 </trans-unit>
 <trans-unit id="sd1ef30906c2367ad">
   <source>Five commendation titles: Master Spy (highest military impact), Iron Guardian (strongest sovereignty defense), The Diplomat (highest diplomatic score), Most Lethal (best operative success rate), Cultural Domination (greatest influence spread). Multiple awards can go to the same player.</source>
-<target>Five commendation titles: Master Spy (highest military impact), Iron Guardian (strongest sovereignty defense), The Diplomat (highest diplomatic score), Most Lethal (best operative success rate), Cultural Domination (greatest influence spread). Multiple awards can go to the same player.</target>
+<target>Fünf Auszeichnungstitel: Meisterspion (höchste militärische Wirkung), Eiserner Wächter (stärkste Verteidigung der Souveränität), Der Diplomat (höchste diplomatische Wertung), Der Tödlichste (beste Erfolgsquote der Operativen), Kulturelle Vorherrschaft (weiteste Ausbreitung des Einflusses). Mehrere Titel können an denselben Spieler gehen.</target>
 </trans-unit>
 <trans-unit id="sc126c08acbbeb441">
   <source>Animated breakdown bars for all five scoring dimensions with per-participant breakdowns. See exactly where each player dominated and where they were vulnerable. All animations respect prefers-reduced-motion.</source>
-<target>Animated breakdown bars for all five scoring dimensions with per-participant breakdowns. See exactly where each player dominated and where they were vulnerable. All animations respect prefers-reduced-motion.</target>
+<target>Bewegte Balken für alle fünf Wertungsdimensionen, je Teilnehmer aufgeschlüsselt. Man sieht genau, wo jeder überlegen war und wo verwundbar. Alle Bewegungen achten `prefers-reduced-motion`.</target>
 </trans-unit>
 <trans-unit id="sb7a2c1e1d09937d1">
   <source>Type commands instead of clicking dashboards – local perspective, zone-limited view</source>
-<target>Type commands instead of clicking dashboards – local perspective, zone-limited view</target>
+<target>Befehle tippen statt Übersichten anzuklicken – örtliche Sicht, auf die Zone beschränkt</target>
 </trans-unit>
 <trans-unit id="s37f4b78fc6fdfe21">
   <source>Tier 1 (Observation): look, go, examine, talk, status, map, where, weather, help</source>
@@ -23765,7 +23765,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
       </trans-unit>
 <trans-unit id="s0156bc03791789e5">
   <source>Bring Your Own Key</source>
-        <target>Bring Your Own Key</target>
+        <target>Eigener Schlüssel</target>
       </trans-unit>
 <trans-unit id="s687063f379d1d036">
   <source>Supply your own OpenRouter + Replicate keys to bypass the platform forge-token quota and unlock unlimited AI generation.</source>
@@ -29652,6 +29652,63 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sda74057294286345">
   <source>Intel Points (debrief, scan)</source>
   <target>Aufklärungspunkte (debrief, scan)</target></trans-unit>
+<trans-unit id="s5ff97de4403d426b">
+  <source>Feature gates could not be loaded.</source>
+  <target>Die Schalter konnten nicht geladen werden.</target></trans-unit>
+<trans-unit id="s6d5c6bb6fc37a86a">
+  <source><x id="0" equiv-text="${gate.label}"/> is now on.</source>
+  <target><x id="0" equiv-text="${gate.label}"/> ist jetzt an.</target></trans-unit>
+<trans-unit id="s500ab3eeb9036a1c">
+  <source><x id="0" equiv-text="${gate.label}"/> is now off.</source>
+  <target><x id="0" equiv-text="${gate.label}"/> ist jetzt aus.</target></trans-unit>
+<trans-unit id="s32092efd71d3b559">
+  <source>Narrative layers</source>
+  <target>Erzählschichten</target></trans-unit>
+<trans-unit id="s7fe0c6f0a6524a46">
+  <source>Social channels</source>
+  <target>Soziale Kanäle</target></trans-unit>
+<trans-unit id="s014c3cb206661037">
+  <source>No row - runs anyway (default on)</source>
+  <target>Keine Zeile – läuft trotzdem (Vorgabe an)</target></trans-unit>
+<trans-unit id="s5995048cfdc85c70">
+  <source>No row - therefore off</source>
+  <target>Keine Zeile – also aus</target></trans-unit>
+<trans-unit id="sc3bb85ee17d2cd73">
+  <source>Prepared - nothing reads this switch</source>
+  <target>Vorbereitet – nichts liest diesen Schalter</target></trans-unit>
+<trans-unit id="s5b9806621b53731e">
+  <source>Non-canonical value: <x id="0" equiv-text="${gate.raw_value}"/></source>
+  <target>Kein kanonischer Wert: <x id="0" equiv-text="${gate.raw_value}"/></target></trans-unit>
+<trans-unit id="s76195cc092d5d350">
+  <source>Off:</source>
+  <target>Aus:</target></trans-unit>
+<trans-unit id="s091d3807b5b2fef0">
+  <source>ON</source>
+  <target>AN</target></trans-unit>
+<trans-unit id="s2fc09b19bf3ec20a">
+  <source>OFF</source>
+  <target>AUS</target></trans-unit>
+<trans-unit id="sf8ebaba07a9b7d70">
+  <source>Undeclared switches</source>
+  <target>Unerklärte Schalter</target></trans-unit>
+<trans-unit id="s77cc3cfab82c775b">
+  <source>These rows end in _enabled but have no entry in the gate contract. Either they belong on this screen - then declare them in backend/services/platform_gate_contracts.py with one sentence on what they turn on and what their absence costs - or the row is a leftover and should go.</source>
+  <target>Diese Zeilen enden auf _enabled, haben aber keinen Eintrag im Schaltervertrag. Entweder gehören sie auf diesen Schirm – dann erkläre sie in backend/services/platform_gate_contracts.py mit einem Satz dazu, was sie einschalten und was ihre Abwesenheit kostet – oder die Zeile ist ein Überbleibsel und sollte weg.</target></trans-unit>
+<trans-unit id="sd0a4ba1de772f0bc">
+  <source>Without a row</source>
+  <target>Ohne Zeile</target></trans-unit>
+<trans-unit id="s640c3e3fbbeff50d">
+  <source>Not wired</source>
+  <target>Nicht verdrahtet</target></trans-unit>
+<trans-unit id="s9370749233d6a29d">
+  <source>Loading feature gates...</source>
+  <target>Schalter werden geladen …</target></trans-unit>
+<trans-unit id="s2741d527d1f70a9c">
+  <source>Every platform switch in one place. A switch nobody lists never gets flipped - that is why the journal stayed empty for months. Two things a plain list would hide are named here: whether a row exists at all (an absent row does not mean the same thing everywhere), and whether anything actually reads the switch.</source>
+  <target>Jeder Plattformschalter an einem Ort. Ein Schalter, den niemand aufführt, wird nie umgelegt – genau deshalb blieb das Journal monatelang leer. Zwei Dinge, die eine bloße Liste verbergen würde, stehen hier ausdrücklich: ob überhaupt eine Zeile vorhanden ist (eine fehlende Zeile bedeutet nicht überall dasselbe), und ob den Schalter überhaupt etwas liest.</target></trans-unit>
+<trans-unit id="s1add4a75318eb709">
+  <source>Feature Gates</source>
+  <target>Schalter</target></trans-unit>
 </body>
 </file>
 </xliff>

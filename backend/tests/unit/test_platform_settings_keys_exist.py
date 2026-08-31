@@ -49,10 +49,27 @@ UNSEEDED_ON_PURPOSE: dict[str, str] = {
     "guardian_api_key": "operator-entered secret, never seeded",
     "newsapi_api_key": "operator-entered secret, never seeded",
     "openrouter_api_key": "operator-entered secret, never seeded",
-    # Fail-closed feature gates. Absent row == off, which is the intended
-    # default; seeding 'false' would only add a row that says the same thing.
-    "resonance_auto_process_enabled": "fail-closed gate, absent row means off",
-    "resonance_auto_process_interval_seconds": "companion of the gate above",
+    # Scheduler gates whose MEASURED default-when-missing is ON.
+    #
+    # ⚠ The first version of this list said "fail-closed gate, absent row means
+    # off". That was wrong, and the way it was wrong is worth keeping:
+    # `parse_setting_bool` IS fail-closed (F32), but that governs what happens
+    # to a VALUE that arrives. It says nothing about a row that never arrives —
+    # then the caller's own default decides, and
+    # `resonance_scheduler._DEFAULT_ENABLED` is True. The loop only overrides it
+    # when a row comes back, so on production, where no row exists, the
+    # scheduler RUNS.
+    #
+    # **A fail-closed parser is not a fail-closed absence.** Measured
+    # 31.08.2026 (found by the parallel session, confirmed here): the single
+    # row in `substrate_resonances` stands at `subsiding`, not `detected` — it
+    # has been processed. A closed gate would have left it lying there.
+    #
+    # They stay unseeded because that is the current, deliberate state, not
+    # because absence means off. Any entry added below must state its MEASURED
+    # default, not the one its name suggests.
+    "resonance_auto_process_enabled": "no row on prod; caller default is True, so it runs",
+    "resonance_auto_process_interval_seconds": "companion of the key above; caller default 3600",
 }
 
 
