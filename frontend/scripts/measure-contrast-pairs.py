@@ -452,6 +452,35 @@ def theme_token_map() -> dict:
     return {k: v[2:] for k, v in TOKEN_MAP_ENTRY.findall(m.group(1))}
 
 
+# A view that pins the platform palette on ITSELF at runtime makes its whole
+# subtree immune to simulation themes:
+#
+#     themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
+#
+# Two do it today (dungeon/DungeonView.ts, drift/DriftView.ts). Measuring their
+# children against a light theme reports failures that cannot happen — the
+# child inherits the pinned dark palette across the shadow boundary, and no
+# amount of reading the child's CSS reveals that. Derived from the call, not
+# from a hardcoded list, so a third view that does the same is covered the day
+# it is written.
+PIN_CALL = re.compile(r"applyConfig\(\s*PLATFORM_DARK_CONFIG\s*,\s*this\s*\)")
+
+
+def theme_immune_dirs(root: Path) -> list:
+    out = []
+    for f in (root / "src" / "components").rglob("*.ts"):
+        try:
+            if PIN_CALL.search(f.read_text(encoding="utf-8")):
+                out.append(f.parent)
+        except OSError:
+            continue
+    return out
+
+
+def is_theme_immune(path: Path, dirs: list) -> bool:
+    return any(d == path.parent or d in path.parents for d in dirs)
+
+
 def theme_overrides() -> dict:
     """Token overrides per simulation theme preset.
 
@@ -652,6 +681,22 @@ def scan_file(path: Path, tokens: dict[str, str]):
 
             # Composite DOWN the stack: each translucent layer is painted on
             # the one below it, until something opaque carries the result.
+            # A Tier-3 ground this file never declares - not in its own
+            # `:host`, not in a module it composes, not in the platform
+            # palette - comes from an ANCESTOR component across the shadow
+            # boundary. Resolving the global value there does not produce an
+            # unknown, it produces a WRONG number, and a wrong number reads
+            # like a finding. The header of this file says an unmeasured pair
+            # must not look like a passing one; it must not look like a
+            # failing one either.
+            first = chain[0][0]
+            fm = re.match(r"^var\(\s*(--[a-z0-9_-]+)", first)
+            if fm and fm.group(1)[2:] not in tokens_here:
+                skips.append(
+                    (path, sel, f"ground {fm.group(1)} is declared by an ancestor component")
+                )
+                continue
+
             bg = None
             bg_raw, ground_via = chain[0][0], chain[0][1]
             layers = []
@@ -734,9 +779,25 @@ def report_themes(targets, base_tokens) -> int:
     for name, over in sorted(themes.items()):
         runs[name] = {**base_tokens, **over}
 
+    # Files under a view that pins the platform palette at runtime are measured
+    # ONCE, against the default - a simulation theme never reaches them.
+    immune_dirs = theme_immune_dirs(ROOT)
+    immune = [t for t in targets if is_theme_immune(t, immune_dirs)]
+    themed = [t for t in targets if t not in set(immune)]
+    if immune:
+        print(f"# {len(immune)} file(s) under a view that pins PLATFORM_DARK_CONFIG "
+              f"at runtime — measured against the default palette only.")
+        print()
+
     per_pair: dict[tuple, dict] = {}
+    for f in run(immune, base_tokens)[0]:
+        key = (str(f["file"]), f["line"], f["sel"])
+        e = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0})
+        e["themes"].append("(pinned dark)")
+        e["worst"] = min(e["worst"], f["ratio"])
+
     for theme, tok in runs.items():
-        for f in run(targets, tok)[0]:
+        for f in run(themed, tok)[0]:
             key = (str(f["file"]), f["line"], f["sel"])
             entry = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0})
             entry["themes"].append(theme)
