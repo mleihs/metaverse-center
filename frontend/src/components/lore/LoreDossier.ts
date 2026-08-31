@@ -1,6 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { pluralCount } from '../../utils/text.js';
 import type { LoreSection } from '../platform/LoreScroll.js';
 import { markerSelectionStyles } from '../shared/marker-styles.js';
 import '../shared/Lightbox.js';
@@ -491,7 +492,7 @@ export class VelgLoreDossier extends LitElement {
     const section = this._current;
     if (!section) return nothing;
 
-    const classifiedCount = this.sections.filter((s) => this.classifiedSectionIds.has(s.id)).length;
+    const sealed = this.sections.filter((s) => this.classifiedSectionIds.has(s.id)).length;
 
     return html`
       <div class="head">
@@ -534,8 +535,8 @@ export class VelgLoreDossier extends LitElement {
             `,
           )}
           <div class="toc__foot">
-            ${this.sections.length} ${msg('sections')}
-            ${classifiedCount ? html` · ${classifiedCount} ${msg('classified')}` : nothing}
+            ${pluralCount(this.sections.length, msg('section'), msg('sections'))}
+            ${sealed ? html` · ${pluralCount(sealed, msg('classified'), msg('classified'))}` : nothing}
             ${this.anchorTitle ? html`<br />${msg('Anchor')}: ${this.anchorTitle}` : nothing}
           </div>
         </nav>

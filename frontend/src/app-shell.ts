@@ -1221,6 +1221,19 @@ export class VelgApp extends LitElement {
 
     let content: TemplateResult;
     switch (view) {
+      /*
+       * First, because it is the tab a bare simulation URL lands on.
+       *
+       * This case was missing while the route, the lazy import and the register
+       * entry all existed — so `/overview` resolved, loaded the module, marked
+       * the tab active, and then fell through to the "coming soon" default.
+       * Three of four things wired is not a wired view, and nothing failed
+       * loudly: no 404, no console error, no red test. Only looking at it showed
+       * it.
+       */
+      case 'overview':
+        content = html`<velg-simulation-overview .simulationId=${resolvedId}></velg-simulation-overview>`;
+        break;
       case 'lore':
         content = html`<velg-simulation-lore-view .simulationId=${resolvedId} .entitySlug=${entitySlug ?? ''}></velg-simulation-lore-view>`;
         break;

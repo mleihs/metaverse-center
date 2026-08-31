@@ -64,6 +64,17 @@ class SimulationResponse(BaseModel):
     weather_lat: float | None = None
     weather_lon: float | None = None
     lore_progress: dict | None = None
+    # Die Frage, aus der die Welt entstand (Migration 319). Ohne dieses Feld
+    # bleibt die Spalte in der Datenbank stehen und erreicht den Browser nie:
+    # `SuccessResponse[T]` gibt genau das heraus, was das Modell nennt, und
+    # verwirft den Rest still. Genau so ist es hier auch passiert — Spalte,
+    # Sicht, Materialisierung und Rueckfuellung waren fertig, die Anker-Karte
+    # blieb leer, und nichts hat gemeldet warum.
+    #
+    # `dict`, nicht ein eigenes Modell: der Astrolab schreibt das gewaehlte
+    # Ankerobjekt so, wie es der Entwurf trug, und ein spaeter ergaenztes
+    # Ankerfeld soll hier nicht scheitern, sondern durchgereicht werden.
+    philosophical_anchor: dict | None = None
 
 
 class SimulationDashboardResponse(BaseModel):

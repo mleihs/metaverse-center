@@ -31,6 +31,7 @@ import './SimulationNav.js';
 /** Map tab path segments to localized labels. */
 function getTabLabel(path: string): string {
   const labels: Record<string, () => string> = {
+    overview: () => msg('Overview'),
     lore: () => msg('Lore'),
     agents: () => msg('Agents'),
     buildings: () => msg('Buildings'),
