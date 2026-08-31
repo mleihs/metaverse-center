@@ -101,6 +101,17 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         flex-wrap: wrap;
       }
 
+      /* Pushed to the far end of the bar: it explains the bar, it is not one
+         of its controls. */
+      .editorial__note {
+        margin: 0 0 var(--space-1) auto;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-quiet);
+        max-width: 26ch;
+        text-align: right;
+      }
+
       .editorial__field {
         display: flex;
         flex-direction: column;
@@ -564,6 +575,14 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
           ${icons.sparkle(12)}
           ${msg('Compile edition')}
         </button>
+        <!-- Why this bar exists at all. It appears only for architects, and a
+             control bar that shows up for some readers and not others, with no
+             word about why, is worse than none: the reader who sees it does not
+             know what it costs, and the one who does not see it cannot know it
+             was withheld. -->
+        <p class="editorial__note">
+          ${msg('Only the architect of this world can compile an edition.')}
+        </p>
       </div>
     `;
   }

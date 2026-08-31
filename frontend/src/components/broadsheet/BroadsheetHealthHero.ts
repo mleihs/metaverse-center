@@ -179,7 +179,21 @@ export class VelgBroadsheetHealthHero extends LitElement {
   @property({ type: Object }) health: HealthSnapshot | null = null;
   @property({ type: Object }) mood: MoodSnapshot | null = null;
   @property({ type: Object }) statistics: StatisticsSnapshot | null = null;
-  @property({ type: String }) voice = 'neutral';
+  /**
+   * The edition's editorial voice. `alarmed` turns the colony bar red.
+   *
+   * This property was DECLARED and PASSED and never read — it appeared exactly
+   * once in this file, on this line. The parent hands it over
+   * (`SimulationBroadsheet` line 660), so from the outside the wiring looked
+   * complete: no compiler error, no runtime error, no missing binding. The
+   * handoff's "Unruhe-Balken rot bei voice=alarmed" simply did not exist.
+   *
+   * `reflect: true` is what makes it visible to CSS. Without it the attribute
+   * never reaches the DOM and a `:host([voice='alarmed'])` rule can never
+   * match — which is the second half of the same trap: the rule would have
+   * looked right and matched nothing.
+   */
+  @property({ type: String, reflect: true }) voice = 'neutral';
 
   protected render() {
     if (!this.health && !this.mood && !this.statistics) return nothing;
@@ -201,7 +215,17 @@ export class VelgBroadsheetHealthHero extends LitElement {
 
     const pct = Math.round((health.overall_health ?? 0.5) * 100);
     const label = this._getHealthLabel(health.health_label);
-    const barColor = this._getHealthColor(pct);
+    // An alarmed edition reads its own health in red, whatever the number
+    // says: a broadsheet that leads with "Situation Critical" and shows a calm
+    // green bar is arguing with itself on the same page.
+    //
+    // Decided HERE and not in CSS, because `--_bar-color` is set inline on the
+    // very element a `:host([voice='alarmed'])` rule would target — and an
+    // inline custom property beats any rule in the stylesheet. The CSS version
+    // of this was written first and would have matched nothing while looking
+    // entirely correct.
+    const barColor =
+      this.voice === 'alarmed' ? 'var(--color-danger)' : this._getHealthColor(pct);
 
     return html`
       <div class="health" style="--_bar-color: ${barColor}">
