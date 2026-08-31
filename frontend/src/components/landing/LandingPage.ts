@@ -63,6 +63,25 @@ export class VelgLandingPage extends LitElement {
 
   @state() private _snapshot: LandingSnapshot | null = null;
 
+  /**
+   * Die Welt des Satzes, der im Schmiede-Abschnitt gerade anlaeuft.
+   *
+   * Die Frontseite haelt sie, nicht eines der beiden Bauteile: der Faecher
+   * weiss nichts vom Schreibwerk und das Schreibwerk nichts vom Faecher, und
+   * das soll so bleiben — sie stehen nur zufaellig uebereinander. Der Ort, an
+   * dem sie sich kennen, ist die Seite, die beide rendert.
+   *
+   * `null` heisst „kein Zusammenhang": ein Beispielsatz gehoert zu keiner
+   * Welt, und drei der sechzehn echten Saetze liessen sich keiner zuordnen
+   * (Migration 328). Der Faecher blaettert dann wie bisher weiter.
+   */
+  @state() private _promptWorld: string | null = null;
+
+  private _onPromptWorld = (e: Event): void => {
+    const detail = (e as CustomEvent<{ simulationId: string | null }>).detail;
+    this._promptWorld = detail?.simulationId ?? null;
+  };
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     injectLandingStructuredData();
@@ -103,8 +122,14 @@ export class VelgLandingPage extends LitElement {
       <velg-landing-hero .counts=${counts} .worlds=${worlds}></velg-landing-hero>
       <velg-landing-systems .counts=${counts}></velg-landing-systems>
       <velg-landing-worlds .worlds=${worlds} .counts=${counts}></velg-landing-worlds>
-      <velg-landing-citizens .citizens=${citizens}></velg-landing-citizens>
-      <velg-landing-forge .prompts=${prompts}></velg-landing-forge>
+      <velg-landing-citizens
+        .citizens=${citizens}
+        .highlightSimulationId=${this._promptWorld}
+      ></velg-landing-citizens>
+      <velg-landing-forge
+        .prompts=${prompts}
+        @prompt-world=${this._onPromptWorld}
+      ></velg-landing-forge>
       <velg-landing-seo-footer .worlds=${worlds}></velg-landing-seo-footer>
     `;
   }

@@ -111,6 +111,9 @@ class LandingCitizen(BaseModel):
     zone_name: str | None = None
 
     #: Welt, in der der Bürger lebt — die Karte verlinkt dorthin.
+    simulation_id: str | None = None
+    """Die Welt dieses Bürgers — der Schlüssel, über den der Fächer zum
+    durchlaufenden Ausgangssatz passt (Migration 328)."""
     simulation_slug: str
     simulation_name: str
 
@@ -145,6 +148,16 @@ class LandingPrompt(BaseModel):
 
     text: str
     text_de: str | None = None
+    simulation_id: str | None = None
+    """Die Welt, die aus diesem Satz wurde — oder None.
+
+    Erst seit Migration 328 gibt es diese Verbindung überhaupt; davor war der
+    Weg vom Entwurf zur Welt in keiner Richtung gespeichert. Für den Bestand
+    ist sie über die Agentennamen rekonstruiert (13 von 16 eindeutig), für neue
+    Läufe schreibt sie ``fn_materialize_shard`` mit.
+
+    ``None`` heißt „unbekannt" und nicht „keine": die Frontseite zeigt dann
+    keinen Zusammenhang statt einen falschen."""
 
 
 class LandingSnapshotResponse(BaseModel):

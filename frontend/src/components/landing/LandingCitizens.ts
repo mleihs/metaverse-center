@@ -15,6 +15,23 @@
  * Neigung, und zwei Quellen fuer dieselbe Eigenschaft ergeben genau einen
  * Gewinner. Die Huelle dreht, die Karte neigt.
  *
+ * DER FAECHER BLAETTERT
+ * Der Endpunkt liefert ein DECK (12 Buerger), nicht drei. Jeder der drei
+ * Plaetze blaettert unabhaengig durch seinen eigenen Viertel-Ausschnitt, damit
+ * nicht alle drei gleichzeitig umschlagen - das saehe aus wie ein Neuladen,
+ * nicht wie ein Blaettern.
+ *
+ * Vier Bedingungen, alle aus der Sache heraus und nicht aus Vorsicht:
+ *   - prefers-reduced-motion: gar kein Wechsel. Nicht bloss ohne Ueberblendung
+ *     - ein Bild, das ohne Zutun wechselt, IST die Bewegung, und wer sie
+ *     abbestellt hat, hat auch den Wechsel abbestellt.
+ *   - ausserhalb des Bildausschnitts: angehalten. Ein Faecher, der unten auf
+ *     der Seite vor sich hin blaettert, kostet Rechenzeit fuer niemanden.
+ *   - Zeiger oder Tastaturfokus im Faecher: angehalten. Wer eine Karte liest,
+ *     soll sie nicht unter den Augen verlieren.
+ *   - beim Abhaengen: Zeitgeber weg. Sonst laeuft der Wechsel auf einer Seite
+ *     weiter, die es nicht mehr gibt.
+ *
  * WAS DIE KARTE ZEIGT, IST GEMESSEN
  * Der Endpunkt liefert nur Buerger MIT Portraet, Beruf und Kennung. Gemessen
  * ueber die 108 Agenten lebender Welten: 108 haben ein Portraet, aber nur 66
@@ -23,8 +40,8 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import type { LandingCitizen } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
@@ -33,6 +50,21 @@ import { stageStyles } from '../shared/stage-styles.js';
 
 /** Die Faecherung des Entwurfs: drei Karten, leicht ueberlappend. */
 const FAN_ANGLES = [-7, 0, 7];
+
+/**
+ * Wie lange eine Karte steht, bevor der Platz weiterblaettert.
+ *
+ * Neun Sekunden, weil die Karte gelesen werden soll: Name, Beruf und Zone sind
+ * drei Angaben, und ein Faecher, der schneller umschlaegt als man sie aufnimmt,
+ * ist Unruhe und keine Auffrischung.
+ */
+const HOLD_MS = 9000;
+
+/** Versatz zwischen den Plaetzen, damit sie nicht gemeinsam umschlagen. */
+const STAGGER_MS = 3000;
+
+/** Muss zur Dauer von .fan__slot--swapping im CSS passen. */
+const FADE_MS = 420;
 
 @localized()
 @customElement('velg-landing-citizens')
@@ -149,7 +181,19 @@ export class VelgLandingCitizens extends LitElement {
     /* Die Drehung liegt hier, nicht auf der Karte: "velg-game-card" benutzt
        "transform" fuer seine eigene Neigung. */
     .fan__slot {
-      transition: transform var(--duration-slow) var(--ease-out);
+      transition:
+        transform var(--duration-slow) var(--ease-out),
+        opacity 420ms var(--ease-out);
+    }
+
+    /*
+     * Der Platz, der gerade weiterblaettert. Die Dauer muss zu FADE_MS im
+     * Bauteil passen — deshalb steht sie hier als Zahl und nicht als Token:
+     * ein Token, das jemand spaeter aendert, wuerde die Karte tauschen, bevor
+     * sie verschwunden ist, und niemand saehe, warum.
+     */
+    .fan__slot--swapping {
+      opacity: 0;
     }
 
     .fan__slot:not(:first-child) {
@@ -176,6 +220,11 @@ export class VelgLandingCitizens extends LitElement {
         gap: var(--space-4);
       }
 
+      .fan__slot,
+      .fan__slot--swapping {
+        opacity: 1;
+      }
+
       .fan__slot {
         transform: none !important;
       }
@@ -196,9 +245,155 @@ export class VelgLandingCitizens extends LitElement {
 
   @property({ type: Array, attribute: false }) citizens: LandingCitizen[] = [];
 
-  protected willUpdate(): void {
-    this.hidden = this.citizens.length === 0;
+  /**
+   * Die Welt des Satzes, der im Schmiede-Abschnitt darunter gerade anlaeuft.
+   *
+   * Ist sie gesetzt und hat sie Buerger im Deck, zeigt der Faecher DIESE — der
+   * Satz und die Gesichter darueber gehoeren dann zusammen, was sie bis
+   * Migration 328 nie taten. Ist sie null (Beispielsatz, oder eine Welt, deren
+   * Herkunft sich nicht rekonstruieren liess), blaettert der Faecher wie
+   * bisher weiter, statt stehenzubleiben.
+   */
+  @property({ type: String, attribute: false }) highlightSimulationId: string | null = null;
+
+  /** Welche Karte jeder der drei Plaetze gerade zeigt (Index ins Deck). */
+  @state() private _shown: number[] = FAN_ANGLES.map((_, i) => i);
+
+  /** Der Platz, der gerade ausblendet - waehrend der Ueberblendung gesetzt. */
+  @state() private _swapping: number | null = null;
+
+  private _timers: number[] = [];
+  private _observer: IntersectionObserver | null = null;
+  private _inView = false;
+  private _held = false;
+
+  /**
+   * Der Ausschnitt des Decks, durch den EIN Platz blaettert.
+   *
+   * Platz 0 bekommt 0,3,6,9 - nicht 0,1,2,3. Bei fortlaufenden Bloecken
+   * zeigte der Faecher anfangs die Buerger 0,4,8, also nie die Nachbarn im
+   * Deck; mit dem Schrittmuster steht am Anfang 0,1,2 da, und das ist die
+   * Auswahl, die der Server als erste drei gezogen hat.
+   */
+  private _deckFor(slot: number): number[] {
+    const out: number[] = [];
+    for (let i = slot; i < this.citizens.length; i += FAN_ANGLES.length) out.push(i);
+    return out.length ? out : [slot];
   }
+
+  private get _canRotate(): boolean {
+    return (
+      this.citizens.length > FAN_ANGLES.length &&
+      !matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Ein Faecher unterhalb des Bildausschnitts blaettert fuer niemanden.
+    this._observer = new IntersectionObserver((entries) => {
+      this._inView = entries.some((e) => e.isIntersecting);
+      this._sync();
+    });
+    this._observer.observe(this);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._observer?.disconnect();
+    this._observer = null;
+    this._stop();
+  }
+
+  protected willUpdate(changed: Map<string, unknown>): void {
+    this.hidden = this.citizens.length === 0;
+    if (changed.has('highlightSimulationId')) this._followWorld();
+  }
+
+  /**
+   * Den Faecher auf die Welt des laufenden Satzes stellen.
+   *
+   * Nur wenn die Welt genug Buerger im Deck hat, um den Faecher ZU FUELLEN.
+   * Ein Fächer, der bei einer Welt mit einem Buerger zwei Plaetze leert, waere
+   * schlechter als einer, der nicht folgt: die Verbindung soll etwas
+   * hinzufuegen und nichts wegnehmen.
+   */
+  private _followWorld(): void {
+    const id = this.highlightSimulationId;
+    if (!id) return;
+    const treffer: number[] = [];
+    this.citizens.forEach((c, i) => {
+      if (c.simulation_id === id) treffer.push(i);
+    });
+    if (treffer.length < FAN_ANGLES.length) return;
+    const neu = FAN_ANGLES.map((_, slot) => treffer[slot]);
+    if (neu.every((v, i) => v === this._shown[i])) return;
+    this._shown = neu;
+  }
+
+  protected updated(): void {
+    this._sync();
+  }
+
+  /** Laeuft der Wechsel gerade, und soll er? Eine Stelle entscheidet das. */
+  private _sync(): void {
+    const soll = this._canRotate && this._inView && !this._held && !this.hidden;
+    if (soll && this._timers.length === 0) this._start();
+    else if (!soll && this._timers.length > 0) this._stop();
+  }
+
+  private _start(): void {
+    this._timers = FAN_ANGLES.map((_, slot) =>
+      window.setTimeout(
+        () => {
+          const tick = window.setInterval(() => this._advance(slot), HOLD_MS);
+          this._timers.push(tick);
+          this._advance(slot);
+        },
+        STAGGER_MS * (slot + 1),
+      ),
+    );
+  }
+
+  private _stop(): void {
+    for (const t of this._timers) {
+      clearTimeout(t);
+      clearInterval(t);
+    }
+    this._timers = [];
+    this._swapping = null;
+  }
+
+  /**
+   * Ein Platz blaettert weiter: ausblenden, tauschen, einblenden.
+   *
+   * Zwei Karten uebereinander waeren eine echte Ueberblendung, kosteten aber
+   * die doppelte Zahl an <velg-game-card> samt ihrer Neigungs-Zuhoerer. Eine
+   * Dossierkarte, die kurz verschwindet und als andere zurueckkommt, ist
+   * ausserdem die ehrlichere Bewegung fuer das, was hier passiert: es wird
+   * eine Karte AUSGETAUSCHT, nicht eine in die andere ueberblendet.
+   */
+  private _advance(slot: number): void {
+    const deck = this._deckFor(slot);
+    if (deck.length < 2) return;
+    this._swapping = slot;
+    window.setTimeout(() => {
+      const pos = deck.indexOf(this._shown[slot]);
+      const next = deck[(pos + 1) % deck.length];
+      this._shown = this._shown.map((v, i) => (i === slot ? next : v));
+      this._swapping = null;
+    }, FADE_MS);
+  }
+
+  private _hold = (): void => {
+    this._held = true;
+    this._sync();
+  };
+
+  private _release = (): void => {
+    this._held = false;
+    this._sync();
+  };
 
   protected render() {
     if (!this.citizens.length) return null;
@@ -219,12 +414,20 @@ export class VelgLandingCitizens extends LitElement {
           </button>
         </div>
 
-        <div class="fan">
-          ${this.citizens.slice(0, FAN_ANGLES.length).map(
-            (citizen, index) => html`
+        <div
+          class="fan"
+          @pointerenter=${this._hold}
+          @pointerleave=${this._release}
+          @focusin=${this._hold}
+          @focusout=${this._release}
+        >
+          ${FAN_ANGLES.map((angle, index) => {
+            const citizen = this.citizens[this._shown[index] ?? index];
+            if (!citizen) return nothing;
+            return html`
               <div
-                class="fan__slot"
-                style="transform: rotate(${FAN_ANGLES[index]}deg); z-index: ${index === 1 ? 2 : 1}"
+                class="fan__slot ${this._swapping === index ? 'fan__slot--swapping' : ''}"
+                style="transform: rotate(${angle}deg); z-index: ${index === 1 ? 2 : 1}"
               >
                 <velg-game-card
                   type="agent"
@@ -238,8 +441,8 @@ export class VelgLandingCitizens extends LitElement {
                     navigate(`/simulations/${citizen.simulation_slug}/agents/${citizen.slug}`)}
                 ></velg-game-card>
               </div>
-            `,
-          )}
+            `;
+          })}
         </div>
       </div>
     `;

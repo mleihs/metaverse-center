@@ -42,5 +42,13 @@ Arbeitsgrundlage: `README.md` in diesem Paket (Spezifikation) + die `.dc.html`-P
 - [ ] **4.9 Wide-Screen Cockpit-Regel**: Rails fix 360/380, Bühne nimmt ALLES; keine Container-Zentrierung.
 - [ ] **4.10 Fallen** als Review-Checkliste übernehmen (Dispatch-Guard, kein Interval-Rewrite des Combat-Objekts, computed-background statt img-src-Holes, Grid-Zeilen explizit pinnen, Icon-/Streifen-/Stempel-Tabus).
 
+## HOTFIX — Lore-Page, Live-Befund 31.08.2026 (Screenshot „Staatspathographie", Light-Theme)
+- [ ] **Lesespalte + TOC als Paar setzen**: `grid-template-columns: 300px minmax(0, 740px); gap: 64px; justify-content: center;` auf dem Lore-Container — NICHT TOC links pinnen und Text separat zentrieren (aktuell ~400px totes Gutter dazwischen). TOC `position:sticky; top:…` beibehalten.
+- [ ] **Masthead-Scrim pro Theme kalibrieren**: Im Light-Theme wäscht der Dark-Scrim das Banner komplett aus (graue Void hinter dem Titel). Scrim aus Theme-Tokens ableiten (`color-mix(in srgb, var(--color-surface) 92%, transparent)` → transparent), Banner-Deckkraft im Light-Theme ≥ .35, Bildkante rechts definiert statt ausgefadet. Titelkontrast AA gegen die hellste Scrim-Stelle prüfen.
+- [ ] **CTA verankern**: „Bureau Terminal →" + Statszeile (Agenten · Gebäude · Zyklus) nicht frei rechts floaten lassen — als Meta-Zeile unten im Masthead bündig zur Titel-Baseline (eine Flex-Zeile, space-between mit Tagline).
+- [ ] **Abb.-Captions**: kein Mono-Uppercase-Tracking für mehrzeilige Bildbeschreibungen. Nur das Präfix „ABB. 01" als Mono-Label, der Beschreibungstext in Serif (Spectral) 13px/1.6, normale Groß-/Kleinschreibung, max-width = Bildbreite.
+- [ ] **Seitenende**: kein leerer Füllstreifen unter dem Inhalt — min-height am Content-Wrapper statt am Body-Filler; Abschluss mit Prev/Next-Kapitelnavigation (siehe Phase 1 Lore-Tab).
+- [ ] Regression: dieselbe Seite im Dark-Theme (Velgarien) gegenprüfen — Scrim-Tokenisierung darf den dunklen Look nicht verändern.
+
 ## Definition of Done (jede Phase)
 1440 pixel-nah am Prototyp (Screenshot-Vergleich), 2560 nach jeweiliger Regel (Container/Cockpit/Papier), DE+EN ohne Clipping, Tastaturpfade (Lightbox ←/→/Esc, Targeting Esc, Composer Enter/Shift+Enter), prefers-reduced-motion respektiert, keine rohen Hex-Werte im Komponenten-CSS (Lint), WCAG AA Kontrast auf Phosphor-Dim-Texten geprüft.
