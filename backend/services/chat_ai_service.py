@@ -51,7 +51,12 @@ _CONTEXT_WINDOWS: dict[str, int] = {
     "mistral": 128_000,
     "deepseek": 128_000,
 }
-_DEFAULT_CONTEXT_WINDOW = 128_000
+# Vorsichtig, nicht großzügig: ein Modell, das nicht in der Tabelle steht,
+# kann jede Fensterbreite haben, und die kleinen sind die häufigeren im
+# OpenRouter-Katalog. Eine zu hohe Annahme lässt den Anbieteraufruf
+# scheitern; eine zu niedrige kostet Erinnerung. Der zweite Fehler ist der
+# billigere und der sichtbarere.
+_DEFAULT_CONTEXT_WINDOW = 32_000
 _TOKENS_PER_MESSAGE_ESTIMATE = 250
 _CONTEXT_RESERVE = 5_000  # system prompt + response headroom
 _HISTORY_BUDGET_RATIO = 0.6  # use 60% of context for history
@@ -60,7 +65,28 @@ _MIN_MESSAGES = 20
 
 
 def _max_history_messages(model_id: str) -> int:
-    """Compute the maximum number of history messages for a given model."""
+    """Compute the maximum number of history messages for a given model.
+
+    NACHGEMESSEN AM 31.08.2026: diese Funktion lieferte für JEDES Modell der
+    Tabelle 200 — und für ein unbekanntes ebenfalls. Zwanzig Zeilen
+    Fensterbreiten, Budgetanteil, Reserve und Tokenschätzung erzeugten eine
+    Konstante. Die Kappe ``_MAX_MESSAGES_HARD`` band immer, weil schon das
+    kleinste Fenster der Tabelle (128k) rechnerisch 287 Nachrichten erlaubt.
+
+    Das ist die Bauart, die dieser Prüflauf laufend findet: Maschinerie, die
+    aussieht, als entschiede sie etwas, und nichts entscheidet. Gefährlich
+    wird sie nicht durch das Rechnen, sondern durch die ANNAHME darunter —
+    ``_DEFAULT_CONTEXT_WINDOW`` stand auf 128 000, also bekam ein UNBEKANNTES
+    Modell die großzügigste Schätzung. Ein 8k- oder 16k-Modell aus dem
+    OpenRouter-Katalog hätte damit 200 Nachrichten (~50 000 Token) in ein
+    Fenster geschickt, das sie nicht fasst; der Aufruf scheitert dann beim
+    Anbieter, nicht hier.
+
+    Die Vorgabe ist deshalb jetzt VORSICHTIG. Für die Modelle der Tabelle
+    ändert sich nichts (die Kappe bindet weiterhin); für ein unbekanntes
+    bindet die Rechnung, und zwar nach unten. Fail-closed statt fail-open —
+    dieselbe Richtung wie bei ``parse_setting_bool``.
+    """
     context_tokens = _DEFAULT_CONTEXT_WINDOW
     model_lower = model_id.lower()
     for prefix, tokens in _CONTEXT_WINDOWS.items():
@@ -1143,20 +1169,35 @@ class ChatAIService:
         return response.data[0] if response and response.data else {}
 
     async def _load_history(self, conversation_id: UUID, model_id: str = "") -> list[dict]:
-        """Load recent messages from conversation history.
+        """Load the MOST RECENT messages of a conversation, chronologically.
 
-        The number of messages is computed from the model's context window
-        so that larger-context models benefit from longer memory.
+        Die Reihenfolge ist hier keine Kosmetik. Vorher stand
+        ``order("created_at", desc=False).limit(N)`` — das nimmt die N
+        ÄLTESTEN Nachrichten. Sobald eine Unterhaltung die Kappe
+        überschreitet, sieht der Agent also dauerhaft nur ihren ANFANG und
+        nie, was zuletzt gesagt wurde: die Erinnerung friert am Tag N ein und
+        wächst nie mit. Es fällt nichts aus, die Antworten werden nur
+        stillschweigend beziehungslos.
+
+        Auf Prod hat das noch nie zugeschlagen (gemessen 31.08.2026: drei
+        Unterhaltungen, die längste 13 Nachrichten) — der Fehler wartet auf
+        die erste lange Unterhaltung, also genau auf den Fall, für den die
+        Kappe überhaupt gedacht ist.
+
+        Gleicher Weg wie ``ChatService.get_messages``: absteigend holen,
+        kappen, umdrehen.
         """
         response = await (
             self._supabase.table("chat_messages")
             .select("content, sender_role, agent_id, created_at")
             .eq("conversation_id", str(conversation_id))
-            .order("created_at", desc=False)
+            .order("created_at", desc=True)
             .limit(_max_history_messages(model_id))
             .execute()
         )
-        return extract_list(response)
+        messages = extract_list(response)
+        messages.reverse()
+        return messages
 
     async def _get_locale(self) -> str:
         """Get the simulation's content locale (cached per instance)."""

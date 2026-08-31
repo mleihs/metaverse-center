@@ -507,11 +507,15 @@ INSERT INTO prompt_templates (
 Your personality: {agent_character}
 Your background: {agent_background}
 
+{agent_memories}
+
+{agent_mood}
+
 Stay in character at all times. Respond naturally as this character would.
 Never break character or acknowledge being an AI.
 Respond in {locale_name}.',
     NULL,
-    '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}, {"name": "simulation_name"}, {"name": "locale_name"}]',
+    '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}, {"name": "agent_memories"}, {"name": "agent_mood"}, {"name": "simulation_name"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 500, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
@@ -527,11 +531,15 @@ INSERT INTO prompt_templates (
 Deine Persönlichkeit: {agent_character}
 Dein Hintergrund: {agent_background}
 
+{agent_memories}
+
+{agent_mood}
+
 Bleibe jederzeit in der Rolle. Antworte natürlich, wie dieser Charakter es tun würde.
 Brich niemals die Rolle und gib nie zu, eine KI zu sein.
 Antworte auf {locale_name}.',
     NULL,
-    '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}, {"name": "simulation_name"}, {"name": "locale_name"}]',
+    '[{"name": "agent_name"}, {"name": "agent_character"}, {"name": "agent_background"}, {"name": "agent_memories"}, {"name": "agent_mood"}, {"name": "simulation_name"}, {"name": "locale_name"}]',
     'deepseek/deepseek-chat-v3-0324', 0.8, 500, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
