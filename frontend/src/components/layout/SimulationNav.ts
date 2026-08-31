@@ -1,14 +1,14 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftStatus } from '../../services/DriftStatusService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
-import { markerSelectionStyles } from '../shared/marker-styles.js';
-import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
+import { markerSelectionStyles } from '../shared/marker-styles.js';
 
 /**
  * Canon groups. `core` tabs are always in the bar; `more` tabs live in the
@@ -688,7 +688,13 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
     };
     const status = statusLabels[sim.status]?.() ?? sim.status;
     const isEpoch = sim.simulation_type === 'game_instance' && !!sim.epoch_id;
-    const state = isEpoch ? msg('Epoch') + ' ' + status.toLocaleLowerCase() : status;
+    /*
+     * `str` rather than concatenation, and not only because biome asks: gluing
+     * a translated word onto a translated word hands the translator two halves
+     * and no sentence. German puts them in this order, but the phrase has to be
+     * one unit for a language that would not.
+     */
+    const state = isEpoch ? msg(str`Epoch ${status.toLocaleLowerCase()}`) : status;
 
     const tick = sim.last_heartbeat_tick;
     if (typeof tick !== 'number') return state;
@@ -705,13 +711,17 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         aria-current=${active ? 'page' : nothing}
         @click=${(e: Event) => this._handleTabClick(e, tab)}
       >
-        ${tab.path === DEFAULT_TAB && !inRegister
-          ? html`<span class="nav__mark" aria-hidden="true">◈</span>`
-          : nothing}
+        ${
+          tab.path === DEFAULT_TAB && !inRegister
+            ? html`<span class="nav__mark" aria-hidden="true">◈</span>`
+            : nothing
+        }
         <span class="nav__label">${tab.label}</span>
-        ${badged.has(tab.path)
-          ? html`<span class="nav__badge" aria-label=${msg('New activity')}></span>`
-          : nothing}
+        ${
+          badged.has(tab.path)
+            ? html`<span class="nav__badge" aria-label=${msg('New activity')}></span>`
+            : nothing
+        }
       </a>
     `;
   }

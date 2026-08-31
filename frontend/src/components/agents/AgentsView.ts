@@ -462,22 +462,60 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
     }
   }
 
+  /**
+   * Where the open operative sits in the list, by ID rather than by identity.
+   *
+   * `indexOf(this._selectedAgent)` compares object references. It is right until
+   * the list is refetched — a reload, a filter change, a recruitment completing
+   * — after which the same operative is a NEW object with the same id, `indexOf`
+   * returns -1, and both arrows go dead with the dossier still open. Nothing
+   * throws and nothing logs; the buttons simply stop working.
+   */
+  private get _selectedIndex(): number {
+    if (!this._selectedAgent) return -1;
+    const id = this._selectedAgent.id;
+    return this._agents.findIndex((a) => a.id === id);
+  }
+
+  /**
+   * Turn to the neighbouring operative, cyclically, within the FILTERED list.
+   *
+   * One method for both directions and for both callers (the lightbox's own
+   * buttons and its arrow keys), reading `this._agents` — the same array the
+   * grid renders and the same one that feeds `totalEntities`/`currentIndex`.
+   * That is the handoff's requirement stated as code rather than as a comment:
+   * with the "Ambassadors" filter on, the arrows can only reach ambassadors,
+   * because there is nothing else in the list to reach.
+   *
+   * Cyclic because the list is a roster, not a document: there is no last page
+   * to stop at, and an arrow that silently does nothing at the end reads as a
+   * broken button rather than as a boundary.
+   *
+   * SCOPE, STATED RATHER THAN IMPLIED: `_agents` is the current PAGE of the
+   * filtered set, 25 at a time, because search and filters run server-side. So
+   * the arrows walk the page, not the whole result. That is deliberate and not
+   * a shortfall: the grid shows the page, the counter counts the page, and the
+   * arrows reach the page — three things saying one thing. Paging forward at
+   * the boundary would let the keyboard reach operatives the grid is not
+   * showing, which is exactly the split the handoff's one-data-source rule
+   * exists to prevent. If a world ever needs more than 25 in one turn, raise
+   * `_limit` here rather than teaching the arrows to fetch.
+   */
+  private _turnTo(delta: number): void {
+    const list = this._agents;
+    const idx = this._selectedIndex;
+    if (idx < 0 || list.length < 2) return;
+    const next = list[(idx + delta + list.length) % list.length];
+    this._pushEntityUrl(next);
+    this._openAgentDetail(next);
+  }
+
   private _handleLightboxPrev(): void {
-    const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
-    if (idx > 0) {
-      const next = this._agents[idx - 1];
-      this._pushEntityUrl(next);
-      this._openAgentDetail(next);
-    }
+    this._turnTo(-1);
   }
 
   private _handleLightboxNext(): void {
-    const idx = this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : -1;
-    if (idx >= 0 && idx < this._agents.length - 1) {
-      const next = this._agents[idx + 1];
-      this._pushEntityUrl(next);
-      this._openAgentDetail(next);
-    }
+    this._turnTo(1);
   }
 
   private _handleRecruitmentComplete(): void {
@@ -546,7 +584,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
         ?open=${this._showDetails}
         container="lightbox"
         .totalEntities=${this._agents.length}
-        .currentIndex=${this._selectedAgent ? this._agents.indexOf(this._selectedAgent) : 0}
+        .currentIndex=${Math.max(0, this._selectedIndex)}
         @panel-close=${this._handleDetailsPanelClose}
         @lightbox-prev=${this._handleLightboxPrev}
         @lightbox-next=${this._handleLightboxNext}

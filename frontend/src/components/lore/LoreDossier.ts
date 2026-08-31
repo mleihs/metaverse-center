@@ -474,9 +474,7 @@ export class VelgLoreDossier extends LitElement {
   }
 
   private _toggleCaseFile(): void {
-    this.dispatchEvent(
-      new CustomEvent('case-file-toggle', { bubbles: true, composed: true }),
-    );
+    this.dispatchEvent(new CustomEvent('case-file-toggle', { bubbles: true, composed: true }));
   }
 
   private _openLightbox(src: string, caption: string): void {
@@ -493,9 +491,7 @@ export class VelgLoreDossier extends LitElement {
     const section = this._current;
     if (!section) return nothing;
 
-    const classifiedCount = this.sections.filter((s) =>
-      this.classifiedSectionIds.has(s.id),
-    ).length;
+    const classifiedCount = this.sections.filter((s) => this.classifiedSectionIds.has(s.id)).length;
 
     return html`
       <div class="head">
