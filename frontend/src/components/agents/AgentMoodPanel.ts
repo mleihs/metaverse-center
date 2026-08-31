@@ -19,7 +19,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
+import { appState } from '../../services/AppStateManager.js';
 import {
   type AgentMood,
   type AgentMoodlet,
@@ -809,10 +809,15 @@ export class AgentMoodPanel extends LitElement {
 
   private async _fetchData() {
     try {
+      // Public-First: Stimmung, Moodlets und Bedürfnisse sind Simulationsdaten
+      // und stehen über ihre eigenen RLS-Richtlinien offen. Die Route wird hier
+      // am Aufrufort gewählt, nicht in der API-Schicht (Regel
+      // `lint-no-appstate-access-reads.sh`).
+      const mode = appState.currentSimulationMode.value;
       const [moodResp, moodletsResp, needsResp] = await Promise.all([
-        agentAutonomyApi.getAgentMood(this.simulationId, this.agentId),
-        agentAutonomyApi.getAgentMoodlets(this.simulationId, this.agentId),
-        agentAutonomyApi.getAgentNeeds(this.simulationId, this.agentId),
+        agentAutonomyApi.getAgentMood(this.simulationId, this.agentId, mode),
+        agentAutonomyApi.getAgentMoodlets(this.simulationId, this.agentId, mode),
+        agentAutonomyApi.getAgentNeeds(this.simulationId, this.agentId, mode),
       ]);
 
       this._mood = moodResp.data ?? null;

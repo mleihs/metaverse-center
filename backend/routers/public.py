@@ -15,6 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from backend.dependencies import get_admin_supabase, get_anon_supabase, resolve_simulation_id
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.agent import AgentResponse
+from backend.models.agent_autonomy import AgentMoodResponse, AgentNeedsResponse, MoodletResponse
 from backend.models.alpha_state import AlphaStatePublic, FirstContactPublic
 from backend.models.aptitude import AptitudeResponse
 from backend.models.bond import PublicBondResponse
@@ -58,6 +59,8 @@ from backend.models.simulation import PlatformStatsResponse, SimulationResponse
 from backend.models.social import SocialMediaPostResponse, SocialTrendResponse
 from backend.models.taxonomy import TaxonomyResponse
 from backend.services.agent_memory_service import AgentMemoryService
+from backend.services.agent_mood_service import AgentMoodService
+from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_service import AgentService
 from backend.services.aptitude_service import AptitudeService
 from backend.services.battle_log_service import BattleLogService
@@ -1200,6 +1203,66 @@ async def get_drift_chart(
     http_response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate={max_age * 5}"
     chart = await DriftService.get_active_chart(anon)
     return SuccessResponse(data=chart)
+
+
+# ── Agent-Innenleben (Stimmung, Moodlets, Bedürfnisse) ───────────────────
+#
+# Public-First-Befund D11/S19. Die drei Tabellen tragen auf Prod seit jeher
+# eine Richtlinie `*_public_read` mit `USING (true)` für die Rolle `public` —
+# die Datenbank sagt also „öffentlich lesbar". Nur das API-Tor sagte „nur
+# Mitglieder": `get_current_user` plus `require_role("viewer")`.
+#
+# Die beiden widersprachen sich, und das Tor war das striktere und das
+# falsche. Gemessen an den Aufrufstellen trifft es echte Oberflächen: der
+# `examine`-Befehl des Terminals holt Stimmung, Bedürfnisse UND Moodlets in
+# einem Zug (`terminal-commands.ts:396-398`), dazu der Chat und das
+# Stimmungsfeld der Agentenansicht. Für eine anonyme Besucherin endete das
+# Betrachten eines Agenten also in 403 — genau das, was die
+# Public-First-Regel verbietet („Browsing must never produce 403 errors").
+#
+# Der anon-Client ist hier ausdrücklich richtig und nicht bloß möglich: er
+# BEWEIST bei jedem Aufruf, dass die Daten über ihre eigenen Richtlinien
+# offenstehen. Ein Admin-Client würde die Frage umgehen, statt sie zu
+# beantworten (dieselbe Erwägung wie bei `/public/drift/chart`).
+
+
+@router.get("/simulations/{simulation_id}/agents/{agent_id}/mood")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_public_agent_mood(
+    request: Request,
+    simulation_id: UUID,
+    agent_id: UUID,
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[AgentMoodResponse | None]:
+    """Public: the current emotional state of an agent."""
+    data = await AgentMoodService.get_agent_mood(anon, agent_id, simulation_id)
+    return SuccessResponse(data=data)
+
+
+@router.get("/simulations/{simulation_id}/agents/{agent_id}/moodlets")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def list_public_agent_moodlets(
+    request: Request,
+    simulation_id: UUID,
+    agent_id: UUID,
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[list[MoodletResponse]]:
+    """Public: the active moodlets of an agent."""
+    data = await AgentMoodService.list_moodlets(anon, agent_id, simulation_id)
+    return SuccessResponse(data=data)
+
+
+@router.get("/simulations/{simulation_id}/agents/{agent_id}/needs")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_public_agent_needs(
+    request: Request,
+    simulation_id: UUID,
+    agent_id: UUID,
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[AgentNeedsResponse | None]:
+    """Public: the current needs of an agent."""
+    data = await AgentNeedsService.get_agent_needs(anon, agent_id, simulation_id)
+    return SuccessResponse(data=data)
 
 
 # ── Agent Bonds ──────────────────────────────────────────────────────────
