@@ -843,12 +843,32 @@ def self_check(tokens) -> int:
     elif layered:
         print(f"ok    .tab__tint__label ground: {layered['ground_via']}")
 
+    # The other modes must at least RUN. A regression found the hard way: the
+    # pinned-subtree branch created entries without the "palette" key while the
+    # themed branch created them with it, so `--themes` died on a KeyError
+    # after printing half its output. The self-check stayed green throughout,
+    # because it only ever exercised the default path.
+    #
+    # A control that covers one of three modes is a control for one of three
+    # modes. This does not verify the numbers of the others — it verifies that
+    # they produce numbers at all, which is the failure that actually happened.
+    import contextlib as _ctx
+    import io as _io
+
+    try:
+        with _ctx.redirect_stdout(_io.StringIO()):
+            report_themes([path], tokens)
+        print("ok    --themes completes without error")
+    except Exception as exc:  # noqa: BLE001 — catching any is the point
+        print(f"FAIL  --themes raised {type(exc).__name__}: {exc}")
+        bad += 1
+
     print()
     if bad:
         print(f"{bad} control(s) failed. The instrument has drifted; do not trust "
               "its other numbers until this passes.")
         return 1
-    print(f"All {len(CONTROL_EXPECT) + len(CONTROL_SILENT) + 1} controls hold.")
+    print(f"All {len(CONTROL_EXPECT) + len(CONTROL_SILENT) + 2} controls hold.")
     return 0
 
 
@@ -990,7 +1010,9 @@ def report_themes(targets, base_tokens) -> int:
     per_pair: dict[tuple, dict] = {}
     for f in run(immune, base_tokens)[0]:
         key = (str(f["file"]), f["line"], f["sel"])
-        e = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0})
+        e = per_pair.setdefault(
+            key, {"f": f, "themes": [], "worst": 99.0, "palette": set()}
+        )
         e["themes"].append("(pinned dark)")
         e["worst"] = min(e["worst"], f["ratio"])
 
