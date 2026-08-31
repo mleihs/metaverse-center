@@ -124,12 +124,20 @@ class LandingPrompt(BaseModel):
     ``forge_drafts.seed_prompt``, davon 16 aus abgeschlossenen Läufen — die
     tatsächlichen Sätze, aus denen die tatsächlichen Welten wurden.
 
-    ⚠ SIE SIND NOCH NICHT ANGESCHALTET. Ein Ausgangssatz ist von einem Menschen
-    geschrieben, und die Frontseite ist öffentlich; ihn dort zu zeigen ist eine
-    Veröffentlichung fremden Textes. Das ist eine Entscheidung des Nutzers, keine
-    Ermessensfrage der Umsetzung. Die Leitung liegt: ist die Liste gefüllt,
-    tippt der Abschnitt echte Sätze; ist sie leer, tippt er seine Beispiele und
-    nennt sie so.
+    Ein Ausgangssatz ist von einem Menschen geschrieben, und die Frontseite ist
+    öffentlich — ihn dort zu zeigen ist eine Veröffentlichung fremden Textes.
+    Der Nutzer hat sie am 31.08.2026 freigegeben. Gelesen wird über die Sicht
+    ``public_forge_prompts`` (Migration 314), die GENAU EINE Spalte herausgibt:
+    ``forge_drafts`` selbst trägt ``user_id``, alle Zwischenstände und das
+    Fehlerprotokoll, und wer eine Zeile davon hat, hat jede Spalte darin.
+
+    Ist die Liste leer (Abfrage ausgefallen, kein passender Satz), tippt der
+    Abschnitt seine Beispiele und nennt sie so.
+
+    ``text_de`` bleibt leer: ein Ausgangssatz wurde in einer Sprache
+    geschrieben und bleibt darin. Eine maschinelle Übersetzung eines fremden
+    Satzes wäre eine Fälschung; ``t(prompt, 'text')`` fällt richtigerweise auf
+    ``text`` zurück.
 
     Der Client wählt über ``t(prompt, 'text')`` — deshalb ``text``/``text_de``
     und kein locale-Parameter.
@@ -145,8 +153,7 @@ class LandingSnapshotResponse(BaseModel):
     counts: LandingCounts
     worlds: list[LandingWorld] = Field(default_factory=list)
     citizens: list[LandingCitizen] = Field(default_factory=list)
-    #: Echte Ausgangssätze für den Schmiede-Abschnitt. Leer, solange die
-    #: Veröffentlichung nicht freigegeben ist — siehe ``LandingPrompt``.
+    #: Echte Ausgangssätze für den Schmiede-Abschnitt, aus ``public_forge_prompts``.
     forge_prompts: list[LandingPrompt] = Field(default_factory=list)
 
     #: Wann gemessen wurde. Steht in der Antwort, weil eine Kennzahl ohne

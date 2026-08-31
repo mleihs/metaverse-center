@@ -121,9 +121,7 @@ def _world(idx: int, *, beat_age_days: float = 0.1, agents: int = 0) -> dict:
 def _client(worlds: list[dict], **extra) -> _FakeClient:
     rows = {
         "simulations": worlds,
-        "simulation_dashboard": [
-            {"simulation_id": w["id"], "agent_count": w.get("_agents", 0)} for w in worlds
-        ],
+        "simulation_dashboard": [{"simulation_id": w["id"], "agent_count": w.get("_agents", 0)} for w in worlds],
         "game_epochs": extra.get("game_epochs", []),
         "substrate_resonances": extra.get("substrate_resonances", []),
         "agents": extra.get("agents", []),
@@ -169,9 +167,7 @@ async def test_epoch_query_demands_movement_not_just_status():
     filters = client.filters_for("game_epochs")
     statuses = next(values for kind, column, values in filters if kind == "in" and column == "status")
     assert set(statuses) == {"foundation", "competition", "reckoning"}
-    assert "lobby" not in statuses, (
-        "Eine Epoche, die auf Mitspieler wartet, ist nicht im Spiel."
-    )
+    assert "lobby" not in statuses, "Eine Epoche, die auf Mitspieler wartet, ist nicht im Spiel."
     assert any(kind == "gte" and column == "updated_at" for kind, column, _ in filters), (
         "Ohne Frist zählt der Filter jede stillstehende Epoche mit."
     )
@@ -269,3 +265,63 @@ async def test_empty_platform_yields_zeroes_not_an_error():
     assert snapshot["worlds"] == []
     assert snapshot["citizens"] == []
     assert snapshot["measured_at"] is not None
+
+
+# ── Die echten Ausgangssätze ───────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_the_real_sentences_replace_the_invented_ones():
+    """Bis zum 31.08.2026 tippte der Schmiede-Abschnitt zwanzig erfundene
+    Beispiele. Jetzt kommen die echten Sätze aus ``public_forge_prompts`` —
+    der Sicht, die GENAU EINE Spalte herausgibt."""
+    client = _client([_world(1)])
+    client.rows["public_forge_prompts"] = [
+        {
+            "seed_prompt": "Ein Satz, der lang genug ist, um getippt zu werden, und kurz genug, um gelesen zu werden. "
+            * 2
+        },
+    ]
+    snapshot = await LandingService.get_snapshot(client)
+    assert len(snapshot["forge_prompts"]) == 1
+    assert snapshot["forge_prompts"][0]["text"].startswith("Ein Satz, der lang genug ist")
+    # Ein Ausgangssatz wurde in EINER Sprache geschrieben; er wird nicht
+    # maschinell verdoppelt.
+    assert "text_de" not in snapshot["forge_prompts"][0]
+
+
+@pytest.mark.asyncio
+async def test_a_sentence_too_long_to_type_is_left_out():
+    """Gemessen reicht der Bestand bis 1 122 Zeichen. Ein Satz dieser Länge
+    tippt sich über eine Minute und hat die Seite längst verloren — das ist
+    eine Darstellungsfrage und wird hier entschieden, nicht in der Sicht."""
+    client = _client([_world(1)])
+    client.rows["public_forge_prompts"] = [
+        {"seed_prompt": "x" * 1122},
+        {"seed_prompt": "zu kurz"},
+    ]
+    snapshot = await LandingService.get_snapshot(client)
+    assert snapshot["forge_prompts"] == []
+
+
+@pytest.mark.asyncio
+async def test_without_sentences_the_section_falls_back():
+    """Keine Sätze ist kein Fehler: der Abschnitt tippt dann seine Beispiele.
+    Public-First — die Frontseite zeigt nie eine Fehlermeldung."""
+    snapshot = await LandingService.get_snapshot(_client([_world(1)]))
+    assert snapshot["forge_prompts"] == []
+
+
+@pytest.mark.asyncio
+async def test_whitespace_in_a_sentence_is_normalised():
+    """Ein von Hand geschriebener Satz trägt Zeilenumbrüche. Der
+    Schreibmaschinen-Effekt tippt Zeichen für Zeichen — ein Umbruch mitten
+    darin risse die Zeile auf."""
+    client = _client([_world(1)])
+    client.rows["public_forge_prompts"] = [
+        {
+            "seed_prompt": "Erste Zeile\n\nZweite Zeile mit genug Text, damit der Satz die Untergrenze von achtzig Zeichen sicher ueberschreitet."
+        },
+    ]
+    snapshot = await LandingService.get_snapshot(client)
+    assert "\n" not in snapshot["forge_prompts"][0]["text"]
