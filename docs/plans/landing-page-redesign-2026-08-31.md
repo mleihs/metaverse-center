@@ -203,10 +203,12 @@ Pfeiltasten.
 3. **Deutscher Titel für 11 von 16 Welten** — dieselbe offene Entscheidung wie
    bisher, aber die Frontseite macht sie sichtbar: ohne sie ist das Weltraster
    auf Deutsch halb englisch.
-4. **Wer baut?** Der Umfang ist eine eigene Welle (L1 Backend ≈ ½ Tag, L4
-   Bildableitung ≈ ½ Tag, L5/L6/L7 Frontend ≈ 2–3 Tage). Beide Sitzungen tragen
-   gerade laufende Pakete; die Frontseite sollte keine dritte Baustelle im
-   selben Arbeitsbaum werden.
+4. ~~**Wer baut?**~~ — **entschieden am 31.08.2026:** die Sitzung
+   `velgarien-rebuild-45` übernimmt die Welle, **nachdem** sie H7/H1/H6
+   abgeschlossen hat. Der Umfang ist eine eigene Welle (L1 Backend ≈ ½ Tag, L4
+   Bildableitung ≈ ½ Tag, L5/L6/L7 Frontend ≈ 2–3 Tage) und darf keine dritte
+   gleichzeitige Baustelle im geteilten Arbeitsbaum werden. `velgarien-rebuild-88`
+   fasst ab hier nichts davon an.
 
 ## 6. Reihenfolge
 
