@@ -39,15 +39,28 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
       display: block;
     }
 
-    /* Three across, as the handoff draws it. A building card carries a full
-       prose description, not a label, and at --grid-min-width: 200px the
-       auto-fill packed five or six into a wide viewport and squeezed that
-       prose into a column two words wide. The minimum is what governs an
-       auto-fill grid, so raising it is what produces three - stating "3"
-       directly would break the narrow case the auto-fill handles for free. */
+    /* Three across, as the handoff draws it - and stated as three.
+       An earlier attempt raised --grid-min-width to 320px and reasoned that
+       the minimum governs an auto-fill grid. It does, and it produced FOUR:
+       measured at 1352px of grid, 4 x 323px fits. A minimum cannot express
+       "three" at an unknown width; only a count can. The narrow cases the
+       auto-fill used to handle for free are handled by the two queries below,
+       which is three lines instead of a wrong number. */
     .entity-grid {
-      --grid-min-width: 320px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-5);
+    }
+
+    @media (max-width: 1100px) {
+      .entity-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .entity-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
     @media (max-width: 480px) {
@@ -171,14 +184,9 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
         this._load();
       }
     });
-    // On the document, not the host: the dossier is a lightbox and focus may
-    // sit inside it, on the page behind it, or nowhere at all after a click on
-    // the backdrop. A listener on this element only fires for two of the three.
-    document.addEventListener('keydown', this._onKeyDown);
   }
 
   disconnectedCallback(): void {
-    document.removeEventListener('keydown', this._onKeyDown);
     this._disposeImageTracking?.();
     seoService.removeStructuredData();
     super.disconnectedCallback();
@@ -356,6 +364,15 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
    * Wrapping rather than stopping: the previous version stopped at index 0 and
    * at the end, so the arrow simply did nothing and looked broken. There is no
    * "first" building in a register you browse.
+   *
+   * The KEYBOARD is not wired up here, on purpose. `velg-entity-lightbox`
+   * already listens for the arrows on its own dialog and routes them out as
+   * `lightbox-prev` / `lightbox-next`, which land in the two handlers below.
+   * A second listener on `document` was added here first and looked right in
+   * the code - on screen it stepped TWICE per keypress (measured: seven
+   * buildings, ArrowLeft at index 0 landed on 5, not 6). Two listeners for one
+   * key is the same fault as two controls for one action, and it is invisible
+   * to a reading of either file alone.
    */
   private _stepBuilding(delta: number): void {
     const list = this._buildings;
@@ -376,30 +393,6 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     this._stepBuilding(1);
   }
 
-  /**
-   * Arrow keys step, Escape closes — but only while a dossier is open, and
-   * never while the caret is in a field. Without the field check, typing a
-   * building name into the search box would page the dossier away under the
-   * user mid-word.
-   */
-  private readonly _onKeyDown = (e: KeyboardEvent): void => {
-    if (!this._selectedBuilding) return;
-    const target = e.composedPath()[0] as HTMLElement | undefined;
-    const tag = target?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) {
-      return;
-    }
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      this._stepBuilding(-1);
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      this._stepBuilding(1);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      this._selectedBuilding = null;
-    }
-  };
 
   private _handleEmbassyEstablish(e: CustomEvent<Building>): void {
     this._embassySourceBuilding = e.detail;
