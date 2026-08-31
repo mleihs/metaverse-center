@@ -98,6 +98,35 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       gap: var(--space-2);
+
+      /*
+       * Gemessen, nicht geraten: elf von vierzehn Reitern zeigten in der
+       * deutschen Ausgabe ein abgeschnittenes Wort — GEBÄUD, GESUNDHE,
+       * EREIGNISS, BINDUNGE, SOZIALE, TERMINA, DUNGEO, EINSTELLUNG — ohne
+       * Auslassungszeichen und ohne Umbruch.
+       *
+       * Die Ursache ist eine Wechselwirkung zweier Zeilen, die einzeln
+       * harmlos aussehen:
+       *
+       *   .nav       overflow-x: auto   soll rollen, wenn es eng wird
+       *   .nav__tab  overflow: hidden   für den ::before-Verlauf und den
+       *                                 ::after-Strich
+       *
+       * Ein Flex-Kind hat min-width: auto, was es normalerweise davor
+       * schützt, unter seine Inhaltsbreite gedrückt zu werden. Diese
+       * automatische Mindestbreite gilt aber NUR, solange overflow auf
+       * visible steht — overflow: hidden setzt sie auf null. Die Reiter
+       * schrumpften also, statt die Leiste überlaufen zu lassen, und das
+       * overflow-x: auto darüber kam nie zum Einsatz.
+       *
+       * Dass Rollen die Absicht war, steht zwei Regeln weiter oben: die
+       * Leiste versteckt eigens ihren Rollbalken (scrollbar-width: none).
+       * Ein Rollbalken wird nicht versteckt, wenn nie gerollt werden soll.
+       *
+       * flex-shrink: 0 stellt die Absicht wieder her. Unter 640 px ist die
+       * Leiste ohnehin ausgeblendet und das Hamburger-Menü übernimmt.
+       */
+      flex-shrink: 0;
       padding: var(--space-3) var(--space-4);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
