@@ -37,15 +37,23 @@ export class VelgLandingWorlds extends LitElement {
     :host {
       --_rule: var(--color-border-light);
       display: block;
-      padding: var(--space-24) var(--space-12);
+      /* Nur senkrecht — die seitliche Polsterung gehoert INNERHALB des
+         Seitenmasses und sitzt deshalb am Behaelter, nicht an der Huelle. */
+      padding-block: var(--space-24);
       background: var(--color-surface-sunken);
       border-top: var(--border-width-thin) solid var(--_rule);
       border-bottom: var(--border-width-thin) solid var(--_rule);
     }
 
     .inner {
-      max-width: var(--container-max);
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
+      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .head {
@@ -60,7 +68,7 @@ export class VelgLandingWorlds extends LitElement {
     .head__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(var(--text-2xl), 4vw, 44px);
+      font-size: calc(clamp(var(--text-2xl), 4vw, 44px) * var(--landing-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       color: var(--color-text-primary);
@@ -223,6 +231,12 @@ export class VelgLandingWorlds extends LitElement {
       overflow: hidden;
     }
 
+    /* ── BREITBILD (Entwurf v2) ─────────────────────────────────────────
+       Das Raster bleibt vierspaltig; die Karten wachsen einfach mit. Eine
+       fuenfte Spalte bei 2560 px waere technisch moeglich und inhaltlich
+       falsch — die Frontseite zeigt VIER Welten, nicht so viele, wie
+       hineinpassen. Der Hintergrund und die beiden Trennlinien bleiben
+       randlos, weil sie an der Huelle haengen. */
     @media (max-width: 1024px) {
       :host {
         padding: var(--space-16) var(--space-5);

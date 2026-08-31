@@ -57,12 +57,26 @@ export class VelgLandingHero extends LitElement {
 
     /* ── Navigation ────────────────────────────────────────────────── */
 
+    /* Der Unterstrich spannt ueber den ganzen Sichtbereich, der Inhalt sitzt im
+       Mass der Seite. Deshalb kein zweites Element und keine Maximalbreite,
+       sondern eine seitliche Polsterung, die den zentrierten Behaelter
+       NACHRECHNET: ist der Sichtbereich schmaler als das Mass, bleibt es bei
+       der blossen Polsterung, sonst kommt der halbe Ueberhang dazu. "100%" ist
+       hier die Breite der Huelle, also exakt — "100vw" waere um die Breite des
+       Rollbalkens zu gross. */
     .nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: var(--space-6);
-      padding: var(--space-4) var(--space-12);
+      padding-block: var(--space-4);
+      padding-inline: max(
+        var(--landing-gutter, var(--space-12)),
+        calc(
+          (100% - var(--landing-measure, var(--container-max))) / 2 +
+            var(--landing-gutter, var(--space-12))
+        )
+      );
       border-bottom: var(--border-width-thin) solid var(--_rule);
     }
 
@@ -221,9 +235,15 @@ export class VelgLandingHero extends LitElement {
     }
 
     .hero__body {
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
       position: relative;
-      padding: clamp(var(--space-16), 12vw, 130px) var(--space-12) var(--space-20);
-      max-width: var(--container-max);
+      padding: clamp(var(--space-16), 12vw, 130px) var(--landing-gutter, var(--space-12))
+        var(--space-20);
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
     }
 
@@ -273,7 +293,10 @@ export class VelgLandingHero extends LitElement {
     }
 
     /* Der Entwurf setzt 158 px bei 1440 px Referenzbreite. "clamp()" traegt
-       das nach unten, ohne dass die zwei Zeilen umbrechen. */
+       das nach unten, ohne dass die zwei Zeilen umbrechen. Ab 1920 px uebernimmt
+       eine ZWEITE Spanne (weiter unten): 158 → 212 px. Zwei Spannen, weil eine
+       einzelne nur EINE Steigung haben kann — hier sind es drei Abschnitte
+       (11vw bis 1436 px, dann flach, dann 8,3vw bis 2554 px). */
     .headline {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
@@ -317,11 +340,13 @@ export class VelgLandingHero extends LitElement {
       font-family: var(--font-prose);
       font-style: italic;
       font-weight: var(--font-medium);
-      font-size: clamp(var(--text-base), 2vw, 27px);
+      font-size: calc(clamp(var(--text-base), 2vw, 27px) * var(--landing-type-scale, 1));
       line-height: var(--leading-normal);
       color: var(--color-text-secondary);
       margin: 0;
-      max-width: 600px;
+      /* Die Breite waechst mit der Schrift, sonst wuerde die Zeile bei 2560 px
+         laenger statt gleich lang. Gemessen bleibt sie so bei rund 60 Zeichen. */
+      max-width: calc(600px * var(--landing-type-scale, 1));
       text-wrap: pretty;
     }
 
@@ -406,6 +431,17 @@ export class VelgLandingHero extends LitElement {
     :host(:focus-within) .ticker__track,
     .ticker:hover .ticker__track {
       animation-play-state: paused;
+    }
+
+    /* ── BREITBILD (Entwurf v2, ≥1920) ──────────────────────────────────
+       Die Seite waechst fluessig nach oben; 1440 px ist die kleinste
+       Schreibtischfassung, keine Obergrenze. Bild, Laufband und die beiden
+       Schleier bleiben randlos — sie haengen an ":host" und wurden nie
+       eingefasst, hier ist also nichts zu tun. */
+    @media (min-width: 1920px) {
+      .headline {
+        font-size: clamp(158px, 8.3vw, 212px);
+      }
     }
 
     @media (max-width: 900px) {
