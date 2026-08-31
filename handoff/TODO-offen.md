@@ -318,3 +318,45 @@ Startwert oder eine Zusicherung über die Menge statt über das gezogene Stück.
 **Nicht gemessen:** welcher vorangehende Test den Zustand hinterlässt. Der erste
 Schritt ist ein Lauf gegen die Integrationsmappe mit fester Reihenfolge, nicht
 das Ändern der Zusicherung.
+
+---
+
+## T8 · Fünf gelöschte Welten halten noch lebende Bauten, Agenten und Zonen
+
+**Gemessen:** 31.08.2026, beim Abnehmen von Migration 311 auf Prod.
+
+Meine Prüfabfrage meldete „68 Schritte führen aus dem Vokabular ihrer Welt
+heraus", der Abnahmeblock der Migration hatte null gemeldet. Beide hatten recht:
+die Abnahme filtert `s.deleted_at IS NULL`, meine Abfrage nicht. **Alle 68
+liegen in gelöschten Welten**, und alle sind `fair → fair` — der Schritt gibt
+unverändert zurück, weil Migration 309 gelöschte Welten übersprungen hat und
+diese Welten deshalb gar kein Bauzustands-Vokabular haben.
+
+Kein Defekt an 311. Aber es legt etwas frei:
+
+    gelöschte Welten                                   5
+    Bauten mit deleted_at IS NULL darin               34
+    Agenten mit deleted_at IS NULL darin              30
+    Zonen darin                                       25
+    Ereignisse darin                                   0
+
+🔑 **Das ist N3 in seiner vollen Größe.** Die Systemprüfung führte „30 Agenten
+gelöschter Welten" als Befund an der Sicht `active_agents`. Es sind nicht nur
+Agenten: das Löschen einer Welt setzt `simulations.deleted_at`, aber die Kinder
+behalten ihr `deleted_at IS NULL`. Jede Abfrage, die nur das Kind filtert und
+nicht über `simulations` joint, zählt sie mit.
+
+**Zu entscheiden ist die Richtung, und das ist keine Kleinigkeit:**
+* **Kaskade beim Löschen** — sauber, aber ein Schreibvorgang über vier Tabellen,
+  und er macht das Löschen unumkehrbar in einer Weise, die es heute nicht ist.
+* **Jede Leseabfrage joint** — ehrlich, aber es sind viele Abfragen, und die
+  nächste vergisst es wieder.
+* **Eine Sicht je Tabelle** (`active_buildings` neben `active_agents`) —
+  dasselbe Muster, das die Plattform schon benutzt; dann muss aber
+  `active_agents` selbst zuerst repariert werden, denn genau die zählt heute
+  falsch.
+
+**Nicht gemessen:** ob die fünf Welten absichtlich gelöscht wurden oder ob eines
+der Kinder noch irgendwo angezeigt wird. Vor jeder Reparatur gehört das
+nachgesehen — eine Kaskade auf eine Welt, die jemand zurückholen will, ist
+schlimmer als der Fehler.
