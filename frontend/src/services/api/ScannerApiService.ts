@@ -1,5 +1,6 @@
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export interface ScannerDashboard {
   config: {
@@ -108,7 +109,7 @@ export class ScannerApiService extends BaseApiService {
     );
   }
 
-  async listCandidates(params?: Record<string, string>): Promise<ApiResponse<ScanCandidateList>> {
+  async listCandidates(params?: QueryParams): Promise<ApiResponse<ScanCandidateList>> {
     return this.get('/admin/news-scanner/candidates', params);
   }
 
@@ -132,7 +133,7 @@ export class ScannerApiService extends BaseApiService {
     return this.patch(`/admin/news-scanner/candidates/${id}`, data);
   }
 
-  async getScanLog(params?: Record<string, string>): Promise<ApiResponse<ScanLogEntry[]>> {
+  async getScanLog(params?: QueryParams): Promise<ApiResponse<ScanLogEntry[]>> {
     return this.get('/admin/news-scanner/scan-log', params);
   }
 }

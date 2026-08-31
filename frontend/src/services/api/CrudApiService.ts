@@ -1,5 +1,6 @@
 import type { ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 /**
  * Abstract base for simulation-scoped CRUD API services.
@@ -19,7 +20,7 @@ export abstract class CrudApiService<T> extends BaseApiService {
   list(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<T[]>> {
     return this.getSimulationData(this.basePath(simulationId), mode, params);
   }
@@ -46,10 +47,7 @@ export abstract class CrudApiService<T> extends BaseApiService {
 
   /* Optional public-access helpers for services that need them. */
 
-  protected listPublic(
-    simulationId: string,
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<T[]>> {
+  protected listPublic(simulationId: string, params?: QueryParams): Promise<ApiResponse<T[]>> {
     return this.getPublic(this.basePath(simulationId), params);
   }
 

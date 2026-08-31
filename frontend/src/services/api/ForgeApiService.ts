@@ -5,6 +5,7 @@ import type {
   PaginatedResponse,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export interface PhilosophicalAnchor {
   title: string;
@@ -235,7 +236,7 @@ export interface FeaturePurchase {
 }
 
 export class ForgeApiService extends BaseApiService {
-  listDrafts(params?: Record<string, string>): Promise<ApiResponse<PaginatedResponse<ForgeDraft>>> {
+  listDrafts(params?: QueryParams): Promise<ApiResponse<PaginatedResponse<ForgeDraft>>> {
     return this.get('/forge/drafts', params);
   }
 

@@ -43,6 +43,7 @@ class EventService(BaseService):
         simulation_id: UUID,
         *,
         event_type: str | None = None,
+        event_status: str | None = None,
         impact_level: int | None = None,
         tag: str | None = None,
         search: str | None = None,
@@ -63,6 +64,8 @@ class EventService(BaseService):
 
         if event_type:
             query = query.eq("event_type", event_type)
+        if event_status:
+            query = query.eq("event_status", event_status)
         if impact_level is not None:
             query = query.eq("impact_level", impact_level)
         if tag:

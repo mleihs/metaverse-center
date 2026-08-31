@@ -1,5 +1,6 @@
 import type { AgentRelationship, ApiResponse } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class RelationshipsApiService extends BaseApiService {
   listForAgent(
@@ -16,7 +17,7 @@ export class RelationshipsApiService extends BaseApiService {
   listForSimulation(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<AgentRelationship[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/relationships`, mode, params);
   }

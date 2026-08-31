@@ -22,6 +22,7 @@ import type {
   TeamActionResult,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class EpochsApiService extends BaseApiService {
   // ── Epochs ──────────────────────────────────────────
@@ -33,10 +34,7 @@ export class EpochsApiService extends BaseApiService {
    * Epochs are a global collection, not sim-scoped; the typical caller
    * computes mode as `isAuthenticated ? 'member' : 'public'`.
    */
-  listEpochs(
-    mode: 'public' | 'member',
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<Epoch[]>> {
+  listEpochs(mode: 'public' | 'member', params?: QueryParams): Promise<ApiResponse<Epoch[]>> {
     return mode === 'public' ? this.getPublic('/epochs', params) : this.get('/epochs', params);
   }
 
@@ -197,10 +195,7 @@ export class EpochsApiService extends BaseApiService {
 
   // ── Operatives ──────────────────────────────────────
 
-  listMissions(
-    epochId: string,
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<OperativeMission[]>> {
+  listMissions(epochId: string, params?: QueryParams): Promise<ApiResponse<OperativeMission[]>> {
     return this.get(`/epochs/${epochId}/operatives`, params);
   }
 
@@ -333,7 +328,7 @@ export class EpochsApiService extends BaseApiService {
   getBattleLog(
     epochId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<BattleLogEntry[]>> {
     return mode === 'public'
       ? this.getPublic(`/epochs/${epochId}/battle-log`, params)
@@ -342,7 +337,7 @@ export class EpochsApiService extends BaseApiService {
 
   getBattleLogPublic(
     epochId: string,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<BattleLogEntry[]>> {
     return this.getPublic(`/epochs/${epochId}/battle-log`, params);
   }

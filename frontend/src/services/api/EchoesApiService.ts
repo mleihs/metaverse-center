@@ -1,11 +1,12 @@
 import type { ApiResponse, EchoVector, EventEcho } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class EchoesApiService extends BaseApiService {
   listForSimulation(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<EventEcho[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/echoes`, mode, params);
   }

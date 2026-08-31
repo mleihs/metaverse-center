@@ -5,13 +5,14 @@ import type {
   BuildingProfessionRequirement,
 } from '../../types/index.js';
 import { CrudApiService } from './CrudApiService.js';
+import type { QueryParams } from './query-params';
 
 export class BuildingsApiService extends CrudApiService<Building> {
   protected readonly resource = 'buildings';
 
   override listPublic(
     simulationId: string,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<Building[]>> {
     return super.listPublic(simulationId, params);
   }

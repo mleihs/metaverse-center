@@ -1,5 +1,6 @@
 import type { ApiResponse, Event as SimEvent, SocialTrend } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export interface BrowseArticle {
   name: string;
@@ -12,7 +13,7 @@ export class SocialTrendsApiService extends BaseApiService {
   list(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<SocialTrend[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/social-trends`, mode, params);
   }

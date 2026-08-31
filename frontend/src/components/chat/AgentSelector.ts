@@ -285,7 +285,7 @@ export class VelgAgentSelector extends LitElement {
       const response = await agentsApi.list(
         this.simulationId,
         appState.currentSimulationMode.value,
-        { page_size: '100' },
+        { limit: '100' },
       );
       if (response.success && response.data) {
         this._agents = Array.isArray(response.data) ? response.data : [];

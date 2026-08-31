@@ -1,5 +1,6 @@
 import type { ApiResponse, City, CityStreet, Zone } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class LocationsApiService extends BaseApiService {
   // --- Cities ---
@@ -7,7 +8,7 @@ export class LocationsApiService extends BaseApiService {
   listCities(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<City[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/locations/cities`, mode, params);
   }
@@ -37,7 +38,7 @@ export class LocationsApiService extends BaseApiService {
   listZones(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<Zone[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/locations/zones`, mode, params);
   }
@@ -67,7 +68,7 @@ export class LocationsApiService extends BaseApiService {
   listStreets(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<CityStreet[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/locations/streets`, mode, params);
   }

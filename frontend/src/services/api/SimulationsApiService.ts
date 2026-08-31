@@ -1,5 +1,6 @@
 import type { ApiResponse, Simulation } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class SimulationsApiService extends BaseApiService {
   /**
@@ -9,10 +10,7 @@ export class SimulationsApiService extends BaseApiService {
    * The typical caller computes mode as
    * `isAuthenticated ? 'member' : 'public'`.
    */
-  list(
-    mode: 'public' | 'member',
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<Simulation[]>> {
+  list(mode: 'public' | 'member', params?: QueryParams): Promise<ApiResponse<Simulation[]>> {
     return mode === 'public'
       ? this.getPublic('/simulations', params)
       : this.get('/simulations', params);
@@ -41,7 +39,7 @@ export class SimulationsApiService extends BaseApiService {
     return this.delete(`/simulations/${id}`);
   }
 
-  listPublic(params?: Record<string, string>): Promise<ApiResponse<Simulation[]>> {
+  listPublic(params?: QueryParams): Promise<ApiResponse<Simulation[]>> {
     return this.getPublic('/simulations', params);
   }
 

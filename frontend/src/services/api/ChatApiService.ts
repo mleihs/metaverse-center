@@ -6,6 +6,7 @@ import type {
   ChatReactionSummary,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class ChatApiService extends BaseApiService {
   listConversations(
@@ -26,7 +27,7 @@ export class ChatApiService extends BaseApiService {
     simulationId: string,
     conversationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<ChatMessage[]>> {
     return this.getSimulationData(
       `/simulations/${simulationId}/chat/conversations/${conversationId}/messages`,

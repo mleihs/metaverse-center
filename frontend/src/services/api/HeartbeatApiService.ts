@@ -11,6 +11,7 @@ import type {
   SubstrateAttunement,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class HeartbeatApiService extends BaseApiService {
   // ── Heartbeat Data ──────────────────────────────────────────
@@ -32,7 +33,7 @@ export class HeartbeatApiService extends BaseApiService {
   listEntries(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<HeartbeatEntry[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/heartbeat/entries`, mode, params);
   }
@@ -40,7 +41,7 @@ export class HeartbeatApiService extends BaseApiService {
   listArcs(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<NarrativeArc[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/heartbeat/arcs`, mode, params);
   }
@@ -50,7 +51,7 @@ export class HeartbeatApiService extends BaseApiService {
   listResponses(
     simulationId: string,
     eventId: string,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<BureauResponse[]>> {
     return this.get(`/simulations/${simulationId}/events/${eventId}/responses`, params);
   }
@@ -93,7 +94,7 @@ export class HeartbeatApiService extends BaseApiService {
 
   // ── Anchors ─────────────────────────────────────────────────
 
-  listAnchors(params?: Record<string, string>): Promise<ApiResponse<CollaborativeAnchor[]>> {
+  listAnchors(params?: QueryParams): Promise<ApiResponse<CollaborativeAnchor[]>> {
     return this.get('/anchors', params);
   }
 

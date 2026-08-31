@@ -543,7 +543,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         this.simulationId,
         conversationId,
         appState.currentSimulationMode.value,
-        { page_size: '100' },
+        { limit: '100' },
       );
 
       if (response.success && response.data) {
@@ -778,7 +778,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         this.simulationId,
         convId,
         appState.currentSimulationMode.value,
-        { page_size: '50', before },
+        { limit: '50', before },
       );
       if (response.success && Array.isArray(response.data)) {
         return response.data;

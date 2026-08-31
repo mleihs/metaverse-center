@@ -9,6 +9,7 @@ import type {
   PlatformSetting,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class AdminApiService extends BaseApiService {
   async getEnvironment(): Promise<ApiResponse<{ environment: string }>> {
@@ -192,9 +193,7 @@ export class AdminApiService extends BaseApiService {
 
   // --- Instagram Pipeline ---
 
-  async listInstagramQueue(
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<InstagramQueueItem[]>> {
+  async listInstagramQueue(params?: QueryParams): Promise<ApiResponse<InstagramQueueItem[]>> {
     return this.get('/admin/instagram/queue', params);
   }
 
@@ -210,7 +209,7 @@ export class AdminApiService extends BaseApiService {
     return this.post('/admin/instagram/generate', body);
   }
 
-  async listInstagramCandidates(params?: Record<string, string>): Promise<ApiResponse<unknown[]>> {
+  async listInstagramCandidates(params?: QueryParams): Promise<ApiResponse<unknown[]>> {
     return this.get('/admin/instagram/candidates', params);
   }
 
@@ -267,9 +266,7 @@ export class AdminApiService extends BaseApiService {
 
   // --- Bluesky Pipeline ---
 
-  async listBlueskyQueue(
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<BlueskyQueueItem[]>> {
+  async listBlueskyQueue(params?: QueryParams): Promise<ApiResponse<BlueskyQueueItem[]>> {
     return this.get('/admin/bluesky/queue', params);
   }
 
@@ -303,9 +300,7 @@ export class AdminApiService extends BaseApiService {
 
   // --- Social Stories (Resonance → Instagram Story Pipeline) ---
 
-  async listSocialStories(
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<SocialStoryItem[]>> {
+  async listSocialStories(params?: QueryParams): Promise<ApiResponse<SocialStoryItem[]>> {
     return this.get('/admin/instagram/stories', params);
   }
 
