@@ -109,7 +109,7 @@ export class ChatComposer extends LitElement {
     }
 
     .composer__textarea::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       text-transform: uppercase;
@@ -194,7 +194,7 @@ export class ChatComposer extends LitElement {
     .composer__hint {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0;
       transition: opacity var(--transition-fast);
     }
@@ -207,7 +207,7 @@ export class ChatComposer extends LitElement {
     .composer__counter {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 

@@ -59,7 +59,7 @@ export class VelgBuildingEditModal extends LitElement {
       font-weight: var(--font-black);
       font-size: var(--text-xs);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .image-section__buttons {

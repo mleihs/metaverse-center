@@ -76,7 +76,7 @@ export class VelgEmbassyLink extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .embassy__partner {
@@ -120,7 +120,7 @@ export class VelgEmbassyLink extends LitElement {
 
     .embassy__type {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: capitalize;
     }
 
@@ -143,7 +143,7 @@ export class VelgEmbassyLink extends LitElement {
 
     .embassy__vector-label {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }

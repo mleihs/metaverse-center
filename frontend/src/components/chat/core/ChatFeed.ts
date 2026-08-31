@@ -109,7 +109,7 @@ export class ChatFeed extends LitElement {
       padding: var(--space-1-5) var(--space-3);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: color var(--transition-fast), border-color var(--transition-fast);
     }
@@ -151,7 +151,7 @@ export class ChatFeed extends LitElement {
     .date-separator__label {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
       flex-shrink: 0;
       text-transform: uppercase;
@@ -174,7 +174,7 @@ export class ChatFeed extends LitElement {
       gap: var(--space-1-5);
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
     }
@@ -223,7 +223,7 @@ export class ChatFeed extends LitElement {
     .event-card__meta {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -304,7 +304,7 @@ export class ChatFeed extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* --- Conversation starters (empty state with suggestions) --- */
@@ -323,7 +323,7 @@ export class ChatFeed extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.6;
     }
 

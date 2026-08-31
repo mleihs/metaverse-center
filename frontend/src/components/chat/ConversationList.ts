@@ -76,7 +76,7 @@ export class VelgConversationList extends LitElement {
 
     .search__icon {
       flex-shrink: 0;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .search__input {
@@ -91,7 +91,7 @@ export class VelgConversationList extends LitElement {
     }
 
     .search__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       text-transform: uppercase;
@@ -107,7 +107,7 @@ export class VelgConversationList extends LitElement {
       padding: 0;
       background: transparent;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
@@ -334,7 +334,7 @@ export class VelgConversationList extends LitElement {
     .conversation__time {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .conversation__status {
@@ -366,7 +366,7 @@ export class VelgConversationList extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: var(--border-width-thin) solid var(--color-border-light);
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -408,7 +408,7 @@ export class VelgConversationList extends LitElement {
       text-align: center;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Responsive ───────────────────────────────────── */

@@ -59,7 +59,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       justify-content: center;
       width: 100%;
       height: 100%;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__content {
@@ -108,7 +108,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__detail-value {
@@ -145,13 +145,13 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__no-agents {
       font-family: var(--font-body);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -192,7 +192,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       display: block;
       margin-top: var(--space-1);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -291,7 +291,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: 1;
     }
 

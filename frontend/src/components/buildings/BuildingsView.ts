@@ -120,7 +120,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     }
 
     .legend__mark--ruined {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
   `,
   ];

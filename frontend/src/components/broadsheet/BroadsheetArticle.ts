@@ -41,7 +41,7 @@ export class VelgBroadsheetArticleEl extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.14em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         display: flex;
         align-items: center;
         gap: var(--space-1-5);
@@ -91,7 +91,7 @@ export class VelgBroadsheetArticleEl extends LitElement {
       .article__agent {
         font-family: var(--font-mono);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         letter-spacing: 0.04em;
       }
     `,

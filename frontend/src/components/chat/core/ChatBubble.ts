@@ -80,7 +80,7 @@ export class ChatBubble extends LitElement {
     /* --- System bubble (centered, muted) --- */
     .bubble--system {
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: none;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
@@ -256,7 +256,7 @@ export class ChatBubble extends LitElement {
     .code-block__lang {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -325,7 +325,7 @@ export class ChatBubble extends LitElement {
 
     /* --- Empty response placeholder --- */
     .bubble__empty {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
       font-size: var(--text-xs);
     }

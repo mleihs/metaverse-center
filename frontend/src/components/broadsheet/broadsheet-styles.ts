@@ -103,7 +103,7 @@ export const broadsheetStyles = css`
     font-weight: var(--font-black);
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     background: var(--color-surface);
     padding: 0 var(--space-3);
   }
@@ -131,7 +131,7 @@ export const broadsheetStyles = css`
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   /* ── Reading Progress Bar (scroll-driven) ────────── */
@@ -297,7 +297,7 @@ export const broadsheetStyles = css`
     flex-shrink: 0;
     font-family: var(--font-mono);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: 0.04em;
   }
 

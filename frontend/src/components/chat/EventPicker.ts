@@ -36,7 +36,7 @@ export class VelgEventPicker extends LitElement {
     }
 
     .picker__search::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       text-transform: uppercase;
@@ -126,7 +126,7 @@ export class VelgEventPicker extends LitElement {
       gap: var(--space-1);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .picker__impact-bar {
@@ -145,7 +145,7 @@ export class VelgEventPicker extends LitElement {
     .picker__item-date {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .picker__item-desc {
@@ -170,7 +170,7 @@ export class VelgEventPicker extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 640px) {

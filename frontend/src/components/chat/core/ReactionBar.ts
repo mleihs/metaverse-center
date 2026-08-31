@@ -119,7 +119,7 @@ export class ReactionBar extends LitElement {
       background: transparent;
       border: var(--border-width-thin) dashed var(--_pill-border);
       cursor: pointer;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: all var(--transition-fast);
     }
 

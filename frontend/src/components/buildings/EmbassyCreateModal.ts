@@ -39,7 +39,7 @@ export class VelgEmbassyCreateModal extends LitElement {
       .steps__item {
         padding: var(--space-1) var(--space-3);
         border: var(--border-width-default) solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .steps__item--active {
@@ -81,7 +81,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         justify-content: center;
         background: var(--color-surface-sunken);
         border: var(--border-width-thin) solid var(--color-border-light);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-size: var(--text-xs);
         flex-shrink: 0;
       }
@@ -103,7 +103,7 @@ export class VelgEmbassyCreateModal extends LitElement {
 
       .building-preview__type {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-transform: capitalize;
       }
 
@@ -133,7 +133,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .ambassador-col__preview {
@@ -177,7 +177,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
       }
 
@@ -219,7 +219,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-1);
       }
 
