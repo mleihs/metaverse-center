@@ -38,8 +38,14 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
       display: block;
     }
 
+    /* Three across, as the handoff draws it. A building card carries a full
+       prose description, not a label, and at --grid-min-width: 200px the
+       auto-fill packed five or six into a wide viewport and squeezed that
+       prose into a column two words wide. The minimum is what governs an
+       auto-fill grid, so raising it is what produces three - stating "3"
+       directly would break the narrow case the auto-fill handles for free. */
     .entity-grid {
-      --grid-min-width: 200px;
+      --grid-min-width: 320px;
       gap: var(--space-5);
     }
 
@@ -110,9 +116,14 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
         this._load();
       }
     });
+    // On the document, not the host: the dossier is a lightbox and focus may
+    // sit inside it, on the page behind it, or nowhere at all after a click on
+    // the backdrop. A listener on this element only fires for two of the three.
+    document.addEventListener('keydown', this._onKeyDown);
   }
 
   disconnectedCallback(): void {
+    document.removeEventListener('keydown', this._onKeyDown);
     this._disposeImageTracking?.();
     seoService.removeStructuredData();
     super.disconnectedCallback();
@@ -278,23 +289,62 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     }
   }
 
+  /**
+   * Step through the dossier, wrapping at both ends.
+   *
+   * ONE source for the grid, the buttons and the keyboard: `_buildings` is the
+   * filtered list (the filter runs server-side, so what the grid shows is what
+   * this steps through). That is the acceptance test the handoff names — pick
+   * a filter, press the arrows, and you must not be handed a building the grid
+   * is not showing.
+   *
+   * Wrapping rather than stopping: the previous version stopped at index 0 and
+   * at the end, so the arrow simply did nothing and looked broken. There is no
+   * "first" building in a register you browse.
+   */
+  private _stepBuilding(delta: number): void {
+    const list = this._buildings;
+    if (list.length === 0 || !this._selectedBuilding) return;
+    const idx = list.indexOf(this._selectedBuilding);
+    if (idx < 0) return;
+    const next = list[(idx + delta + list.length) % list.length];
+    if (!next || next === this._selectedBuilding) return;
+    this._pushEntityUrl(next);
+    this._openBuildingDetail(next);
+  }
+
   private _handleLightboxPrev(): void {
-    const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
-    if (idx > 0) {
-      const next = this._buildings[idx - 1];
-      this._pushEntityUrl(next);
-      this._openBuildingDetail(next);
-    }
+    this._stepBuilding(-1);
   }
 
   private _handleLightboxNext(): void {
-    const idx = this._selectedBuilding ? this._buildings.indexOf(this._selectedBuilding) : -1;
-    if (idx >= 0 && idx < this._buildings.length - 1) {
-      const next = this._buildings[idx + 1];
-      this._pushEntityUrl(next);
-      this._openBuildingDetail(next);
-    }
+    this._stepBuilding(1);
   }
+
+  /**
+   * Arrow keys step, Escape closes — but only while a dossier is open, and
+   * never while the caret is in a field. Without the field check, typing a
+   * building name into the search box would page the dossier away under the
+   * user mid-word.
+   */
+  private readonly _onKeyDown = (e: KeyboardEvent): void => {
+    if (!this._selectedBuilding) return;
+    const target = e.composedPath()[0] as HTMLElement | undefined;
+    const tag = target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable) {
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      this._stepBuilding(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      this._stepBuilding(1);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      this._selectedBuilding = null;
+    }
+  };
 
   private _handleEmbassyEstablish(e: CustomEvent<Building>): void {
     this._embassySourceBuilding = e.detail;
