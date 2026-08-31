@@ -206,3 +206,75 @@ Der Entwurf hält sich an die bestehenden Regeln: keine farbigen Kantenbalken
 außer TCG-Karten, nur versetzte Schatten, Courier-Versalien für Überschriften,
 Spectral für Erzähltext, `msg()` für jede Zeichenkette, keine Geviertstriche.
 Das ist dieselbe Sprache wie die neue Frontseite.
+
+### T6a · Verträgt sich das Paket mit dem Tokensystem? — gemessen
+
+**Frage des Nutzers am 31.08.2026: wird unser Design-System unterlaufen?**
+Gemessen, nicht beurteilt. **Nein — das Paket ist darauf GEBAUT.**
+
+Die Tokendateien, die das Paket mitbringt (`_ds/…/src/styles/tokens/`), sind
+eine **Teilmenge unserer eigenen**:
+
+    Tokens bei uns                              203
+    Tokens im Paket                             104
+      gemeinsam                                 104
+      nur im Paket                                0
+      gleicher Name, ANDERER Wert                 0
+
+Claude Design hat unsere echten Tokendateien gelesen. Der README sagt es auch
+ausdrücklich: „Colors only via tokens from `src/styles/tokens/`; hex values in
+this README identify tokens, never hardcode them."
+
+**Von den 23 Farbangaben im README decken 14 unmittelbar ein Tier-1-Token:**
+
+    #060606 --color-surface-sunken     #e5e5e5 --color-text-primary
+    #0a0a0a --color-surface            #a0a0a0 --color-text-secondary
+    #222    --color-border-light       #888    --color-text-muted
+    #333    --color-border             #ef4444 --color-danger
+    #f59e0b --color-primary            #4ade80 --color-accent-green
+    #b45309 --color-accent-amber-dim   #3b82f6 --color-info
+    #fbbf24 --color-accent-amber-hover #a78bfa --color-epoch-influence
+
+Die übrigen neun brauchen kein neues Token, sondern eine bestehende Antwort:
+
+| README | Antwort im System |
+|---|---|
+| `4px 4px 0 #000` | `--shadow-md` — zeichengleich |
+| `6px 6px 0 #000` | `--shadow-lg` — zeichengleich |
+| `rgba(239,68,68,.07)` | `--color-danger-bg` (Tier 2, `color-mix` 8 %) |
+| `#0d0d0d` (Hover) | Tier 3 per `color-mix`; es gibt `--color-surface-raised: #111111` |
+| `#1a1a1a` | Tier 3, zwischen `--color-surface-raised` und `--color-border-light` |
+| `#555`, `#666` | Tier 3 unter `--color-text-muted` (#888); Vorbild: `--color-text-tertiary` ist bereits ein `color-mix` |
+| `#64748b` `#10b981` `#dc2626` | **existieren bereits** in `frontend/src/utils/operative-constants.ts` und in `docs/explanations/tcg-card-system.md` |
+
+**Der einzige echte Riss, und er ist ÄLTER als das Paket:** die
+Operativ-Farben stehen als rohe Hex-Werte in einer TypeScript-Konstantendatei
+statt in `_colors.css`. Das Paket benutzt sie korrekt, aber es macht sichtbar,
+dass eine Farbfamilie des Werks am Tokensystem vorbei lebt.
+→ Eigener Punkt, unabhängig vom Dashboard.
+
+#### Wo es NICHT aufgeht: Größen
+
+Die Abstände des Entwurfs treffen unsere Skala fast durchweg:
+
+    40px --space-10   48px --space-12   56px --space-14
+    24px --space-6    28px --space-7    14px --space-3-5
+
+Zwei Ausnahmen: **44 px** (Befehlsleiste) liegt zwischen `--space-10` und
+`--space-12`, und die Segmentleiste (`22×8px`) hat gar keine Entsprechung.
+
+Und die Schriftgrößen sind der eigentliche Punkt:
+
+    unsere Skala endet bei --text-3xl = 39 px
+    der Entwurf verlangt   60 px (Countdown), 69 px ab 2560
+
+🔑 **Für die kinematische Bühne gibt es keine Stufe.** Das ist keine
+Nachlässigkeit des Entwurfs, sondern eine echte Lücke: unsere Skala ist für
+Arbeitsflächen gebaut, nicht für eine Bühne. Zu entscheiden ist, ob sie eine
+Anzeigestufe bekommt (`--text-4xl` / `--text-display`) oder ob der Countdown
+seine Größe als Tier-3-`--_countdown-size` selbst trägt.
+
+⚠ Und dazu die Zahl, die dabei herauskam: **986 fest verdrahtete
+`font-size: NNpx` stehen bereits in Komponenten.** `lint-color-tokens.sh` prüft
+nur Farben; für Größen gibt es **kein Tor**. Eine Anzeigestufe einzuführen und
+kein Tor dafür zu bauen hiesse, die 987. Ausnahme zu schaffen.
