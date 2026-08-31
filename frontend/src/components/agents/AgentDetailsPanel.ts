@@ -51,6 +51,8 @@ import './RelationshipCard.js';
 import './RelationshipEditModal.js';
 import './VelgIntelCard.js';
 import { buildAptitudeIndex } from '../../utils/aptitudes.js';
+import '../shared/VelgMetricExplainer.js';
+import { INFLUENCE_FORMULA } from '../../utils/metric-formulas.js';
 
 @localized()
 @customElement('velg-agent-details-panel')
@@ -1004,6 +1006,13 @@ export class VelgAgentDetailsPanel extends LitElement {
     this._selectedSuggestions = new Set();
   }
 
+  /** Die fünf stärksten Beziehungen, wie sie auch der Server wählt. */
+  private _strongestRelationships() {
+    return [...this._relationships]
+      .sort((a, b) => (b.intensity ?? 5) - (a.intensity ?? 5))
+      .slice(0, 5);
+  }
+
   private _computeInfluence(): {
     score: number;
     relationshipWeight: number;
@@ -1014,11 +1023,15 @@ export class VelgAgentDetailsPanel extends LitElement {
     if (!agent)
       return { score: 0, relationshipWeight: 0, professionWeight: 0, ambassadorWeight: 0 };
 
-    // Relationship influence: sum of intensities / max possible (capped at 5 rels)
-    const relCount = Math.min(this._relationships.length, 5);
-    const relIntensitySum = this._relationships
-      .slice(0, 5)
-      .reduce((sum, r) => sum + (r.intensity ?? 5), 0);
+    // Relationship influence: mean intensity of the STRONGEST five.
+    // `fn_compute_agent_influence` orders by intensity DESC before its LIMIT 5;
+    // this used to slice the first five in whatever order the list arrived in.
+    // On today's data no agent holds more than two relationships, so the two
+    // readings cannot differ yet — which is exactly why it would have gone
+    // unnoticed until the day they do.
+    const strongest = this._strongestRelationships();
+    const relCount = strongest.length;
+    const relIntensitySum = strongest.reduce((sum, r) => sum + (r.intensity ?? 5), 0);
     const relationshipWeight = relCount > 0 ? relIntensitySum / (relCount * 10) : 0;
 
     // Profession influence: avg qualification / 10
@@ -1053,12 +1066,11 @@ export class VelgAgentDetailsPanel extends LitElement {
       tier === 'weak' ? msg('WEAK') : tier === 'strong' ? msg('STRONG') : msg('AVG');
 
     // Natural language: relationships
-    const relCount = Math.min(this._relationships.length, 5);
+    const strongest = this._strongestRelationships();
+    const relCount = strongest.length;
     const avgIntensity =
       relCount > 0
-        ? Math.round(
-            this._relationships.slice(0, 5).reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount,
-          )
+        ? Math.round(strongest.reduce((s, r) => s + (r.intensity ?? 5), 0) / relCount)
         : 0;
     // Same rule as the agent count: the plural form is grammar, so each case is
     // its own complete message. `${n === 1 ? 'ally' : 'allies'}` interpolated an
@@ -1087,6 +1099,12 @@ export class VelgAgentDetailsPanel extends LitElement {
         <div class="panel__influence-header">
           <span class="panel__influence-label">
             ${msg('Influence')}
+            <velg-metric-explainer
+              .metric=${msg('Influence')}
+              .what=${msg('How much weight this agent carries in the buildings they are assigned to. It feeds one of the four readiness factors.')}
+              .why=${msg(str`Their five strongest relationships count ${INFLUENCE_FORMULA.relationsPct}, their professional qualification ${INFLUENCE_FORMULA.professionsPct}, and holding an ambassador post ${INFLUENCE_FORMULA.ambassadorPct}. Qualification runs from 1 to 5 but is scored out of 10, so professions contribute at most ${INFLUENCE_FORMULA.professionsPct / 2}.`)}
+              .action=${msg(str`Relationships are the part that moves. Without an ambassador post the score stops at ${INFLUENCE_FORMULA.ceilingWithoutAmbassadorPct} percent, which is exactly where the STRONG tier begins.`)}
+            ></velg-metric-explainer>
             <span class="panel__tier panel__tier--${tier}">${tierLabel}</span>
           </span>
           <span class="panel__influence-value" style="color: ${color}">${pct}%</span>

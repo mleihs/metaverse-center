@@ -3,6 +3,8 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Zone, ZoneStability } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import '../shared/VelgMetricExplainer.js';
+import { EVENT_MULTIPLIER, ZONE_STABILITY_FORMULA } from '../../utils/metric-formulas.js';
 
 /** Ambient weather data for a zone (from heartbeat entries).
  * Field naming follows t() convention: `narrative` (EN) + `narrative_de` (DE).
@@ -459,6 +461,12 @@ export class VelgZoneList extends LitElement {
       <div class="item__event-risk ${tier === 'high' ? 'item__event-risk--high' : tier === 'critical' ? 'item__event-risk--critical' : ''}"
         aria-label=${msg(str`Event risk: ${this._riskLabel(tier)}`)}>
         <span class="item__risk-tier item__risk-tier--${tier}">${this._riskLabel(tier)}</span>
+        <velg-metric-explainer
+          .metric=${msg('Event risk')}
+          .what=${msg('How much more or less often events strike this zone compared to an average one.')}
+          .why=${msg(str`It follows zone stability along a fixed curve: ${EVENT_MULTIPLIER.max}x at a stability of 10 percent or below, 1.0x at ${EVENT_MULTIPLIER.baselineAt} percent, and ${EVENT_MULTIPLIER.min}x at 90 percent.`)}
+          .action=${msg(str`Raise stability to lower the multiplier. Since stability itself stops at ${ZONE_STABILITY_FORMULA.ceilingPct} percent, the lowest reachable multiplier is about ${EVENT_MULTIPLIER.reachableMin}x.`)}
+        ></velg-metric-explainer>
         <span class="item__risk-multiplier">${multiplier.toFixed(1)}x</span>
         ${riskHint ? html`<span class="item__risk-hint">${riskHint}</span>` : nothing}
       </div>

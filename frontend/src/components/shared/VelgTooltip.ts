@@ -79,7 +79,7 @@ export class VelgTooltip extends LitElement {
     .tip::after {
       content: '';
       position: absolute;
-      left: 50%;
+      left: var(--_arrow-x, 50%);
       transform: translateX(-50%);
       border: 5px solid transparent;
     }
@@ -117,6 +117,22 @@ export class VelgTooltip extends LitElement {
       line-height: 1.5;
     }
 
+    /* Kennzahl-Erklärung (H7): drei Teile — Was / Warum / Was tun. Braucht mehr
+       Breite als die Info-Variante, sonst bricht jede Zeile mehrfach um und
+       die drei Teile verlieren ihre Gestalt. */
+    .tip--explainer {
+      white-space: normal;
+      width: min(320px, 92vw);
+      /* .tip--rich gilt gleichzeitig (es gibt Schlitzinhalt) und deckelt mit
+         max-width: 260px. Ohne diese Zeile ist die Breite oben wirkungslos. */
+      max-width: min(320px, 92vw);
+      padding: var(--space-3);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      line-height: var(--leading-normal);
+      text-align: left;
+    }
+
     /* Hide when no content at all */
     .tip[hidden] {
       display: none !important;
@@ -145,8 +161,11 @@ export class VelgTooltip extends LitElement {
   /** Position relative to the trigger element. */
   @property({ reflect: true }) position: 'above' | 'below' = 'above';
 
-  /** Variant: 'default' for compact mono, 'info' for wider info-bubble style. */
-  @property() variant: 'default' | 'info' = 'default';
+  /**
+   * Variant: 'default' for compact mono, 'info' for wider info-bubble style,
+   * 'explainer' for the three-part metric explanation (H7).
+   */
+  @property() variant: 'default' | 'info' | 'explainer' = 'default';
 
   /** Tracks whether the named `tip` slot has slotted content. */
   @state() private _hasSlottedTip = false;
@@ -205,10 +224,27 @@ export class VelgTooltip extends LitElement {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Horizontal: center on trigger, clamp to viewport (16px margin)
+    // Horizontal: auf den Auslöser zentrieren und die BOX im Bild halten.
+    //
+    // Bis 31.08.2026 stand hier `Math.max(margin, Math.min(centerX, vw - margin))`
+    // mit dem Kommentar „clamp to viewport". Geklemmt wurde aber der MITTELPUNKT,
+    // und die Box hängt an `translateX(-50%)` — sie reicht also je eine halbe
+    // Breite nach beiden Seiten darüber hinaus. Gemessen mit einer 336 px
+    // breiten Blase am Fensterrand: links 152 px, rechts 138 px außerhalb des
+    // Bildes. Der Kommentar beschrieb eine Absicht, die der Code nie ausführte.
     const centerX = rect.left + rect.width / 2;
     const margin = 16;
-    const left = Math.max(margin, Math.min(centerX, vw - margin));
+    const tipEl = this.shadowRoot?.querySelector('.tip') as HTMLElement | null;
+    // `.tip` ist versteckt, aber nicht `display: none` — es hat Maße.
+    const half = (tipEl?.offsetWidth ?? 0) / 2;
+    const minLeft = margin + half;
+    const maxLeft = vw - margin - half;
+    // Passt die Blase überhaupt nicht ins Fenster, ist die Mitte das kleinste
+    // Übel: dann ragt sie beidseitig gleich weit hinaus statt einseitig ganz.
+    const left = maxLeft < minLeft ? vw / 2 : Math.min(Math.max(centerX, minLeft), maxLeft);
+    // Der Pfeil zeigt weiterhin auf den Auslöser, auch wenn die Box verschoben
+    // wurde. Ohne das behauptet er, zu einem anderen Element zu gehören.
+    const arrowX = half > 0 ? Math.min(Math.max(centerX - (left - half), 10), half * 2 - 10) : 0;
 
     // Auto-flip: if preferred position has no room, flip
     let pos = this.position;
@@ -222,6 +258,7 @@ export class VelgTooltip extends LitElement {
         left: `${left}px`,
         bottom: 'auto',
         '--_arrow-side': 'top',
+        '--_arrow-x': half > 0 ? `${arrowX}px` : '50%',
       };
     } else {
       this._tipPos = {
@@ -229,6 +266,7 @@ export class VelgTooltip extends LitElement {
         left: `${left}px`,
         top: 'auto',
         '--_arrow-side': 'bottom',
+        '--_arrow-x': half > 0 ? `${arrowX}px` : '50%',
       };
     }
     this._visible = true;
@@ -257,6 +295,7 @@ export class VelgTooltip extends LitElement {
       tip: true,
       'tip--rich': this._hasSlottedTip,
       'tip--info': this.variant === 'info',
+      'tip--explainer': this.variant === 'explainer',
       'tip--visible': this._visible,
       'tip--above': this._resolvedPos === 'above',
       'tip--below': this._resolvedPos === 'below',
