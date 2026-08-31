@@ -18,9 +18,12 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Final
 from uuid import UUID
 
+import httpx
 import structlog
+from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -111,6 +114,19 @@ STACKING_CAPS: dict[str, int] = {
 DEFAULT_STACKING_CAP = 5
 
 # Relationship thresholds
+# Die Ereignistypen, die dieser Dienst meldet — EINE Deklaration.
+#
+# Sie stand vorher nur als Zeichenkette an der Emissionsstelle. Als D10/S18 die
+# beiden Zweige zu einer Schleife zusammenfasste, fand das Chronik-Tor
+# (`test_chronicle_state_words.py`) sie nicht mehr und wurde rot, obwohl sich
+# an den Typen nichts geändert hatte: es suchte eine CODEFORM statt der Sache.
+# Eine Deklaration ist der Ort, an dem beide nachsehen können — dasselbe
+# Muster wie `HEARTBEAT_ENTRY_TYPES` im Herzschlag.
+RELATIONSHIP_EVENT_TYPES: Final[tuple[str, ...]] = (
+    "relationship_breakthrough",
+    "relationship_breakdown",
+)
+
 RELATIONSHIP_CREATE_THRESHOLD = 60  # Opinion > 60 → auto-create positive relationship
 RELATIONSHIP_HOSTILE_THRESHOLD = -60  # Opinion < -60 → auto-create/modify to hostile
 
@@ -397,55 +413,128 @@ class AgentOpinionService:
         supabase: Client,
         simulation_id: UUID,
     ) -> list[dict]:
-        """Check if any opinions crossed relationship creation/modification thresholds."""
+        """Überschrittene Meinungsschwellen: Beziehung ANLEGEN und melden.
+
+        ── Was hier nicht stimmte (D10/S18) ────────────────────────────────
+
+        Die Konstanten heißen ``RELATIONSHIP_CREATE_THRESHOLD`` („Opinion > 60
+        → auto-create positive relationship") und
+        ``RELATIONSHIP_HOSTILE_THRESHOLD`` („→ auto-create/modify to hostile").
+        Gemessen am 31.08.2026: **im ganzen Backend fügt nichts in
+        ``agent_relationships`` ein.** Die Namen versprachen eine Automatik,
+        die nie gebaut wurde; die 48 Bestandsbeziehungen auf Prod stammen aus
+        der Schmiede.
+
+        Daraus folgten zwei Defekte, die sich gegenseitig verdeckten:
+
+        1. Der Durchbruch-Zweig prüfte ``if not existing`` — eine Entdopplung,
+           die NIE greifen konnte, weil nie jemand die Zeile anlegte, deren
+           Vorhandensein sie prüft. Dasselbe Paar hätte in jedem Tick erneut
+           gemeldet.
+        2. Der Bruch-Zweig prüfte gar nichts. Symmetrisch wäre schon vorher
+           nötig gewesen; ohne den Insert wäre es nur derselbe Leerlauf in
+           zwei Ausführungen.
+
+        Es fiel nicht auf, weil keine Meinung die Schwelle je erreicht: die
+        Spanne auf Prod ist 0 … 45 gegen ein Tor von ±60 (Befund N5). Der
+        Fehler wartet also auf genau den Tag, an dem die Schwellen gerichtet
+        werden — und hätte dann in jedem Tick dieselben Paare gemeldet.
+
+        ── Was jetzt passiert ──────────────────────────────────────────────
+
+        Beide Zweige legen die Beziehung an und melden NUR, wenn sie neu ist.
+        Damit ist die Entdopplung zum ersten Mal wirksam, und die
+        Konstantennamen sagen die Wahrheit.
+
+        ``is_bidirectional`` bleibt bei der Vorgabe ``true``: eine Meinung ist
+        gerichtet, eine Beziehung im Sinne dieser Tabelle nicht — und die
+        Gegenrichtung würde beim nächsten Tick ohnehin dieselbe Zeile finden.
+        """
         events: list[dict] = []
 
-        # Find opinions above create threshold
-        high_result = await (
-            supabase.table("agent_opinions")
-            .select("agent_id, target_agent_id, opinion_score")
-            .eq("simulation_id", str(simulation_id))
-            .gte("opinion_score", RELATIONSHIP_CREATE_THRESHOLD)
-            .execute()
-        )
-
-        for opinion in extract_list(high_result):
-            # Check if relationship already exists
-            existing = await maybe_single_data(
-                supabase.table("agent_relationships")
-                .select("id")
-                .eq("source_agent_id", opinion["agent_id"])
-                .eq("target_agent_id", opinion["target_agent_id"])
-                .maybe_single()
+        for threshold_op, threshold, event_type, rel_type, description in (
+            (
+                "gte",
+                RELATIONSHIP_CREATE_THRESHOLD,
+                RELATIONSHIP_EVENT_TYPES[0],
+                "trading_partner",
+                "Formed from sustained positive opinion.",
+            ),
+            (
+                "lte",
+                RELATIONSHIP_HOSTILE_THRESHOLD,
+                RELATIONSHIP_EVENT_TYPES[1],
+                "rival",
+                "Formed from sustained hostile opinion.",
+            ),
+        ):
+            query = (
+                supabase.table("agent_opinions")
+                .select("agent_id, target_agent_id, opinion_score")
+                .eq("simulation_id", str(simulation_id))
             )
-            if not existing:
+            query = (
+                query.gte("opinion_score", threshold)
+                if threshold_op == "gte"
+                else query.lte("opinion_score", threshold)
+            )
+            result = await query.execute()
+
+            for opinion in extract_list(result):
+                existing = await maybe_single_data(
+                    supabase.table("agent_relationships")
+                    .select("id")
+                    .eq("source_agent_id", opinion["agent_id"])
+                    .eq("target_agent_id", opinion["target_agent_id"])
+                    .maybe_single()
+                )
+                if existing:
+                    continue
+
+                # Die Beziehung anlegen — das ist, was die Konstante verspricht.
+                # Nicht tödlich: schlägt der Insert fehl (Wettlauf mit einem
+                # anderen Tick, gelöschter Agent), soll der Tick weiterlaufen.
+                # Ohne Zeile wird beim nächsten Tick erneut versucht — das ist
+                # der richtige Ausfallweg, denn die Meinung steht ja weiterhin
+                # über der Schwelle.
+                try:
+                    await (
+                        supabase.table("agent_relationships")
+                        .insert(
+                            {
+                                "simulation_id": str(simulation_id),
+                                "source_agent_id": opinion["agent_id"],
+                                "target_agent_id": opinion["target_agent_id"],
+                                "relationship_type": rel_type,
+                                "description": description,
+                                "metadata": {
+                                    "created_by": "opinion_threshold",
+                                    "opinion_score": opinion["opinion_score"],
+                                },
+                            }
+                        )
+                        .execute()
+                    )
+                except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                    logger.warning(
+                        "Beziehung aus Meinungsschwelle konnte nicht angelegt werden",
+                        extra={
+                            "simulation_id": str(simulation_id),
+                            "agent_id": opinion["agent_id"],
+                            "target_agent_id": opinion["target_agent_id"],
+                        },
+                        exc_info=True,
+                    )
+                    continue
+
                 events.append(
                     {
-                        "type": "relationship_breakthrough",
+                        "type": event_type,
                         "agent_id": opinion["agent_id"],
                         "target_agent_id": opinion["target_agent_id"],
                         "opinion_score": opinion["opinion_score"],
                     }
                 )
-
-        # Find opinions below hostile threshold
-        low_result = await (
-            supabase.table("agent_opinions")
-            .select("agent_id, target_agent_id, opinion_score")
-            .eq("simulation_id", str(simulation_id))
-            .lte("opinion_score", RELATIONSHIP_HOSTILE_THRESHOLD)
-            .execute()
-        )
-
-        for opinion in extract_list(low_result):
-            events.append(
-                {
-                    "type": "relationship_breakdown",
-                    "agent_id": opinion["agent_id"],
-                    "target_agent_id": opinion["target_agent_id"],
-                    "opinion_score": opinion["opinion_score"],
-                }
-            )
 
         if events:
             logger.info(

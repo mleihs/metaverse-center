@@ -30,6 +30,7 @@ import ast
 import re
 from pathlib import Path
 
+from backend.services.agent_opinion_service import RELATIONSHIP_EVENT_TYPES
 from backend.services.heartbeat_entry_builder import _STATE_WORDS_DE, state_word_de
 
 _ROOT = Path(__file__).resolve().parents[3]
@@ -138,22 +139,23 @@ def test_every_event_status_has_a_german_word() -> None:
 
 def test_every_relationship_event_type_has_a_german_word() -> None:
     """Die Typen, die `agent_opinion_service` in `relationship_events` schreibt."""
-    tree = ast.parse(_OPINION.read_text(encoding="utf-8"))
-    types: set[str] = set()
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Dict):
-            continue
-        for key, value in zip(node.keys, node.values, strict=False):
-            if (
-                isinstance(key, ast.Constant)
-                and key.value == "type"
-                and isinstance(value, ast.Constant)
-                and isinstance(value.value, str)
-                and value.value.startswith("relationship_")
-            ):
-                types.add(value.value)
+    # Zwei Entwürfe dieses Scans lagen daneben, in beide Richtungen — und das
+    # ist der Grund, warum die Quelle jetzt eine DEKLARATION hat:
+    #
+    #  1. zu eng: gesucht wurde `{"type": "relationship_…"}`, also eine
+    #     CODEFORM. Als D10/S18 die beiden Zweige zu einer Schleife
+    #     zusammenfasste, fand der Scan null und wurde rot, obwohl sich an den
+    #     Typen nichts geändert hatte.
+    #  2. zu weit: „jede Zeichenkette mit dem Präfix" fing prompt den
+    #     Spaltennamen `relationship_type` und den Dict-Schlüssel
+    #     `relationship_events` mit ein.
+    #
+    # Beides ist J3c, einmal in jede Richtung. Der Ausweg ist keine dritte
+    # Suchheuristik, sondern eine Stelle, an der die Antwort STEHT —
+    # `RELATIONSHIP_EVENT_TYPES`, nach dem Muster von `HEARTBEAT_ENTRY_TYPES`.
+    types = set(RELATIONSHIP_EVENT_TYPES)
+    assert types, "RELATIONSHIP_EVENT_TYPES ist leer — die Deklaration prüft dann nichts"
 
-    assert types, "keine relationship_*-Typen in agent_opinion_service gefunden — der Scan zeigt ins Leere"
     missing = sorted(t for t in types if t not in _STATE_WORDS_DE)
     assert not missing, f"Beziehungsereignis ohne deutsches Wort: {missing}"
 
