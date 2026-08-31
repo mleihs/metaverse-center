@@ -256,7 +256,6 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       padding: var(--space-2) var(--space-3) var(--space-2) var(--space-3);
       background: none;
       border: none;
-      border-left: 2px solid transparent;
       font: inherit;
       letter-spacing: inherit;
       color: var(--color-text-secondary);
@@ -291,7 +290,6 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     .breadcrumb__option:focus-visible {
       background: color-mix(in srgb, var(--color-primary) 10%, transparent);
       color: var(--color-primary);
-      border-left-color: var(--color-primary);
       padding-left: var(--space-4);
     }
 
@@ -299,10 +297,18 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       outline: none;
     }
 
-    .breadcrumb__option[aria-current="true"] {
+    /*
+     * The current world in the switcher used to wear a 2px amber slab down its
+     * left edge — the device the platform tabu removes, split across two rules
+     * (the width sat here as transparent, the colour in the modifier) so the CI
+     * gate never saw it. It now uses the shared selection marking, which is the same tint
+     * it already had plus a hairline that closes the shape.
+     */
+    .breadcrumb__option[aria-current='true'] {
       color: var(--color-primary);
-      border-left-color: var(--color-primary);
-      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      background: color-mix(in srgb, var(--color-accent-amber) 6%, transparent);
+      outline: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+      outline-offset: -1px;
     }
 
     .shell__content {
@@ -314,7 +320,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       margin-inline: auto;
     }
 
-    /* Immersive views (Dungeon HUD) — fill full width, no padding */
+    /* Full-height views (Dungeon HUD, Chat cockpit) — full width, no padding */
     .shell__content--immersive {
       max-width: 100%;
       padding: 0;
@@ -1070,7 +1076,22 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
         <div class=${classMap({
           shell__content: true,
           shell__overlays: true,
-          'shell__content--immersive': this.view === 'dungeon',
+          /*
+           * The same set that decides the footer, eleven lines below — and for
+           * the same reason. `FULL_HEIGHT_VIEWS` was introduced to replace a
+           * bare `view === 'dungeon'` comparison with a named set, but only the
+           * footer was switched over; this line kept the comparison, so the set
+           * was half-adopted and the chat inherited a container it does not want.
+           *
+           * Measured: `.shell__content` caps at `--container-2xl` (1400px, and
+           * 1600px above the wide breakpoint) and centres itself. On a 2560px
+           * screen that parks the chat in a 1600px box with ~480px of dead
+           * margin on each side — the cockpit rule of the 2026-08-31 handoff
+           * names exactly that empty strip left of the sidebar as its failure
+           * condition. A view that owns the whole viewport vertically owns it
+           * horizontally too; there is no view that wants one and not the other.
+           */
+          'shell__content--immersive': FULL_HEIGHT_VIEWS.has(this.view),
         })}>
           ${
             hasBleeds
