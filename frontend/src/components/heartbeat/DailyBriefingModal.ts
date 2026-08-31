@@ -14,7 +14,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { t } from '../../utils/locale-fields.js';
+import { entryNarrative } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
 import '../shared/VelgDispatchStamp.js';
@@ -887,10 +887,7 @@ export class VelgDailyBriefing extends LitElement {
       <div class="weather-section">
         <div class="dispatch-section-label">${msg('Ambient Conditions')}</div>
         ${zones.map((zone) => {
-          const narrative = t(
-            { narrative: zone.narrative_en, narrative_de: zone.narrative_de },
-            'narrative',
-          ) as string;
+          const narrative = entryNarrative(zone);
           return html`
             <div class="weather-zone">
               <span class="weather-zone__name">${zone.zone_name}</span>

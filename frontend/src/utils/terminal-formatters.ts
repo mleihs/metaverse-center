@@ -23,6 +23,7 @@ import type {
   ZoneStability,
 } from '../types/index.js';
 import type { TerminalCommand, TerminalLine, TerminalLineMeta } from '../types/terminal.js';
+import { entryNarrative } from './locale-fields.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -365,8 +366,9 @@ export function formatWeather(entry: HeartbeatEntry | null): TerminalLine[] {
   lines.push(responseLine(msg('CURRENT CONDITIONS')));
 
   // Narrative is the primary content
-  if (entry.narrative_en) {
-    lines.push(responseLine(entry.narrative_en));
+  const weatherNarrative = entryNarrative(entry);
+  if (weatherNarrative) {
+    lines.push(responseLine(weatherNarrative));
   }
 
   // Extract structured data if available in metadata
@@ -754,7 +756,7 @@ export function formatFeedEntry(
       channel = isLocal ? 'INTEL' : 'DISTANT';
   }
 
-  const narrative = entry.narrative_en || entry.entry_type;
+  const narrative = entryNarrative(entry) || entry.entry_type;
 
   // Build content: non-local non-weather entries get [DISTANT] prefix before channel tag.
   // When channel is already DISTANT, skip the redundant prefix.

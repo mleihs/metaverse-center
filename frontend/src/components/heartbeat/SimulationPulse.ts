@@ -25,6 +25,7 @@ import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
 import './AgentLifeTimeline.js';
 import type { HeartbeatEntry, HeartbeatEntryType, HeartbeatOverview } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import { entryNarrative } from '../../utils/locale-fields.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 
 type FilterKey =
@@ -1270,7 +1271,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
             ${entry.severity === 'warning' ? html`<span class="severity-badge severity-badge--warning">${msg('Warning')}</span>` : nothing}
             ${entry.severity === 'positive' ? html`<span class="severity-badge severity-badge--positive">${msg('Positive')}</span>` : nothing}
           </span>
-          <span class="entry__narrative">${entry.narrative_en}</span>
+          <span class="entry__narrative">${entryNarrative(entry)}</span>
         </div>
         <span class="entry__meta">${this._formatRelativeTime(entry.created_at)}</span>
       </div>

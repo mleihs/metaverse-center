@@ -37,7 +37,7 @@ from backend.services.autonomous_event_service import AutonomousEventService
 from backend.services.bond.whisper_service import WhisperService
 from backend.services.bureau_response_service import BureauResponseService
 from backend.services.game_mechanics_service import GameMechanicsService
-from backend.services.heartbeat_entry_builder import make_heartbeat_entry
+from backend.services.heartbeat_entry_builder import make_heartbeat_entry, state_word_de
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.services.simulation_setting_contracts import (
@@ -1184,7 +1184,7 @@ class HeartbeatService(BaseSchedulerMixin):
                             tick_number,
                             entry_type,
                             f"'{title}' transitioned to {new_status}. Pressure contribution {pressure_msg}.",
-                            f"'{title}' wechselte zu {new_status}. Druckbeitrag {druck_msg}.",
+                            f"'{title}' wechselte zu {state_word_de(new_status)}. Druckbeitrag {druck_msg}.",
                             severity="positive" if new_status == "resolved" else "info",
                             metadata={"event_id": event_id, "old_status": old_status, "new_status": new_status},
                         )
@@ -1214,7 +1214,7 @@ class HeartbeatService(BaseSchedulerMixin):
                         "event_aging",
                         f"'{title}' has been {old_status} for {ticks} ticks. "
                         f"Auto-{auto_en} in {remaining} more tick(s).",
-                        f"'{title}' ist seit {ticks} Ticks {old_status}. "
+                        f"'{title}' ist seit {ticks} Ticks {state_word_de(old_status)}. "
                         f"Automatische {auto_de} in {remaining} weiteren Tick(s).",
                         severity="warning" if old_status == "active" else "info",
                         metadata={"event_id": event_id, "ticks_in_status": ticks, "remaining": remaining},
@@ -1328,7 +1328,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     tick_number,
                     "scar_tissue",
                     f"Substrate scar tissue {direction} ({scar_delta:+.4f}).",
-                    f"Substrat-Narbengewebe {direction} ({scar_delta:+.4f}).",
+                    f"Substrat-Narbengewebe {state_word_de(direction)} ({scar_delta:+.4f}).",
                     severity="warning" if scar_delta > 0 else "positive",
                     metadata={"scar_delta": scar_delta},
                 )
@@ -1402,7 +1402,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     tick_number,
                     "relationship_shift",
                     f"Relationship {evt_type}: {a_id}... / {t_id}...",
-                    f"Beziehung ({evt_type}): {a_id}... / {t_id}...",
+                    f"Beziehung ({state_word_de(evt_type)}): {a_id}... / {t_id}...",
                     severity=sev,
                     metadata=rel_event,
                 )

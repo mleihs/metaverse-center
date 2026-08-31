@@ -56,6 +56,52 @@ HEARTBEAT_ENTRY_TYPES: Final[tuple[str, ...]] = (
 )
 
 
+# ── Das Zustandsvokabular der Chronik ────────────────────────────────────────
+#
+# Der deutsche Chroniktext ist keine Übersetzung des englischen, sondern ein
+# zweiter, gleichrangiger Text — beide werden an derselben Stelle von Hand
+# geschrieben. Genau deshalb ist die Fehlerart hier eine besondere: es fällt
+# nichts aus, wenn im deutschen Satz ein englischer Statusname stehen bleibt.
+# Der Satz ist grammatisch heil, er liest sich nur halb.
+#
+# Gemessen am 31.08.2026 per AST über alle 17 `make_heartbeat_entry`-Aufrufe
+# der `HeartbeatService`: VIER deutsche Erzähltexte interpolierten einen
+# englischen Bezeichner — `{direction}` („deepening"/„healing"),
+# `{new_status}`, `{old_status}` und `{evt_type}`. Der Prüfbericht führte
+# eine davon. Die anderen drei standen unmittelbar neben Stellen, an denen
+# derselbe Autor das Paar `pressure_msg`/`druck_msg` bereits von Hand gebildet
+# hatte — die Form war also bekannt, sie wurde nur nicht durchgehalten. Und das
+# ist der Grund, warum das hier eine TABELLE wird und keine fünfte Ternärzeile:
+# ein Paar, das man von Hand bildet, bildet man irgendwo nicht.
+#
+# Wer einen neuen Status einführt, ergänzt ihn hier; `_de` fällt auf den
+# englischen Wert zurück, damit ein fehlender Eintrag einen sichtbaren Rest
+# hinterlässt und keine leere Lücke im Satz.
+_STATE_WORDS_DE: Final[dict[str, str]] = {
+    # Ereignis-Lebenslauf (events.status)
+    "active": "aktiv",
+    "escalating": "eskalierend",
+    "resolving": "in Auflösung",
+    "resolved": "aufgelöst",
+    "archived": "archiviert",
+    # Narbengewebe-Richtung
+    "deepening": "vertieft sich",
+    "healing": "heilt",
+    # Beziehungsschwellen (agent_opinion_service)
+    "relationship_breakthrough": "Durchbruch",
+    "relationship_breakdown": "Bruch",
+}
+
+
+def state_word_de(value: str) -> str:
+    """Deutsches Wort für einen Zustandsbezeichner der Chronik.
+
+    Rückfall auf den Bezeichner selbst: ein unbekannter Status soll im
+    deutschen Satz sichtbar bleiben (und damit auffindbar), nicht verschwinden.
+    """
+    return _STATE_WORDS_DE.get(value, value)
+
+
 def make_heartbeat_entry(
     heartbeat_id: UUID,
     sim_id: UUID,
