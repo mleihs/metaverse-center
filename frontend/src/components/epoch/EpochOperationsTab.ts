@@ -92,16 +92,7 @@ export class VelgEpochOperationsTab extends LitElement {
       gap: var(--space-3);
       padding: var(--space-2) 0;
       border-bottom: 1px solid var(--color-border-light);
-      border-left: 2px solid transparent;
       transition: all var(--transition-normal);
-    }
-
-    .mission--defensive {
-      border-left-color: var(--color-success);
-    }
-
-    .mission--offensive {
-      border-left-color: var(--color-warning);
     }
 
     .mission:hover {
@@ -352,7 +343,7 @@ export class VelgEpochOperationsTab extends LitElement {
         <div class="panel__body">
           ${forts.map(
             (f) => html`
-              <div class="mission ${f.isExpired ? '' : 'mission--defensive'}">
+              <div class="mission">
                 <div class="mission__icon">${icons.fortify(14)}</div>
                 <div class="mission__info">
                   <div class="mission__type">${f.zoneName}</div>
@@ -375,13 +366,12 @@ export class VelgEpochOperationsTab extends LitElement {
     const canRecall =
       ['deploying', 'active'].includes(m.status) &&
       !['completed', 'cancelled'].includes(this.epochStatus);
-    const isDefensive = m.operative_type === 'guardian';
     const isCompleted = ['success', 'failed', 'detected', 'captured'].includes(m.status);
     const narrative = (m as OperativeMission & { mission_result?: { narrative?: string } })
       .mission_result?.narrative;
 
     return html`
-      <div class="mission ${isDefensive ? 'mission--defensive' : 'mission--offensive'}">
+      <div class="mission">
         <div class="mission__icon">${getOperativeIcon(m.operative_type)}</div>
         <div class="mission__info">
           <div class="mission__type">

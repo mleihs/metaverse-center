@@ -231,7 +231,6 @@ export const contentStyles = css`
     font-size: 11px;
     color: var(--color-text-muted);
     text-decoration: none;
-    border-left: 2px solid transparent;
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
@@ -241,7 +240,6 @@ export const contentStyles = css`
 
   .toc__link:hover {
     color: var(--color-text-tertiary);
-    border-left-color: var(--color-border);
   }
 
   .toc__link:focus-visible {
@@ -249,10 +247,17 @@ export const contentStyles = css`
     outline-offset: -2px;
   }
 
+  /* Position in the list, said the way the whole platform says it: a tinted
+     face plus a 1px outline. NOT an edge bar - the handoff names this exact
+     element ("aktiver Eintrag getoent+Umriss, KEIN Kantenstreifen").
+     An outline and not a border, so the list does not shift by a pixel when
+     the active entry changes. The tinted background was already here; the
+     bar only said a second time what the fill already said. */
   .toc__link--active {
     color: var(--color-text-primary);
-    border-left-color: var(--color-warning);
     background: var(--color-ascendant-gold);
+    outline: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+    outline-offset: -1px;
   }
 
   /* ═══ MAIN CONTENT ═══════════════════════════════ */
@@ -406,17 +411,19 @@ export const contentStyles = css`
   .callout {
     margin: var(--space-6) 0;
     padding: var(--space-4) var(--space-5);
-    border: 1px solid var(--color-border-light);
-    border-left: 3px solid var(--color-border);
+    /* The box was already outlined, so the category colours the WHOLE border
+       instead of one edge - the replacement the gate itself names for this
+       case. A slab down the left said nothing the label inside does not. */
+    border: 1px solid var(--color-border);
     background: var(--color-surface);
   }
 
   .callout--info {
-    border-left-color: var(--color-info, var(--color-warning));
+    border-color: var(--color-info, var(--color-warning));
   }
 
   .callout--tip {
-    border-left-color: var(--color-success, var(--color-warning));
+    border-color: var(--color-success, var(--color-warning));
   }
 
   .callout__label {
