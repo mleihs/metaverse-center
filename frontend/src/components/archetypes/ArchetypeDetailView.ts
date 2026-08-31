@@ -60,6 +60,21 @@ export class VelgArchetypeDetail extends LitElement {
          HOST — the scroll container
          ═══════════════════════════════════════════════════════════ */
       :host {
+      /* Der Akzent als TEXT.
+         Acht feste Archetypfarben, und diese Ansicht haengt an der
+         Plattform-Route /archetypes/ — nicht unter /simulations/, erbt also
+         nie ein Weltthema. Damit ist es ein Problem mit ZWEI festen Gruenden,
+         nicht mit zehn: der Seite und dem aufgehellten Panel darueber.
+
+         Sechs der acht bestehen auf beiden. Zwei nicht, und gegen den Panel-
+         Grund brauchen sie 18 % statt der 12 %, die die Seite allein verlangt
+         haette — der erste Versuch rechnete gegen EINEN Grund und liess zwei
+         Stellen bei 4,04 stehen. Genau der Fehler, gegen den die Funktion
+         liftForContrast eine Liste nimmt.
+
+         Bei 18 % bleibt der Farbton erkennbar; das ist der Unterschied zu
+         einer echten Hebung, die die Identitaet kosten wuerde. */
+      --_accent-text: color-mix(in srgb, var(--_accent) 82%, var(--color-text-primary));
         display: block;
         height: var(--_viewport);
         overflow-y: auto;
@@ -515,7 +530,7 @@ export class VelgArchetypeDetail extends LitElement {
       }
 
       .gauge__label--top { top: -16px; }
-      .gauge__label--bottom { bottom: -16px; color: var(--_accent); }
+      .gauge__label--bottom { bottom: -16px; color: var(--_accent-text); }
 
       @media (max-width: 768px) {
         .gauge { right: var(--space-2, 8px); width: 3px; height: 30vh; }
@@ -537,7 +552,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-weight: 400;
         letter-spacing: 0.3em;
         text-transform: uppercase;
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.6;
         margin-bottom: var(--space-4, 16px);
       }
@@ -561,7 +576,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-style: italic;
         font-weight: 500;
         letter-spacing: 0.08em;
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.85;
         margin-top: var(--space-2, 8px);
       }
@@ -715,7 +730,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-size: var(--_exhibit-size);
         font-style: italic;
         line-height: var(--_exhibit-leading);
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.75;
         max-width: 60ch;
         margin-bottom: var(--space-8, 32px);
@@ -747,7 +762,7 @@ export class VelgArchetypeDetail extends LitElement {
         line-height: 0.8;
         padding-right: 8px;
         padding-top: 4px;
-        color: var(--_accent);
+        color: var(--_accent-text);
         font-weight: 700;
       }
 
@@ -809,7 +824,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-prose);
         font-size: 1.2rem;
         font-weight: 500;
-        color: var(--_accent);
+        color: var(--_accent-text);
       }
 
       .threshold-list {
@@ -854,7 +869,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-size: 0.9rem;
         font-weight: 600;
         font-style: italic;
-        color: var(--_accent);
+        color: var(--_accent-text);
         margin-bottom: 6px;
       }
 
@@ -913,7 +928,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-prose);
         font-size: clamp(1.1rem, 2vw, 1.5rem);
         font-style: italic;
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.7;
         max-width: 50ch;
         margin: var(--space-4, 16px) auto 0;
@@ -1119,7 +1134,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-weight: var(--_monument-weight);
         text-transform: uppercase;
         letter-spacing: 0.2em;
-        color: var(--_accent);
+        color: var(--_accent-text);
         text-shadow:
           0 0 40px var(--_accent-glow),
           0 0 80px color-mix(in oklch, var(--_accent) 40%, transparent);
@@ -1131,7 +1146,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-prose);
         font-size: 0.88rem;
         font-style: italic;
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.7;
         margin-bottom: var(--space-6, 24px);
       }
@@ -1207,7 +1222,7 @@ export class VelgArchetypeDetail extends LitElement {
         transition: color 0.2s;
       }
 
-      .exit__nav-link:hover { color: var(--_accent); }
+      .exit__nav-link:hover { color: var(--_accent-text); }
 
       .exit__back {
         margin-top: var(--space-4, 16px);

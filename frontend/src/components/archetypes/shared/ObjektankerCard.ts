@@ -102,7 +102,7 @@ export class VelgObjektankerCard extends LitElement {
         font-weight: 600;
         font-style: italic;
         letter-spacing: 0.02em;
-        color: var(--_accent);
+        color: var(--_accent-text);
         margin-bottom: 4px;
       }
 
@@ -122,6 +122,21 @@ export class VelgObjektankerCard extends LitElement {
       }
 
       :host([expanded]) .collapsed-phases {
+      /* Der Akzent als TEXT.
+         Acht feste Archetypfarben, und diese Ansicht haengt an der
+         Plattform-Route /archetypes/ — nicht unter /simulations/, erbt also
+         nie ein Weltthema. Damit ist es ein Problem mit ZWEI festen Gruenden,
+         nicht mit zehn: der Seite und dem aufgehellten Panel darueber.
+
+         Sechs der acht bestehen auf beiden. Zwei nicht, und gegen den Panel-
+         Grund brauchen sie 18 % statt der 12 %, die die Seite allein verlangt
+         haette — der erste Versuch rechnete gegen EINEN Grund und liess zwei
+         Stellen bei 4,04 stehen. Genau der Fehler, gegen den die Funktion
+         liftForContrast eine Liste nimmt.
+
+         Bei 18 % bleibt der Farbton erkennbar; das ist der Unterschied zu
+         einer echten Hebung, die die Identitaet kosten wuerde. */
+      --_accent-text: color-mix(in srgb, var(--_accent) 82%, var(--color-text-primary));
         max-height: 600px;
         opacity: 1;
       }
