@@ -147,3 +147,50 @@ halbe Beschriftung trägt.
 | 2 | Unicode-Ornamente | einig | Schmuck darf bleiben, Bezeichnendes wird Icon; Glyph nie in `msg()` |
 | 3 | Ken-Burns / `filter` | einig | Effekt auf die Blatt-Ebene, nie auf den Container |
 | 4 | Dim-Farben | **Skill** | Farbton behalten, Wert bis AA heben, von Hand nachrechnen |
+
+---
+
+## Punkt 5 — Breitbild und 4K: hier stand der Skill WIRKLICH im Weg (behoben)
+
+Dies ist der zweite echte Konflikt, und anders als bei der Schrift war er nicht
+nur eine Formulierung, sondern eine **veraltete Token-Liste**. Vom Nutzer als
+grosser Punkt benannt (Wortlaut nicht wiedergegeben)
+
+**Was der Skill sagte.** Seine Layout-Liste kannte genau eine Container-Leiter,
+`--container-sm` bis `--container-max` (1600 px), und sonst nichts. Gemessen:
+
+    grep -c "stage-measure" .claude/skills/velg-frontend-design/SKILL.md   → 0
+    grep -c "stage-measure" .claude/rules/velg-frontend-design.md          → 0
+
+Der Skill wusste also **nichts** von `--stage-measure` (1920), `--stage-gutter`
+(48 → 64 ab 1920), `--stage-type-scale` (1 → 1,15 ab 2560) und `stage-styles.ts` —
+dem Raster, das die Sitzung `velgarien-rebuild-45` am selben Tag gebaut hat und das
+`tokens/_layout.css` ausführlich begründet. Wer dem Skill wörtlich folgte, kam bei
+4K auf 1600 px zentriert, und zwar für JEDE Ansicht.
+
+**Was der Handoff verlangt** — ausdrücklich nicht eine Regel für alle
+(README, „Wide-Screen & 4K": „Drei Regeln nach View-Typ — NICHT eine für alle"):
+
+| Ansicht | Regel | Mass |
+|---|---|---|
+| Simulation View v4 (Dokument/Registratur) | zentrierte Bühne, Chrome full-bleed | 1920 |
+| Chat, Dungeon (Vollhöhen-Cockpit) | **gar kein Container** | Rails an der Kante, Bühne nimmt alles |
+| Broadsheet (Papier) | Satzmass halten | 1220 zentriert |
+| Epochen-Boards, Admin (Werkzeug) | `--container-max` | 1600, wie bisher |
+
+**Der Schaden war messbar, nicht theoretisch.** `SimulationShell.ts` kappte
+`.shell__content` auf `--container-2xl` (bei Breitbild 1600) und zentrierte es, und
+die Ausnahme `--immersive` hing an `view === 'dungeon'`. Der Chat stand damit bei
+2560 px in einer 1600-px-Kiste mit rund 480 px totem Rand auf jeder Seite — genau
+der „Leerstreifen links der Sidebar", den die Cockpit-Regel als Abnahmekriterium
+ausschliesst. Gefunden von `velgarien-rebuild-af`, behoben in der Sitzung
+`Frontseite-Redesign`: die Zeile nutzt jetzt `FULL_HEIGHT_VIEWS`, dasselbe Set, das
+elf Zeilen tiefer schon über die Fusszeile entscheidet.
+
+**Behoben, nicht nur notiert.** Beide Kopien des Skills (`.claude/skills/…/SKILL.md`
+und `.claude/rules/…`) tragen jetzt die Bühnen-Token und die Vier-Regeln-Tabelle. Der
+Skill ist damit kein Hindernis mehr, sondern sagt dasselbe wie der Handoff.
+
+**Die Frage, die vor jedem `max-width` zu stellen ist:** *Was IST diese Ansicht —
+Dokument, Cockpit, Papier oder Werkzeug?* Wer sie nicht stellt, wählt stillschweigend
+„Werkzeug", weil das der Vorgabewert der alten Liste war.
