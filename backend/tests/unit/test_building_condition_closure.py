@@ -19,11 +19,19 @@ Nachgemessen auf Prod (31.08.2026) ist daran dreierlei anders:
   in den Welt-Migrationen 043 und 140; die fünf Klone erbten sie. Von der
   Schmiede stammt keine einzige Taxonomiezeile (alle 26 Entwürfe tragen
   `taxonomies = {}`).
-* **Der Defekt trifft sieben Welten, nicht sechs.** Gemessen fehlt
-  `cite-des-dames` (und ihren fünf Klonen) `poor` UND `ruined`,
+* **Der Defekt trifft sieben Simulationen, nicht sechs.** Gemessen fehlt
+  `cite-des-dames` (und ihren fünf Ablegern) `poor` UND `ruined`,
   `conventional-memory` fehlt `ruined`. Verfällt dort ein Bau, trägt er einen
   Wert, den seine eigene Welt nicht beschriften kann — dieselbe Klasse wie
   `moderate` vor Migration 303.
+
+Und eine Zahl gehört geradegerückt, die 303 lose geführt hat: „25 Welten" sind
+keine 25 Ursprungswelten. Von 36 nicht gelöschten Simulationen sind 16
+Ursprungswelten und 20 Epochenableger; 25 tragen ein Bauzustands-Vokabular
+(6 Ursprungswelten + 19 Ableger). Die sieben mit Lücke sind zwei
+Ursprungswelten und fünf Ableger derselben Welt. Der schwerere Fall steht
+daneben und bekommt eine eigene Migration: **elf Simulationen, zehn davon
+Ursprungswelten, haben gar kein Bauzustands-Vokabular.**
 
 DIE REGEL
 ---------

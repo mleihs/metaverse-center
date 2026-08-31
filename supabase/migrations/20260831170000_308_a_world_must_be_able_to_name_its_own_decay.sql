@@ -30,11 +30,22 @@
 -- der Schmiede stammt keine einzige: alle 26 Entwürfe tragen
 -- `taxonomies = {}` (siehe `forge_taxonomies`-Modulkopf, Befund 30).
 --
--- **Drittens — und das ist der eigentliche Defekt: sieben Welten, nicht sechs,
--- führen ein Vokabular, das unter dem Verfall nicht abgeschlossen ist.**
+-- **Drittens — und das ist der eigentliche Defekt: sieben Simulationen, nicht
+-- sechs, führen ein Vokabular, das unter dem Verfall nicht abgeschlossen ist.**
 --
---     cite-des-dames        fehlt: poor, ruined      (und ihre fünf Klone e3–e8)
+--     cite-des-dames        fehlt: poor, ruined      (und ihre fünf Ableger e3–e8)
 --     conventional-memory   fehlt: ruined
+--
+-- Und hier gehört eine Zahl geradegerückt, die Migration 303 lose geführt hat.
+-- „25 Welten" sind keine 25 Ursprungswelten. Gemessen auf Prod:
+--
+--     Simulationen, nicht gelöscht                          36
+--       davon Ursprungswelten (source_template_id IS NULL)  16
+--       davon Epochenableger                                20
+--     mit Bauzustands-Vokabular    25  = 6 Ursprungswelten + 19 Ableger
+--     davon mit Lücke               7  = 2 Ursprungswelten +  5 Ableger
+--
+-- Die sieben sind also ZWEI Ursprungswelten und fünf Ableger derselben Welt.
 --
 -- Verfällt dort ein Bau von `fair`, schreibt `fn_degrade_building` den Wert
 -- `poor` — und die Welt kann ihn nicht beschriften. In der Oberfläche steht
@@ -55,8 +66,18 @@
 -- kein `excellent` dazu — das wäre erfunden. Nicht weniger: jeden Zustand, in
 -- den der Verfall einen Bau bringen KANN, muss die Welt benennen können.
 --
--- Alle 25 Welten mit Bauzustands-Taxonomie beginnen bei `excellent`; für sie
--- heisst die Regel also: alle fünf Sprossen. 18 erfüllen sie bereits.
+-- Alle 25 Simulationen mit Bauzustands-Taxonomie beginnen bei `excellent`; für
+-- sie heisst die Regel also: alle fünf Sprossen. 18 erfüllen sie bereits.
+--
+-- ⚠ NICHT hier behandelt, weil es ein anderer Befund ist: **elf Simulationen,
+-- zehn davon Ursprungswelten, haben gar kein Bauzustands-Vokabular** — 81
+-- Bauten, deren Zustand sich in KEINEM Fall beschriften lässt, nicht nur der
+-- verfallene. Darunter `the-m-bius-academy`, eine der beiden Welten, die
+-- überhaupt ticken. Von sechzehn Ursprungswelten können damit nur VIER ihre
+-- Bauzustände vollständig benennen — und es sind die vier ältesten, von Hand
+-- geschriebenen. Das ist derselbe Defekt eine Ebene höher und bekommt eine
+-- eigene Migration; diese hier lässt solche Welten unangetastet (der Nachtrag
+-- greift nur, wo bereits eine Kernsprosse steht).
 --
 -- WAS DIESE MIGRATION TUT
 -- -----------------------
@@ -156,7 +177,8 @@ $$;
 
 COMMENT ON FUNCTION fn_building_condition_label(TEXT) IS
   'Die Beschriftung einer Kernsprosse, wie sie auf Prod bereits einstimmig '
-  'steht (excellent/good/fair 25 von 25 Welten identisch, poor 19 von 19, '
+  'steht (excellent/good/fair 25 von 25 Simulationen identisch, poor 19 von '
+  '19, '
   'ruined 18 von 18). Wird nur beim NACHTRAGEN einer fehlenden Sprosse '
   'benutzt; eine vorhandene Beschriftung überschreibt sie nie — eine Welt darf '
   'ihre Zustände in ihren eigenen Worten benennen.';
