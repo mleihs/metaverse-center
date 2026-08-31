@@ -721,13 +721,13 @@ export function getSocialTrendsGuideSteps(): DemoStep[] {
       phase: 'lobby',
       title: msg('Campaigns'),
       narration: msg(
-        'Campaigns group related events into thematic narratives \u2013 a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.',
+        'Campaigns group related events into thematic narratives \u2013 a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The mechanic exists on the server; there is no campaign surface in the interface yet, so nothing here can be created or browsed from the client.',
       ),
       readout: [
         { label: msg('Types'), value: msg('Marketing, political, social') },
         { label: msg('Metrics'), value: msg('Engagement, reach, impact') },
         { label: msg('Source'), value: msg('Manual, imported, social') },
-        { label: msg('Dashboard'), value: msg('Simulation \u2192 Campaigns tab') },
+        { label: msg('Status'), value: msg('Server-side only \u2013 no interface yet') },
       ],
     },
   ];
