@@ -26,6 +26,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { driftStatus } from '../../services/DriftStatusService.js';
+import { journalStatus } from '../../services/JournalStatusService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { IconKey } from '../../utils/icons.js';
 import { icons } from '../../utils/icons.js';
@@ -43,9 +44,22 @@ import {
   htpHeroStyles,
   htpReducedMotionBase,
 } from './htp-shared-styles.js';
-import { type TopicDefinition, visibleTopics } from './htp-topic-data.js';
+import { type TopicDefinition, type TopicVisibility, visibleTopics } from './htp-topic-data.js';
 
 // ── Component ────────────────────────────────────────────────────────────────
+
+/**
+ * Die Sichtbarkeitsflaggen der Themen, an einer Stelle.
+ *
+ * Zwei Themen sind flag-gesteuert (DRIFT und das Journal), und beide Signale
+ * werden an mehreren Stellen derselben Datei gebraucht. Als Funktion statt als
+ * Konstante, weil die Signale sich zur Laufzeit auflösen, nachdem der
+ * öffentliche Zustand geladen wurde.
+ */
+const TOPIC_FLAGS = (): TopicVisibility => ({
+  drift: driftStatus.enabled.value,
+  journal: journalStatus.enabled.value,
+});
 
 @localized()
 @customElement('velg-how-to-play-guide-hub')
@@ -546,10 +560,11 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     // The Drift topic is flag-gated like its nav tab — load the public gate so the grid
     // and search show it only when drift_p0_enabled (SignalWatcher re-renders on resolve).
     void driftStatus.ensureLoaded();
+    void journalStatus.ensureLoaded();
     seoService.setTitle([msg('Game Guide'), msg('How to Play')]);
     seoService.setDescription(
       msg(
-        str`Browse ${visibleTopics(driftStatus.enabled.value).length} topics covering every game system in metaverse.center.`,
+        str`Browse ${visibleTopics(TOPIC_FLAGS()).length} topics covering every game system in metaverse.center.`,
       ),
     );
     seoService.setCanonical('/how-to-play/guide');
@@ -597,7 +612,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     // DRIFT-Bedingung hier und im Raster woertlich zweimal — zwei Kopien einer
     // Regel laufen auseinander, und eine dritte Ansicht haette eine dritte
     // bekommen.
-    const visible = new Set(visibleTopics(driftStatus.enabled.value).map((t) => t.slug));
+    const visible = new Set(visibleTopics(TOPIC_FLAGS()).map((t) => t.slug));
     this._searchResults = searchTopics(q).filter((r) => visible.has(r.topic.slug));
     this._showDropdown = this._searchResults.length > 0 || q.length >= 2;
     this._activeResultIdx = -1;
@@ -718,7 +733,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
         <span class="hero__eyebrow">${msg('Classified Archive')}</span>
         <h1 class="hero__title">${msg('Game Guide')}</h1>
         <p class="hero__subtitle">
-          ${msg(str`${visibleTopics(driftStatus.enabled.value).length} topics covering every system. Pick a dossier.`)}
+          ${msg(str`${visibleTopics(TOPIC_FLAGS()).length} topics covering every system. Pick a dossier.`)}
         </p>
       </header>
     `;
@@ -793,7 +808,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
   private _renderGrid() {
     return html`
       <div class="grid" role="list" aria-label=${msg('Game guide topics')}>
-        ${visibleTopics(driftStatus.enabled.value).map((topic, i) => this._renderCard(topic, i))}
+        ${visibleTopics(TOPIC_FLAGS()).map((topic, i) => this._renderCard(topic, i))}
       </div>
     `;
   }

@@ -75,6 +75,8 @@ export type TopicSlug =
   | 'advanced'
   | 'terminal'
   | 'dungeons'
+  | 'commendations'
+  | 'journal'
   | 'drift';
 
 export type CalloutType = 'info' | 'tip' | 'warn' | 'danger';
@@ -482,6 +484,50 @@ export const TOPICS: TopicDefinition[] = [
       msg('Academy Mode: solo sprint training against AI bots with compressed cycles'),
     ],
     sections: () => [
+      // Frist, Passen, AFK und die KI-Übernahme standen nirgends in der Hilfe,
+      // obwohl sie das Einzige sind, was einem Spieler PASSIERT, ohne dass er
+      // handelt. Alle Zahlen aus `EpochConfig` (backend/models/epoch.py) — der
+      // Text nennt die Vorgabe und sagt dazu, dass sie je Epoche einstellbar ist.
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'warn',
+            label: msg('The deadline'),
+            text: msg(
+              'Every cycle has an end. By default it is 8 hours, adjustable per epoch between 15 minutes and 48. When it passes, the cycle resolves with whatever has been filed. It does not wait.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Passing'),
+            text: msg(
+              'Declaring ready with no orders is a legitimate move, not a forfeit. A cycle in which everyone is ready early does not resolve instantly: the deadline is pulled forward to the earliest legal moment instead, so a fast table cannot turn an eight-hour cycle into eight seconds.',
+            ),
+          },
+          {
+            type: 'danger',
+            label: msg('Missing a cycle'),
+            text: msg(
+              'Filing nothing at all is different from passing. Where the AFK penalty is switched on for the epoch, it costs 2 RP by default, and the reminder that goes out before the deadline names the actual figure for your epoch.',
+            ),
+          },
+          {
+            type: 'danger',
+            label: msg('The AI takeover'),
+            text: msg(
+              'After three consecutive missed cycles, an AI takes the seat and plays it for you. Which personality it uses is set by the epoch, sentinel by default. You get the seat back by filing orders again; the AI does not keep it.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('The warning'),
+            text: msg(
+              'Two hours before a deadline, everyone who has not filed gets a mail naming the cycle, the time left and the exact penalty. Until this existed, the system deducted RP and handed over a seat with no notice at all.',
+            ),
+          },
+        ],
+      },
       {
         kind: 'text',
         content: msg(
@@ -1107,6 +1153,173 @@ export const TOPICS: TopicDefinition[] = [
   // ────────────────────────────────────────────────────────────────────────
   // 16: THE DRIFT (travel game)
   // ────────────────────────────────────────────────────────────────────────
+  // ────────────────────────────────────────────────────────────────────────
+  // 16: COMMENDATIONS
+  // ────────────────────────────────────────────────────────────────────────
+  // Vierunddreißig Abzeichen existierten, und nirgends stand, wie man eines
+  // bekommt. Der Plan sprach von 35 — gemessen sind es 34, davon drei geheime.
+  // Es steht bewusst KEINE Gesamtzahl im Text: sie wäre eine Kopie, die beim
+  // nächsten Abzeichen driftet, und ein Spieler fragt ohnehin nach dem WIE.
+  {
+    slug: 'commendations',
+    title: msg('Commendations'),
+    icon: 'trophy',
+    description: msg('Seven kinds of badge, and what each of them asks of you.'),
+    accent: '--color-warning',
+    readTime: msg('4 min'),
+    tldr: () => [
+      msg('Badges are awarded automatically; there is nothing to claim'),
+      msg('Seven categories: initiation, dungeon, epoch, social, collection, challenge, secret'),
+      msg('Some track progress, so a partial attempt is not lost'),
+      msg('The secret ones stay secret. They are not listed here and not hinted at'),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'Commendations record what you have actually done, not what you have bought or unlocked. They are granted by the server when the condition is met, so there is no button to press and nothing to collect. If you meet a condition while offline, the badge is waiting when you return.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('Initiation'),
+            text: msg(
+              'The first of everything: your first world, your first field assignment, your first descent, your first forge run. These exist so the beginning of the game is legible.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Dungeon'),
+            text: msg(
+              'The largest group. One badge per archetype you survive, plus depth, plus the two that ask you to see all of them. Each archetype has its own condition, not a shared counter.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Epoch'),
+            text: msg(
+              'Competitive play: holding a position, running an operative role to its conclusion, winning without a loss. The rarest badges on the platform sit here.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Social'),
+            text: msg(
+              'Things that reach another world: founding an embassy, sending an echo, decoding a cipher, holding a ward. None of them can be earned alone.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Collection'),
+            text: msg(
+              'Patience rather than skill. Loot, literary fragments, object anchors, banter. These track progress, so what you gather is never lost between sessions.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Challenge'),
+            text: msg(
+              'Self-imposed constraints: a flawless run, a fast one, one without a single kill. The game will not ask you to try these; that is the point.',
+            ),
+          },
+          {
+            type: 'warn',
+            label: msg('Secret'),
+            text: msg(
+              'Three badges are hidden. Their names, conditions and hints are not shown until you hold them. This page will not spoil them, and neither will the badge list.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'Rarity is a label, not a currency: common, uncommon, rare, epic, legendary. It says how hard the condition is, not what the badge does. Badges do not affect any game mechanic, and that is deliberate. A record that changed the game would stop being a record.',
+        ),
+      },
+    ],
+    related: ['dungeons', 'epochs', 'diplomacy'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 17: THE RESONANCE JOURNAL
+  // ────────────────────────────────────────────────────────────────────────
+  // Flag-gesteuert wie DRIFT: das Thema erscheint nur, wenn `journal_enabled`
+  // gesetzt ist. Eine Anleitung für eine Mechanik, die auf dieser Plattform
+  // nicht läuft, ist schlimmer als keine — sie lässt jemanden suchen.
+  {
+    slug: 'journal',
+    title: msg('The Resonance Journal'),
+    icon: 'sparkle',
+    description: msg('Fragments the world leaves behind, and what they form when they meet.'),
+    accent: '--color-epoch-influence',
+    readTime: msg('5 min'),
+    tldr: () => [
+      msg('Fragments are written by the world as you play; you do not collect them'),
+      msg('Fragments that resonate form constellations, and a constellation yields an insight'),
+      msg('Crystallising a constellation can unlock an attunement'),
+      msg('The journal is released per platform and needs its own model budget'),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'The journal is the one part of the platform you do not operate. It watches five systems at once and writes down what it notices: an agent whispering at bond depth two, a dungeon run that ended a certain way, a resonance that touched a zone. Each note is a fragment.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('Fragments'),
+            text: msg(
+              'Written by the world, not gathered by you. They arrive from bonds, dungeons, resonances, events and chat. You cannot ask for one.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Constellations'),
+            text: msg(
+              'When fragments resonate with one another they are drawn together into a constellation. The pairing is measured, not chosen: a detector compares them and only real resonance counts.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('Insight'),
+            text: msg(
+              'A completed constellation yields a single written insight about what the fragments have in common. It is generated once and then belongs to the constellation.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('Attunement'),
+            text: msg(
+              'Crystallising a constellation can open an attunement, which deepens over time and eventually spawns events of its own. This is the only path from reading the journal back into the world.',
+            ),
+          },
+          {
+            type: 'warn',
+            label: msg('Requirement'),
+            text: msg(
+              'Each fragment costs one model call, so the journal is released per platform by the operators and runs against a budget. Where it is not released, no fragments accumulate at all.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'The journal rewards playing widely rather than deeply. Fragments come from five different systems, and a constellation needs fragments that resonate, which is easier across systems than within one. A week of dungeon runs produces fewer constellations than a week of dungeon runs, a bond and an embassy.',
+        ),
+      },
+    ],
+    related: ['bonds', 'dungeons', 'advanced'],
+  },
+
   {
     slug: 'drift',
     title: msg('The Drift'),
@@ -1282,6 +1495,26 @@ export function getAllTopicSlugs(): string[] {
  * Dienst. Der Zustand kommt als Argument herein, damit die Funktion ohne
  * Signale prüfbar bleibt und die Datenschicht keine Dienstschicht zieht.
  */
-export function visibleTopics(driftEnabled: boolean): TopicDefinition[] {
-  return TOPICS.filter((t) => t.slug !== 'drift' || driftEnabled);
+export interface TopicVisibility {
+  /** drift_p0_enabled / drift_fun_core_enabled */
+  drift: boolean;
+  /** journal_enabled */
+  journal: boolean;
+}
+
+/**
+ * Beide Felder sind PFLICHT, nicht optional mit Vorgabe.
+ *
+ * Eine Vorgabe hieße, dass ein Aufrufer eine Flagge stillschweigend vergessen
+ * kann und das Thema dann entweder immer fehlt oder immer erscheint — ohne
+ * Fehlermeldung. Mit einem Pflichtfeld weist TypeScript die Aufrufstelle ab.
+ * Vorher war es ein einzelnes Stellungsargument; das zweite hätte man
+ * dranhängen können, ohne dass eine der sechs Stellen es merkt.
+ */
+export function visibleTopics(flags: TopicVisibility): TopicDefinition[] {
+  return TOPICS.filter((t) => {
+    if (t.slug === 'drift') return flags.drift;
+    if (t.slug === 'journal') return flags.journal;
+    return true;
+  });
 }

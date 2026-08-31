@@ -59,6 +59,7 @@ import type {
   VelgDriftStoryletPanel,
 } from './DriftStoryletPanel.js';
 import { FREQUENCIES, freqColorByName } from './palette.js';
+import '../shared/VelgMetricExplainer.js';
 
 /** The scene currently holding the board: a Havarie decision, the delivery's effect cards,
  *  or the Bureau debriefing after a run closed. Only one at a time — a run that stops to
@@ -1831,11 +1832,45 @@ export class VelgDriftView extends LitElement {
     `;
   }
 
+  /**
+   * Die Erklärung der drei Messgrößen stand im Leitfaden und nirgends neben der
+   * Zahl (H1). Wer eine Dissonanz von 34 sieht, weiß nicht, ob das viel ist,
+   * woher sie kommt und was er dagegen tun kann — und wechselt dafür nicht in
+   * ein anderes Fenster.
+   *
+   * Der Wortlaut folgt dem Hilfethema `drift`, damit nicht zwei Fassungen
+   * derselben Mechanik nebeneinander stehen und auseinanderlaufen.
+   */
+  private _statExplainer(kind: 'kh' | 'bb' | 'dz') {
+    if (kind === 'kh') {
+      return html`<velg-metric-explainer
+        .metric=${msg('Kohärenz')}
+        .what=${msg('Your hold on yourself out here. It starts at 100 and only falls.')}
+        .why=${msg('Deep Drift erodes it, emergency moves cost it outright, and Dissonanz past its threshold bleeds it every crossing.')}
+        .action=${msg('At 0 the run collapses and the haul is lost. Turn for home while you still have crossings left, or discharge cargo to cut the pressure that is draining it.')}
+      ></velg-metric-explainer>`;
+    }
+    if (kind === 'bb') {
+      return html`<velg-metric-explainer
+        .metric=${msg('Bandbreite')}
+        .what=${msg('Movement fuel. Every crossing spends some.')}
+        .why=${msg('It is set when the run begins and is not replenished out here.')}
+        .action=${msg('At 0 you can still move on Notfrequenz, but each crossing then costs Kohärenz instead. Plan the way back before it runs out, not after.')}
+      ></velg-metric-explainer>`;
+    }
+    return html`<velg-metric-explainer
+      .metric=${msg('Dissonanz')}
+      .what=${msg("The Drift's pressure on you.")}
+      .why=${msg('It rises the deeper and the longer you travel, and it does not fall on its own.')}
+      .action=${msg('Past its threshold it starts bleeding Kohärenz on every crossing. Discharging cargo and heading for shallower nodes are the two things that hold it down.')}
+    ></velg-metric-explainer>`;
+  }
+
   private _stat(label: string, value: number, max: number, kind: 'kh' | 'bb' | 'dz') {
     const pct = Math.max(0, Math.min(100, (value / max) * 100));
     return html`
       <div class="stat stat--${kind}">
-        <dt class="stat__label">${label}</dt>
+        <dt class="stat__label">${label}${this._statExplainer(kind)}</dt>
         <dd class="stat__value">${value}</dd>
         <div class="stat__bar"><span style="width:${pct}%"></span></div>
       </div>
