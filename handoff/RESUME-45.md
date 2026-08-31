@@ -1,156 +1,96 @@
 # Resume — Sitzung `velgarien-rebuild-45`
 
-Stand 31.08.2026. **Nach einem Context-Clear: den Block unten komplett in den
-Prompt kopieren.**
+Stand 31.08.2026, Nachmittag. **Nach einem Context-Clear: den Block unten
+komplett in den Prompt kopieren.**
 
 ---
 
 ```
-Lies zuerst das Gedächtnis `paket-p2-h7-d13-2026-08-31`. Ich bin
+Lies zuerst das Gedächtnis `frontseite-l1-l7-2026-08-31`. Ich bin
 `velgarien-rebuild-45`, der Peer ist `velgarien-rebuild-88` (ListAgents zuerst,
 der NAME ist die Adresse für SendMessage).
 
-▶ DEINE AUFGABE: DAS FRONTSEITEN-REDESIGN EINBAUEN.
-Claude Design hat den Entwurf geliefert und er ist gut — das ist die Welle, an
-der du arbeitest, nicht eine von mehreren Optionen.
-
-Lies in dieser Reihenfolge:
-  1. docs/plans/landing-page-redesign-2026-08-31.md   — Plan L1–L7 des Peers,
-     mit allen Messungen, vier Entscheidungen und der Reihenfolge
-  2. handoff/landing-page/DESIGN-HANDOFF.md           — der Text des Pakets
-  3. handoff/landing-page/landing-redesign-reference.html
-     → NUR der Abschnitt id="3a" ("Editorial Brutalist"). Die Varianten
-       1a/1b/2a/2b/3b darunter sind Erkundungen und außer Umfang.
-Die Bilder liegen NICHT im Repo (.gitignore Zeile 69 schließt *.jpeg aus).
-Quellpaket beim Nutzer: ~/Dev/Buchhaltung/Metaverse.center (1).zip
-
-Reihenfolge laut Plan:
-  L1  öffentlicher Kennzahlen-Endpunkt GET /api/v1/public/landing
-      (ein Aufruf statt Wasserfall; entscheidungsfrei) — darin fallen L2 und L3
-  L4  Bildableitung (AVIF/WebP, srcset, Supabase Storage; entscheidungsfrei)
-  →   dann die VIER ENTSCHEIDUNGEN dem Nutzer vorlegen
-  L5/L6/L7  Umbau von LandingPage.ts (2 302 Zeilen, wird vollständig ersetzt)
-
-DAVOR, weil es Voraussetzung ist und nicht Nebensache:
-der fehlende Schalter-Abschnitt in AdminPlatformConfigTab. Für
-platform_settings-Schalter gibt es KEINE Oberfläche — deshalb ist
-journal_enabled auf Prod bis heute ungesetzt, und resonance_auto_process_enabled
-und scheduled_ai_spend_enabled ebenso. Vier der sechs auf der Frontseite
-beworbenen Systeme lassen sich ohne den Abschnitt nicht anschalten. Der Peer
-fasst AdminPlatformConfigTab.ts nicht an. Ich hatte damit begonnen: die
-Bestandsaufnahme steht weiter unten in dieser Datei.
+Das Frontseiten-Redesign (L1–L7) IST FERTIG und committet, nichts gepusht.
+Was noch offen ist, steht unten unter „Offen" — arbeite es der Reihe nach ab
+und frag zwischendurch nicht „soll ich weitermachen?".
 
 REGELN, die in diesem Projekt gelten:
-- Geteilter Arbeitsbaum: NIE `git stash`, nur explizite Pfade stagen.
-- Prod-Schreibvorgänge NUR mit dem Wort des Nutzers. Ein Peer kann das nicht
-  weiterreichen.
-- Migrationen: der ZEITSTEMPEL ist der Schlüssel (schema_migrations.version),
-  nicht die Nummer im Dateinamen. Nimm ab `20260831130000` aufwärts;
-  301/302 gehören dem Peer.
+- Geteilter Arbeitsbaum: NIE `git stash`. Und NIE `git commit` ohne Pfadangabe —
+  immer `git commit -F <datei> -- <pfade>`. Ohne das nimmt der Commit alles mit,
+  was der Peer zwischen `add` und `commit` in den Index gelegt hat (passiert am
+  31.08. mit 14 Dateien).
+- Prod-Schreibvorgänge NUR mit meinem Wort. Ein Peer kann das nicht weiterreichen.
+- Migrationen: der ZEITSTEMPEL ist der Schlüssel, nicht die Nummer im Dateinamen.
 - Vor jedem Commit: ruff + tsc + `npm run lint:full` + pytest.
 - Jede Messung gegen den ECHTEN Fall prüfen, bevor du ihr glaubst — und gegen
-  HEAD messen, nicht gegen den Plan und nicht gegen origin/main.
+  HEAD messen, nicht gegen den Plan.
 - `velg-frontend-design`-Skill vor der ersten Zeile Komponentencode.
-- `frontend/src/locales/de.xlf` gehört dem Peer (H2). Nicht anfassen.
-- Dem Peer melden, was du anfasst, BEVOR du es anfasst; Befunde aus seinem
-  Bereich schicken statt sie zu reparieren.
-
-Arbeite durch, ohne zwischendurch "soll ich weitermachen?" zu fragen.
+- `frontend/src/locales/**` gehört dem Peer (H2). `lit-localize extract` NICHT
+  selbst aufrufen — dem Peer Bescheid sagen.
+- Dem Peer melden, was du anfasst, BEVOR du es anfasst.
 ```
 
 ---
 
-## Was die Frontseite behauptet und was gemessen ist
+## Was in diesem Lauf fertig wurde
 
-Der Entwurf passt handwerklich exakt auf die Token — **kein Farb- oder
-Schriftwert ist neu**. Amber `#f59e0b` und Rand `#b45309` sind
-`--color-accent-amber`/`-dim`, Grün `#4ade80` ist `--color-accent-green`,
-Courier ist `--font-brutalist`, Spectral ist `--font-bureau`. Die TCG-Karten für
-die Dossierkarten gibt es als `VelgGameCard.ts`. Die Token-Regel kostet hier
-also nichts.
+**Merkmalstor-Verwaltung im Admin** (war Voraussetzung fürs Redesign)
+`backend/services/platform_gate_contracts.py` erklärt **23 Plattform-Tore**, je
+mit einem Satz, was der Schalter anschaltet, was sein Ausbleiben kostet,
+`default_when_missing` (gemessen!) und `wired`.
+`backend/tests/unit/test_platform_gate_contracts.py` bindet per AST in beide
+Richtungen. `GET /api/v1/admin/feature-gates` + `AdminFeatureGatesTab.ts` als
+**erster** Unterreiter unter Admin → Plattform.
 
-Was **nicht** passt, sind die Behauptungen:
+**L1** `GET /api/v1/public/landing` — ein Aufruf statt Wasserfall.
+**L4** Bildstrecke 20,61 MB → 1,58 MB, erste Bildlast 63 KB, **auf Prod abgelegt**.
+**L5/L6/L7** `LandingPage.ts` von 2 302 auf 120 Zeilen, sechs Abschnittsdateien.
 
-| Entwurf sagt | Gemessen auf Prod |
-|---|---|
-| 47 worlds | **16** lebende Welten (alle 16 ticken) |
-| 3 epochs in play | **0** |
-| 128 resonances absorbed | **1** |
-| Saltmeridian, The Gilded Hollow | **existieren nicht** — und stehen in der SEO-Fußzeile, deren ganzer Zweck kriechbare `<a href>` sind |
+## Offen — in dieser Reihenfolge
 
-Zweisprachigkeit: **5 von 16** Welten haben einen deutschen Titel, **7 von 16**
-deutschen Text. Das Weltraster wäre auf Deutsch halb englisch.
+1. **Welt-Übersetzungen schreiben.** `scripts/backfill_world_locale.py` ist
+   vorgelegt und im Trockenlauf geprüft (11 Welten, 7 neue Titel, 9 neue Texte,
+   4 bewusst OHNE deutschen Titel weil Eigennamen). Ausführen:
+   `WORLD_LOCALE_CONFIRMED=yes .venv/bin/python scripts/backfill_world_locale.py --write`
+   — **braucht das Wort des Nutzers.**
 
-Zwei Fallen beim Zählpfad: auf `simulation_type='template' AND status='active'`
-filtern (die 20 Epochen-Klone und 5 archivierten Welten gehören nicht in die
-Zahl — das ist N3, die Sicht `active_agents` macht genau diesen Fehler). Und die
-Tabelle heißt `game_epochs`, nicht `epochs`; die Agenten-Bildspalte heißt
-`portrait_image_url`.
+2. **`velgarien.description` steht auf DEUTSCH in der ENGLISCHEN Spalte.**
+   Eine englische Fassung fehlt ganz. Zweite Entscheidung, nicht im Nachtrag
+   enthalten.
 
-**Die Bildstrecke ist so nicht auslieferbar:** sieben JPEG à 2,7–3,4 MB,
-2752–2816 × 1536 px, zusammen 20,7 MB, plus 21 MB Vorstufen in `uploads/`. Die
-sechs Systembilder werden in einer 640×360-Tafel gezeigt (4,4-fache Breite) und
-zusätzlich als ~100-px-Miniaturen. Ziel: erste Bildlast unter 400 KB, vorher und
-nachher messen.
+3. **133 neue `msg()`-Zeichenketten** warten beim Peer (H2). Die 20 langen
+   Weltbeschreibungen in `LandingForge.ts` sind der Brocken.
 
-**Drei Dinge, die der Entwurf nicht führt und die kein Geschmack sind:**
-1. `prefers-reduced-motion` — die Seite trägt VIER Dauerläufer gleichzeitig
-   (Ken-Burns 34 s, Laufband 30 s, Tippfeld 34 ms/Zeichen, blinkender Cursor).
-2. Der Umschalter der sechs Systeme reagiert nur auf `hover`. Ohne Tastaturpfad
-   ist ein Sechstel des Seiteninhalts unerreichbar — `role="tab"`,
-   `aria-selected`, sichtbarer Fokus, Pfeiltasten.
-3. Kein `filter`/`transform` auf Layout-Behältern: der Held will
-   `brightness(.72)` und Ken-Burns-`scale()`. Beides gehört aufs Bild-Element
-   oder ein `::after`, nie auf den Abschnitt — sonst bricht jedes
-   `position: fixed`-Modal der Seite.
+4. **Verwaist nach dem Umbau:** `velg-dungeon-showcase` (71 KB) und
+   `velg-landing-agent-showcase` (24 KB). Keine Laufzeitkosten (nicht
+   importiert = nicht im Bündel). Löschen ist Nutzerentscheidung — beide tragen
+   echte Arbeit.
 
-## Der Schalter-Abschnitt (Voraussetzung, angefangen)
+5. **Fünf DRIFT-Schalter auf Prod, die nichts liest:** `drift_ai_enabled`,
+   `drift_p1..p4_enabled`. Über `pg_get_functiondef` gemessen: 0 Funktionen
+   (`drift_fun_core_enabled`: 10). Die Oberfläche sagt „vorbereitet, nichts
+   liest diesen Schalter". Zeilen entfernen oder anschließen?
 
-`adminApi.listSettings()` und `adminApi.updateSetting(key, value)` **existieren
-bereits** — es fehlt nur die Oberfläche. `AdminPlatformConfigTab.ts` hat fünf
-Abschnitte (API-Schlüssel, Modelle, Forschung, Caching, Ankündigungen) und
-keinen für Schalter.
+6. **Plattformweit, kein Frontseiten-Problem:**
+   `/storage/v1/object/public/…` liefert IMMER `cache-control: no-cache`, egal
+   was beim Ablegen gesendet wird — in drei Formen und gegen einen frischen
+   Pfad geprüft. Halb so schlimm: ETag → **304 mit null Bytes**. Betrifft alle
+   Bilder der Plattform.
 
-Gemessen auf Prod: **20 `*_enabled`-Zeilen in `platform_settings`**. Der Code
-liest zusätzlich Schlüssel, die es dort NICHT gibt — die laufen seit F32
-fail-closed, also dauerhaft aus:
-- `journal_enabled` (C2)
-- `resonance_auto_process_enabled` (vom v2.6-Changelog angekündigt, nie gelaufen)
-- `scheduled_ai_spend_enabled` (neu vom Peer)
+## Die vier Lehren, die im Kopf bleiben sollen
 
-Vorschlag für den Abschnitt: eine **deklarierte Liste** der Merkmalstore mit je
-einem Satz, was der Schalter anschaltet und was sein Ausbleiben kostet — plus
-eine Zeile für jeden `*_enabled`-Schlüssel, den `listSettings()` liefert und der
-in der Deklaration FEHLT. So versteckt sich keiner. (Vorsicht: einige der im
-Code gefundenen Namen wie `bonds_enabled`, `weather_enabled`, `bleed_enabled`
-sind `simulation_settings`, nicht `platform_settings` — vor der Aufnahme je
-Schlüssel prüfen, aus welcher Tabelle er gelesen wird.)
+**`git add <pfade>` schützt nicht, wenn `git commit` ohne Pfadangabe folgt.**
+Der Index ist im geteilten Baum gemeinsam.
 
-## Erledigt in diesem Lauf (7 Commits, nichts gepusht)
+**Ein fail-closed PARSER ist keine fail-closed ABWESENHEIT.** Was mit einem
+ankommenden Wert geschieht, sagt nichts darüber, was ohne Zeile geschieht — das
+entscheidet die Vorgabe des Aufrufers, und die muss man LESEN.
 
-`da33e90d` DSGVO-Löschbestätigung · `d21a2d29` Willkommensmail +
-`LifecycleMailScheduler` · `a303441d` neun Kennzahlen erklärt (H7) ·
-`828c549e` Einfluss als Serverfeld (D13) · `d83f211a` Zeitstempel-Kollision ·
-`e6f8e1cd` Changelog sechs Monate nachgezogen (H6) · `1a4d109f` zwei Themen +
-Frist/AFK + DRIFT-Blasen (H1)
+**Ein Status ist kein Betrieb.** Sieben Epochen stehen in einem spielenden
+Status und keine hat sich seit 164 Tagen bewegt.
 
-**Auf Prod:** Migration 298 und 300, Ledger für 289–300 nachgetragen.
-
-⚠ **Signaturänderung:** `visibleTopics(driftEnabled: boolean)` →
-`visibleTopics({ drift, journal })`, beide Felder Pflicht. TOPICS ist jetzt 18.
-
-## Offen, dem Nutzer vorgelegt
-
-- **N5** (Peer legt vor): um unglücklich zu werden, muss man beleidigt werden;
-  um zu beleidigen, muss man unglücklich sein. Vier tote Ereignis-Auslöser aus
-  EINER Ursache. Schwellen senken repariert nichts — die Reparatur gehört an die
-  Quelle (`agent_needs` erzeugt kein einziges Moodlet, obwohl `social` auf Prod
-  bei manchen Agenten schon 0 ist).
-- **D12/S16**: Zonenstabilität endet bei 80 %, „vorbildlich" ab 90 unerreichbar;
-  Einfluss ohne Botschafteramt endet bei 55 %, exakt dort beginnt STARK. Die
-  Zahlen stehen mit Quelle in `frontend/src/utils/metric-formulas.ts`.
-- **P2.19** Wochenbericht — baubar, bliebe aber leer bis N5 entschieden ist.
-- **P2.24** Einladungs-Nachfass — 0 Einladungen je in beiden Tabellen.
-- **Datenexport-Mail** — es gibt keinen Datenexport.
-- **Persönlichkeits-Rückfüllung** (~0,03 USD, 258 Aufrufe) — vom Nutzer
-  zurückgestellt, NICHT ausführen.
+**Lint grün ≠ Seite richtig.** tsc und alle 23 Tore waren sauber, bevor die
+Seite zum ersten Mal im Bild stand. Erst dann sichtbar: zwei Navigationsleisten
+übereinander, zwei `main#main-content`, ein Weltkartenrahmen von 2 × 21 px
+(`aspect-ratio` wirkt NICHT auf `display: inline`), ein leerer Abschnitt mit
+192 px Höhe.
