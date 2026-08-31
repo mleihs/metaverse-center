@@ -48,10 +48,37 @@ Die Schuld sichtbar zu benennen ist der kleinere Schaden — aber nur, solange
 sie sichtbar bleibt.
 
 ## Regeln im geteilten Arbeitsbaum
-- **Immer `git commit -F <datei> -- <pfade>`.** Nie `git commit -a`, nie
+- **Immer `git commit -F <datei> -- <dateiliste>`.** Nie `git commit -a`, nie
   `git commit` ohne Pfade: `git add <pfade>` allein schützt NICHT, wenn zwischen
   `add` und `commit` jemand anders etwas einlegt — das hat hier schon einmal
   14 fremde Dateien in einen Commit gezogen.
+
+  ⚠ **„Pfade" heisst DATEIEN, nicht Verzeichnisse — und das stand hier zu
+  schwach.** Am 31.08. hat eine Sitzung genau diese Regel befolgt und trotzdem
+  34 Zeilen fremder Arbeit mitgenommen: sie schrieb `-- frontend/src/components`.
+  **Ein Verzeichnis als Pfadangabe begrenzt nicht in dem Sinn, auf den es
+  ankommt** — es nimmt alles Geänderte darunter mit, auch das, was eine andere
+  Sitzung dort gerade offen hat. Die Historie behauptete danach, sie habe einen
+  Fix geschrieben, den sie nicht geschrieben hatte.
+
+  Das ist an EINEM Tag zweimal passiert, in beide Richtungen: einmal hat eine
+  Sitzung 14 fremde Dateien gezogen, einmal 34 fremde Zeilen. Beide Male war
+  nichts beschädigt und beide Male war die Zuschreibung falsch.
+
+  **Bei wenigen Dateien: die Liste ausschreiben.** Bei vielen (der Sweep-Fall,
+  199 Dateien) ist die Liste unpraktisch, und dann ist die Antwort nicht
+  „Verzeichnis nehmen", sondern **vor dem Commit `git status --short` gegen die
+  eigene Änderungsliste halten** und Fremdes benennen, statt es mitzunehmen.
+
+  **Warum hier KEIN Tor steht, anders als bei den Migrationen.** Bei den
+  Migrationen ist die verletzte Eigenschaft im Baum sichtbar — zwei Dateien,
+  ein Zeitstempel, das kann ein Skript sehen. Hier ist die Eigenschaft
+  „stammt von mir", und die steht nirgends: git kennt geänderte Dateien, nicht
+  ihre Urheber vor dem Commit. Ein Tor könnte nur zählen, wie viele Dateien
+  eine Angabe erfasst, und würde beim ehrlichen Sweep genauso anschlagen wie
+  beim Unfall. Ein Tor, das bei jedem grossen Commit anschlägt, wird
+  weggeklickt — und dann ist es schlechter als der Satz, weil es Wachsamkeit
+  vortäuscht. Deshalb bleibt das hier eine Regel, mit dem Beleg daneben.
 - **Nie `git stash`** — das nimmt die Arbeit der anderen mit.
 - **`frontend/src/locales/**` gehört `-88` allein.** Kein eigener
   `lit-localize extract`; neue `msg()`-Zeichenketten bei `-88` melden, er nimmt
