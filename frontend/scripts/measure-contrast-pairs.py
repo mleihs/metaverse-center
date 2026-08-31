@@ -759,6 +759,70 @@ def run(targets, tokens):
     return findings, skips
 
 
+PLAIN_TOKEN = re.compile(r"^var\(\s*(--color-[a-z0-9-]+)\s*\)$")
+
+
+def palette_fault(fg_raw: str, bg_raw: str, tokens, need: float):
+    """Is this failure the THEME's palette, or the component's composition?
+
+    The distinction turns a list of hundreds into a list of worlds. If a rule
+    puts one plain platform token on another plain platform token — say
+    `--color-success` on `--color-surface` — then nothing about the component
+    decides the outcome: the theme picked both values, and every component in
+    the platform that pairs them fails identically. Repairing that at the call
+    site would dodge the theme's intent in one place and leave it standing in
+    ninety others.
+
+    Anything else — a `color-mix`, a Tier-3 token, a literal — is a choice the
+    component made, and the component is where it can be unmade.
+
+    Measured origin: `--color-success` on `--color-surface` is 3.30:1 in
+    brutalist, 3.15 in nordic-noir and 1.28 in deep-fried-horror (#00FF00 on
+    #FFFF00). No component wrote those numbers.
+    """
+    fm, bm = PLAIN_TOKEN.match(fg_raw.strip()), PLAIN_TOKEN.match(bg_raw.strip())
+    if not (fm and bm):
+        return None
+
+    # Two exclusions, because a wrong GROUND must never be dressed up as a
+    # palette defect. A list of "the theme is broken" that contains this
+    # tool's own mistakes is worse than no list: the reader cannot tell the
+    # halves apart, and the real entries lose their authority with the false
+    # ones.
+    #
+    # (a) The same token on itself is not a pairing anyone wrote. It means the
+    #     ground resolution landed on the element's own colour.
+    # (b) --color-text-inverse exists FOR an inverse ground: it is the label on
+    #     a filled button, a solid badge, a primary chip. If the resolved
+    #     ground is anything but --color-surface-inverse, the fill is what the
+    #     text actually sits on and this tool did not see it. Ten pairs.
+    if fm.group(1) == bm.group(1):
+        return None
+    if fm.group(1) == "--color-text-inverse" and bm.group(1) != "--color-surface-inverse":
+        return None
+
+    # (c) A palette pairing is TEXT or a STATUS colour on a SURFACE - the same
+    #     shape lint-color-contrast.sh checks in its 13 base pairs. A surface
+    #     token used as a foreground (`color: var(--color-surface-sunken)`) is
+    #     a component painting something decorative; a border token used as a
+    #     ground is a divider the ground walk stepped onto. Neither is a
+    #     decision the theme's author made about legibility.
+    fg_tok, bg_tok = fm.group(1), bm.group(1)
+    fg_ok = fg_tok.startswith("--color-text-") or fg_tok in (
+        "--color-primary", "--color-secondary", "--color-danger", "--color-success",
+        "--color-warning", "--color-info", "--color-accent-amber",
+        "--color-accent-green", "--color-epoch-influence",
+    )
+    bg_ok = bg_tok.startswith("--color-surface")
+    if not (fg_ok and bg_ok):
+        return None
+    try:
+        r = ratio(resolve(fg_raw, tokens), resolve(bg_raw, tokens))
+    except Unresolved:
+        return None
+    return (fm.group(1), bm.group(1)) if r < need else None
+
+
 def report_themes(targets, base_tokens) -> int:
     """Measure every simulation theme and report per PAIR, not per theme.
 
@@ -796,15 +860,49 @@ def report_themes(targets, base_tokens) -> int:
         e["themes"].append("(pinned dark)")
         e["worst"] = min(e["worst"], f["ratio"])
 
+    palette_pairs: dict = {}
     for theme, tok in runs.items():
         for f in run(themed, tok)[0]:
             key = (str(f["file"]), f["line"], f["sel"])
-            entry = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0})
+            entry = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0, "palette": set()})
             entry["themes"].append(theme)
             entry["worst"] = min(entry["worst"], f["ratio"])
+            pf = palette_fault(f["fg"], f["bg"], tok, f["need"])
+            if pf:
+                entry["palette"].add(theme)
+                palette_pairs.setdefault(pf, {}).setdefault(theme, []).append(f["ratio"])
 
     rows = sorted(per_pair.values(), key=lambda e: e["worst"])
+
+    # ── The palette's own faults, named once ──────────────────────────────
+    #
+    # Every row below would otherwise appear as dozens of component findings.
+    # It is one decision per token pair per theme, and it belongs to whoever
+    # owns the theme - not to the ninety files that pair the two tokens.
+    if palette_pairs:
+        print("=" * 72)
+        print("THEME PALETTE — these token pairs fail before any component is involved")
+        print("=" * 72)
+        for (fg, bg), by_theme in sorted(
+            palette_pairs.items(), key=lambda kv: min(min(v) for v in kv[1].values())
+        ):
+            print(f"  {fg} on {bg}")
+            for theme, ratios in sorted(by_theme.items(), key=lambda kv: min(kv[1])):
+                print(f"      {min(ratios):5.2f}:1  {theme}")
+        touched = sum(1 for e in rows if e["palette"])
+        print()
+        print(f"  {len(palette_pairs)} token pair(s) - they account for {touched} "
+              f"of the {len(rows)} findings below.")
+        print("  Repairing these at a call site would dodge the theme's intent in one")
+        print("  place and leave it standing everywhere else.")
+        print()
+        print("=" * 72)
+        print("COMPONENT — a colour this file chose, and can unchoose")
+        print("=" * 72)
+
     for e in rows:
+        if e["palette"]:
+            continue
         f = e["f"]
         try:
             rel = f["file"].relative_to(ROOT)
@@ -816,8 +914,12 @@ def report_themes(targets, base_tokens) -> int:
         print(f"           fg {f['fg']}")
         print(f"           fails in {n}/{len(runs)}: {where}")
 
+    component_rows = [e for e in rows if not e["palette"]]
     print()
-    print(f"{len(rows)} pair(s) below WCAG AA in at least one of {len(runs)} themes.")
+    print(f"{len(rows)} pair(s) below WCAG AA in at least one of {len(runs)} themes:")
+    print(f"   {len(rows) - len(component_rows)} caused by a theme's own palette "
+          f"({len(palette_pairs)} token pairs to decide)")
+    print(f"   {len(component_rows)} caused by a colour the component chose")
     light_only = [
         e for e in rows if "(platform default)" not in e["themes"]
     ]
