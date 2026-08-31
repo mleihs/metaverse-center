@@ -17,6 +17,7 @@ from backend.services.constants import (
     _downgrade_security,
     _upgrade_security,
 )
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -72,12 +73,12 @@ class OperativeService:
     async def get_mission(cls, supabase: Client, mission_id: UUID) -> dict:
         """Get a single mission by ID."""
         select_fields = "*, agents(name, portrait_image_url), target_sim:simulations!target_simulation_id(name)"
-        resp = await (
-            supabase.table("operative_missions").select(select_fields).eq("id", str(mission_id)).single().execute()
+        mission = await maybe_single_data(
+            supabase.table("operative_missions").select(select_fields).eq("id", str(mission_id)).maybe_single()
         )
-        if not resp.data:
+        if not mission:
             raise not_found(detail="Mission not found.")
-        return resp.data
+        return mission
 
     @classmethod
     async def list_threats(

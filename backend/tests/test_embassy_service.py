@@ -34,6 +34,7 @@ def _mock_supabase(data=None, count=None):
     builder.range.return_value = builder
     builder.limit.return_value = builder
     builder.single.return_value = builder
+    builder.maybe_single.return_value = builder
     builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
@@ -203,6 +204,7 @@ class TestCreateEmbassy:
                 single_b = MagicMock()
                 single_b.execute = AsyncMock(return_value=single_r)
                 b.single.return_value = single_b
+                b.maybe_single.return_value = single_b
                 # update path for transition_status returns activated version
                 update_b = MagicMock()
                 update_b.eq.return_value = update_b
@@ -213,9 +215,11 @@ class TestCreateEmbassy:
             elif table_name == "buildings":
                 r.data = {"name": "Test Building"}
                 b.single.return_value = b
+                b.maybe_single.return_value = b
             else:
                 r.data = None
                 b.single.return_value = b
+                b.maybe_single.return_value = b
             b.execute = AsyncMock(return_value=r)
             return b
 
@@ -319,6 +323,7 @@ class TestTransitionStatus:
             b.select.return_value = b
             b.eq.return_value = b
             b.single.return_value = b
+            b.maybe_single.return_value = b
             b.update.return_value = b
 
             r = MagicMock()
@@ -349,6 +354,7 @@ class TestTransitionStatus:
             b.select.return_value = b
             b.eq.return_value = b
             b.single.return_value = b
+            b.maybe_single.return_value = b
             b.update.return_value = b
 
             r = MagicMock()
@@ -376,6 +382,7 @@ class TestTransitionStatus:
             b.select.return_value = b
             b.eq.return_value = b
             b.single.return_value = b
+            b.maybe_single.return_value = b
 
             r = MagicMock()
             r.data = {**MOCK_EMBASSY, "status": "proposed"}
@@ -399,6 +406,7 @@ class TestTransitionStatus:
             b.select.return_value = b
             b.eq.return_value = b
             b.single.return_value = b
+            b.maybe_single.return_value = b
 
             r = MagicMock()
             r.data = {**MOCK_EMBASSY, "status": "dissolved"}

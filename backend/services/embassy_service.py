@@ -13,6 +13,7 @@ from uuid import UUID
 from fastapi import HTTPException
 
 from backend.services.base_service import serialize_for_json
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -86,12 +87,12 @@ class EmbassyService:
         embassy_id: UUID,
     ) -> dict:
         """Get a single embassy by ID."""
-        response = await (
-            supabase.table(cls.table_name).select(_EMBASSY_SELECT).eq("id", str(embassy_id)).single().execute()
+        embassy = await maybe_single_data(
+            supabase.table(cls.table_name).select(_EMBASSY_SELECT).eq("id", str(embassy_id)).maybe_single()
         )
-        if not response.data:
+        if not embassy:
             raise not_found("embassy", embassy_id)
-        return response.data
+        return embassy
 
     @classmethod
     async def get_for_building(
@@ -264,10 +265,12 @@ class EmbassyService:
         )
         resp = await (
             supabase.table(cls.table_name)
-            .update({
-                "ward_vector": ward_vector,
-                "ward_strength": max(0.0, min(1.0, ward_strength)),
-            })
+            .update(
+                {
+                    "ward_vector": ward_vector,
+                    "ward_strength": max(0.0, min(1.0, ward_strength)),
+                }
+            )
             .eq("id", str(embassy_id))
             .eq("status", "active")
             .execute()

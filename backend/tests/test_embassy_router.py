@@ -56,6 +56,7 @@ def _mock_supabase_with_role(role: str = "editor") -> MagicMock:
         b.eq.return_value = b
         b.limit.return_value = b
         b.single.return_value = b
+        b.maybe_single.return_value = b
 
         r = MagicMock()
         if table_name == "simulation_members":

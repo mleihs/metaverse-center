@@ -263,6 +263,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "lobby", "config": {}}
         ))
@@ -280,6 +281,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "completed", "config": {}}
         ))
@@ -298,6 +300,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "foundation", "config": {}}
         ))
@@ -316,6 +319,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
         ))
@@ -334,6 +338,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
         ))
@@ -352,6 +357,7 @@ class TestDeployValidation:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
         ))
@@ -719,6 +725,7 @@ class TestSpyEffect:
             fc.eq.return_value = fc
             fc.in_.return_value = fc
             fc.single.return_value = fc
+            fc.maybe_single.return_value = fc
             fc.execute = AsyncMock(return_value=MagicMock(data=[]))
             return fc
 
@@ -891,6 +898,7 @@ class TestAssassinEffect:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"config": {"cycle_hours": 8}}
         ))
@@ -954,6 +962,7 @@ class TestInfiltratorEffect:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"config": {"cycle_hours": 8}}
         ))
@@ -1026,6 +1035,7 @@ class TestRecall:
         get_chain.select.return_value = get_chain
         get_chain.eq.return_value = get_chain
         get_chain.single.return_value = get_chain
+        get_chain.maybe_single.return_value = get_chain
         get_chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
 
         # EpochService.get chain (game_epochs select)
@@ -1033,6 +1043,7 @@ class TestRecall:
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition"}
         ))
@@ -1047,6 +1058,7 @@ class TestRecall:
             fc.select.return_value = fc
             fc.eq.return_value = fc
             fc.single.return_value = fc
+            fc.maybe_single.return_value = fc
             fc.execute = AsyncMock(return_value=MagicMock(data=[]))
             return fc
 
@@ -1091,12 +1103,14 @@ class TestRecall:
         get_chain.select.return_value = get_chain
         get_chain.eq.return_value = get_chain
         get_chain.single.return_value = get_chain
+        get_chain.maybe_single.return_value = get_chain
         get_chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
 
         epoch_chain = MagicMock()
         epoch_chain.select.return_value = epoch_chain
         epoch_chain.eq.return_value = epoch_chain
         epoch_chain.single.return_value = epoch_chain
+        epoch_chain.maybe_single.return_value = epoch_chain
         epoch_chain.execute = AsyncMock(return_value=MagicMock(
             data={"id": str(EPOCH_ID), "status": "competition"}
         ))
@@ -1127,6 +1141,7 @@ class TestRecall:
         chain.select.return_value = chain
         chain.eq.return_value = chain
         chain.single.return_value = chain
+        chain.maybe_single.return_value = chain
         chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
         sb.table.return_value = chain
 
@@ -1152,6 +1167,7 @@ class TestRecall:
             chain.select.return_value = chain
             chain.eq.return_value = chain
             chain.single.return_value = chain
+            chain.maybe_single.return_value = chain
             if name == "operative_missions":
                 chain.execute = AsyncMock(return_value=MagicMock(data=mission_data))
             elif name == "game_epochs":

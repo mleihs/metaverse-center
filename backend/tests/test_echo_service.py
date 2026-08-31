@@ -36,6 +36,7 @@ def _mock_supabase(data=None, count=None):
     builder.range.return_value = builder
     builder.limit.return_value = builder
     builder.single.return_value = builder
+    builder.maybe_single.return_value = builder
     builder.execute = AsyncMock(return_value=response)
 
     mock.table.return_value = builder
@@ -523,6 +524,7 @@ class TestApproveEcho:
         get_builder.select.return_value = get_builder
         get_builder.eq.return_value = get_builder
         get_builder.single.return_value = get_builder
+        get_builder.maybe_single.return_value = get_builder
         get_resp = MagicMock()
         get_resp.data = {"id": str(ECHO_ID), "status": "pending"}
         get_builder.execute = AsyncMock(return_value=get_resp)
@@ -561,6 +563,7 @@ class TestRejectEcho:
         get_builder.select.return_value = get_builder
         get_builder.eq.return_value = get_builder
         get_builder.single.return_value = get_builder
+        get_builder.maybe_single.return_value = get_builder
         get_resp = MagicMock()
         get_resp.data = {"id": str(ECHO_ID), "status": "pending"}
         get_builder.execute = AsyncMock(return_value=get_resp)

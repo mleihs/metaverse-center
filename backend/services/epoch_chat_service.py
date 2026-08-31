@@ -8,6 +8,7 @@ import sentry_sdk
 
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.epoch_service import EpochService
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -160,16 +161,20 @@ class EpochChatService:
         config = {**DEFAULT_CONFIG, **(epoch_row.get("config") or {})}
         if ready and config.get("auto_resolve_mode") != "manual" and config.get("require_action_for_ready"):
             db = admin_supabase or supabase
-            participant_check = await (
+            # `maybe_single()`, weil ein NICHT-Teilnehmer hier ein gueltiger Fall
+            # ist: die Pruefung soll ihn durchlassen, nicht abbrechen. Mit
+            # `.single()` warf PostgREST bei null Zeilen PGRST116, und aus dem
+            # vorgesehenen Ablauf wurde ein 500 — der Zweig `if participant_check.data`
+            # daneben las sich wie eine Behandlung dieses Falls und war unerreichbar.
+            participant_check = await maybe_single_data(
                 db.table("epoch_participants")
                 .select("has_acted_this_cycle, is_bot")
                 .eq("epoch_id", str(epoch_id))
                 .eq("simulation_id", str(simulation_id))
-                .single()
-                .execute()
+                .maybe_single()
             )
-            if participant_check.data and not participant_check.data["is_bot"]:
-                if not participant_check.data["has_acted_this_cycle"]:
+            if participant_check and not participant_check["is_bot"]:
+                if not participant_check["has_acted_this_cycle"]:
                     raise bad_request("You must perform at least one action (or pass) before signalling ready.")
 
         response = await (

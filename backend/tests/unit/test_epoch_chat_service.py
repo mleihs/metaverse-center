@@ -74,6 +74,7 @@ def _mock_supabase(
     gate_subchain = MagicMock()
     gate_subchain.eq.return_value = gate_subchain
     gate_subchain.single.return_value = gate_subchain
+    gate_subchain.maybe_single.return_value = gate_subchain
     gate_subchain.execute = AsyncMock(return_value=MagicMock(data=None))
     ep_combined.select = MagicMock(return_value=gate_subchain)
 

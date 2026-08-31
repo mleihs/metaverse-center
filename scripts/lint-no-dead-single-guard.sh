@@ -43,27 +43,46 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
-RESULT=$(python3 - <<'PY'
+RESULT=$(python3 - <<'PYEOF'
 import re
 import pathlib
 
-# `.single()` / `.execute()` on their own lines, then a falsy check on the
-# result of that same await — the shape that cannot run.
-PATTERN = re.compile(
-    r"\.single\(\)\s*\n\s*\.execute\(\)\s*\n\s*\)\s*\n\s*if not (\w+)(?:\.data)?\b"
-)
+# ZEILENBASIERT, NICHT ALS EIN REGEX UEBER DIE GANZE KETTE.
+#
+# Die erste Fassung suchte `.single()` + `.execute()` + `)` + `if not X` mit
+# Zeilenumbruechen dazwischen -- also genau die MEHRZEILIGE Schreibweise. Am
+# 31.08.2026 gemessen: 27 Ketten stehen einzeilig, und ACHT davon trugen
+# denselben toten Waechter. Das Tor meldete sie nie und war PASS.
+#
+# Ein Muster, das eine FORMATIERUNG beschreibt statt einer BEDEUTUNG, prueft die
+# Formatierung. Ueber den Zeilenumbruch entscheidet `ruff format`, nicht der
+# Autor -- die Sichtbarkeit des Fehlers hing damit an einer Zeilenlaenge.
+SINGLE = re.compile(r"\.single\(\)")
+ASSIGN = re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*=\s*await\b")
+VENDOR = (".venv", "venv", "site-packages", "node_modules")
 
 violations = []
 for path in sorted(pathlib.Path("backend").rglob("*.py")):
-    if "tests" in path.parts:
+    if "tests" in path.parts or any(v in path.parts for v in VENDOR):
         continue
-    source = path.read_text(encoding="utf-8")
-    for match in PATTERN.finditer(source):
-        line = source[: match.start()].count("\n") + 1
-        violations.append(f"{path}:{line}: guard on `{match.group(1)}` after .single()")
+    lines = path.read_text(encoding="utf-8").split("\n")
+    for i, line in enumerate(lines):
+        if not SINGLE.search(line) or ".maybe_single()" in line:
+            continue
+        var = None
+        for j in range(i, max(-1, i - 6), -1):
+            m = ASSIGN.match(lines[j])
+            if m:
+                var = m.group(1)
+                break
+        if not var:
+            continue
+        window = "\n".join(lines[i + 1 : i + 7])
+        if re.search(rf"if not {re.escape(var)}(?:\.data)?\b|if {re.escape(var)}(?:\.data)? is None", window):
+            violations.append(f"{path}:{i + 1}: guard on `{var}` after .single()")
 
 print("\n".join(violations))
-PY
+PYEOF
 )
 
 if [ -n "$RESULT" ]; then

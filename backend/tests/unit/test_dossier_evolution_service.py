@@ -26,6 +26,7 @@ def _make_admin():
     sim_chain.select.return_value = sim_chain
     sim_chain.eq.return_value = sim_chain
     sim_chain.single.return_value = sim_chain
+    sim_chain.maybe_single.return_value = sim_chain
     sim_chain.execute = AsyncMock(
         return_value=MagicMock(data={"name": "Test Sim", "description": "A theme"})
     )
