@@ -69,3 +69,29 @@ nicht: Sabotage und Krisenereignisse laufen an ihnen vorbei.
 eine INHALTLICHE Entscheidung über das Vokabular dieser Welten — keine, die
 eine Migration erraten darf. Dasselbe gilt für `restored` und `illuminated` in
 Cité des Dames (vier Bauten).
+
+---
+
+## T4 · Die Beschriftung eines Bauzustands steht zweimal da
+
+**Gemessen:** 31.08.2026, Migration 309.
+
+`buildings.building_condition_de` ist eine Zweitschrift der Beschriftung, die in
+`simulation_taxonomies` steht. Migration 309 gibt ihr eine Quelle
+(`fn_building_condition_de`) und einen Wächter (`trg_building_condition_label`),
+aber sie räumt die Zweitschrift nicht ab.
+
+Richtig wäre, dass die Oberfläche die Beschriftung aus der Taxonomie liest und
+die Spalte verschwindet. Betroffen sind vier Stellen:
+
+    frontend/src/components/buildings/BuildingCard.ts        t(b, 'building_condition')
+    frontend/src/components/buildings/BuildingDetailsPanel.ts
+    frontend/src/components/buildings/BuildingsView.ts       Spaltenschlüssel
+    frontend/src/utils/terminal-formatters.ts
+
+Dazu bräuchte das Frontend die Taxonomie der laufenden Welt im Zustand — die
+gibt es schon (`BuildingEditModal` holt sie über `getTaxonomiesByType`), aber
+nicht als geteilte Quelle.
+
+Solange die Spalte bleibt, ist sie ein Zwischenspeicher mit Quelle und Wächter
+statt einer Zweitschrift ohne beides. Das ist tragfähig, aber nicht das Ziel.
