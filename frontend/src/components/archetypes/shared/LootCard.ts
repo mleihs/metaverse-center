@@ -34,6 +34,21 @@ export class VelgLootCard extends LitElement {
       }
 
       :host([tier="3"]) .card {
+      /* Der Akzent als TEXT.
+         Acht feste Archetypfarben, und diese Ansicht haengt an der
+         Plattform-Route /archetypes/ — nicht unter /simulations/, erbt also
+         nie ein Weltthema. Damit ist es ein Problem mit ZWEI festen Gruenden,
+         nicht mit zehn: der Seite und dem aufgehellten Panel darueber.
+
+         Sechs der acht bestehen auf beiden. Zwei nicht, und gegen den Panel-
+         Grund brauchen sie 18 % statt der 12 %, die die Seite allein verlangt
+         haette — der erste Versuch rechnete gegen EINEN Grund und liess zwei
+         Stellen bei 4,04 stehen. Genau der Fehler, gegen den die Funktion
+         liftForContrast eine Liste nimmt.
+
+         Bei 18 % bleibt der Farbton erkennbar; das ist der Unterschied zu
+         einer echten Hebung, die die Identitaet kosten wuerde. */
+      --_accent-text: color-mix(in srgb, var(--_accent) 82%, var(--color-text-primary));
         border-color: var(--_accent);
         box-shadow: 0 0 16px var(--_accent-glow);
       }
@@ -65,12 +80,12 @@ export class VelgLootCard extends LitElement {
       }
 
       :host([tier="2"]) .tier-label {
-        color: var(--_accent);
+        color: var(--_accent-text);
         background: color-mix(in oklch, var(--_accent) 10%, transparent);
       }
 
       :host([tier="3"]) .tier-label {
-        color: var(--_accent);
+        color: var(--_accent-text);
         background: color-mix(in oklch, var(--_accent) 15%, transparent);
         border: 1px solid var(--_accent-border);
       }
@@ -79,7 +94,7 @@ export class VelgLootCard extends LitElement {
         font-family: var(--_font-prose);
         font-size: 0.72rem;
         font-style: italic;
-        color: var(--_accent);
+        color: var(--_accent-text);
         letter-spacing: 0.04em;
         margin-bottom: 8px;
       }

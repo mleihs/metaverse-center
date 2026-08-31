@@ -15,6 +15,21 @@ export class VelgQuoteWall extends LitElement {
     detailTokenStyles,
     css`
       :host {
+      /* Der Akzent als TEXT.
+         Acht feste Archetypfarben, und diese Ansicht haengt an der
+         Plattform-Route /archetypes/ — nicht unter /simulations/, erbt also
+         nie ein Weltthema. Damit ist es ein Problem mit ZWEI festen Gruenden,
+         nicht mit zehn: der Seite und dem aufgehellten Panel darueber.
+
+         Sechs der acht bestehen auf beiden. Zwei nicht, und gegen den Panel-
+         Grund brauchen sie 18 % statt der 12 %, die die Seite allein verlangt
+         haette — der erste Versuch rechnete gegen EINEN Grund und liess zwei
+         Stellen bei 4,04 stehen. Genau der Fehler, gegen den die Funktion
+         liftForContrast eine Liste nimmt.
+
+         Bei 18 % bleibt der Farbton erkennbar; das ist der Unterschied zu
+         einer echten Hebung, die die Identitaet kosten wuerde. */
+      --_accent-text: color-mix(in srgb, var(--_accent) 82%, var(--color-text-primary));
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -65,7 +80,7 @@ export class VelgQuoteWall extends LitElement {
         font-style: normal;
         text-transform: uppercase;
         letter-spacing: var(--_label-tracking);
-        color: var(--_accent);
+        color: var(--_accent-text);
         opacity: 0.5;
         margin-top: 4px;
       }
@@ -79,7 +94,7 @@ export class VelgQuoteWall extends LitElement {
         font-weight: 500;
         letter-spacing: var(--_label-tracking);
         font-variant: small-caps;
-        color: var(--_accent);
+        color: var(--_accent-text);
       }
     `,
   ];
