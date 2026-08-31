@@ -1,162 +1,106 @@
 # Resume — Sitzung `velgarien-rebuild-45`
 
-Stand 31.08.2026, Nachmittag. **Nach einem Context-Clear: den Block unten
-komplett in den Prompt kopieren.**
-
-Das Frontseiten-Redesign (L1–L7) ist FERTIG und committet, nichts gepusht.
-Offen sind vier Punkte, die der Nutzer bewusst hinter den Context-Clear gelegt
-hat.
+Stand 31.08.2026, Abend. Die vier Punkte aus dem Vorlauf sind **gebaut**.
+Offen ist genau eine Sache: ein Prod-Schreibvorgang, der auf das Wort des
+Nutzers wartet.
 
 ---
 
+## ⏳ DAS EINZIGE, WAS NOCH AUSSTEHT
+
 ```
-Lies zuerst das Gedächtnis `frontseite-l1-l7-2026-08-31`, dann diese Datei
-(`handoff/RESUME-45.md`). Ich bin `velgarien-rebuild-45`, der Peer ist
-`velgarien-rebuild-88` (ListAgents zuerst, der NAME ist die Adresse für
-SendMessage).
+# Trockenlauf — läuft sauber, 31 Zeilen würden geändert
+.venv/bin/python scripts/backfill_world_locale.py
 
-Das Frontseiten-Redesign ist durch. Es sind VIER Punkte offen. Arbeite sie in
-dieser Reihenfolge ab und frag zwischendurch nicht „soll ich weitermachen?".
+# Der Schreibvorgang (PROD). Braucht das ausdrückliche Wort des Nutzers.
+WORLD_LOCALE_CONFIRMED=yes .venv/bin/python scripts/backfill_world_locale.py --write
+```
 
-▶ 1. DIE ÜBERSETZUNGEN AUF DELUXE HEBEN, DANN SCHREIBEN
-   `scripts/backfill_world_locale.py` trägt 11 Welten: 7 neue deutsche Titel,
-   9 deutsche Texte, 1 englische Korrektur. Vier Welten bekommen ausdrücklich
-   KEINEN deutschen Titel (Eigennamen: Speranza, Cité des Dames, Velgarien,
-   Station Null) — das ist entschieden, nicht vergessen.
+31 Zeilen = 11 Vorlagen + 20 Klon-Zeilen. Nach dem Schreiben gegenprüfen:
 
-   ⚠ ABER: die vorhandenen Texte sind ERSTE ENTWÜRFE und genügen dem Anspruch
-   NICHT. Der Nutzer verlangt ausdrücklich (Wortlaut nicht wiedergegeben)
-   Sie lesen sich derzeit als Übersetzung, nicht als deutsche Prosa. Was
-   konkret zu tun ist:
-     · Jeder Text muss klingen, als wäre er auf Deutsch GESCHRIEBEN worden,
-       nicht aus dem Englischen gewendet. Satzbau umbauen, wo das Deutsche es
-       anders will. Keine englische Wortstellung, keine Partizipialketten.
-     · Die Titel prüfen, nicht nur die Texte. „Konventioneller Speicher" ist
-       technisch richtig und als Welttitel flach. „Stoffwechselwährung und
-       zellulärer Kapitalismus" ist wörtlich und klobig. „Die Architektur von
-       Babel" sollte vermutlich „Die Architektur zu Babel" heißen (Anklang an
-       „Turmbau zu Babel"). „Die Gaslicht-Weite" für „The Gaslit Reach" ist
-       unsicher — „Reach" ist ein Gewässerabschnitt.
-     · Den Ton der Welt treffen: Spengbab ist derb, Cité des Dames ist
-       feierlich, Station Null ist knapp und kalt, Velgarien ist bürokratisch.
-     · Fachbegriffe stehen lassen, wo sie im Deutschen etabliert sind
-       (Contrada/Contrade, Unterzee, ARC, Hydroponik, biolumineszent).
+```
+.venv/bin/python scripts/backfill_world_locale.py   # muss „0 Zeilen" melden
+```
 
-   Erst wenn die Texte sitzen, ausführen — es ist ein PROD-SCHREIBVORGANG und
-   braucht mein ausdrückliches Wort:
-     .venv/bin/python scripts/backfill_world_locale.py            # Trockenlauf
-     WORLD_LOCALE_CONFIRMED=yes .venv/bin/python scripts/backfill_world_locale.py --write
+---
 
-▶ 2. VELGARIEN: DEUTSCHER TEXT IN DER ENGLISCHEN SPALTE
-   `velgarien.description` ist auf DEUTSCH und steht in der ENGLISCHEN Spalte;
-   `description_de` war leer. Ein englischsprachiger Besucher liest dort seit
-   jeher deutschen Text. Der Nachtrag oben verschiebt den deutschen Text nach
-   `description_de` und setzt eine englische Fassung daneben (`description_en_fix`,
-   die EINZIGE Stelle, an der das Skript ein gefülltes Feld überschreibt).
-   Auch dieser englische Text muss deluxe sein, nicht bloß korrekt.
+## ✅ Was in diesem Lauf fertig wurde (4 Commits, nichts gepusht)
 
-   🔑 Und prüfe, ob es weitere Welten mit derselben Verwechslung gibt — ich
-   habe nur die 16 lebenden angesehen, nicht die Epochen-Klone und Archivierten.
+| Commit | Inhalt |
+|---|---|
+| `f639dffa` | Punkt 3 — drei verwaiste Dateien weg, die vierte lebte |
+| `b75153b0` | Punkt 4 — fünf tote DRIFT-Tore angeschlossen |
+| `047100f8` | Peer-Nachzug — `status`-Filter, zwei Erklärungen berichtigt |
+| `78399c84` | Punkte 1+2 — Übersetzungen deluxe, Spaltenfehler ×4 |
 
-▶ 3. ZWEI VERWAISTE KOMPONENTEN LÖSCHEN
-   `frontend/src/components/landing/DungeonShowcase.ts` (19 KB) mit
-   `dungeon-showcase-styles.ts` (36 KB) und `dungeon-showcase-data.ts` (16 KB),
-   sowie `LandingAgentShowcase.ts` (24 KB). Die neue Frontseite bindet sie nicht
-   mehr ein; gemessen: 0 Verwender im ganzen Werk. Zur Laufzeit kosten sie
-   nichts (nicht importiert = nicht im Bündel), aber sie sind totes Gewicht.
-   Vor dem Löschen NOCH EINMAL messen (`grep -rl "<velg-dungeon-showcase"`),
-   und prüfen, ob in `dungeon-showcase-data.ts` literarische Inhalte stehen,
-   die anderswo hingehören statt in den Papierkorb.
+### Punkt 1+2 — Übersetzungen und Spaltenfehler
+Texte neu **geschrieben**, nicht übersetzt. Fünf Titel geändert:
+„Der konventionelle Speicher", „Währung des Stoffwechsels und Kapitalismus der
+Zelle", „Die Architektur **zu** Babel" (Turmbau), „Der Gaslicht-**Sund**"
+(*Reach* = Gewässerabschnitt), „Das **Panopticon**" (Foucault, nicht
+Wachsfigurenkabinett). Vier Welten bleiben ohne deutschen Titel.
 
-▶ 4. DIE FÜNF TOTEN DRIFT-SCHALTER ANSCHLIESSEN (nicht entfernen)
-   `drift_ai_enabled`, `drift_p1_enabled`, `drift_p2_enabled`,
-   `drift_p3_enabled`, `drift_p4_enabled` stehen auf Prod und werden von NICHTS
-   gelesen — gemessen über `pg_get_functiondef` auf der laufenden DB: 0
-   Funktionen (zum Vergleich `drift_fun_core_enabled`: 10), und im Python
-   nennt sie nur die Vertragsdatei selbst.
+Der Spaltenfehler betrifft **vier** Zeilen, nicht eine: `velgarien` **und**
+`velgarien-e3/-e4/-e5`. Gefunden erst beim Zählauf über alle 41 Zeilen.
 
-   Der Nutzer hat entschieden: ANSCHLIESSEN, nicht löschen (Wortlaut nicht wiedergegeben). Die Anschlussstelle ist schon vorbereitet und steht
-   ausdrücklich im Bestand: `backend/models/drift.py`, `DriftPublicState` hat
-   heute genau EIN Feld (`enabled`) und der Docstring sagt wörtlich „further
-   phase flags are an additive extension on this model, never a new endpoint".
+### Punkt 3 — verwaiste Dateien
+Drei gelöscht (2 106 Zeilen). Die vierte, `dungeon-showcase-data.ts`, **lebt**
+— sie trägt 49 belegte Zitate und die Archetyp-Detailseiten. Umgezogen nach
+`components/archetypes/`. Dazu: tote Felder `scrim`/`cssClass`, zwei tote
+Linter-Ausnahmen, vier Dokumente.
 
-   Vorgeschlagener Weg (gegen HEAD prüfen, nicht blind übernehmen):
-     a) `DriftService.get_phase_state()` — liest alle sechs drift-Tore in EINER
-        Abfrage und wendet die KUMULATIVE Regel an: P2 gilt nur als offen, wenn
-        P1 und P0 offen sind. Die Regel gehört an EINE Stelle, sonst leitet sie
-        die nächste Lesestelle neu her.
-     b) `DriftPublicState` um `ai`, `p1`…`p4` und `highest_open_phase` erweitern
-        (additiv, kein neuer Endpunkt).
-     c) `GET /api/v1/public/drift/state` liefert es mit; die HUD zeigt, welche
-        Phase offen ist.
-     d) In `platform_gate_contracts.py` bei den fünf `wired=False` → `wired=True`.
-        Dann wird `test_unwired_gates_are_really_dead` ROT und zwingt zur
-        Umstellung — genau dafür ist der Test da.
-     e) Tests: kumulative Regel (P2 ohne P1 = zu), fehlende Zeile = zu.
+### Punkt 4 — DRIFT-Tore
+`DriftService.get_public_state` liest alle sechs in EINEM Abruf, kumulative
+Regel an EINER Stelle. `DriftPublicState` + `ai`/`p1..p4`/`highest_open_phase`.
+Ausbaustufen-Leiter im HUD (nur im Zweig ohne Lauf). 24 neue Tests. Kein Tor
+mehr unverdrahtet.
 
-   ⚠ Zu `drift_ai_enabled` gemessen: DRIFT macht heute ÜBERHAUPT KEINE
-   KI-Aufrufe (kein `run_ai`, kein `GenerationService` in `drift_service.py`
-   oder `routers/drift.py`). Das Tor ist also ein Riegel für etwas, das es noch
-   nicht gibt. Es trotzdem lesbar zu machen ist richtig — dann fragt die erste
-   DRIFT-Textgenerierung das vorhandene Tor, statt ein neues zu erfinden. Aber
-   behaupte in der Oberfläche nicht, es spare gerade Geld.
+---
 
-REGELN, die in diesem Projekt gelten:
-- Geteilter Arbeitsbaum: NIE `git stash`. Und NIE `git commit` ohne Pfadangabe —
-  immer `git commit -F <datei> -- <pfade>`. Ohne das nimmt der Commit alles mit,
-  was der Peer zwischen `add` und `commit` in den Index gelegt hat (passiert am
-  31.08. mit 14 Dateien).
-- Prod-Schreibvorgänge NUR mit meinem Wort. Ein Peer kann das nicht weiterreichen.
-- Migrationen: der ZEITSTEMPEL ist der Schlüssel, nicht die Nummer im Dateinamen.
+## 🔑 Die fünf Lehren
+
+**1. Die Messung im Auftrag war falsch.** `dungeon-showcase-data.ts` galt als
+verwaist, weil es unter `landing/` lag und „showcase" hieß. Die Bühne war tot,
+die Daten nicht. Ursache war der ORT — deshalb umgezogen, nicht nur verschont.
+
+**2. Eine halbe Reparatur ist eine Regression.** Dreht man bei Velgarien nur
+`description` auf Englisch, läuft der deutsche Rückfall (`t()` in
+`locale-fields.ts`) ins reparierte Feld: die deutsche Seite zeigt ab sofort
+Englisch. Nur als **Paar** schreiben.
+
+**3. Der Abstammung folgen, aber nicht mit dem Titel.** Klone hängen über
+`source_template_id` an der Vorlage. Der deutsche Titel darf NICHT mitwandern —
+er verschluckte den Epochenzusatz.
+
+**4. Angeschlossen ≠ wirksam.** Hinter P1–P4 steht kein Merkmal, und
+`drift_ai_enabled` riegelt nichts ab (DRIFT ruft keine KI). Es kommt in der
+Spieleroberfläche deshalb gar nicht vor: „KI aus" läse sich als ersparte Kosten.
+
+**5. `platform_settings` steht auf Prod in Python-Schreibweise** (`True`, nicht
+`true`). `parse_setting_bool` kleinschreibt — aber nie selbst gegen `"true"`
+vergleichen.
+
+---
+
+## Offene Punkte danach
+
+- **T5** (vom Peer): `/platform-stats` ist tot — `getPlatformStats` hat null
+  Verwender, `LandingService` ist das bessere Duplikat. Entfernen eines
+  öffentlichen Endpunkts ist eine Nutzerentscheidung.
+- `get_platform_stats` zählt **Epochen weiterhin allein am Status** (Prod: 7
+  statt 0). Nur die `status`-Hälfte ist behoben.
+- Der deutsche Text von `the-panopticon-of-good-taste` ist maschinennah
+  („ambiantes Licht", „Panoptikum"). Gefüllte Felder werden nicht überschrieben.
+- `POST /admin/dungeon-showcase/generate-image` hat null Aufrufer im Frontend,
+  erzeugt aber die Bilder der Detailseiten.
+- Plattformweit: `/storage/v1/object/public/…` liefert immer
+  `cache-control: no-cache`.
+
+## Regeln, die gelten
+
+- Geteilter Arbeitsbaum: NIE `git stash`, NIE `git commit` ohne Pfadangabe.
+- Prod-Schreibvorgänge nur mit dem Wort des Nutzers.
+- Migrationen: der ZEITSTEMPEL ist der Schlüssel. Nächste freie Nummer: **311**
+  ab `20260831200000` (308–310 sind beim Peer vergeben).
 - Vor jedem Commit: ruff + tsc + `npm run lint:full` + pytest.
-- Jede Messung gegen den ECHTEN Fall prüfen, bevor du ihr glaubst.
-- die nachhaltigere Handlung hat Vorrang — den Weg, der die URSACHE beseitigt.
-- `velg-frontend-design`-Skill vor der ersten Zeile Komponentencode.
-- `frontend/src/locales/**` gehört dem Peer (H2). `lit-localize extract` NICHT
-  selbst aufrufen — dem Peer Bescheid sagen.
-- Dem Peer melden, was du anfasst, BEVOR du es anfasst.
-```
-
----
-
-## Was in diesem Lauf fertig wurde (6 Commits, nichts gepusht)
-
-**Merkmalstor-Verwaltung im Admin** (war Voraussetzung fürs Redesign).
-`backend/services/platform_gate_contracts.py` erklärt **23 Plattform-Tore**, je
-mit einem Satz, was der Schalter anschaltet, was sein Ausbleiben kostet,
-`default_when_missing` (gemessen, nicht aus dem Namen geschlossen) und `wired`.
-AST-Test bindet in beide Richtungen. `GET /api/v1/admin/feature-gates` +
-`AdminFeatureGatesTab.ts` als **erster** Unterreiter unter Admin → Plattform.
-
-**L1** `GET /api/v1/public/landing` — ein Aufruf: 9 Zahlen, 4 Welten, 3 Bürger.
-**L4** Bildstrecke 20,61 MB → 1,58 MB, erste Bildlast **63 KB**, auf Prod abgelegt.
-**L5/L6/L7** `LandingPage.ts` von 2 302 auf 120 Zeilen, sechs Abschnittsdateien.
-
-## Die vier Lehren, die im Kopf bleiben sollen
-
-**`git add <pfade>` schützt nicht, wenn `git commit` ohne Pfadangabe folgt.**
-Der Index ist im geteilten Baum gemeinsam.
-
-**Ein fail-closed PARSER ist keine fail-closed ABWESENHEIT.** Was mit einem
-ankommenden Wert geschieht, sagt nichts darüber, was ohne Zeile geschieht — das
-entscheidet die Vorgabe des Aufrufers, und die muss man LESEN.
-
-**Ein Status ist kein Betrieb.** Sieben Epochen stehen in einem spielenden
-Status, keine hat sich seit 164 Tagen bewegt.
-
-**Lint grün ≠ Seite richtig.** tsc und alle 23 Tore waren sauber, bevor die
-Seite zum ersten Mal im Bild stand. Erst dann sichtbar: zwei Navigationsleisten
-übereinander, zwei `main#main-content`, ein Weltkartenrahmen von 2 × 21 px
-(`aspect-ratio` wirkt NICHT auf `display: inline`), ein leerer Abschnitt mit
-192 px Höhe.
-
-## Weitere offene Punkte (nicht in den vier oben)
-
-- **133 neue `msg()`-Zeichenketten** warten beim Peer (H2). Die 20 langen
-  Weltbeschreibungen in `LandingForge.ts` sind der Brocken.
-- **Plattformweit:** `/storage/v1/object/public/…` liefert IMMER
-  `cache-control: no-cache`, egal was beim Ablegen gesendet wird — in drei
-  Formen und gegen einen frischen Pfad geprüft. Halb so schlimm: ETag →
-  **304 mit null Bytes**. Betrifft alle Bilder der Plattform.
-- **`get_platform_stats` filtert `status` nicht** (heute zufällig richtig, weil
-  alle 16 Vorlagen `active` sind). Beim Peer als Punkt gemeldet.
+- `frontend/src/locales/**` gehört dem Peer.
