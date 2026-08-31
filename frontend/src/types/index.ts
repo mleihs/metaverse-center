@@ -113,6 +113,23 @@ export interface Simulation {
   last_heartbeat_tick?: number;
   last_heartbeat_at?: string;
   next_heartbeat_at?: string;
+  /**
+   * The question this world was built to ask, carried over from the Forge.
+   *
+   * The Astrolabe picks one philosophical anchor per draft and every later
+   * generation step is written against it, but until migration 319 the anchor
+   * stayed on `forge_drafts` — owner-scoped — and materialization dropped it.
+   * The world therefore could not state its own premise, which is the first
+   * thing the overview is supposed to say. Absent on worlds forged before the
+   * backfill, and on worlds that were never forged at all; the card is simply
+   * not drawn then, because an invented premise is worse than no premise.
+   */
+  philosophical_anchor?: {
+    title: string;
+    question: string;
+    title_de?: string;
+    question_de?: string;
+  };
   agent_count?: number;
   building_count?: number;
   event_count?: number;
