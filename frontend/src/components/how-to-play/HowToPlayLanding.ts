@@ -14,14 +14,17 @@
  * Cognitive Load Theory (max 2 disclosure levels, essential first).
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
+import { driftStatus } from '../../services/DriftStatusService.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
 import { htpHeroStyles } from './htp-shared-styles.js';
+import { visibleTopics } from './htp-topic-data.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,7 +43,7 @@ interface DoorCard {
 
 @localized()
 @customElement('velg-how-to-play-landing')
-export class VelgHowToPlayLanding extends LitElement {
+export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
   // ── Styles ───────────────────────────────────────────────────────────────
 
   static styles = [
@@ -363,6 +366,12 @@ export class VelgHowToPlayLanding extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    // Dieselbe Quelle wie im Fuehrer-Raster: das DRIFT-Thema haengt am
+    // Plattform-Tor, also haengt auch die Zahl daran. Eine Landeseite, die
+    // 16 verspricht, waehrend hinter der Tuer 15 liegen, ist eine Zusage, die
+    // die naechste Seite widerlegt. `SignalWatcher` zeichnet neu, sobald das
+    // oeffentliche Tor aufgeloest ist.
+    void driftStatus.ensureLoaded();
     seoService.setTitle([msg('How to Play')]);
     seoService.setDescription(
       msg(
@@ -380,6 +389,7 @@ export class VelgHowToPlayLanding extends LitElement {
   // ── Data ───────────────────────────────────────────────────────────────
 
   private get _doors(): DoorCard[] {
+    const topicCount = visibleTopics(driftStatus.enabled.value).length;
     return [
       {
         key: 'quickstart',
@@ -399,9 +409,9 @@ export class VelgHowToPlayLanding extends LitElement {
         title: msg('Game Guide'),
         subtitle: msg('"How does X work?"'),
         description: msg(
-          '12 topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.',
+          str`${topicCount} topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.`,
         ),
-        detail: msg('12 topics'),
+        detail: msg(str`${topicCount} topics`),
         href: '/how-to-play/guide',
         accentVar: '--_accent-guide',
       },
