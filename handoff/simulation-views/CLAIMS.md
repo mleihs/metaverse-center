@@ -17,6 +17,36 @@ Vier Sitzungen teilen sich **einen** Arbeitsbaum
 > Phase 2+3, von der anderen Phase 4). `-88` hat zurückgezogen; es gilt die
 > Zuteilung aus der Hand, die das Paket vom Nutzer bekommen hat.
 
+### Nachtrag 31.08., nach dem Schärfen des Tors (`51d0d0ab`)
+
+Das Tor kennt die geteilte Form jetzt und würde diese zwei Zeilen melden:
+
+    platform/DevAccountSwitcher.ts:266   .user--focused     border-left-color: var(--color-primary)
+    platform/SimulationSwitcher.ts:256   .sim-card--active  border-left-color: var(--color-primary)
+
+Beide Dateien stehen deshalb in `ALLOWLIST` von
+`frontend/scripts/lint-accent-edge-bar.py` — **nicht als Ausnahme, sondern
+als benannte Schuld** (der Kommentar dort sagt das wörtlich, mit Datum und
+Verweis auf diesen Abschnitt).
+
+**Wer eine der beiden Dateien repariert, entfernt im selben Commit ihre
+Zeile aus `ALLOWLIST`.** Sonst bleibt das Tor an dieser Stelle für immer
+blind, und der nächste Streifen, der dort entsteht, wird nicht gemeldet.
+
+Der Ersatz ist mechanisch und steht fünfmal im Repo (`9129415e`, `b6c130b9`,
+`51d0d0ab`): den `border-left: <breite> solid transparent` aus der
+Basisklasse entfernen, im Modifier statt `border-left-color` die getönte
+Fläche plus `outline: 1px …; outline-offset: -1px` setzen — oder
+`markerSelectionStyles` aus `shared/marker-styles.ts` und die Klasse
+`is-selected` verwenden, wenn die Datei eine eigene `styles`-Liste hat.
+
+**Warum überhaupt eine Ausnahme statt eines roten Tors:** ein Tor, das rot
+ist für eine Reparatur, die niemand machen KANN (die Sitzung ist nicht
+erreichbar) und in die niemand einwilligen kann, bringt die anderen
+Sitzungen dazu, es zu übergehen. Das kostet mehr als die zwei Streifen.
+Die Schuld sichtbar zu benennen ist der kleinere Schaden — aber nur, solange
+sie sichtbar bleibt.
+
 ## Regeln im geteilten Arbeitsbaum
 - **Immer `git commit -F <datei> -- <pfade>`.** Nie `git commit -a`, nie
   `git commit` ohne Pfade: `git add <pfade>` allein schützt NICHT, wenn zwischen
