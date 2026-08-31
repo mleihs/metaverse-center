@@ -224,8 +224,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
     // inline custom property beats any rule in the stylesheet. The CSS version
     // of this was written first and would have matched nothing while looking
     // entirely correct.
-    const barColor =
-      this.voice === 'alarmed' ? 'var(--color-danger)' : this._getHealthColor(pct);
+    const barColor = this.voice === 'alarmed' ? 'var(--color-danger)' : this._getHealthColor(pct);
 
     return html`
       <div class="health" style="--_bar-color: ${barColor}">
