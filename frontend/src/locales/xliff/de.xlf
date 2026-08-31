@@ -58,33 +58,9 @@
   <source>Select a system/faction first.</source>
   <target>Wähle zuerst ein System/eine Fraktion aus.</target>
 </trans-unit>
-<trans-unit id="s294dc6cefd120024">
-  <source>Anfrage wird vorbereitet...</source>
-  <target>Anfrage wird vorbereitet...</target>
-</trans-unit>
-<trans-unit id="s12c59f35a2c5431d">
-  <source>KI generiert Beschreibung...</source>
-  <target>KI generiert Beschreibung...</target>
-</trans-unit>
-<trans-unit id="sb1da4cad59e0a448">
-  <source>Dies kann einen Moment dauern</source>
-  <target>Dies kann einen Moment dauern</target>
-</trans-unit>
-<trans-unit id="sdc8aa4706ab3a899">
-  <source>Verarbeite Antwort...</source>
-  <target>Verarbeite Antwort...</target>
-</trans-unit>
-<trans-unit id="sb71baad1644e4e9d">
-  <source>Beschreibung erfolgreich generiert.</source>
-  <target>Beschreibung erfolgreich generiert.</target>
-</trans-unit>
 <trans-unit id="s30766130968aa653">
   <source>Character description generated.</source>
   <target>Charakterbeschreibung generiert.</target>
-</trans-unit>
-<trans-unit id="sd860002e0bef0935">
-  <source>Generation fehlgeschlagen.</source>
-  <target>Generation fehlgeschlagen.</target>
 </trans-unit>
 <trans-unit id="s51ac6f9ff1abcc2b">
   <source>Failed to generate character.</source>
@@ -98,14 +74,6 @@
   <source>Save the agent first before generating a portrait description.</source>
   <target>Speichere den Agenten zuerst, bevor du eine Portraitbeschreibung generierst.</target>
 </trans-unit>
-<trans-unit id="s97bc3a05b96554d7">
-  <source>Portrait-Beschreibung wird generiert...</source>
-  <target>Portrait-Beschreibung wird generiert...</target>
-</trans-unit>
-<trans-unit id="s67eea433868d5a35">
-  <source>Portrait-Beschreibung generiert.</source>
-  <target>Portrait-Beschreibung generiert.</target>
-</trans-unit>
 <trans-unit id="s854c6ad084b5f24d">
   <source>Portrait description generated.</source>
   <target>Portraitbeschreibung generiert.</target>
@@ -118,33 +86,9 @@
   <source>Save the agent first before generating a portrait.</source>
   <target>Speichere den Agenten zuerst, bevor du ein Portrait generierst.</target>
 </trans-unit>
-<trans-unit id="s3fd3a9c0374a796e">
-  <source>Bild-Anfrage wird vorbereitet...</source>
-  <target>Bild-Anfrage wird vorbereitet...</target>
-</trans-unit>
-<trans-unit id="s6cb9499d9282467f">
-  <source>KI generiert Portrait...</source>
-  <target>KI generiert Portrait...</target>
-</trans-unit>
-<trans-unit id="sd100dea2de918be5">
-  <source>Dies kann 1-2 Minuten dauern</source>
-  <target>Dies kann 1-2 Minuten dauern</target>
-</trans-unit>
-<trans-unit id="s887d2ef358dd6de5">
-  <source>Verarbeite Bild...</source>
-  <target>Verarbeite Bild...</target>
-</trans-unit>
-<trans-unit id="s1b35c2e84912a5eb">
-  <source>Portrait erfolgreich generiert.</source>
-  <target>Portrait erfolgreich generiert.</target>
-</trans-unit>
 <trans-unit id="sd2d7466d37ca3d40">
   <source>Portrait generated and uploaded.</source>
   <target>Portrait generiert und hochgeladen.</target>
-</trans-unit>
-<trans-unit id="s9f8416bbbf33d7f7">
-  <source>Bildgenerierung fehlgeschlagen.</source>
-  <target>Bildgenerierung fehlgeschlagen.</target>
 </trans-unit>
 <trans-unit id="s530f248e6f713b2f">
   <source>Failed to generate portrait.</source>
@@ -396,7 +340,7 @@
 </trans-unit>
 <trans-unit id="s1c7a90a6f8745d3e">
   <source>Generation failed.</source>
-  <target>Generierung fehlgeschlagen.</target>
+  <target>Generation fehlgeschlagen.</target>
 </trans-unit>
 <trans-unit id="s72e464bc169b409e">
   <source>Save the building first before generating an image.</source>
@@ -29990,6 +29934,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sc46e1690f33904af">
   <source><x id="0" equiv-text="${agent.name}"/>, strongest as <x id="1" equiv-text="${operativeName(entry.best.type)}"/>, <x id="2" equiv-text="${entry.sum}"/> in total</source>
 <target><x id="0" equiv-text="${agent.name}"/>, am stärksten als <x id="1" equiv-text="${operativeName(entry.best.type)}"/>, <x id="2" equiv-text="${entry.sum}"/> insgesamt</target>
+</trans-unit>
+<trans-unit id="s8899762bf19f879e">
+  <source>AI is writing the description...</source>
+<target>KI generiert Beschreibung...</target>
+</trans-unit>
+<trans-unit id="s32a780cd773ba136">
+  <source>Processing the response...</source>
+<target>Verarbeite Antwort...</target>
+</trans-unit>
+<trans-unit id="sc90b56e90bff514a">
+  <source>Description generated.</source>
+<target>Beschreibung erfolgreich generiert.</target>
+</trans-unit>
+<trans-unit id="sa0bfb651cb75bafb">
+  <source>Writing the portrait brief...</source>
+<target>Portrait-Beschreibung wird generiert...</target>
+</trans-unit>
+<trans-unit id="s09b5b3f05f2d188f">
+  <source>Portrait brief generated.</source>
+<target>Portrait-Beschreibung generiert.</target>
+</trans-unit>
+<trans-unit id="s6a74af27065df31a">
+  <source>Preparing the image request...</source>
+<target>Bild-Anfrage wird vorbereitet...</target>
+</trans-unit>
+<trans-unit id="s47455c4b100ade4f">
+  <source>AI is painting the portrait...</source>
+<target>KI generiert Portrait...</target>
+</trans-unit>
+<trans-unit id="s1b221ce69961bf7e">
+  <source>Processing the image...</source>
+<target>Verarbeite Bild...</target>
+</trans-unit>
+<trans-unit id="s90648591a58544d3">
+  <source>Portrait generated.</source>
+<target>Portrait erfolgreich generiert.</target>
 </trans-unit>
 </body>
 </file>

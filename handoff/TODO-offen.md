@@ -216,43 +216,47 @@ lassen.
 
 ---
 
-## T12 · In `msg()` steht Deutsch — die ENGLISCHE Oberflaeche zeigt es
+## T12 · In `msg()` stand Deutsch - ERLEDIGT, und der grosse Teil davon war ABSICHT
 
-**Gemessen:** 31.08.2026 abends, ueber `frontend/src/locales/xliff/de.xlf`
-(8 198 Einheiten).
+**Gemessen und behoben:** 31.08.2026 abends.
 
-    Ziel identisch mit Quelle                          565
-      davon Quelle eindeutig DEUTSCH (Umlaut/Funktionswort)   96
-      davon Quelle englisch/neutral (legitim: Name, Status,
-      Zone, Admin, Chat, Portrait, Slug, NewsAPI ...)        469
+Der erste Befund lautete „96 `msg()`-Aufrufe enthalten Deutsch, die ENGLISCHE
+Oberflaeche zeigt es". Nachgesehen zerfaellt das in drei Gruppen, und nur eine
+war ein Fehler:
 
-Die 96 sind kein Uebersetzungsfehler, sondern ein Quellfehler: jemand hat
-Deutsch in `msg()` geschrieben. Deutsch stimmt dann zufaellig, und **Englisch
-zeigt Deutsch** — z. B. „Anfrage wird vorbereitet...", „Dies kann 1-2 Minuten
-dauern", „Bildgenerierung fehlgeschlagen.", „Vorabuebertragung · Fragment 42
-von ???".
+    DRIFT / Bureau-Weltstimme     ~107   ABSICHT - nicht anfassen
+    Alpha-Suite                      8   ABSICHT - nicht anfassen
+    Systemmeldungen                 14   FEHLER  - behoben
 
-⚠ **96 ist eine UNTERGRENZE.** Der Erkenner sucht Umlaute und deutsche
-Funktionswoerter; „Verarbeite Antwort..." und „KI generiert Portrait..." stehen
-deshalb in der zweiten Gruppe, obwohl sie Deutsch sind. Wer das abraeumt, geht
-die 565 einmal von Hand durch — automatisch trennbar ist es nicht.
+⚠ **Die 107 sind kein Rueckstand.** `Zwischenraum`, `Kohaerenz`, `Havarie`,
+`Funkboje`, `Vermessung`, `Fracht`, `Traeger`, `Grenzgaenger`, `Naechster Stich`,
+`Ueberziehen`, `Rueckruf` - das ist das Vokabular des Bureaus fuer
+Zwischenraumfragen, und die Alpha-Suite spricht denselben Ton
+(„Vorabuebertragung · Fragment 42 von ???"). Wer das nach Englisch zieht,
+zerstoert eine Entwurfsentscheidung. **Es steht hier, damit niemand es fuer
+einen offenen Punkt haelt** - genau der Fehler, an dem sich T3 heute schon
+einmal gerecht hat.
 
-**Warum es nicht nebenbei zu beheben ist:** die Zeichenketten stehen in
-Komponenten (fremde Gebiete), das Umschreiben ist eine INHALTLICHE Arbeit (der
-englische Satz muss erst geschrieben werden), und jede Aenderung an einer
-`msg()`-Quelle erzeugt eine neue Einheit, deren deutsche Uebersetzung dann
-nachzuziehen ist. Also: erst entscheiden, dann in einem Zug, und die Extraktion
-macht `-88`.
+**Der echte Fehler lag in EINER Datei:** `components/agents/AgentEditModal.ts`,
+18 Vorkommen von 14 Zeichenketten - reine Systemmeldungen des
+Generierungsfortschritts („Dies kann 1-2 Minuten dauern",
+„Bildgenerierung fehlgeschlagen."). Umgedreht: Englisch in die Quelle, das
+bisherige Deutsch als Uebersetzung, beides aus EINER Tabelle erzeugt, damit die
+zwei Seiten nicht auseinanderlaufen koennen. Deutsch ist Zeichen fuer Zeichen
+geblieben, was es war; die englische Oberflaeche zeigt jetzt Englisch.
 
-**Nebenbefund, schon behoben:** `classified` war mit „classified" uebersetzt —
-ein Ziel, das die Quelle wiederholt, sieht fuer jedes Messgeraet uebersetzt aus.
-Jetzt „klassifiziert". Ebenso `sections`: „Sektionen" ist ein Lehnwort und liest
-sich technisch; ein Dossier hat „Abschnitte".
+**Zwei Nebenbefunde, auch behoben:** `classified` war mit „classified"
+uebersetzt - ein Ziel, das die Quelle wiederholt, sieht fuer jedes Messgeraet
+uebersetzt aus. Und `sections` stand als „Sektionen"; ein Dossier hat
+„Abschnitte".
 
-🔑 **Und die Lehre am Messgeraet:** die erste Zaehlung meldete „0 unuebersetzt".
-`lit-localize` laesst das `<target>`-Element bei unuebersetzten Einheiten GANZ
-WEG, das Muster suchte aber nach `<target/>`. Drei neue Zeichenketten waren
-unsichtbar. Ein Muster, das die leere Form sucht, findet die fehlende nicht.
+🔑 **Zwei Lehren am Messgeraet.** Erstens: `lit-localize` laesst das
+`<target>`-Element bei unuebersetzten Einheiten GANZ WEG - ein Muster, das die
+LEERE Form sucht (`<target/>`), findet die FEHLENDE nicht und meldet „0" statt
+„ungeprueft". Drei Zeichenketten waren so unsichtbar. Zweitens: der erste
+Erkenner fuer „sieht deutsch aus" zaehlte 96 und die verbesserte Fassung 114 -
+eine Zahl aus einer Schlagwortliste ist immer eine Untergrenze, und sie als
+Befund zu melden haette 107 absichtliche Zeichenketten zu Arbeit gemacht.
 
 ---
 
