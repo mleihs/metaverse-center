@@ -36,6 +36,7 @@ from backend.dependencies import get_admin_supabase
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
+from backend.services.event_service import EventService
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.journal.hooks import enqueue_simulation_echo
@@ -311,6 +312,29 @@ class AutonomousEventService:
                 )
                 if community:
                     created.append(community)
+
+        # Die Folgen — EINMAL fuer den ganzen Stapel, nicht je Ereignis.
+        #
+        # D2/S7: dieser Aufruf fehlte. Autonome Ereignisse standen in der
+        # Tabelle und bewegten nichts: keine Kennzahlenaktualisierung, keine
+        # Kaskaden, keine Anbindung an einen Erzaehlbogen, keine
+        # Gebaeudeschaedigung. Genau die Folgen, die C1 wieder oeffnen wollte,
+        # als es die Phase vom BYOK-Schluessel entkoppelte — die Prosa war nie
+        # das Teure, die Folgen waren nie eine Kostenfrage.
+        #
+        # Nicht toedlich: ein Fehlschlag hier darf die bereits geschriebenen
+        # Ereignisse nicht zuruecknehmen (dasselbe Muster wie in
+        # `resonance_service`).
+        if created:
+            try:
+                await EventService.apply_event_consequences(supabase, simulation_id)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                logger.warning(
+                    "Folgeverarbeitung nach autonomen Ereignissen fehlgeschlagen",
+                    extra={"simulation_id": str(simulation_id), "count": len(created)},
+                    exc_info=True,
+                )
+                sentry_sdk.capture_exception()
 
         logger.info(
             "Autonomous events created",

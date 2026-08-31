@@ -295,11 +295,7 @@ class EventService(BaseService):
             .limit(1)
             .execute()
         )
-        content_locale = (
-            str(locale_resp.data[0].get("setting_value", "de"))
-            if locale_resp.data
-            else "de"
-        )
+        content_locale = str(locale_resp.data[0].get("setting_value", "de")) if locale_resp.data else "de"
 
         event_id = UUID(event["id"])
         existing = await cls.get_reactions(supabase, simulation_id, event_id)
@@ -432,12 +428,50 @@ class EventService(BaseService):
         return links
 
     @classmethod
-    async def _post_event_mutation(
+    async def apply_event_consequences(
         cls,
         supabase: Client,
         simulation_id: UUID,
     ) -> list[dict]:
-        """Refresh game metrics and process cascade events after any event mutation.
+        """Die Folgen eines Ereignisses: Kennzahlen, Kaskaden, Bögen, Gebäude.
+
+        ── Warum diese Methode einen öffentlichen Namen bekommen hat ─────────
+
+        Sie hieß ``_post_event_mutation`` und war damit privat — aber ihr
+        einziger Aufrufer stand in einem ANDEREN Dienst
+        (``resonance_service.py:651``). Ein privater Name, den nur die Fremde
+        ruft, sagt genau das Falsche: er liest sich wie „intern, hier ist alles
+        geregelt", während er in Wahrheit ein Schritt ist, den JEDER Erzeuger
+        von Ereignissen gehen muss.
+
+        Und drei von vier gingen ihn nicht (gemessen 31.08.2026, D2/S7):
+
+            resonance_service.py:651        ruft  ✓
+            autonomous_event_service.py:646 nicht ✗
+            echo_service.py:533             nicht ✗
+            operative_mission_service.py    nicht ✗ (zwei Stellen)
+
+        Ereignisse aus diesen Pfaden bekamen also keine Kennzahlenaktualisierung,
+        keine Kaskadenverarbeitung, keine Anbindung an einen Erzählbogen und
+        keine Gebäudeschädigung. Sie standen in der Tabelle und bewegten nichts.
+
+        ── Warum kein Datenbank-Trigger ─────────────────────────────────────
+
+        Der Plan schlug einen ``AFTER INSERT``-Trigger vor (ADR-007,
+        Postgres-first). Dagegen sprechen zwei gemessene Gründe:
+
+        1. Diese Methode ruft ``GameMechanicsService.refresh_metrics`` — eine
+           Aktualisierung materialisierter Sichten. In einem Zeilen-Trigger
+           liefe sie EINMAL JE ZEILE; ein Tick, der zehn Ereignisse erzeugt,
+           würde die Sichten zehnmal neu bauen.
+        2. Der Schritt ist von Natur aus stapelweise („nach EINER Ereignis-
+           änderung", nicht „nach einer Zeile"). Genau so ruft ihn der eine
+           Aufrufer, der es richtig macht: einmal, nachdem alle Ereignisse
+           geschrieben sind.
+
+        Postgres-first gilt für Integrität und für konkurrierende Zugriffe.
+        Dies ist Spiellogik mit Stapelgranularität — die gehört nach Python
+        (``feedback-sql-vs-python-boundary``).
 
         Uses Postgres ``process_cascade_events`` (migration 073).
         Returns list of cascade events created (empty if none).

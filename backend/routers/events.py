@@ -96,7 +96,7 @@ async def create_event(
     """Create a new event."""
     event = await _service.create(supabase, simulation_id, user.id, body.model_dump(exclude_none=True))
     await AuditService.safe_log(supabase, simulation_id, user.id, "events", event["id"], "create")
-    await _service._post_event_mutation(supabase, simulation_id)
+    await _service.apply_event_consequences(supabase, simulation_id)
     return SuccessResponse(data=event)
 
 
@@ -119,7 +119,7 @@ async def update_event(
         if_updated_at=if_updated_at,
     )
     await AuditService.safe_log(supabase, simulation_id, user.id, "events", event_id, "update")
-    await _service._post_event_mutation(supabase, simulation_id)
+    await _service.apply_event_consequences(supabase, simulation_id)
     return SuccessResponse(data=event)
 
 
@@ -134,7 +134,7 @@ async def delete_event(
     """Soft-delete an event."""
     event = await _service.soft_delete(supabase, simulation_id, event_id)
     await AuditService.safe_log(supabase, simulation_id, user.id, "events", event_id, "delete")
-    await _service._post_event_mutation(supabase, simulation_id)
+    await _service.apply_event_consequences(supabase, simulation_id)
     return SuccessResponse(data=event)
 
 
@@ -250,7 +250,7 @@ async def update_event_status(
         "status_change",
         details={"new_status": event_status},
     )
-    await _service._post_event_mutation(supabase, simulation_id)
+    await _service.apply_event_consequences(supabase, simulation_id)
     return SuccessResponse(data=event)
 
 

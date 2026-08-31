@@ -15,6 +15,7 @@ from fastapi import HTTPException
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.base_service import serialize_for_json
+from backend.services.event_service import EventService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.journal.hooks import enqueue_bleed_tremor
 from backend.utils.errors import bad_request, not_found, server_error
@@ -103,11 +104,7 @@ class EchoService:
         """Credit target simulation owner for successfully warding an echo. Best-effort."""
         try:
             sim_resp = await (
-                supabase.table("simulations")
-                .select("created_by_id")
-                .eq("id", target_sim_id)
-                .single()
-                .execute()
+                supabase.table("simulations").select("created_by_id").eq("id", target_sim_id).single().execute()
             )
             user_id = sim_resp.data.get("created_by_id") if sim_resp.data else None
             if not user_id:
@@ -534,6 +531,25 @@ class EchoService:
             if not event_resp.data:
                 raise server_error("Failed to create target event from echo.")
             target_event = event_resp.data[0]
+
+            # Die Folgen des Zielereignisses (D2/S7).
+            #
+            # Ein Bleed ist der teuerste Weg, auf dem ein Ereignis entstehen
+            # kann: eine Welt blutet in eine andere, ein Modell schreibt den
+            # Text um, ein Admin gibt frei. Und am Ende stand das Ereignis in
+            # der Zielwelt, ohne dort irgendetwas zu bewegen — weder Kaskade
+            # noch Erzaehlbogen noch Gebaeudeschaedigung.
+            #
+            # Nicht toedlich: der Echo-Uebergang unten ist der eigentliche
+            # Vorgang, und er darf an der Nachbereitung nicht scheitern.
+            try:
+                await EventService.apply_event_consequences(admin_supabase, UUID(str(target_event["simulation_id"])))
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                logger.warning(
+                    "Folgeverarbeitung nach Bleed-Ereignis fehlgeschlagen",
+                    extra={"event_id": target_event["id"]},
+                    exc_info=True,
+                )
 
             # 5. Mark echo as completed
             metadata = dict(echo.get("bleed_metadata") or {})
