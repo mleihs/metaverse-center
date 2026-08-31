@@ -1,13 +1,35 @@
 /**
  * How-to-Play — Fuzzy Search System for the Guide Hub.
  *
- * Builds a searchable index from all 12 topic definitions.
+ * Builds a searchable index from every topic definition.
  * Reuses Levenshtein + fuzzyMatch from shared utils/fuzzy-search.ts.
  *
+ * WHAT IS INDEXED, AND WHY THAT CHANGED (H5)
+ * ------------------------------------------
+ * The index used to hold four things per topic: the title, the description,
+ * the TL;DR bullets, and the TITLES of the sections. It held nothing from
+ * inside the sections — and inside the sections is where the manual is. A
+ * reader looking for "cooldown" or "heartbeat" found something only if the
+ * word happened to appear in a heading. The search box promised, by merely
+ * existing, that the manual was searchable.
+ *
+ * It now walks every section kind that carries text:
+ *
+ *   text      → the paragraph
+ *   callouts  → each card's label and body
+ *   readout   → each row's label and value
+ *   steps     → each step's title, narration, detail, tip, warning and readout
+ *               rows (previously only the section heading above them)
+ *
+ * `custom` sections render a TemplateResult and have no text to read without
+ * rendering; they contribute only their optional title. That is a real gap and
+ * `frontend/tests/htp-search-index.test.ts` prints how many of them there are,
+ * so the limit has a number rather than a silence.
+ *
  * Features:
- * - Pre-built index from title + description + TL;DR bullets + section titles
+ * - Pre-built index over the full body text of every topic
  * - Multi-strategy matching: exact → substring → Levenshtein
- * - Result scoring with match-type priority
+ * - Result scoring with match-type priority, then field priority
  * - Highlight matched substring in results
  */
 
@@ -19,8 +41,8 @@ import { TOPICS, type TopicDefinition } from './htp-topic-data.js';
 export interface SearchEntry {
   /** Topic slug */
   slug: string;
-  /** Source field (for match context display) */
-  field: 'title' | 'description' | 'tldr' | 'section';
+  /** Source field (for match context display and ranking) */
+  field: 'title' | 'description' | 'tldr' | 'section' | 'step' | 'callout' | 'readout' | 'body';
   /** Searchable text (lowercased) */
   text: string;
   /** Original text (for display) */
@@ -79,16 +101,59 @@ export function getSearchIndex(): SearchEntry[] {
       });
     }
 
-    // Section titles (from sections that have titles)
+    const add = (field: SearchEntry['field'], text: string | undefined | null): void => {
+      const trimmed = (text ?? '').trim();
+      if (!trimmed) return;
+      entries.push({
+        slug: topic.slug,
+        field,
+        text: trimmed.toLowerCase(),
+        original: trimmed,
+        topic,
+      });
+    };
+
     for (const section of topic.sections()) {
-      if ('title' in section && section.title) {
-        entries.push({
-          slug: topic.slug,
-          field: 'section',
-          text: section.title.toLowerCase(),
-          original: section.title,
-          topic,
-        });
+      // Section titles (from sections that have one)
+      if ('title' in section && section.title) add('section', section.title);
+
+      switch (section.kind) {
+        case 'text':
+          add('body', section.content);
+          break;
+
+        case 'callouts':
+          for (const item of section.items) {
+            add('callout', item.label);
+            add('callout', item.text);
+          }
+          break;
+
+        case 'readout':
+          for (const row of section.data()) {
+            add('readout', row.label);
+            add('readout', row.value);
+          }
+          break;
+
+        case 'steps':
+          for (const step of section.steps()) {
+            add('step', step.title);
+            add('step', step.narration);
+            add('step', step.detail);
+            add('step', step.tip);
+            add('step', step.warning);
+            for (const row of step.readout ?? []) {
+              add('readout', row.label);
+              add('readout', row.value);
+            }
+          }
+          break;
+
+        default:
+          // 'custom' renders a TemplateResult — its title is already indexed
+          // above and there is no further text to read without rendering.
+          break;
       }
     }
   }
@@ -107,8 +172,23 @@ export function clearSearchIndex(): void {
 /** Score multiplier by match type (lower = better). */
 const MATCH_SCORES = { exact: 0, substring: 1, levenshtein: 2 } as const;
 
-/** Field priority (lower = better). */
-const FIELD_PRIORITY = { title: 0, section: 1, description: 2, tldr: 3 } as const;
+/**
+ * Field priority (lower = better).
+ *
+ * Headings stay ahead of body text: a hit in a title is almost always the page
+ * the reader wanted, while a hit in a paragraph may be an aside. The body
+ * fields rank last but they DO rank — before H5 they could not be hit at all.
+ */
+const FIELD_PRIORITY = {
+  title: 0,
+  section: 1,
+  description: 2,
+  tldr: 3,
+  step: 4,
+  callout: 5,
+  readout: 6,
+  body: 7,
+} as const;
 
 /**
  * Search all topics for a query string.
