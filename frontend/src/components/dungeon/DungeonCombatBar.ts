@@ -1189,11 +1189,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .briefing__alt {
         font-family: var(--_mono);
         font-size: 8px;
-        /* Toward the screen ground, not toward the transparent keyword.
-           Halving a colour against transparency does not dim it, it makes it
-           translucent: measured 1.25 to 1, effectively invisible. An opaque
-           mix reads the same and can be measured. */
-        color: color-mix(in srgb, var(--_phosphor-dim) 82%, var(--_screen-bg));
+        /* Halving a colour against transparency does not dim it, it makes it
+           translucent: measured 1.25 to 1, effectively invisible. The mix goes
+           toward --color-text-primary and not toward the screen ground, because
+           the ground is themed: mixing toward it gains contrast on a dark theme
+           and loses it on a light one. */
+        color: color-mix(in srgb, var(--_phosphor-dim) 68%, var(--color-text-primary));
         font-style: italic;
         flex: 1;
       }
@@ -1250,11 +1251,12 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .footer__hint {
         font-family: var(--_mono);
         font-size: 8px;
-        /* Toward the screen ground, not toward the transparent keyword.
-           Halving a colour against transparency does not dim it, it makes it
-           translucent: measured 1.25 to 1, effectively invisible. An opaque
-           mix reads the same and can be measured. */
-        color: color-mix(in srgb, var(--_phosphor-dim) 82%, var(--_screen-bg));
+        /* Halving a colour against transparency does not dim it, it makes it
+           translucent: measured 1.25 to 1, effectively invisible. The mix goes
+           toward --color-text-primary and not toward the screen ground, because
+           the ground is themed: mixing toward it gains contrast on a dark theme
+           and loses it on a light one. */
+        color: color-mix(in srgb, var(--_phosphor-dim) 68%, var(--color-text-primary));
         letter-spacing: 0.3px;
       }
 

@@ -42,6 +42,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { terminalState } from '../../../services/TerminalStateManager.js';
 import type { DungeonNarrationLine, DungeonRoomStamp } from '../../../types/dungeon.js';
 import type { TerminalLine, TerminalLineMeta } from '../../../types/terminal.js';
+import { getRoomTypeLabel } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
 import { a11yStyles } from '../../shared/a11y-styles.js';
 
@@ -231,7 +232,7 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
            backdrop image, so the measured value was 2.14 : 1, the worst line in
            the dungeon. Mixing toward the surface names the same visual dimming
            as an opaque colour that can actually be measured. 78% clears AA. */
-        color: color-mix(in srgb, var(--_phosphor) 78%, var(--color-surface));
+        color: color-mix(in srgb, var(--_phosphor) 72%, var(--color-text-primary));
       }
       .beat__cmd svg {
         flex: none;
@@ -278,9 +279,12 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
       }
       .entry--hint {
         font-style: italic;
-        /* Same correction as .beat__cmd: opaque against the surface instead of
-           translucent against whatever is behind it. */
-        color: color-mix(in srgb, var(--_text-dim) 92%, var(--color-surface));
+        /* The platform token for exactly this: a quiet neutral derived from
+           --color-text-primary rather than from the ground, so it holds in light
+           and dark alike. ThemeService re-declares it on the theme host, which
+           is what keeps its color-mix from resolving against the platform
+           defaults inside a themed subtree. */
+        color: var(--color-text-quiet);
       }
       .entry--error {
         color: color-mix(in srgb, var(--_danger) 82%, var(--_phosphor));
@@ -637,11 +641,14 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
     // Two-digit room numbers, so a column of dividers lines up. Not msg(): a
     // number and its padding are the same in every language.
     const number = String(room.index).padStart(2, '0');
+    // Resolved HERE, not at stamping time: the label follows the reader's
+    // language, the stamp only remembers which room it was.
+    const label = getRoomTypeLabel(room.roomType);
     return html`
-      <div class="room-divider" role="separator" aria-label=${msg(str`Room ${number}: ${room.label}`)}>
+      <div class="room-divider" role="separator" aria-label=${msg(str`Room ${number}: ${label}`)}>
         <span class="room-divider__rule"></span>
         <span class="room-divider__label" aria-hidden="true"
-          >${msg(str`Room ${number}`)} \u00b7 ${room.label}</span
+          >${msg(str`Room ${number}`)} \u00b7 ${label}</span
         >
         <span class="room-divider__rule"></span>
       </div>

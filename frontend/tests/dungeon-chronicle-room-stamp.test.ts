@@ -34,10 +34,10 @@ describe('chronicle room stamping', () => {
   });
 
   it('stamps each line with the room that was current when it arrived', () => {
-    terminalState.setNarrationRoom({ index: 2, label: 'Rest' });
+    terminalState.setNarrationRoom({ index: 2, roomType: 'rest' });
     terminalState.appendOutput([line('the lamps are still lit')]);
 
-    terminalState.setNarrationRoom({ index: 7, label: 'Combat' });
+    terminalState.setNarrationRoom({ index: 7, roomType: 'combat' });
     terminalState.appendOutput([line('something moves')]);
 
     const stamps = terminalState.dungeonNarration.value.map((l) => l.room?.index);
@@ -45,13 +45,13 @@ describe('chronicle room stamping', () => {
   });
 
   it('does not relabel earlier lines when the party moves on', () => {
-    terminalState.setNarrationRoom({ index: 2, label: 'Rest' });
+    terminalState.setNarrationRoom({ index: 2, roomType: 'rest' });
     terminalState.appendOutput([line('the lamps are still lit')]);
 
     // The party walks to three further rooms without writing anything.
-    terminalState.setNarrationRoom({ index: 3, label: 'Combat' });
-    terminalState.setNarrationRoom({ index: 4, label: 'Encounter' });
-    terminalState.setNarrationRoom({ index: 5, label: 'Boss' });
+    terminalState.setNarrationRoom({ index: 3, roomType: 'combat' });
+    terminalState.setNarrationRoom({ index: 4, roomType: 'encounter' });
+    terminalState.setNarrationRoom({ index: 5, roomType: 'boss' });
 
     // The line about the lamps is still about room 2. This is the assertion a
     // render-time implementation fails: there it would now read 5.
@@ -64,7 +64,7 @@ describe('chronicle room stamping', () => {
   });
 
   it('forgets the room when the run ends, so the next run cannot inherit it', () => {
-    terminalState.setNarrationRoom({ index: 9, label: 'Boss' });
+    terminalState.setNarrationRoom({ index: 9, roomType: 'boss' });
     terminalState.clearDungeon();
     terminalState.initializeDungeon('run-2');
     terminalState.appendOutput([line('a new descent begins')]);
