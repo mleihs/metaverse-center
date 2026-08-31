@@ -5,6 +5,7 @@ import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { getThemeColor, getThemeVariant } from '../../utils/theme-colors.js';
 import '../shared/VelgBadge.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 @localized()
 @customElement('velg-simulation-card')
@@ -260,7 +261,7 @@ export class VelgSimulationCard extends LitElement {
 
     return html`
       <a
-        href="/simulations/${sim.slug}/lore"
+        href="/simulations/${sim.slug}/${DEFAULT_TAB}"
         class="shard"
         style="--shard-color: ${color}; --shard-color-alpha: ${colorAlpha}"
         @click=${this._handleClick}

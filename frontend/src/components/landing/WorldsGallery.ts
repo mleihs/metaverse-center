@@ -20,6 +20,7 @@ import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 @localized()
 @customElement('velg-worlds-gallery')
@@ -535,7 +536,7 @@ export class VelgWorldsGallery extends LitElement {
           position: i + 1,
           name: t(sim, 'name'),
           description: t(sim, 'description'),
-          url: `https://metaverse.center/simulations/${sim.slug || sim.id}/lore`,
+          url: `https://metaverse.center/simulations/${sim.slug || sim.id}/${DEFAULT_TAB}`,
           ...(sim.banner_url ? { image: sim.banner_url } : {}),
         })),
       },
@@ -614,7 +615,7 @@ export class VelgWorldsGallery extends LitElement {
                       href="/simulations/${sim.slug || sim.id}/lore"
                       @click=${(e: Event) => {
                         e.preventDefault();
-                        navigate(`/simulations/${sim.slug || sim.id}/lore`);
+                        navigate(`/simulations/${sim.slug || sim.id}/${DEFAULT_TAB}`);
                       }}
                     >
                       <div

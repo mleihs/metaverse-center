@@ -27,6 +27,7 @@ import '../shared/SvgFilters.js';
 import '../shared/PlatformFooter.js';
 import './SimulationHeader.js';
 import './SimulationNav.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 /** Map tab path segments to localized labels. */
 function getTabLabel(path: string): string {
@@ -1012,7 +1013,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       return html`
         <button
           class="breadcrumb__link"
-          @click=${(e: Event) => this._navigate(`/simulations/${slug}/lore`, e)}
+          @click=${(e: Event) => this._navigate(`/simulations/${slug}/${DEFAULT_TAB}`, e)}
         >${simName}</button>
       `;
     }
