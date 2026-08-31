@@ -195,3 +195,56 @@ export const OCCUPANCY_LEGEND: Readonly<Record<OccupancyLevel, () => string>> = 
   sparse: () => msg('Nearly empty \u2013 below a third'),
   ruined: () => msg('A ruin \u2013 its places are not counted'),
 };
+
+// ---------------------------------------------------------------------------
+// The ladder of a WORLD, not a list in this file
+// ---------------------------------------------------------------------------
+
+/**
+ * Filled dots from the building's position on ITS OWN world's ladder.
+ *
+ * WHY THIS EXISTS NEXT TO `conditionDots`
+ *   The table above is a fixed list of six words. That list has been wrong
+ *   twice: it missed `pristine` once, and it missed `excellent` — the top rung
+ *   in 26 of 36 worlds, 216 of 290 buildings. Each time the symptom was the
+ *   same, a building at the HIGHEST rank of its world drawn with an empty gem,
+ *   and each time the repair was to add a word and wait for the next one.
+ *
+ *   There is no core ladder. `fn_building_condition_ladder` takes a
+ *   simulation_id; the rungs are per world, and a world only gets a rung for a
+ *   word it carries itself. Reading the world's own ladder makes the empty gem
+ *   structurally impossible rather than one word less likely.
+ *
+ * RELATIVE, NOT ABSOLUTE
+ *   A world with three rungs (`fair → poor → ruined`) has `fair` as the best
+ *   condition it knows, and the gem should say so — three dots, not two.
+ *   Position is therefore measured against the number of rungs that world
+ *   actually has, which is why this needs the whole taxonomy and not one row.
+ *
+ * @param condition the building's raw `building_condition`
+ * @param entries   the world's `building_condition` taxonomy rows
+ * @returns 0–3 dots, or `null` when the word stands on no rung — which is also
+ *          what every row carries if the ladder function fails, so the null
+ *          branch is the failure path as well as the odd-word path.
+ */
+export function conditionDotsOnLadder(
+  condition: string | null | undefined,
+  entries: ReadonlyArray<{ value: string; rung?: number | null }>,
+): number | null {
+  const key = condition?.trim().toLowerCase();
+  if (!key) return null;
+
+  const rungs = entries
+    .filter((e) => e.rung != null)
+    .sort((a, b) => (a.rung as number) - (b.rung as number));
+  if (rungs.length === 0) return null;
+
+  const index = rungs.findIndex((e) => e.value.trim().toLowerCase() === key);
+  if (index < 0) return null;
+
+  // Best rung → 3, worst → 0, the rest spread evenly between. With one rung
+  // the world knows only one condition, and it is that world's best.
+  if (rungs.length === 1) return 3;
+  const share = 1 - index / (rungs.length - 1);
+  return Math.round(share * 3);
+}

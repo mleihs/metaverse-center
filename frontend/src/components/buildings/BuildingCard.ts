@@ -2,9 +2,10 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import type { Building, Simulation } from '../../types/index.js';
+import type { Building, Simulation, SimulationTaxonomy } from '../../types/index.js';
 import {
   conditionDots,
+  conditionDotsOnLadder,
   conditionVariant,
   OCCUPANCY_LABEL,
   occupancyLevel,
@@ -35,6 +36,9 @@ export class VelgBuildingCard extends LitElement {
 
   @property({ attribute: false }) building!: Building;
   @property({ type: Boolean }) compromised = false;
+  /** The world's `building_condition` taxonomy, carrying each word's rung. */
+  @property({ type: Array }) conditionTaxonomy: SimulationTaxonomy[] = [];
+
   @property({ type: Boolean }) generating = false;
 
   private _handleClick(): void {
@@ -105,6 +109,21 @@ export class VelgBuildingCard extends LitElement {
    * like rubble. `velg-game-card` already omits the gem on null (line 1452).
    */
   private _getConditionDots(): number | null {
+    // The world's own ladder first. It knows words this file never will, and
+    // it knows how MANY rungs the world has — in a three-rung world `fair` is
+    // the best condition there is and earns three dots, which no fixed table
+    // can express.
+    const onLadder = conditionDotsOnLadder(
+      this.building?.building_condition,
+      this.conditionTaxonomy,
+    );
+    if (onLadder !== null) return onLadder;
+
+    // The taxonomy has not arrived yet, or the ladder failed, or this word
+    // stands on no rung. The fixed table still knows the six common ones, and
+    // a gem that appears immediately and is right is better than one that pops
+    // in a beat later. Where both come up empty, no gem — that is the honest
+    // answer and it is now the only way to get one.
     return conditionDots(this.building?.building_condition);
   }
 
