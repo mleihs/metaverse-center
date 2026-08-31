@@ -3,6 +3,7 @@
 import logging
 from uuid import UUID
 
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -29,10 +30,10 @@ class BotPlayerService:
     @classmethod
     async def get(cls, supabase: Client, bot_id: UUID) -> dict:
         """Get a single bot player preset."""
-        resp = await supabase.table("bot_players").select("*").eq("id", str(bot_id)).single().execute()
-        if not resp.data:
+        bot = await maybe_single_data(supabase.table("bot_players").select("*").eq("id", str(bot_id)).maybe_single())
+        if not bot:
             raise not_found(detail="Bot player not found.")
-        return resp.data
+        return bot
 
     @classmethod
     async def create(cls, supabase: Client, user_id: UUID, data: dict) -> dict:

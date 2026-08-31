@@ -18,6 +18,7 @@ from backend.services.base_service import serialize_for_json
 from backend.services.event_service import EventService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.journal.hooks import enqueue_bleed_tremor
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -92,10 +93,10 @@ class EchoService:
         echo_id: UUID,
     ) -> dict:
         """Get a single echo by ID."""
-        response = await supabase.table(cls.table_name).select("*").eq("id", str(echo_id)).single().execute()
-        if not response.data:
+        echo = await maybe_single_data(supabase.table(cls.table_name).select("*").eq("id", str(echo_id)).maybe_single())
+        if not echo:
             raise not_found("echo", echo_id)
-        return response.data
+        return echo
 
     # --- Ward Master Badge ---
 
@@ -477,10 +478,11 @@ class EchoService:
 
         try:
             # 2. Fetch source event
-            source_event_resp = await supabase.table("events").select("*").eq("id", source_event_id).single().execute()
-            if not source_event_resp.data:
+            source_event = await maybe_single_data(
+                supabase.table("events").select("*").eq("id", source_event_id).maybe_single()
+            )
+            if not source_event:
                 raise not_found("event", detail="Source event no longer exists.")
-            source_event = source_event_resp.data
 
             # Fetch target simulation info
             target_sim_resp = await (

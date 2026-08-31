@@ -18,6 +18,7 @@ from backend.services.email_templates import epoch_invitation_subject, render_ep
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.platform_model_config import get_platform_model
 from backend.services.prompt_service import PromptResolver
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import gone, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -280,14 +281,12 @@ class EpochInvitationService:
     async def generate_lore(supabase: Client, epoch_id: UUID) -> str:
         """Generate invitation lore via OpenRouter. Caches in game_epochs.config.invitation_lore."""
         # Fetch epoch
-        epoch_response = await (
-            supabase.table("game_epochs").select("name, description, config").eq("id", str(epoch_id)).single().execute()
+        epoch = await maybe_single_data(
+            supabase.table("game_epochs").select("name, description, config").eq("id", str(epoch_id)).maybe_single()
         )
 
-        if not epoch_response.data:
+        if not epoch:
             raise not_found(detail="Epoch not found.")
-
-        epoch = epoch_response.data
         config = epoch.get("config") or {}
 
         # Return cached lore if exists

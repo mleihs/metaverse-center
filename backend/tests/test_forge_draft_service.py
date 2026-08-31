@@ -29,6 +29,7 @@ def _mock_supabase(data=None, count=None):
     builder.order.return_value = builder
     builder.range.return_value = builder
     builder.single.return_value = builder
+    builder.maybe_single.return_value = builder
     # `maybe_single` was missing, and MagicMock hides that: the call returns a
     # FRESH auto-created mock rather than the builder, so `.execute()` on it is a
     # plain MagicMock and `await` raises "object MagicMock can't be used in

@@ -10,6 +10,7 @@ from uuid import UUID
 
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.constants import OPERATIVE_RP_COSTS
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -52,10 +53,12 @@ class EpochService:
     @classmethod
     async def get(cls, supabase: Client, epoch_id: UUID) -> dict:
         """Get a single epoch by ID."""
-        resp = await supabase.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()
-        if not resp.data:
+        epoch = await maybe_single_data(
+            supabase.table("game_epochs").select("*").eq("id", str(epoch_id)).maybe_single()
+        )
+        if not epoch:
             raise not_found(detail="Epoch not found.")
-        return resp.data
+        return epoch
 
     @classmethod
     async def get_active_epochs(cls, supabase: Client) -> list[dict]:

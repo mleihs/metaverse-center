@@ -23,6 +23,7 @@ def _make_chain(**overrides):
     c.select.return_value = c
     c.eq.return_value = c
     c.single.return_value = c
+    c.maybe_single.return_value = c
     c.order.return_value = c
     c.insert.return_value = c
     c.update.return_value = c

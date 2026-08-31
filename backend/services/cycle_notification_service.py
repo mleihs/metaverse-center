@@ -58,9 +58,7 @@ class CycleNotificationService:
         scheduler reaching into another service's underscore is the kind of
         coupling that breaks quietly on the next rename.
         """
-        return await cls._resolve_recipients(
-            admin_supabase, epoch_id, notification_type=notification_type
-        )
+        return await cls._resolve_recipients(admin_supabase, epoch_id, notification_type=notification_type)
 
     @classmethod
     async def _resolve_recipients(
@@ -239,8 +237,10 @@ class CycleNotificationService:
                     " stability_score, influence_score, sovereignty_score,"
                     " diplomatic_score, military_score"
                 )
-                .eq("epoch_id", epoch_id).eq("cycle_number", cycle_number)
-                .order("composite_score", desc=True).execute()
+                .eq("epoch_id", epoch_id)
+                .eq("cycle_number", cycle_number)
+                .order("composite_score", desc=True)
+                .execute()
             )
             return extract_list(resp)
 
@@ -254,7 +254,9 @@ class CycleNotificationService:
                     " stability_score, influence_score, sovereignty_score,"
                     " diplomatic_score, military_score"
                 )
-                .eq("epoch_id", epoch_id).eq("cycle_number", prev_cycle).execute()
+                .eq("epoch_id", epoch_id)
+                .eq("cycle_number", prev_cycle)
+                .execute()
             )
             return {s["simulation_id"]: s for s in extract_list(resp)}
 
@@ -262,12 +264,15 @@ class CycleNotificationService:
             return await maybe_single_data(
                 admin_supabase.table("epoch_participants")
                 .select("current_rp, team_id")
-                .eq("epoch_id", epoch_id).eq("simulation_id", simulation_id)
+                .eq("epoch_id", epoch_id)
+                .eq("simulation_id", simulation_id)
                 .maybe_single()
             )
 
         current_scores, prev_scores_map, rp_data = await asyncio.gather(
-            _scores_current(), _scores_prev(), _participant_data(),
+            _scores_current(),
+            _scores_prev(),
+            _participant_data(),
         )
 
         # Find this player's score and rank
@@ -317,7 +322,8 @@ class CycleNotificationService:
             resp = await (
                 admin_supabase.table("operative_missions")
                 .select("operative_type, status, target_simulation_id, resolves_at")
-                .eq("epoch_id", epoch_id).eq("source_simulation_id", simulation_id)
+                .eq("epoch_id", epoch_id)
+                .eq("source_simulation_id", simulation_id)
                 .execute()
             )
             return extract_list(resp)
@@ -326,7 +332,8 @@ class CycleNotificationService:
             resp = await (
                 admin_supabase.table("operative_missions")
                 .select("operative_type, status, source_simulation_id")
-                .eq("epoch_id", epoch_id).eq("target_simulation_id", simulation_id)
+                .eq("epoch_id", epoch_id)
+                .eq("target_simulation_id", simulation_id)
                 .in_("status", ["detected", "captured"])
                 .execute()
             )
@@ -464,10 +471,7 @@ class CycleNotificationService:
                 pending_proposals_count = team_proposals.count or 0
                 # Get tension from team
                 tension_data = await maybe_single_data(
-                    admin_supabase.table("epoch_teams")
-                    .select("tension")
-                    .eq("id", player_team_id)
-                    .maybe_single()
+                    admin_supabase.table("epoch_teams").select("tension").eq("id", player_team_id).maybe_single()
                 )
                 if tension_data:
                     alliance_tension = tension_data.get("tension", 0)
@@ -547,15 +551,16 @@ class CycleNotificationService:
 
         if participation is None:
             afk_events, auto_resolved, participation = await asyncio.gather(
-                _afk_events(), _auto_resolve_check(), _participation_counts(),
+                _afk_events(),
+                _auto_resolve_check(),
+                _participation_counts(),
             )
         else:
             afk_events, auto_resolved = await asyncio.gather(_afk_events(), _auto_resolve_check())
 
         player_was_afk = any(e["event_type"] == "player_afk" for e in afk_events)
         afk_penalty_rp = sum(
-            (e.get("metadata") or {}).get("rp_loss", 0)
-            for e in afk_events if e["event_type"] == "player_afk_penalty"
+            (e.get("metadata") or {}).get("rp_loss", 0) for e in afk_events if e["event_type"] == "player_afk_penalty"
         )
         replaced_by_ai = any(e["event_type"] == "player_afk_ai_takeover" for e in afk_events)
         afk_ai_personality = config.get("afk_ai_personality", "sentinel")
@@ -722,18 +727,15 @@ class CycleNotificationService:
         Returns the number of emails successfully sent.
         """
         # Fetch epoch info
-        epoch_resp = await (
+        epoch = await maybe_single_data(
             admin_supabase.table("game_epochs")
             .select("name, status, config, epoch_type")
             .eq("id", epoch_id)
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not epoch_resp.data:
+        if not epoch:
             logger.warning("Epoch %s not found for cycle notifications", epoch_id)
             return 0
-
-        epoch = epoch_resp.data
         if cls._suppressed_for_epoch(epoch, "cycle_resolved"):
             logger.info(
                 "Academy epoch — cycle briefing suppressed",
@@ -770,9 +772,7 @@ class CycleNotificationService:
 
                 email_locale = recipient.get("email_locale")
                 opt_out = unsubscribe_url(recipient["user_id"], "cycle_resolved")
-                html_body = render_cycle_briefing(
-                    briefing, email_locale=email_locale, unsubscribe_url=opt_out
-                )
+                html_body = render_cycle_briefing(briefing, email_locale=email_locale, unsubscribe_url=opt_out)
                 # The change goes first. The old line spent its first 25
                 # characters on "CLASSIFIED // SITREP", a word identical in
                 # every message the platform has ever sent, and a phone shows
@@ -824,25 +824,24 @@ class CycleNotificationService:
         new_phase: str,
     ) -> int:
         """Send phase-change emails to all human participants (per-player with standing)."""
-        epoch_resp = await (
+        epoch = await maybe_single_data(
             admin_supabase.table("game_epochs")
             .select("name, current_cycle, epoch_type")
             .eq("id", epoch_id)
-            .single()
-            .execute()
+            .maybe_single()
         )
-        if not epoch_resp.data:
+        if not epoch:
             return 0
 
-        if cls._suppressed_for_epoch(epoch_resp.data, "phase_changed"):
+        if cls._suppressed_for_epoch(epoch, "phase_changed"):
             logger.info(
                 "Academy epoch — phase change mail suppressed",
                 extra={"epoch_id": epoch_id, "old_status": old_phase, "new_status": new_phase},
             )
             return 0
 
-        epoch_name = epoch_resp.data.get("name", "Unknown Operation")
-        cycle_count = epoch_resp.data.get("current_cycle", 0)
+        epoch_name = epoch.get("name", "Unknown Operation")
+        cycle_count = epoch.get("current_cycle", 0)
 
         recipients = await cls._resolve_recipients(admin_supabase, epoch_id, notification_type="phase_changed")
         if not recipients:
@@ -925,14 +924,14 @@ class CycleNotificationService:
         epoch_id: str,
     ) -> int:
         """Send epoch-completed emails with final leaderboard + campaign stats."""
-        epoch_resp = await (
-            admin_supabase.table("game_epochs").select("name, current_cycle").eq("id", epoch_id).single().execute()
+        epoch = await maybe_single_data(
+            admin_supabase.table("game_epochs").select("name, current_cycle").eq("id", epoch_id).maybe_single()
         )
-        if not epoch_resp.data:
+        if not epoch:
             return 0
 
-        epoch_name = epoch_resp.data.get("name", "Unknown Operation")
-        cycle_count = epoch_resp.data.get("current_cycle", 0)
+        epoch_name = epoch.get("name", "Unknown Operation")
+        cycle_count = epoch.get("current_cycle", 0)
 
         recipients = await cls._resolve_recipients(admin_supabase, epoch_id, notification_type="epoch_completed")
         if not recipients:
@@ -967,9 +966,7 @@ class CycleNotificationService:
                     campaign_stats=campaign_stats,
                     unsubscribe_url=opt_out,
                 )
-                subject = epoch_completed_subject(
-                    epoch_name, leaderboard, recipient["simulation_id"], email_locale
-                )
+                subject = epoch_completed_subject(epoch_name, leaderboard, recipient["simulation_id"], email_locale)
 
                 if await EmailService.send(
                     recipient["email"],

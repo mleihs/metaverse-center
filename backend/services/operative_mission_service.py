@@ -77,10 +77,10 @@ class OperativeMissionService:
             if not body.embassy_id:
                 raise bad_request("Operatives must deploy through an embassy.")
             # Validate embassy exists and is active
-            embassy = await (
-                supabase.table("embassies").select("id, status").eq("id", str(body.embassy_id)).single().execute()
+            embassy = await maybe_single_data(
+                supabase.table("embassies").select("id, status").eq("id", str(body.embassy_id)).maybe_single()
             )
-            if not embassy.data or embassy.data.get("status") != "active":
+            if not embassy or embassy.get("status") != "active":
                 raise bad_request("Embassy must be active to deploy operatives.")
 
         # Check for betrayal (attacking an ally)
