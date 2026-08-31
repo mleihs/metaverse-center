@@ -19,6 +19,14 @@ cd "$SCRIPT_DIR/.."
 
 TOKENS_FILE="src/styles/tokens/_colors.css"
 
+# The same 13 pairs, once per simulation theme. Report only — see the header of
+# the companion. Runs FIRST so its number is visible even when the default
+# palette passes, which is exactly the case that used to look like "all clear".
+if [ -f "scripts/lint-color-contrast-themes.mjs" ]; then
+  node scripts/lint-color-contrast-themes.mjs || true
+  echo
+fi
+
 if [ ! -f "$TOKENS_FILE" ]; then
   echo "ERROR: $TOKENS_FILE not found."
   exit 1
