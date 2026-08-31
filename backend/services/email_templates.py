@@ -868,6 +868,38 @@ def _cta_button(url: str, label: str, *, accent: str = _AMBER) -> str:
           </tr>"""
 
 
+def _security_footer_row(email_locale: str | None = None) -> str:
+    """Footer for mail about the account itself, not about the game.
+
+    The ordinary `_footer_row` offers "manage all notifications" pointing at
+    `/settings/notifications`. In a deletion confirmation that is a link to an
+    account that no longer exists — useless, and confusing at exactly the wrong
+    moment. The shared footer quietly assumes the reader still has an account.
+
+    What stays is the legal link and the sentence that this kind of post cannot
+    be switched off, because a security notice with an unsubscribe link is
+    either a lie or a vulnerability.
+    """
+    lang = _resolve_lang(email_locale)
+    legal = "Impressum &amp; Datenschutz" if lang == "de" else "Legal notice &amp; privacy"
+    notice = (
+        "Dies ist eine Sicherheitsnachricht zu deinem Konto. Sie kann nicht abbestellt werden."
+        if lang == "de"
+        else "This is a security message about your account. It cannot be unsubscribed from."
+    )
+    return f"""\
+          <tr>
+            <td style="padding:20px 32px 28px;border-top:1px dashed {_BORDER_SUBTLE};">
+              <p style="margin:0 0 8px;font-size:11px;line-height:1.6;color:{_TEXT_DIM};">
+                {notice}
+              </p>
+              <p style="margin:0;font-size:11px;line-height:1.6;">
+                <a href="{_esc(settings.site_url.rstrip("/"))}/privacy" style="color:{_TEXT_DIM};">{legal}</a>
+              </p>
+            </td>
+          </tr>"""
+
+
 def _footer_row(email_locale: str | None = None, *, unsubscribe_url: str | None = None) -> str:
     """Render the standard footer.
 
@@ -1478,6 +1510,47 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "subject_phase_transition": {
         "en": "CLASSIFIED // PHASE TRANSITION",
         "de": "GEHEIM // PHASENÜBERGANG",
+    },
+    # ── Account deletion (P2.23, DSGVO Art. 17) ──
+    # Sicherheitspost: nüchtern, nicht abbestellbar, kein Rollenspiel.
+    "deleted_header": {
+        "en": "YOUR ACCOUNT HAS BEEN DELETED",
+        "de": "DEIN KONTO WURDE GELÖSCHT",
+    },
+    "pre_deleted": {
+        "en": "Your account and personal data have been removed.",
+        "de": "Dein Konto und deine personenbezogenen Daten wurden entfernt.",
+    },
+    "deleted_subject": {
+        "en": "Your metaverse.center account has been deleted",
+        "de": "Dein Konto bei metaverse.center wurde gelöscht",
+    },
+    "deleted_lead": {
+        "en": "The account for this address has been deleted, together with the personal data held for it.",
+        "de": "Das Konto für diese Adresse wurde gelöscht, zusammen mit den dazu gespeicherten personenbezogenen Daten.",
+    },
+    "deleted_irreversible": {
+        "en": "This cannot be undone. Signing in with this address is no longer possible.",
+        "de": "Das lässt sich nicht rückgängig machen. Eine Anmeldung mit dieser Adresse ist nicht mehr möglich.",
+    },
+    "deleted_worlds_header": {
+        "en": "WHAT REMAINS",
+        "de": "WAS BLEIBT",
+    },
+    # Wichtig und rechtlich relevant: die Welten werden NICHT gelöscht, sondern
+    # übertragen (`admin_delete_user`, Migr. 040/113). Das zu verschweigen wäre
+    # die bequemere, aber falsche Mail.
+    "deleted_worlds": {
+        "en": "Worlds you created stay on the platform and their ownership has passed to the operators. They no longer carry your name or your account.",
+        "de": "Von dir erstellte Welten bleiben auf der Plattform, ihre Inhaberschaft ist an den Betrieb übergegangen. Sie tragen weder deinen Namen noch dein Konto.",
+    },
+    "deleted_no_worlds": {
+        "en": "No worlds were held under this account.",
+        "de": "Unter diesem Konto lagen keine Welten.",
+    },
+    "deleted_contact": {
+        "en": "If you did not expect this, reply to this message.",
+        "de": "Wenn du damit nicht gerechnet hast, antworte auf diese Nachricht.",
     },
     # ── Deadline reminder (P2.17) ──
     # Das System zog RP ab und ersetzte den Spieler durch eine KI, OHNE vorher
@@ -2673,6 +2746,84 @@ def _render_completed_block(
     sections.append(stats_html)
 
     return "\n".join(s for s in sections if s)
+
+
+def render_account_deleted(
+    *,
+    email_locale: str | None = None,
+    worlds_transferred: int = 0,
+) -> str:
+    """Confirm a deleted account (Handoff P2.23, DSGVO Art. 17).
+
+    Security post: sober register, no Bureau roleplay, not unsubscribable. There
+    is nothing to click — a call-to-action in this mail would be the one thing a
+    phishing copy would add.
+
+    Says out loud that the worlds are **transferred, not deleted**
+    (`admin_delete_user`, Migr. 040/113 hands ownership to the operators). The
+    comfortable version of this mail would leave that out; the honest one cannot,
+    because the person has a right to know what survives them.
+    """
+    lang = _resolve_lang(email_locale)
+    accent = _AMBER
+
+    worlds_line = (
+        _nt("deleted_worlds", lang) if worlds_transferred else _nt("deleted_no_worlds", lang)
+    )
+
+    top = f"""\
+          <tr>
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                metaverse.center
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 8px;">
+              <h1 style="margin:0;font-size:20px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt("deleted_header", lang)}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 32px 8px;">
+              <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:{_TEXT};">
+                {_esc(_nt("deleted_lead", lang))}
+              </p>
+              <p style="margin:0;font-size:15px;line-height:1.6;color:{_TEXT};">
+                {_esc(_nt("deleted_irreversible", lang))}
+              </p>
+            </td>
+          </tr>"""
+
+    blocks = [
+        top,
+        _section_header(_nt("deleted_worlds_header", lang)),
+        f"""\
+          <tr>
+            <td style="padding:4px 32px 20px;">
+              <p style="margin:0;font-size:14px;line-height:1.65;color:{_TEXT};">
+                {_esc(worlds_line)}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 24px;">
+              <p style="margin:0;font-size:14px;line-height:1.65;color:{_TEXT_DIM};">
+                {_esc(_nt("deleted_contact", lang))}
+              </p>
+            </td>
+          </tr>""",
+        _security_footer_row(email_locale),
+    ]
+
+    return _email_shell(
+        "ACCOUNT DELETED",
+        "\n".join(blocks),
+        lang=lang,
+        preheader=_nt("pre_deleted", lang),
+    )
 
 
 def render_deadline_reminder(
