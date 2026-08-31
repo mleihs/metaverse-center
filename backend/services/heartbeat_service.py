@@ -1369,6 +1369,20 @@ class HeartbeatService(BaseSchedulerMixin):
         rate_mult = float(overrides.get("autonomy_needs_decay_rate", 1.0))
         needs_updated = await AgentNeedsService.decay_all(admin, sim_id, rate_mult)
 
+        # 9a-2: Turn unmet needs into mood (N5, migration 306).
+        #
+        # This sits BETWEEN the decay and the mood recalculation on purpose. A
+        # need that crossed its threshold in THIS tick is felt in the same
+        # round; behind the mood phase it would lag by one tick — four hours in
+        # which the world shows something other than what it is.
+        #
+        # Until this existed there was exactly one source of negative mood in
+        # the whole system, and it was capped at −1 per agent. Needs fell and
+        # nobody felt it, so no agent could ever become unhappy, so three of
+        # six social interactions, the stress build-up and four of five
+        # autonomous-event triggers were all unreachable at once.
+        need_moodlets = await AgentNeedsService.apply_need_moodlets(admin, sim_id)
+
         # 9b: Mood housekeeping
         mood_summary = await AgentMoodService.process_tick(admin, sim_id)
 
@@ -1377,6 +1391,7 @@ class HeartbeatService(BaseSchedulerMixin):
 
         stats: dict = {
             "needs_decayed": needs_updated,
+            "need_moodlets": need_moodlets,
             "mood": mood_summary,
             "opinions": opinion_summary,
         }
