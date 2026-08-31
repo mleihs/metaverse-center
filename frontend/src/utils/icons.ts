@@ -46,6 +46,17 @@ export const icons = {
     </svg>
   `,
 
+  /** Der Gegenpart zu `chevronRight`. Er hat gefehlt, solange niemand rückwärts
+   *  blättern konnte — ein Karussell braucht beide Richtungen, und einen
+   *  vorhandenen Pfeil per CSS zu drehen hiesse, seine Bedeutung aus der
+   *  Darstellung abzuleiten statt aus seinem Namen. */
+  chevronLeft: (size = 14) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M15 6l-6 6l6 6" />
+    </svg>
+  `,
+
   plus: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
       fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
