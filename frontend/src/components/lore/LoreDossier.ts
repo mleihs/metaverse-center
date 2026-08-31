@@ -125,7 +125,21 @@ export class VelgLoreDossier extends LitElement {
       display: grid;
       grid-template-columns: var(--_toc-width) minmax(0, var(--_measure));
       gap: var(--space-16);
-      justify-content: center;
+      /*
+       * Der RAHMEN heftet sich an das Paar, statt die Spalten in einem Rahmen
+       * voller Breite zu zentrieren.
+       *
+       * Der erste Versuch stand hier als justify-content: center. Die Spalten
+       * standen danach richtig zueinander — und der Rahmen lief weiter ueber
+       * die ganze Breite, also war die tote Flaeche nicht weg, sondern
+       * verschoben: auf 1600 gemessen 217 px zwischen Rahmenkante und
+       * Register. Eine Luecke von zwischen den Spalten nach hinter den Rand zu
+       * schieben ist keine Reparatur, es ist derselbe Fehler an einer Stelle,
+       * an der man ihn seltener bemerkt. Mit fit-content sind es 1 px.
+       */
+      width: fit-content;
+      margin-inline: auto;
+      max-width: 100%;
       border: var(--border-width-thin) solid var(--color-border-light);
       background: var(--color-surface);
     }
