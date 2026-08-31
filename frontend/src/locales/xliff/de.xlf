@@ -520,11 +520,11 @@
 </trans-unit>
 <trans-unit id="s0b7e8f388caf2b36">
   <source><x id="0" equiv-text="${this._total}"/> buildings total</source>
-  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
+  <target><x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="s9289a1008fa7df3d">
   <source><x id="0" equiv-text="${this._total}"/> building total</source>
-  <target>Gebäude insgesamt<x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
+  <target><x id="0" equiv-text="${this._total}"/> Gebäude insgesamt</target>
 </trans-unit>
 <trans-unit id="se6ce9f50ddd15633">
   <source>Failed to load agents.</source>
@@ -608,7 +608,7 @@
 </trans-unit>
 <trans-unit id="sd94e4de48e8973cb">
   <source><x id="0" equiv-text="${this.conversation.message_count}"/> messages</source>
-  <target>Nachrichten<x id="0" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
+  <target><x id="0" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
 </trans-unit>
 <trans-unit id="se3b62a22fe3df419">
   <source>Loading messages...</source>
@@ -672,7 +672,7 @@
 </trans-unit>
 <trans-unit id="sdad9a8331eaf87b9">
   <source><x id="0" equiv-text="${reactionCount}"/> Reactions</source>
-  <target>Reaktionen<x id="0" equiv-text="${reactionCount}"/> Reaktionen</target>
+  <target><x id="0" equiv-text="${reactionCount}"/> Reaktionen</target>
 </trans-unit>
 <trans-unit id="se44a1146a7e00fd1">
   <source>Edit event</source>
@@ -828,19 +828,19 @@
 </trans-unit>
 <trans-unit id="s9914f7f7bed983b3">
   <source><x id="0" equiv-text="${this._typeLabel}"/> updated successfully</source>
-  <target>erfolgreich aktualisiert<x id="0" equiv-text="${this._typeLabel}"/> erfolgreich aktualisiert</target>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erfolgreich aktualisiert</target>
 </trans-unit>
 <trans-unit id="sa73b997642f65846">
   <source><x id="0" equiv-text="${this._typeLabel}"/> created successfully</source>
-  <target>erfolgreich erstellt<x id="0" equiv-text="${this._typeLabel}"/> erfolgreich erstellt</target>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erfolgreich erstellt</target>
 </trans-unit>
 <trans-unit id="sa80933980d6bd0c7">
   <source>Edit <x id="0" equiv-text="${this._typeLabel}"/></source>
-  <target>Bearbeiten<x id="0" equiv-text="${this._typeLabel}"/> bearbeiten</target>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> bearbeiten</target>
 </trans-unit>
 <trans-unit id="s5d6af4c100ad321b">
   <source>Create <x id="0" equiv-text="${this._typeLabel}"/></source>
-  <target>Erstellen<x id="0" equiv-text="${this._typeLabel}"/> erstellen</target>
+  <target><x id="0" equiv-text="${this._typeLabel}"/> erstellen</target>
 </trans-unit>
 <trans-unit id="s1148def0112d096a">
   <source>Enter <x id="0" equiv-text="${this.type}"/> name</source>
@@ -1124,7 +1124,7 @@
 </trans-unit>
 <trans-unit id="s0bcd877483a23da5">
   <source><x id="0" equiv-text="${displayName}"/> has been removed.</source>
-  <target>wurde entfernt.<x id="0" equiv-text="${displayName}"/> wurde entfernt.</target>
+  <target><x id="0" equiv-text="${displayName}"/> wurde entfernt.</target>
 </trans-unit>
 <trans-unit id="s58791d830f346d4b">
   <source>Failed to remove member.</source>
@@ -2268,11 +2268,11 @@
 </trans-unit>
 <trans-unit id="s6d936d8dcc053ab0">
   <source><x id="0" equiv-text="${response.data.length}"/> reactions generated</source>
-  <target>Reaktionen generiert<x id="0" equiv-text="${response.data.length}"/> Reaktionen generiert</target>
+  <target><x id="0" equiv-text="${response.data.length}"/> Reaktionen generiert</target>
 </trans-unit>
 <trans-unit id="s7dcfa30133c26319">
   <source><x id="0" equiv-text="${response.data.length}"/> agent reactions generated</source>
-  <target>Agentenreaktionen generiert<x id="0" equiv-text="${response.data.length}"/> Agentenreaktionen generiert</target>
+  <target><x id="0" equiv-text="${response.data.length}"/> Agentenreaktionen generiert</target>
 </trans-unit>
 <trans-unit id="sc02725662448fb75">
   <source>Reaction generation failed</source>
@@ -2380,7 +2380,7 @@
 </trans-unit>
 <trans-unit id="s1feb2c0afcc4660c">
   <source><x id="0" equiv-text="${agents.length}"/> agent(s) added.</source>
-  <target>Agent(en) hinzugefügt.<x id="0" equiv-text="${agents.length}"/> Agent(en) hinzugefügt.</target>
+  <target><x id="0" equiv-text="${agents.length}"/> Agent(en) hinzugefügt.</target>
 </trans-unit>
 <trans-unit id="s4095b60011d6e4ae">
   <source>Event "<x id="0" equiv-text="${event.title}"/>" referenced.</source>
@@ -3757,7 +3757,7 @@
 <target>Zyklus-Intervall</target></trans-unit>
 <trans-unit id="s567a3193a6ad8025">
   <source><x id="0" equiv-text="${cyclesPerDay}"/> cycles per day</source>
-<target>Zyklen pro Tag<x id="0" equiv-text="${cyclesPerDay}"/> Zyklen pro Tag</target></trans-unit>
+<target><x id="0" equiv-text="${cyclesPerDay}"/> Zyklen pro Tag</target></trans-unit>
 <trans-unit id="s4d2d7498eb8ea64a">
   <source>RP per Cycle</source>
 <target>RP pro Zyklus</target></trans-unit>
@@ -4008,7 +4008,7 @@
 <target>Zyklen</target></trans-unit>
 <trans-unit id="s9a8758a0c98cfb49">
   <source><x id="0" equiv-text="${this._suggestions.length}"/> suggestions generated</source>
-<target>Vorschläge generiert<x id="0" equiv-text="${this._suggestions.length}"/> Vorschläge generiert</target></trans-unit>
+<target><x id="0" equiv-text="${this._suggestions.length}"/> Vorschläge generiert</target></trans-unit>
 <trans-unit id="sea8f4c8095b57166">
   <source>No suggestions generated</source>
 <target>Keine Vorschläge generiert</target></trans-unit>
@@ -4017,7 +4017,7 @@
 <target>Generierung fehlgeschlagen</target></trans-unit>
 <trans-unit id="sc2a2ef3edfd49261">
   <source><x id="0" equiv-text="${saved}"/> relationships saved</source>
-<target>Beziehungen gespeichert<x id="0" equiv-text="${saved}"/> Beziehungen gespeichert</target></trans-unit>
+<target><x id="0" equiv-text="${saved}"/> Beziehungen gespeichert</target></trans-unit>
 <trans-unit id="s2dc335265b16339d">
   <source>Failed to save relationships</source>
 <target>Beziehungen konnten nicht gespeichert werden</target></trans-unit>
@@ -4065,7 +4065,7 @@
 <target>Aufstellen</target></trans-unit>
 <trans-unit id="s7d15d2dac95778b8">
   <source><x id="0" equiv-text="${this.epoch?.current_cycle ?? 0}"/> cycles</source>
-<target>Zyklen<x id="0" equiv-text="${op.missionCycles}"/> Zyklen</target></trans-unit>
+<target><x id="0" equiv-text="${op.missionCycles}"/> Zyklen</target></trans-unit>
 <trans-unit id="s57ce5bc9b2b4287e">
   <source>Preset</source>
 <target>Voreingestellt</target></trans-unit>
@@ -5313,7 +5313,7 @@
 <target>Speichern fehlgeschlagen.</target></trans-unit>
 <trans-unit id="s98271ceaf8dc97b9">
   <source><x id="0" equiv-text="${errorCount}"/> settings failed to save.</source>
-<target>Einstellungen konnten nicht gespeichert werden.<x id="0" equiv-text="${errorCount}"/> Einstellungen konnten nicht gespeichert werden.</target></trans-unit>
+<target><x id="0" equiv-text="${errorCount}"/> Einstellungen konnten nicht gespeichert werden.</target></trans-unit>
 <trans-unit id="s1c171f24624e11de">
   <source>Loading settings...</source>
 <target>Einstellungen werden geladen...</target></trans-unit>
@@ -5364,7 +5364,7 @@
 <target>Benutzer nach E-Mail suchen...</target></trans-unit>
 <trans-unit id="s279b9e6f821888b9">
   <source><x id="0" equiv-text="${users.length}"/> users</source>
-<target>Benutzer<x id="0" equiv-text="${users.length}"/> Benutzer</target></trans-unit>
+<target><x id="0" equiv-text="${users.length}"/> Benutzer</target></trans-unit>
 <trans-unit id="sf91abb3323905dc0">
   <source>No users found.</source>
 <target>Keine Benutzer gefunden.</target></trans-unit>
@@ -6946,7 +6946,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 </trans-unit>
 <trans-unit id="s039b6434e8a75560">
   <source>Delete <x id="0" equiv-text="${epoch.name}"/></source>
-  <target>Löschen <x id="0" equiv-text="${epoch.name}"/> löschen</target></trans-unit>
+  <target><x id="0" equiv-text="${epoch.name}"/> löschen</target></trans-unit>
 <trans-unit id="s4703acf0081a9e92">
   <source>Deploy Guardian / Spy</source>
   <target>Wächter / Spion einsetzen</target>
@@ -10224,10 +10224,10 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 </trans-unit>
 <trans-unit id="s5fa511bebe4a7390">
   <source>Approve <x id="0" equiv-text="${c.title}"/></source>
-<target>Genehmigen <x id="0" equiv-text="${c.title}"/> genehmigen</target></trans-unit>
+<target><x id="0" equiv-text="${c.title}"/> genehmigen</target></trans-unit>
 <trans-unit id="seed03a4c0428a764">
   <source>Reject <x id="0" equiv-text="${c.title}"/></source>
-<target>Ablehnen<x id="0" equiv-text="${c.title}"/> ablehnen</target>
+<target><x id="0" equiv-text="${c.title}"/> ablehnen</target>
 </trans-unit>
 <trans-unit id="s8daa1db5187d4ad4">
   <source>Detail</source>
@@ -11973,21 +11973,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s9a0d8a8f75d1c0e9">
   <source>REDACTED</source>
 <target>GESCHWÄRZT</target></trans-unit>
-<trans-unit id="sc8bc45a6bf90fc7f">
-  <source>CONSUMED</source>
-<target>AUFGEZEHRT</target></trans-unit>
-<trans-unit id="s56f5c9194461d57c">
-  <source>the</source>
-<target>das</target></trans-unit>
-<trans-unit id="s6dcaab493a75066d">
-  <source>shall</source>
-<target>soll</target></trans-unit>
-<trans-unit id="s77076f70301c37c4">
-  <source>ILLEGIBLE</source>
-<target>UNLESERLICH</target></trans-unit>
-<trans-unit id="s11eecdb7d76a5803">
-  <source>THREAT LEVEL</source>
-<target>BEDROHUNGSSTUFE</target></trans-unit>
 <trans-unit id="s4faf5ee29f55ef21">
   <source>DOSSIER PREVIEW // 6 CLASSIFIED SECTIONS PENDING AUTHORIZATION</source>
 <target>DOSSIER-VORSCHAU // 6 GEHEIME ABSCHNITTE WARTEN AUF AUTORISIERUNG</target></trans-unit>
@@ -12147,78 +12132,21 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s9eec5e4d6996de32">
   <source>Pre-Arrival History (~2,000 words)</source>
 <target>Vorgeschichte (~2.000 Wörter)</target></trans-unit>
-<trans-unit id="s75d6795c299c1161">
-  <source>What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near</source>
-<target>Was existierte, bevor dieser Shard materialisierte? Konkurrierende Theorien von Bureau-Historikern. Geborgene archäologische Beweise deuten auf</target></trans-unit>
-<trans-unit id="sa9bab0cf2f390e62">
-  <source>suggests</source>
-<target>deuten auf</target></trans-unit>
-<trans-unit id="sa42d434a699db39e">
-  <source>Temporal anomalies, contested origin myths, and the</source>
-<target>Temporale Anomalien, umstrittene Ursprungsmythen und der</target></trans-unit>
-<trans-unit id="s7f9938cc03ed9ca8">
-  <source>incident of</source>
-<target>Vorfall von</target></trans-unit>
 <trans-unit id="s420647da47620e73">
   <source>Agent Classified Addenda (~2,500 words)</source>
 <target>Geheime Agenten-Nachträge (~2.500 Wörter)</target></trans-unit>
-<trans-unit id="s3b7dae19d7f68624">
-  <source>Per-agent intelligence supplement.</source>
-<target>Nachrichtendienstliche Ergänzung pro Agent.</target></trans-unit>
-<trans-unit id="sdf9ba1f73c2a839c">
-  <source>Full dossier for every agent. Cross-references mapped.</source>
-<target>Vollständiges Dossier für jeden Agenten. Querverweise kartiert.</target></trans-unit>
 <trans-unit id="s78fa6de29af1e00f">
   <source>Geographic Anomalies (~1,500 words)</source>
 <target>Geografische Anomalien (~1.500 Wörter)</target></trans-unit>
-<trans-unit id="s35502dfbe2abc539">
-  <source>Cartographic breach detected near</source>
-<target>Kartografischer Bruch in der Nähe von</target></trans-unit>
-<trans-unit id="s64822333a6f32d63">
-  <source>Spatial geometry contradicts</source>
-<target>Räumliche Geometrie widerspricht</target></trans-unit>
-<trans-unit id="sa64c6148ad272116">
-  <source>Bureau field surveys.</source>
-<target>Bureau-Feldvermessungen.</target></trans-unit>
-<trans-unit id="s7b30d4a2096f1fac">
-  <source>exhibits properties consistent with</source>
-<target>weist Eigenschaften auf, die konsistent sind mit</target></trans-unit>
-<trans-unit id="sfdb1aa0d0965d2dc">
-  <source>Annotated zone analysis for</source>
-<target>Kommentierte Zonenanalyse für</target></trans-unit>
 <trans-unit id="se24dae01cbb16195">
   <source>Bleed Signature Analysis (~1,500 words)</source>
 <target>Bleed-Signaturanalyse (~1.500 Wörter)</target></trans-unit>
-<trans-unit id="s9ae481b68086c7dc">
-  <source>Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why.</source>
-<target>Cross-Shard-Kontaminationsvektoren. Welche benachbarten Realitäten in diesen Shard bluten und warum.</target></trans-unit>
-<trans-unit id="sd55eac1ba2ce25f7">
-  <source>CONTAINMENT STATUS</source>
-<target>EINDÄMMUNGSSTATUS</target></trans-unit>
-<trans-unit id="sa78fad6ae38b6d28">
-  <source>DOCUMENTED INCURSIONS</source>
-<target>DOKUMENTIERTE EINBRÜCHE</target></trans-unit>
 <trans-unit id="s8b0a85e76e7e90db">
   <source>Prophetic Fragments (~1,000 words)</source>
 <target>Prophetische Fragmente (~1.000 Wörter)</target></trans-unit>
-<trans-unit id="s9350d4dafb7d3103">
-  <source>Recovered documents, dream transcriptions, inscriptions.</source>
-<target>Geborgene Dokumente, Traumprotokolle, Inschriften.</target></trans-unit>
-<trans-unit id="s17a70f94cd74115b">
-  <source>Reliability</source>
-<target>Zuverlässigkeit</target></trans-unit>
-<trans-unit id="sbd8ba6e005512ce5">
-  <source>Unreliable narration with degradation markers.</source>
-<target>Unzuverlässige Erzählung mit Verfallsmarkern.</target></trans-unit>
 <trans-unit id="s799d5441ac2e5ee1">
   <source>Bureau Recommendation (~500 words)</source>
 <target>Bureau-Empfehlung (~500 Wörter)</target></trans-unit>
-<trans-unit id="s7818ed1eea70237b">
-  <source>Official Bureau assessment. Threat designation, research value, recommended actions.</source>
-<target>Offizielle Bureau-Bewertung. Bedrohungseinstufung, Forschungswert, empfohlene Maßnahmen.</target></trans-unit>
-<trans-unit id="s85f5007f30c4411d">
-  <source>Institutional authority. Dry humor. Final word.</source>
-<target>Institutionelle Autorität. Trockener Humor. Letztes Wort.</target></trans-unit>
 <trans-unit id="s70a55e76cf29f00e">
   <source>Authorize Classified Expansion</source>
 <target>Geheime Erweiterung autorisieren</target></trans-unit>
@@ -29970,6 +29898,34 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s90648591a58544d3">
   <source>Portrait generated.</source>
 <target>Portrait erfolgreich generiert.</target>
+</trans-unit>
+<trans-unit id="sa26377c454cfde9f">
+  <source>Enlarge figure</source>
+<target>Abbildung vergrößern</target>
+</trans-unit>
+<trans-unit id="s2e5d951433792fa4">
+  <source>What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near <x id="0" equiv-text="${zone}"/> suggests ████████. Temporal anomalies, contested origin myths, and the [<x id="1" equiv-text="${geschwaerzt}"/>] incident of ████████.</source>
+<target>Was war, bevor dieser Shard sich materialisierte? Konkurrierende Thesen der Bureau-Historiker. Bei <x id="0" equiv-text="${zone}"/> geborgene Funde legen ████████ nahe. Zeitanomalien, umstrittene Ursprungsmythen und der Vorfall [<x id="1" equiv-text="${geschwaerzt}"/>] von ████████.</target>
+</trans-unit>
+<trans-unit id="s2ada1dee6c57e04a">
+  <source>Per-agent intelligence supplement. <x id="0" equiv-text="${agent}"/>: RISK ASSESSMENT ████████, HIDDEN MOTIVATION: [<x id="1" equiv-text="${geheim}"/>], SURVEILLANCE NOTES... // <x id="2" equiv-text="${agent2}"/>: [<x id="3" equiv-text="${geschwaerzt}"/>] // Full dossier for every agent. Cross-references mapped.</source>
+<target>Nachrichtendienstliche Ergänzung je Agent. <x id="0" equiv-text="${agent}"/>: RISIKOEINSCHÄTZUNG ████████, VERDECKTES MOTIV: [<x id="1" equiv-text="${geheim}"/>], ÜBERWACHUNGSNOTIZEN… // <x id="2" equiv-text="${agent2}"/>: [<x id="3" equiv-text="${geschwaerzt}"/>] // Vollständige Akte zu jedem Agenten. Querverweise erfasst.</target>
+</trans-unit>
+<trans-unit id="s64658fde7422c3ea">
+  <source>Cartographic breach detected near <x id="0" equiv-text="${building}"/>. Spatial geometry contradicts ████ Bureau field surveys. <x id="1" equiv-text="${building2}"/> exhibits properties consistent with ███████. Annotated zone analysis for <x id="2" equiv-text="${zone}"/>.</source>
+<target>Kartografischer Bruch bei <x id="0" equiv-text="${building}"/> festgestellt. Die Raumgeometrie widerspricht ████ Feldvermessungen des Bureaus. <x id="1" equiv-text="${building2}"/> zeigt Eigenschaften, die zu ███████ passen. Kommentierte Zonenanalyse für <x id="2" equiv-text="${zone}"/>.</target>
+</trans-unit>
+<trans-unit id="sfff7c56531232e37">
+  <source>Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why. CONTAINMENT STATUS: ████████ | DOCUMENTED INCURSIONS: [<x id="0" equiv-text="${geschwaerzt}"/>]</source>
+<target>Kontaminationsvektoren zwischen den Shards. Welche angrenzenden Wirklichkeiten in diesen Shard bluten, und warum. EINDÄMMUNG: ████████ | DOKUMENTIERTE ÜBERTRITTE: [<x id="0" equiv-text="${geschwaerzt}"/>]</target>
+</trans-unit>
+<trans-unit id="s7cc815e7bf822925">
+  <source>Recovered documents, dream transcriptions, inscriptions. "the <x id="0" equiv-text="${building}"/> shall ████... [ILLEGIBLE]" – Source: ████████. Reliability: [CONSUMED]. Unreliable narration with degradation markers.</source>
+<target>Geborgene Dokumente, Traumniederschriften, Inschriften. „das <x id="0" equiv-text="${building}"/> soll ████… [ILLEGIBLE]“ – Quelle: ████████. Verlässlichkeit: [CONSUMED]. Unzuverlässige Erzählung mit Zerfallsmarken.</target>
+</trans-unit>
+<trans-unit id="s1ac3e2635c18da6b">
+  <source>Official Bureau assessment. Threat designation, research value, recommended actions. THREAT LEVEL: ████████ | [<x id="0" equiv-text="${geheim}"/>] | Institutional authority. Dry humor. Final word.</source>
+<target>Amtliche Einschätzung des Bureaus. Bedrohungsbezeichnung, Forschungswert, empfohlene Maßnahmen. BEDROHUNGSSTUFE: ████████ | [<x id="0" equiv-text="${geheim}"/>] | Institutionelle Autorität. Trockener Humor. Letztes Wort.</target>
 </trans-unit>
 </body>
 </file>
