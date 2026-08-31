@@ -1,0 +1,72 @@
+/* === Typography Tokens === */
+
+:root {
+  /* === FONT FAMILIES === */
+  --font-brutalist: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  --font-bureau: 'Spectral', 'Georgia', 'Times New Roman', serif;
+
+  /* === FONT SIZES (Modular Scale: 1.25 ratio) === */
+  --text-xs: 0.64rem;    /* 10.24px */
+  --text-sm: 0.8rem;     /* 12.8px */
+  --text-base: 1rem;     /* 16px */
+  --text-md: 1.125rem;   /* 18px */
+  --text-lg: 1.25rem;    /* 20px */
+  --text-xl: 1.563rem;   /* 25px */
+  --text-2xl: 1.953rem;  /* 31.25px */
+  --text-3xl: 2.441rem;  /* 39px */
+  --text-4xl: 3.052rem;  /* 48.8px */
+
+  /* === FONT WEIGHTS === */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-black: 900;
+
+  /* === LINE HEIGHTS === */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* === LETTER SPACING === */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  --tracking-brutalist: 0.08em; /* Relative — scales with font size (was 1px fixed, too tight at large sizes) */
+  --tracking-display: 0.15em;  /* Hero subtitles, display typography */
+  --tracking-hero: 0.3em;      /* Landing page hero headings, dramatic effect */
+
+  /* === SEMANTIC TOKENS (analogous to --heading-font for headings) === */
+  --font-body: var(--font-sans);    /* UI text — themed per simulation */
+  --font-prose: var(--font-bureau); /* Literary prose — themed per simulation, Spectral on platform */
+
+  /* === HEADING TOKENS === */
+  --heading-font: var(--font-brutalist);
+  --heading-weight: var(--font-bold); /* 700 — Courier New only ships 400/700; 900 triggers faux bold synthesis */
+  --heading-transform: uppercase;
+  --heading-tracking: var(--tracking-brutalist);
+
+  --h1-size: var(--text-3xl);
+  --h2-size: var(--text-2xl);
+  --h3-size: var(--text-xl);
+  --h4-size: var(--text-lg);
+  --h5-size: var(--text-md);
+  --h6-size: var(--text-base);
+}
+
+/* === Mobile Typography Scale === */
+@media (max-width: 767px) {
+  :root {
+    --text-3xl: 1.953rem;   /* 31px, was 39px */
+    --text-4xl: 2.441rem;   /* 39px, was 49px */
+    --h1-size: var(--text-2xl);
+    --h2-size: var(--text-xl);
+  }
+}
