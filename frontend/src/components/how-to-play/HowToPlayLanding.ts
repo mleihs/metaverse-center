@@ -20,11 +20,12 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { driftStatus } from '../../services/DriftStatusService.js';
+import { journalStatus } from '../../services/JournalStatusService.js';
 import { seoService } from '../../services/SeoService.js';
 import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
 import { htpHeroStyles } from './htp-shared-styles.js';
-import { visibleTopics } from './htp-topic-data.js';
+import { type TopicVisibility, visibleTopics } from './htp-topic-data.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,19 @@ interface DoorCard {
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
+
+/**
+ * Die Sichtbarkeitsflaggen der Themen, an einer Stelle.
+ *
+ * Zwei Themen sind flag-gesteuert (DRIFT und das Journal), und beide Signale
+ * werden an mehreren Stellen derselben Datei gebraucht. Als Funktion statt als
+ * Konstante, weil die Signale sich zur Laufzeit auflösen, nachdem der
+ * öffentliche Zustand geladen wurde.
+ */
+const TOPIC_FLAGS = (): TopicVisibility => ({
+  drift: driftStatus.enabled.value,
+  journal: journalStatus.enabled.value,
+});
 
 @localized()
 @customElement('velg-how-to-play-landing')
@@ -372,6 +386,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
     // die naechste Seite widerlegt. `SignalWatcher` zeichnet neu, sobald das
     // oeffentliche Tor aufgeloest ist.
     void driftStatus.ensureLoaded();
+    void journalStatus.ensureLoaded();
     seoService.setTitle([msg('How to Play')]);
     seoService.setDescription(
       msg(
@@ -389,7 +404,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
   // ── Data ───────────────────────────────────────────────────────────────
 
   private get _doors(): DoorCard[] {
-    const topicCount = visibleTopics(driftStatus.enabled.value).length;
+    const topicCount = visibleTopics(TOPIC_FLAGS()).length;
     return [
       {
         key: 'quickstart',
