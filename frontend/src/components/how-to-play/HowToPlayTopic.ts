@@ -832,7 +832,6 @@ export class VelgHowToPlayTopic extends LitElement {
       color: var(--color-text-muted);
       text-decoration: none;
       cursor: pointer;
-      border-left: 2px solid transparent;
       transition:
         color var(--duration-fast) var(--ease-default),
         border-color var(--duration-fast) var(--ease-default);
@@ -842,9 +841,14 @@ export class VelgHowToPlayTopic extends LitElement {
       color: var(--color-text-secondary);
     }
 
+    /* Position in the list: tinted face plus a 1px outline, the same device
+       the chat sidebar, the navigation and the broadsheet archive use. The
+       accent colour was already on the LABEL - the bar said it twice. */
     .sidebar__nav-link--active {
       color: var(--_topic-accent);
-      border-left-color: var(--_topic-accent);
+      background: color-mix(in srgb, var(--_topic-accent) 6%, transparent);
+      outline: 1px solid color-mix(in srgb, var(--_topic-accent) 45%, transparent);
+      outline-offset: -1px;
     }
 
     .sidebar__related-title {
