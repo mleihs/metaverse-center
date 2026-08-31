@@ -50,6 +50,18 @@ import '../shared/VelgHoldButton.js';
 const TIMER_WARNING_MS = 10_000;
 const TIMER_CRITICAL_MS = 5_000;
 
+/** ①②③④ for the order strip, as the prototype draws them.
+ *
+ *  Decorative numbering, not a bearing glyph: replace the circle with a plain
+ *  digit and nothing is lost, which is the test that lets it stay a character
+ *  instead of an icon. Never inside `msg()` — a translation has no business
+ *  carrying an ornament. Beyond twenty (a party never gets there, but a fallback
+ *  that cannot be reached is still cheaper than one that crashes) it degrades to
+ *  the bare number. */
+function circledIndex(index: number): string {
+  return index < 20 ? String.fromCodePoint(0x2460 + index) : String(index + 1);
+}
+
 @localized()
 @customElement('velg-dungeon-combat-bar')
 export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
@@ -606,17 +618,24 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
          four equal shares: a long ability name must not squeeze its neighbour
          into an ellipsis, because the point of the strip is that all four
          orders are readable at once. */
+      /* One row with the commit button, as the prototype draws it: the strip is
+         the last thing crossed on the way to Execute, and putting it on its own
+         line pushed the button a row further from the abilities for no gain.
+         The list grows, each slot takes an equal share of it — four shares
+         that shrink together, so a long ability name never squeezes a
+         neighbour out of legibility. */
       .orders {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        flex: 1;
+        display: flex;
         gap: 1px;
         margin: 0;
         padding: 0;
         list-style: none;
-        border-top: 1px solid color-mix(in srgb, var(--_border) 30%, transparent);
+        min-width: 0;
         background: color-mix(in srgb, var(--_border) 22%, transparent);
       }
       .orders__slot {
+        flex: 1 1 0;
         display: flex;
         min-width: 0;
       }
@@ -624,9 +643,9 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         flex: 1;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         min-width: 0;
-        padding: 5px 8px;
+        padding: 4px 7px;
         border: 0;
         background: var(--_screen-bg);
         color: var(--_phosphor-dim);
@@ -645,37 +664,37 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         outline: 2px solid var(--_phosphor);
         outline-offset: -2px;
       }
+      /* The circled digit itself, unboxed — a border around it made four little
+         chips competing with the ability tiles above. */
       .order__index {
         flex: none;
-        width: 14px;
-        height: 14px;
-        display: grid;
-        place-items: center;
-        border: 1px solid color-mix(in srgb, var(--_phosphor) 30%, transparent);
-        font-size: 9px;
-        font-weight: 700;
-        /* Tabular figures: the four indices must sit on one baseline grid, or
-           the strip reads as four unrelated buttons rather than one list. */
-        font-variant-numeric: tabular-nums;
+        font-size: 10px;
+        line-height: 1;
+        opacity: 0.75;
       }
-      .order__body {
+      .order__line {
         display: flex;
-        flex-direction: column;
+        align-items: baseline;
+        gap: 4px;
         min-width: 0;
-        line-height: 1.25;
+        white-space: nowrap;
       }
       .order__who {
+        flex: none;
         font-weight: 700;
         letter-spacing: 0.4px;
         text-transform: uppercase;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
+      .order__sep {
+        flex: none;
+        opacity: 0.5;
+      }
+      /* The name survives, the order is what truncates — a slot whose operative
+         cannot be identified tells the player nothing at all. */
       .order__what {
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
         opacity: 0.85;
       }
       /* Set: the amber of a placed order, the same accent the command card and
@@ -684,8 +703,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         color: var(--color-accent-amber);
       }
       .order--set .order__index {
-        border-color: color-mix(in srgb, var(--color-accent-amber) 55%, transparent);
-        background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
+        opacity: 1;
       }
       .order__drop {
         flex: none;
@@ -707,10 +725,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         @keyframes order-aim-pulse {
           0%,
           100% {
-            border-color: color-mix(in srgb, var(--color-accent-amber) 35%, transparent);
+            opacity: 0.4;
           }
           50% {
-            border-color: var(--color-accent-amber);
+            opacity: 1;
           }
         }
       }
@@ -1415,18 +1433,18 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
               </div>`
         }
 
-        ${this.compact ? this._renderOrderStrip(actionable, selected, enemies) : nothing}
-
         <div class="footer">
-          <span class="counter" aria-live="polite">
-            ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length} ${msg('ACTIONS')}
-          </span>
           ${
-            // The graphical mode has no terminal buffer to type into; pointing
-            // at one there is an instruction the player cannot follow.
+            // On the stage the order strip IS the counter: four slots that each
+            // name what will happen carry more than "2/4 ACTIONS", and the hold
+            // button repeats the tally anyway. The terminal path keeps the
+            // counter, where there is no strip to read it from.
             this.compact
-              ? nothing
-              : html`<span class="footer__hint">${msg('or type "submit" in terminal')}</span>`
+              ? this._renderOrderStrip(actionable, selected, enemies)
+              : html`<span class="counter" aria-live="polite">
+                    ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length} ${msg('ACTIONS')}
+                  </span>
+                  <span class="footer__hint">${msg('or type "submit" in terminal')}</span>`
           }
           ${
             // A held button, not a click, and only on the stage. Committing the
@@ -1508,7 +1526,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
               : abilityName
             : aiming
               ? msg('Choosing a target…')
-              : msg('Defends');
+              : msg('Auto-defence');
 
           return html`
             <li class="orders__slot">
@@ -1523,9 +1541,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
                 }
                 title=${`${agent.agent_name} \u2013 ${text}`}
               >
-                <span class="order__index" aria-hidden="true">${index + 1}</span>
-                <span class="order__body">
+                <span class="order__index" aria-hidden="true">${circledIndex(index)}</span>
+                <span class="order__line">
                   <span class="order__who">${firstName}</span>
+                  <span class="order__sep" aria-hidden="true">\u2013</span>
                   <span class="order__what">${text}</span>
                 </span>
                 ${
