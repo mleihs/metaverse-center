@@ -345,7 +345,11 @@ export class VelgConversationList extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-warning-bg);
-      color: var(--color-warning-hover);
+      /* -on-tint, not -hover. Both mix toward --color-text-primary, but -hover
+         only takes 20 % and lands at 2.63:1 against its own tint in the worst
+         theme - measurably better and still failing. -on-tint takes 45 %,
+         which is where the worst case crosses AA. */
+      color: var(--color-warning-on-tint);
       border: var(--border-width-thin) solid var(--color-warning-border);
     }
 

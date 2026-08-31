@@ -242,7 +242,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
 
     .panel__readiness-label--critical {
       background: var(--color-danger-bg);
-      color: var(--color-danger);
+      color: var(--color-danger-on-tint);
     }
 
     .panel__readiness-label--understaffed {
@@ -252,7 +252,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
 
     .panel__readiness-label--operational {
       background: var(--color-success-bg);
-      color: var(--color-success);
+      color: var(--color-success-on-tint);
     }
 
     .panel__readiness-label--overcrowded {
@@ -330,19 +330,19 @@ export class VelgBuildingDetailsPanel extends LitElement {
     .panel__tier--weak {
       background: color-mix(in srgb, var(--color-danger) 12%, transparent);
       border: var(--border-width-thin) solid color-mix(in srgb, var(--color-danger) 35%, transparent);
-      color: var(--color-danger);
+      color: var(--color-danger-on-tint);
     }
 
     .panel__tier--average {
       background: color-mix(in srgb, var(--color-warning) 12%, transparent);
       border: var(--border-width-thin) solid color-mix(in srgb, var(--color-warning) 35%, transparent);
-      color: var(--color-warning);
+      color: var(--color-warning-on-tint);
     }
 
     .panel__tier--strong {
       background: color-mix(in srgb, var(--color-success) 12%, transparent);
       border: var(--border-width-thin) solid color-mix(in srgb, var(--color-success) 35%, transparent);
-      color: var(--color-success);
+      color: var(--color-success-on-tint);
     }
   `,
   ];
