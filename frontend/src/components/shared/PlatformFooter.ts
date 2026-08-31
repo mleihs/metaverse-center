@@ -70,7 +70,15 @@ export class VelgPlatformFooter extends LitElement {
     }
 
     .footer__links-label {
-      color: var(--color-accent-amber);
+      /* -readable, weil die Fussleiste das Weltthema erbt und das Amber dort
+         auf einer hellen Flaeche stehen kann: gemessen 1,89 : 1 auf der
+         Creme-Flaeche der Staatspathographie.
+         ⚠ Das repariert den Kontrast, nicht die Frage dahinter — SOLL die
+         Plattform-Fussleiste ueberhaupt das Weltthema tragen? Sie ist
+         Plattform-Chrome, und --color-accent-amber ist ausdruecklich nicht
+         themebar. Bleibt sie kuenftig plattform-dunkel, ist -readable hier
+         ueberfluessig und darf zurueck. */
+      color: var(--color-accent-amber-readable);
       font-weight: var(--font-bold);
     }
 
