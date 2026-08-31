@@ -49,9 +49,7 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 
 def _run_row(admin_client, run_id) -> dict:
-    return (
-        admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()
-    ).data[0]
+    return (admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()).data[0]
 
 
 def _move(client, user, run, node) -> dict:
@@ -72,11 +70,7 @@ def _move(client, user, run, node) -> dict:
 
 def _log(admin_client, run_id) -> list[dict]:
     return (
-        admin_client.table("travel_log_entries")
-        .select("*")
-        .eq("run_id", str(run_id))
-        .order("created_at")
-        .execute()
+        admin_client.table("travel_log_entries").select("*").eq("run_id", str(run_id)).order("created_at").execute()
     ).data
 
 
@@ -154,16 +148,20 @@ class TestBands:
 
 
 class TestDraw:
-    def test_draw_is_deterministic_per_run_and_takt(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_draw_is_deterministic_per_run_and_takt(self, admin_client, user_clients, test_user_ids, chart_home):
         """The same run at the same Takt always draws the same thing — twice in a row."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         bands = _bands(admin_client, 100, 0, 12)
         args = {
-            "band": "mid", "takt": 3, "bands": bands, "kh": 100, "bb": 8, "window": 12,
-            "chart": run["chart_version"], "anchor": chart_home["simulation_id"],
+            "band": "mid",
+            "takt": 3,
+            "bands": bands,
+            "kh": 100,
+            "bb": 8,
+            "window": 12,
+            "chart": run["chart_version"],
+            "anchor": chart_home["simulation_id"],
         }
 
         first = _draw(admin_client, run["id"], user, **args)
@@ -171,9 +169,7 @@ class TestDraw:
         assert first == second
         assert first["template_key"]
 
-    def test_two_runs_do_not_share_a_deck(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_two_runs_do_not_share_a_deck(self, admin_client, user_clients, test_user_ids, chart_home):
         """The salt (264) is what makes the deck unforgeable: same takt, different run,
         different draw. Without it every roll would be precomputable from public inputs."""
         user, client = test_user_ids[0], user_clients[0]
@@ -190,8 +186,15 @@ class TestDraw:
                 [
                     (
                         _draw(
-                            admin_client, run["id"], user, band="deep", takt=takt,
-                            bands=bands, kh=100, bb=8, window=12,
+                            admin_client,
+                            run["id"],
+                            user,
+                            band="deep",
+                            takt=takt,
+                            bands=bands,
+                            kh=100,
+                            bb=8,
+                            window=12,
                             chart=run["chart_version"],
                             anchor=chart_home["simulation_id"],
                         )
@@ -203,9 +206,7 @@ class TestDraw:
 
         assert decks[0] != decks[1], "two runs share a deck — the salt is not in the seed"
 
-    def test_requirements_gate_the_draw(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_requirements_gate_the_draw(self, admin_client, user_clients, test_user_ids, chart_home):
         """A skeleton that asks for a battered hull is never handed to an intact one."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
@@ -215,10 +216,7 @@ class TestDraw:
         # none of the ones demanding damage may ever surface.
         damaged_only = {
             row["template_key"]
-            for row in admin_client.table("travel_signal_templates")
-            .select("template_key,requires")
-            .execute()
-            .data
+            for row in admin_client.table("travel_signal_templates").select("template_key,requires").execute().data
             if "kritisch" in (row["requires"].get("kh_band") or [])
             or "kritisch" in (row["requires"].get("dz_band") or [])
         }
@@ -227,8 +225,16 @@ class TestDraw:
         seen = set()
         for takt in range(1, 40):
             drawn = _draw(
-                admin_client, run["id"], user, band="deep", takt=takt, bands=intact,
-                kh=100, bb=8, window=12, chart=run["chart_version"],
+                admin_client,
+                run["id"],
+                user,
+                band="deep",
+                takt=takt,
+                bands=intact,
+                kh=100,
+                bb=8,
+                window=12,
+                chart=run["chart_version"],
                 anchor=chart_home["simulation_id"],
             )
             if drawn:
@@ -237,9 +243,7 @@ class TestDraw:
         assert seen  # the deep band does produce signals
         assert not (seen & damaged_only)
 
-    def test_prose_never_ships_a_raw_token(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_prose_never_ships_a_raw_token(self, admin_client, user_clients, test_user_ids, chart_home):
         """KPI-1: {sim} must resolve to a real world — a literal token is a bug a player
         can read."""
         user, client = test_user_ids[0], user_clients[0]
@@ -248,8 +252,16 @@ class TestDraw:
 
         for takt in range(1, 30):
             drawn = _draw(
-                admin_client, run["id"], user, band="near", takt=takt, bands=bands,
-                kh=100, bb=8, window=12, chart=run["chart_version"],
+                admin_client,
+                run["id"],
+                user,
+                band="near",
+                takt=takt,
+                bands=bands,
+                kh=100,
+                bb=8,
+                window=12,
+                chart=run["chart_version"],
                 anchor=chart_home["simulation_id"],
             )
             if drawn:
@@ -269,9 +281,7 @@ class TestMoveDrawsSignals:
         moved = _move(client, user, run, home_neighbor)
 
         cp = moved["checkpoint"]
-        drew_something = (
-            "pending_signal" in cp or cp.get("last_move", {}).get("signal") is not None
-        )
+        drew_something = "pending_signal" in cp or cp.get("last_move", {}).get("signal") is not None
         assert drew_something, "the move said nothing at all — D2 is back"
 
     def test_interactive_signal_blocks_the_next_move(
@@ -309,7 +319,7 @@ class TestMoveDrawsSignals:
             _move(client, user, run, home_neighbor)
 
     def test_a_passive_signal_does_not_eat_the_survey(
-        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
+        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor_surveyable
     ):
         """The first-arrival Vermessung of THIS move must survive the draw.
 
@@ -326,24 +336,28 @@ class TestMoveDrawsSignals:
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
 
+        # Der Nachbar kommt aus `home_neighbor_surveyable` und zahlt daher
+        # garantiert etwas. Hier stand vorher `home_neighbor` plus ein
+        # `pytest.skip`, wenn das Band 0 zahlt — und weil jene Vorrichtung die
+        # erste Zeile einer ungeordneten Abfrage nahm, entschied der Zufall, ob
+        # dieser Test lief. Er sprang in etwa drei von vier Läufen ab (drei der
+        # vier Nachbarn von `home-velgarien` sind `mid`, einer ist `near`); die
+        # schwankende Skip-Zahl in den Gesamtläufen war genau das.
         band = (
-            admin_client.table("drift_chart_nodes")
-            .select("distance_band")
-            .eq("id", home_neighbor)
-            .execute()
+            admin_client.table("drift_chart_nodes").select("distance_band").eq("id", home_neighbor_surveyable).execute()
         ).data[0]["distance_band"]
         expected = _tuning(admin_client, "survey_value_by_band")[band]
-        if expected == 0:
-            pytest.skip("the neighbour is a near node — no survey to lose")
+        assert expected > 0, (
+            f"das Band {band!r} zahlt {expected} — die Vorrichtung muss einen zahlenden "
+            "Nachbarn liefern, sonst prüft dieser Test nichts"
+        )
 
-        moved = _move(client, user, run, home_neighbor)
+        moved = _move(client, user, run, home_neighbor_surveyable)
 
         # Whatever the draw did on top (a Fund can ADD to the haul), the survey itself must
         # be in there — never less than the band pays for a first arrival.
         assert moved["checkpoint"]["last_move"]["survey"] == expected
-        assert moved["haul"] >= expected, (
-            "the draw ate the first-arrival Vermessung of this move"
-        )
+        assert moved["haul"] >= expected, "the draw ate the first-arrival Vermessung of this move"
 
     def test_a_scene_with_no_payable_option_left_drains_itself(
         self, admin_client, user_clients, test_user_ids, chart_home
@@ -382,7 +396,12 @@ class TestMoveDrawsSignals:
         moved = _move(client, user, run, home_neighbor)
 
         assert set(moved["checkpoint"]["last_move"].keys()) == {
-            "from", "bb_cost", "notfrequenz", "dz_add", "surge", "survey",
+            "from",
+            "bb_cost",
+            "notfrequenz",
+            "dz_add",
+            "surge",
+            "survey",
         }, "gate off → the exact migration-265 last_move key set"
 
     def test_gate_off_draws_nothing_and_writes_no_log(
@@ -490,9 +509,7 @@ class TestResolve:
         assert entries and entries[-1]["kind"] == "signal"
         assert entries[-1]["payload"]["template_key"] == "stoerung_bandbreitenfrass"
 
-    def test_the_resolved_run_still_parses_as_a_run(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_the_resolved_run_still_parses_as_a_run(self, admin_client, user_clients, test_user_ids, chart_home):
         """The checkpoint blocks are LIFTED into typed fields, so a key the model does not
         know is not a cosmetic problem — it breaks every read of the run, not just the
         mutation's own response.
@@ -522,12 +539,8 @@ class TestResolve:
 
         outcomes = []
         for dz in (0, 0):
-            run = _armed_run(
-                admin_client, client, user, chart_home, kohaerenz=90, dissonanz=dz
-            )
-            run = _park(
-                admin_client, run, "stoerung_frequenzscherung", [{"key": "durchdruecken"}]
-            )
+            run = _armed_run(admin_client, client, user, chart_home, kohaerenz=90, dissonanz=dz)
+            run = _park(admin_client, run, "stoerung_frequenzscherung", [{"key": "durchdruecken"}])
             resolved = _resolve(client, user, run, "durchdruecken")
             outcomes.append(resolved["checkpoint"]["last_signal"]["success"])
 
@@ -542,9 +555,7 @@ class TestResolve:
         assert 1 <= check["roll"] <= _tuning(admin_client, "signal_check")["dice"]
         assert check["success"] is outcomes[-1]
 
-    def test_dissonanz_makes_the_check_harder(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_dissonanz_makes_the_check_harder(self, admin_client, user_clients, test_user_ids, chart_home):
         """The Drift's grip is a real term in the roll, not flavour text."""
         user, client = test_user_ids[0], user_clients[0]
         divisor = _tuning(admin_client, "signal_check")["dz_divisor"]
@@ -554,9 +565,7 @@ class TestResolve:
         _resolve(client, user, run, "durchdruecken")
         calm = _log(admin_client, run["id"])[-1]["payload"]["check"]
 
-        run = _armed_run(
-            admin_client, client, user, chart_home, kohaerenz=90, dissonanz=2 * divisor
-        )
+        run = _armed_run(admin_client, client, user, chart_home, kohaerenz=90, dissonanz=2 * divisor)
         run = _park(admin_client, run, "stoerung_frequenzscherung", [{"key": "durchdruecken"}])
         _resolve(client, user, run, "durchdruecken")
         strained = _log(admin_client, run["id"])[-1]["payload"]["check"]
@@ -572,9 +581,7 @@ class TestResolve:
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         # Away from home, with the hull on the option's cost exactly.
-        _force_run_state(
-            admin_client, run["id"], position_node_id=home_neighbor, kohaerenz=8
-        )
+        _force_run_state(admin_client, run["id"], position_node_id=home_neighbor, kohaerenz=8)
         run = _run_row(admin_client, run["id"])
         run = _park(admin_client, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
 
@@ -587,26 +594,20 @@ class TestResolve:
         kinds = [e["kind"] for e in _log(admin_client, run["id"])]
         assert "havarie" in kinds
 
-    def test_unknown_option_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_unknown_option_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         run = _park(admin_client, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
         with pytest.raises(Exception, match="UNKNOWN_OPTION"):
             _resolve(client, user, run, "die_flucht_ergreifen")
 
-    def test_resolve_without_a_scene_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_resolve_without_a_scene_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         with pytest.raises(Exception, match="NO_PENDING_SIGNAL"):
             _resolve(client, user, run, "abschirmen")
 
-    def test_stale_version_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_stale_version_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         run = _park(admin_client, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
@@ -614,9 +615,7 @@ class TestResolve:
         with pytest.raises(Exception, match="RUN_STALE"):
             _resolve(client, user, stale, "abschirmen")
 
-    def test_unaffordable_option_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_unaffordable_option_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         """The draw never offers an option the run cannot pay — and the resolve refuses
         one anyway, because the checkpoint copy is display, not law."""
         user, client = test_user_ids[0], user_clients[0]
@@ -626,9 +625,7 @@ class TestResolve:
         with pytest.raises(Exception, match="OPTION_UNAFFORDABLE"):
             _resolve(client, user, run, "vorlegen")
 
-    def test_gate_off_drains_the_scene(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_gate_off_drains_the_scene(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         run = _park(admin_client, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
@@ -657,17 +654,13 @@ class TestDeltas:
             {
                 "p_user": str(user),
                 "p_run": run["id"],
-                "p_deltas": {
-                    "cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 5}
-                },
+                "p_deltas": {"cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 5}},
                 "p_source": "test",
             },
         ).execute()
 
         after = _run_row(admin_client, run["id"])
-        cargo = (
-            admin_client.table("travel_cargo").select("*").eq("run_id", run["id"]).execute()
-        ).data
+        cargo = (admin_client.table("travel_cargo").select("*").eq("run_id", run["id"]).execute()).data
         assert len(cargo) == 1
         assert cargo[0]["haul_value"] == 5
         assert after["haul"] == 5, (
@@ -690,20 +683,14 @@ class TestDeltas:
             {
                 "p_user": str(user),
                 "p_run": run["id"],
-                "p_deltas": {
-                    "cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 5}
-                },
+                "p_deltas": {"cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 5}},
                 "p_source": "test",
             },
         ).execute()
-        cargo_id = (
-            admin_client.table("travel_cargo").select("id").eq("run_id", run["id"]).execute()
-        ).data[0]["id"]
+        cargo_id = (admin_client.table("travel_cargo").select("id").eq("run_id", run["id"]).execute()).data[0]["id"]
 
         # Strand it: a Havarie that offers notabwurf (cargo aboard, Takte to spare).
-        _force_run_state(
-            admin_client, run["id"], kohaerenz=1, bandbreite=0, window_remaining=8
-        )
+        _force_run_state(admin_client, run["id"], kohaerenz=1, bandbreite=0, window_remaining=8)
         run = _run_row(admin_client, run["id"])
         stranded = _move(client, user, run, home_neighbor)
         if stranded["status"] != "havarie":
@@ -733,17 +720,12 @@ class TestDeltas:
         )
         assert resolved["checkpoint"]["last_havarie"]["haul_lost"] == 5
 
-    def test_rumor_reveal_charts_an_undiscovered_node(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_rumor_reveal_charts_an_undiscovered_node(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
 
         before = (
-            admin_client.table("traveler_discoveries")
-            .select("node_stable_key")
-            .eq("user_id", str(user))
-            .execute()
+            admin_client.table("traveler_discoveries").select("node_stable_key").eq("user_id", str(user)).execute()
         ).data
 
         admin_client.rpc(
@@ -797,9 +779,7 @@ class TestDeltas:
         moved = _move(client, user, run, home_neighbor)
         assert moved["markers"][node] == ["statik"], "the move forgot the marker stack"
 
-    def test_siegel_goes_through_the_single_ledger_writer(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_siegel_goes_through_the_single_ledger_writer(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
 
@@ -817,17 +797,10 @@ class TestDeltas:
             .data
         )
         assert result["applied"]["siegel"] == 5
-        profile = (
-            admin_client.table("traveler_profiles")
-            .select("siegel")
-            .eq("user_id", str(user))
-            .execute()
-        ).data[0]
+        profile = (admin_client.table("traveler_profiles").select("siegel").eq("user_id", str(user)).execute()).data[0]
         assert profile["siegel"] == 5
 
-    def test_deltas_clamp_to_the_columns_own_checks(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_deltas_clamp_to_the_columns_own_checks(self, admin_client, user_clients, test_user_ids, chart_home):
         """A skeleton is authored in deltas and can never write an illegal row."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, kohaerenz=5, dissonanz=0)
@@ -863,17 +836,13 @@ class TestLateWindowEscalation:
         early = _move(client, user, run, home_neighbor)
         early_dz = early["checkpoint"]["last_move"]["dz_add"]
 
-        run = _armed_run(
-            admin_client, client, user, chart_home, takt_count=cfg["from_takt"] - 1
-        )
+        run = _armed_run(admin_client, client, user, chart_home, takt_count=cfg["from_takt"] - 1)
         late = _move(client, user, run, home_neighbor)
         late_dz = late["checkpoint"]["last_move"]["dz_add"]
 
         assert late_dz == early_dz + cfg["extra"]
 
-    def test_gate_off_does_not_escalate(
-        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
-    ):
+    def test_gate_off_does_not_escalate(self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor):
         user, client = test_user_ids[0], user_clients[0]
         cfg = _tuning(admin_client, "dz_late_window")
 
