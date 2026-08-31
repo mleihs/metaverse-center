@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
-from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID
+from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID, make_async_supabase_mock
 
 SIM_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa02")
@@ -77,7 +77,12 @@ def client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    # Awaitbar, nicht blank: `require_role` fragt über Stufe 3 von
+    # `is_platform_admin` die Tabelle `platform_admins` mit `await` ab.
+    # `data = None` heisst: der Testnutzer ist kein Plattform-Admin — die
+    # Rolle soll aus `simulation_members` kommen, sonst prüft die Datei
+    # ihre eigene Rollenlogik gar nicht.
+    app.dependency_overrides[get_admin_supabase] = lambda: make_async_supabase_mock()
 
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -91,7 +96,12 @@ def admin_client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    # Awaitbar, nicht blank: `require_role` fragt über Stufe 3 von
+    # `is_platform_admin` die Tabelle `platform_admins` mit `await` ab.
+    # `data = None` heisst: der Testnutzer ist kein Plattform-Admin — die
+    # Rolle soll aus `simulation_members` kommen, sonst prüft die Datei
+    # ihre eigene Rollenlogik gar nicht.
+    app.dependency_overrides[get_admin_supabase] = lambda: make_async_supabase_mock()
 
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -105,7 +115,12 @@ def viewer_client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    # Awaitbar, nicht blank: `require_role` fragt über Stufe 3 von
+    # `is_platform_admin` die Tabelle `platform_admins` mit `await` ab.
+    # `data = None` heisst: der Testnutzer ist kein Plattform-Admin — die
+    # Rolle soll aus `simulation_members` kommen, sonst prüft die Datei
+    # ihre eigene Rollenlogik gar nicht.
+    app.dependency_overrides[get_admin_supabase] = lambda: make_async_supabase_mock()
 
     yield TestClient(app)
     app.dependency_overrides.clear()

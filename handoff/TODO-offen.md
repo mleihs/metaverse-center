@@ -299,7 +299,58 @@ kein Tor dafür zu bauen hiesse, die 987. Ausnahme zu schaffen.
 
 ---
 
-## T7 · `test_travel_havarie.py` hängt von der Testreihenfolge ab
+## T7 · `test_travel_havarie.py` hängt von der Testreihenfolge ab — ✅ ERLEDIGT, aber die Überschrift war falsch
+
+> **Nachtrag 31.08.2026 abends.** Der erste Schritt aus der Notiz unten
+> („herausfinden, WELCHER vorangehende Test den Zustand hinterlässt") führte ins
+> Leere, weil die Überschrift die Ursache schon behauptete. Der richtige erste
+> Schritt war, die RATE zu messen.
+>
+> **Gemessen über 30 EINZELläufe des einen Falls, ohne jeden Vorgänger: 2 rot,
+> rund 7 %.** Damit ist die Reihenfolge als Ursache erledigt. Jeder Fehlschlag
+> hat dieselbe Signatur:
+>
+>     erwartet  ['rueckruf',              'notruf', 'zerfaserung']
+>     bekommen  ['rueckruf', 'notabwurf', 'notruf', 'zerfaserung']
+>
+> **Die Ursache:** der Test macht ZWEI Sprünge (raus, dann heim auf leerem
+> Tank). Der Ausgangssprung zieht ein Signal wie jeder andere Sprung. Trägt das
+> gezogene Signal ein `cargo_grant` (Migration 267, „Fund freight"), legt
+> `fn_travel_signal_apply` eine Zeile in `travel_cargo` — und
+> `drift_havarie_payload` hängt `notabwurf` in den Katalog, sobald
+> `cargo_aboard > 0` (Migr. 278, Zeile 110 ff.). Die Voraussetzung „keine Ladung
+> an Bord" stand nirgends; sie traf nur meistens zu.
+>
+> Der Test räumte die ANDERE Folge derselben Ziehung längst weg
+> (`pending_signal` aus dem Checkpoint) — nur eben die eine, die ihm damals
+> aufgefallen war.
+>
+> 🔑 **Ein Test, der eine Voraussetzung nicht herstellt, sondern vorfindet, ist
+> in dem Maß grün, in dem er Glück hat.** Der Kommentar beschrieb die Ziehung
+> sogar richtig und zog daraus nur die halbe Folgerung.
+>
+> **Reparatur:** dieselbe Admin-Schreibung, die den Checkpoint säubert, löscht
+> jetzt auch `travel_cargo` für den Run; und die Voraussetzung wird gemessen
+> (`assert hav["cargo_aboard"] == 0`), bevor die Liste geprüft wird. Die
+> Zusicherung bleibt EXAKT: Gegenstand des Tests ist der Katalog am eigenen Dock
+> und dessen REIHENFOLGE (das HUD rendert ihn in Reihenfolge). Eine Zusicherung
+> über die Menge statt über die Liste hätte genau das aufgegeben.
+>
+> ### Und der Grund, warum es wie Reihenfolge AUSSAH
+>
+> ⚠ **Zwei Sitzungen fahren gegen dasselbe lokale Supabase.** Direkt gemessen:
+> zwei GLEICHZEITIGE Läufe derselben Datei → **6 von 6 rot**, 15 bis 17
+> Fehlschläge je Lauf, mit ganz anderen Signaturen (`fn_travel_move: run not
+> found`, `run is havarie, not active`, `assert 'havarie' == 'abandoned'`).
+> Sequenziell: 1 rot in 30. Die Integrationsmappe setzt Reisende über
+> `_reset_traveler` auf FESTEN Nutzer-IDs zurück — zwei gleichzeitige Läufe
+> räumen sich gegenseitig den Boden weg.
+>
+> 🔑 **Ein grüner und ein roter Lauf zwei Minuten auseinander sind hier kein
+> Beleg für Flackern.** Sie können schlicht heissen, dass die andere Sitzung
+> auch gerade lief. Vor `backend/tests/integration/` kurz abstimmen.
+
+### Der ursprüngliche Befund (Stand vor der Messung)
 
 **Gemessen:** 31.08.2026, beim Abschluss von T5.
 
