@@ -5,9 +5,11 @@ Gemessen: 16, 0, 1. Dieser Test bewacht nicht die Zahlen — die ändern sich �
 sondern die **Filter**, aus denen sie entstehen. Genau dort lagen die beiden
 Fallen:
 
-* Der bestehende Zähler ``get_platform_stats`` filtert `status` NICHT mit. Heute
-  ist sein Ergebnis richtig, weil alle Vorlagen zufällig `active` sind; mit der
-  ersten archivierten Welt wäre es falsch, und niemand würde es merken.
+* Der Bestandsfilter. ``get_platform_stats`` filterte `status` nicht mit; sein
+  Ergebnis war richtig, weil alle Vorlagen zufällig `active` sind, und mit der
+  ersten archivierten Welt wäre es falsch geworden, ohne dass es jemand merkt.
+  Dort ist es am 31.08.2026 nachgezogen worden — hier stand der Filter immer, und
+  dieser Test hält ihn fest, damit er nicht wieder verschwindet.
 * ``game_epochs`` kennt gar kein `status='active'`. Der Statusfilter allein
   zählt auf Prod **7 laufende Epochen**, die seit 164 bis 185 Tagen stillstehen.
 
@@ -147,8 +149,8 @@ async def test_world_query_filters_status_not_only_type():
     filters = client.filters_for("simulations")
     assert ("eq", "simulation_type", "template") in filters
     assert ("eq", "status", "active") in filters, (
-        "Die Welt-Abfrage filtert `status` nicht mit — genau der Schnitt, "
-        "an dem `get_platform_stats` eine archivierte Welt mitzählen würde."
+        "Die Welt-Abfrage filtert `status` nicht mit — genau der Schnitt, an dem "
+        "eine archivierte Welt in die Zahlen der Frontseite geriete."
     )
     assert ("is", "deleted_at", "null") in filters
 
