@@ -58,6 +58,96 @@ class TestGetPlatformStats:
         assert result["resonance_count"] == 0
 
 
+class TestGetPlatformStatsFiltersStatus:
+    """Der Zähler schnitt anders als die Liste, die er beziffert.
+
+    `get_platform_stats` zählte `simulation_type='template' AND deleted_at IS
+    NULL` — ohne `status`. Auf Prod war das Ergebnis zufällig richtig, weil alle
+    16 Vorlagen `active` sind; mit der ersten archivierten Welt wäre es falsch
+    geworden, und an einer Zahl sieht man das nicht.
+
+    Deshalb prüft dieser Test nicht die ZAHL — die ändert sich —, sondern die
+    BEDINGUNGEN, aus denen sie entsteht. Der falsche Client schreibt jede
+    Einschränkung mit, und die Zusicherung liest sie zurück.
+    """
+
+    @pytest.mark.asyncio
+    async def test_the_world_count_is_cut_like_the_world_list(self):
+        filters = _record_filters()
+        await SimulationService.get_platform_stats(filters.client)
+
+        sims = filters.für("simulations")
+        assert ("eq", "simulation_type", "template") in sims
+        assert ("is", "deleted_at", "null") in sims
+        assert ("eq", "status", "active") in sims, (
+            "Der Zähler filtert `status` nicht mit. Sobald eine Welt archiviert "
+            "wird, zählt er sie weiter — während `list_active_public`, die "
+            "Liste, die der Besucher danach sieht, sie weglässt. Ein Zähler, "
+            "der anders schneidet als seine Liste, zählt etwas anderes als er "
+            "behauptet."
+        )
+
+    @pytest.mark.asyncio
+    async def test_the_recorder_would_notice_a_missing_filter(self):
+        """Gegenprobe: das Messgerät darf nicht alles bejahen."""
+        filters = _record_filters()
+        await SimulationService.get_platform_stats(filters.client)
+        assert ("eq", "status", "archived") not in filters.für("simulations")
+        assert ("eq", "status", "active") not in filters.für("substrate_resonances")
+
+
+class _Recorder:
+    """Ein Postgrest-Bauplan, der mitschreibt, statt zu fragen."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, str, str, object]] = []
+        self.client = MagicMock()
+        self.client.table.side_effect = self._table
+        self._table_name = ""
+
+    def _table(self, name: str):
+        self._table_name = name
+        return _RecordingQuery(self, name)
+
+    def für(self, table: str) -> list[tuple[str, str, object]]:
+        return [(kind, col, val) for t, kind, col, val in self.calls if t == table]
+
+
+class _RecordingQuery:
+    def __init__(self, recorder: _Recorder, table: str) -> None:
+        self._r = recorder
+        self._t = table
+        self.count = 0
+
+    def select(self, *_args, **_kwargs) -> "_RecordingQuery":
+        return self
+
+    def eq(self, column: str, value: object) -> "_RecordingQuery":
+        self._r.calls.append((self._t, "eq", column, value))
+        return self
+
+    def in_(self, column: str, values: list) -> "_RecordingQuery":
+        self._r.calls.append((self._t, "in", column, tuple(values)))
+        return self
+
+    def is_(self, column: str, value: object) -> "_RecordingQuery":
+        self._r.calls.append((self._t, "is", column, value))
+        return self
+
+    def __await__(self):
+        async def _self():
+            return self
+
+        return _self().__await__()
+
+    def execute(self) -> "_RecordingQuery":
+        return self
+
+
+def _record_filters() -> _Recorder:
+    return _Recorder()
+
+
 # ── SimulationService.list_active_public ──────────────────────
 
 

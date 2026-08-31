@@ -95,3 +95,35 @@ nicht als geteilte Quelle.
 
 Solange die Spalte bleibt, ist sie ein Zwischenspeicher mit Quelle und Wächter
 statt einer Zweitschrift ohne beides. Das ist tragfähig, aber nicht das Ziel.
+
+---
+
+## T5 · `/platform-stats` sollte verschwinden
+
+**Gemessen:** 31.08.2026.
+
+`SimulationService.get_platform_stats` und der Endpunkt `/platform-stats`
+messen dieselben drei Grössen wie `LandingService` — schlechter und ohne
+Aufrufer:
+
+    frontend/src/services/api/SimulationsApiService.ts  getPlatformStats()  0 Verwender
+    LandingService._resonance_count                     Zeile für Zeile identisch
+    LandingService._world_count                         filtert `status` mit, dieser tat es nicht
+    active_epoch_count                                  zählt 7 Epochen, von denen
+                                                        sich keine seit 164–185
+                                                        Tagen bewegt hat
+
+Der `status`-Filter ist repariert (Punkt 2 der Systemprüfung), der Epochenzähler
+ausdrücklich NICHT — die Unterscheidung „Status ist kein Betrieb" ein zweites
+Mal hinzuschreiben wäre genau die Doppelung, die den Zähler löschenswert macht.
+
+**Zu löschen sind vier Stellen**, und drei davon gehören zur Frontseite und
+damit zur Sitzung, die sie hält:
+
+    backend/services/simulation_service.py      get_platform_stats
+    backend/routers/public.py                   @router.get("/platform-stats")   ← Frontseite
+    backend/models/…                            PlatformStatsResponse            ← Frontseite
+    frontend/src/services/api/SimulationsApiService.ts  getPlatformStats         ← Frontseite
+
+Deshalb nicht einseitig getan: ein öffentlicher Endpunkt wird nicht aus einer
+fremden, gerade laufenden Datei entfernt.
