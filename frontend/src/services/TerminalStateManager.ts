@@ -4,6 +4,7 @@
  * Pattern: ForgeStateManager (dedicated signal store, singleton export).
  */
 
+import { msg, str } from '@lit/localize';
 import { computed, signal } from '@preact/signals-core';
 import type {
   Agent,
@@ -59,6 +60,8 @@ class TerminalStateManager {
   readonly commandCount = signal<number>(0);
   readonly operationsPoints = signal<number>(DEFAULT_OPS_POINTS);
   readonly intelPoints = signal<number>(DEFAULT_INTEL_POINTS);
+  /** Herzschlag-Tick der letzten Auffuellung; null = noch nie aufgefuellt. */
+  readonly budgetTick = signal<number | null>(null);
   readonly onboarded = signal<boolean>(false);
   readonly onboardingStep = signal<number>(0);
   readonly conversationMode = signal<ConversationMode | null>(null);
@@ -212,6 +215,9 @@ class TerminalStateManager {
       if (typeof stored.intelPoints !== 'number' || Number.isNaN(stored.intelPoints)) {
         stored.intelPoints = DEFAULT_INTEL_POINTS;
       }
+      if (typeof stored.budgetTick !== 'number' || Number.isNaN(stored.budgetTick)) {
+        stored.budgetTick = null;
+      }
       if (typeof stored.onboarded !== 'boolean') stored.onboarded = false;
       if (typeof stored.onboardingStep !== 'number' || Number.isNaN(stored.onboardingStep))
         stored.onboardingStep = 0;
@@ -224,6 +230,7 @@ class TerminalStateManager {
       this.commandHistory.value = stored.commandHistory;
       this.operationsPoints.value = stored.operationsPoints;
       this.intelPoints.value = stored.intelPoints;
+      this.budgetTick.value = stored.budgetTick;
       this.feedFilter.value = stored.feedFilter;
       this.conversationMap.value = stored.conversationMap;
     } else {
@@ -247,6 +254,8 @@ class TerminalStateManager {
 
     // Fetch admin-configured dungeon clearance settings (non-blocking).
     void this.loadDungeonClearanceConfig();
+    // Und die Punkte an den Herzschlag koppeln (ebenfalls nicht blockierend).
+    void this.syncBudgetsWithHeartbeat();
   }
 
   // ── Epoch Context ────────────────────────────────────────────────────
@@ -465,11 +474,92 @@ class TerminalStateManager {
     return true;
   }
 
-  /** Refresh budgets to max (called on heartbeat tick). */
-  refreshBudgets(): void {
+  /**
+   * Punkte auf das Maximum setzen. Kein oeffentlicher Einstieg mehr —
+   * `syncBudgetsWithHeartbeat` entscheidet, WANN das passiert.
+   *
+   * Der Kommentar hier lautete „called on heartbeat tick". Gemessen am
+   * 31.08.2026: die Methode hatte NULL Aufrufer im gesamten Baum. Der Satz
+   * beschrieb eine Absicht als Tatsache, und die Punktewirtschaft lief
+   * einseitig — `fortify` kostet 1, `quarantine` 2, `scan`/`debrief` je 1
+   * Intel, und nach drei bzw. zwei Handlungen war die Sitzung endgueltig
+   * vorbei. Nicht bis zum naechsten Zyklus: endgueltig, denn der persistierte
+   * Stand ueberlebte den Neuladen.
+   */
+  private _refillBudgets(tick: number): void {
     this.operationsPoints.value = DEFAULT_OPS_POINTS;
     this.intelPoints.value = DEFAULT_INTEL_POINTS;
+    this.budgetTick.value = tick;
     this._debouncedPersist();
+  }
+
+  /**
+   * Die Punkte an den Herzschlag der Welt koppeln.
+   *
+   * Die Hilfe verspricht „3 Operations Points per cycle" und „2 Intel Points
+   * per cycle" — ein Zyklus ist ein Herzschlag-Tick. Genau diese Zusage war
+   * unerfuellbar, weil niemand das Auffuellen ausloeste.
+   *
+   * ERSTER ABGLEICH FUELLT NICHT AUF. Wer `budgetTick = null` mitbringt, hat
+   * diesen Mechanismus nie gehabt; er bekaeme sonst allein durch das
+   * Erscheinen des Feldes ein Geschenk, und im Protokoll saehe es aus wie
+   * eine regulaere Auffuellung. Der aktuelle Tick wird uebernommen, die
+   * Punkte bleiben, wie sie sind.
+   *
+   * MEHRERE VERSAEUMTE TICKS FUELLEN EINMAL AUF, nicht mehrfach: die Punkte
+   * sind eine Obergrenze je Zyklus, kein Guthaben, das sich ansammelt. Wer
+   * eine Woche nicht da war, kommt mit vollen Punkten zurueck — nicht mit
+   * zwanzig.
+   *
+   * Nicht blockierend und fehlertolerant: schlaegt der Abruf fehl, bleiben
+   * die Punkte, wie sie waren. Ein Terminal, das wegen einer misslungenen
+   * Abfrage Punkte verschenkt, waere schlimmer als eines, das eine Auffuellung
+   * verpasst.
+   */
+  async syncBudgetsWithHeartbeat(): Promise<void> {
+    if (!this._simulationId) return;
+    try {
+      const { heartbeatApi } = await import('../services/api/HeartbeatApiService.js');
+      const { appState } = await import('./AppStateManager.js');
+      const result = await heartbeatApi.getOverview(
+        this._simulationId,
+        appState.currentSimulationMode.value,
+      );
+      if (!result.success || !result.data) return;
+
+      const tick = result.data.last_tick;
+      if (typeof tick !== 'number' || Number.isNaN(tick)) return;
+
+      if (this.budgetTick.value === null) {
+        this.budgetTick.value = tick;
+        this._debouncedPersist();
+        return;
+      }
+      if (tick > this.budgetTick.value) {
+        const missed = tick - this.budgetTick.value;
+        this._refillBudgets(tick);
+        // Eine Auffuellung, die niemand sieht, ist die halbe Tuer: der
+        // Spielende wuerde die Punkte fuer unveraenderlich halten und nicht
+        // ausgeben. Deshalb sagt das Terminal es an — und nennt die Zahl der
+        // Zyklen, damit sichtbar bleibt, dass mehrere Ticks EINMAL auffuellen
+        // und sich nicht ansammeln.
+        this.appendOutput([
+          {
+            id: `budget-refill-${tick}`,
+            type: 'system',
+            content:
+              missed === 1
+                ? msg('[SYSTEM] Substrate pulse registered. Operations and Intel points restored.')
+                : msg(
+                    str`[SYSTEM] ${missed} substrate pulses registered since your last visit. Operations and Intel points restored (they do not accumulate).`,
+                  ),
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    } catch (err) {
+      captureError(err, { source: 'TerminalStateManager.syncBudgetsWithHeartbeat' });
+    }
   }
 
   // ── Conversation Mode ──────────────────────────────────────────────────
@@ -589,6 +679,7 @@ class TerminalStateManager {
       commandHistory: this.commandHistory.value,
       operationsPoints: this.operationsPoints.value,
       intelPoints: this.intelPoints.value,
+      budgetTick: this.budgetTick.value,
       feedFilter: this.feedFilter.value,
       conversationMap: this.conversationMap.value,
       recentOutput,
@@ -614,6 +705,12 @@ class TerminalStateManager {
     this.commandHistory.value = [];
     this.operationsPoints.value = DEFAULT_OPS_POINTS;
     this.intelPoints.value = DEFAULT_INTEL_POINTS;
+    // Bewusst null und nicht 0: eine frische Sitzung hat noch nie aufgefuellt.
+    // Mit 0 waere der erste Abgleich gegen einen echten Tick (auf Prod
+    // dreistellig) sofort eine Auffuellung — auf einem Stand, der ohnehin
+    // schon voll ist. Das waere folgenlos, aber es stuende als Auffuellung im
+    // Protokoll, und der naechste Leser haielte den Mechanismus fuer erprobt.
+    this.budgetTick.value = null;
     this.feedFilter.value = 'all';
     this.conversationMap.value = {};
   }
