@@ -6,21 +6,24 @@ Nutzers wartet.
 
 ---
 
-## ⏳ DAS EINZIGE, WAS NOCH AUSSTEHT
+## ✅ ERLEDIGT — die Welt-Übersetzungen sind auf Prod
 
-```
-# Trockenlauf — läuft sauber, 31 Zeilen würden geändert
-.venv/bin/python scripts/backfill_world_locale.py
+Der offene Punkt aus dem Vorlauf ist geschlossen, aber **nicht auf dem Weg, den
+er vorschlug**. Das Handskript `scripts/backfill_world_locale.py` hätte die
+Texte mit dem Dienstschlüssel von Hand nach Prod geschrieben — ein zweiter Weg
+an der Tür vorbei: nicht im Diff prüfbar, nicht wiederholbar, nicht an den
+Deploy gebunden. Die Texte stehen jetzt in **Migration 312**
+(`20260831210000_312_a_world_speaks_the_readers_language.sql`), das Skript ist
+entfallen.
 
-# Der Schreibvorgang (PROD). Braucht das ausdrückliche Wort des Nutzers.
-WORLD_LOCALE_CONFIRMED=yes .venv/bin/python scripts/backfill_world_locale.py --write
-```
+Auf Prod angewandt am 31.08.2026, vorher zweimal in EINER Transaktion geprobt
+und zurückgenommen. Gegenprobe am echten Zustand, nicht am Ledger:
 
-31 Zeilen = 11 Vorlagen + 20 Klon-Zeilen. Nach dem Schreiben gegenprüfen:
-
-```
-.venv/bin/python scripts/backfill_world_locale.py   # muss „0 Zeilen" melden
-```
+| Größe | vorher | nachher |
+|---|---|---|
+| Welten mit deutschem Titel | 5 | **12** |
+| Zeilen mit deutschem Text | 7 | **36** (16 Vorlagen + 20 Klone) |
+| Deutscher Text in der englischen Spalte | 4 | **0** |
 
 ---
 
