@@ -1,6 +1,6 @@
 import { localized, msg } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
@@ -22,146 +22,343 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
-      background: var(--color-surface-raised);
-      border-bottom: var(--border-default);
-      padding: var(--space-4) var(--space-6);
+      position: relative;
+      overflow: hidden;
+      border-bottom: var(--border-width-thin) solid var(--color-border-light);
+      background: var(--color-surface-sunken);
+
+      /* ── Tier 3 ─────────────────────────────────────────────────────── */
+      --_ground: var(--color-surface-sunken);
+      --_measure: var(--stage-measure, 1920px);
+      /*
+       * The gutter is the tab register's gutter plus the tab's own inline
+       * padding, so the world name starts on the same x as the first tab label
+       * one row below. Two rows of chrome that do not line up read as two
+       * unrelated bars.
+       */
+      --_gutter: max(var(--space-10), calc((100% - var(--_measure)) / 2));
+      --_dim: color-mix(in srgb, var(--color-text-muted) 90%, var(--_ground));
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
+    /* ── Backdrop ────────────────────────────────────────────────────── */
+
+    /*
+     * The Ken Burns and the dimming live on THIS layer and never on :host.
+     * A filter or a transform on the masthead itself would make it a containing
+     * block, and every position: fixed modal in the app — lightbox, dispatch,
+     * confirm dialog — would anchor to it instead of the viewport. The bug is
+     * invisible until someone opens one. Same construction as LandingHero.
+     */
+    .masthead__art {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center 35%;
+      filter: brightness(0.62) saturate(0.85);
+      animation: ken-burns 34s var(--ease-in-out, ease-in-out) infinite alternate;
     }
 
-    .header__name {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xl);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      margin: 0;
-      animation: header-name-enter 400ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    @keyframes ken-burns {
+      from {
+        scale: 1;
+      }
+      to {
+        scale: 1.06;
+      }
     }
 
-    @keyframes header-name-enter {
+    /*
+     * Two scrims, not one. The 94deg wash carries the text side; the vertical
+     * one seats the masthead against the register below it. Together they are
+     * what makes a 74px word legible over an arbitrary generated image.
+     */
+    .masthead__scrim {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(
+          94deg,
+          color-mix(in srgb, var(--_ground) 97%, transparent) 28%,
+          color-mix(in srgb, var(--_ground) 72%, transparent) 56%,
+          color-mix(in srgb, var(--_ground) 22%, transparent) 100%
+        ),
+        linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--_ground) 55%, transparent),
+          transparent 32%,
+          transparent 60%,
+          color-mix(in srgb, var(--_ground) 85%, transparent)
+        );
+    }
+
+    .masthead__scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        color-mix(in srgb, var(--color-text-inverse) 12%, transparent) 3px,
+        color-mix(in srgb, var(--color-text-inverse) 12%, transparent) 6px
+      );
+      pointer-events: none;
+    }
+
+    /* ── Content ─────────────────────────────────────────────────────── */
+
+    .masthead__body {
+      position: relative;
+      padding: var(--space-14) var(--_gutter) var(--space-12);
+    }
+
+    .rise {
+      animation: rise 700ms var(--ease-out, ease-out) both;
+      animation-delay: var(--_delay, 0ms);
+    }
+
+    @keyframes rise {
       from {
         opacity: 0;
-        transform: translateX(-8px);
-        letter-spacing: 0.2em;
+        translate: 0 20px;
       }
       to {
         opacity: 1;
-        transform: translateX(0);
+        translate: 0 0;
       }
     }
 
-    .header__badge {
+    /* ── Chips ───────────────────────────────────────────────────────── */
+
+    .chips {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3-5);
+      flex-wrap: wrap;
+      margin-block-end: var(--space-4-5, var(--space-4));
+    }
+
+    .chip {
       display: inline-flex;
       align-items: center;
-      padding: var(--space-0-5) var(--space-2);
+      gap: var(--space-1-5);
+      font-family: var(--font-mono);
+      font-size: calc(var(--text-xs) * 0.95);
+      letter-spacing: calc(var(--tracking-widest) * 2);
+      text-transform: uppercase;
+      color: var(--_chip, var(--color-text-muted));
+      white-space: nowrap;
+    }
+
+    .chip--boxed {
+      border: var(--border-width-thin) solid var(--_chip, var(--color-border));
+      padding: var(--space-0-5) var(--space-2-5);
+      background: color-mix(in srgb, var(--_ground) 60%, transparent);
+    }
+
+    .chip__pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: var(--border-radius-full);
+      background: var(--_chip, var(--color-accent-green));
+      box-shadow: 0 0 8px var(--_chip, var(--color-accent-green));
+      animation: chip-blink 2.2s ease-in-out infinite;
+    }
+
+    @keyframes chip-blink {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.2;
+      }
+    }
+
+    /* ── World name ──────────────────────────────────────────────────── */
+
+    /*
+     * clamp() rather than --stage-type-scale: a single factor can only carry one
+     * slope, and this word has to go from a phone to a 4K wall. The token scales
+     * section headings and body copy, which move much less.
+     */
+    .masthead__name {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: clamp(2.25rem, 5.2vw, 4.625rem);
+      line-height: 0.96;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      color: var(--color-text-primary);
+      text-shadow: 0 5px 40px color-mix(in srgb, var(--_ground) 75%, transparent);
+      margin: 0 0 var(--space-5);
+      text-wrap: balance;
+    }
+
+    .masthead__dot {
+      color: var(--color-accent-amber);
+    }
+
+    /* ── Foot: tagline and call to action ────────────────────────────── */
+
+    .masthead__foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-14);
+    }
+
+    .masthead__tagline {
+      font-family: var(--font-bureau, var(--font-prose));
+      font-style: italic;
+      font-size: var(--text-md);
+      line-height: var(--leading-relaxed);
+      color: var(--color-text-secondary);
+      margin: 0;
+      max-width: 620px;
+      text-wrap: pretty;
+    }
+
+    .masthead__actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-3);
+      flex: 0 0 auto;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2-5);
+      padding: var(--space-4) var(--space-8);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
+      letter-spacing: calc(var(--tracking-widest) * 3);
       text-transform: uppercase;
-      letter-spacing: var(--tracking-wide);
-      border: var(--border-default);
-      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 150ms;
+      color: var(--color-text-inverse);
+      background: var(--color-accent-amber);
+      border: var(--border-width-thin) solid var(--color-accent-amber-dim);
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      transition:
+        background var(--transition-normal),
+        translate var(--transition-normal),
+        box-shadow var(--transition-normal);
     }
 
-    @keyframes badge-pop {
-      from {
-        opacity: 0;
-        transform: scale(0.7);
-      }
+    .cta:hover {
+      background: var(--color-accent-amber-hover);
+      translate: 0 -2px;
+      box-shadow: var(--shadow-md), 0 0 20px var(--color-accent-amber-glow);
     }
 
-    .badge--active {
-      background: var(--color-success-bg);
-      color: var(--color-text-success);
-      border-color: var(--color-success-border);
+    .cta__arrow {
+      display: inline-block;
+      transition: translate var(--transition-normal);
     }
 
-    .badge--draft {
-      background: var(--color-warning-bg);
-      color: var(--color-text-warning);
-      border-color: var(--color-warning-border);
+    .cta:hover .cta__arrow {
+      translate: 5px 0;
     }
 
-    .badge--archived {
-      background: var(--color-surface-sunken);
-      color: var(--color-text-secondary);
+    .masthead__stats {
+      font-family: var(--font-mono);
+      font-size: calc(var(--text-xs) * 0.9);
+      letter-spacing: calc(var(--tracking-widest) * 2);
+      text-transform: uppercase;
+      color: var(--_dim);
+      text-align: end;
     }
 
-    /* ── Bureau Button ── */
+    /* ── Bureau dispatch ─────────────────────────────────────────────── */
 
-    .header__bureau-btn {
+    .bureau {
+      position: absolute;
+      top: var(--space-5);
+      inset-inline-end: var(--_gutter);
+      z-index: var(--z-raised);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: var(--space-1);
+      width: 38px;
+      height: 38px;
+      padding: 0;
       color: var(--color-accent-amber);
-      background: transparent;
-      border: none;
+      background: color-mix(in srgb, var(--_ground) 70%, transparent);
+      border: var(--border-width-thin) solid var(--color-accent-amber-dim);
       cursor: pointer;
-      transition: all 0.2s;
-      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms;
+      transition:
+        background var(--transition-fast),
+        color var(--transition-fast);
     }
 
-    .header__bureau-btn:hover {
-      background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
-      transform: scale(1.1);
+    .bureau:hover {
+      background: var(--color-accent-amber);
+      color: var(--color-text-inverse);
     }
 
-    .header__bureau-btn:focus-visible {
-      outline: 2px solid var(--color-accent-amber);
-      outline-offset: 2px;
+    .bureau--pulse {
+      animation: bureau-pulse 2.4s ease-in-out infinite;
     }
 
-    .header__bureau-btn--pulse {
-      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms,
-                 bureau-pulse 2s ease-in-out infinite 550ms;
-    }
-
-    .header__bureau-btn--intro {
-      animation: badge-pop 250ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both 300ms,
-                 bureau-intro 1.8s ease-in-out 600ms,
-                 bureau-pulse 2s ease-in-out infinite 2400ms;
+    .bureau--intro {
+      animation: bureau-pulse 1.2s ease-in-out infinite;
     }
 
     @keyframes bureau-pulse {
-      0%, 100% { filter: drop-shadow(0 0 0 transparent); }
-      50% { filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.5)); }
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 var(--color-accent-amber-glow);
+      }
+      50% {
+        box-shadow: 0 0 0 8px transparent;
+      }
     }
 
-    @keyframes bureau-intro {
-      0%   { filter: drop-shadow(0 0 0 transparent); transform: scale(1); }
-      20%  { filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.8)); transform: scale(1.3); }
-      40%  { filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.2)); transform: scale(1); }
-      60%  { filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6)); transform: scale(1.2); }
-      80%  { filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.1)); transform: scale(1); }
-      100% { filter: drop-shadow(0 0 0 transparent); transform: scale(1); }
+    /* ── Responsive ──────────────────────────────────────────────────── */
+
+    @media (max-width: 900px) {
+      .masthead__body {
+        padding: var(--space-10) var(--space-6) var(--space-8);
+      }
+
+      .masthead__foot {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-6);
+      }
+
+      .masthead__actions {
+        align-items: flex-start;
+      }
+
+      .masthead__stats {
+        text-align: start;
+      }
+
+      .bureau {
+        inset-inline-end: var(--space-6);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .header__bureau-btn,
-      .header__bureau-btn--pulse,
-      .header__bureau-btn--intro {
+      .masthead__art,
+      .chip__pulse,
+      .bureau--pulse,
+      .bureau--intro {
         animation: none;
       }
-    }
 
-    @media (max-width: 640px) {
-      :host {
-        padding: var(--space-3) var(--space-4);
+      .rise {
+        animation: none;
+        opacity: 1;
+        translate: none;
       }
 
-      .header {
-        gap: var(--space-2);
-        flex-wrap: wrap;
-      }
-
-      .header__name {
-        font-size: var(--text-lg);
+      .cta,
+      .cta__arrow {
+        transition: none;
       }
     }
   `;
@@ -230,12 +427,6 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     );
   }
 
-  private _getBadgeClass(status: string): string {
-    if (status === 'active') return 'badge--active';
-    if (status === 'draft' || status === 'configuring') return 'badge--draft';
-    return 'badge--archived';
-  }
-
   private _getStatusLabel(status: string): string {
     switch (status) {
       case 'active':
@@ -255,6 +446,41 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     this.dispatchEvent(new CustomEvent('open-bureau-dispatch', { bubbles: true, composed: true }));
   }
 
+  /**
+   * Classification, from the record rather than from flavour.
+   *
+   * The prototype prints a fixed "Restricted" chip. Here it says which of two
+   * things is true: a world whose classified dossier has been generated carries
+   * sections a visitor cannot read, and one that has not is public in full. The
+   * threat reading arrives through the same gate, so the two chips can never
+   * disagree.
+   */
+  private get _isClassified(): boolean {
+    return forgeStateManager.hasCompletedPurchase(this.simulationId, 'classified_dossier');
+  }
+
+  private _threatChipColor(level: number): string {
+    if (level <= 3) return 'var(--color-success)';
+    if (level <= 7) return 'var(--color-accent-amber)';
+    return 'var(--color-danger)';
+  }
+
+  private _threatChipLabel(level: number): string {
+    if (level <= 3) return msg('Calm');
+    if (level <= 7) return msg('Elevated');
+    return msg('Critical');
+  }
+
+  private _goTerminal(): void {
+    this.dispatchEvent(
+      new CustomEvent('navigate-to-tab', {
+        bubbles: true,
+        composed: true,
+        detail: { tab: 'terminal' },
+      }),
+    );
+  }
+
   protected render() {
     const sim = appState.currentSimulation.value;
     if (!sim) return html``;
@@ -264,35 +490,87 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
     const canEdit = appState.canEdit.value;
     const hasPulse = canEdit && forgeStateManager.hasAnyUnpurchasedFeature(this.simulationId);
-    const btnClass = this.introHexagon
-      ? 'header__bureau-btn--intro'
+    const bureauClass = this.introHexagon
+      ? 'bureau--intro'
       : hasPulse
-        ? 'header__bureau-btn--pulse'
+        ? 'bureau--pulse'
         : '';
 
+    const name = t(sim, 'name');
+    const tagline = t(sim, 'description');
+    const threat = this._threatLevel;
+    const stats = [
+      sim.agent_count ? `${sim.agent_count} ${msg('agents')}` : null,
+      sim.building_count ? `${sim.building_count} ${msg('buildings')}` : null,
+      typeof sim.last_heartbeat_tick === 'number'
+        ? `${msg('Cycle')} ${sim.last_heartbeat_tick}`
+        : null,
+    ].filter(Boolean);
+
     return html`
-      <div class="header">
-        <h2 class="header__name">${t(sim, 'name')}</h2>
-        <span class="header__badge ${this._getBadgeClass(sim.status)}">${this._getStatusLabel(sim.status)}</span>
-        ${
-          this._threatLevel
-            ? html`<velg-threat-level
-              .threatLevel=${this._threatLevel}
-              @navigate-to-zeta=${this._handleThreatClick}
-            ></velg-threat-level>`
-            : ''
-        }
-        ${
-          canEdit
-            ? html`
-          <button
-            class="header__bureau-btn ${btnClass}"
-            @click=${this._openDispatch}
-            aria-label=${msg('Bureau Services')}
-          >${icons.hexagon(14)}</button>
-        `
-            : ''
-        }
+      ${
+        /*
+         * The artwork is a computed background and never <img src=…>: a hole in
+         * a src attribute makes the browser fetch the page's own URL as an image
+         * before the value lands. A world without a banner simply gets the
+         * ground, which the scrims are built to sit on anyway.
+         */
+        sim.banner_url
+          ? html`<div
+              class="masthead__art"
+              style="background-image: url('${sim.banner_url}')"
+              aria-hidden="true"
+            ></div>`
+          : nothing
+      }
+      <div class="masthead__scrim" aria-hidden="true"></div>
+      <div class="masthead__scanlines" aria-hidden="true"></div>
+
+      ${
+        canEdit
+          ? html`<button
+              class="bureau ${bureauClass}"
+              @click=${this._openDispatch}
+              aria-label=${msg('Bureau Services')}
+            >${icons.hexagon(16)}</button>`
+          : nothing
+      }
+
+      <div class="masthead__body">
+        <div class="chips rise" style="--_delay: 0ms">
+          <span class="chip" style="--_chip: var(--color-accent-green)">
+            <span class="chip__pulse" aria-hidden="true"></span>
+            ${this._getStatusLabel(sim.status)}
+          </span>
+          <span class="chip chip--boxed">
+            ${this._isClassified ? msg('Classified') : msg('Public record')}
+          </span>
+          ${
+            threat
+              ? html`<button
+                  class="chip chip--boxed"
+                  style="--_chip: ${this._threatChipColor(threat.level)}; cursor: pointer"
+                  @click=${this._handleThreatClick}
+                >
+                  ${msg('Threat level')}: ${this._threatChipLabel(threat.level)}
+                </button>`
+              : nothing
+          }
+        </div>
+
+        <h1 class="masthead__name rise" style="--_delay: 100ms">
+          ${name}<span class="masthead__dot">.</span>
+        </h1>
+
+        <div class="masthead__foot rise" style="--_delay: 250ms">
+          ${tagline ? html`<p class="masthead__tagline">${tagline}</p>` : html`<span></span>`}
+          <div class="masthead__actions">
+            <button class="cta" @click=${this._goTerminal}>
+              ${msg('Bureau Terminal')} <span class="cta__arrow" aria-hidden="true">→</span>
+            </button>
+            ${stats.length ? html`<span class="masthead__stats">${stats.join(' · ')}</span>` : nothing}
+          </div>
+        </div>
       </div>
     `;
   }

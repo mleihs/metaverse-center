@@ -113,7 +113,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
 
     .breadcrumb__sep {
-      color: color-mix(in srgb, var(--color-text-muted) 40%, transparent);
+      color: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
       user-select: none;
       flex-shrink: 0;
     }

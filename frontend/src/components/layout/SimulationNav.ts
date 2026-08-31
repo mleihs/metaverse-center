@@ -135,7 +135,12 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       gap: var(--space-1);
       padding: var(--space-1) var(--space-6);
       background: var(--color-epoch-influence);
-      color: var(--color-text-primary);
+      /*
+       * Measured: --color-text-primary on this violet is 2.16:1 — a near-white
+       * label on a light ground. The badge is a filled chip, so its text takes
+       * the inverse (7.27:1), the same way every other filled chip does.
+       */
+      color: var(--color-text-inverse);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       text-transform: uppercase;
@@ -255,7 +260,13 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
      * the tab you land on. It lives outside msg() so no translation carries it.
      */
     .nav__mark {
-      color: var(--color-accent-amber-dim);
+      /*
+       * Measured at 4.03:1 on --color-accent-amber-dim, just under AA. The mark
+       * now simply matches the label it stands beside when idle (5.72:1) and
+       * turns amber with it when active — it was never meant to be a second
+       * colour, only a second shape.
+       */
+      color: var(--color-text-muted);
       font-size: 1.1em;
       line-height: 1;
     }
