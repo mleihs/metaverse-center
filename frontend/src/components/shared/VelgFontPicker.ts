@@ -248,8 +248,7 @@ export class VelgFontPicker extends LitElement {
       gap: 2px;
       padding: var(--space-1-5) var(--space-3);
       cursor: pointer;
-      border-left: 3px solid transparent;
-      transition: background 0.1s, border-color 0.1s;
+      transition: background 0.1s, outline-color 0.1s;
     }
 
     .picker__option:hover,
@@ -257,9 +256,17 @@ export class VelgFontPicker extends LitElement {
       background: var(--color-surface-raised);
     }
 
+    /*
+     * Selected font: the shared marking, tinted green rather than amber because
+     * in this picker green means "this is the one in force" and amber is already
+     * spent on the preview. --selection-color is what the shared style exposes
+     * for exactly this.
+     */
     .picker__option--selected {
-      border-left-color: var(--color-success);
-      background: var(--color-success-glow);
+      --selection-color: var(--color-success);
+      background: color-mix(in srgb, var(--color-success) 6%, transparent);
+      outline: 1px solid color-mix(in srgb, var(--color-success) 45%, transparent);
+      outline-offset: -1px;
     }
 
     .picker__option-label {

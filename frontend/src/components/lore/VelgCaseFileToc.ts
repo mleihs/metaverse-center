@@ -49,19 +49,26 @@ export class VelgCaseFileToc extends LitElement {
       text-align: left;
       background: transparent;
       border: none;
-      border-left: 2px solid transparent;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .toc__btn:hover {
       background: color-mix(in srgb, var(--color-accent-amber) 8%, transparent);
-      border-left-color: color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
     }
 
+    /*
+     * The current chapter used to be marked by a 2px amber slab down its left
+     * edge, with the width declared transparent in the base rule and the colour
+     * added here — the split form the CI gate could not see until it learned it.
+     * It now carries the shared selection marking, so a table of contents marks
+     * its current entry exactly like the register, the conversation list and the
+     * edition archive do.
+     */
     .toc__btn--active {
-      background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
-      border-left-color: var(--color-accent-amber);
+      background: color-mix(in srgb, var(--color-accent-amber) 6%, transparent);
+      outline: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+      outline-offset: -1px;
     }
 
     .toc__btn:focus-visible {

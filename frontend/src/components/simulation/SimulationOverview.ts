@@ -7,6 +7,7 @@ import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
 import { appState } from '../../services/AppStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/index.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
@@ -192,10 +193,21 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       flex: 0 0 190px;
     }
 
-    .anchor__title {
-      margin-block-start: var(--space-2);
-      font-size: var(--text-base);
+    /*
+     * The influence is an attribution, so it is set like one: mono, quiet, and
+     * allowed to wrap. Some of these run to three lines of citation.
+     */
+    .anchor__influence {
+      margin-block: var(--space-2) 0;
+      font-family: var(--font-mono);
+      font-size: calc(var(--text-xs) * 0.95);
+      line-height: var(--leading-relaxed);
       letter-spacing: var(--tracking-wide);
+      color: var(--_dim);
+    }
+
+    .anchor--bare .anchor__id {
+      flex: 0 0 auto;
     }
 
     .anchor__question {
@@ -680,25 +692,39 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
   /**
    * The anchor: the question the world was built to ask.
    *
-   * It is not shown when it is not known, and today it is never known here —
-   * the selected anchor lives on `forge_drafts`, which is owner-scoped, and
-   * materialization does not copy it onto the simulation. The card is written
-   * against the field it needs so that wiring the field is the only remaining
-   * step; drawing a placeholder question would have been worse than an absence,
-   * because a visitor cannot tell an invented premise from a real one.
+   * Two things measured on the eight backfilled worlds shaped this card, and
+   * both contradict the prototype:
+   *
+   * 1. The anchor's TITLE is the world's own name. Materialization assigns
+   *    `anchor->>'title'` to `simulations.name`, so printing it here would set
+   *    the world's name twice on one screen, forty pixels apart. The left
+   *    column carries the LITERARY INFLUENCE instead — a real field, and the
+   *    one a reader actually gains something from ("Bakhtin, Rabelais and His
+   *    World"). Where a world has no influence on file, the column collapses
+   *    and the question takes the full width.
+   * 2. `core_question_de` is sometimes null while `core_question` is not, so
+   *    the German build falls back to the English sentence rather than
+   *    rendering an empty quotation mark.
+   *
+   * No question, no card. An invented premise is worse than an absence — a
+   * visitor cannot tell one from the other.
    */
   private _renderAnchor() {
-    const sim = appState.currentSimulation.value;
-    const anchor = sim?.philosophical_anchor;
-    if (!anchor?.question) return nothing;
+    const anchor = appState.currentSimulation.value?.philosophical_anchor;
+    if (!anchor) return nothing;
+
+    const de = localeService.currentLocale !== 'en';
+    const question = (de && anchor.core_question_de) || anchor.core_question;
+    if (!question) return nothing;
+    const influence = (de && anchor.literary_influence_de) || anchor.literary_influence;
 
     return html`
-      <section class="panel anchor">
+      <section class="panel anchor ${influence ? '' : 'anchor--bare'}">
         <div class="anchor__id">
           <div class="kicker">${msg('Philosophical anchor')}</div>
-          <h2 class="head anchor__title">${anchor.title}</h2>
+          ${influence ? html`<p class="anchor__influence">${influence}</p>` : nothing}
         </div>
-        <p class="prose anchor__question">“${anchor.question}”</p>
+        <p class="prose anchor__question">“${question}”</p>
       </section>
     `;
   }
