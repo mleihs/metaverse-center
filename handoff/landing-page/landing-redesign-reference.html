@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    @keyframes scanbeam { from{top:-120px} to{top:100%} }
+    @keyframes ping { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.4);opacity:0} }
+    :root { --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); }
+    @keyframes deal-in { from { opacity: 0; transform: translateY(34px) rotate(-2.5deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+    @keyframes legendary-pulse { 0%,100% { box-shadow: 9px 9px 0 #000000, 0 0 10px rgba(245,158,11,.25); } 50% { box-shadow: 9px 9px 0 #000000, 0 0 26px rgba(245,158,11,.5); } }
+    @keyframes plate-sheen { 0% { background-position: -160% 0; } 100% { background-position: 260% 0; } }
+    @keyframes dg-a { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes dg-b { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes dg-art-a { from { opacity:0; } to { opacity:1; } }
+    @keyframes dg-art-b { from { opacity:0; } to { opacity:1; } }
+    .hv-amber, .hv-outline, .hv-ghost, .hv-row { transition: background .2s, border-color .2s, box-shadow .2s, transform .2s; }
+    .hv-amber:hover { background:#fbbf24 !important; transform:translateY(-2px); box-shadow:4px 4px 0 #000, 0 0 24px rgba(245,158,11,.35) !important; }
+    .hv-outline:hover { border-color:#888 !important; background:rgba(255,255,255,.04) !important; }
+    .hv-ghost:hover { background:rgba(245,158,11,.14) !important; }
+    .hv-row:hover { background:#101010 !important; }
+    .hv-lift { transition: transform .35s cubic-bezier(.22,1,.36,1); }
+    .hv-lift:hover { transform:translateY(-3px); }
+    .monitor-img { transition: opacity .4s, filter .4s; }
+    .hv-lift:hover .monitor-img { opacity:.9 !important; filter:saturate(1) !important; }
+    .hv-arrow .arr { display:inline-block; transition: transform .2s; }
+    .hv-arrow:hover .arr { transform:translateX(5px); }
+    .feature { cursor:pointer; }
+    .feature-img { transition: transform .5s cubic-bezier(.22,1,.36,1), filter .5s; }
+    .feature:hover .feature-img { transform:scale(1.05); filter:brightness(.85) saturate(1) !important; }
+    .feature-imgwrap::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:#f59e0b; transform:scaleX(0); transform-origin:left; transition:transform .4s cubic-bezier(.22,1,.36,1); z-index:2; }
+    .feature:hover .feature-imgwrap::after { transform:scaleX(1); }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes cur { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+    .sys-row { transition: background .22s; cursor:pointer; }
+    .sys-row:hover { background:#0f0f0f; }
+    .sys-row .sys-t { transition: color .22s, transform .22s; }
+    .sys-row:hover .sys-t { color:#f59e0b !important; transform:translateX(12px); }
+    .sys-row .sys-arr { opacity:0; transform:translateX(-8px); transition:opacity .22s, transform .22s; color:#f59e0b; }
+    .sys-row:hover .sys-arr { opacity:1; transform:translateX(0); }
+    @keyframes kb { from{transform:scale(1)} to{transform:scale(1.08)} }
+    @keyframes rise { from{opacity:0; transform:translateY(26px)} to{opacity:1; transform:none} }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .monitor-img { transition:transform .5s ease, opacity .5s ease; }
+    .hv-lift:hover .monitor-img { transform:scale(1.06); opacity:.9; }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 3a — EDITORIAL BRUTALIST ═══════════════ -->
+  <div id="3a" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#3a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">3A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Editorial Brutalist — Typo-Hero, System-Index mit Hover-Preview, weniger Chrome</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- NAV -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 48px; border-bottom:1px solid #222;">
+        <span style="font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#e5e5e5;">Metaverse<span style="color:#f59e0b;">.Center</span></span>
+        <div style="display:flex; gap:36px; font-size:11px; letter-spacing:2px; text-transform:uppercase;">
+          <a href="#3a" style="color:#888;">Worlds</a>
+          <a href="#3a" style="color:#888;">Systems</a>
+          <a href="#3a" style="color:#888;">Chronicle</a>
+        </div>
+        <span class="hv-amber" style="display:inline-flex; padding:10px 22px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:3px 3px 0 #000; cursor:pointer;">Forge a World</span>
+      </div>
+
+      <!-- HERO — Typo über Full-Bleed-Artwork -->
+      <div style="position:relative; overflow:hidden;">
+        <div style="position:absolute; inset:0; background-image:url('uploads/Gemini_Generated_Image_1vj29q1vj29q1vj2.jpeg'); background-size:cover; background-position:center 62%; filter:brightness(.72) saturate(.95); animation:kb 34s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(96deg, rgba(10,10,10,.97) 24%, rgba(10,10,10,.7) 55%, rgba(10,10,10,.22) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,10,10,.7), transparent 32%, transparent 58%, rgba(10,10,10,.5));"></div>
+        <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.13) 3px, rgba(0,0,0,.13) 6px); pointer-events:none;"></div>
+        <div style="position:relative; padding:130px 48px 88px;">
+        <p style="display:flex; align-items:center; gap:11px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin:0 0 36px; animation:rise .7s ease both;"><span style="width:7px; height:7px; border-radius:50%; background:#4ade80; box-shadow:0 0 9px #4ade80; animation:pulse-dot 2.2s ease-in-out infinite;"></span>Signal locked // {{ worldsOnline }} worlds transmitting</p>
+        <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:158px; line-height:.94; letter-spacing:.01em; text-transform:uppercase; margin:0; color:#e5e5e5; text-shadow:0 6px 50px rgba(0,0,0,.7);"><span style="display:block; animation:rise .8s ease .08s both;">Living</span><span style="display:block; animation:rise .8s ease .22s both;">Worlds<span style="color:#f59e0b;">.</span></span></h1>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:64px; margin-top:48px; animation:rise .8s ease .4s both;">
+          <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-weight:500; font-size:27px; line-height:1.5; color:#a0a0a0; margin:0; max-width:600px; text-wrap:pretty;">Forged from a single sentence. Playing while you sleep. Populated by citizens who remember what you did.</p>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:14px; flex:0 0 auto;">
+            <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:18px 40px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Build Your World <span>→</span></span>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888;">Or just watch one <span class="arr">→</span></a>
+          </div>
+        </div>
+      </div>
+        <div style="position:relative; border-top:1px solid #222; background:rgba(6,6,6,.94); overflow:hidden; padding:13px 0;">
+          <div style="display:flex; gap:56px; width:max-content; animation:marquee 30s linear infinite; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#888; white-space:nowrap;">
+            <span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span><span style="color:#f59e0b;">✦</span>
+            <span><b style="color:#4ade80; font-weight:700;">3</b> epochs in play</span><span style="color:#f59e0b;">✦</span>
+            <span><b style="color:#4ade80; font-weight:700;">128</b> resonances absorbed</span><span style="color:#f59e0b;">✦</span>
+            <span>Velgarien</span><span style="color:#f59e0b;">✦</span>
+            <span>Saltmeridian</span><span style="color:#f59e0b;">✦</span>
+            <span>The Chitinous Mandate</span><span style="color:#f59e0b;">✦</span>
+            <span>The Gilded Hollow</span><span style="color:#f59e0b;">✦</span>
+            <span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span><span style="color:#f59e0b;">✦</span>
+            <span><b style="color:#4ade80; font-weight:700;">3</b> epochs in play</span><span style="color:#f59e0b;">✦</span>
+            <span><b style="color:#4ade80; font-weight:700;">128</b> resonances absorbed</span><span style="color:#f59e0b;">✦</span>
+            <span>Velgarien</span><span style="color:#f59e0b;">✦</span>
+            <span>Saltmeridian</span><span style="color:#f59e0b;">✦</span>
+            <span>The Chitinous Mandate</span><span style="color:#f59e0b;">✦</span>
+            <span>The Gilded Hollow</span><span style="color:#f59e0b;">✦</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM-INDEX mit Hover-Preview -->
+      <div style="padding:110px 48px; display:grid; grid-template-columns:1fr 640px; gap:56px; align-items:stretch;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:28px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>The Six Systems</div>
+          <div class="sys-row" onMouseEnter="{{ sysGo0 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222;">
+            <span style="font-size:13px; color:#666;">01</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Forge a World <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">One sentence becomes a civilization — geography, citizens, lore. Minutes, not months.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">SIM-CONSTRUCT</span>
+          </div>
+          <div class="sys-row" onMouseEnter="{{ sysGo1 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222;">
+            <span style="font-size:13px; color:#666;">02</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Compete in Seasons <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">Timed epochs where civilizations clash: deploy operatives, forge alliances, betray on time.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">EPOCH-OPS</span>
+          </div>
+          <div class="sys-row" onMouseEnter="{{ sysGo2 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222;">
+            <span style="font-size:13px; color:#666;">03</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Send Agents Below <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">Eight literary descents where stress is real. Agents return changed — or not at all.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">DEPTH-SIGNAL</span>
+          </div>
+          <div class="sys-row" onMouseEnter="{{ sysGo3 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222;">
+            <span style="font-size:13px; color:#666;">04</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Travel the In-Between <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">The node-sea between worlds is playable. Dock at a foreign broadcast edge, haul home cargo.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">ZWISCHENRAUM</span>
+          </div>
+          <div class="sys-row" onMouseEnter="{{ sysGo4 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222;">
+            <span style="font-size:13px; color:#666;">05</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Reality Bleeds In <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">Real events echo through every simulation as resonances. The boundary is thinner than you think.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">SUB-MONITOR</span>
+          </div>
+          <div class="sys-row" onMouseEnter="{{ sysGo5 }}" style="display:grid; grid-template-columns:72px 1fr auto; gap:28px; align-items:baseline; padding:26px 10px; border-top:1px solid #222; border-bottom:1px solid #222;">
+            <span style="font-size:13px; color:#666;">06</span>
+            <div>
+              <h3 class="sys-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Play It as Text <span class="sys-arr">→</span></h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.6; color:#888; margin:8px 0 0;">A command-line window into your world. Local perspective, narrative prose, no mercy.</p>
+            </div>
+            <span style="font-size:10px; letter-spacing:2px; color:#555;">TTY-ACCESS</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; padding-top:52px;">
+          <div style="position:relative; aspect-ratio:16/9; flex:0 0 auto; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; background:#060606;">
+            <div style="{{ sysArt }}"></div>
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 55%, rgba(6,6,6,.94));"></div>
+            <div style="position:absolute; left:24px; right:24px; bottom:22px; display:flex; justify-content:space-between; align-items:flex-end; gap:24px;">
+              <div>
+                <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">{{ sysTag }}</div>
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5;">{{ sysName }}</div>
+              </div>
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:2px; color:#888; flex:0 0 auto;">{{ sysIdx }} / 06</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:18px;">
+            <sc-for list="{{ sysThumbs }}" as="t" hint-placeholder-count="6">
+              <div onMouseEnter="{{ t.go }}" style="{{ t.style }}"></div>
+            </sc-for>
+          </div>
+          <div style="margin-top:26px; flex:1; display:flex; flex-direction:column; justify-content:space-between; gap:20px; border:1px solid #222; background:#060606; padding:30px 32px;">
+            <p style="font-family:'Spectral',Georgia,serif; font-size:16.5px; line-height:1.8; color:#a0a0a0; margin:0;">{{ sysDesc }}</p>
+            <div style="border-top:1px solid #222; padding-top:20px;">
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:15.5px; line-height:1.7; color:#e5e5e5; margin:0 0 10px;">“{{ sysQuote }}”</p>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:20px; min-height:30px;">
+                <p style="font-family:'SF Mono',ui-monospace,monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; line-height:1.6; color:#888; margin:0;">— {{ sysWho }}</p>
+                <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:3px; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;">Enter the system <span class="arr">→</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORLDS — reduziert -->
+      <div style="padding:96px 48px; background:#060606; border-top:1px solid #222; border-bottom:1px solid #222;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:40px;">
+          <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:44px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5; margin:0;">Already Running<span style="color:#f59e0b;">.</span></h2>
+          <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;">All {{ worldsOnline }} worlds <span class="arr">→</span></a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:28px;">
+          <sc-for list="{{ feeds }}" as="feed" hint-placeholder-count="4">
+            <div class="hv-lift" style="cursor:pointer;">
+              <div style="position:relative; aspect-ratio:4/3; overflow:hidden; border:1px solid #222;">
+                <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ feed.img }}; background-size:cover; background-position:center; opacity:.72; filter:saturate(.8);"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(6,6,6,.85), transparent 45%);"></div>
+                <span style="position:absolute; bottom:10px; left:12px; font-size:9px; letter-spacing:2px; color:#888;">{{ feed.coord }} · {{ feed.agents }} AGENTS</span>
+              </div>
+              <div style="padding:16px 2px 0;">
+                <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px;">{{ feed.name }}</h3>
+                <p style="font-family:'Spectral',Georgia,serif; font-size:13.5px; line-height:1.55; color:#888; margin:0;">{{ feed.desc }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- DOSSIERS -->
+      <div style="padding:110px 48px;">
+        <div style="display:grid; grid-template-columns:380px 1fr; gap:64px; align-items:center;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:16px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>The Citizens</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:40px; letter-spacing:.06em; text-transform:uppercase; color:#e5e5e5; margin:0 0 16px; line-height:1.1;">They Remember<span style="color:#f59e0b;">.</span></h2>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:16px; line-height:1.7; color:#a0a0a0; margin:0 0 22px;">Every world is populated by AI characters with memory, opinion, and intent — they hold grudges, form bonds, and print their own morning broadsheet.</p>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;">Meet more characters <span class="arr">→</span></a>
+          </div>
+          <div style="display:flex; justify-content:center; align-items:flex-start; padding:24px 0 12px;">
+          <sc-for list="{{ agentCards }}" as="c" hint-placeholder-count="3">
+            <div style="{{ c.fan }}">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ c.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.tint }};">{{ c.kicker }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; color:#666;">{{ c.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ c.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ c.holo }}"></div>
+                  <div style="{{ c.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ c.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ c.tint }};">{{ c.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ c.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ c.bestColor }};">{{ c.bestVal }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.08em; color:{{ c.bestColor }}; opacity:.8;">{{ c.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ c.plate }}">✦ {{ c.name }} ✦</div>
+                  <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.role }} · {{ c.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ c.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ c.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ c.tint }};">★ {{ c.rarity }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; color:#666;">FILE {{ c.file }}</span>
+                </div>
+                <div style="{{ c.ring }}"></div>
+                <div style="{{ c.glare }}"></div>
+              </div>
+            </div>
+          </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER CTA — großes Typo, gecroppte Wortmarke -->
+      <div style="border-top:1px solid #222;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:64px; padding:110px 48px 96px;">
+          <div>
+            <p style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin:0 0 24px;">Transmission Open</p>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:96px; line-height:.96; letter-spacing:.01em; text-transform:uppercase; color:#e5e5e5; margin:0;">Forge<br>Yours<span style="color:#f59e0b;">.</span></h2>
+          </div>
+          <div style="flex:1; max-width:720px;">
+            <div style="border:1px solid #333; background:#060606; box-shadow:6px 6px 0 #000; padding:24px 28px; display:flex; align-items:baseline; gap:15px; margin-bottom:28px;">
+              <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:17px; color:#f59e0b; flex:0 0 auto;">&gt;</span>
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:17px; line-height:1.55; color:#e5e5e5; margin:0; min-height:158px;">{{ typed }}<span style="display:inline-block; width:10px; height:20px; background:#f59e0b; margin-left:6px; vertical-align:-2px; animation:cur 1.1s steps(1) infinite;"></span></p>
+            </div>
+            <div style="display:flex; align-items:center; gap:24px;">
+              <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Forge This World <span>→</span></span>
+              <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666;">Free · alive in minutes</span>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #222; padding:64px 48px 56px; display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:48px; background:#060606;">
+          <div>
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:.12em; text-transform:uppercase; color:#e5e5e5; margin-bottom:14px;">Metaverse<span style="color:#f59e0b;">.Center</span></div>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:13.5px; line-height:1.7; color:#888; margin:0 0 20px; max-width:300px;">The Bureau of Impossible Geography. AI-simulated living worlds — forged from a sentence, populated by citizens who remember, playing while you sleep.</p>
+            <div style="display:flex; gap:10px; font-size:10px; letter-spacing:2px; text-transform:uppercase;">
+              <span style="color:#f59e0b; cursor:pointer;">DE</span><span style="color:#444;">/</span><span style="color:#888; cursor:pointer;">EN</span>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Systems</div>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">World Forge</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Epochs &amp; Seasons</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Resonance Dungeons</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">The Drift</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Bureau Terminal</a>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Worlds</div>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Velgarien</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Saltmeridian</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">The Chitinous Mandate</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">All living worlds</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Chronicle archive</a>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Bureau</div>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">About the Bureau</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Field manual</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Contact</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Privacy</a>
+            <a href="#3a" style="font-size:12px; letter-spacing:1px; color:#a0a0a0;">Terms of transmission</a>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 48px; border-top:1px solid #1a1a1a; background:#060606; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#555;">
+          <span>© 2026 Metaverse.Center — All worlds reserved</span>
+          <span>Signal status: <b style="color:#4ade80; font-weight:700;">transmitting</b></span>
+        </div>
+        <div style="height:140px; overflow:hidden; border-top:1px solid #222; padding-top:8px;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:225px; line-height:.86; letter-spacing:.01em; text-transform:uppercase; color:#161616; white-space:nowrap;">Metaverse.Center</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════ OPTION 3b — EIN SATZ, EINE AKTION ═══════════════ -->
+  <div id="3b" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#3b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">3B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Ein Satz, eine Aktion — der Forge-Prompt als Hero, radikal reduziert</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- TOP ROW -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:18px 48px; border-bottom:1px solid #222;">
+        <span style="font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#e5e5e5;">Metaverse<span style="color:#f59e0b;">.Center</span></span>
+        <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666;">Free to play · {{ worldsOnline }} worlds transmitting</span>
+      </div>
+
+      <!-- PROMPT HERO -->
+      <div style="position:relative; min-height:780px; display:flex; flex-direction:column; justify-content:center; padding:80px 96px; overflow:hidden; background:#0a0a0a;">
+        <div style="position:absolute; inset:0; background-image:url('uploads/Gemini_Generated_Image_qdwgy1qdwgy1qdwg.jpeg'); background-size:cover; background-position:center 40%; filter:brightness(.75); animation:kb 36s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(94deg, rgba(10,10,10,.96) 30%, rgba(10,10,10,.78) 58%, rgba(10,10,10,.3) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,10,10,.55), transparent 30%, transparent 60%, rgba(10,10,10,.7));"></div>
+        <p style="position:relative; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin:0 0 30px;">The Forge // Intake Open</p>
+        <h1 style="position:relative; font-family:'Courier New',monospace; font-weight:700; font-size:88px; line-height:1; letter-spacing:.02em; text-transform:uppercase; margin:0 0 52px; color:#e5e5e5; text-shadow:0 5px 40px rgba(0,0,0,.75);">One Sentence In.<br><span style="color:#f59e0b;">A Civilization Out.</span></h1>
+        <div style="position:relative; max-width:1060px; border:1px solid #333; background:rgba(6,6,6,.92); box-shadow:8px 8px 0 #000; padding:34px 40px; display:flex; align-items:baseline; gap:18px;">
+          <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:22px; color:#f59e0b; flex:0 0 auto;">&gt;</span>
+          <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:24px; line-height:1.5; color:#e5e5e5; margin:0; min-height:180px;">{{ typed }}<span style="display:inline-block; width:11px; height:23px; background:#f59e0b; margin-left:6px; vertical-align:-3px; animation:cur 1.1s steps(1) infinite;"></span></p>
+        </div>
+        <div style="position:relative; display:flex; align-items:baseline; gap:18px; margin-top:26px; max-width:1060px; flex-wrap:wrap;">
+          <span style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; flex:0 0 auto;">Anchor it in a philosophy —</span>
+          <sc-for list="{{ anchors }}" as="a" hint-placeholder-count="6">
+            <span style="{{ a.chip }}">{{ a.name }}</span>
+          </sc-for>
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666;">required · shapes every citizen&#8217;s soul</span>
+        </div>
+        <div style="position:relative; display:flex; align-items:center; gap:24px; margin-top:36px;">
+          <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:18px 42px; font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Forge This World <span>→</span></span>
+          <a href="#3b" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888;">Or watch a world instead <span class="arr">→</span></a>
+        </div>
+        <p style="position:relative; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin:30px 0 0;">Geography, citizens &amp; lore in minutes — and it keeps playing without you</p>
+      </div>
+
+      <!-- OVERNIGHT REPORT — Beweis statt Featureliste -->
+      <div style="padding:100px 96px; border-top:1px solid #222; background:#060606;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:14px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Overnight Report</div>
+        <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:44px; letter-spacing:.06em; text-transform:uppercase; color:#e5e5e5; margin:0 0 48px;">You Slept. It Didn&#8217;t<span style="color:#f59e0b;">.</span></h2>
+        <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:40px; align-items:stretch;">
+          <div style="position:relative; border:1px solid #333; background:#0a0a0a; box-shadow:6px 6px 0 #000; padding:44px 48px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #333; padding-bottom:14px; margin-bottom:22px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5;">The Saltmeridian Ledger</span>
+              <span style="font-size:9px; letter-spacing:2px; color:#666;">CYCLE 214 · MORNING EDITION</span>
+            </div>
+            <h3 style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:30px; line-height:1.25; color:#e5e5e5; margin:0 0 16px; text-wrap:pretty;">Tide-Warden Accused of Selling the Moon&#8217;s Schedule</h3>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.7; color:#a0a0a0; margin:0 0 14px;">Three clerks of the Brine Chancellery swear they saw the Warden hand a sealed almanac to a foreign Träger at the broadcast edge. The Chancellery denies everything; the tide came in forty minutes early anyway.</p>
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:14px; line-height:1.65; color:#888; margin:0;">Written, sourced and printed by the citizens themselves — while you were asleep.</p>
+            <span style="position:absolute; top:-1px; left:-1px; width:14px; height:14px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <div style="position:relative; flex:1; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; min-height:220px;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif'); background-size:cover; background-position:center; filter:brightness(.6) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(6,6,6,.92));"></div>
+              <div style="position:absolute; left:20px; right:20px; bottom:16px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;"><b style="color:#f59e0b; font-weight:700;">18:00 UTC</b> — your spy reported from a rival archive</div>
+            </div>
+            <div style="position:relative; flex:1; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; min-height:220px;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/showcase/dungeon-deluge.avif'); background-size:cover; background-position:center 30%; filter:brightness(.55) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(6,6,6,.92));"></div>
+              <div style="position:absolute; left:20px; right:20px; bottom:16px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;"><b style="color:#1ab5c8; font-weight:700;">03:12</b> — four went under the Deluge, three came back</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:48px; margin-top:44px; padding-top:28px; border-top:1px solid #222;">
+          <a href="#3b" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;">Ⅰ · Observe a world <span class="arr">→</span></a>
+          <a href="#3b" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;">Ⅱ · Train in the Academy <span class="arr">→</span></a>
+          <a href="#3b" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;">Ⅲ · Forge your own <span class="arr">→</span></a>
+        </div>
+      </div>
+
+      <!-- FOOTER MARQUEE + CTA -->
+      <div style="border-top:1px solid #222;">
+        <div style="overflow:hidden; padding:14px 0; border-bottom:1px solid #222;">
+          <div style="display:flex; gap:56px; width:max-content; animation:marquee 26s linear infinite; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#888; white-space:nowrap;">
+            <span>Velgarien</span><span style="color:#f59e0b;">✦</span><span>Saltmeridian</span><span style="color:#f59e0b;">✦</span><span>The Chitinous Mandate</span><span style="color:#f59e0b;">✦</span><span>The Gilded Hollow</span><span style="color:#f59e0b;">✦</span><span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span><span style="color:#f59e0b;">✦</span>
+            <span>Velgarien</span><span style="color:#f59e0b;">✦</span><span>Saltmeridian</span><span style="color:#f59e0b;">✦</span><span>The Chitinous Mandate</span><span style="color:#f59e0b;">✦</span><span>The Gilded Hollow</span><span style="color:#f59e0b;">✦</span><span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span><span style="color:#f59e0b;">✦</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:34px 48px;">
+          <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:#666;">Metaverse.Center — Bureau of Impossible Geography</span>
+          <span class="hv-amber" style="display:inline-flex; padding:12px 28px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:3px 3px 0 #000; cursor:pointer;">Forge a World</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 2a — SYSTEMKARTE ═══════════════ -->
+  <div id="2a" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#2a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">2A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Systemkarte — alle 6 Spielsysteme + Einstiegspfade, Begriffe entwirrt</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- HERO -->
+      <div style="position:relative; height:760px; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(ellipse 700px 420px at 28% 30%, rgba(245,158,11,.07), transparent 70%), radial-gradient(ellipse 560px 520px at 74% 66%, rgba(34,197,94,.05), transparent 70%), #0a0a0a;">
+        <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/hero.avif'); background-size:cover; background-position:center; filter:brightness(.42) saturate(.85);"></div>
+        <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(245,158,11,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,.04) 1px, transparent 1px); background-size:60px 60px;"></div>
+        <sc-if value="{{ scanlinesOn }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(245,158,11,.015) 3px, rgba(245,158,11,.015) 6px); pointer-events:none;"></div>
+          <div style="position:absolute; left:0; right:0; height:120px; background:linear-gradient(180deg, transparent, rgba(245,158,11,.05) 50%, transparent); animation:scanbeam 8s linear infinite; pointer-events:none;"></div>
+        </sc-if>
+
+        <div style="position:absolute; top:24px; left:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px; opacity:.45;"></div>
+        <div style="position:absolute; top:24px; right:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:2px 2px 0 0; opacity:.45;"></div>
+        <div style="position:absolute; bottom:64px; left:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:0 0 2px 2px; opacity:.45;"></div>
+        <div style="position:absolute; bottom:64px; right:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:0 2px 2px 0; opacity:.45;"></div>
+        <span style="position:absolute; top:74px; left:30px; font-size:10px; letter-spacing:1px; color:#666;">SEC-7 // LAT 42.3601</span>
+        <span style="position:absolute; top:74px; right:30px; font-size:10px; letter-spacing:1px; color:#666;">FRACTURE DEPTH: 0.847</span>
+
+        <div style="position:relative; text-align:center; max-width:920px; padding:0 24px;">
+          <p style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#f59e0b; margin:0 0 28px;">SIGNAL LOCKED // TRANSMISSION OPEN</p>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:76px; line-height:1.02; letter-spacing:.12em; text-transform:uppercase; margin:0; color:#e5e5e5;"><span style="color:#f59e0b;">Metaverse</span>.Center</h1>
+          <div style="height:2px; max-width:520px; margin:14px auto 0; background:linear-gradient(90deg, transparent, rgba(245,158,11,.5), transparent);"></div>
+          <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-weight:500; font-size:22px; line-height:1.55; color:#a0a0a0; margin:28px auto 0; max-width:640px;">Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.</p>
+          <div style="display:flex; gap:16px; justify-content:center; margin-top:44px;">
+            <span style="display:inline-flex; align-items:center; gap:10px; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" class="hv-amber">Build Your World <span>→</span></span>
+            <span style="display:inline-flex; align-items:center; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; background:transparent; border:1px solid #333; cursor:pointer;" class="hv-outline">Explore Worlds</span>
+          </div>
+        </div>
+
+        <!-- Telemetry-Ticker ersetzt die Live-Data-Sektion -->
+        <div style="position:absolute; bottom:0; left:0; right:0; border-top:1px solid #222; background:rgba(6,6,6,.85); display:flex; justify-content:center; gap:64px; padding:14px 24px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="position:relative; width:6px; height:6px; border-radius:50%; background:#22c55e;"><span style="position:absolute; inset:-3px; border:1px solid #22c55e; border-radius:50%; animation:ping 2s ease-out infinite;"></span></span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="width:6px; height:6px; border-radius:50%; background:#22c55e;"></span><b style="color:#4ade80; font-weight:700;">3</b> epochs in play</span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="width:6px; height:6px; border-radius:50%; background:#22c55e;"></span><b style="color:#4ade80; font-weight:700;">128</b> real-world resonances absorbed</span>
+        </div>
+      </div>
+
+      <!-- START HERE — Drei Türen -->
+      <div style="padding:88px 64px 0;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:32px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Start Here — Three Doors</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;">
+          <div class="hv-row" style="position:relative; border:1px solid #333; background:#060606; padding:28px 30px 26px; cursor:pointer;">
+            <span style="position:absolute; top:-1px; left:-1px; width:14px; height:14px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; color:#f59e0b; margin-bottom:12px;">Ⅰ</div>
+            <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Observe</h3>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.6; color:#a0a0a0; margin:0 0 16px;">No account needed. Read the lore, meet the characters, follow the intrigues of {{ worldsOnline }} living worlds.</p>
+            <a href="#2a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase;">Browse worlds <span class="arr">→</span></a>
+          </div>
+          <div class="hv-row" style="position:relative; border:1px solid #333; background:#060606; padding:28px 30px 26px; cursor:pointer;">
+            <span style="position:absolute; top:-1px; left:-1px; width:14px; height:14px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; color:#f59e0b; margin-bottom:12px;">Ⅱ</div>
+            <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Train</h3>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.6; color:#a0a0a0; margin:0 0 16px;">The Academy: a full solo epoch against 3 bot civilizations, compressed into one afternoon. Learn by playing.</p>
+            <a href="#2a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase;">Start training <span class="arr">→</span></a>
+          </div>
+          <div class="hv-row" style="position:relative; border:1px solid #333; background:#060606; padding:28px 30px 26px; cursor:pointer;">
+            <span style="position:absolute; top:-1px; left:-1px; width:14px; height:14px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; color:#f59e0b; margin-bottom:12px;">Ⅲ</div>
+            <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Forge</h3>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.6; color:#a0a0a0; margin:0 0 16px;">One sentence in, a civilization out. Then enter it in epochs, send it below, let it drift.</p>
+            <a href="#2a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase;">Build your world <span class="arr">→</span></a>
+          </div>
+        </div>
+        <p style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666; margin:18px 0 0;">metaverse.center is free — advanced AI imagery optionally runs on your own keys</p>
+      </div>
+
+      <!-- SYSTEMKARTE — alle sechs Spielsysteme -->
+      <div style="padding:80px 64px;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:36px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>The Six Systems</div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:2px; background:#222;">
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#f59e0b;"></span>SYSTEM 01 // THE FORGE</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Forge a World</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">Type one sentence. Minutes later: a civilization with geography, characters and thousands of words of lore — alive and running without you.</p>
+            </div>
+          </div>
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#3b82f6;"></span>SYSTEM 02 // EPOCHS</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Compete in Seasons</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">Timed seasons where civilizations clash: deploy operatives, forge alliances, betray at the right moment. Scored across five dimensions, from stability to military.</p>
+            </div>
+          </div>
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-dungeons.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#1ab5c8;"></span>SYSTEM 03 // RESONANCE DUNGEONS</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Send Agents Below</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">Eight literary descents where stress is real. Agents return changed — carrying aptitudes, artifacts and scars back into your world.</p>
+            </div>
+          </div>
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background:radial-gradient(ellipse at 30% 60%, rgba(124,92,231,.2), transparent 55%), radial-gradient(ellipse at 78% 28%, rgba(245,158,11,.12), transparent 50%), #05070c;">
+                <span style="position:absolute; left:18%; top:58%; width:34%; height:1px; background:linear-gradient(90deg, rgba(245,158,11,.55), rgba(124,92,231,.45)); transform:rotate(-16deg); transform-origin:left;"></span>
+                <span style="position:absolute; left:47%; top:40%; width:32%; height:1px; background:rgba(124,92,231,.35); transform:rotate(13deg); transform-origin:left;"></span>
+                <span style="position:absolute; left:32%; top:74%; width:24%; height:1px; background:rgba(74,138,181,.4); transform:rotate(-38deg); transform-origin:left;"></span>
+                <span style="position:absolute; left:18%; top:58%; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%; background:#f59e0b; box-shadow:0 0 12px #f59e0b;"></span>
+                <span style="position:absolute; left:47%; top:40%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#7c5ce7; box-shadow:0 0 10px #7c5ce7;"></span>
+                <span style="position:absolute; left:78%; top:54%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#4a8ab5; box-shadow:0 0 10px #4a8ab5;"></span>
+                <span style="position:absolute; left:65%; top:22%; width:4px; height:4px; margin:-2px 0 0 -2px; border-radius:50%; background:#2dd4a0; box-shadow:0 0 8px #2dd4a0;"></span>
+                <span style="position:absolute; left:35%; top:84%; width:4px; height:4px; margin:-2px 0 0 -2px; border-radius:50%; background:#555;"></span>
+                <span style="position:absolute; right:10px; bottom:8px; font-size:8px; letter-spacing:2px; color:#6a6a8a;">DRIFTKARTE · ZWISCHENRAUM</span>
+              </div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#7c5ce7;"></span>SYSTEM 04 // DRIFT</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Travel the In-Between</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">The space between worlds is playable. Chart a Träger across the node-sea, dock at a foreign world&#8217;s broadcast edge, haul home what the static lets through.</p>
+            </div>
+          </div>
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#ef4444;"></span>SYSTEM 05 // THE SUBSTRATE</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Reality Bleeds In</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">Real events echo through every simulation as resonances: an earthquake in Tokyo becomes a tremor in your kingdom. The boundary is thinner than you think.</p>
+            </div>
+          </div>
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/9; overflow:hidden;">
+              <div class="feature-img" style="position:absolute; inset:0; background:#0a0a08; padding:16px 18px; box-sizing:border-box; font-size:10.5px; line-height:1.8; color:#f5c542; overflow:hidden;">
+                <div style="position:absolute; inset:7px; border:1px solid #3d3200; pointer-events:none;"></div>
+                <div style="color:#a68a2e;">&gt; look</div>
+                <div>The Apiary hums. Three clerks argue about wax quotas.</div>
+                <div style="color:#a68a2e;">&gt; interrogate clerk</div>
+                <div>&#8220;Ask the Warden what the water took.&#8221;<span style="display:inline-block; width:7px; height:11px; background:#f59e0b; margin-left:5px; vertical-align:-1px; animation:rec-blink 1.2s steps(1) infinite;"></span></div>
+              </div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(6,6,6,.95)); pointer-events:none;"></div>
+              <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.78); border:1px solid #3d3200; padding:4px 9px;"><span style="width:6px; height:6px; background:#f5c542;"></span>SYSTEM 06 // BUREAU TERMINAL</span>
+            </div>
+            <div style="padding:20px 24px 26px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:2.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">Play It as Text</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.65; color:#a0a0a0; margin:0;">A command-line window into your world. Local perspective, narrative prose — you see only your zone, and must scout for the rest.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE FEEDS — sunken Band -->
+      <div style="padding:80px 64px; background:#060606; border-top:1px solid #222; border-bottom:1px solid #222;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:36px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Active Feeds</div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:3px;">
+          <sc-for list="{{ feeds }}" as="feed" hint-placeholder-count="3">
+            <div style="background:#0a0a0a; border-top:3px solid; border-top-color:{{ feed.accent }}; cursor:pointer;" class="hv-lift">
+              <div style="position:relative; height:140px; overflow:hidden;">
+                <div style="position:absolute; inset:0; background-image:{{ feed.img }}; background-size:cover; background-position:center; opacity:.6; filter:saturate(.7);" class="monitor-img"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a, transparent 55%);"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(transparent 0px, transparent 2px, rgba(10,10,10,.35) 2px, rgba(10,10,10,.35) 4px);"></div>
+                <span style="position:absolute; top:8px; left:10px; display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC</span>
+                <span style="position:absolute; bottom:8px; right:10px; font-size:9px; letter-spacing:1px; color:#555;">{{ feed.coord }}</span>
+              </div>
+              <div style="padding:14px 16px 18px;">
+                <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ feed.name }}</h3>
+                <p style="font-size:11px; line-height:1.5; color:#888; margin:0 0 10px; height:33px; overflow:hidden;">{{ feed.desc }}</p>
+                <div style="display:flex; gap:12px; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666;"><span>{{ feed.agents }} agents</span><span>{{ feed.buildings }} buildings</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:18px;"><a href="#2a" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;" class="hv-arrow">Explore all {{ worldsOnline }} worlds <span class="arr">→</span></a></div>
+      </div>
+
+      <!-- INTERCEPTED DOSSIERS -->
+      <div style="padding:96px 64px;">
+        <div style="display:grid; grid-template-columns:380px 1fr; gap:64px; align-items:center;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:16px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Intercepted Dossiers</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:28px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 16px;">They Remember.<br>They Hold Grudges.</h2>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:16px; line-height:1.7; color:#a0a0a0; margin:0 0 22px;">Every world is populated by AI characters with memory, opinion, and intent — they hold grudges, form bonds, and print their own morning broadsheet. Three specimens follow.</p>
+            <a href="#2a" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;" class="hv-arrow">Meet more characters <span class="arr">→</span></a>
+          </div>
+          <div style="display:flex; justify-content:center; align-items:flex-start; padding:24px 0 12px;">
+          <sc-for list="{{ agentCards }}" as="c" hint-placeholder-count="3">
+            <div style="{{ c.fan }}">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ c.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.tint }};">{{ c.kicker }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; color:#666;">{{ c.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ c.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ c.holo }}"></div>
+                  <div style="{{ c.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ c.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ c.tint }};">{{ c.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ c.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ c.bestColor }};">{{ c.bestVal }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.08em; color:{{ c.bestColor }}; opacity:.8;">{{ c.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ c.plate }}">✦ {{ c.name }} ✦</div>
+                  <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.role }} · {{ c.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ c.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ c.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ c.tint }};">★ {{ c.rarity }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; color:#666;">FILE {{ c.file }}</span>
+                </div>
+                <div style="{{ c.ring }}"></div>
+                <div style="{{ c.glare }}"></div>
+              </div>
+            </div>
+          </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- DUNGEON BAND -->
+      <div style="position:relative; padding:110px 64px; overflow:hidden; border-top:1px solid #222;">
+        <div style="{{ dgArt }}"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, #0a0a0a, transparent 30%, transparent 70%, #0a0a0a);"></div>
+        <div style="position:relative; text-align:center; max-width:720px; margin:0 auto;">
+          <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:20px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Resonance Dungeons<span style="width:24px; height:1px; background:#f59e0b;"></span></div>
+          <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:38px; letter-spacing:.15em; text-transform:uppercase; color:#e5e5e5; margin:0 0 18px;">Where Boundaries Thin</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:17px; line-height:1.7; color:#a0a0a0; margin:0 0 34px;">Eight literary descents for your agents — stress is real down here, and what they carry back up reshapes the world above.</p>
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:26px;">
+            <sc-for list="{{ dgTabs }}" as="t" hint-placeholder-count="8">
+              <span onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.numeral }}</span>
+            </sc-for>
+          </div>
+          <div style="{{ dgAnim }}">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; letter-spacing:.14em; text-transform:uppercase; color:{{ dgAccent }}; margin-bottom:4px;">{{ dgName }}</div>
+            <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#888; margin-bottom:10px;">{{ dgSub }}</div>
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:16px; line-height:1.65; color:#a0a0a0; margin:0 auto 26px; max-width:520px; min-height:52px;">{{ dgLine }}</p>
+            <span onClick="{{ dgNext }}" class="hv-ghost" style="display:inline-flex; align-items:center; gap:10px; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer; background:rgba(10,10,10,.6);">{{ dgCta }} →</span>
+          </div>
+          <button onClick="{{ dgPrev }}" class="hv-ghost" style="position:absolute; left:-72px; top:50%; transform:translateY(-50%); width:46px; height:46px; background:rgba(10,10,10,.7); border:1px solid #333; color:#f59e0b; font-size:18px; cursor:pointer;">←</button>
+          <button onClick="{{ dgNext }}" class="hv-ghost" style="position:absolute; right:-72px; top:50%; transform:translateY(-50%); width:46px; height:46px; background:rgba(10,10,10,.7); border:1px solid #333; color:#f59e0b; font-size:18px; cursor:pointer;">→</button>
+        </div>
+      </div>
+
+      <!-- CTA FOOTER -->
+      <div style="padding:90px 64px 110px; border-top:1px solid #222;">
+        <div style="position:relative; max-width:660px; margin:0 auto; border:1px dashed #333; padding:52px 44px; text-align:center;">
+          <span style="position:absolute; top:-1px; left:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+          <span style="position:absolute; top:-1px; right:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:2px 2px 0 0;"></span>
+          <span style="position:absolute; bottom:-1px; left:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:0 0 2px 2px;"></span>
+          <span style="position:absolute; bottom:-1px; right:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:0 2px 2px 0;"></span>
+          <p style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:5px; text-transform:uppercase; color:#f59e0b; margin:0 0 20px;">Transmission Open</p>
+          <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Every World Writes Its Own History</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:16px; line-height:1.65; color:#a0a0a0; margin:0 0 34px;">Describe a world in one sentence. The Forge does the rest.</p>
+          <div style="display:flex; gap:16px; justify-content:center;">
+            <span style="display:inline-flex; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" class="hv-amber">Create Your World</span>
+            <span style="display:inline-flex; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;" class="hv-ghost">Explore Worlds</span>
+          </div>
+          <p style="font-size:9px; letter-spacing:1px; color:#666; margin:26px 0 0;">FREE TO PLAY — NO FEE ON FILE // REF: BMO-2026-INTAKE</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════ OPTION 2b — DER SPIELZYKLUS ═══════════════ -->
+  <div id="2b" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#2b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">2B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Der Spielzyklus — alle Systeme als eine Woche erzählt</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- HERO -->
+      <div style="position:relative; height:560px; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;">
+        <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/hero.avif'); background-size:cover; background-position:center; filter:brightness(.42) saturate(.85);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,10,10,.7), transparent 40%, rgba(10,10,10,.95));"></div>
+        <div style="position:relative; text-align:center; max-width:860px; padding:0 24px;">
+          <p style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#f59e0b; margin:0 0 24px;">How It Plays // One Week in the Multiverse</p>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:58px; line-height:1.02; letter-spacing:.12em; text-transform:uppercase; margin:0; color:#e5e5e5;"><span style="color:#f59e0b;">Metaverse</span>.Center</h1>
+          <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-weight:500; font-size:21px; line-height:1.55; color:#a0a0a0; margin:24px auto 0; max-width:600px;">A worldbuilding strategy platform where the game keeps playing while you sleep.</p>
+          <div style="display:flex; gap:16px; justify-content:center; margin-top:38px;">
+            <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Build Your World <span>→</span></span>
+            <span class="hv-outline" style="display:inline-flex; align-items:center; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; background:transparent; border:1px solid #333; cursor:pointer;">Explore Worlds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIE WOCHE -->
+      <div style="padding:88px 64px 40px; border-top:1px solid #222;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>The Loop</div>
+        <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:16px; color:#888; margin:0 0 24px;">Sechs Systeme, ein Rhythmus. So sieht die erste Woche aus.</p>
+        <div style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 0</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-top:4px;">The Forge</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#f59e0b; box-shadow:0 0 12px #f59e0b;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">You Type One Sentence</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">&#8220;A drowned republic trading in tides and secrets.&#8221; Minutes later Saltmeridian exists: 28 citizens with opinions, 17 buildings, three rival guilds and a newspaper.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="aspect-ratio:16/9; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif'); background-size:cover; background-position:center; filter:brightness(.65) saturate(.9);"></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 1</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#22c55e; margin-top:4px;">Living Agents</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#22c55e; box-shadow:0 0 12px #22c55e;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">You Sleep. They Don&#8217;t.</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">Your citizens form opinions, hold grudges, fall in and out of alliances — and print all of it in the morning broadsheet. You read what your world did overnight.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:#333;"><div style="aspect-ratio:1; background-image:url('assets/portrait-0.png'); background-size:cover; background-position:center; filter:saturate(.85);"></div><div style="aspect-ratio:1; background-image:url('assets/portrait-1.png'); background-size:cover; background-position:center; filter:saturate(.85);"></div><div style="aspect-ratio:1; background-image:url('assets/portrait-2.png'); background-size:cover; background-position:center; filter:saturate(.85);"></div></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 2</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#3b82f6; margin-top:4px;">Epochs</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#3b82f6; box-shadow:0 0 12px #3b82f6;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">The Cycle Resolves at 18:00 UTC</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">You joined a competitive season. Your spy sits in a rival&#8217;s archive; their saboteur sits in yours. Orders lock, the cycle resolves, five scores move.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="aspect-ratio:16/9; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif'); background-size:cover; background-position:center; filter:brightness(.65) saturate(.9);"></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 3</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#1ab5c8; margin-top:4px;">Resonance Dungeons</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#1ab5c8; box-shadow:0 0 12px #1ab5c8;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">Four Go Under. Three Come Back.</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">Zone stability is slipping, so you send a party into The Deluge. The water rises 5cm per room. One agent returns carrying something the flood kept for centuries.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="aspect-ratio:16/9; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/showcase/dungeon-deluge.avif'); background-size:cover; background-position:center; filter:brightness(.65) saturate(.9);"></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 4</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#7c5ce7; margin-top:4px;">Drift</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#7c5ce7; box-shadow:0 0 12px #7c5ce7;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">A Träger Crosses the In-Between</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">Between the worlds lies the Drift — a playable node-sea. Your traveler docks at a neighbor&#8217;s broadcast edge and hauls home foreign cargo through the static.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="position:relative; aspect-ratio:16/9; background:radial-gradient(ellipse at 30% 60%, rgba(124,92,231,.22), transparent 55%), #05070c; overflow:hidden;"><span style="position:absolute; left:16%; top:60%; width:40%; height:1px; background:linear-gradient(90deg, rgba(245,158,11,.55), rgba(124,92,231,.45)); transform:rotate(-16deg); transform-origin:left;"></span><span style="position:absolute; left:16%; top:60%; width:8px; height:8px; margin:-4px 0 0 -4px; border-radius:50%; background:#f59e0b; box-shadow:0 0 12px #f59e0b;"></span><span style="position:absolute; left:56%; top:42%; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; background:#7c5ce7; box-shadow:0 0 10px #7c5ce7;"></span><span style="position:absolute; left:80%; top:58%; width:5px; height:5px; margin:-2px 0 0 -2px; border-radius:50%; background:#4a8ab5; box-shadow:0 0 8px #4a8ab5;"></span></div></div>
+          </div>
+          <div style="display:grid; grid-template-columns:110px 30px 1fr 320px; gap:0 28px; align-items:center; padding:30px 0;">
+            <div style="text-align:right;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:1px; color:#e5e5e5;">Day 5</div>
+              <div style="font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:#ef4444; margin-top:4px;">The Substrate</div>
+            </div>
+            <div style="position:relative; align-self:stretch;">
+              <span style="position:absolute; left:50%; top:0; bottom:0; width:2px; margin-left:-1px; background:#1e1e1e;"></span>
+              <span style="position:absolute; left:50%; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:#ef4444; box-shadow:0 0 12px #ef4444;"></span>
+            </div>
+            <div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px;">Real Earth Interferes</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0; max-width:56ch;">An election happens — on the real one. It resonates through every simulation: your broadsheet runs riot, two zones destabilize. The multiverse noticed.</p>
+            </div>
+            <div style="position:relative; border:1px solid #333; box-shadow:4px 4px 0 #000;"><div style="aspect-ratio:16/9; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif'); background-size:cover; background-position:center; filter:brightness(.65) saturate(.9);"></div></div>
+          </div>
+        </div>
+        <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:17px; color:#a0a0a0; text-align:center; margin:36px 0 0;">Then the next cycle begins — and the broadsheet writes about all of it.</p>
+      </div>
+
+      <!-- DREI TÜREN KOMPAKT -->
+      <div style="padding:56px 64px 90px; text-align:center;">
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+          <span class="hv-ghost" style="display:inline-flex; padding:14px 30px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;">Ⅰ · Browse Worlds</span>
+          <span class="hv-amber" style="display:inline-flex; padding:14px 30px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Ⅱ · Start Training</span>
+          <span class="hv-ghost" style="display:inline-flex; padding:14px 30px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;">Ⅲ · Forge a World</span>
+        </div>
+        <p style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666; margin:22px 0 0;">Free to play · one afternoon to learn · {{ worldsOnline }} worlds already running</p>
+      </div>
+
+      <!-- Ticker -->
+      <div style="border-top:1px solid #222; background:rgba(6,6,6,.85); display:flex; justify-content:center; gap:64px; padding:14px 24px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+        <span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> living worlds</span>
+        <span><b style="color:#4ade80; font-weight:700;">3</b> epochs in play</span>
+        <span><b style="color:#4ade80; font-weight:700;">128</b> real-world resonances absorbed</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 1a — CONSOLE, GESTRAFFT ═══════════════ -->
+  <div id="1a" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Konservativ gestrafft — Console, 6 Sektionen</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- HERO -->
+      <div style="position:relative; height:760px; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(ellipse 700px 420px at 28% 30%, rgba(245,158,11,.07), transparent 70%), radial-gradient(ellipse 560px 520px at 74% 66%, rgba(34,197,94,.05), transparent 70%), #0a0a0a;">
+        <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/hero.avif'); background-size:cover; background-position:center; filter:brightness(.42) saturate(.85);"></div>
+        <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(245,158,11,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(245,158,11,.04) 1px, transparent 1px); background-size:60px 60px;"></div>
+        <sc-if value="{{ scanlinesOn }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(245,158,11,.015) 3px, rgba(245,158,11,.015) 6px); pointer-events:none;"></div>
+          <div style="position:absolute; left:0; right:0; height:120px; background:linear-gradient(180deg, transparent, rgba(245,158,11,.05) 50%, transparent); animation:scanbeam 8s linear infinite; pointer-events:none;"></div>
+        </sc-if>
+
+        <div style="position:absolute; top:24px; left:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px; opacity:.45;"></div>
+        <div style="position:absolute; top:24px; right:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:2px 2px 0 0; opacity:.45;"></div>
+        <div style="position:absolute; bottom:64px; left:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:0 0 2px 2px; opacity:.45;"></div>
+        <div style="position:absolute; bottom:64px; right:24px; width:40px; height:40px; border-style:solid; border-color:#f59e0b; border-width:0 2px 2px 0; opacity:.45;"></div>
+        <span style="position:absolute; top:74px; left:30px; font-size:10px; letter-spacing:1px; color:#666;">SEC-7 // LAT 42.3601</span>
+        <span style="position:absolute; top:74px; right:30px; font-size:10px; letter-spacing:1px; color:#666;">FRACTURE DEPTH: 0.847</span>
+
+        <div style="position:relative; text-align:center; max-width:920px; padding:0 24px;">
+          <p style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:5px; text-transform:uppercase; color:#f59e0b; margin:0 0 28px;">SIGNAL LOCKED // TRANSMISSION OPEN</p>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:76px; line-height:1.02; letter-spacing:.12em; text-transform:uppercase; margin:0; color:#e5e5e5;"><span style="color:#f59e0b;">Metaverse</span>.Center</h1>
+          <div style="height:2px; max-width:520px; margin:14px auto 0; background:linear-gradient(90deg, transparent, rgba(245,158,11,.5), transparent);"></div>
+          <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-weight:500; font-size:22px; line-height:1.55; color:#a0a0a0; margin:28px auto 0; max-width:640px;">Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.</p>
+          <div style="display:flex; gap:16px; justify-content:center; margin-top:44px;">
+            <span style="display:inline-flex; align-items:center; gap:10px; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" class="hv-amber">Build Your World <span>→</span></span>
+            <span style="display:inline-flex; align-items:center; padding:16px 36px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; background:transparent; border:1px solid #333; cursor:pointer;" class="hv-outline">Explore Worlds</span>
+          </div>
+        </div>
+
+        <!-- Telemetry-Ticker ersetzt die Live-Data-Sektion -->
+        <div style="position:absolute; bottom:0; left:0; right:0; border-top:1px solid #222; background:rgba(6,6,6,.85); display:flex; justify-content:center; gap:64px; padding:14px 24px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="position:relative; width:6px; height:6px; border-radius:50%; background:#22c55e;"><span style="position:absolute; inset:-3px; border:1px solid #22c55e; border-radius:50%; animation:ping 2s ease-out infinite;"></span></span><b style="color:#4ade80; font-weight:700;">{{ worldsOnline }}</b> worlds online</span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="width:6px; height:6px; border-radius:50%; background:#22c55e;"></span><b style="color:#4ade80; font-weight:700;">3</b> live epochs</span>
+          <span style="display:inline-flex; align-items:center; gap:8px;"><span style="width:6px; height:6px; border-radius:50%; background:#22c55e;"></span><b style="color:#4ade80; font-weight:700;">128</b> substrate events</span>
+        </div>
+      </div>
+
+      <!-- OPERATIONS PROTOCOL = Features + How-It-Works fusioniert -->
+      <div style="padding:96px 64px 80px; border-top:1px solid #222;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:36px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Operations Protocol</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; background:#222;">
+
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/7; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);" class="feature-img"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 30%, rgba(6,6,6,.95));"></div>
+              <span style="position:absolute; top:12px; left:12px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.75); border:1px solid #3d3200; padding:4px 9px;">STEP 01 // SIM-CONSTRUCT</span>
+            </div>
+            <div style="padding:26px 30px 32px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; margin:0 0 12px;">Create Your World</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0;">Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, thousands of words of lore. Minutes, not months.</p>
+            </div>
+          </div>
+
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/7; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);" class="feature-img"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 30%, rgba(6,6,6,.95));"></div>
+              <span style="position:absolute; top:12px; left:12px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.75); border:1px solid #3d3200; padding:4px 9px;">STEP 02 // EPOCH-OPS</span>
+            </div>
+            <div style="padding:26px 30px 32px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; margin:0 0 12px;">Join an Epoch</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0;">Timed competitive seasons where civilizations clash. Deploy spies, forge alliances with rival worldbuilders, betray them at the perfect moment.</p>
+            </div>
+          </div>
+
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/7; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-dungeons.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);" class="feature-img"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 30%, rgba(6,6,6,.95));"></div>
+              <span style="position:absolute; top:12px; left:12px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.75); border:1px solid #3d3200; padding:4px 9px;">STEP 03 // DEPTH-SIGNAL</span>
+            </div>
+            <div style="padding:26px 30px 32px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; margin:0 0 12px;">Enter the Resonance</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0;">Send agents where reality fractures. Eight archetypal dungeons where stress is real — and what happens in the depths changes your world above.</p>
+            </div>
+          </div>
+
+          <div class="feature" style="background:#060606; position:relative;">
+            <div class="feature-imgwrap" style="position:relative; aspect-ratio:16/7; overflow:hidden;">
+              <div style="position:absolute; inset:0; background-image:url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif'); background-size:cover; background-position:center; filter:brightness(.7) saturate(.9);" class="feature-img"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 30%, rgba(6,6,6,.95));"></div>
+              <span style="position:absolute; top:12px; left:12px; font-size:9px; letter-spacing:2px; color:#f59e0b; background:rgba(10,10,10,.75); border:1px solid #3d3200; padding:4px 9px;">STEP 04 // SUB-MONITOR</span>
+            </div>
+            <div style="padding:26px 30px 32px;">
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:3px; text-transform:uppercase; color:#e5e5e5; margin:0 0 12px;">Shape the Metaverse</h2>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:15.5px; line-height:1.65; color:#a0a0a0; margin:0;">Real-world events ripple through every simulation. Build embassies, trigger cross-world events, watch separate civilizations entangle.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE FEEDS — sunken Band -->
+      <div style="padding:80px 64px; background:#060606; border-top:1px solid #222; border-bottom:1px solid #222;">
+        <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:36px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Active Feeds</div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:3px;">
+          <sc-for list="{{ feeds }}" as="feed" hint-placeholder-count="3">
+            <div style="background:#0a0a0a; border-top:3px solid; border-top-color:{{ feed.accent }}; cursor:pointer;" class="hv-lift">
+              <div style="position:relative; height:140px; overflow:hidden;">
+                <div style="position:absolute; inset:0; background-image:{{ feed.img }}; background-size:cover; background-position:center; opacity:.6; filter:saturate(.7);" class="monitor-img"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a, transparent 55%);"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(transparent 0px, transparent 2px, rgba(10,10,10,.35) 2px, rgba(10,10,10,.35) 4px);"></div>
+                <span style="position:absolute; top:8px; left:10px; display:inline-flex; align-items:center; gap:5px; font-size:9px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:5px; height:5px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC</span>
+                <span style="position:absolute; bottom:8px; right:10px; font-size:9px; letter-spacing:1px; color:#555;">{{ feed.coord }}</span>
+              </div>
+              <div style="padding:14px 16px 18px;">
+                <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ feed.name }}</h3>
+                <p style="font-size:11px; line-height:1.5; color:#888; margin:0 0 10px; height:33px; overflow:hidden;">{{ feed.desc }}</p>
+                <div style="display:flex; gap:12px; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666;"><span>{{ feed.agents }} agents</span><span>{{ feed.buildings }} buildings</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:18px;"><a href="#1a" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;" class="hv-arrow">Explore all {{ worldsOnline }} worlds <span class="arr">→</span></a></div>
+      </div>
+
+      <!-- INTERCEPTED DOSSIERS -->
+      <div style="padding:96px 64px;">
+        <div style="display:grid; grid-template-columns:380px 1fr; gap:64px; align-items:center;">
+          <div>
+            <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:16px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Intercepted Dossiers</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:28px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 16px;">They Remember.<br>They Hold Grudges.</h2>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:16px; line-height:1.7; color:#a0a0a0; margin:0 0 22px;">Every world is populated by AI characters with memory, opinion, and intent. The Bureau interviews them regularly. Three specimens follow.</p>
+            <a href="#1a" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase;" class="hv-arrow">Meet more characters <span class="arr">→</span></a>
+          </div>
+          <div style="display:flex; justify-content:center; align-items:flex-start; padding:24px 0 12px;">
+          <sc-for list="{{ agentCards }}" as="c" hint-placeholder-count="3">
+            <div style="{{ c.fan }}">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ c.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.tint }};">{{ c.kicker }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; color:#666;">{{ c.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ c.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ c.holo }}"></div>
+                  <div style="{{ c.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ c.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ c.tint }};">{{ c.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ c.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ c.bestColor }};">{{ c.bestVal }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.08em; color:{{ c.bestColor }}; opacity:.8;">{{ c.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ c.plate }}">✦ {{ c.name }} ✦</div>
+                  <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.role }} · {{ c.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ c.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ c.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ c.tint }};">★ {{ c.rarity }}</span>
+                  <span style="font-family:'SF Mono',ui-monospace,monospace; font-size:7.5px; color:#666;">FILE {{ c.file }}</span>
+                </div>
+                <div style="{{ c.ring }}"></div>
+                <div style="{{ c.glare }}"></div>
+              </div>
+            </div>
+          </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- DUNGEON BAND -->
+      <div style="position:relative; padding:110px 64px; overflow:hidden; border-top:1px solid #222;">
+        <div style="{{ dgArt }}"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, #0a0a0a, transparent 30%, transparent 70%, #0a0a0a);"></div>
+        <div style="position:relative; text-align:center; max-width:720px; margin:0 auto;">
+          <div style="display:inline-flex; align-items:center; gap:8px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:20px;"><span style="width:24px; height:1px; background:#f59e0b;"></span>Depth Signal<span style="width:24px; height:1px; background:#f59e0b;"></span></div>
+          <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:38px; letter-spacing:.15em; text-transform:uppercase; color:#e5e5e5; margin:0 0 18px;">Where Boundaries Thin</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:17px; line-height:1.7; color:#a0a0a0; margin:0 0 34px;">Eight archetypal dungeons, each a different wound in the world — and a different test of what your civilization is made of.</p>
+          <div style="display:flex; justify-content:center; gap:8px; margin-bottom:26px;">
+            <sc-for list="{{ dgTabs }}" as="t" hint-placeholder-count="8">
+              <span onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.numeral }}</span>
+            </sc-for>
+          </div>
+          <div style="{{ dgAnim }}">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; letter-spacing:.14em; text-transform:uppercase; color:{{ dgAccent }}; margin-bottom:4px;">{{ dgName }}</div>
+            <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#888; margin-bottom:10px;">{{ dgSub }}</div>
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:16px; line-height:1.65; color:#a0a0a0; margin:0 auto 26px; max-width:520px; min-height:52px;">{{ dgLine }}</p>
+            <span onClick="{{ dgNext }}" class="hv-ghost" style="display:inline-flex; align-items:center; gap:10px; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer; background:rgba(10,10,10,.6);">{{ dgCta }} →</span>
+          </div>
+          <button onClick="{{ dgPrev }}" class="hv-ghost" style="position:absolute; left:-72px; top:50%; transform:translateY(-50%); width:46px; height:46px; background:rgba(10,10,10,.7); border:1px solid #333; color:#f59e0b; font-size:18px; cursor:pointer;">←</button>
+          <button onClick="{{ dgNext }}" class="hv-ghost" style="position:absolute; right:-72px; top:50%; transform:translateY(-50%); width:46px; height:46px; background:rgba(10,10,10,.7); border:1px solid #333; color:#f59e0b; font-size:18px; cursor:pointer;">→</button>
+        </div>
+      </div>
+
+      <!-- CTA FOOTER -->
+      <div style="padding:90px 64px 110px; border-top:1px solid #222;">
+        <div style="position:relative; max-width:660px; margin:0 auto; border:1px dashed #333; padding:52px 44px; text-align:center;">
+          <span style="position:absolute; top:-1px; left:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:2px 0 0 2px;"></span>
+          <span style="position:absolute; top:-1px; right:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:2px 2px 0 0;"></span>
+          <span style="position:absolute; bottom:-1px; left:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:0 0 2px 2px;"></span>
+          <span style="position:absolute; bottom:-1px; right:-1px; width:16px; height:16px; border-style:solid; border-color:#f59e0b; border-width:0 2px 2px 0;"></span>
+          <p style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:5px; text-transform:uppercase; color:#f59e0b; margin:0 0 20px;">Transmission Open</p>
+          <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Every World Writes Its Own History</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:16px; line-height:1.65; color:#a0a0a0; margin:0 0 34px;">Describe a world in one sentence. The Forge does the rest.</p>
+          <div style="display:flex; gap:16px; justify-content:center;">
+            <span style="display:inline-flex; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" class="hv-amber">Create Your World</span>
+            <span style="display:inline-flex; padding:14px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;" class="hv-ghost">Explore Worlds</span>
+          </div>
+          <p style="font-size:9px; letter-spacing:1px; color:#666; margin:26px 0 0;">REF: BMO-2026-INTAKE</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;scanlines&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Atmosphäre&quot; },
+  &quot;worldsOnline&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 47, &quot;min&quot;: 1, &quot;max&quot;: 500, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Telemetry&quot; }
+}">
+class Component extends DCLogic {
+  state = { dg: 0, sys: 0, typed: '' };
+
+  componentDidMount() {
+    const P = [
+      'A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books — one for the living, one for the sea.',
+      'A bureaucracy of chitinous insects governing a city of wax and paper. Promotion is by molting, demotion is by candle, and the archive eats one form per night — nobody files a complaint, because the complaint form is the first thing it ate.',
+      'A mining aristocracy that dug too deep and now pays rent to whatever lives below. The lease is renegotiated every winter solstice, in the dark, by a delegation that returns one member short and never discusses it.',
+      'A baroque city-state that prints its grudges every morning in a broadsheet of record. Duels are fought over typos, retractions cost more than funerals, and the editor has outlived four governments by misquoting all of them.',
+      'An alpine empire run entirely by lighthouse keepers, though there is no sea — only fog with opinions. The lights must never align, for on the one recorded night they did, something in the fog aligned back.',
+      'A desert caliphate where cartographers are priests and an inaccurate map is heresy. The border moves when nobody is drawing it, so the frontier monasteries sketch in shifts, around the clock, and still lose a village every decade.',
+      'A glacier city that migrates two meters per year, dragging its cathedral by law. Streets are renamed as they drift, marriages are annulled if the couple ends up on opposite moraines, and the founding quarter is now three valleys behind.',
+      'A merchant archipelago where every contract must be sung before witnesses. Breach of contract is off-key, insurance fraud is falsetto, and the supreme court is a choir that has not agreed on a verdict — or a key signature — since the drowning of the second fleet.',
+      'A velvet dictatorship of retired opera singers who outlawed silence in 1911. Informants hum. The secret police travel as a touring company, and the last man who whispered was given three encores and never seen again.',
+      'A river delta ruled by three rival post offices that read everything and forgive nothing. Love letters arrive annotated, ransom notes come back corrected, and once a generation the three postmasters exchange a single unstamped envelope no one has ever opened.',
+      'A walled garden-state whose census counts the dead, because they still vote. The graveyard districts lean conservative, the crematorium ward is a swing seat, and every election night the returning officer reads the results aloud twice — once facing the city, once facing the wall.',
+      'A smog-choked industrial duchy where the chimney sweeps\u2019 union secretly owns the sky. Sunlight is leased by the hour, stars are a black-market luxury, and when the duke stopped paying his invoice, his palace stood in private night for eleven years.',
+      'A salt-flat theocracy that worships reflections and executes mirror-breakers at dawn. After the rains, when the whole flat becomes one perfect mirror, the priesthood walks out onto the sky and takes confession from the clouds.',
+      'A canal republic where the gondoliers are the intelligence service and every song is a report. The melody carries the facts, the harmony carries the doubts, and the state anthem is legally classified.',
+      'A mountain kingdom that elects its king by avalanche. Candidates stand on the slope at first thaw; the mountain abstains some years, and the throne stays empty, which the constitution counts as its wisest reign.',
+      'A paper federation of libraries at war over a single misfiled book since 1834. Ceasefires are signed in pencil. The book itself has been read by no one still living, and both sides privately fear it is a ledger of what the war has cost.',
+      'A coastal margravate where storms are put on trial in absentia and always found guilty. Sentences are carved into the cliff face. The great hurricane of \u201988 was condemned to four hundred years of community service, and the harbor wall it must rebuild is almost finished.',
+      'A subterranean stock exchange that trades in memories, dreams futures, and grudge derivatives. Childhood summers are blue-chip, first kisses are volatile, and the crash of the nostalgia bubble left an entire generation unable to remember why it was angry.',
+      'A frostbitten port where every departing ship must carry one passenger who never existed. The shipping registry lists them in white ink. Sailors say the invented passengers keep the sea from noticing the real ones.',
+      'A vineyard oligarchy whose wars are fought exclusively by sommeliers, to the last drop. Vintages are classified as armaments, decanting is a declaration, and the treaty of the great frost was ratified by everyone spitting at the same time.',
+    ];
+    let pi = 0, ci = 0, del = false, hold = 0;
+    this._typeT = setInterval(() => {
+      const p = P[pi];
+      if (!del) {
+        ci++;
+        if (ci >= p.length) { ci = p.length; del = true; hold = 110; }
+      } else if (hold > 0) { hold--; }
+      else {
+        ci -= 5;
+        if (ci <= 0) { ci = 0; del = false; pi = (pi + 1) % P.length; this.setState({ anch: pi % 6 }); }
+      }
+      this.setState({ typed: p.slice(0, Math.max(0, ci)) });
+    }, 34);
+  }
+
+  componentWillUnmount() { clearInterval(this._typeT); }
+
+  _tiltMove = (e) => {
+    const el = e.currentTarget, r = el.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    const py = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    el.style.setProperty('--rx', (-py * 9).toFixed(2) + 'deg');
+    el.style.setProperty('--ry', (px * 11).toFixed(2) + 'deg');
+    el.style.setProperty('--px', px.toFixed(3));
+    el.style.setProperty('--py', py.toFixed(3));
+    el.style.setProperty('--o', '1');
+  };
+
+  _tiltLeave = (e) => {
+    const el = e.currentTarget;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
+    el.style.setProperty('--px', '0');
+    el.style.setProperty('--py', '0');
+    el.style.setProperty('--o', '0');
+  };
+
+  _agentCards() {
+    const OPC = { SPY: '#64748b', GRD: '#10b981', SAB: '#ef4444', PRP: '#f59e0b', INF: '#a78bfa', ASN: '#dc2626' };
+    const OPL = ['SPY', 'GRD', 'SAB', 'PRP', 'INF', 'ASN'];
+    const I = 0.75;
+    const FOIL = 'linear-gradient(calc(115deg + var(--px,0)*40deg),#f59e0b 0%,#f7e8b8 18%,#7fd0c5 38%,#8b7bd8 58%,#c85a4a 78%,#f59e0b 100%)';
+    const HOLO = 'repeating-linear-gradient(calc(112deg + var(--px,0)*18deg),rgba(245,158,11,.9) 0px,rgba(247,232,184,.9) 14px,rgba(127,208,197,.9) 30px,rgba(139,123,216,.9) 46px,rgba(200,90,74,.9) 62px,rgba(245,158,11,.9) 78px)';
+    const tiers = {
+      common: { tint: '#666666', label: 'Standard' },
+      rare: { tint: '#3b82f6', label: 'Notable' },
+      legendary: { tint: '#f59e0b', label: 'Key Figure' },
+    };
+    const agents = [
+      { name: 'Corvin Fenn', role: 'Saboteur', zone: 'The Underworks', tier: 'rare', file: '0432', img: 'assets/portrait-1.png', apt: [6, 4, 8, 3, 5, 6], quote: 'You closed my archive in the third cycle. I have not forgotten the smell of the smoke.', fan: 'perspective:1100px;transform:rotate(-5deg) translateY(12px);margin-right:-36px;position:relative;z-index:1;' },
+      { name: 'Ilsabet Voss', role: 'Propagandist', zone: 'Inkstone Row', tier: 'legendary', file: '0117', img: 'assets/portrait-0.png', apt: [4, 3, 5, 9, 7, 4], quote: 'I wrote the story of the flood before it happened. The river merely complied.', fan: 'perspective:1100px;transform:translateY(-8px);position:relative;z-index:2;' },
+      { name: 'Marta Wolfram', role: 'Guardian', zone: 'The Gatewall', tier: 'common', file: '0289', img: 'assets/portrait-2.png', apt: [4, 7, 3, 3, 4, 2], quote: 'Ask the others about loyalty. Then ask them who was still standing at the gate.', fan: 'perspective:1100px;transform:rotate(5deg) translateY(12px);margin-left:-36px;position:relative;z-index:1;' },
+    ];
+    return agents.map((a, i) => {
+      const tm = tiers[a.tier];
+      const sum = a.apt.reduce((x, y) => x + y, 0);
+      const bi = a.apt.indexOf(Math.max(...a.apt));
+      return {
+        name: a.name, role: a.role, zone: a.zone, quote: a.quote, file: a.file, fan: a.fan,
+        id: 'OP-' + a.name.split(' ')[1].toUpperCase().slice(0, 3),
+        kicker: tm.label, rarity: tm.label, tint: tm.tint,
+        aptSum: String(sum), bestVal: String(a.apt[bi]), bestType: OPL[bi], bestColor: OPC[OPL[bi]],
+        root: `position:relative;width:300px;height:420px;border-radius:6px;background:linear-gradient(180deg,#0d0d0d,#0a0a0a);border:1px solid ${a.tier === 'common' ? '#2a2a2a' : tm.tint + '99'};transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .16s ease-out;cursor:pointer;animation:${a.tier === 'legendary' ? 'deal-in .55s cubic-bezier(.22,1,.36,1) both, legendary-pulse 3.2s ease-in-out infinite' : 'deal-in .55s cubic-bezier(.22,1,.36,1) both'};animation-delay:${i * 130}ms${a.tier === 'legendary' ? ',' + i * 130 + 'ms' : ''};box-shadow:9px 9px 0 #000000`,
+        art: `position:absolute;inset:0;background:url('${a.img}') center 20%/cover;transform:translate(calc(var(--px,0)*-9px),calc(var(--py,0)*-7px)) scale(1.14);filter:contrast(1.1) saturate(.82) brightness(.96);transition:transform .16s ease-out`,
+        holo: a.tier === 'legendary' ? `position:absolute;inset:0;background:${HOLO};background-size:200% 200%;mix-blend-mode:color-dodge;opacity:calc(var(--o,0)*${(0.34 * I).toFixed(3)});transition:opacity .3s;pointer-events:none` : 'display:none',
+        holoGrain: a.tier === 'legendary' ? `position:absolute;inset:0;background:var(--noise);mix-blend-mode:overlay;opacity:calc(var(--o,0)*${(0.5 * I).toFixed(3)});transition:opacity .3s;pointer-events:none` : 'display:none',
+        ring: a.tier === 'common' ? 'display:none' : `position:absolute;inset:0;border-radius:6px;padding:2.5px;background:${FOIL};background-size:250% 250%;background-position:calc(50% + var(--px,0)*50%) calc(50% + var(--py,0)*50%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;mix-blend-mode:screen;opacity:calc(.25 + var(--o,0)*${(0.75 * I).toFixed(3)});transition:opacity .3s;pointer-events:none;z-index:8;box-sizing:border-box`,
+        glare: `position:absolute;inset:0;border-radius:6px;background:radial-gradient(circle at calc(50% + var(--px,0)*46%) calc(46% + var(--py,0)*46%),rgba(255,255,255,${a.tier === 'common' ? '.16' : '.26'}),rgba(255,255,255,.05) 34%,transparent 62%);mix-blend-mode:overlay;opacity:var(--o,0);transition:opacity .3s;pointer-events:none;z-index:9`,
+        plate: a.tier === 'legendary'
+          ? "display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Courier New',monospace;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;background:linear-gradient(100deg,#8a6420 0%,#f5d67a 22%,#fff3c4 30%,#f5d67a 38%,#8a6420 55%,#f5d67a 80%,#8a6420 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:plate-sheen 4.5s ease-in-out infinite"
+          : "display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Courier New',monospace;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:#e5e5e5",
+        pips: a.apt.map((v, j) => ({
+          val: String(v), label: OPL[j],
+          dot: `display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;font-family:'SF Mono',Monaco,monospace;font-weight:700;font-size:9.5px;color:#060606;background:${OPC[OPL[j]]};${v <= 5 ? 'opacity:.38;' : v >= 8 ? `box-shadow:0 0 8px ${OPC[OPL[j]]}90;` : ''}`,
+        })),
+      };
+    });
+  }
+
+  renderVals() {
+    const worldsOnline = this.props.worldsOnline ?? 47;
+    const DG = [
+      { id: 'shadow', numeral: 'I', name: 'The Shadow', sub: 'Die Tiefe Nacht', line: 'Darkness is not absence. It is presence.', cta: 'Descend', accent: '#7c5ce7' },
+      { id: 'tower', numeral: 'II', name: 'The Tower', sub: 'Der Fallende Turm', line: 'The building is alive. You are its nervous system.', cta: 'Face the Trial', accent: '#4a8ab5' },
+      { id: 'mother', numeral: 'III', name: 'The Devouring Mother', sub: 'Das Lebendige Labyrinth', line: 'That which sustains you consumes you.', cta: 'Accept the Gift', accent: '#2dd4a0' },
+      { id: 'entropy', numeral: 'IV', name: 'The Entropy', sub: 'Der Verfall-Garten', line: 'Decay is not destruction — it is equalization.', cta: 'Carry On', accent: '#d4920a' },
+      { id: 'prometheus', numeral: 'V', name: 'The Prometheus', sub: 'Die Werkstatt der Götter', line: 'Innovation demands perpetual suffering. The gift cannot be ungiven.', cta: 'Steal the Flame', accent: '#e85d26' },
+      { id: 'deluge', numeral: 'VI', name: 'The Deluge', sub: 'Die Steigende Flut', line: 'The world reminds its inhabitants: guests, not owners.', cta: 'Go Under', accent: '#1ab5c8' },
+      { id: 'awakening', numeral: 'VII', name: 'The Awakening', sub: 'Das Kollektive Unbewusste', line: 'The dungeon is not a container for memories — it IS memory.', cta: 'Open Your Eyes', accent: '#b48aef' },
+      { id: 'overthrow', numeral: 'VIII', name: 'The Overthrow', sub: 'Der Spiegelpalast', line: 'Power changes hands. The old order does not die — it metamorphoses.', cta: 'Seize Power', accent: '#d4364b' },
+    ].map((d) => ({ ...d, img: 'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/showcase/dungeon-' + d.id + '.avif', br: 0.45 }));
+    const dgi = this.state.dg;
+    const dgTabs = DG.map((d, i) => ({
+      numeral: d.numeral,
+      onClick: () => this.setState({ dg: i }),
+      style: "font-family:'Courier New',monospace;font-weight:700;font-size:15px;letter-spacing:2px;cursor:pointer;padding:7px 12px;transition:all .2s;border:1px solid " + (i === dgi ? d.accent : 'transparent') + ';color:' + (i === dgi ? d.accent : '#888') + ';background:' + (i === dgi ? d.accent + '1a' : 'transparent') + ';' + (i === dgi ? 'box-shadow:0 0 14px ' + d.accent + '40;' : ''),
+    }));
+    return {
+      dgTabs,
+      dgName: DG[dgi].name,
+      dgSub: DG[dgi].sub,
+      dgAccent: DG[dgi].accent,
+      dgLine: DG[dgi].line,
+      dgCta: DG[dgi].cta,
+      dgAnim: 'text-align:center;animation:' + (dgi % 2 ? 'dg-a' : 'dg-b') + ' .35s cubic-bezier(.22,1,.36,1) both',
+      dgArt: "position:absolute;inset:0;background:url('" + DG[dgi].img + "') center 35%/cover;filter:brightness(" + DG[dgi].br + ") saturate(.85);animation:" + (dgi % 2 ? 'dg-art-a' : 'dg-art-b') + ' .6s ease both',
+      dgPrev: () => this.setState({ dg: (this.state.dg + 7) % 8 }),
+      dgNext: () => this.setState({ dg: (this.state.dg + 1) % 8 }),
+      scanlinesOn: this.props.scanlines ?? true,
+      typed: this.state.typed || '',
+      anchors: ['Stoic Order', 'The Absurd', 'Entropy & Decay', 'Collective Memory', 'Faustian Ambition', 'Sacred Bureaucracy'].map((name, i) => {
+        const on = i === (this.state.anch || 0);
+        return { name, chip: 'display:inline-flex; padding:7px 14px; font-family:\'SF Mono\',ui-monospace,monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; transition:all .3s;' + (on ? 'color:#f59e0b; border:1px solid #f59e0b; background:rgba(245,158,11,.08); box-shadow:2px 2px 0 #000;' : 'color:#888; border:1px solid #2a2a2a;') };
+      }),
+      ...(() => {
+        const B = 'https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/';
+        const SYS = [
+          { tag: 'System 01 // The Forge', name: 'Forge a World', art: "url('uploads/Gemini_Generated_Image_qdwgy1qdwgy1qdwg.jpeg') center/cover", flt: 'brightness(.85) saturate(.95)' },
+          { tag: 'System 02 // Epochs', name: 'Compete in Seasons', art: "url('uploads/Gemini_Generated_Image_v68o98v68o98v68o.jpeg') center/cover", flt: 'brightness(.85) saturate(.95)' },
+          { tag: 'System 03 // Resonance Dungeons', name: 'Send Agents Below', art: "url('uploads/Gemini_Generated_Image_vzwq1rvzwq1rvzwq.jpeg') center/cover", flt: 'brightness(.85) saturate(.95)' },
+          { tag: 'System 04 // Drift', name: 'Travel the In-Between', art: "url('uploads/Gemini_Generated_Image_dxctjgdxctjgdxct.jpeg') center/cover", flt: 'brightness(1.05)' },
+          { tag: 'System 05 // The Substrate', name: 'Reality Bleeds In', art: "url('uploads/Gemini_Generated_Image_c0yl04c0yl04c0yl.jpeg') center/cover", flt: 'brightness(.85) saturate(.95)' },
+          { tag: 'System 06 // Bureau Terminal', name: 'Play It as Text', art: "url('uploads/Gemini_Generated_Image_srtsbpsrtsbpsrts.jpeg') center/cover", flt: 'brightness(.95)' },
+        ];
+        const si = this.state.sys;
+        const out = {
+          sysTag: SYS[si].tag, sysName: SYS[si].name,
+          sysArt: 'position:absolute;inset:0;background:' + SYS[si].art + ';filter:' + SYS[si].flt + ';animation:dg-art-' + (si % 2 ? 'a' : 'b') + ' .45s ease both;',
+        };
+        SYS.forEach((s, i) => { out['sysGo' + i] = () => this.setState({ sys: i }); });
+        out.sysIdx = '0' + (si + 1);
+        const DESCS = [
+          { d: 'The intake desk of the Bureau. You file a single sentence; the Forge answers with coastlines, a census, a founding grudge and a working economy. It names the rivers, seats the parliament, invents the folk songs, and decides — before you can object — which of your words was the important one. Most applicants are unprepared for how fast it talks back.',
+            q: 'I wrote \u201Ca city that fears the rain\u201D and by evening it had umbrella cartels, a drought cult, and a poet under house arrest. I have never felt so read.',
+            w: 'Intake Form 7-C, marginal note, applicant #4,112' },
+          { d: 'Epochs are timed seasons in which rival civilizations share one map and one deadline. Operatives are deployed under false names, alliances are notarized in triplicate, betrayals are scheduled weeks in advance and executed to the minute. When the clock runs out, the standings wall prints one civilization\u2019s name slightly larger than the rest — and the archive remembers it forever.',
+            q: 'We lost the epoch on points but won the peace: their spymaster defected to us for the food. Wars end; kitchens are forever.',
+            w: 'After-action report, Epoch of the Hollow Crown' },
+          { d: 'Below every world lie resonance dungeons — eight literary descents where the water rises one bureaucratic percentage point at a time and the odds are printed honestly on every door. Stress is bookkeeping here, kept in amber ink: agents return changed, decorated, or as a single line in the ledger of the deep. The Bureau reimburses lanterns, not nerves.',
+            q: 'Storey by storey the Deluge taught us subtraction. Four went down. The ledger shows three signatures and one water stain.',
+            w: 'Debrief fragment, Descent Authorization #88' },
+          { d: 'Between worlds stretches the node-sea: black, patient, crossed by amber signal-lines that hum like held breath. Charter a barge, follow a line to a foreign broadcast edge, and dock where your passport is a rumor. What you haul home — cargo, gossip, a stowaway idea — has no field on any customs form, which is precisely why it\u2019s valuable.',
+            q: 'Halfway between two worlds the radio picks up both of their lullabies at once. That is the whole reason I run this route.',
+            w: 'Logbook of the barge Second Postscript' },
+          { d: 'The Substrate listens to your reality. Headlines, weather fronts, the general mood of a Tuesday — all of it arrives in every simulation as resonances, bent through each world\u2019s own philosophy until your election is their comet and your heatwave is their angry god. One hundred twenty-eight resonances absorbed to date. The boundary was never sealed; it was only ever filed as sealed.',
+            q: 'Your world sneezed and three of mine wrote prophecies about it. Kindly sneeze less, or at least on schedule.',
+            w: 'Complaint lodged by the Chitinous Mandate, unanswered' },
+          { d: 'The Bureau Terminal is a keyhole into your world: one phosphor screen, one cursor, no mercy and no minimap. You see what a citizen at street level sees, told in narrative prose that does not care about your feelings. Type \u201Clook\u201D and the world describes itself. Type something braver and it describes you back.',
+            q: 'I asked the terminal where my agent was. It wrote: \u201CGrieving. Third bench from the fountain. Bring bread.\u201D I brought bread.',
+            w: 'Operator transcript, 03:41, unfiled' },
+        ][si];
+        out.sysDesc = DESCS.d; out.sysQuote = DESCS.q; out.sysWho = DESCS.w;
+        out.sysThumbs = SYS.map((s, i) => ({
+          go: () => this.setState({ sys: i }),
+          style: 'flex:1; aspect-ratio:16/9; cursor:pointer; background:' + s.art + '; border:1px solid ' + (i === si ? '#f59e0b' : '#2a2a2a') + '; filter:' + (i === si ? 'none' : 'brightness(.4) saturate(.5)') + '; transition:all .3s; box-sizing:border-box;',
+        }));
+        return out;
+      })(),
+      worldsOnline,
+      moreWorlds: worldsOnline - 4,
+      feeds: [
+        { name: 'The Chitinous Mandate', desc: 'A bureaucracy of insects governs a city of wax and paper.', theme: 'Insectile', coord: 'FEED-01', accent: '#22c55e', agents: 34, buildings: 21, img: "url('assets/e-court.png')" },
+        { name: 'Velgarien', desc: 'The reference world. Espionage, broadsheets, long memories.', theme: 'Baroque', coord: 'FEED-02', accent: '#f59e0b', agents: 61, buildings: 40, img: "url('assets/e-warden.png')" },
+        { name: 'Saltmeridian', desc: 'A drowned republic trading in tides and secrets.', theme: 'Maritime', coord: 'FEED-03', accent: '#3b82f6', agents: 28, buildings: 17, img: "url('assets/e-clerk.png')" },
+        { name: 'The Gilded Hollow', desc: 'Mining aristocracy above, something older below.', theme: 'Subterran', coord: 'FEED-04', accent: '#a78bfa', agents: 45, buildings: 33, img: "url('assets/e-wraith.png')" },
+      ],
+      agentCards: this._agentCards(),
+      tiltMove: this._tiltMove,
+      tiltLeave: this._tiltLeave,
+      exhibits: [
+        { num: '01', letter: 'A', dir: 'ltr', tag: 'The Forge // Sim-Construct', title: 'Worlds From a Sentence', ref: 'EXHIBIT A // TIER-1 // ACTIVE', img: "url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-worldbuilding.avif')", body: 'Describe a world in one sentence. The Forge builds it — geography, citizens, architecture, thousands of words of lore. Within minutes you hold a living civilization that writes its own newspapers.' },
+        { num: '02', letter: 'B', dir: 'rtl', tag: 'Epochs // Competitive Ops', title: 'Civilizations in Session', ref: 'EXHIBIT B // TIER-2 // ACTIVE', img: "url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-competition.avif')", body: 'Timed seasons where worlds clash. Deploy spies behind enemy lines, forge alliances with rival worldbuilders, betray them at the perfect moment. Strategy meets emergent AI storytelling.' },
+        { num: '03', letter: 'C', dir: 'ltr', tag: 'Resonance // Depth Signal', title: 'The Fractures Below', ref: 'EXHIBIT C // TIER-3 // RESTRICTED', img: "url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-dungeons.avif')", body: 'Eight archetypal dungeons, each shaped by its own literary DNA. Stress is real, choices reshape who your agents become, and what happens in the depths changes the world above.' },
+        { num: '04', letter: 'D', dir: 'rtl', tag: 'The Substrate // Sub-Monitor', title: 'Reality Bleeds Through', ref: 'EXHIBIT D // TIER-4 // ACTIVE', img: "url('https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/landing/feature-substrate.avif')", body: 'Real-world events ripple through every simulation as Resonances. An earthquake in Tokyo becomes a tremor in your kingdom. The boundary between realities is thinner than you think.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
