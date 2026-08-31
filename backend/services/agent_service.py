@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
@@ -273,70 +272,46 @@ class AgentService(BaseService):
         simulation_id: UUID,
         agents: list[dict],
     ) -> None:
-        """Set is_ambassador=True on agents who serve as embassy ambassadors.
+        """Set is_ambassador=True from the view that decides it.
 
-        Queries active embassies involving this simulation and matches on the
-        ambassador's ``agent_id`` where the metadata carries one, falling back
-        to the ``name``.
+        Seit Migration 322 steht die Regel — Kennung zuerst, Name nur
+        ersatzweise, gesperrte Botschafter ausgenommen — nur noch in
+        ``active_ambassadors``. Diese Methode liest sie und rechnet nichts nach.
 
-        Why both: measured on production 31.08.2026 — of 40 active embassies,
-        37 carry an ``ambassador_a`` block, **37 of those carry a ``name`` and
-        only 9 carry an ``agent_id``**. Matching on the id alone would drop 28
-        embassies; matching on the name alone is what this did, and a name is
-        not an identity. It happens to work today (zero duplicate agent names
-        per simulation, measured) and it stops working the first time two
-        agents share a name or one is renamed — silently, because a name that
-        no longer matches looks exactly like an agent who is not an ambassador.
+        WARUM DAS NICHT NUR AUFRAEUMEN IST
+        Vorher stand dieselbe Regel hier und in ``fn_compute_agent_influence``
+        ausgeschrieben, und Migration 304 verlangte im eigenen Kopf, dass die
+        beiden uebereinstimmen. Sie taten es nicht ganz: SQL prueft
+        ``id ODER (id fehlt UND name)``, diese Methode pruefte
+        ``id ODER name`` — sie sammelte den Namen also auch aus Botschaften, die
+        bereits eine ``agent_id`` tragen. Ein zweiter Agent desselben Namens
+        waere hier Botschafter geworden und dort nicht.
 
-        The SQL side (``fn_compute_agent_influence``, migration 304) resolves
-        the identity the same way and in the same order. These two must agree:
-        the influence score gives an ambassador 0.3 of 1.0, and the badge on
-        the card comes from this flag.
+        Auf Prod gemessen (31.08.2026), bevor umgestellt wurde: beide Regeln
+        finden dieselben **14** Paare, Differenz 0/0. Die Abweichung war also
+        latent und nicht aktiv — sie waere beim ersten doppelten Namen
+        aufgewacht, lautlos, weil ein Abzeichen zu viel genauso aussieht wie
+        eines zu wenig.
+
+        Die Sperrpruefung (``ambassador_blocked_until``) faellt hier weg, weil
+        die Sicht sie enthaelt: eine Stelle entscheidet, oder es sind wieder
+        zwei. Die Uhr ist damit die der Datenbank statt die des Anwendungs-
+        prozesses, was bei zwei Prozessen auf zwei Maschinen die richtigere ist.
         """
         if not agents:
             return
 
-        sim_str = str(simulation_id)
         try:
             response = await (
-                supabase.table("embassies")
-                .select("simulation_a_id, simulation_b_id, embassy_metadata")
-                .eq("status", "active")
-                .or_(f"simulation_a_id.eq.{sim_str},simulation_b_id.eq.{sim_str}")
+                supabase.table("active_ambassadors")
+                .select("agent_id")
+                .eq("simulation_id", str(simulation_id))
                 .execute()
             )
         except (PostgrestAPIError, httpx.HTTPError):
-            logger.warning("Failed to query embassies for ambassador enrichment", exc_info=True)
+            logger.warning("Failed to read active_ambassadors", exc_info=True)
             return
 
-        ambassador_ids: set[str] = set()
-        ambassador_names: set[str] = set()
-        for embassy in extract_list(response):
-            meta = embassy.get("embassy_metadata") or {}
-            # ambassador_a belongs to simulation_a, ambassador_b to simulation_b
-            if embassy.get("simulation_a_id") == sim_str:
-                block = meta.get("ambassador_a") or {}
-            else:
-                block = meta.get("ambassador_b") or {}
-            agent_id = block.get("agent_id")
-            if agent_id:
-                ambassador_ids.add(str(agent_id))
-            name = block.get("name")
-            if name:
-                ambassador_names.add(name)
-
-        now = datetime.now(UTC)
+        ambassador_ids = {str(row["agent_id"]) for row in extract_list(response)}
         for agent in agents:
-            # The id wins when the metadata has one; the name is the fallback
-            # for the 28 of 37 embassies that carry no id yet.
-            is_ambassador = str(agent.get("id")) in ambassador_ids or agent.get("name") in ambassador_names
-            # A2: Check if ambassador status is temporarily blocked
-            blocked_until = agent.get("ambassador_blocked_until")
-            if blocked_until and is_ambassador:
-                try:
-                    blocked_dt = datetime.fromisoformat(str(blocked_until).replace("Z", "+00:00"))
-                    if blocked_dt > now:
-                        is_ambassador = False
-                except (ValueError, TypeError):
-                    pass
-            agent["is_ambassador"] = is_ambassador
+            agent["is_ambassador"] = str(agent.get("id")) in ambassador_ids
