@@ -69,7 +69,36 @@
   /* === PLATFORM ACCENT (non-themeable chrome — always amber) === */
   --color-accent-amber: #f59e0b;
   --color-accent-amber-hover: #fbbf24;
-  --color-accent-amber-dim: #b45309;
+  /*
+   * Gehoben von #b45309 auf #be5e09 (31.08.2026).
+   *
+   * GEMESSEN, DREIMAL UNABHAENGIG
+   * Der alte Wert stand auf `--color-surface` bei **3,94 : 1**. WCAG AA verlangt
+   * 4,5 : 1 fuer Fliesstext. Drei Sitzungen sind an einem Tag getrennt darauf
+   * gestossen und auf dieselbe Zahl und denselben kleinsten Schritt gekommen:
+   *
+   *     color-mix(in srgb, var(--color-accent-amber) 15%, #b45309) = #be5e09
+   *     → 4,52 : 1
+   *
+   * WARUM DAS HIER STEHT UND NICHT DREIMAL LOKAL
+   * Der Token ist der Kopf einer Kette (`--_phosphor-dim` → `--amber-dim` →
+   * hierher) und trug **85 der 165 plattformweiten Kontrastverstoesse** —
+   * mehr als alle anderen Ursachen zusammen. Eine Ueberschreibung in einem
+   * Verzeichnis haette denselben Farbnamen an zwei Orten verschieden aussehen
+   * lassen und die Verstoesse in forge, shared, epoch, lore und terminal
+   * stehen lassen.
+   *
+   * WARUM DER SCHRITT SO KLEIN IST
+   * Er ist der kleinste, der traegt: gerade ueber die Schwelle, damit „dim
+   * amber" dim bleibt. Wo der Token einen RAHMEN faerbt statt Text, war er nie
+   * kaputt (Konturen brauchen 3 : 1) — heller ist dort nicht falsch, nur etwas
+   * weniger zurueckhaltend.
+   *
+   * Gemessen mit `frontend/scripts/measure-contrast-pairs.py`, das anders als
+   * `lint-color-contrast.sh` die Komponenten anfasst statt 13 fest verdrahteter
+   * Token-Paare. Siehe handoff/simulation-views/DESIGN-AUTORITAET.md, Punkt 4.
+   */
+  --color-accent-amber-dim: #be5e09;
   --color-accent-amber-glow: rgba(245, 158, 11, 0.15);
   --color-accent-green: #4ade80;
   --color-mint-brass: #b8860b;
