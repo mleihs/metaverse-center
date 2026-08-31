@@ -741,7 +741,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           type="button"
           @click=${() => dungeonState.cancelTargeting()}
         >
-          ${msg('Esc')} <span aria-hidden="true">\u2715</span>
+          ${msg('Esc')} ${icons.close(10)}
         </button>
       </div>
     `;
@@ -819,7 +819,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                         @click=${() => this._withdrawOrder(agent.agent_id)}
                         aria-label=${msg(str`Withdraw ${agent.agent_name}'s order`)}
                       >
-                        <span aria-hidden="true">\u2715</span>
+                        ${icons.close(9)}
                       </button>
                     </div>`
                   : nothing
