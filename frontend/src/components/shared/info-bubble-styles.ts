@@ -1,4 +1,5 @@
-import { css, html, nothing } from 'lit';
+import { css, html } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import './VelgTooltip.js';
 
@@ -26,8 +27,13 @@ import './VelgTooltip.js';
  * @param id    Optional id for aria-describedby linkage (preserved on wrapper)
  */
 export function renderInfoBubble(text: string, id?: string) {
+  // `id` wurde bis 31.08.2026 stumm verworfen: der Ausdruck stand als
+  // `${id ? html`id=${id}` : nothing}` in ELEMENT-Position, und Lit lässt ein
+  // dort erzeugtes Attribut wortlos fallen — kein Typfehler, keine Warnung, nur
+  // eine `aria-describedby`-Verknüpfung, die es nie gab, obwohl der Docstring
+  // sie seit jeher beschreibt. `ifDefined` bindet es als echtes Attribut.
   return html`
-    <velg-tooltip content=${text} position="below" variant="info" ${id ? html`id=${id}` : nothing}>
+    <velg-tooltip content=${text} position="below" variant="info" id=${ifDefined(id)}>
       <span class="info-bubble">
         <span class="info-bubble__icon" tabindex="0" aria-label="Info">i</span>
       </span>

@@ -23,6 +23,8 @@ import '../shared/VelgSectionHeader.js';
 import '../shared/EntityLightbox.js';
 import '../shared/VelgSidePanel.js';
 import './EmbassyLink.js';
+import '../shared/VelgMetricExplainer.js';
+import { READINESS_FORMULA } from '../../utils/metric-formulas.js';
 
 @localized()
 @customElement('velg-building-details-panel')
@@ -571,6 +573,12 @@ export class VelgBuildingDetailsPanel extends LitElement {
             ></div>
           </div>
           <span class="panel__readiness-value" style="color: ${fillColor}">${pct}%</span>
+          <velg-metric-explainer
+            .metric=${msg('Building readiness')}
+            .what=${msg('How much of what this building could do it actually does. Its zone reads this number as infrastructure.')}
+            .why=${msg('Four factors multiply: staffing, how well the assigned professions match, the building condition, and the average influence of the agents inside. The bar below marks the weakest one.')}
+            .action=${msg(str`Work on the marked bottleneck. The other three cannot make up for it, because the factors multiply instead of adding. The highest value measured so far is ${READINESS_FORMULA.observedCeilingPct} percent.`)}
+          ></velg-metric-explainer>
         </div>
 
         <!-- Staffing headline with natural numbers -->
@@ -585,7 +593,15 @@ export class VelgBuildingDetailsPanel extends LitElement {
             </span>
           </div>
           <div class="panel__detail-item">
-            <span class="panel__detail-label">${msg('Criticality')}</span>
+            <span class="panel__detail-label">
+              ${msg('Criticality')}
+              <velg-metric-explainer
+                .metric=${msg('Criticality')}
+                .what=${msg("How heavily this building counts towards its zone's infrastructure.")}
+                .why=${msg(str`Weights run from ${READINESS_FORMULA.criticalityMin} to ${READINESS_FORMULA.criticalityMax}. A building at ${READINESS_FORMULA.criticalityMax} pulls the zone's infrastructure score twice as hard as one at 1.`)}
+                .action=${msg('Repair readiness in high-criticality buildings first. The same percentage point is worth up to four times more there than in the lightest building.')}
+              ></velg-metric-explainer>
+            </span>
             <span class="panel__detail-value">${r.criticality_weight}x</span>
           </div>
         </div>

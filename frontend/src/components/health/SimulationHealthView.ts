@@ -1,6 +1,7 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import '../shared/VelgMetricExplainer.js';
 import { appState } from '../../services/AppStateManager.js';
 import { healthApi } from '../../services/api/HealthApiService.js';
 import { heartbeatApi } from '../../services/api/HeartbeatApiService.js';
@@ -15,6 +16,12 @@ import type {
   ZoneStability,
 } from '../../types/index.js';
 import { icons } from '../../utils/icons.js';
+import {
+  EMBASSY_EFFECTIVENESS_FORMULA,
+  HEALTH_FORMULA,
+  READINESS_FORMULA,
+  ZONE_STABILITY_FORMULA,
+} from '../../utils/metric-formulas.js';
 import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
 import { viewHeaderStyles } from '../shared/view-header-styles.js';
@@ -957,6 +964,12 @@ export class VelgSimulationHealthView extends LitElement {
           <h2 class="health-hero__title">${h.simulation_name}</h2>
           <span class="health-hero__label" style="color: ${color}">
             ${h.health_label.toUpperCase()}
+            <velg-metric-explainer
+              .metric=${msg('World health')}
+              .what=${msg('One number for the whole world, made of three parts: how stable its zones are, how ready its buildings are, and how far its diplomacy reaches.')}
+              .why=${msg(str`Zone stability counts ${HEALTH_FORMULA.stabilityPct}, building readiness ${HEALTH_FORMULA.readinessPct} and diplomacy ${HEALTH_FORMULA.diplomacyPct}, on top of a base of ${HEALTH_FORMULA.baselinePct}. Diplomacy counts in full once the combined effectiveness of the active embassies reaches ${HEALTH_FORMULA.diplomacyFullAt}.`)}
+              .action=${msg(str`Zone stability moves this number fastest. Without a single active embassy the score stops at ${HEALTH_FORMULA.ceilingWithoutEmbassyPct} percent, so an embassy is the only way past that.`)}
+            ></velg-metric-explainer>
           </span>
           <div class="health-hero__stats">
             <span class="health-hero__stat">
@@ -1134,7 +1147,15 @@ export class VelgSimulationHealthView extends LitElement {
       <div class="panel">
         <div class="panel__header">
           <span class="panel__icon">${icons.mapPin(16)}</span>
-          <h3 class="panel__title">${msg('Zone Stability')}</h3>
+          <h3 class="panel__title">
+            ${msg('Zone Stability')}
+            <velg-metric-explainer
+              .metric=${msg('Zone stability')}
+              .what=${msg('How well one zone holds together. It decides how often events strike there.')}
+              .why=${msg(str`Infrastructure counts ${ZONE_STABILITY_FORMULA.infrastructurePct}, the security level ${ZONE_STABILITY_FORMULA.securityPct}, and every point of pressure subtracts ${ZONE_STABILITY_FORMULA.pressurePct}. Infrastructure is the readiness of the zone's buildings, weighted by how critical each one is.`)}
+              .action=${msg(str`Raise readiness in the zone's most critical buildings, or fortify to cut pressure. The scale stops at ${ZONE_STABILITY_FORMULA.ceilingPct} percent, because ${ZONE_STABILITY_FORMULA.infrastructurePct} plus ${ZONE_STABILITY_FORMULA.securityPct} is all there is.`)}
+            ></velg-metric-explainer>
+          </h3>
         </div>
         ${
           zones.length === 0
@@ -1184,6 +1205,12 @@ export class VelgSimulationHealthView extends LitElement {
                       ${
                         z.total_pressure > 0
                           ? html`<div class="zone-item__pressure-text">
+                            <velg-metric-explainer
+                              .metric=${msg('Zone pressure')}
+                              .what=${msg('What pushes against a zone: the events aimed at it, plus a share of every other event in the world.')}
+                              .why=${msg('Targeted pressure comes from events linked to this zone, weighted by impact and status. Ambient pressure is the spill from unlinked events, 30 percent by default. Fortification subtracts from the total.')}
+                              .action=${msg('Fortify or quarantine the zone to subtract pressure for a few days. Resolving the events themselves removes it for good.')}
+                            ></velg-metric-explainer>
                             ${msg(str`Pressure: ${Math.round(z.event_pressure * 100)}% targeted + ${Math.round(z.ambient_pressure * 100)}% ambient${z.fortification_reduction > 0 ? ` - ${Math.round(z.fortification_reduction * 100)}% fortification` : ''}`)}
                           </div>`
                           : nothing
@@ -1211,7 +1238,15 @@ export class VelgSimulationHealthView extends LitElement {
         </div>
         <div class="diplo-stats" style="margin-bottom: var(--space-4)">
           <div class="diplo-stat">
-            <span class="diplo-stat__label">${msg('Avg Readiness')}</span>
+            <span class="diplo-stat__label">
+              ${msg('Avg Readiness')}
+              <velg-metric-explainer
+                .metric=${msg('Building readiness')}
+                .what=${msg('How much of what a building could do it actually does, averaged over the world.')}
+                .why=${msg('Four factors multiply: staffing, how well the assigned professions match, the building condition, and the average influence of the agents inside. The weakest of the four is the bottleneck.')}
+                .action=${msg(str`Work on the marked bottleneck. The other three cannot make up for it, because the factors multiply instead of adding. The highest value measured so far is ${READINESS_FORMULA.observedCeilingPct} percent.`)}
+              ></velg-metric-explainer>
+            </span>
             <span class="diplo-stat__value" aria-label=${msg(str`Average readiness: ${(health.avg_readiness * 100).toFixed(0)} percent`)}>${(health.avg_readiness * 100).toFixed(0)}%</span>
           </div>
           <div class="diplo-stat">
@@ -1294,7 +1329,15 @@ export class VelgSimulationHealthView extends LitElement {
         </div>
         <div class="diplo-stats">
           <div class="diplo-stat">
-            <span class="diplo-stat__label">${msg('Diplomatic Reach')}</span>
+            <span class="diplo-stat__label">
+              ${msg('Diplomatic Reach')}
+              <velg-metric-explainer
+                .metric=${msg('Diplomatic reach')}
+                .what=${msg('The summed effectiveness of every active embassy this world holds.')}
+                .why=${msg('Each embassy contributes its own effectiveness. Two embassies at half strength reach as far as one at full strength.')}
+                .action=${msg(str`Found another embassy, or improve one you have. At a reach of ${HEALTH_FORMULA.diplomacyFullAt} the diplomacy share of world health is full and anything beyond it adds nothing.`)}
+              ></velg-metric-explainer>
+            </span>
             <span class="diplo-stat__value">${health.diplomatic_reach.toFixed(2)}</span>
           </div>
           <div class="diplo-stat">
@@ -1302,7 +1345,15 @@ export class VelgSimulationHealthView extends LitElement {
             <span class="diplo-stat__value">${health.active_embassy_count}</span>
           </div>
           <div class="diplo-stat">
-            <span class="diplo-stat__label">${msg('Avg Effectiveness')}</span>
+            <span class="diplo-stat__label">
+              ${msg('Avg Effectiveness')}
+              <velg-metric-explainer
+                .metric=${msg('Embassy effectiveness')}
+                .what=${msg('How well one embassy actually works, averaged over the active ones.')}
+                .why=${msg(str`The readiness of the two embassy buildings counts ${EMBASSY_EFFECTIVENESS_FORMULA.buildingHealthPct}, the two ambassadors ${EMBASSY_EFFECTIVENESS_FORMULA.ambassadorPct}, and the bleed vector ${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct}.`)}
+                .action=${msg(str`The vector is all or nothing: it either matches one the connection carries, or it scores zero. Checking it is worth ${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct} points in one step, more than any repair.`)}
+              ></velg-metric-explainer>
+            </span>
             <span class="diplo-stat__value" aria-label=${msg(str`Average effectiveness: ${(health.avg_embassy_effectiveness * 100).toFixed(0)} percent`)}>
               ${(health.avg_embassy_effectiveness * 100).toFixed(0)}%
             </span>

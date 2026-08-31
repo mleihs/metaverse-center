@@ -96,10 +96,29 @@ jobs:
       # Binds the class the marker gate could not: a shared style module that is
       # copied by hand instead of imported. See the script header for the
       # measurement that set its thresholds.
+      # `working-directory: .` fehlte hier, obwohl der Kommentar zwei Schritte
+      # weiter oben genau diesen Fehler beschreibt: die Vorgabe dieses Jobs ist
+      # `frontend`, ohne die Zeile sucht bash also `frontend/frontend/scripts/…`.
       - name: Shared-style lint (no hand-copied style modules)
         run: bash frontend/scripts/lint-no-shared-style-copy.sh
+        working-directory: .
       - name: Lint — every dungeon verb is gated and documented
         run: bash frontend/scripts/lint-dungeon-verbs-gated.sh
+        working-directory: .
+
+      # Diese drei standen in `npm run lint:full` und liefen NICHT in CI. Ein Tor,
+      # das nur lokal läuft, ist eine Bitte, keine Regel: es hält niemanden auf,
+      # der es nicht von sich aus aufruft.
+      - name: Lint — help numbers match their sources
+        run: bash frontend/scripts/lint-help-numbers-measured.sh
+        working-directory: .
+
+      - name: Lint — every api client has a caller
+        run: bash frontend/scripts/lint-no-dead-api-client.sh
+        working-directory: .
+
+      - name: Lint — every metric explanation answers all three questions
+        run: bash frontend/scripts/lint-metric-explainer-complete.sh
         working-directory: .
 
       # Guards the guards: a lint script whose grep target does not exist under
