@@ -5679,9 +5679,6 @@
 <trans-unit id="s42019ab54afe464c">
   <source>Data Provenance</source>
 <target>Datenherkunft</target></trans-unit>
-<trans-unit id="sb94dd9db2a0a65cf">
-  <source>All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis. Future simulation runs will validate v2.2 impact.</source>
-<target>Alle Analysedaten basieren auf der v2.1-Baseline (188 gültige Partien von 200 simulierten). Die oben genannten v2.2-Balanceanpassungen beruhen auf dieser Analyse. Zukünftige Simulationsläufe werden die Auswirkungen von v2.2 validieren.</target></trans-unit>
 <trans-unit id="s2e32b5b1994a10ed">
   <source>v2.2 Balance Changes Applied</source>
 <target>v2.2-Balanceanpassungen angewendet</target></trans-unit>
@@ -6042,10 +6039,6 @@
 <trans-unit id="sbfdfd594b652f867">
   <source>Failed to save notification preferences.</source>
   <target>Benachrichtigungseinstellungen konnten nicht gespeichert werden.</target>
-</trans-unit>
-<trans-unit id="se16bb9c19f882452">
-  <source>Configure which epoch email notifications you receive. All emails are bilingual (English and German).</source>
-  <target>Konfiguriere, welche Epochen-E-Mail-Benachrichtigungen du erhältst. Alle E-Mails sind zweisprachig (Englisch und Deutsch).</target>
 </trans-unit>
 <trans-unit id="s83d01309a7c11e6b">
   <source>Cycle Resolved</source>
@@ -8497,36 +8490,15 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sde0019997430f575">
   <source>Spawned by substrate resonance</source>
 <target>Durch Substratresonanz ausgelöst</target></trans-unit>
-<trans-unit id="s50d9254ea7f7b8c1">
-  <source>Impacting</source>
-<target>Einwirkend</target></trans-unit>
 <trans-unit id="s0d4646ae164e0b39">
   <source>Subsiding</source>
 <target>Abklingend</target></trans-unit>
-<trans-unit id="se50e717e70159266">
-  <source>Time until impact</source>
-<target>Zeit bis zum Einschlag</target></trans-unit>
-<trans-unit id="s4d59f6321a6db981">
-  <source>IMPACTING</source>
-<target>EINWIRKEND</target></trans-unit>
 <trans-unit id="s4d8bccd6f856a9f5">
   <source>Magnitude</source>
 <target>Magnitude</target></trans-unit>
-<trans-unit id="sdb59c52ab0ff71f2">
-  <source>Tremor magnitude</source>
-<target>Bebenstärke</target></trans-unit>
-<trans-unit id="s8724ae840be12f80">
-  <source>Affected event types</source>
-<target>Betroffene Ereignistypen</target></trans-unit>
 <trans-unit id="saf6734684d40ab4b">
   <source>Bureau Dispatch</source>
 <target>Bureau-Depesche</target></trans-unit>
-<trans-unit id="s81f777330da5b84c">
-  <source>impacts</source>
-<target>Einschläge</target></trans-unit>
-<trans-unit id="s2a8c29411f57f29d">
-  <source>Process impact across simulations</source>
-<target>Auswirkung auf Simulationen verarbeiten</target></trans-unit>
 <trans-unit id="s275e8941632a9afa">
   <source>Process</source>
 <target>Verarbeiten</target></trans-unit>
@@ -9827,10 +9799,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Dashboard</source>
   <target>Dashboard</target>
 </trans-unit>
-<trans-unit id="s4837d23dd38f4e28">
-  <source>Simulation → Campaigns tab</source>
-  <target>Simulation → Kampagnen-Reiter</target>
-</trans-unit>
 <trans-unit id="saf71fd669a443b09">
   <source>What is the COMMS System?</source>
   <target>Was ist das KOMM-System?</target>
@@ -9986,54 +9954,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sa62ee3d2e1c9f944">
   <source>Uses service_role admin client (system actor pattern)</source>
   <target>Verwendet service_role-Admin-Client (System-Akteur-Muster)</target>
-</trans-unit>
-<trans-unit id="sc015a51e31f8db97">
-  <source>Scanning affected shards...</source>
-  <target>Betroffene Scherben werden gescannt...</target>
-</trans-unit>
-<trans-unit id="sac4f21e6dc5b92a8">
-  <source>No impact records found.</source>
-  <target>Keine Wirkungsdatensätze gefunden.</target>
-</trans-unit>
-<trans-unit id="s52de1f04f0a20e42">
-  <source>Affected Shards</source>
-  <target>Betroffene Scherben</target>
-</trans-unit>
-<trans-unit id="s1e188a19b52656d4">
-  <source>Mag</source>
-  <target>Mag</target>
-</trans-unit>
-<trans-unit id="s005bf56c85b6b5a3">
-  <source>Evts</source>
-  <target>Erg</target>
-</trans-unit>
-<trans-unit id="s51bb22db9bbc7b95">
-  <source>magnitude</source>
-  <target>Magnitude</target>
-</trans-unit>
-<trans-unit id="s1f34a659d3c109c0">
-  <source>Affected Event Types</source>
-  <target>Betroffene Ereignistypen</target>
-</trans-unit>
-<trans-unit id="s680fc90489553ed6">
-  <source>Timeline</source>
-  <target>Zeitachse</target>
-</trans-unit>
-<trans-unit id="s4c6366cec535f831">
-  <source>Impacts at</source>
-  <target>Wirkt auf</target>
-</trans-unit>
-<trans-unit id="s405ab7eaf621dba8">
-  <source>Subsides at</source>
-  <target>Klingt ab um</target>
-</trans-unit>
-<trans-unit id="s2df076aface0dc6b">
-  <source>Shard</source>
-  <target>Scherbe</target>
-</trans-unit>
-<trans-unit id="scd885b6786111c7d">
-  <source>Resonance Details</source>
-  <target>Resonanzdetails</target>
 </trans-unit>
 <trans-unit id="sec704d88c62f6c1b">
   <source>Style Reference Images</source>
@@ -19143,9 +19063,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="see058b1a1efaa0b2">
   <source>Operations Points (fortify, quarantine)</source>
 <target>Operationspunkte (fortify, quarantine)</target></trans-unit>
-<trans-unit id="s1e181e0e45fb4458">
-  <source>Intel Points (future: debrief, scan)</source>
-<target>Aufklärungspunkte (künftig: debrief, scan)</target></trans-unit>
 <trans-unit id="sf0e061c32c8434b2">
   <source>Syntax</source>
 <target>Syntax</target></trans-unit>
@@ -19740,16 +19657,9 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1b7d237aa76adc0f">
   <source>Building readiness level</source>
 <target>Bereitschaftsgrad des Gebäudes</target></trans-unit>
-<trans-unit id="s79f6c103fead35db">
-  <source>Browse 12 topics covering every game system in metaverse.center.</source>
-<target>Browse 12 topics covering every game system in metaverse.center.</target>
-</trans-unit>
 <trans-unit id="s9fa4646fa9d94d20">
   <source>Classified Archive</source>
 <target>Geheimarchiv</target></trans-unit>
-<trans-unit id="s7020dfc239a936e6">
-  <source>12 topics covering every system. Pick a dossier.</source>
-<target>12 Themen zu jedem Spielsystem. Wähle ein Dossier.</target></trans-unit>
 <trans-unit id="sad7f341e83db62be">
   <source>Search topics, mechanics, systems...</source>
 <target>Themen, Mechaniken, Systeme durchsuchen...</target></trans-unit>
@@ -19787,12 +19697,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s8976ee7bafa569e2">
   <source>"How does X work?"</source>
 <target>"Wie funktioniert X?"</target></trans-unit>
-<trans-unit id="sc24d0318c9d3205a">
-  <source>12 topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.</source>
-<target>12 Themenseiten zu jedem System: Agenten, Ereignisse, Epochen, Operative, Wertung, Allianzen und mehr.</target></trans-unit>
-<trans-unit id="sf3168b583ad684fe">
-  <source>12 topics</source>
-<target>12 Themen</target></trans-unit>
 <trans-unit id="see9458595f3aa8a5">
   <source>"I want to win"</source>
 <target>"Ich will gewinnen"</target></trans-unit>
@@ -20102,17 +20006,9 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>The workflow is: Fetch → Transform → Integrate. First, browse or search real-world articles. Then, select an article and transform it – the AI rewrites the story through your simulation’s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.</source>
 <target>The workflow is: Fetch → Transform → Integrate. First, browse or search real-world articles. Then, select an article and transform it – the AI rewrites the story through your simulation’s lens, matching its theme, tone, and internal logic. Finally, integrate the transformed content as a new simulation event, optionally linking it to a campaign.</target>
 </trans-unit>
-<trans-unit id="safc62b15838ed672">
-  <source>Campaigns group related events into thematic narratives – a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.</source>
-<target>Campaigns group related events into thematic narratives – a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The campaign dashboard shows an overview of all active campaigns with performance analytics.</target>
-</trans-unit>
 <trans-unit id="sdf8a1a4056757bd7">
   <source>The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket – no page refresh needed.</source>
 <target>The COMMS sidebar on the Epoch Operations Board provides real-time communication during competitive play. Two channels are available: ALL CHANNELS broadcasts to every participant, while TEAM FREQ is restricted to your alliance members. Messages update in real time via WebSocket – no page refresh needed.</target>
-</trans-unit>
-<trans-unit id="s5fa6afb1af1b0ea0">
-  <source>The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you’ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves – no waiting for the timer.</source>
-<target>The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you’ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves – no waiting for the timer.</target>
 </trans-unit>
 <trans-unit id="sd1b3f2a3344bf870">
   <source>Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players – use TEAM FREQ for sensitive coordination.</source>
@@ -20122,23 +20018,9 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences – opt out anytime in Settings.</source>
 <target>After each cycle resolves, all participants receive a tactical briefing email. The email is bilingual (EN/DE), fog-of-war compliant (you only see your own operations), and includes your current rank, score gaps, mission outcomes, spy intel summaries, threat assessments, and a preview of the next cycle phase. Emails respect notification preferences – opt out anytime in Settings.</target>
 </trans-unit>
-<trans-unit id="sfe5772856441bb42">
-  <source>30 across 4 tiers</source>
-<target>30 auf 4 Stufen</target></trans-unit>
 <trans-unit id="sff82f765b81eb6e2">
   <source>Tier 4: Epoch Operations</source>
 <target>Stufe 4: Epochen-Operationen</target></trans-unit>
-<trans-unit id="s6bda96980b504e05">
-  <source>Unlocks at 50 total commands during an active epoch. The terminal becomes a tactical command center connected to the epoch war effort. Eight commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), intercept (counter-intelligence sweep), deploy (operative deployment), ally (alliance proposals), broadcast (public messaging), and encrypt (private messaging).</source>
-<target>Unlocks at 50 total commands during an active epoch. The terminal becomes a tactical command center connected to the epoch war effort. Eight commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), intercept (counter-intelligence sweep), deploy (operative deployment), ally (alliance proposals), broadcast (public messaging), and encrypt (private messaging).</target>
-</trans-unit>
-<trans-unit id="sa74b47dc45e7ee7e">
-  <source>Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Deploy, ally, broadcast, and encrypt redirect to their respective epoch interface tabs for execution.</source>
-<target>Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Deploy, ally, broadcast, and encrypt redirect to their respective epoch interface tabs for execution.</target>
-</trans-unit>
-<trans-unit id="scbef5cea988c6c04">
-  <source>After 50 commands + active epoch</source>
-<target>Nach 50 Befehlen + aktiver Epoche</target></trans-unit>
 <trans-unit id="sc0ac850139a85172">
   <source>sitrep</source>
 <target>Lagebericht</target></trans-unit>
@@ -20543,10 +20425,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Animated breakdown bars for all five scoring dimensions with per-participant breakdowns. See exactly where each player dominated and where they were vulnerable. All animations respect prefers-reduced-motion.</source>
 <target>Animated breakdown bars for all five scoring dimensions with per-participant breakdowns. See exactly where each player dominated and where they were vulnerable. All animations respect prefers-reduced-motion.</target>
 </trans-unit>
-<trans-unit id="s1ec914c9c4b31ebc">
-  <source>Text-based command interface: 30 commands across 4 tiers, CRT aesthetic.</source>
-<target>Text-based command interface: 30 commands across 4 tiers, CRT aesthetic.</target>
-</trans-unit>
 <trans-unit id="sb7a2c1e1d09937d1">
   <source>Type commands instead of clicking dashboards – local perspective, zone-limited view</source>
 <target>Type commands instead of clicking dashboards – local perspective, zone-limited view</target>
@@ -20554,14 +20432,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s37f4b78fc6fdfe21">
   <source>Tier 1 (Observation): look, go, examine, talk, status, map, where, weather, help</source>
 <target>Tier 1 (Observation): look, go, examine, talk, status, map, where, weather, help</target>
-</trans-unit>
-<trans-unit id="sd0813a3688810550">
-  <source>Tier 2 (Field Ops, 10 cmds): fortify, quarantine, assign – costs Operations Points</source>
-<target>Tier 2 (Field Ops, 10 cmds): fortify, quarantine, assign – costs Operations Points</target>
-</trans-unit>
-<trans-unit id="s4e72fba776f3e093">
-  <source>Tier 3 (Intel, 25 cmds): scan, investigate, debrief, ask – costs Intel Points</source>
-<target>Tier 3 (Intel, 25 cmds): scan, investigate, debrief, ask – costs Intel Points</target>
 </trans-unit>
 <trans-unit id="s1c36c940deeb6af6">
   <source>The Bureau Terminal</source>
@@ -20856,10 +20726,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Loot grants permanent aptitude boosts (+2 cap per agent), memories, and moodlets</source>
   <target>Loot gewährt permanente Eignungs-Verstärkungen (+2 pro Agent), Erinnerungen und Moodlets</target>
 </trans-unit>
-<trans-unit id="s8d58495b9fe8cc2f">
-  <source>Party of up to 4 agents – condition tracks from Operational to Afflicted</source>
-  <target>Trupp aus bis zu 4 Agenten – Zustandsverlauf von Einsatzbereit bis Gezeichnet</target>
-</trans-unit>
 <trans-unit id="se3b49d0981fdd534">
   <source>Resonance Dungeons transform substrate resonances into explorable procedural dungeons. When a resonance event occurs in your simulation, it may open a dungeon tied to that resonance archetype. Each dungeon is a branching node graph – inspired by FTL – where your agents explore rooms, face encounters, and fight enemies shaped by the resonance that spawned the dungeon.</source>
   <target>Resonanz-Dungeons verwandeln Substrat-Resonanzen in erkundbare prozedurale Dungeons. Wenn ein Resonanz-Ereignis in deiner Simulation auftritt, kann es einen Dungeon öffnen, der an diesen Resonanz-Archetyp gebunden ist. Jeder Dungeon ist ein verzweigter Knotengraph – inspiriert von FTL – in dem deine Agenten Räume erkunden, Begegnungen meistern und Feinde bekämpfen, die von der Resonanz geformt wurden, die den Dungeon hervorgebracht hat.</target>
@@ -20867,10 +20733,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s5faafe27ccab3e70">
   <source>How to Enter</source>
   <target>Wie man eintritt</target>
-</trans-unit>
-<trans-unit id="s87952dfc1bdf32a1">
-  <source>Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (up to 4 agents). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.</source>
-  <target>Navigiere zum Terminal-Tab und tippe "dungeon" um verfügbare Dungeons zu sehen. Wähle einen Archetyp und stelle deinen Trupp zusammen (bis zu 4 Agenten). Der Dungeon startet im Terminal mit einem U-Boot-Kriegsraum-HUD, das die Karte, den Trupp-Status und die Kampfoberfläche anzeigt.</target>
 </trans-unit>
 <trans-unit id="sa4987bcc42ad38a3">
   <source>Gameplay flows through room exploration: move between connected nodes on the dungeon map, each containing encounters, treasure, rest points, or the final boss. Encounters range from skill checks (using agent aptitudes and personality) to full combat sequences. Rooms you have visited are marked; rooms ahead show threat indicators based on scouting.</source>
@@ -24039,11 +23901,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s91cbc43a189c83cb">
   <source>Phase-based combat: 60-second planning phase, then simultaneous resolution</source>
         <target>Phasenbasierter Kampf: 60 Sekunden Planungsphase, dann simultane Auflösung</target>
-      
-</trans-unit>
-<trans-unit id="sdcd33fc3df6d6f39">
-  <source>Combat is phase-based. During the 60-second planning phase, assign abilities from 6 schools (one per operative type) to your agents. Then the round resolves simultaneously – your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.</source>
-        <target>Der Kampf ist phasenbasiert. In den 60 Sekunden der Planungsphase weist du Fähigkeiten aus 6 Schulen (eine pro Operativtyp) deinen Agenten zu. Danach löst sich die Runde simultan auf – deine Agenten und die Feinde handeln zur gleichen Zeit. Agenten haben Zustandsleisten (Einsatzbereit, Gestresst, Verwundet, Beeinträchtigt) und sammeln Stress an. Wird die ganze Gruppe besiegt, ist der Run gelöscht, und die Agenten tragen Trauma-Folgen davon.</target>
       
 </trans-unit>
 <trans-unit id="se0864df4939d8b29">
@@ -29213,6 +29070,588 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Rally the faction (Overthrow only)</source>
   <target>Die Fraktion sammeln (nur im Umsturz)</target>
 </trans-unit>
+<trans-unit id="s4d839249a58d5870">
+  <source>Influence weak</source>
+  <target>Einfluss schwach</target></trans-unit>
+<trans-unit id="sbff2c3dd73b7c29f">
+  <source>Influence average</source>
+  <target>Einfluss mittel</target></trans-unit>
+<trans-unit id="s3a0c894e1d4df69f">
+  <source>Influence strong</source>
+  <target>Einfluss stark</target></trans-unit>
+<trans-unit id="sd5a185a1dad6b844">
+  <source>How much weight this agent carries in the buildings they are assigned to. It feeds one of the four readiness factors.</source>
+  <target>Wie viel Gewicht dieser Agent in den Bauten hat, denen er zugewiesen ist. Er speist einen der vier Bereitschaftsfaktoren.</target></trans-unit>
+<trans-unit id="s8159cb050d45790f">
+  <source>Their five strongest relationships count <x id="0" equiv-text="${INFLUENCE_FORMULA.relationsPct}"/>, their professional qualification <x id="1" equiv-text="${INFLUENCE_FORMULA.professionsPct}"/>, and holding an ambassador post <x id="2" equiv-text="${INFLUENCE_FORMULA.ambassadorPct}"/>. Qualification runs from 1 to 5 but is scored out of 10, so professions contribute at most <x id="3" equiv-text="${INFLUENCE_FORMULA.professionsPct / 2}"/>.</source>
+  <target>Seine fünf stärksten Beziehungen zählen <x id="0" equiv-text="${INFLUENCE_FORMULA.relationsPct}"/>, seine berufliche Qualifikation <x id="1" equiv-text="${INFLUENCE_FORMULA.professionsPct}"/> und ein Botschafteramt <x id="2" equiv-text="${INFLUENCE_FORMULA.ambassadorPct}"/>. Die Qualifikation reicht von 1 bis 5, gewertet wird sie aber gegen 10 – Professionen steuern also höchstens <x id="3" equiv-text="${INFLUENCE_FORMULA.professionsPct / 2}"/> bei.</target></trans-unit>
+<trans-unit id="s97ea4895a76d8653">
+  <source>Relationships are the part that moves. Without an ambassador post the score stops at <x id="0" equiv-text="${INFLUENCE_FORMULA.ceilingWithoutAmbassadorPct}"/> percent, which is exactly where the STRONG tier begins.</source>
+  <target>Die Beziehungen sind der bewegliche Teil. Ohne Botschafteramt endet der Wert bei <x id="0" equiv-text="${INFLUENCE_FORMULA.ceilingWithoutAmbassadorPct}"/> Prozent – genau dort, wo die Stufe STARK beginnt.</target></trans-unit>
+<trans-unit id="s28913a700ae26f3f">
+  <source>How much of what this building could do it actually does. Its zone reads this number as infrastructure.</source>
+  <target>Wie viel von dem, was dieser Bau könnte, er tatsächlich leistet. Seine Zone liest diese Zahl als Infrastruktur.</target></trans-unit>
+<trans-unit id="safd6f5ad3fafcaec">
+  <source>Four factors multiply: staffing, how well the assigned professions match, the building condition, and the average influence of the agents inside. The bar below marks the weakest one.</source>
+  <target>Vier Faktoren multiplizieren sich: die Besetzung, wie gut die zugewiesenen Professionen passen, der Zustand des Baus und der mittlere Einfluss der Agenten darin. Der Balken darunter markiert den schwächsten.</target></trans-unit>
+<trans-unit id="s9cf3f4f5543f0dd0">
+  <source>How heavily this building counts towards its zone's infrastructure.</source>
+  <target>Wie schwer dieser Bau für die Infrastruktur seiner Zone zählt.</target></trans-unit>
+<trans-unit id="sd6190b0e5c6919e1">
+  <source>Weights run from <x id="0" equiv-text="${READINESS_FORMULA.criticalityMin}"/> to <x id="1" equiv-text="${READINESS_FORMULA.criticalityMax}"/>. A building at <x id="2" equiv-text="${READINESS_FORMULA.criticalityMax}"/> pulls the zone's infrastructure score twice as hard as one at 1.</source>
+  <target>Die Gewichte reichen von <x id="0" equiv-text="${READINESS_FORMULA.criticalityMin}"/> bis <x id="1" equiv-text="${READINESS_FORMULA.criticalityMax}"/>. Ein Bau auf <x id="2" equiv-text="${READINESS_FORMULA.criticalityMax}"/> zieht am Infrastrukturwert der Zone doppelt so stark wie einer auf 1.</target></trans-unit>
+<trans-unit id="s241aea8c7ffdc0a9">
+  <source>Repair readiness in high-criticality buildings first. The same percentage point is worth up to four times more there than in the lightest building.</source>
+  <target>Repariere zuerst die Bereitschaft der kritischsten Bauten. Derselbe Prozentpunkt wiegt dort bis zu viermal so schwer wie im leichtesten Bau.</target></trans-unit>
+<trans-unit id="scbc2ac88165790e4">
+  <source>Your hold on yourself out here. It starts at 100 and only falls.</source>
+  <target>Dein Halt an dir selbst hier draußen. Beginnt bei 100 und fällt nur.</target></trans-unit>
+<trans-unit id="sc5b1bf8d0a1080dc">
+  <source>Deep Drift erodes it, emergency moves cost it outright, and Dissonanz past its threshold bleeds it every crossing.</source>
+  <target>Der Tiefe Drift trägt ihn ab, Notmanöver kosten ihn unmittelbar, und Dissonanz über ihrer Schwelle blutet ihn bei jeder Überfahrt aus.</target></trans-unit>
+<trans-unit id="sff18a7f1c20f0911">
+  <source>At 0 the run collapses and the haul is lost. Turn for home while you still have crossings left, or discharge cargo to cut the pressure that is draining it.</source>
+  <target>Bei 0 bricht der Lauf zusammen und die Fracht ist verloren. Kehr um, solange dir noch Überfahrten bleiben, oder entlade Fracht, um den Druck zu senken, der ihn leert.</target></trans-unit>
+<trans-unit id="sdb050dc26ef21aea">
+  <source>Movement fuel. Every crossing spends some.</source>
+  <target>Der Treibstoff der Bewegung. Jede Überfahrt zehrt daran.</target></trans-unit>
+<trans-unit id="s094c13c74a47fbc1">
+  <source>It is set when the run begins and is not replenished out here.</source>
+  <target>Er wird beim Aufbruch festgelegt und hier draußen nicht wieder aufgefüllt.</target></trans-unit>
+<trans-unit id="s48b6f722f3a5e533">
+  <source>At 0 you can still move on Notfrequenz, but each crossing then costs Kohärenz instead. Plan the way back before it runs out, not after.</source>
+  <target>Bei 0 kannst du auf Notfrequenz weiterfahren, doch jede Überfahrt kostet dann Kohärenz. Plane den Rückweg, bevor er zur Neige geht, nicht danach.</target></trans-unit>
+<trans-unit id="s60f4fc217f1e1604">
+  <source>The Drift's pressure on you.</source>
+  <target>Der Druck, den der Drift auf dich ausübt.</target></trans-unit>
+<trans-unit id="s182bc23cda148d6a">
+  <source>It rises the deeper and the longer you travel, and it does not fall on its own.</source>
+  <target>Er steigt, je tiefer und je länger du reist, und fällt von allein nicht wieder.</target></trans-unit>
+<trans-unit id="sfd91c2be23b2150f">
+  <source>Past its threshold it starts bleeding Kohärenz on every crossing. Discharging cargo and heading for shallower nodes are the two things that hold it down.</source>
+  <target>Über seiner Schwelle beginnt er, bei jeder Überfahrt Kohärenz auszubluten. Fracht entladen und flachere Knoten ansteuern sind die beiden Dinge, die ihn niederhalten.</target></trans-unit>
+<trans-unit id="s6a76cc8f9992d06b">
+  <source>World health</source>
+  <target>Weltgesundheit</target></trans-unit>
+<trans-unit id="s389e20f3b864137e">
+  <source>One number for the whole world, made of three parts: how stable its zones are, how ready its buildings are, and how far its diplomacy reaches.</source>
+  <target>Eine Zahl für die ganze Welt, aus drei Teilen: wie stabil ihre Zonen sind, wie einsatzbereit ihre Bauten und wie weit ihre Diplomatie reicht.</target></trans-unit>
+<trans-unit id="s4c2f3064142cfbd1">
+  <source>Zone stability counts <x id="0" equiv-text="${HEALTH_FORMULA.stabilityPct}"/>, building readiness <x id="1" equiv-text="${HEALTH_FORMULA.readinessPct}"/> and diplomacy <x id="2" equiv-text="${HEALTH_FORMULA.diplomacyPct}"/>, on top of a base of <x id="3" equiv-text="${HEALTH_FORMULA.baselinePct}"/>. Diplomacy counts in full once the combined effectiveness of the active embassies reaches <x id="4" equiv-text="${HEALTH_FORMULA.diplomacyFullAt}"/>.</source>
+  <target>Die Zonenstabilität zählt <x id="0" equiv-text="${HEALTH_FORMULA.stabilityPct}"/>, die Gebäudebereitschaft <x id="1" equiv-text="${HEALTH_FORMULA.readinessPct}"/> und die Diplomatie <x id="2" equiv-text="${HEALTH_FORMULA.diplomacyPct}"/>, auf einem Sockel von <x id="3" equiv-text="${HEALTH_FORMULA.baselinePct}"/>. Die Diplomatie zählt voll, sobald die zusammengenommene Wirksamkeit der aktiven Botschaften <x id="4" equiv-text="${HEALTH_FORMULA.diplomacyFullAt}"/> erreicht.</target></trans-unit>
+<trans-unit id="sf0788ec785d371dc">
+  <source>Zone stability moves this number fastest. Without a single active embassy the score stops at <x id="0" equiv-text="${HEALTH_FORMULA.ceilingWithoutEmbassyPct}"/> percent, so an embassy is the only way past that.</source>
+  <target>Die Zonenstabilität bewegt diese Zahl am schnellsten. Ohne eine einzige aktive Botschaft endet der Wert bei <x id="0" equiv-text="${HEALTH_FORMULA.ceilingWithoutEmbassyPct}"/> Prozent – eine Botschaft ist der einzige Weg darüber hinaus.</target></trans-unit>
+<trans-unit id="se216e85401dbd178">
+  <source>How well one zone holds together. It decides how often events strike there.</source>
+  <target>Wie gut eine Zone zusammenhält. Sie entscheidet, wie oft Ereignisse dort einschlagen.</target></trans-unit>
+<trans-unit id="s0085d2ba09ee8523">
+  <source>Infrastructure counts <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.infrastructurePct}"/>, the security level <x id="1" equiv-text="${ZONE_STABILITY_FORMULA.securityPct}"/>, and every point of pressure subtracts <x id="2" equiv-text="${ZONE_STABILITY_FORMULA.pressurePct}"/>. Infrastructure is the readiness of the zone's buildings, weighted by how critical each one is.</source>
+  <target>Die Infrastruktur zählt <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.infrastructurePct}"/>, die Sicherheitsstufe <x id="1" equiv-text="${ZONE_STABILITY_FORMULA.securityPct}"/>, und jeder Punkt Druck zieht <x id="2" equiv-text="${ZONE_STABILITY_FORMULA.pressurePct}"/> ab. Die Infrastruktur ist die Bereitschaft der Bauten dieser Zone, gewichtet danach, wie kritisch jeder einzelne ist.</target></trans-unit>
+<trans-unit id="s1f954e80e09460f9">
+  <source>Raise readiness in the zone's most critical buildings, or fortify to cut pressure. The scale stops at <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.ceilingPct}"/> percent, because <x id="1" equiv-text="${ZONE_STABILITY_FORMULA.infrastructurePct}"/> plus <x id="2" equiv-text="${ZONE_STABILITY_FORMULA.securityPct}"/> is all there is.</source>
+  <target>Hebe die Bereitschaft der kritischsten Bauten der Zone, oder befestige sie, um Druck zu nehmen. Die Skala endet bei <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.ceilingPct}"/> Prozent, weil <x id="1" equiv-text="${ZONE_STABILITY_FORMULA.infrastructurePct}"/> plus <x id="2" equiv-text="${ZONE_STABILITY_FORMULA.securityPct}"/> alles ist, was es gibt.</target></trans-unit>
+<trans-unit id="sdbe498c2aa33d102">
+  <source>Zone pressure</source>
+  <target>Zonendruck</target></trans-unit>
+<trans-unit id="sd4430c7d06663db5">
+  <source>What pushes against a zone: the events aimed at it, plus a share of every other event in the world.</source>
+  <target>Was gegen eine Zone drückt: die Ereignisse, die auf sie zielen, plus ein Anteil jedes anderen Ereignisses der Welt.</target></trans-unit>
+<trans-unit id="s82f43157de716c43">
+  <source>Targeted pressure comes from events linked to this zone, weighted by impact and status. Ambient pressure is the spill from unlinked events, 30 percent by default. Fortification subtracts from the total.</source>
+  <target>Der gerichtete Druck stammt aus Ereignissen, die mit dieser Zone verknüpft sind, gewichtet nach Wirkung und Status. Der Umgebungsdruck ist der Überlauf aus unverknüpften Ereignissen, standardmäßig 30 Prozent. Befestigung zieht von der Summe ab.</target></trans-unit>
+<trans-unit id="s9e19bba2136f3de4">
+  <source>Fortify or quarantine the zone to subtract pressure for a few days. Resolving the events themselves removes it for good.</source>
+  <target>Befestige oder isoliere die Zone, um für einige Tage Druck abzuziehen. Die Ereignisse selbst aufzulösen nimmt ihn dauerhaft.</target></trans-unit>
+<trans-unit id="s148086e9188e3d75">
+  <source>Building readiness</source>
+  <target>Gebäudebereitschaft</target></trans-unit>
+<trans-unit id="sedb19566abe667a9">
+  <source>How much of what a building could do it actually does, averaged over the world.</source>
+  <target>Wie viel von dem, was ein Bau könnte, er tatsächlich leistet – über die ganze Welt gemittelt.</target></trans-unit>
+<trans-unit id="sace5d696a6973347">
+  <source>Four factors multiply: staffing, how well the assigned professions match, the building condition, and the average influence of the agents inside. The weakest of the four is the bottleneck.</source>
+  <target>Vier Faktoren multiplizieren sich: die Besetzung, wie gut die zugewiesenen Professionen passen, der Zustand des Baus und der mittlere Einfluss der Agenten darin. Der schwächste der vier ist der Engpass.</target></trans-unit>
+<trans-unit id="s299006cd8baa8333">
+  <source>Work on the marked bottleneck. The other three cannot make up for it, because the factors multiply instead of adding. The highest value measured so far is <x id="0" equiv-text="${READINESS_FORMULA.observedCeilingPct}"/> percent.</source>
+  <target>Arbeite am markierten Engpass. Die anderen drei können ihn nicht ausgleichen, weil die Faktoren sich multiplizieren statt zu addieren. Der höchste je gemessene Wert liegt bei <x id="0" equiv-text="${READINESS_FORMULA.observedCeilingPct}"/> Prozent.</target></trans-unit>
+<trans-unit id="scb911a0ebe1333a0">
+  <source>Diplomatic reach</source>
+  <target>Diplomatische Reichweite</target></trans-unit>
+<trans-unit id="se5f484cc557d78c1">
+  <source>The summed effectiveness of every active embassy this world holds.</source>
+  <target>Die summierte Wirksamkeit aller aktiven Botschaften dieser Welt.</target></trans-unit>
+<trans-unit id="s2141f50a6ee6d6a0">
+  <source>Each embassy contributes its own effectiveness. Two embassies at half strength reach as far as one at full strength.</source>
+  <target>Jede Botschaft steuert ihre eigene Wirksamkeit bei. Zwei Botschaften halber Stärke reichen so weit wie eine volle.</target></trans-unit>
+<trans-unit id="s60e6b1f116afd04c">
+  <source>Found another embassy, or improve one you have. At a reach of <x id="0" equiv-text="${HEALTH_FORMULA.diplomacyFullAt}"/> the diplomacy share of world health is full and anything beyond it adds nothing.</source>
+  <target>Gründe eine weitere Botschaft, oder verbessere eine bestehende. Bei einer Reichweite von <x id="0" equiv-text="${HEALTH_FORMULA.diplomacyFullAt}"/> ist der diplomatische Anteil an der Weltgesundheit voll, und alles darüber bringt nichts mehr.</target></trans-unit>
+<trans-unit id="sc9b84315098899e7">
+  <source>How well one embassy actually works, averaged over the active ones.</source>
+  <target>Wie gut eine einzelne Botschaft tatsächlich arbeitet – über die aktiven gemittelt.</target></trans-unit>
+<trans-unit id="s3336a4e940f3f639">
+  <source>The readiness of the two embassy buildings counts <x id="0" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.buildingHealthPct}"/>, the two ambassadors <x id="1" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.ambassadorPct}"/>, and the bleed vector <x id="2" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct}"/>.</source>
+  <target>Die Bereitschaft der beiden Botschaftsgebäude zählt <x id="0" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.buildingHealthPct}"/>, die beiden Botschafter <x id="1" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.ambassadorPct}"/> und der Bleed-Vektor <x id="2" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct}"/>.</target></trans-unit>
+<trans-unit id="s1581d59be2050b80">
+  <source>The vector is all or nothing: it either matches one the connection carries, or it scores zero. Checking it is worth <x id="0" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct}"/> points in one step, more than any repair.</source>
+  <target>Der Vektor gilt ganz oder gar nicht: Er trifft einen, den die Verbindung führt, oder er zählt null. Ihn zu prüfen ist <x id="0" equiv-text="${EMBASSY_EFFECTIVENESS_FORMULA.vectorPct}"/> Punkte in einem Schritt wert – mehr als jede Reparatur.</target></trans-unit>
+<trans-unit id="s0f8e0087a962587a">
+  <source>Browse <x id="0" equiv-text="${visibleTopics(TOPIC_FLAGS()).length}"/> topics covering every game system in metaverse.center.</source>
+  <target>Durchstöbere <x id="0" equiv-text="${visibleTopics(TOPIC_FLAGS()).length}"/> Themen zu jedem Spielsystem in metaverse.center.</target></trans-unit>
+<trans-unit id="s94060c18e8da69d5">
+  <source><x id="0" equiv-text="${visibleTopics(TOPIC_FLAGS()).length}"/> topics covering every system. Pick a dossier.</source>
+  <target><x id="0" equiv-text="${visibleTopics(TOPIC_FLAGS()).length}"/> Themen zu jedem System. Wähle eine Akte.</target></trans-unit>
+<trans-unit id="s7dacef224d5f70c3">
+  <source><x id="0" equiv-text="${topicCount}"/> topic pages covering every system: agents, events, epochs, operatives, scoring, alliances, and more.</source>
+  <target><x id="0" equiv-text="${topicCount}"/> Themenseiten zu jedem System: Agenten, Ereignisse, Epochen, Operative, Wertung, Bündnisse und mehr.</target></trans-unit>
+<trans-unit id="s957d2c77867267e7">
+  <source><x id="0" equiv-text="${topicCount}"/> topics</source>
+  <target><x id="0" equiv-text="${topicCount}"/> Themen</target></trans-unit>
+<trans-unit id="sdef2e7cbc5bf5e80">
+  <source>Measured on <x id="0" equiv-text="${date}"/>. <x id="1" equiv-text="${releasesSince}"/> releases have shipped since, and the run has not been repeated. Read these as the shape of the balance, not as today's numbers.</source>
+  <target>Gemessen am <x id="0" equiv-text="${date}"/>. Seither sind <x id="1" equiv-text="${releasesSince}"/> Auslieferungen erschienen, und der Lauf wurde nicht wiederholt. Lies das als die Form des Gleichgewichts, nicht als die Zahlen von heute.</target></trans-unit>
+<trans-unit id="s3f6055f3178d3c31">
+  <source>All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis.</source>
+  <target>Alle Analysedaten geben den Stand v2.1 wieder (188 gültige Partien aus 200 simulierten). Die Balance-Änderungen zu v2.2 oben stützen sich auf diese Auswertung.</target></trans-unit>
+<trans-unit id="s0cd097d8fbee7e0f">
+  <source>Campaigns group related events into thematic narratives – a propaganda initiative, an influence operation, or a social movement. Each campaign tracks engagement metrics and links back to its source events. The mechanic exists on the server; there is no campaign surface in the interface yet, so nothing here can be created or browsed from the client.</source>
+  <target>Kampagnen bündeln zusammengehörige Ereignisse zu thematischen Erzählungen – eine Propagandainitiative, eine Einflussoperation, eine soziale Bewegung. Jede Kampagne führt Kennzahlen zur Beteiligung und verweist auf ihre Ursprungsereignisse zurück. Die Mechanik besteht auf dem Server; eine Kampagnenfläche in der Oberfläche gibt es noch nicht, hier lässt sich also nichts anlegen und nichts durchsehen.</target></trans-unit>
+<trans-unit id="s06d1b93a181929f5">
+  <source>Server-side only – no interface yet</source>
+  <target>Nur serverseitig – noch keine Oberfläche</target></trans-unit>
+<trans-unit id="se85ecc515c22df5d">
+  <source>The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you’ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves early – unless the epoch sets a minimum cycle length, which acts as a floor even when everyone is ready.</source>
+  <target>Die Präsenzanzeige zeigt mit einem grünen Punkt, wer gerade online ist. Über das Bereitschaftssignal meldest du, dass deine Handlungen für diesen Zyklus abgeschlossen sind. Sind alle menschlichen Teilnehmer bereit, löst der Zyklus früher auf – es sei denn, die Epoche setzt eine Mindestdauer, die auch dann als Boden gilt, wenn alle bereit sind.</target></trans-unit>
+<trans-unit id="seec722cb18582914">
+  <source>32 across 4 tiers</source>
+  <target>32 auf 4 Stufen</target></trans-unit>
+<trans-unit id="sd1dbe2fb1821dd3d">
+  <source>Granted for the duration of an active epoch – there is no command count to reach. The terminal becomes a tactical command center connected to the epoch war effort. Four commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), and intercept (counter-intelligence sweep). Deployment, alliances, broadcasts and encrypted messages are not terminal commands – they live in the epoch interface tabs.</source>
+  <target>Gilt für die Dauer einer laufenden Epoche – es gibt keine Befehlszahl, die man erreichen müsste. Das Terminal wird zur taktischen Leitstelle, angeschlossen an das Kriegsgeschehen der Epoche. Vier Befehle schlagen die Brücke zur Epochenoberfläche: sitrep (KI-Lagebericht), dossier (Erkenntnisakte über einen Gegner), threats (Erkennung eingehender Operativer) und intercept (Abwehrsuche). Einsatz, Bündnisse, Rundrufe und verschlüsselte Nachrichten sind keine Terminalbefehle – sie leben in den Reitern der Epochenoberfläche.</target></trans-unit>
+<trans-unit id="s72739de70e94b696">
+  <source>Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Tier 4 lasts as long as the epoch does; when it ends, the terminal falls back to the tier you earned by using it.</source>
+  <target>Sitrep erzeugt eine KI-gestützte Lagebeurteilung zu Trends der Zonenstabilität, zur Tätigkeit der Operativen und zu empfohlenen Schwerpunkten. Dossier stellt Erkenntnisse über einen bestimmten Gegner zusammen: seine Einsatzgeschichte, seinen Punkteverlauf und seinen Bündnisstand. Intercept kostet 4 FP und wirkt wie eine Abwehrsuche vom Terminal aus. Stufe 4 hält so lange wie die Epoche; endet sie, fällt das Terminal auf die Stufe zurück, die du dir erspielt hast.</target></trans-unit>
+<trans-unit id="sf62debfe14c2a320">
+  <source>Active epoch – no command count</source>
+  <target>Laufende Epoche – keine Befehlszahl</target></trans-unit>
+<trans-unit id="s372f69efba0c4296">
+  <source>The Repair Pass</source>
+  <target>Die Sanierung</target></trans-unit>
+<trans-unit id="sb5d2452635a85d0b">
+  <source>A full review of every game system, and the repairs that came out of it</source>
+  <target>Eine vollständige Prüfung aller Spielsysteme und die Reparaturen, die daraus hervorgingen</target></trans-unit>
+<trans-unit id="s2bfff6703a46876f">
+  <source>Agents now remember their conversations and carry their mood into them</source>
+  <target>Agenten erinnern sich jetzt an ihre Gespräche und bringen ihre Stimmung mit hinein</target></trans-unit>
+<trans-unit id="sfe440910af87d849">
+  <source>Every metric in the interface says what it is, why it stands there, and what you can do</source>
+  <target>Jede Kennzahl der Oberfläche sagt, was sie ist, warum sie dort steht und was du tun kannst</target></trans-unit>
+<trans-unit id="s9dc1b23afd5fb170">
+  <source>Worlds &amp; Agents</source>
+  <target>Welten &amp; Agenten</target></trans-unit>
+<trans-unit id="s4f42176c7e56c00a">
+  <source>Agent chat reads memories and current mood instead of starting fresh every time</source>
+  <target>Der Agentenchat liest Erinnerungen und aktuelle Stimmung, statt jedes Mal bei null zu beginnen</target></trans-unit>
+<trans-unit id="s67b3cf920bfc01ea">
+  <source>Five different ways of writing an event existed; four of them triggered no consequences</source>
+  <target>Es gab fünf Wege, ein Ereignis zu schreiben; vier davon lösten keine Folgen aus</target></trans-unit>
+<trans-unit id="s06e9195018fedb07">
+  <source>Terminal clearance points were spent and never replenished</source>
+  <target>Terminal-Freigabepunkte wurden ausgegeben und nie aufgefüllt</target></trans-unit>
+<trans-unit id="s171cbe4cbc79511b">
+  <source>Agent influence is now computed by the server, so the card and the panel agree with the game</source>
+  <target>Den Agenteneinfluss rechnet jetzt der Server, damit Karte und Tafel mit dem Spiel übereinstimmen</target></trans-unit>
+<trans-unit id="s6426931027b6f250">
+  <source>Cloning an epoch kept the draft, the aptitudes, the inner life and the German title</source>
+  <target>Der Epochenklon behält den Draft, die Eignungen, das Innenleben und den deutschen Titel</target></trans-unit>
+<trans-unit id="sa71579d44551aed9">
+  <source>Explanations</source>
+  <target>Erklärungen</target></trans-unit>
+<trans-unit id="sa20c6e6a1c50717e">
+  <source>Nine metrics carry an explanation with three parts: what, why, and what to do</source>
+  <target>Neun Kennzahlen tragen eine Erklärung in drei Teilen: was, warum und was zu tun ist</target></trans-unit>
+<trans-unit id="sc254d04edc7bf544">
+  <source>Zone stability, world health and influence each state their reachable ceiling</source>
+  <target>Zonenstabilität, Weltgesundheit und Einfluss nennen jeweils ihre erreichbare Decke</target></trans-unit>
+<trans-unit id="s29e5a9e5076f7c6d">
+  <source>Tooltips no longer run off the edge of the window</source>
+  <target>Blasen laufen nicht mehr über den Fensterrand hinaus</target></trans-unit>
+<trans-unit id="s49e765aed0087b0e">
+  <source>Mail</source>
+  <target>Post</target></trans-unit>
+<trans-unit id="seae329a9cd14e709">
+  <source>The four account mails every user sees were still in the framework default design</source>
+  <target>Die vier Kontomails, die jeder Nutzer sieht, liefen noch im Standarddesign des Frameworks</target></trans-unit>
+<trans-unit id="s8aaee6dcba23d9c3">
+  <source>Signing up produced no message at all; there is a welcome now</source>
+  <target>Sich anzumelden erzeugte gar keine Nachricht; jetzt gibt es eine Begrüßung</target></trans-unit>
+<trans-unit id="s99d9ba593c51edd6">
+  <source>Deleting an account sends a confirmation and says which worlds outlive it</source>
+  <target>Eine Kontolöschung schickt eine Bestätigung und nennt, welche Welten sie überdauern</target></trans-unit>
+<trans-unit id="sec01a78e73990211">
+  <source>A reminder goes out before an epoch deadline, naming the actual penalty</source>
+  <target>Vor einer Epochenfrist geht eine Erinnerung heraus, die die tatsächliche Strafe benennt</target></trans-unit>
+<trans-unit id="s22f9111af4ad3196">
+  <source>DRIFT: Every Move Says Something</source>
+  <target>DRIFT: Jeder Zug sagt etwas</target></trans-unit>
+<trans-unit id="s20c59307ab12c72a">
+  <source>The economy of the Zwischenraum: dispatches and discharge finally pay</source>
+  <target>Die Ökonomie des Zwischenraums: Depeschen und Entladung zahlen endlich</target></trans-unit>
+<trans-unit id="se7f14add1f142b68">
+  <source>A collapse became a decision: the Havarie scene with its own consequences</source>
+  <target>Aus einem Zusammenbruch wurde eine Entscheidung: die Havarie-Szene mit eigenen Folgen</target></trans-unit>
+<trans-unit id="s6c33f565b2712a40">
+  <source>The signal engine gives each move an answer instead of a number</source>
+  <target>Das Signalwerk gibt jedem Zug eine Antwort statt einer Zahl</target></trans-unit>
+<trans-unit id="s6558a6111d798f7c">
+  <source>Economy &amp; Risk</source>
+  <target>Ökonomie &amp; Risiko</target></trans-unit>
+<trans-unit id="s7cbadc93c05c1ef9">
+  <source>Carrying dispatches and discharging them pay into an account you can read</source>
+  <target>Depeschen zu tragen und zu entladen zahlt auf ein Konto ein, das du einsehen kannst</target></trans-unit>
+<trans-unit id="s8d6e4d8a1ea24de3">
+  <source>Effect cards and the check surfaced in the HUD rather than hidden in the result</source>
+  <target>Wirkungskarten und die Probe stehen im HUD, statt im Ergebnis versteckt zu sein</target></trans-unit>
+<trans-unit id="sa8109c255a6f5a27">
+  <source>One move too far: probing, resonance rupture and the radio buoy</source>
+  <target>Ein Zug zu weit: Sondieren, Resonanzriss und die Funkboje</target></trans-unit>
+<trans-unit id="s3f9e5986fc95c5a7">
+  <source>A failure floor scatters cargo instead of ending the run</source>
+  <target>Ein Fehlschlagsboden streut die Fracht, statt den Lauf zu beenden</target></trans-unit>
+<trans-unit id="s3d3b4f88fa2273ee">
+  <source>Signals</source>
+  <target>Signale</target></trans-unit>
+<trans-unit id="s9a9d9b63c4153760">
+  <source>Signal scenes, marker stacks and a logbook that reads as a record</source>
+  <target>Signalszenen, Markerstapel und ein Logbuch, das sich wie ein Protokoll liest</target></trans-unit>
+<trans-unit id="s850b6297b577ffae">
+  <source>Signals authored as a content pack, not written into the engine</source>
+  <target>Signale als Inhaltspaket verfasst, nicht in das Werk hineingeschrieben</target></trans-unit>
+<trans-unit id="sf1a4b1f7351d4c58">
+  <source>The DRIFT core is released per platform by the operators</source>
+  <target>Der DRIFT-Kern wird je Plattform von den Betreibern freigegeben</target></trans-unit>
+<trans-unit id="s3b79f93442ac3a16">
+  <source>DRIFT &amp; The Graphical Dungeon</source>
+  <target>DRIFT &amp; der grafische Dungeon</target></trans-unit>
+<trans-unit id="s0c65ee5c47176119">
+  <source>DRIFT: travel through the Zwischenraum between worlds</source>
+  <target>DRIFT: Reisen durch den Zwischenraum zwischen den Welten</target></trans-unit>
+<trans-unit id="s7456c1cec7d29272">
+  <source>Resonance dungeons gained a graphical view alongside the terminal</source>
+  <target>Resonanzdungeons haben neben dem Terminal eine grafische Ansicht bekommen</target></trans-unit>
+<trans-unit id="s30656e686bb7d065">
+  <source>Both views show the same run; you can switch without losing anything</source>
+  <target>Beide Ansichten zeigen denselben Lauf; du kannst wechseln, ohne etwas zu verlieren</target></trans-unit>
+<trans-unit id="s0581e02442204ea4">
+  <source>DRIFT</source>
+  <target>DRIFT</target></trans-unit>
+<trans-unit id="s39451c071a9bd75f">
+  <source>Star chart, routes and a public read path: you can look before you join</source>
+  <target>Sternkarte, Routen und ein öffentlicher Leseweg: Du kannst hinsehen, bevor du beitrittst</target></trans-unit>
+<trans-unit id="sfee55c56fb646ef4">
+  <source>Dispatches delivered as a content pack</source>
+  <target>Depeschen als Inhaltspaket ausgeliefert</target></trans-unit>
+<trans-unit id="sec00def9beb07694">
+  <source>Its own help topic, gated the same way the navigation tab is</source>
+  <target>Ein eigenes Hilfethema, ebenso verriegelt wie der Reiter in der Navigation</target></trans-unit>
+<trans-unit id="sdbf315dfcc1862f0">
+  <source>Graphical Dungeon</source>
+  <target>Grafischer Dungeon</target></trans-unit>
+<trans-unit id="s86abe7e210fbd781">
+  <source>Populated scene with backdrop art, party and chamber</source>
+  <target>Bevölkerte Szene mit Hintergrundbild, Trupp und Kammer</target></trans-unit>
+<trans-unit id="sca7d488035756ea0">
+  <source>Combat effects: hit-stop, trauma shake, overshoot numbers</source>
+  <target>Kampfeffekte: Trefferstopp, Erschütterung, überschießende Zahlen</target></trans-unit>
+<trans-unit id="s65835dc9b4bb8e23">
+  <source>A persistent map rail instead of a modal you had to open</source>
+  <target>Eine ständige Kartenleiste statt eines Fensters, das man erst öffnen musste</target></trans-unit>
+<trans-unit id="s65562f5307aa4cf7">
+  <source>Agent picker with the same party-composition warning the terminal gives</source>
+  <target>Agentenwahl mit derselben Warnung zur Truppzusammensetzung, die auch das Terminal gibt</target></trans-unit>
+<trans-unit id="s8235e783debfff63">
+  <source>The Atlas</source>
+  <target>Der Atlas</target></trans-unit>
+<trans-unit id="sa0e5dd9ae70f6011">
+  <source>Every world got its own map, drawn from its zones, streets and buildings</source>
+  <target>Jede Welt hat ihre eigene Karte bekommen, gezeichnet aus ihren Zonen, Straßen und Bauten</target></trans-unit>
+<trans-unit id="sa432c33a2259bd28">
+  <source>Live overlays: event markers, agent roles, zone state</source>
+  <target>Lebende Überlagerungen: Ereignismarken, Agentenrollen, Zonenzustand</target></trans-unit>
+<trans-unit id="s8e52d560928c7bbe">
+  <source>Per-Simulation Map</source>
+  <target>Karte je Simulation</target></trans-unit>
+<trans-unit id="sa6a84cc8e4cd3be7">
+  <source>An OSM-style map generated per world instead of a shared schematic</source>
+  <target>Eine Karte im OSM-Stil, je Welt erzeugt, statt eines gemeinsamen Schemas</target></trans-unit>
+<trans-unit id="s027a108dd77f81e2">
+  <source>Event markers and live overlays on top of the geometry</source>
+  <target>Ereignismarken und lebende Überlagerungen über der Geometrie</target></trans-unit>
+<trans-unit id="sb1d08caed879c039">
+  <source>Marker tiers by zoom level and an agent-role tint</source>
+  <target>Markenstufen nach Zoomgrad und eine Einfärbung nach Agentenrolle</target></trans-unit>
+<trans-unit id="s8a6da711b3431840">
+  <source>Rendering overhaul: framing, colour, depth, marker de-confliction</source>
+  <target>Überarbeitung der Darstellung: Bildausschnitt, Farbe, Tiefe, Entzerrung der Marken</target></trans-unit>
+<trans-unit id="sa3856a11fa1b1c33">
+  <source>Journal, Bonds &amp; The Bureau</source>
+  <target>Journal, Bindungen &amp; das Bureau</target></trans-unit>
+<trans-unit id="s1fc67181eeb7ede3">
+  <source>The Resonance Journal: fragments, constellations and attunements</source>
+  <target>Das Resonanzjournal: Fragmente, Konstellationen und Attunements</target></trans-unit>
+<trans-unit id="se970e9d93474b8e7">
+  <source>Agent bonds: attention you pay to an agent deepens into whispers</source>
+  <target>Agentenbindungen: Aufmerksamkeit, die du einem Agenten schenkst, vertieft sich zu Flüstern</target></trans-unit>
+<trans-unit id="sdc51d61dc1a78175">
+  <source>Bureau Ops: budget, ledger and the operator surfaces behind them</source>
+  <target>Bureau Ops: Budget, Hauptbuch und die Betriebsflächen dahinter</target></trans-unit>
+<trans-unit id="s003b983253244f50">
+  <source>Resonance Journal</source>
+  <target>Resonanzjournal</target></trans-unit>
+<trans-unit id="sb20413f3ee13a26b">
+  <source>Fragments collected from five source systems, not authored by hand</source>
+  <target>Fragmente aus fünf Quellsystemen gesammelt, nicht von Hand verfasst</target></trans-unit>
+<trans-unit id="sc0c840fa111230e0">
+  <source>Constellations with a resonance detector and a revealed insight</source>
+  <target>Konstellationen mit einem Resonanzmesser und einer freigelegten Einsicht</target></trans-unit>
+<trans-unit id="s0d163dfaa6bf2ad8">
+  <source>Pair-level resonance and attunement unlocking on crystallisation</source>
+  <target>Resonanz auf Paarebene und ein Attunement, das beim Kristallisieren aufgeht</target></trans-unit>
+<trans-unit id="sd926f2545d58321b">
+  <source>Requires a platform release and its own model budget</source>
+  <target>Braucht eine Plattformfreigabe und ein eigenes Modellbudget</target></trans-unit>
+<trans-unit id="se13ae3ed16fc7af7">
+  <source>Bonds &amp; Chat</source>
+  <target>Bindungen &amp; Chat</target></trans-unit>
+<trans-unit id="s99c20dd8fc10d19a">
+  <source>Bond depth grows from attention and opens whispers at depth 2</source>
+  <target>Die Bindungstiefe wächst aus Aufmerksamkeit und öffnet bei Tiefe 2 das Flüstern</target></trans-unit>
+<trans-unit id="sb75e09c557533b51">
+  <source>Agent chat redesigned end to end</source>
+  <target>Der Agentenchat von Grund auf neu gestaltet</target></trans-unit>
+<trans-unit id="s5fb6e9606bd171de">
+  <source>Content &amp; Operations</source>
+  <target>Inhalte &amp; Betrieb</target></trans-unit>
+<trans-unit id="s0074a17d792abcbe">
+  <source>Dungeon content moved out of code into authored YAML packs</source>
+  <target>Dungeon-Inhalte sind aus dem Code in verfasste YAML-Pakete gewandert</target></trans-unit>
+<trans-unit id="s40faaee5fba2066a">
+  <source>Archetype pages, achievements and the Bureau Ops budget ledger</source>
+  <target>Archetypseiten, Auszeichnungen und das Budget-Hauptbuch von Bureau Ops</target></trans-unit>
+<trans-unit id="sf508ba93393e2014">
+  <source>Three archetypes playable in the terminal: the Chamber, the Tower, the Entropy</source>
+  <target>Drei Archetypen im Terminal spielbar: die Kammer, der Turm, die Entropie</target></trans-unit>
+<trans-unit id="s79c4685f3a48e559">
+  <source>Navigation with path labels, risk colours and depth indicators</source>
+  <target>Navigation mit Wegbeschriftungen, Risikofarben und Tiefenanzeigen</target></trans-unit>
+<trans-unit id="sf6d506fc6e93ce92">
+  <source>The Tower: structural failure as a mechanic, not a message</source>
+  <target>Der Turm: bauliches Versagen als Mechanik, nicht als Meldung</target></trans-unit>
+<trans-unit id="se2460fe70634bdb4">
+  <source>The Entropy: the third archetype</source>
+  <target>Die Entropie: der dritte Archetyp</target></trans-unit>
+<trans-unit id="se02567c1bb52727b">
+  <source>Navigation UX: path labels, risk colours, depth indicators</source>
+  <target>Bedienung der Navigation: Wegbeschriftungen, Risikofarben, Tiefenanzeigen</target></trans-unit>
+<trans-unit id="sf337380865baad4b">
+  <source>German text audit across the whole dungeon surface</source>
+  <target>Prüfung des deutschen Textes über die gesamte Dungeon-Oberfläche</target></trans-unit>
+<trans-unit id="s1596cd563f31e4d4">
+  <source>Fog of war with a simulation battery and the spy intel extension</source>
+  <target>Nebel des Krieges mit einer Simulationsbatterie und der Erweiterung um Spionageerkenntnisse</target></trans-unit>
+<trans-unit id="s61d127e43a9ac508">
+  <source>The deadline</source>
+  <target>Die Frist</target></trans-unit>
+<trans-unit id="scb044cad16af40f1">
+  <source>Every cycle has an end. By default it is 8 hours, adjustable per epoch between 15 minutes and 48. When it passes, the cycle resolves with whatever has been filed. It does not wait.</source>
+  <target>Jeder Zyklus hat ein Ende. Standardmäßig sind es 8 Stunden, je Epoche zwischen 15 Minuten und 48 Stunden einstellbar. Läuft sie ab, löst der Zyklus mit dem auf, was eingereicht wurde. Er wartet nicht.</target></trans-unit>
+<trans-unit id="sd3a853f63f45dcb0">
+  <source>Passing</source>
+  <target>Passen</target></trans-unit>
+<trans-unit id="s0c012080daa1e1db">
+  <source>Declaring ready with no orders is a legitimate move, not a forfeit. A cycle in which everyone is ready early does not resolve instantly: the deadline is pulled forward to the earliest legal moment instead, so a fast table cannot turn an eight-hour cycle into eight seconds.</source>
+  <target>Sich ohne Befehle bereit zu melden ist ein zulässiger Zug, kein Verzicht. Ein Zyklus, in dem früh alle bereit sind, löst nicht sofort auf: Stattdessen wird die Frist auf den frühesten zulässigen Zeitpunkt vorgezogen, damit ein schneller Tisch aus acht Stunden nicht acht Sekunden macht.</target></trans-unit>
+<trans-unit id="s94f1c7d9f6265d5a">
+  <source>Missing a cycle</source>
+  <target>Einen Zyklus versäumen</target></trans-unit>
+<trans-unit id="sc6db494a63057b97">
+  <source>Filing nothing at all is different from passing. Where the AFK penalty is switched on for the epoch, it costs 2 RP by default, and the reminder that goes out before the deadline names the actual figure for your epoch.</source>
+  <target>Gar nichts einzureichen ist etwas anderes als zu passen. Wo die AFK-Strafe für die Epoche eingeschaltet ist, kostet sie standardmäßig 2 FP, und die Erinnerung vor der Frist nennt den tatsächlichen Betrag deiner Epoche.</target></trans-unit>
+<trans-unit id="sab91e6a3bd90b757">
+  <source>The AI takeover</source>
+  <target>Die KI-Übernahme</target></trans-unit>
+<trans-unit id="sf7d32b45779957ed">
+  <source>After three consecutive missed cycles, an AI takes the seat and plays it for you. Which personality it uses is set by the epoch, sentinel by default. You get the seat back by filing orders again; the AI does not keep it.</source>
+  <target>Nach drei versäumten Zyklen in Folge übernimmt eine KI den Platz und spielt ihn für dich. Welche Persönlichkeit sie dabei benutzt, legt die Epoche fest, standardmäßig sentinel. Du bekommst den Platz zurück, indem du wieder Befehle einreichst; die KI hält ihn nicht fest.</target></trans-unit>
+<trans-unit id="sd7feaebe4cb8cac8">
+  <source>The warning</source>
+  <target>Die Vorwarnung</target></trans-unit>
+<trans-unit id="s0230d0f9d815e815">
+  <source>Two hours before a deadline, everyone who has not filed gets a mail naming the cycle, the time left and the exact penalty. Until this existed, the system deducted RP and handed over a seat with no notice at all.</source>
+  <target>Zwei Stunden vor einer Frist bekommt jeder, der noch nichts eingereicht hat, eine Mail mit dem Zyklus, der verbleibenden Zeit und der genauen Strafe. Bevor es sie gab, zog das System Forschungspunkte ab und übergab einen Platz – ohne jede Ankündigung.</target></trans-unit>
+<trans-unit id="seca4799f6cc896b2">
+  <source>Text-based command interface: 32 commands across 4 tiers, CRT aesthetic.</source>
+  <target>Textbasierte Befehlsoberfläche: 32 Befehle auf 4 Stufen, im Röhrenmonitor-Gewand.</target></trans-unit>
+<trans-unit id="sc28e1b42f7d83f48">
+  <source>Tier 2 (Field Ops, unlocks after 10 commands): fortify, quarantine, assign – costs Operations Points</source>
+  <target>Stufe 2 (Feldeinsatz, ab 10 Befehlen): fortify, quarantine, assign – kostet Einsatzpunkte</target></trans-unit>
+<trans-unit id="s17890125949f4a13">
+  <source>Tier 3 (Intel, unlocks after 25 commands): scan, investigate, debrief, ask – costs Intel Points</source>
+  <target>Stufe 3 (Aufklärung, ab 25 Befehlen): scan, investigate, debrief, ask – kostet Aufklärungspunkte</target></trans-unit>
+<trans-unit id="see8e568a34446f01">
+  <source>Tier 4 (Epoch Ops): sitrep, dossier, threats, intercept – granted during an active epoch</source>
+  <target>Stufe 4 (Epochenbetrieb): sitrep, dossier, threats, intercept – während einer laufenden Epoche gewährt</target></trans-unit>
+<trans-unit id="sa3a1ad79bf84c2be">
+  <source>Party of 2 to 4 agents – condition tracks from Operational to Afflicted</source>
+  <target>Trupp aus 2 bis 4 Agenten – Zustandsspuren von Einsatzfähig bis Zerrüttet</target></trans-unit>
+<trans-unit id="sb8fea5d9c2f15291">
+  <source>Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (2 to 4 agents – a single agent is refused). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.</source>
+  <target>Wechsle in den Terminal-Reiter und tippe „dungeon“, um die verfügbaren Dungeons zu sehen. Wähle einen Archetyp und stelle deinen Trupp zusammen (2 bis 4 Agenten – ein einzelner wird abgewiesen). Der Dungeon startet im Terminal mit einem Leitstand im Stil eines U-Boot-Gefechtsraums: Karte, Truppzustand und Kampfoberfläche.</target></trans-unit>
+<trans-unit id="s1cb23f02e784b7d4">
+  <source>Combat is phase-based. During the 60-second planning phase, assign abilities from 7 schools – one per operative type, plus a universal school every agent always has – to your agents. Then the round resolves simultaneously – your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.</source>
+  <target>Der Kampf läuft in Phasen. Während der 60-sekündigen Planungsphase weist du deinen Agenten Fertigkeiten aus 7 Schulen zu – eine je Operativtyp, dazu eine allgemeine Schule, die jeder Agent immer hat. Dann löst die Runde gleichzeitig auf: Deine Agenten und die Gegner handeln zur selben Zeit. Agenten haben Zustandsspuren (Einsatzfähig, Belastet, Verwundet, Zerrüttet) und sammeln Stress an. Wird der ganze Trupp bezwungen, ist der Lauf ausgelöscht und die Agenten tragen Traumafolgen davon.</target></trans-unit>
+<trans-unit id="sf3af128663d13f6a">
+  <source>Seven kinds of badge, and what each of them asks of you.</source>
+  <target>Sieben Arten von Abzeichen, und was jede von dir verlangt.</target></trans-unit>
+<trans-unit id="s566ee78a0beed177">
+  <source>Badges are awarded automatically; there is nothing to claim</source>
+  <target>Abzeichen werden von selbst verliehen; es gibt nichts einzufordern</target></trans-unit>
+<trans-unit id="sc4ed38564ce4ee93">
+  <source>Seven categories: initiation, dungeon, epoch, social, collection, challenge, secret</source>
+  <target>Sieben Kategorien: Initiation, Dungeon, Epoche, Sozial, Sammlung, Herausforderung, Geheim</target></trans-unit>
+<trans-unit id="sb955901e0823756d">
+  <source>Some track progress, so a partial attempt is not lost</source>
+  <target>Manche verzeichnen Fortschritt, ein halber Versuch geht also nicht verloren</target></trans-unit>
+<trans-unit id="s55b1841d83507979">
+  <source>The secret ones stay secret. They are not listed here and not hinted at</source>
+  <target>Die geheimen bleiben geheim. Sie stehen hier nicht und werden auch nicht angedeutet</target></trans-unit>
+<trans-unit id="s61d2b3b8b0fefc17">
+  <source>Commendations record what you have actually done, not what you have bought or unlocked. They are granted by the server when the condition is met, so there is no button to press and nothing to collect. If you meet a condition while offline, the badge is waiting when you return.</source>
+  <target>Auszeichnungen halten fest, was du tatsächlich getan hast – nicht, was du gekauft oder freigeschaltet hast. Der Server verleiht sie, sobald die Bedingung erfüllt ist; es gibt also keinen Knopf zu drücken und nichts einzusammeln. Erfüllst du eine Bedingung, während du offline bist, wartet das Abzeichen bei deiner Rückkehr.</target></trans-unit>
+<trans-unit id="s65f58bda89b5807f">
+  <source>Initiation</source>
+  <target>Initiation</target></trans-unit>
+<trans-unit id="sfa7702124efa308d">
+  <source>The first of everything: your first world, your first field assignment, your first descent, your first forge run. These exist so the beginning of the game is legible.</source>
+  <target>Das erste Mal von allem: deine erste Welt, dein erster Feldeinsatz, dein erster Abstieg, dein erster Schmiedelauf. Sie gibt es, damit der Anfang des Spiels lesbar ist.</target></trans-unit>
+<trans-unit id="s29cc0bd25f358ba6">
+  <source>The largest group. One badge per archetype you survive, plus depth, plus the two that ask you to see all of them. Each archetype has its own condition, not a shared counter.</source>
+  <target>Die größte Gruppe. Ein Abzeichen je Archetyp, den du überstehst, dazu die Tiefe und die beiden, die verlangen, sie alle gesehen zu haben. Jeder Archetyp hat seine eigene Bedingung, keinen gemeinsamen Zähler.</target></trans-unit>
+<trans-unit id="s39be5964d0c41d1d">
+  <source>Competitive play: holding a position, running an operative role to its conclusion, winning without a loss. The rarest badges on the platform sit here.</source>
+  <target>Der Wettbewerb: eine Position halten, eine Operativrolle bis zum Ende führen, ohne Verlust gewinnen. Hier sitzen die seltensten Abzeichen der Plattform.</target></trans-unit>
+<trans-unit id="s8165d5d6dc408f8f">
+  <source>Things that reach another world: founding an embassy, sending an echo, decoding a cipher, holding a ward. None of them can be earned alone.</source>
+  <target>Dinge, die eine andere Welt erreichen: eine Botschaft gründen, ein Echo senden, eine Chiffre entschlüsseln, einen Bann halten. Keines davon ist allein zu verdienen.</target></trans-unit>
+<trans-unit id="sa7eea45fe1e4d231">
+  <source>Collection</source>
+  <target>Sammlung</target></trans-unit>
+<trans-unit id="s0fda61bf57181b38">
+  <source>Patience rather than skill. Loot, literary fragments, object anchors, banter. These track progress, so what you gather is never lost between sessions.</source>
+  <target>Geduld statt Geschick. Beute, literarische Fragmente, Objektanker, Wortwechsel. Diese verzeichnen Fortschritt; was du sammelst, geht zwischen zwei Sitzungen nie verloren.</target></trans-unit>
+<trans-unit id="s7993aa2490416ffe">
+  <source>Challenge</source>
+  <target>Herausforderung</target></trans-unit>
+<trans-unit id="s99ca6bf6fcac2b5c">
+  <source>Self-imposed constraints: a flawless run, a fast one, one without a single kill. The game will not ask you to try these; that is the point.</source>
+  <target>Selbst auferlegte Beschränkungen: ein makelloser Lauf, ein schneller, einer ohne einen einzigen Tod. Das Spiel wird dich nicht auffordern, es zu versuchen; genau darum geht es.</target></trans-unit>
+<trans-unit id="s9025c40297775331">
+  <source>Secret</source>
+  <target>Geheim</target></trans-unit>
+<trans-unit id="sb8aadc97f410d7ef">
+  <source>Three badges are hidden. Their names, conditions and hints are not shown until you hold them. This page will not spoil them, and neither will the badge list.</source>
+  <target>Drei Abzeichen sind verborgen. Ihre Namen, Bedingungen und Hinweise werden erst gezeigt, wenn du sie hältst. Diese Seite verrät sie nicht, und die Abzeichenliste tut es auch nicht.</target></trans-unit>
+<trans-unit id="s0b878b2cd598dc09">
+  <source>Rarity is a label, not a currency: common, uncommon, rare, epic, legendary. It says how hard the condition is, not what the badge does. Badges do not affect any game mechanic, and that is deliberate. A record that changed the game would stop being a record.</source>
+  <target>Die Seltenheit ist ein Etikett, keine Währung: gewöhnlich, ungewöhnlich, selten, episch, legendär. Sie sagt, wie schwer die Bedingung ist, nicht was das Abzeichen bewirkt. Abzeichen greifen in keine Spielmechanik ein, und das ist Absicht. Ein Nachweis, der das Spiel veränderte, wäre keiner mehr.</target></trans-unit>
+<trans-unit id="s71fa2fd1f77d301d">
+  <source>Fragments the world leaves behind, and what they form when they meet.</source>
+  <target>Fragmente, die die Welt zurücklässt, und was sie bilden, wenn sie sich treffen.</target></trans-unit>
+<trans-unit id="sfa32a06acb964ad6">
+  <source>Fragments are written by the world as you play; you do not collect them</source>
+  <target>Fragmente schreibt die Welt, während du spielst; du sammelst sie nicht</target></trans-unit>
+<trans-unit id="sac1baf1eae957bbe">
+  <source>Fragments that resonate form constellations, and a constellation yields an insight</source>
+  <target>Fragmente, die miteinander schwingen, bilden Konstellationen, und eine Konstellation trägt eine Einsicht</target></trans-unit>
+<trans-unit id="s73aac59a0eabde17">
+  <source>Crystallising a constellation can unlock an attunement</source>
+  <target>Eine Konstellation zu kristallisieren kann ein Attunement öffnen</target></trans-unit>
+<trans-unit id="sfc45e304de20f3a6">
+  <source>The journal is released per platform and needs its own model budget</source>
+  <target>Das Journal wird je Plattform freigegeben und braucht ein eigenes Modellbudget</target></trans-unit>
+<trans-unit id="s0b653820b146a5e1">
+  <source>The journal is the one part of the platform you do not operate. It watches five systems at once and writes down what it notices: an agent whispering at bond depth two, a dungeon run that ended a certain way, a resonance that touched a zone. Each note is a fragment.</source>
+  <target>Das Journal ist der eine Teil der Plattform, den du nicht bedienst. Es beobachtet fünf Systeme zugleich und schreibt auf, was ihm auffällt: ein Agent, der bei Bindungstiefe zwei flüstert, ein Dungeonlauf, der auf eine bestimmte Weise endete, eine Resonanz, die eine Zone berührte. Jede Notiz ist ein Fragment.</target></trans-unit>
+<trans-unit id="s43be5497c4ed6f98">
+  <source>Written by the world, not gathered by you. They arrive from bonds, dungeons, resonances, events and chat. You cannot ask for one.</source>
+  <target>Von der Welt geschrieben, nicht von dir gesammelt. Sie kommen aus Bindungen, Dungeons, Resonanzen, Ereignissen und Gesprächen. Du kannst keines anfordern.</target></trans-unit>
+<trans-unit id="s6ff5140531056d26">
+  <source>When fragments resonate with one another they are drawn together into a constellation. The pairing is measured, not chosen: a detector compares them and only real resonance counts.</source>
+  <target>Wenn Fragmente miteinander schwingen, zieht es sie zu einer Konstellation zusammen. Die Paarung wird gemessen, nicht gewählt: Ein Messgerät vergleicht sie, und nur echte Resonanz zählt.</target></trans-unit>
+<trans-unit id="s907dcde44fbbe8d9">
+  <source>A completed constellation yields a single written insight about what the fragments have in common. It is generated once and then belongs to the constellation.</source>
+  <target>Eine vollständige Konstellation trägt eine einzige geschriebene Einsicht darüber, was die Fragmente gemeinsam haben. Sie entsteht einmal und gehört danach der Konstellation.</target></trans-unit>
+<trans-unit id="s24f44864a3ca5bcb">
+  <source>Crystallising a constellation can open an attunement, which deepens over time and eventually spawns events of its own. This is the only path from reading the journal back into the world.</source>
+  <target>Eine Konstellation zu kristallisieren kann ein Attunement öffnen, das sich mit der Zeit vertieft und schließlich eigene Ereignisse hervorbringt. Das ist der einzige Weg vom Lesen des Journals zurück in die Welt.</target></trans-unit>
+<trans-unit id="s857bddfd6a4d196b">
+  <source>Each fragment costs one model call, so the journal is released per platform by the operators and runs against a budget. Where it is not released, no fragments accumulate at all.</source>
+  <target>Jedes Fragment kostet einen Modellaufruf; das Journal wird deshalb je Plattform von den Betreibern freigegeben und läuft gegen ein Budget. Wo es nicht freigegeben ist, sammelt sich überhaupt nichts an.</target></trans-unit>
+<trans-unit id="s88fbf4d8b60876ec">
+  <source>The journal rewards playing widely rather than deeply. Fragments come from five different systems, and a constellation needs fragments that resonate, which is easier across systems than within one. A week of dungeon runs produces fewer constellations than a week of dungeon runs, a bond and an embassy.</source>
+  <target>Das Journal belohnt breites Spielen mehr als tiefes. Fragmente kommen aus fünf verschiedenen Systemen, und eine Konstellation braucht Fragmente, die miteinander schwingen – über Systemgrenzen hinweg gelingt das leichter als innerhalb eines Systems. Eine Woche Dungeonläufe bringt weniger Konstellationen hervor als eine Woche aus Dungeonläufen, einer Bindung und einer Botschaft.</target></trans-unit>
+<trans-unit id="s3bc0c8cdc00190d2">
+  <source>Fragment collection is not running on this platform yet. Nothing accumulates in the meantime – when it is switched on, your dungeon runs, epoch cycles and bonded agents begin to leave traces here.</source>
+  <target>Das Sammeln von Fragmenten läuft auf dieser Plattform noch nicht. Bis dahin sammelt sich nichts an – wird es eingeschaltet, beginnen deine Dungeonläufe, Epochenzyklen und gebundenen Agenten, hier Spuren zu hinterlassen.</target></trans-unit>
+<trans-unit id="s59de62d998fd0b92">
+  <source>Event risk</source>
+  <target>Ereignisrisiko</target></trans-unit>
+<trans-unit id="s674b2f472147ec2e">
+  <source>How much more or less often events strike this zone compared to an average one.</source>
+  <target>Wie viel häufiger oder seltener Ereignisse diese Zone treffen als eine durchschnittliche.</target></trans-unit>
+<trans-unit id="s543c860765d2bc23">
+  <source>It follows zone stability along a fixed curve: <x id="0" equiv-text="${EVENT_MULTIPLIER.max}"/>x at a stability of 10 percent or below, 1.0x at <x id="1" equiv-text="${EVENT_MULTIPLIER.baselineAt}"/> percent, and <x id="2" equiv-text="${EVENT_MULTIPLIER.min}"/>x at 90 percent.</source>
+  <target>Es folgt der Zonenstabilität entlang einer festen Kurve: <x id="0" equiv-text="${EVENT_MULTIPLIER.max}"/>x bei einer Stabilität von 10 Prozent oder darunter, 1,0x bei <x id="1" equiv-text="${EVENT_MULTIPLIER.baselineAt}"/> Prozent und <x id="2" equiv-text="${EVENT_MULTIPLIER.min}"/>x bei 90 Prozent.</target></trans-unit>
+<trans-unit id="s4f959383c03b1e2d">
+  <source>Raise stability to lower the multiplier. Since stability itself stops at <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.ceilingPct}"/> percent, the lowest reachable multiplier is about <x id="1" equiv-text="${EVENT_MULTIPLIER.reachableMin}"/>x.</source>
+  <target>Hebe die Stabilität, um den Multiplikator zu senken. Da die Stabilität selbst bei <x id="0" equiv-text="${ZONE_STABILITY_FORMULA.ceilingPct}"/> Prozent endet, liegt der niedrigste erreichbare Multiplikator bei etwa <x id="1" equiv-text="${EVENT_MULTIPLIER.reachableMin}"/>x.</target></trans-unit>
+<trans-unit id="s4cb1839b74a4a5e5">
+  <source>Configure which epoch email notifications you receive. Emails are sent in the language you choose below.</source>
+  <target>Lege fest, welche Epochen-Benachrichtigungen du per Mail erhältst. Die Mails kommen in der Sprache, die du unten wählst.</target></trans-unit>
+<trans-unit id="sbb05e8879b4da0d5">
+  <source>Deadline Reminder</source>
+  <target>Fristerinnerung</target></trans-unit>
+<trans-unit id="s87ef09a1e072d1b0">
+  <source>Receive a warning two hours before a cycle resolves while your orders are still open. Missing a cycle costs research points, and a second one hands your seat to an AI until you return.</source>
+  <target>Erhalte zwei Stunden vor der Auflösung eines Zyklus eine Warnung, solange deine Befehle noch offen sind. Einen Zyklus zu versäumen kostet Forschungspunkte, und ein zweiter übergibt deinen Platz an eine KI, bis du zurückkehrst.</target></trans-unit>
+<trans-unit id="sc8e8176eae51cbbe">
+  <source>Delete Data</source>
+  <target>Daten löschen</target></trans-unit>
+<trans-unit id="sc2bcb03e276bf817">
+  <source>Explanation for this metric</source>
+  <target>Erklärung zu dieser Kennzahl</target></trans-unit>
+<trans-unit id="s1b23c41934894f30">
+  <source>Explanation</source>
+  <target>Erklärung</target></trans-unit>
+<trans-unit id="sc676c702509736ef">
+  <source>What</source>
+  <target>Was</target></trans-unit>
+<trans-unit id="s74cf0a19e64a56d9">
+  <source>Why</source>
+  <target>Warum</target></trans-unit>
+<trans-unit id="s7debb2425da6bf5d">
+  <source>What to do</source>
+  <target>Was zu tun ist</target></trans-unit>
+<trans-unit id="sb9325578bb10b2fc">
+  <source>[SYSTEM] Substrate pulse registered. Operations and Intel points restored.</source>
+  <target>[SYSTEM] Substratpuls erfasst. Einsatz- und Aufklärungspunkte aufgefüllt.</target></trans-unit>
+<trans-unit id="s45c68042215c8b68">
+  <source>[SYSTEM] <x id="0" equiv-text="${missed}"/> substrate pulses registered since your last visit. Operations and Intel points restored (they do not accumulate).</source>
+  <target>[SYSTEM] <x id="0" equiv-text="${missed}"/> Substratpulse seit deinem letzten Besuch erfasst. Einsatz- und Aufklärungspunkte aufgefüllt (sie sammeln sich nicht an).</target></trans-unit>
+<trans-unit id="sda74057294286345">
+  <source>Intel Points (debrief, scan)</source>
+  <target>Aufklärungspunkte (debrief, scan)</target></trans-unit>
 </body>
 </file>
 </xliff>
