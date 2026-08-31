@@ -5,6 +5,7 @@ import { captureError } from '../../services/SentryService.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import { formatRelativeTime } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
+import { markerSelectionStyles } from '../shared/marker-styles.js';
 import '../shared/EmptyState.js';
 import '../shared/VelgAgentTip.js';
 import '../shared/VelgAvatar.js';
@@ -34,7 +35,9 @@ interface GroupedConversations {
 @localized()
 @customElement('velg-conversation-list')
 export class VelgConversationList extends LitElement {
-  static styles = css`
+  static styles = [
+    markerSelectionStyles,
+    css`
     :host {
       display: flex;
       flex-direction: column;
@@ -161,11 +164,9 @@ export class VelgConversationList extends LitElement {
       gap: var(--space-1);
       padding: var(--space-3) var(--space-4);
       border-bottom: var(--border-light);
-      border-left: var(--border-width-heavy) solid transparent;
       cursor: pointer;
       transition:
         background var(--transition-fast),
-        border-color var(--transition-fast),
         box-shadow var(--transition-fast);
       /* Staggered entrance */
       animation: conv-enter var(--duration-entrance, 350ms) var(--ease-dramatic) both;
@@ -191,11 +192,6 @@ export class VelgConversationList extends LitElement {
       z-index: 1;
     }
 
-    .conversation--active {
-      background: var(--color-surface-sunken);
-      border-left-color: var(--color-primary);
-    }
-
     /* Unread indicator — bold name + accent dot */
     .conversation--unread .conversation__agent-name {
       font-weight: var(--font-black);
@@ -216,22 +212,29 @@ export class VelgConversationList extends LitElement {
       gap: var(--space-2);
     }
 
-    /* Portrait stack for multi-agent */
+    /* Portrait stack for multi-agent. The operatives of one conversation
+       overlap so the group reads as a single unit instead of a row of
+       strangers: -9px on a 30px disc is enough overlap to bind them and
+       enough face left to tell them apart. Later portraits paint on top,
+       so the overflow chip closes the stack. */
     .conversation__portraits {
       display: flex;
       align-items: center;
-      gap: var(--space-1);
       flex-shrink: 0;
     }
 
+    .conversation__portraits > * + * {
+      margin-left: -9px;
+    }
+
     .conversation__portrait-overflow {
-      min-width: 20px;
-      height: 20px;
+      min-width: 32px;
+      height: 32px;
       padding: 0 var(--space-0-5);
       background: var(--color-primary);
       color: var(--color-text-inverse);
       font-family: var(--font-mono);
-      font-size: 9px;
+      font-size: var(--text-xs);
       font-weight: var(--font-bold);
       display: flex;
       align-items: center;
@@ -311,13 +314,14 @@ export class VelgConversationList extends LitElement {
     }
 
     .conversation__preview {
-      font-family: var(--font-body);
+      font-family: var(--font-bureau, var(--font-prose));
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
       line-height: var(--leading-snug);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .conversation__footer {
@@ -440,7 +444,8 @@ export class VelgConversationList extends LitElement {
         opacity: 1;
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Array }) conversations: ChatConversation[] = [];
   @property({ type: String }) selectedId = '';
@@ -692,7 +697,7 @@ export class VelgConversationList extends LitElement {
       return html`<velg-avatar .src=${primary.portrait_image_url ?? ''} .name=${primary.name} size="sm"></velg-avatar>`;
     }
 
-    // Multi-agent: show up to 3 avatars with gap, "+N" for remainder
+    // Multi-agent: up to 3 overlapping portraits, "+N" for the remainder
     const maxVisible = 3;
     const visible = agents.slice(0, maxVisible);
     const overflow = agents.length - maxVisible;
@@ -701,7 +706,7 @@ export class VelgConversationList extends LitElement {
       <div class="conversation__portraits">
         ${visible.map(
           (agent) =>
-            html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="xs"></velg-avatar>`,
+            html`<velg-avatar .src=${agent.portrait_image_url ?? ''} .name=${agent.name} size="sm"></velg-avatar>`,
         )}
         ${
           overflow > 0
@@ -730,7 +735,7 @@ export class VelgConversationList extends LitElement {
 
     return html`
       <div
-        class="conversation ${isActive ? 'conversation--active' : ''} ${isUnread ? 'conversation--unread' : ''}"
+        class="conversation ${isActive ? 'is-selected' : ''} ${isUnread ? 'conversation--unread' : ''}"
         role="option"
         tabindex="0"
         aria-selected=${isActive ? 'true' : 'false'}
