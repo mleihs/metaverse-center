@@ -13,7 +13,46 @@ lang: de
 
 ---
 
-## ▶ DIE NÄCHSTE AUFGABE: PHASE 4 · DUNGEON
+## ✅ PHASE 4 · DUNGEON IST DURCH (31.08., Sitzung `-88`)
+
+Alle zehn Punkte des Vertrags erledigt oder als bereits vorhanden nachgemessen.
+Neun Commits, **nichts gepusht**.
+
+| § | Zustand |
+|---|---|
+| 4.1 Raster | **gebaut** — Rails `grid-row: 2/4`; Desktop-Collapse wirkungslos statt versteckt; tote 40px-Regel entfernt |
+| 4.3 Karte | **war schon da** — echte Icons über `ROOM_ICON` → `icons.mapCombat` usw.; Raum-Panel scrollt nicht |
+| 4.4 Druck | **gebaut** — Wasser als Grid-Ebene in Zeile 4 (beide Bewohner gepinnt), Druck auf der INTENSITÄT statt der Höhe; fixer Deckel am Chamber-Panel entfernt |
+| 4.5 Prosa | **war schon da** — Reihenfolge Banter→Marke→Ambient→Anker→Encounter→Barometer, Lesemass 68ch |
+| 4.6 Zielkette | **gebaut** — der Kern. Siehe unten |
+| 4.7 Combat-Bar | **war schon da** — Piktogramme als CSS-Masken mit Intent-Farbe, Encounter-Karten mit Freiwilligem und sichtbar gesperrten Optionen |
+| 4.8 Chronik | **gebaut** — Raum-Trenner, gestempelt beim Absorbieren; 4 neue Tests |
+| 4.9 Breitbild | **gebaut** — Cockpit-Regel, Rails 360/380 ab 1920px, kein Container |
+| 4.10 Fallen | als Prüfliste angewandt (u. a. `✕` → `icons.close()`) |
+
+**4.6 im Kern:** der schwebende Befehl wanderte aus zwei lokalen `@state`-Feldern
+der Combat-Bar in den Store (`dungeonState.pendingOrder` + `ordersByTarget`),
+weil die drei Anker in ZWEI Geschwisterkomponenten liegen. Ein Angriff wartet
+jetzt wirklich auf sein Ziel, statt sofort das erste zu nehmen — der alte
+Vorgriff war eine berechtigte Abwehr (`target_id: null` wird vom Backend
+lautlos verworfen), die aber durch RATEN abwehrte.
+
+**WCAG AA:** `components/dungeon/**` ging von **82 Paaren unter AA auf 0**.
+77 davon erledigte die zentrale Token-Hebung der Nachbarsitzung
+(`--color-accent-amber-dim`, 3,94 : 1); die restlichen acht sind lokal repariert.
+🔑 Die Ursache hinter dreien davon: **`color-mix(… X%, transparent)` dimmt nicht,
+es macht DURCHSCHEINEND** — das Ergebnis hängt davon ab, worauf die Schicht
+zufällig liegt (bei `.beat__cmd` auf einem Hintergrundbild: 2,14 : 1).
+
+**i18n:** 31 neue Zeichenketten extrahiert und übersetzt (17 aus Phase 4,
+14 von den Peers), 8 181 Einheiten, 0 ohne Ziel.
+
+**Keine Migration nötig** — 4.8 ist reiner Client-Zustand. Die reservierte
+Nummer 320 ist frei geblieben.
+
+---
+
+## ▶ DIE AUFGABE WAR: PHASE 4 · DUNGEON
 
 Ein neues Claude-Design-Paket liegt in **`handoff/simulation-views/`**. Der
 Vertrag ist **`README.md` §4.1–4.10**, die Arbeitsliste **`TODO-OPUS.md`
