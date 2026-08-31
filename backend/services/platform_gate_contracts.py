@@ -347,6 +347,19 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         default_when_missing=False,
         reader="backend/services/forge_draft_service.py",
     ),
+    PlatformGate(
+        key="json_repair_enabled",
+        group="operations",
+        label="JSON-Reparatur durch das Modell",
+        turns_on="Eine unbrauchbare Modellantwort geht samt Zielform ein ZWEITES Mal "
+        "ans Modell, statt verworfen zu werden.",
+        absence_costs="Nichts Laufendes. Eine misslungene Antwort wird verworfen und "
+        "über _observe_json_failure gezählt — der Zustand, in dem die Plattform "
+        "seit jeher war, jetzt nur sichtbar. Anschalten kostet je Reparatur einen "
+        "weiteren bezahlten Aufruf.",
+        default_when_missing=False,
+        reader="backend/utils/settings.py",
+    ),
 )
 
 
