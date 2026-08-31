@@ -823,6 +823,38 @@ def palette_fault(fg_raw: str, bg_raw: str, tokens, need: float):
     return (fm.group(1), bm.group(1)) if r < need else None
 
 
+STATUS_TOKEN = re.compile(
+    r"--color-(primary|secondary|danger|success|warning|info"
+    r"|accent-amber|accent-green|epoch-influence)\b"
+)
+
+
+def same_colour_tint(fg_raw: str, bg_raw: str):
+    """Is the text the same status colour as the tint it sits on?
+
+    A platform idiom, not a slip: 168 rules in 74 files paint a status colour
+    on `color-mix(in srgb, <that same status colour> N%, …)`. On a near-black
+    ground the tint stays dark and the text reads at 8:1. On a WHITE ground the
+    tint becomes a pale wash of the same hue and the text lands at 1.0 - green
+    on pale green.
+
+    It is worth naming as its own kind because the obvious repair does not
+    work. `--color-success-hover` (80 % base + 20 % text-primary) exists for
+    exactly this direction and only lifts brutalist from 2.55 to 3.68 - still
+    under AA. Reaching 4.5 means either a dedicated text-weight variant per
+    status, or not tinting the ground with the colour the text is written in.
+    Both are decisions about the design system, and neither belongs in the 74
+    files that merely follow the idiom.
+    """
+    fm = STATUS_TOKEN.search(fg_raw)
+    if not fm or "color-mix" not in bg_raw:
+        return None
+    bm = STATUS_TOKEN.search(bg_raw)
+    if not bm or bm.group(1) != fm.group(1):
+        return None
+    return f"--color-{fm.group(1)}"
+
+
 def report_themes(targets, base_tokens) -> int:
     """Measure every simulation theme and report per PAIR, not per theme.
 
@@ -861,6 +893,7 @@ def report_themes(targets, base_tokens) -> int:
         e["worst"] = min(e["worst"], f["ratio"])
 
     palette_pairs: dict = {}
+    tint_pairs: dict = {}
     for theme, tok in runs.items():
         for f in run(themed, tok)[0]:
             key = (str(f["file"]), f["line"], f["sel"])
@@ -871,6 +904,10 @@ def report_themes(targets, base_tokens) -> int:
             if pf:
                 entry["palette"].add(theme)
                 palette_pairs.setdefault(pf, {}).setdefault(theme, []).append(f["ratio"])
+            tint = same_colour_tint(f["fg"], f["bg"])
+            if tint:
+                entry["tint"] = tint
+                tint_pairs.setdefault(tint, set()).add(str(f["file"]))
 
     rows = sorted(per_pair.values(), key=lambda e: e["worst"])
 
@@ -896,12 +933,25 @@ def report_themes(targets, base_tokens) -> int:
         print("  Repairing these at a call site would dodge the theme's intent in one")
         print("  place and leave it standing everywhere else.")
         print()
+    if tint_pairs:
         print("=" * 72)
-        print("COMPONENT — a colour this file chose, and can unchoose")
+        print("SAME-COLOUR TINT — the text and its ground are one status colour")
         print("=" * 72)
+        for tok, files_ in sorted(tint_pairs.items(), key=lambda kv: -len(kv[1])):
+            print(f"  {tok:28s} {len(files_):3d} file(s)")
+        n_tint = sum(1 for e in rows if e.get("tint"))
+        print()
+        print(f"  A platform idiom, {n_tint} of the findings below. It reads at 8:1 on")
+        print("  a near-black ground and at 1.0 on a white one. --color-<status>-hover")
+        print("  is the obvious repair and is NOT enough (brutalist: 2.55 -> 3.68).")
+        print()
+
+    print("=" * 72)
+    print("COMPONENT — a colour this file chose, and can unchoose")
+    print("=" * 72)
 
     for e in rows:
-        if e["palette"]:
+        if e["palette"] or e.get("tint"):
             continue
         f = e["f"]
         try:
@@ -912,13 +962,19 @@ def report_themes(targets, base_tokens) -> int:
         where = "ALL themes" if n == len(runs) else ", ".join(e["themes"])
         print(f"{e['worst']:5.2f}:1  need {f['need']}  {rel}:{f['line']}  {f['sel']}")
         print(f"           fg {f['fg']}")
+        # The ground belongs in every finding, theme mode included: a pair
+        # without it cannot be acted on, and the reader cannot tell a bad
+        # colour from a bad ground.
+        print(f"           bg {f['bg']}   ({f['ground_via']}, {f['size']})")
         print(f"           fails in {n}/{len(runs)}: {where}")
 
-    component_rows = [e for e in rows if not e["palette"]]
+    component_rows = [e for e in rows if not e["palette"] and not e.get("tint")]
+    tint_rows = [e for e in rows if e.get("tint") and not e["palette"]]
     print()
     print(f"{len(rows)} pair(s) below WCAG AA in at least one of {len(runs)} themes:")
     print(f"   {len(rows) - len(component_rows)} caused by a theme's own palette "
           f"({len(palette_pairs)} token pairs to decide)")
+    print(f"   {len(tint_rows)} the same-colour-tint idiom ({len(tint_pairs)} status colours)")
     print(f"   {len(component_rows)} caused by a colour the component chose")
     light_only = [
         e for e in rows if "(platform default)" not in e["themes"]
