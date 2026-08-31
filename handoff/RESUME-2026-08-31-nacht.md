@@ -125,7 +125,22 @@ Paare trafen sich in 24 h, 6 von 258 Agenten liegen unter −20, `insult` hat
 9 % Anteil an den dann gültigen Wahlen). **Wer nach einem Tick nachmisst, sieht
 nichts und hält die Änderung fälschlich für wirkungslos.**
 
-**❓ OFFEN: hat der Deploy von `-45` die Backend-Änderung mitgenommen?** Der
+**❓ OFFEN: hat der Deploy die Backend-Änderung mitgenommen?**
+
+⚠ **Über die Coolify-API war es nicht zu klären** (versucht am 31.08. nachts):
+`https://coolify.metaspots.net` antwortet **503**, `http://45.137.68.227:8000`
+nimmt keine Verbindung an. Token liegt in `~/.config/metaspots/coolify-api.token`,
+App-UUID `a6exg3b5euhidpc2r5009o0m`. Auch die Nachbarsitzung kann es nicht sagen
+— ihr Kontext wurde vor dem Deploy geleert, und sie rät zu Recht nicht.
+
+Zweiter Weg, falls Coolify wieder da ist: das ausgelieferte deutsche
+Locale-Bündel prüfen. Enthält es **„Einsatzterminal"**, liegt der Deploy bei oder
+nach `5da147f8` — und damit NACH `7f706ef5`, also **läuft Weg 1**. Enthält es
+„Liegt bei dir" statt „Verlangt dich", ist sogar `e2edbb51` drin. Der Chunk wird
+verzögert geladen und stand nicht in `assets/index-*.js`; am schnellsten über die
+Netzwerkansicht des Browsers auf `/dashboard`.
+
+ Der
 Deploy ist durch (Dashboard live, health 200), aber er trägt sicher noch die
 ERSTE Fassung der Übersetzungen — also lag er vor `e2edbb51`. Ob er nach
 `7f706ef5` (Weg 1) lag, ist ungeklärt. **Erste Handlung nach dem Clear: bei
