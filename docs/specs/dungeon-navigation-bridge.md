@@ -385,6 +385,13 @@ The existing `exit__cta` CSS class is replaced by the component's internal style
 
 ### DungeonShowcase — Phase 2 (Optional)
 
+> ⚠ **Stand 31.08.2026:** `DungeonShowcase.ts` (die Frontseiten-Bühne) ist mit dem
+> Frontseiten-Redesign entfallen — gemessen null Verwender. Die Archetyp-Daten leben
+> weiter unter `frontend/src/components/archetypes/dungeon-showcase-data.ts` und tragen
+> die Detailseiten. Wo dieses Dokument die Bühne als Einstieg beschreibt, ist der
+> Einstieg heute die Detailseite selbst (`/archetypes/:id`).
+
+
 The showcase carousel cards could gain a secondary CTA:
 ```html
 <velg-dungeon-entry-cta

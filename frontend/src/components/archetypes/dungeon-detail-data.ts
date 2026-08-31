@@ -11,11 +11,7 @@
  * Overthrow, Shadow, Tower, Mother, Entropy, Prometheus, and Deluge are fully populated.
  */
 
-import {
-  ARCHETYPES,
-  type ArchetypeQuote,
-  type ArchetypeSlide,
-} from '../landing/dungeon-showcase-data.js';
+import { ARCHETYPES, type ArchetypeQuote, type ArchetypeSlide } from './dungeon-showcase-data.js';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

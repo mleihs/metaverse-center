@@ -46,21 +46,16 @@ App (Root)                           ⚡ = lazy-loaded via route enter()
 │   ├── LoginView
 │   ├── LoginPanel (Slide-from-Right)
 │   └── RegisterView
-├── LandingPage (/ unauthenticated, always-loaded for SEO)
-│   ├── Hero (signal decode animation, CTA)
-│   ├── Features (3-column capability showcase with Supabase Storage images)
-│   ├── WorldsPreview (monitor-card grid, responsive: 3→5→7 worlds at default/1440p/4K)
-│   ├── LandingAgentShowcase ("Intercepted Dossiers" — real AI agents as marketing)
-│   │   ├── VelgAgentCard (reused, with rarity/badges/aptitude pips)
-│   │   ├── Decode animation (scramble→resolve section label, IntersectionObserver)
-│   │   ├── Typewriter tagline ("These are real AI characters...")
-│   │   ├── Scanner beam (CSS ambient sweep, 8s cycle)
-│   │   ├── Responsive grid: 3 cols (default) → 4 cols (1440p) → 6 cols (4K)
-│   │   ├── Data: 6→8→12 agents, scored by portrait/ambassador/character, 1-per-sim diversity
-│   │   └── SEO: ItemList JSON-LD structured data
-│   ├── LiveData (platform stats counters)
-│   ├── HowItWorks (3-step process flow)
-│   └── CtaFooter (terminal-framed conversion CTA)
+├── LandingPage (/ unauthenticated, always-loaded for SEO) — "Editorial Brutalist", 31.08.2026
+│   │   Orchestrator, 120 Zeilen: EIN Abruf (`GET /api/v1/public/landing`), durchgereicht
+│   │   an sechs Abschnitte. Kein eigenes <main> und kein eigener Sprungverweis — die
+│   │   Hülle (`app-shell`) liefert beides; die alte Fassung trug sie doppelt.
+│   ├── LandingHero (Laufband, Kennzahlen, Weltnamen via `t()`)
+│   ├── LandingSystems (sechs Systeme, Zustand aus dem Bestand abgeleitet)
+│   ├── LandingWorlds (Weltraster, `t(world, 'name' | 'description')`)
+│   ├── LandingCitizens (drei Bürger, `<velg-game-card>` wiederverwendet)
+│   ├── LandingForge (Weltenbau-Abschnitt)
+│   └── LandingSeoFooter (alle 15 Verweise der bisherigen `<velg-platform-footer>`)
 ├── WorldsGallery (/worlds) ⚡
 │   ├── Search + Pagination
 │   └── World cards with theme-color portal bleed

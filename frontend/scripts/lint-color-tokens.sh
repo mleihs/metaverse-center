@@ -101,9 +101,7 @@ RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   grep -v '/SimulationSwitcher\.ts:' | \
   grep -v '/MapLayerToggle\.ts:' | \
   grep -v '/AdminInstagramTab\.ts:' | \
-  grep -v '/DungeonShowcase\.ts:' | \
   grep -v '/dungeon-showcase-data\.ts:' | \
-  grep -v '/dungeon-showcase-styles\.ts:' | \
   grep -v '/HowToPlayWarRoom\.ts:' | \
   grep -v '/archetype-detail-styles\.ts:' | \
   grep -v '/ArchetypeDetailView\.ts:' || true)
