@@ -321,7 +321,94 @@ das Ändern der Zusicherung.
 
 ---
 
-## T8 · Fünf gelöschte Welten halten noch lebende Bauten, Agenten und Zonen
+## T8 · Fünf gelöschte Welten halten noch lebende Bauten, Agenten und Zonen — ✅ DAS LESEFENSTER IST ZU (Migration 313)
+
+> **Nachtrag 31.08.2026 abends.** Die drei Kosten aus der ursprünglichen Notiz
+> haben sich beim Messen auf **eine** reduziert, und die Richtung war danach
+> keine Entscheidung mehr. Der Reihe nach.
+>
+> **(1) Sollte eine der fünf zurückgeholt werden? Gemessen: nein.**
+>
+>     Welt                                   angelegt        gelöscht        Abstand
+>     the-tamagotchi-temporality-principle    09.04. 19:34    09.04. 20:37     63 min
+>     the-tamagotchi-temporality              09.04. 20:04    09.04. 20:37     33 min
+>     the-ancestral-dream-syndicate           09.04. 20:29    09.04. 20:37      8 min
+>     the-prophecy-of-fractured-time          09.04. 23:59    10.04. 00:06      7 min
+>     the-oneironautical-beacon               10.04. 00:14    10.04. 00:22      8 min
+>
+> Alle fünf: Ursprungswelten, je 6 Agenten, 6–7 Bauten, 5 Zonen, **0 Ereignisse,
+> 0 Ableger**, ein Mitglied, Besitzer das eigene Konto. Fünf verworfene
+> Schmiede-Versuche eines Abends. Nichts hängt an ihnen.
+>
+> **(2) Die Zahl war nicht der Befund. Das Lesefenster war es.**
+>
+> `active_agents`, `active_buildings` und `active_events` sind Sichten **ohne**
+> `security_invoker`, im Besitz von `postgres`, mit SELECT für `anon`. Sie laufen
+> als ihr Eigentümer — die RLS der Basistabelle greift also gar nicht. Genau so
+> sind sie gemeint (Public-First-Lesepfad, `drift_service.py` nennt es zweimal).
+>
+> Nur trägt `agents_anon_select` eine Bedingung, die die Sicht nicht kennt:
+>
+>     Richtlinie:  deleted_at IS NULL AND EXISTS (SELECT 1 FROM simulations
+>                    WHERE id = agents.simulation_id
+>                      AND status = 'active' AND deleted_at IS NULL)
+>     Sicht:       deleted_at IS NULL
+>
+> Die Sicht prüfte das `deleted_at` des KINDES und schwieg über die Elternwelt.
+> **30 Agenten und 34 Bauten gelöschter Welten waren dadurch anonym lesbar**,
+> obwohl die Richtlinie derselben Tabelle sie verweigert.
+>
+> 🔑 **Migration 294 hat diese acht öffentlichen Sichten geprüft und mit dem Satz
+> stehen lassen: „ihre Basistabellen gewähren `anon` dasselbe per Richtlinie."
+> Der Satz trägt für die Zeile und nicht für die Welt.** Eine Begründung, die für
+> die halbe Bedingung stimmt, sieht wie eine Begründung aus, die stimmt. Die
+> Notiz steht jetzt an der Liste, die den Satz trägt
+> (`test_admin_views_not_public.py`).
+>
+> **(3) Damit ist die Richtung keine Wahl mehr.** Die drei Wege aus der
+> ursprünglichen Notiz messen sich so:
+>
+> * **Kaskade beim Löschen** — unumkehrbar. Und `SimulationService.restore_simulation`
+>   existiert und setzt `deleted_at` zurück. Eine Kaskade würde die Rückholung,
+>   die es GIBT, im Nachhinein entwerten. Verworfen.
+> * **Jede Leseabfrage joint** — gemessen: es gibt gar keine unbegrenzte
+>   Leseabfrage. Alle 22 Stellen, die `agents`/`buildings`/`zones` ohne
+>   `simulation_id` anfassen, sind `.eq("id", …)`-Nachschläge oder Schreibungen.
+>   Das Problem lag nie in den Abfragen. Verworfen.
+> * **Eine Sicht je Tabelle** — die Sichten existieren bereits, sind bereits der
+>   öffentliche Lesepfad, und sind genau die zwei, die lecken. **Gewählt.**
+>
+> **Migration 313** gibt den drei Sichten die fehlende Hälfte:
+> `EXISTS (SELECT 1 FROM simulations s WHERE s.id = <kind>.simulation_id AND
+> s.deleted_at IS NULL)`. Transaktional gegen die echten Prod-Daten geprobt
+> (`BEGIN … ROLLBACK`), zweimal in derselben Transaktion angewandt:
+>
+>     Waisen in active_agents      30 → 0
+>     Waisen in active_buildings   34 → 0
+>     active_agents gesamt              228   (die 228 lebender Welten)
+>     active_buildings gesamt           290
+>     anon-Grant nach CREATE OR REPLACE  erhalten
+>
+> **Bewusst NICHT mitgenommen:** der `status`-Filter, den die anon-Richtlinie
+> zusätzlich trägt. `active_agents` ist auch der MITGLIEDER-Lesepfad
+> (`AgentService.view_name`); `status` in die Sicht zu nehmen hiesse, einem Admin
+> die Agenten seiner eigenen archivierten Welt zu verbergen. Heute fiele das
+> nicht auf — es gibt keine archivierte Welt ohne `deleted_at`, die fünf sind
+> beides. Genau deshalb ist es der Moment, die beiden Aussagen nicht zu
+> verschmelzen. Ein Status ist kein Betrieb.
+>
+> **Und keine `active_zones`:** `zones` hat keine Sicht und damit kein
+> RLS-umgehendes Lesefenster; `zones_anon_select` joint `simulations` korrekt.
+> Die 25 Zonen waren ein Zählfehler meiner eigenen Abfrage, kein Lesefenster.
+>
+> Gebunden von `backend/tests/unit/test_active_views_scope_to_living_worlds.py`
+> (20 Fälle), einschließlich einer **Gegenprobe**: ein Filter, der alles
+> wegnimmt, bestünde die Waisen-Prüfung ebenfalls.
+>
+> ⏳ **Offen:** Migration 313 wartet auf das Wort für Prod. Die fünf Welten
+> bleiben, wie sie sind.
+
+### Der ursprüngliche Befund (Stand vor der Messung)
 
 **Gemessen:** 31.08.2026, beim Abnehmen von Migration 311 auf Prod.
 
