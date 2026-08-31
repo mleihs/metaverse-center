@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes beacon { 0%{r:21; opacity:.8} 100%{r:30; opacity:0} }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    @keyframes op-beam { 0%,100%{opacity:.5} 50%{opacity:.85} }
+    @keyframes skel { 0%,100%{opacity:.5} 50%{opacity:.9} }
+    @keyframes pulse-breathe { 0%,100%{opacity:.55; transform:scale(1)} 50%{opacity:1; transform:scale(1.03)} }
+    @keyframes fx-flicker { 0%,100%{opacity:0} 50%{opacity:1} }
+    @keyframes chron-in { from{opacity:0; transform:translateY(-5px)} to{opacity:1; transform:none} }
+    .qbtn { transition:color .1s ease, border-color .1s ease, background .1s ease; cursor:pointer; }
+    .qbtn:hover { color:#f59e0b !important; border-color:#f59e0b !important; }
+    .gchoice { transition:color .1s ease, border-color .1s ease, background .1s ease; }
+    .gchoice:hover:not([data-locked]) { border-color:#f59e0b !important; background:rgba(245,158,11,.06) !important; }
+    .gchoice:hover:not([data-locked]) .gchoice-label { color:#f59e0b !important; }
+    .railbtn { transition:color .1s, border-color .1s; cursor:pointer; }
+    .railbtn:hover { color:#f59e0b !important; border-color:#f59e0b !important; }
+    .node-move { cursor:pointer; }
+    .node-move:hover circle:nth-of-type(2) { stroke:#f59e0b; }
+    .chamber-scroll { scrollbar-width:thin; scrollbar-color:#4a3f10 #0a0a08; }
+    .chamber-scroll::-webkit-scrollbar { width:8px; }
+    .chamber-scroll::-webkit-scrollbar-thumb { background:#4a3f10; }
+    .chamber-scroll::-webkit-scrollbar-track { background:#0a0a08; }
+    .ic { display:inline-flex; align-items:center; }
+    .ic svg { display:block; }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1b — 4K-PROBE (2560px) ═══════════════ -->
+  <div id="1b" data-screen-label="1b Dungeon Graphical 2560" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">4K-Probe — <a href="#1a">1a</a> bei 2560px, Cockpit-Regel: Instrumenten-Rails fix (360/380), die Bühne nimmt den GESAMTEN Mehrplatz — mehr Welt statt Ränder; Prosa bleibt auf Lesemaß gekappt</span>
+    </div>
+
+    <div style="width:2560px; background:#0a0a0a; color:#a68a2e; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; padding:0 16px 16px; box-sizing:border-box;">
+
+      <!-- HUD grid: header / [rail | scene | side] / actions -->
+      <div style="display:grid; grid-template-columns:{{ gridColsWide }}; grid-template-rows:auto 760px auto; margin-top:12px;">
+
+        <!-- Header row: instrument bar + view toggle -->
+        <div style="grid-column:1 / -1; grid-row:1; display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+          <div style="flex:1; display:flex; align-items:center; gap:16px; padding:6px 12px; background:rgba(10,10,8,.85); border:1px solid rgba(61,50,0,.6); border-bottom:1px dashed rgba(61,50,0,.4); font-size:11px; letter-spacing:.5px; color:#a68a2e;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#3b82f6; padding:3px 10px; border:1px solid rgba(59,130,246,.4); white-space:nowrap;">The Deluge</span>
+            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+              <span style="white-space:nowrap;">Tiefe</span>
+              <div style="flex:1; height:6px; background:rgba(61,50,0,.4); position:relative; overflow:hidden; min-width:60px;">
+                <span style="position:absolute; inset:0; width:45%; background:#a68a2e; display:block;"></span>
+                <span style="position:absolute; right:0; top:0; bottom:0; width:20%; background:rgba(239,68,68,.15); border-left:1px dashed rgba(239,68,68,.3);"></span>
+                <span style="position:absolute; inset:0; display:flex;"><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1;"></span></span>
+              </div>
+              <span style="white-space:nowrap; color:#f5c542;">4 / 8</span>
+            </div>
+            <span style="display:flex; align-items:center; gap:6px; white-space:nowrap;"><span class="ic" style="color:#a68a2e;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor"><path d="M227.4 34.7c-10.1 0-20.2.2-30.2.5l6.1 65.6-61.1-62.5c-31.3 2.5-62.5 6.6-93.8 12.5l34.2 28.4-48-.6c35.1 100.2 6.9 182.6-.3 292.1L130 476.5c10-1.3 19.9-2.4 29.6-3.3l21.5-42.2 18.6 28.8 41.5-33.5.8 43c82.9-.2 157.7 9.1 235.7 7.9-28.2-73-31.2-143.6-31.9-209.2l-33.3-19.1 32.7-33.9c-.4-21.3-1.3-42-3.6-61.9l-57.4.7 50.2-41.7c-3.8-15.5-9-30.4-16.1-44.7l-29.5-23.9C335 38 281.2 34.6 227.4 34.7zm58.7 37c10.6 24.75 21.1 49.5 31.7 74.3 7.5-10.5 14.9-21 22.4-31.5 16 27.2 32 54.3 48 81.5l-16.2 9.5-33.3-56.7-42.5 59.4-15.2-10.9 24-33.5-21.9-51.5-24.6 40.1 12 22.6-16.5 8.8-18.3-34.5-24.8 58.2-17.2-7.4 32.5-76.2 7.7-18c4.8 9.2 9.6 18.3 14.5 27.4 12.5-20.6 25.1-41.11 37.7-61.6zM91.2 128c6.72 1.6 13.4 3.4 19.2 5.3-2.1 5.9-4.1 11.8-6.2 17.6-5.79-1.6-11.72-3.4-16.9-4.7 1.39-6 2.62-12.1 3.9-18.2zm37.9 13.4c6.3 3.8 12 7.2 17 12.8L132.6 167c-4-3.7-8.6-7-12.8-9.4zm28.7 32.3c2.1 7.4 2.1 15.7 1.6 22.5l-18.5-2.4c.1-5.1.3-10-1-14.5zm-21.2 35.7 17.2 7.1c-3.3 6.6-5.1 12.7-8.6 17.8l-16.3-9c2.6-5.4 5.6-10.8 7.7-15.9zm-16.5 34.1 17.7 6.1c-1.5 5.4-3 11.2-3.6 16.2l-18.6-2c1.3-7.5 2.1-14 4.5-20.3zm207.8 17.4c8.5 1 14.6 3 21.7 7.1l-9.8 16c-4.1-2.8-9.4-3.8-13.5-4.5zm-21.2 1.5c1.1 6.1 2.5 12.2 3.9 18.3-5.9 1.3-11.7 3.3-16.5 5.1l-6.8-17.4c6.7-2.4 13.5-4.7 19.4-6zm-37.9 15.9 11 15.1c-5.6 4-11.8 7.8-16.8 10.6l-8.9-16.4c5.1-2.9 10.6-6.3 14.7-9.3zM135.3 281c1.5 4.7 4.2 9.2 6.9 12.1l-13.8 12.6c-5.5-5.7-9.5-13.5-11.2-20.1zm230.3 3.3c3.5 6.4 6.8 12.7 8.7 19.1l-17.8 5.6c-2-5.4-4.3-10.8-6.8-14.8zm-127.4 10.9 6.9 17.3c-6.4 2.7-12.9 4.8-18.6 6.5l-5-18c5.9-1.6 11.3-3.8 16.7-5.8zm-83.8 6.2c5.3 1.7 10.8 3.4 15.7 4.2-1.2 6.1-2 12.3-2.8 18.5-7-1-14.5-3.3-20.5-5.7zm50 3.5 2.8 18.5c-7.2 1.3-13.4 1.6-19.8 1.9l-.4-18.7c5.9-.2 11.6-.8 17.4-1.7zm174.5 18c1 6.4 1.6 12.9 2.2 19.3l-18.7 1.5c-.4-6-.9-11.9-2-17.8zm-67.6 30.8c18.9 3.5 44.9 16.2 68.9 33.9 7.4-9.9 14.4-20.4 21.3-31.1l30.1 12.9c-4.7 12.3-15 25.6-28.6 37.2 17 16.2 30.9 34.5 37 53-13.8-18.1-31.1-31.8-50.3-42.8-23.4 15.8-52.7 25.9-79.6 20.4 22.9-4.4 40.6-16.6 55.8-32.6-16.5-7.5-33.8-13.9-51.3-20.1z"/></svg></span> Räume <b style="color:#f5c542;">5/12</b></span>
+            <span style="display:flex; align-items:center; gap:6px; white-space:nowrap; color:#8a8a8a;">{{ meterLabel }} <b style="{{ meterValStyle }}">{{ water }}%</b></span>
+          </div>
+          <div style="flex:none; display:flex; border:1px solid rgba(61,50,0,.6); background:rgba(10,10,8,.85);">
+            <span class="qbtn" onClick="{{ vGfx }}" style="{{ vGfxStyle }}">◉ Graphical</span>
+            <span class="qbtn" onClick="{{ vTrm }}" style="{{ vTrmStyle }}">&gt;_ Terminal</span>
+          </div>
+        </div>
+
+        <!-- Map rail -->
+        <sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="grid-column:1; grid-row:2 / 4; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-right:1px dashed rgba(61,50,0,.4); background:#0a0a0a;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e; padding:10px 10px 0; border-bottom:none;">Karte</div>
+          <div style="flex:1; min-height:0; overflow:hidden;">
+            <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMin meet" style="width:100%; height:100%;">
+              <line x1="150" y1="52" x2="90" y2="122" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="150" y1="52" x2="210" y2="122" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="90" y1="122" x2="150" y2="196" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="210" y1="122" x2="150" y2="196" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="150" y1="196" x2="86" y2="268" stroke="#a68a2e" stroke-width="1.5" stroke-dasharray="4 4"></line>
+              <line x1="150" y1="196" x2="214" y2="268" stroke="#a68a2e" stroke-width="1.5" stroke-dasharray="4 4"></line>
+              <line x1="86" y1="268" x2="150" y2="344" stroke="#332a08" stroke-width="1.5" stroke-dasharray="3 5"></line>
+              <line x1="214" y1="268" x2="150" y2="344" stroke="#332a08" stroke-width="1.5" stroke-dasharray="3 5"></line>
+              <g transform="translate(150,52)">
+                <circle r="13" fill="rgba(166,138,46,.12)"></circle>
+                <circle r="16" fill="none" stroke="#6b5a1c" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#6b5a1c"><path d="m193.571 26.027 35.192 83.99c14.877 7.658 33.121 6.696 47.488-1.279l40.283-85.976c-45.582-7.268-84.512-4.945-122.963 3.265zm137.3 7.606-32.038 71.38c12.536 12.349 37.237 18.872 47.033 15.448l31.172-64.691c-12.422-8.392-27.428-15.886-46.168-22.137zm-154.86-1.97c-21.814 6.55-40.982 16.35-56.099 28.591 14.941 15.844 28.861 34.184 38.194 52.832 24.477 6.133 35.479-6.849 47.475-18.55zm-74.245 34.831c-36.541 32.91-66.523 76.42-78.068 125.215l65.957 3.353c12.006-30.53 24.552-56.284 54.231-72.755-9.883-20.24-23.626-39.403-42.12-55.813zm292.503-.29-31.852 61.044c32.54 21.007 43.572 41.348 52.597 69l72.464-8.43c-9.612-55.894-42.206-107.047-93.209-121.614zM32.938 236.79v66.242l72.842-11.858 1.592-49.873zm466.269 2.664-77.57 5.687 1.156 79.192 75.524 2.842zM98.313 279.81l-79.955 9.779 1.202 99.754 83.54 1.152zm280.659 7.347-28.332 7.031 21.455 68.315 16.125-5.043zm-246.961 3.348-9.248 70.303 16.125 5.043 21.455-68.315zM412.269 310.3v83.58l79.166-8.031 2.289-75.55zm84.605 91.656-88.934 9.947-1.16 80.727 90.674.586zm-395.822 2.002-81.848 2.322-4.658 86.184h90z"/></g>
+                <g transform="translate(11,-11)"><circle r="6" fill="#0a0a0a" stroke="#22c55e" stroke-width="1"></circle><path d="M-3 0 L-1 2 L3 -2" fill="none" stroke="#22c55e" stroke-width="1.4"></path></g>
+              </g>
+              <g transform="translate(90,122)">
+                <circle r="13" fill="rgba(166,138,46,.12)"></circle>
+                <circle r="16" fill="none" stroke="#6b5a1c" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#6b5a1c"><path d="M19.75 14.438c59.538 112.29 142.51 202.35 232.28 292.718l3.626 3.75.063-.062c21.827 21.93 44.04 43.923 66.405 66.25-18.856 14.813-38.974 28.2-59.938 40.312l28.532 28.53 68.717-68.717c42.337 27.636 76.286 63.646 104.094 105.81l28.064-28.06c-42.47-27.493-79.74-60.206-106.03-103.876l68.936-68.938-28.53-28.53c-11.115 21.853-24.413 42.015-39.47 60.593-43.852-43.8-86.462-85.842-130.125-125.47-.224-.203-.432-.422-.656-.625C183.624 122.75 108.515 63.91 19.75 14.437zm471.875 0c-83.038 46.28-154.122 100.78-221.97 161.156l22.814 21.562 56.81-56.812 13.22 13.187-56.438 56.44 24.594 23.186c61.802-66.92 117.6-136.92 160.97-218.72zm-329.53 125.906 200.56 200.53a402.965 402.965 0 0 1-13.405 13.032L148.875 153.53l13.22-13.186zm-76.69 113.28-28.5 28.532 68.907 68.906c-26.29 43.673-63.53 76.414-106 103.907l28.063 28.06c27.807-42.164 61.758-78.174 104.094-105.81l68.718 68.717 28.53-28.53c-20.962-12.113-41.08-25.5-59.937-40.313 17.865-17.83 35.61-35.433 53.157-52.97l-24.843-25.655-55.47 55.467c-4.565-4.238-9.014-8.62-13.374-13.062l55.844-55.844-24.53-25.374c-18.28 17.856-36.602 36.06-55.158 54.594-15.068-18.587-28.38-38.758-39.5-60.625z"/></g>
+                <g transform="translate(11,-11)"><circle r="6" fill="#0a0a0a" stroke="#22c55e" stroke-width="1"></circle><path d="M-3 0 L-1 2 L3 -2" fill="none" stroke="#22c55e" stroke-width="1.4"></path></g>
+              </g>
+              <g transform="translate(210,122)">
+                <circle r="13" fill="rgba(59,130,246,.14)"></circle>
+                <circle r="16" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="2 3"></circle>
+                <g transform="translate(-10,-10) scale(0.8333)" fill="#3b82f6"><path d="M12 4a5.5 5.5 0 0 0-5.5 5.5c0 .55.45 1 1 1s1-.45 1-1C8.5 7.57 10.07 6 12 6s3.5 1.57 3.5 3.5c0 1.58-1.06 2.56-2.38 3.18C11.78 13.36 11 14.49 11 16v.5c0 .55.45 1 1 1s1-.45 1-1V16c0-.64.42-1.12 1.38-1.62C15.9 13.58 17.5 12.09 17.5 9.5 17.5 6.46 15.04 4 12 4zm0 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></g>
+              </g>
+              <g transform="translate(150,196)">
+                <circle r="21" fill="none" stroke="#f59e0b" stroke-width="1" opacity=".6"><animate attributeName="r" values="21;30" dur="1.8s" repeatCount="indefinite"></animate><animate attributeName="opacity" values=".7;0" dur="1.8s" repeatCount="indefinite"></animate></circle>
+                <circle r="13" fill="rgba(245,158,11,.2)"></circle>
+                <circle r="16" fill="none" stroke="#f59e0b" stroke-width="2"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#f5c542"><path d="m208.7 22.36 22.4 77.23c8.9-1.66 18.1-2.49 27.6-2.49 8.5 0 16.8.68 24.9 2.02l22.2-76.76zm103.1 46.26-10 34.78c15.2 4.8 29.1 12.3 40.8 22.7l25.5-23.8c-16-14.79-35.1-26.35-56.3-33.68zm-108.9.86c-21 7.67-39.9 19.61-55.6 34.72l25.5 23.8c.1-.1.2-.3.4-.4 11.4-10.6 24.9-18.3 39.8-23.4zM97.56 83.35 59.71 139l86.09 30.1c3.7-10 8.6-19.1 14.5-27.1zm318.24 0-60.3 56.35c6.4 8.2 11.7 17.6 15.7 28.1l82.4-28.8zM268 116v317.5h93.4V218.6c0-35.3-11.5-60.4-29.8-77.3-16.2-15-38.3-23.6-63.6-25.3zm-18.6 0c-25.2 1.7-47.3 10.3-63.6 25.3-18.2 16.8-29.7 42-29.7 77.3v214.9h93.3zm163 57.3-35.8 12.5c2.2 10.2 3.4 21.1 3.4 32.8v9.3h38.9v-9.3c0-15.8-2.3-31-6.5-45.3zM105 174.7c-3.9 13.9-6.05 28.6-6.05 43.9v9.3h38.55v-9.3c0-11.2 1.1-21.7 3.1-31.4zm-39.3 71.8v56.2h71.8v-56.2zm314.3 0v56.2h66v-56.2zM98.95 321.3v37.5h38.55v-37.5zm281.05 0v37.5h38.9v-37.5zM56.16 377.4v56.1h81.34v-56.1zm323.84 0v56.1h75.8v-56.1zm-233.3 74.7-39.6 37.5h297.4l-33-37.5z"/></g>
+              </g>
+              <g class="node-move" onClick="{{ mapMove1 }}" transform="translate(86,268)">
+                <circle r="13" fill="rgba(166,138,46,.08)"></circle>
+                <circle r="16" fill="none" stroke="#a68a2e" stroke-width="1.5"></circle>
+                <circle r="20" fill="none" stroke="#a68a2e" stroke-width="1" stroke-dasharray="3 6" opacity=".7"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#a68a2e"><path d="M19.75 14.438c59.538 112.29 142.51 202.35 232.28 292.718l3.626 3.75.063-.062c21.827 21.93 44.04 43.923 66.405 66.25-18.856 14.813-38.974 28.2-59.938 40.312l28.532 28.53 68.717-68.717c42.337 27.636 76.286 63.646 104.094 105.81l28.064-28.06c-42.47-27.493-79.74-60.206-106.03-103.876l68.936-68.938-28.53-28.53c-11.115 21.853-24.413 42.015-39.47 60.593-43.852-43.8-86.462-85.842-130.125-125.47-.224-.203-.432-.422-.656-.625C183.624 122.75 108.515 63.91 19.75 14.437zm471.875 0c-83.038 46.28-154.122 100.78-221.97 161.156l22.814 21.562 56.81-56.812 13.22 13.187-56.438 56.44 24.594 23.186c61.802-66.92 117.6-136.92 160.97-218.72zm-329.53 125.906 200.56 200.53a402.965 402.965 0 0 1-13.405 13.032L148.875 153.53l13.22-13.186zm-76.69 113.28-28.5 28.532 68.907 68.906c-26.29 43.673-63.53 76.414-106 103.907l28.063 28.06c27.807-42.164 61.758-78.174 104.094-105.81l68.718 68.717 28.53-28.53c-20.962-12.113-41.08-25.5-59.937-40.313 17.865-17.83 35.61-35.433 53.157-52.97l-24.843-25.655-55.47 55.467c-4.565-4.238-9.014-8.62-13.374-13.062l55.844-55.844-24.53-25.374c-18.28 17.856-36.602 36.06-55.158 54.594-15.068-18.587-28.38-38.758-39.5-60.625z"/></g>
+              </g>
+              <g class="node-move" onClick="{{ mapMove2 }}" transform="translate(214,268)">
+                <circle r="13" fill="rgba(166,138,46,.08)"></circle>
+                <circle r="16" fill="none" stroke="#a68a2e" stroke-width="1.5"></circle>
+                <circle r="20" fill="none" stroke="#a68a2e" stroke-width="1" stroke-dasharray="3 6" opacity=".7"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#22c55e"><path d="M281.53 23.438c48.44 71.504-18.447 145.556-63.655 58.968 27.295 144.502-65.22 166.347-74.75 74.75-73.554 65.057-59.358 147.17-20.438 210.75l45.844-26.344c-12.004-18.318-17.995-42.502-15.31-66.218 25.688 39.43 106.855 10.088 97.124-59.938 10.695 32.074 37.802 28.97 65.78-20.5C278.07 297.622 337.95 364.248 378.032 333.5c1.47 11.97-2.95 25.657-10.592 38.063l46.968 12.53c55.122-47.503 79.71-135.97-3.812-175.53 39.08 60.478-13.1 105.064-60.72 41.468-38.546-72.133 82.366-113.394-68.343-226.593zM173.876 48.124c-64.128 32.333-14.642 60.51-14.03 92.344 44.122-38.935-3.722-53.508 14.03-92.345zm74.47 269.094L75 416.874c2.71 18.39 8.98 34.417 18.813 48.5l92-44.063-78.688 59.875c3.39 3.38 7.033 6.62 10.938 9.75L192.78 448c-.023-.738-.06-1.475-.06-2.22 0-37.22 30.495-67.56 67.81-67.56a67.554 67.554 0 0 1 29.44 6.717c-2.323-13.414-7.28-27.104-14.72-39.28l-94.938 40.124 82.47-56.467c-4.34-4.55-9.166-8.64-14.438-12.094zm58.874 57.624c1.61 7.148 2.6 14.315 2.967 21.312l.22 3.938c11.13 12.042 17.937 28.09 17.937 45.687a66.814 66.814 0 0 1-3.813 22.25l91.345 24.376c4.642-6.327 8.588-12.768 11.844-19.375l-63.158-24.686 70.125 6.844c.866-2.948 1.61-5.923 2.22-8.938l-97.063-34.22L439 427.5c.156-5.772-.103-11.67-.813-17.72L307.22 374.845zm-46.69 22.062c-27.26 0-49.124 21.8-49.124 48.875 0 27.078 21.864 48.876 49.125 48.876 27.263 0 49.126-21.798 49.126-48.875 0-27.075-21.863-48.874-49.125-48.874z"/></g>
+              </g>
+              <g transform="translate(150,344)">
+                <circle r="15" fill="rgba(51,42,8,.25)"></circle>
+                <circle r="18" fill="none" stroke="#332a08" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.8333)" fill="#4a3f10"><path d="M12 4a5.5 5.5 0 0 0-5.5 5.5c0 .55.45 1 1 1s1-.45 1-1C8.5 7.57 10.07 6 12 6s3.5 1.57 3.5 3.5c0 1.58-1.06 2.56-2.38 3.18C11.78 13.36 11 14.49 11 16v.5c0 .55.45 1 1 1s1-.45 1-1V16c0-.64.42-1.12 1.38-1.62C15.9 13.58 17.5 12.09 17.5 9.5 17.5 6.46 15.04 4 12 4zm0 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></g>
+              </g>
+              <text x="150" y="84" text-anchor="middle" font-size="8.5" fill="#6b5a1c" letter-spacing="1">SCHLEUSE</text>
+              <text x="90" y="154" text-anchor="middle" font-size="8.5" fill="#6b5a1c" letter-spacing="1">KARTENSAAL</text>
+              <text x="210" y="154" text-anchor="middle" font-size="8.5" fill="#3b82f6" letter-spacing="1">GEFLUTET</text>
+              <text x="150" y="230" text-anchor="middle" font-size="8.5" fill="#f5c542" letter-spacing="1">LESESAAL</text>
+              <text x="86" y="300" text-anchor="middle" font-size="8.5" fill="#a68a2e" letter-spacing="1">OSTFLÜGEL</text>
+              <text x="214" y="300" text-anchor="middle" font-size="8.5" fill="#a68a2e" letter-spacing="1">RASTKAMMER</text>
+              <text x="150" y="378" text-anchor="middle" font-size="8.5" fill="#4a3f10" letter-spacing="1">???</text>
+            </svg>
+          </div>
+          <div style="flex:none; border-top:1px dashed rgba(61,50,0,.55); padding:10px 12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#f5c542; margin-bottom:5px;">Raum 04 · Lesesaal</div>
+            <div style="font-size:9px; letter-spacing:.5px; color:#a68a2e; line-height:1.6;">Schwellenraum · Begegnung offen<br>2 Ausgänge · Flut steigt +6%/Zug</div>
+          </div>
+        </div>
+        </sc-if>
+
+
+        <!-- Scene -->
+        <div style="grid-column:2; grid-row:2; display:flex; flex-direction:column; min-height:0;">
+          <sc-if value="{{ isGfx }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative; flex:1; min-height:220px; overflow:hidden; border:1px solid rgba(61,50,0,.5); display:grid; grid-template-rows:auto minmax(132px,1fr) auto minmax(0,auto);">
+            <div style="position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:url('assets/deluge-art-1200.png') center 35%/cover; filter:brightness(.5) saturate(.85);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(4,6,8,.72), rgba(4,6,8,.28) 40%, rgba(4,6,8,.66) 78%, rgba(4,6,8,.9));"></div>
+              <div style="{{ fxOverlay }}"></div>
+            </div>
+
+            <!-- readout -->
+            <div style="{{ meterBox }}">
+              <span style="display:flex; justify-content:space-between; gap:14px; margin-bottom:5px;"><span>{{ meterLabel }}</span><span style="{{ meterValStyle }}">{{ water }}%</span></span>
+              <div style="{{ meterTrack }}"><span style="{{ waterFill }}"></span></div>
+            </div>
+            <sc-if value="{{ targeting }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; display:flex; align-items:center; gap:9px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#f5c542; background:rgba(4,6,8,.92); border:1px solid #f59e0b; padding:8px 14px; box-shadow:0 0 18px rgba(245,158,11,.25); white-space:nowrap;">
+                <span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:rec-blink 1.2s ease-in-out infinite;"></span>
+                {{ pendingHint }}
+                <span onClick="{{ pendingCancel }}" style="cursor:pointer; color:#a68a2e; margin-left:6px;">Esc ✕</span>
+              </div>
+            </sc-if>
+
+            <!-- foes band (nur im Kampf befüllt — kanonisch combat-scoped) -->
+            <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3, 1fr); justify-items:center; align-items:end; padding:4px 48px 26px;">
+              <sc-if value="{{ isCombat }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ foes }}" as="f" hint-placeholder-count="3">
+                  <div onClick="{{ f.go }}" style="display:flex; flex-direction:column; align-items:center; gap:4px; transition:opacity .2s, transform .2s; {{ f.wrap }}">
+                    <sc-if value="{{ f.hasIntent }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; align-items:center; gap:5px; font-size:9px; letter-spacing:.5px; color:{{ f.intentColor }}; background:rgba(4,6,8,.8); border:1px solid; border-color:{{ f.intentColor }}; padding:3px 8px; margin-bottom:2px;">
+                        <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 9v4"></path><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"></path><path d="M12 16h.01"></path></svg></span>
+                        {{ f.intent }}
+                      </div>
+                    </sc-if>
+                    <div style="position:relative;">
+                      <div style="{{ f.art }}"></div>
+                      <span style="{{ f.pool }}"></span>
+                    </div>
+                    <span style="font-size:9px; letter-spacing:1px; color:{{ f.tint }}; text-shadow:0 1px 4px #000;"><sc-if value="{{ f.hasRank }}" hint-placeholder-val="{{ false }}"><span style="margin-right:4px;">{{ f.rank }}</span></sc-if>{{ f.name }}</span>
+                    <span style="font-size:8px; letter-spacing:.5px; color:#8a8a8a;">{{ f.facts }}</span>
+                    <sc-if value="{{ f.hasAttackers }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:inline-flex; align-items:center; gap:5px; margin-top:2px; background:rgba(4,6,8,.85); border:1px solid rgba(239,68,68,.5); padding:3px 7px; animation:chron-in .25s ease both;">
+                        <sc-for list="{{ f.attackers }}" as="at" hint-placeholder-count="1">
+                          <span title="{{ at.title }}" style="{{ at.thumb }}">{{ at.mono }}</span>
+                        </sc-for>
+                        <span style="font-size:7.5px; letter-spacing:1px; text-transform:uppercase; color:#c96a6a;">im Visier</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
+            </div>
+
+            <!-- party band -->
+            <div style="position:relative; z-index:2; display:grid; grid-template-columns:repeat(4, 1fr); justify-items:center; align-items:end; padding:14px 48px 32px;">
+              <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+                <div onClick="{{ o.go }}" style="display:flex; flex-direction:column; align-items:center; gap:5px; transition:opacity .2s, transform .2s; {{ o.wrap }}">
+                  <sc-if value="{{ o.hasOrder }}" hint-placeholder-val="{{ false }}">
+                    <span onClick="{{ o.retract }}" title="Klick: Befehl zurücknehmen" style="display:inline-flex; align-items:center; gap:6px; font-size:8.5px; letter-spacing:.5px; color:#f5c542; background:rgba(4,6,8,.9); border:1px solid rgba(245,158,11,.65); padding:4px 8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.5); margin-bottom:1px; animation:chron-in .25s ease both;">
+                      <span style="{{ o.ordIcon }}"></span>{{ o.ordText }}<span style="color:#6b5a1c;">✕</span>
+                    </span>
+                  </sc-if>
+                  <div style="position:relative;">
+                    <span style="{{ o.disc }}">{{ o.mono }}</span>
+                    <span style="{{ o.pool }}"></span>
+                  </div>
+                  <span style="font-size:8.5px; letter-spacing:1px; color:#c9c9c9; text-shadow:0 1px 4px #000;">{{ o.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- chamber text -->
+            <div style="{{ waterPlane }}"></div>
+            <div class="chamber-scroll" style="grid-row:4; grid-column:1; position:relative; z-index:2; margin:8px 12px 12px; padding:13px 18px; background:rgba(5,9,13,.78); backdrop-filter:blur(3px); border:1px solid rgba(61,50,0,.55); min-height:0; overflow:auto;">
+              <div style="max-width:660px; margin:0 auto;">
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; line-height:1.55; color:#c9b96a; margin:0 0 9px;">„Vier Ausleihen überfällig seit hundert Jahren", sagt Fenn. „Und die Flut bringt sie alle zurück."</p>
+                <p style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#6b5a1c; margin:0 0 8px;">— Schwellenraum · Archiv —</p>
+                <p style="font-size:11.5px; line-height:1.65; color:#a68a2e; margin:0 0 8px;">Der Lesesaal steht knietief. Die Lampen brennen unter Wasser weiter, gelb und geduldig, als hätte man ihnen nicht Bescheid gesagt.</p>
+                <p style="font-size:11.5px; line-height:1.65; color:#a68a2e; margin:0 0 10px;">Am Katalogschrank hängt ein Messingschild: RÜCKGABE NUR MIT UNTERSCHRIFT.</p>
+                <div style="border:1px solid rgba(245,158,11,.4); background:rgba(245,158,11,.05); padding:9px 12px; margin:0 0 10px;">
+                  <p style="font-size:12px; line-height:1.65; color:#f5c542; margin:0;">Zwischen den Regalen treibt die Registratur-Barke: ein Floß aus Akten, ordentlich vertäut. Etwas darunter hält es fest. Die Schwelle verlangt einen Zoll — und sie nimmt keine Unterschriften.</p>
+                </div>
+                <p style="font-size:10.5px; letter-spacing:.5px; color:#5f8bc4; margin:0;">Das Wasser steht bei 38 % und steigt. Ihr habt Zeit für eine Entscheidung, vielleicht zwei.</p>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isTrm }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative; flex:1; border:1px solid rgba(61,50,0,.6); background:#0a0a08; padding:18px 20px; display:flex; flex-direction:column; justify-content:flex-end; gap:5px; overflow:hidden;">
+            <div style="font-size:11.5px; color:#a68a2e;">[Z7] — Schwellenraum · Archiv —</div>
+            <div style="font-size:11.5px; color:#f5c542; line-height:1.6;">Der Lesesaal steht knietief. Die Lampen brennen unter Wasser weiter.</div>
+            <div style="font-size:11.5px; color:#f5c542; line-height:1.6;">Zwischen den Regalen treibt die Registratur-Barke. Die Schwelle verlangt einen Zoll.</div>
+            <div style="font-size:11.5px; color:#5f8bc4;">Flut: 38% · steigt +6%/Zug</div>
+            <div style="font-size:11.5px; color:#a68a2e;">Optionen: [1] Blutzoll · [2] Bergegut opfern · [3] Fenn: Signaturtrick</div>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:8px; border-top:1px solid rgba(61,50,0,.6); padding-top:10px;">
+              <span style="color:#f59e0b; font-size:12px;">&gt;</span>
+              <span style="display:inline-block; width:8px; height:14px; background:#f59e0b; animation:rec-blink 1.1s steps(1) infinite;"></span>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+
+        <!-- Side: party + chronicle -->
+        <div style="grid-column:3; grid-row:2 / 4; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-left:1px dashed rgba(61,50,0,.4); font-size:10px; background:#0a0a0a;">
+          <sc-if value="{{ isEncounter }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:0 0 auto; max-height:58%; overflow:hidden; padding:10px 12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e; margin-bottom:7px;">Trupp · 4/4</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:30px 1fr auto; gap:9px; align-items:center; border:1px solid rgba(61,50,0,.45); background:rgba(10,10,8,.7); padding:6px 8px;">
+                  <span style="{{ o.thumb }}">{{ o.mono }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-size:10px; letter-spacing:.5px; color:#f5c542; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ o.name }}</div>
+                    <div style="font-size:8px; letter-spacing:.5px; color:#6b5a1c; margin-top:2px;">{{ o.apts }}</div>
+                  </div>
+                  <span style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:{{ o.condColor }};">{{ o.cond }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+          <div style="flex:1; min-height:0; display:flex; flex-direction:column; border-top:1px dashed rgba(61,50,0,.55); padding:10px 12px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e;">Chronik</span>
+              <span style="font-size:8.5px; color:#6b5a1c;">{{ chronCount }}</span>
+            </div>
+            <div style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; gap:6px;">
+              <sc-for list="{{ chron }}" as="c" hint-placeholder-count="8">
+                <div>
+                  <sc-if value="{{ c.showRoom }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:8px; margin:5px 0 4px;">
+                      <span style="flex:1; border-top:1px dashed rgba(61,50,0,.55);"></span>
+                      <span style="font-size:7.5px; letter-spacing:1.5px; text-transform:uppercase; color:#6b5a1c; white-space:nowrap;">{{ c.roomLabel }}</span>
+                      <span style="flex:1; border-top:1px dashed rgba(61,50,0,.55);"></span>
+                    </div>
+                  </sc-if>
+                  <div style="{{ c.style }}">{{ c.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions row (unter der Szene, Spalte 2) -->
+        <div style="grid-column:2; grid-row:3; position:relative; z-index:21; padding-top:8px;">
+          <sc-if value="{{ isCombat }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid rgba(61,50,0,.6); background:rgba(10,10,8,.9); padding:8px 10px;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <sc-for list="{{ cbTabs }}" as="t" hint-placeholder-count="4">
+                <span class="qbtn" onClick="{{ t.go }}" style="{{ t.style }}">
+                  <span style="{{ t.thumb }}">{{ t.mono }}</span>
+                  {{ t.name }}
+                  <span style="width:5px; height:5px; border-radius:50%; background:{{ t.cc }}; flex:0 0 auto;"></span>
+                  <sc-if value="{{ t.hasOrder }}" hint-placeholder-val="{{ false }}"><span style="color:#f59e0b; font-size:9px;">✓</span></sc-if>
+                </span>
+              </sc-for>
+              <span style="margin-left:auto; align-self:center; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#6b5a1c;">Runde 2 · Befehle 1/4</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ cbAbilities }}" as="a" hint-placeholder-count="4">
+                <span class="qbtn" onClick="{{ a.go }}" style="display:flex; align-items:center; gap:8px; border:1px solid rgba(166,138,46,.5); padding:7px 12px; font-size:11px; letter-spacing:.4px; color:#f5c542; background:transparent;">
+                  <span style="{{ a.icon }}"></span>
+                  {{ a.label }}
+                  <span style="font-size:8.5px; letter-spacing:.5px; color:{{ a.clusterColor }}; text-transform:uppercase;">{{ a.cluster }}</span>
+                </span>
+              </sc-for>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; border-top:1px dashed rgba(61,50,0,.55); margin-top:9px; padding-top:9px;">
+              <sc-for list="{{ orderSlots }}" as="s" hint-placeholder-count="4">
+                <span onClick="{{ s.go }}" style="{{ s.style }}">
+                  <span style="opacity:.6;">{{ s.num }}</span>
+                  {{ s.text }}
+                  <sc-if value="{{ s.set }}" hint-placeholder-val="{{ false }}"><span style="color:#6b5a1c; margin-left:2px;">✕</span></sc-if>
+                </span>
+              </sc-for>
+              <span class="qbtn" onClick="{{ cbExec }}" style="margin-left:auto; padding:8px 18px; border:1px solid #f59e0b; color:#f5c542; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; background:rgba(245,158,11,.08);" title="Im Stage-Prototyp: halten">Ausführen (halten) · {{ orderCount }}/4</span>
+            </div>
+          </div>
+          </sc-if>
+          <sc-if value="{{ isEncounter }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:stretch;">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; flex:1 1 100%;">
+              <sc-for list="{{ choices }}" as="ch" hint-placeholder-count="3">
+                <div class="gchoice" onClick="{{ ch.go }}" data-locked="{{ ch.locked }}" style="{{ ch.style }}">
+                  <span class="gchoice-label" style="display:flex; align-items:baseline; gap:6px; font-size:11px; font-weight:600; letter-spacing:.4px; color:{{ ch.labelColor }};"><span style="font-weight:700; opacity:.6;">{{ ch.idx }}</span>{{ ch.label }}</span>
+                  <span style="font-size:10px; line-height:1.4; color:#8a8a8a;">{{ ch.desc }}</span>
+                  <span style="display:flex; align-items:center; gap:5px; font-size:10px; color:#a0a0a0;">
+                    <span style="{{ ch.portrait }}">{{ ch.pMono }}</span>
+                    {{ ch.volunteer }} <span style="opacity:.75; font-variant-numeric:tabular-nums;">{{ ch.apt }}</span>
+                  </span>
+                  <span style="font-size:9px; letter-spacing:.4px; text-transform:uppercase; color:{{ ch.reqColor }}; font-weight:{{ ch.reqWeight }};">{{ ch.req }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <span class="qbtn" onClick="{{ qaLook }}" style="padding:7px 14px; border:1px solid rgba(166,138,46,.5); color:#a68a2e; font-size:11px; letter-spacing:.5px; background:transparent;">Umsehen</span>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-left:auto; padding-left:10px; border-left:1px dashed rgba(61,50,0,.55);">
+              <span class="qbtn" onClick="{{ qaStatus }}" style="padding:7px 14px; border:1px solid rgba(166,138,46,.5); color:#a68a2e; font-size:11px; letter-spacing:.5px;">Status</span>
+              <span class="qbtn" onClick="{{ qaSeal }}" style="padding:7px 14px; border:1px solid rgba(59,130,246,.5); color:#5f8bc4; font-size:11px; letter-spacing:.5px;">Leck versiegeln</span>
+              <span class="qbtn" style="padding:7px 14px; border:1px dashed rgba(239,68,68,.5); color:#c96a6a; font-size:11px; letter-spacing:.5px;" title="Halten zum Bestätigen">Rückzug (halten)</span>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1a — DUNGEON GRAPHICAL VIEW (Code-Rebuild) ═══════════════ -->
+  <div id="1a" data-screen-label="1a Dungeon Graphical" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Dungeon Graphical View — 1:1 nach DungeonGraphicalView.ts (HUD-Grid, Instrument-Header, Map-Rail, Chamber-Prosa, Choice-Karten), im 1920er-Rahmen</span>
+    </div>
+
+    <div style="width:1440px; background:#0a0a0a; color:#a68a2e; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; padding:0 16px 16px; box-sizing:border-box;">
+
+      <!-- HUD grid: header / [rail | scene | side] / actions -->
+      <div style="display:grid; grid-template-columns:{{ gridCols }}; grid-template-rows:auto 620px auto; margin-top:12px;">
+
+        <!-- Header row: instrument bar + view toggle -->
+        <div style="grid-column:1 / -1; grid-row:1; display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+          <div style="flex:1; display:flex; align-items:center; gap:16px; padding:6px 12px; background:rgba(10,10,8,.85); border:1px solid rgba(61,50,0,.6); border-bottom:1px dashed rgba(61,50,0,.4); font-size:11px; letter-spacing:.5px; color:#a68a2e;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#3b82f6; padding:3px 10px; border:1px solid rgba(59,130,246,.4); white-space:nowrap;">The Deluge</span>
+            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+              <span style="white-space:nowrap;">Tiefe</span>
+              <div style="flex:1; height:6px; background:rgba(61,50,0,.4); position:relative; overflow:hidden; min-width:60px;">
+                <span style="position:absolute; inset:0; width:45%; background:#a68a2e; display:block;"></span>
+                <span style="position:absolute; right:0; top:0; bottom:0; width:20%; background:rgba(239,68,68,.15); border-left:1px dashed rgba(239,68,68,.3);"></span>
+                <span style="position:absolute; inset:0; display:flex;"><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1; border-right:1px solid rgba(166,138,46,.5);"></span><span style="flex:1;"></span></span>
+              </div>
+              <span style="white-space:nowrap; color:#f5c542;">4 / 8</span>
+            </div>
+            <span style="display:flex; align-items:center; gap:6px; white-space:nowrap;"><span class="ic" style="color:#a68a2e;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 512 512" aria-hidden="true" fill="currentColor"><path d="M227.4 34.7c-10.1 0-20.2.2-30.2.5l6.1 65.6-61.1-62.5c-31.3 2.5-62.5 6.6-93.8 12.5l34.2 28.4-48-.6c35.1 100.2 6.9 182.6-.3 292.1L130 476.5c10-1.3 19.9-2.4 29.6-3.3l21.5-42.2 18.6 28.8 41.5-33.5.8 43c82.9-.2 157.7 9.1 235.7 7.9-28.2-73-31.2-143.6-31.9-209.2l-33.3-19.1 32.7-33.9c-.4-21.3-1.3-42-3.6-61.9l-57.4.7 50.2-41.7c-3.8-15.5-9-30.4-16.1-44.7l-29.5-23.9C335 38 281.2 34.6 227.4 34.7zm58.7 37c10.6 24.75 21.1 49.5 31.7 74.3 7.5-10.5 14.9-21 22.4-31.5 16 27.2 32 54.3 48 81.5l-16.2 9.5-33.3-56.7-42.5 59.4-15.2-10.9 24-33.5-21.9-51.5-24.6 40.1 12 22.6-16.5 8.8-18.3-34.5-24.8 58.2-17.2-7.4 32.5-76.2 7.7-18c4.8 9.2 9.6 18.3 14.5 27.4 12.5-20.6 25.1-41.11 37.7-61.6zM91.2 128c6.72 1.6 13.4 3.4 19.2 5.3-2.1 5.9-4.1 11.8-6.2 17.6-5.79-1.6-11.72-3.4-16.9-4.7 1.39-6 2.62-12.1 3.9-18.2zm37.9 13.4c6.3 3.8 12 7.2 17 12.8L132.6 167c-4-3.7-8.6-7-12.8-9.4zm28.7 32.3c2.1 7.4 2.1 15.7 1.6 22.5l-18.5-2.4c.1-5.1.3-10-1-14.5zm-21.2 35.7 17.2 7.1c-3.3 6.6-5.1 12.7-8.6 17.8l-16.3-9c2.6-5.4 5.6-10.8 7.7-15.9zm-16.5 34.1 17.7 6.1c-1.5 5.4-3 11.2-3.6 16.2l-18.6-2c1.3-7.5 2.1-14 4.5-20.3zm207.8 17.4c8.5 1 14.6 3 21.7 7.1l-9.8 16c-4.1-2.8-9.4-3.8-13.5-4.5zm-21.2 1.5c1.1 6.1 2.5 12.2 3.9 18.3-5.9 1.3-11.7 3.3-16.5 5.1l-6.8-17.4c6.7-2.4 13.5-4.7 19.4-6zm-37.9 15.9 11 15.1c-5.6 4-11.8 7.8-16.8 10.6l-8.9-16.4c5.1-2.9 10.6-6.3 14.7-9.3zM135.3 281c1.5 4.7 4.2 9.2 6.9 12.1l-13.8 12.6c-5.5-5.7-9.5-13.5-11.2-20.1zm230.3 3.3c3.5 6.4 6.8 12.7 8.7 19.1l-17.8 5.6c-2-5.4-4.3-10.8-6.8-14.8zm-127.4 10.9 6.9 17.3c-6.4 2.7-12.9 4.8-18.6 6.5l-5-18c5.9-1.6 11.3-3.8 16.7-5.8zm-83.8 6.2c5.3 1.7 10.8 3.4 15.7 4.2-1.2 6.1-2 12.3-2.8 18.5-7-1-14.5-3.3-20.5-5.7zm50 3.5 2.8 18.5c-7.2 1.3-13.4 1.6-19.8 1.9l-.4-18.7c5.9-.2 11.6-.8 17.4-1.7zm174.5 18c1 6.4 1.6 12.9 2.2 19.3l-18.7 1.5c-.4-6-.9-11.9-2-17.8zm-67.6 30.8c18.9 3.5 44.9 16.2 68.9 33.9 7.4-9.9 14.4-20.4 21.3-31.1l30.1 12.9c-4.7 12.3-15 25.6-28.6 37.2 17 16.2 30.9 34.5 37 53-13.8-18.1-31.1-31.8-50.3-42.8-23.4 15.8-52.7 25.9-79.6 20.4 22.9-4.4 40.6-16.6 55.8-32.6-16.5-7.5-33.8-13.9-51.3-20.1z"/></svg></span> Räume <b style="color:#f5c542;">5/12</b></span>
+            <span style="display:flex; align-items:center; gap:6px; white-space:nowrap; color:#8a8a8a;">{{ meterLabel }} <b style="{{ meterValStyle }}">{{ water }}%</b></span>
+          </div>
+          <div style="flex:none; display:flex; border:1px solid rgba(61,50,0,.6); background:rgba(10,10,8,.85);">
+            <span class="qbtn" onClick="{{ vGfx }}" style="{{ vGfxStyle }}">◉ Graphical</span>
+            <span class="qbtn" onClick="{{ vTrm }}" style="{{ vTrmStyle }}">&gt;_ Terminal</span>
+          </div>
+        </div>
+
+        <!-- Map rail -->
+        <sc-if value="{{ railOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="grid-column:1; grid-row:2 / 4; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-right:1px dashed rgba(61,50,0,.4); background:#0a0a0a;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e; padding:10px 10px 0; border-bottom:none;">Karte</div>
+          <div style="flex:1; min-height:0; overflow:hidden;">
+            <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMin meet" style="width:100%; height:100%;">
+              <line x1="150" y1="52" x2="90" y2="122" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="150" y1="52" x2="210" y2="122" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="90" y1="122" x2="150" y2="196" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="210" y1="122" x2="150" y2="196" stroke="#4a3f10" stroke-width="1.5"></line>
+              <line x1="150" y1="196" x2="86" y2="268" stroke="#a68a2e" stroke-width="1.5" stroke-dasharray="4 4"></line>
+              <line x1="150" y1="196" x2="214" y2="268" stroke="#a68a2e" stroke-width="1.5" stroke-dasharray="4 4"></line>
+              <line x1="86" y1="268" x2="150" y2="344" stroke="#332a08" stroke-width="1.5" stroke-dasharray="3 5"></line>
+              <line x1="214" y1="268" x2="150" y2="344" stroke="#332a08" stroke-width="1.5" stroke-dasharray="3 5"></line>
+              <g transform="translate(150,52)">
+                <circle r="13" fill="rgba(166,138,46,.12)"></circle>
+                <circle r="16" fill="none" stroke="#6b5a1c" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#6b5a1c"><path d="m193.571 26.027 35.192 83.99c14.877 7.658 33.121 6.696 47.488-1.279l40.283-85.976c-45.582-7.268-84.512-4.945-122.963 3.265zm137.3 7.606-32.038 71.38c12.536 12.349 37.237 18.872 47.033 15.448l31.172-64.691c-12.422-8.392-27.428-15.886-46.168-22.137zm-154.86-1.97c-21.814 6.55-40.982 16.35-56.099 28.591 14.941 15.844 28.861 34.184 38.194 52.832 24.477 6.133 35.479-6.849 47.475-18.55zm-74.245 34.831c-36.541 32.91-66.523 76.42-78.068 125.215l65.957 3.353c12.006-30.53 24.552-56.284 54.231-72.755-9.883-20.24-23.626-39.403-42.12-55.813zm292.503-.29-31.852 61.044c32.54 21.007 43.572 41.348 52.597 69l72.464-8.43c-9.612-55.894-42.206-107.047-93.209-121.614zM32.938 236.79v66.242l72.842-11.858 1.592-49.873zm466.269 2.664-77.57 5.687 1.156 79.192 75.524 2.842zM98.313 279.81l-79.955 9.779 1.202 99.754 83.54 1.152zm280.659 7.347-28.332 7.031 21.455 68.315 16.125-5.043zm-246.961 3.348-9.248 70.303 16.125 5.043 21.455-68.315zM412.269 310.3v83.58l79.166-8.031 2.289-75.55zm84.605 91.656-88.934 9.947-1.16 80.727 90.674.586zm-395.822 2.002-81.848 2.322-4.658 86.184h90z"/></g>
+                <g transform="translate(11,-11)"><circle r="6" fill="#0a0a0a" stroke="#22c55e" stroke-width="1"></circle><path d="M-3 0 L-1 2 L3 -2" fill="none" stroke="#22c55e" stroke-width="1.4"></path></g>
+              </g>
+              <g transform="translate(90,122)">
+                <circle r="13" fill="rgba(166,138,46,.12)"></circle>
+                <circle r="16" fill="none" stroke="#6b5a1c" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#6b5a1c"><path d="M19.75 14.438c59.538 112.29 142.51 202.35 232.28 292.718l3.626 3.75.063-.062c21.827 21.93 44.04 43.923 66.405 66.25-18.856 14.813-38.974 28.2-59.938 40.312l28.532 28.53 68.717-68.717c42.337 27.636 76.286 63.646 104.094 105.81l28.064-28.06c-42.47-27.493-79.74-60.206-106.03-103.876l68.936-68.938-28.53-28.53c-11.115 21.853-24.413 42.015-39.47 60.593-43.852-43.8-86.462-85.842-130.125-125.47-.224-.203-.432-.422-.656-.625C183.624 122.75 108.515 63.91 19.75 14.437zm471.875 0c-83.038 46.28-154.122 100.78-221.97 161.156l22.814 21.562 56.81-56.812 13.22 13.187-56.438 56.44 24.594 23.186c61.802-66.92 117.6-136.92 160.97-218.72zm-329.53 125.906 200.56 200.53a402.965 402.965 0 0 1-13.405 13.032L148.875 153.53l13.22-13.186zm-76.69 113.28-28.5 28.532 68.907 68.906c-26.29 43.673-63.53 76.414-106 103.907l28.063 28.06c27.807-42.164 61.758-78.174 104.094-105.81l68.718 68.717 28.53-28.53c-20.962-12.113-41.08-25.5-59.937-40.313 17.865-17.83 35.61-35.433 53.157-52.97l-24.843-25.655-55.47 55.467c-4.565-4.238-9.014-8.62-13.374-13.062l55.844-55.844-24.53-25.374c-18.28 17.856-36.602 36.06-55.158 54.594-15.068-18.587-28.38-38.758-39.5-60.625z"/></g>
+                <g transform="translate(11,-11)"><circle r="6" fill="#0a0a0a" stroke="#22c55e" stroke-width="1"></circle><path d="M-3 0 L-1 2 L3 -2" fill="none" stroke="#22c55e" stroke-width="1.4"></path></g>
+              </g>
+              <g transform="translate(210,122)">
+                <circle r="13" fill="rgba(59,130,246,.14)"></circle>
+                <circle r="16" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="2 3"></circle>
+                <g transform="translate(-10,-10) scale(0.8333)" fill="#3b82f6"><path d="M12 4a5.5 5.5 0 0 0-5.5 5.5c0 .55.45 1 1 1s1-.45 1-1C8.5 7.57 10.07 6 12 6s3.5 1.57 3.5 3.5c0 1.58-1.06 2.56-2.38 3.18C11.78 13.36 11 14.49 11 16v.5c0 .55.45 1 1 1s1-.45 1-1V16c0-.64.42-1.12 1.38-1.62C15.9 13.58 17.5 12.09 17.5 9.5 17.5 6.46 15.04 4 12 4zm0 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></g>
+              </g>
+              <g transform="translate(150,196)">
+                <circle r="21" fill="none" stroke="#f59e0b" stroke-width="1" opacity=".6"><animate attributeName="r" values="21;30" dur="1.8s" repeatCount="indefinite"></animate><animate attributeName="opacity" values=".7;0" dur="1.8s" repeatCount="indefinite"></animate></circle>
+                <circle r="13" fill="rgba(245,158,11,.2)"></circle>
+                <circle r="16" fill="none" stroke="#f59e0b" stroke-width="2"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#f5c542"><path d="m208.7 22.36 22.4 77.23c8.9-1.66 18.1-2.49 27.6-2.49 8.5 0 16.8.68 24.9 2.02l22.2-76.76zm103.1 46.26-10 34.78c15.2 4.8 29.1 12.3 40.8 22.7l25.5-23.8c-16-14.79-35.1-26.35-56.3-33.68zm-108.9.86c-21 7.67-39.9 19.61-55.6 34.72l25.5 23.8c.1-.1.2-.3.4-.4 11.4-10.6 24.9-18.3 39.8-23.4zM97.56 83.35 59.71 139l86.09 30.1c3.7-10 8.6-19.1 14.5-27.1zm318.24 0-60.3 56.35c6.4 8.2 11.7 17.6 15.7 28.1l82.4-28.8zM268 116v317.5h93.4V218.6c0-35.3-11.5-60.4-29.8-77.3-16.2-15-38.3-23.6-63.6-25.3zm-18.6 0c-25.2 1.7-47.3 10.3-63.6 25.3-18.2 16.8-29.7 42-29.7 77.3v214.9h93.3zm163 57.3-35.8 12.5c2.2 10.2 3.4 21.1 3.4 32.8v9.3h38.9v-9.3c0-15.8-2.3-31-6.5-45.3zM105 174.7c-3.9 13.9-6.05 28.6-6.05 43.9v9.3h38.55v-9.3c0-11.2 1.1-21.7 3.1-31.4zm-39.3 71.8v56.2h71.8v-56.2zm314.3 0v56.2h66v-56.2zM98.95 321.3v37.5h38.55v-37.5zm281.05 0v37.5h38.9v-37.5zM56.16 377.4v56.1h81.34v-56.1zm323.84 0v56.1h75.8v-56.1zm-233.3 74.7-39.6 37.5h297.4l-33-37.5z"/></g>
+              </g>
+              <g class="node-move" onClick="{{ mapMove1 }}" transform="translate(86,268)">
+                <circle r="13" fill="rgba(166,138,46,.08)"></circle>
+                <circle r="16" fill="none" stroke="#a68a2e" stroke-width="1.5"></circle>
+                <circle r="20" fill="none" stroke="#a68a2e" stroke-width="1" stroke-dasharray="3 6" opacity=".7"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#a68a2e"><path d="M19.75 14.438c59.538 112.29 142.51 202.35 232.28 292.718l3.626 3.75.063-.062c21.827 21.93 44.04 43.923 66.405 66.25-18.856 14.813-38.974 28.2-59.938 40.312l28.532 28.53 68.717-68.717c42.337 27.636 76.286 63.646 104.094 105.81l28.064-28.06c-42.47-27.493-79.74-60.206-106.03-103.876l68.936-68.938-28.53-28.53c-11.115 21.853-24.413 42.015-39.47 60.593-43.852-43.8-86.462-85.842-130.125-125.47-.224-.203-.432-.422-.656-.625C183.624 122.75 108.515 63.91 19.75 14.437zm471.875 0c-83.038 46.28-154.122 100.78-221.97 161.156l22.814 21.562 56.81-56.812 13.22 13.187-56.438 56.44 24.594 23.186c61.802-66.92 117.6-136.92 160.97-218.72zm-329.53 125.906 200.56 200.53a402.965 402.965 0 0 1-13.405 13.032L148.875 153.53l13.22-13.186zm-76.69 113.28-28.5 28.532 68.907 68.906c-26.29 43.673-63.53 76.414-106 103.907l28.063 28.06c27.807-42.164 61.758-78.174 104.094-105.81l68.718 68.717 28.53-28.53c-20.962-12.113-41.08-25.5-59.937-40.313 17.865-17.83 35.61-35.433 53.157-52.97l-24.843-25.655-55.47 55.467c-4.565-4.238-9.014-8.62-13.374-13.062l55.844-55.844-24.53-25.374c-18.28 17.856-36.602 36.06-55.158 54.594-15.068-18.587-28.38-38.758-39.5-60.625z"/></g>
+              </g>
+              <g class="node-move" onClick="{{ mapMove2 }}" transform="translate(214,268)">
+                <circle r="13" fill="rgba(166,138,46,.08)"></circle>
+                <circle r="16" fill="none" stroke="#a68a2e" stroke-width="1.5"></circle>
+                <circle r="20" fill="none" stroke="#a68a2e" stroke-width="1" stroke-dasharray="3 6" opacity=".7"></circle>
+                <g transform="translate(-10,-10) scale(0.0390625)" fill="#22c55e"><path d="M281.53 23.438c48.44 71.504-18.447 145.556-63.655 58.968 27.295 144.502-65.22 166.347-74.75 74.75-73.554 65.057-59.358 147.17-20.438 210.75l45.844-26.344c-12.004-18.318-17.995-42.502-15.31-66.218 25.688 39.43 106.855 10.088 97.124-59.938 10.695 32.074 37.802 28.97 65.78-20.5C278.07 297.622 337.95 364.248 378.032 333.5c1.47 11.97-2.95 25.657-10.592 38.063l46.968 12.53c55.122-47.503 79.71-135.97-3.812-175.53 39.08 60.478-13.1 105.064-60.72 41.468-38.546-72.133 82.366-113.394-68.343-226.593zM173.876 48.124c-64.128 32.333-14.642 60.51-14.03 92.344 44.122-38.935-3.722-53.508 14.03-92.345zm74.47 269.094L75 416.874c2.71 18.39 8.98 34.417 18.813 48.5l92-44.063-78.688 59.875c3.39 3.38 7.033 6.62 10.938 9.75L192.78 448c-.023-.738-.06-1.475-.06-2.22 0-37.22 30.495-67.56 67.81-67.56a67.554 67.554 0 0 1 29.44 6.717c-2.323-13.414-7.28-27.104-14.72-39.28l-94.938 40.124 82.47-56.467c-4.34-4.55-9.166-8.64-14.438-12.094zm58.874 57.624c1.61 7.148 2.6 14.315 2.967 21.312l.22 3.938c11.13 12.042 17.937 28.09 17.937 45.687a66.814 66.814 0 0 1-3.813 22.25l91.345 24.376c4.642-6.327 8.588-12.768 11.844-19.375l-63.158-24.686 70.125 6.844c.866-2.948 1.61-5.923 2.22-8.938l-97.063-34.22L439 427.5c.156-5.772-.103-11.67-.813-17.72L307.22 374.845zm-46.69 22.062c-27.26 0-49.124 21.8-49.124 48.875 0 27.078 21.864 48.876 49.125 48.876 27.263 0 49.126-21.798 49.126-48.875 0-27.075-21.863-48.874-49.125-48.874z"/></g>
+              </g>
+              <g transform="translate(150,344)">
+                <circle r="15" fill="rgba(51,42,8,.25)"></circle>
+                <circle r="18" fill="none" stroke="#332a08" stroke-width="1.5"></circle>
+                <g transform="translate(-10,-10) scale(0.8333)" fill="#4a3f10"><path d="M12 4a5.5 5.5 0 0 0-5.5 5.5c0 .55.45 1 1 1s1-.45 1-1C8.5 7.57 10.07 6 12 6s3.5 1.57 3.5 3.5c0 1.58-1.06 2.56-2.38 3.18C11.78 13.36 11 14.49 11 16v.5c0 .55.45 1 1 1s1-.45 1-1V16c0-.64.42-1.12 1.38-1.62C15.9 13.58 17.5 12.09 17.5 9.5 17.5 6.46 15.04 4 12 4zm0 15a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></g>
+              </g>
+              <text x="150" y="84" text-anchor="middle" font-size="8.5" fill="#6b5a1c" letter-spacing="1">SCHLEUSE</text>
+              <text x="90" y="154" text-anchor="middle" font-size="8.5" fill="#6b5a1c" letter-spacing="1">KARTENSAAL</text>
+              <text x="210" y="154" text-anchor="middle" font-size="8.5" fill="#3b82f6" letter-spacing="1">GEFLUTET</text>
+              <text x="150" y="230" text-anchor="middle" font-size="8.5" fill="#f5c542" letter-spacing="1">LESESAAL</text>
+              <text x="86" y="300" text-anchor="middle" font-size="8.5" fill="#a68a2e" letter-spacing="1">OSTFLÜGEL</text>
+              <text x="214" y="300" text-anchor="middle" font-size="8.5" fill="#a68a2e" letter-spacing="1">RASTKAMMER</text>
+              <text x="150" y="378" text-anchor="middle" font-size="8.5" fill="#4a3f10" letter-spacing="1">???</text>
+            </svg>
+          </div>
+          <div style="flex:none; border-top:1px dashed rgba(61,50,0,.55); padding:10px 12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#f5c542; margin-bottom:5px;">Raum 04 · Lesesaal</div>
+            <div style="font-size:9px; letter-spacing:.5px; color:#a68a2e; line-height:1.6;">Schwellenraum · Begegnung offen<br>2 Ausgänge · Flut steigt +6%/Zug</div>
+          </div>
+        </div>
+        </sc-if>
+
+
+        <!-- Scene -->
+        <div style="grid-column:2; grid-row:2; display:flex; flex-direction:column; min-height:0;">
+          <sc-if value="{{ isGfx }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative; flex:1; min-height:220px; overflow:hidden; border:1px solid rgba(61,50,0,.5); display:grid; grid-template-rows:auto minmax(132px,1fr) auto minmax(0,auto);">
+            <div style="position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;">
+              <div style="position:absolute; inset:0; background:url('assets/deluge-art-1200.png') center 35%/cover; filter:brightness(.5) saturate(.85);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(4,6,8,.72), rgba(4,6,8,.28) 40%, rgba(4,6,8,.66) 78%, rgba(4,6,8,.9));"></div>
+              <div style="{{ fxOverlay }}"></div>
+            </div>
+
+            <!-- readout -->
+            <div style="{{ meterBox }}">
+              <span style="display:flex; justify-content:space-between; gap:14px; margin-bottom:5px;"><span>{{ meterLabel }}</span><span style="{{ meterValStyle }}">{{ water }}%</span></span>
+              <div style="{{ meterTrack }}"><span style="{{ waterFill }}"></span></div>
+            </div>
+            <sc-if value="{{ targeting }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; display:flex; align-items:center; gap:9px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#f5c542; background:rgba(4,6,8,.92); border:1px solid #f59e0b; padding:8px 14px; box-shadow:0 0 18px rgba(245,158,11,.25); white-space:nowrap;">
+                <span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:rec-blink 1.2s ease-in-out infinite;"></span>
+                {{ pendingHint }}
+                <span onClick="{{ pendingCancel }}" style="cursor:pointer; color:#a68a2e; margin-left:6px;">Esc ✕</span>
+              </div>
+            </sc-if>
+
+            <!-- foes band (nur im Kampf befüllt — kanonisch combat-scoped) -->
+            <div style="position:relative; z-index:1; display:grid; grid-template-columns:repeat(3, 1fr); justify-items:center; align-items:end; padding:4px 48px 26px;">
+              <sc-if value="{{ isCombat }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ foes }}" as="f" hint-placeholder-count="3">
+                  <div onClick="{{ f.go }}" style="display:flex; flex-direction:column; align-items:center; gap:4px; transition:opacity .2s, transform .2s; {{ f.wrap }}">
+                    <sc-if value="{{ f.hasIntent }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; align-items:center; gap:5px; font-size:9px; letter-spacing:.5px; color:{{ f.intentColor }}; background:rgba(4,6,8,.8); border:1px solid; border-color:{{ f.intentColor }}; padding:3px 8px; margin-bottom:2px;">
+                        <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 9v4"></path><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"></path><path d="M12 16h.01"></path></svg></span>
+                        {{ f.intent }}
+                      </div>
+                    </sc-if>
+                    <div style="position:relative;">
+                      <div style="{{ f.art }}"></div>
+                      <span style="{{ f.pool }}"></span>
+                    </div>
+                    <span style="font-size:9px; letter-spacing:1px; color:{{ f.tint }}; text-shadow:0 1px 4px #000;"><sc-if value="{{ f.hasRank }}" hint-placeholder-val="{{ false }}"><span style="margin-right:4px;">{{ f.rank }}</span></sc-if>{{ f.name }}</span>
+                    <span style="font-size:8px; letter-spacing:.5px; color:#8a8a8a;">{{ f.facts }}</span>
+                    <sc-if value="{{ f.hasAttackers }}" hint-placeholder-val="{{ false }}">
+                      <span style="display:inline-flex; align-items:center; gap:5px; margin-top:2px; background:rgba(4,6,8,.85); border:1px solid rgba(239,68,68,.5); padding:3px 7px; animation:chron-in .25s ease both;">
+                        <sc-for list="{{ f.attackers }}" as="at" hint-placeholder-count="1">
+                          <span title="{{ at.title }}" style="{{ at.thumb }}">{{ at.mono }}</span>
+                        </sc-for>
+                        <span style="font-size:7.5px; letter-spacing:1px; text-transform:uppercase; color:#c96a6a;">im Visier</span>
+                      </span>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
+            </div>
+
+            <!-- party band -->
+            <div style="position:relative; z-index:2; display:grid; grid-template-columns:repeat(4, 1fr); justify-items:center; align-items:end; padding:14px 48px 32px;">
+              <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+                <div onClick="{{ o.go }}" style="display:flex; flex-direction:column; align-items:center; gap:5px; transition:opacity .2s, transform .2s; {{ o.wrap }}">
+                  <sc-if value="{{ o.hasOrder }}" hint-placeholder-val="{{ false }}">
+                    <span onClick="{{ o.retract }}" title="Klick: Befehl zurücknehmen" style="display:inline-flex; align-items:center; gap:6px; font-size:8.5px; letter-spacing:.5px; color:#f5c542; background:rgba(4,6,8,.9); border:1px solid rgba(245,158,11,.65); padding:4px 8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.5); margin-bottom:1px; animation:chron-in .25s ease both;">
+                      <span style="{{ o.ordIcon }}"></span>{{ o.ordText }}<span style="color:#6b5a1c;">✕</span>
+                    </span>
+                  </sc-if>
+                  <div style="position:relative;">
+                    <span style="{{ o.disc }}">{{ o.mono }}</span>
+                    <span style="{{ o.pool }}"></span>
+                  </div>
+                  <span style="font-size:8.5px; letter-spacing:1px; color:#c9c9c9; text-shadow:0 1px 4px #000;">{{ o.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- chamber text -->
+            <div style="{{ waterPlane }}"></div>
+            <div class="chamber-scroll" style="grid-row:4; grid-column:1; position:relative; z-index:2; margin:8px 12px 12px; padding:13px 18px; background:rgba(5,9,13,.78); backdrop-filter:blur(3px); border:1px solid rgba(61,50,0,.55); min-height:0; overflow:auto;">
+              <div style="max-width:660px; margin:0 auto;">
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; line-height:1.55; color:#c9b96a; margin:0 0 9px;">„Vier Ausleihen überfällig seit hundert Jahren", sagt Fenn. „Und die Flut bringt sie alle zurück."</p>
+                <p style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#6b5a1c; margin:0 0 8px;">— Schwellenraum · Archiv —</p>
+                <p style="font-size:11.5px; line-height:1.65; color:#a68a2e; margin:0 0 8px;">Der Lesesaal steht knietief. Die Lampen brennen unter Wasser weiter, gelb und geduldig, als hätte man ihnen nicht Bescheid gesagt.</p>
+                <p style="font-size:11.5px; line-height:1.65; color:#a68a2e; margin:0 0 10px;">Am Katalogschrank hängt ein Messingschild: RÜCKGABE NUR MIT UNTERSCHRIFT.</p>
+                <div style="border:1px solid rgba(245,158,11,.4); background:rgba(245,158,11,.05); padding:9px 12px; margin:0 0 10px;">
+                  <p style="font-size:12px; line-height:1.65; color:#f5c542; margin:0;">Zwischen den Regalen treibt die Registratur-Barke: ein Floß aus Akten, ordentlich vertäut. Etwas darunter hält es fest. Die Schwelle verlangt einen Zoll — und sie nimmt keine Unterschriften.</p>
+                </div>
+                <p style="font-size:10.5px; letter-spacing:.5px; color:#5f8bc4; margin:0;">Das Wasser steht bei 38 % und steigt. Ihr habt Zeit für eine Entscheidung, vielleicht zwei.</p>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isTrm }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative; flex:1; border:1px solid rgba(61,50,0,.6); background:#0a0a08; padding:18px 20px; display:flex; flex-direction:column; justify-content:flex-end; gap:5px; overflow:hidden;">
+            <div style="font-size:11.5px; color:#a68a2e;">[Z7] — Schwellenraum · Archiv —</div>
+            <div style="font-size:11.5px; color:#f5c542; line-height:1.6;">Der Lesesaal steht knietief. Die Lampen brennen unter Wasser weiter.</div>
+            <div style="font-size:11.5px; color:#f5c542; line-height:1.6;">Zwischen den Regalen treibt die Registratur-Barke. Die Schwelle verlangt einen Zoll.</div>
+            <div style="font-size:11.5px; color:#5f8bc4;">Flut: 38% · steigt +6%/Zug</div>
+            <div style="font-size:11.5px; color:#a68a2e;">Optionen: [1] Blutzoll · [2] Bergegut opfern · [3] Fenn: Signaturtrick</div>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:8px; border-top:1px solid rgba(61,50,0,.6); padding-top:10px;">
+              <span style="color:#f59e0b; font-size:12px;">&gt;</span>
+              <span style="display:inline-block; width:8px; height:14px; background:#f59e0b; animation:rec-blink 1.1s steps(1) infinite;"></span>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+
+        <!-- Side: party + chronicle -->
+        <div style="grid-column:3; grid-row:2 / 4; display:flex; flex-direction:column; min-height:0; overflow:hidden; border-left:1px dashed rgba(61,50,0,.4); font-size:10px; background:#0a0a0a;">
+          <sc-if value="{{ isEncounter }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:0 0 auto; max-height:58%; overflow:hidden; padding:10px 12px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e; margin-bottom:7px;">Trupp · 4/4</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <sc-for list="{{ ops }}" as="o" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:30px 1fr auto; gap:9px; align-items:center; border:1px solid rgba(61,50,0,.45); background:rgba(10,10,8,.7); padding:6px 8px;">
+                  <span style="{{ o.thumb }}">{{ o.mono }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-size:10px; letter-spacing:.5px; color:#f5c542; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ o.name }}</div>
+                    <div style="font-size:8px; letter-spacing:.5px; color:#6b5a1c; margin-top:2px;">{{ o.apts }}</div>
+                  </div>
+                  <span style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:{{ o.condColor }};">{{ o.cond }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+          <div style="flex:1; min-height:0; display:flex; flex-direction:column; border-top:1px dashed rgba(61,50,0,.55); padding:10px 12px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e;">Chronik</span>
+              <span style="font-size:8.5px; color:#6b5a1c;">{{ chronCount }}</span>
+            </div>
+            <div style="flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; gap:6px;">
+              <sc-for list="{{ chron }}" as="c" hint-placeholder-count="8">
+                <div>
+                  <sc-if value="{{ c.showRoom }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:8px; margin:5px 0 4px;">
+                      <span style="flex:1; border-top:1px dashed rgba(61,50,0,.55);"></span>
+                      <span style="font-size:7.5px; letter-spacing:1.5px; text-transform:uppercase; color:#6b5a1c; white-space:nowrap;">{{ c.roomLabel }}</span>
+                      <span style="flex:1; border-top:1px dashed rgba(61,50,0,.55);"></span>
+                    </div>
+                  </sc-if>
+                  <div style="{{ c.style }}">{{ c.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions row (unter der Szene, Spalte 2) -->
+        <div style="grid-column:2; grid-row:3; position:relative; z-index:21; padding-top:8px;">
+          <sc-if value="{{ isCombat }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid rgba(61,50,0,.6); background:rgba(10,10,8,.9); padding:8px 10px;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <sc-for list="{{ cbTabs }}" as="t" hint-placeholder-count="4">
+                <span class="qbtn" onClick="{{ t.go }}" style="{{ t.style }}">
+                  <span style="{{ t.thumb }}">{{ t.mono }}</span>
+                  {{ t.name }}
+                  <span style="width:5px; height:5px; border-radius:50%; background:{{ t.cc }}; flex:0 0 auto;"></span>
+                  <sc-if value="{{ t.hasOrder }}" hint-placeholder-val="{{ false }}"><span style="color:#f59e0b; font-size:9px;">✓</span></sc-if>
+                </span>
+              </sc-for>
+              <span style="margin-left:auto; align-self:center; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#6b5a1c;">Runde 2 · Befehle 1/4</span>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:7px;">
+              <sc-for list="{{ cbAbilities }}" as="a" hint-placeholder-count="4">
+                <span class="qbtn" onClick="{{ a.go }}" style="display:flex; align-items:center; gap:8px; border:1px solid rgba(166,138,46,.5); padding:7px 12px; font-size:11px; letter-spacing:.4px; color:#f5c542; background:transparent;">
+                  <span style="{{ a.icon }}"></span>
+                  {{ a.label }}
+                  <span style="font-size:8.5px; letter-spacing:.5px; color:{{ a.clusterColor }}; text-transform:uppercase;">{{ a.cluster }}</span>
+                </span>
+              </sc-for>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; border-top:1px dashed rgba(61,50,0,.55); margin-top:9px; padding-top:9px;">
+              <sc-for list="{{ orderSlots }}" as="s" hint-placeholder-count="4">
+                <span onClick="{{ s.go }}" style="{{ s.style }}">
+                  <span style="opacity:.6;">{{ s.num }}</span>
+                  {{ s.text }}
+                  <sc-if value="{{ s.set }}" hint-placeholder-val="{{ false }}"><span style="color:#6b5a1c; margin-left:2px;">✕</span></sc-if>
+                </span>
+              </sc-for>
+              <span class="qbtn" onClick="{{ cbExec }}" style="margin-left:auto; padding:8px 18px; border:1px solid #f59e0b; color:#f5c542; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; background:rgba(245,158,11,.08);" title="Im Stage-Prototyp: halten">Ausführen (halten) · {{ orderCount }}/4</span>
+            </div>
+          </div>
+          </sc-if>
+          <sc-if value="{{ isEncounter }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:stretch;">
+            <div style="display:flex; flex-wrap:wrap; gap:8px; flex:1 1 100%;">
+              <sc-for list="{{ choices }}" as="ch" hint-placeholder-count="3">
+                <div class="gchoice" onClick="{{ ch.go }}" data-locked="{{ ch.locked }}" style="{{ ch.style }}">
+                  <span class="gchoice-label" style="display:flex; align-items:baseline; gap:6px; font-size:11px; font-weight:600; letter-spacing:.4px; color:{{ ch.labelColor }};"><span style="font-weight:700; opacity:.6;">{{ ch.idx }}</span>{{ ch.label }}</span>
+                  <span style="font-size:10px; line-height:1.4; color:#8a8a8a;">{{ ch.desc }}</span>
+                  <span style="display:flex; align-items:center; gap:5px; font-size:10px; color:#a0a0a0;">
+                    <span style="{{ ch.portrait }}">{{ ch.pMono }}</span>
+                    {{ ch.volunteer }} <span style="opacity:.75; font-variant-numeric:tabular-nums;">{{ ch.apt }}</span>
+                  </span>
+                  <span style="font-size:9px; letter-spacing:.4px; text-transform:uppercase; color:{{ ch.reqColor }}; font-weight:{{ ch.reqWeight }};">{{ ch.req }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <span class="qbtn" onClick="{{ qaLook }}" style="padding:7px 14px; border:1px solid rgba(166,138,46,.5); color:#a68a2e; font-size:11px; letter-spacing:.5px; background:transparent;">Umsehen</span>
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-left:auto; padding-left:10px; border-left:1px dashed rgba(61,50,0,.55);">
+              <span class="qbtn" onClick="{{ qaStatus }}" style="padding:7px 14px; border:1px solid rgba(166,138,46,.5); color:#a68a2e; font-size:11px; letter-spacing:.5px;">Status</span>
+              <span class="qbtn" onClick="{{ qaSeal }}" style="padding:7px 14px; border:1px solid rgba(59,130,246,.5); color:#5f8bc4; font-size:11px; letter-spacing:.5px;">Leck versiegeln</span>
+              <span class="qbtn" style="padding:7px 14px; border:1px dashed rgba(239,68,68,.5); color:#c96a6a; font-size:11px; letter-spacing:.5px;" title="Halten zum Bestätigen">Rückzug (halten)</span>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1536, &quot;height&quot;: 900 },
+  &quot;moment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;combat&quot;, &quot;encounter&quot;], &quot;default&quot;: &quot;combat&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Szene&quot; },
+  &quot;fx&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;water&quot;, &quot;darkness&quot;, &quot;decay&quot;, &quot;tilt&quot;, &quot;pulse&quot;, &quot;forge&quot;, &quot;shards&quot;, &quot;flicker&quot;], &quot;default&quot;: &quot;water&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Szene&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    view: 'gfx', rail: true, water: 38, cbAgent: 0, pending: null, orders: {},
+    chron: [
+      { t: 'sys', room: 'Raum 02 · Kartensaal', text: '[Z5] Leck versiegelt. Flut −8%.' },
+      { t: 'nar', room: 'Raum 02 · Kartensaal', text: 'Wolf hält die Tür, bis alle durch sind. Dann hält sie sie noch einen Moment länger.' },
+      { t: 'dmg', room: 'Raum 02 · Kartensaal', text: 'K-9 meldet Wasser im Chassis. Zustand: angeschlagen.' },
+      { t: 'sys', room: 'Raum 04 · Lesesaal', text: '[Z6] Bewegung: Kartensaal → Lesesaal. Flut +6%.' },
+      { t: 'nar', room: 'Raum 04 · Lesesaal', text: 'Fenn liest die Rückgabefristen der treibenden Akten. Er lacht nicht.' },
+      { t: 'sys', room: 'Raum 04 · Lesesaal', text: '[Z7] Schwellenraum betreten — Lesesaal.' },
+    ],
+  };
+
+  _chronStyle(t) {
+    const base = 'font-size:10.5px;line-height:1.55;letter-spacing:.3px;';
+    if (t === 'nar') return base + 'color:#f5c542;font-family:Spectral,Georgia,serif;font-size:11.5px;font-style:italic;';
+    if (t === 'dmg') return base + 'color:#c96a6a;';
+    return base + 'color:#a68a2e;';
+  }
+
+  componentDidMount() {
+    this._onKey = (e) => {
+      if (e.key === 'Escape' && this.state.pending) this.setState({ pending: null });
+    };
+    window.addEventListener('keydown', this._onKey);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this._onKey);
+  }
+
+  _lockOrder(targetName) {
+    const p = this.state.pending;
+    if (!p) return;
+    this.setState((s) => ({
+      pending: null,
+      orders: { ...s.orders, [p.agent]: { label: p.label, cluster: p.cluster, target: targetName, pict: p.pict } },
+    }));
+    this._push('sys', p.who + ': ' + p.label + ' → ' + targetName + '. Befehl rastet ein.');
+  }
+
+  _push(t, text) {
+    this.setState((s) => ({ chron: s.chron.concat([{ t, text, room: 'Raum 04 · Lesesaal', fresh: true }]).slice(-9) }));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const OPC = { SPY: '#64748b', GRD: '#10b981', PRP: '#f59e0b', INF: '#a78bfa' };
+    const ops = [
+      { name: 'Ilsabet Voss', img: 'assets/p-voss.png', cond: 'Einsatzfähig', cc: '#22c55e', apts: 'PRP 9 · INF 7 · SPY 4' },
+      { name: 'Corvin Fenn', img: 'assets/p-fenn.png', cond: 'Gestresst', cc: '#f59e0b', apts: 'SPY 8 · SAB 9 · INF 8' },
+      { name: 'Marta Wolf', img: 'assets/p-wolf.png', cond: 'Einsatzfähig', cc: '#22c55e', apts: 'GRD 9 · SPY 6 · PRP 7' },
+      { name: 'Ledger-Drone K-9', img: null, cond: 'Verwundet', cc: '#ef4444', apts: 'GRD 10 · SPY 8 · PRP 4' },
+    ].map((o, i) => ({
+      name: o.name, cond: o.cond, condColor: o.cc, apts: o.apts,
+      mono: o.img ? '' : 'K9',
+      ...(() => {
+        const ord = this.state.orders[i];
+        const CL = { strike: '#ef4444', aid: '#22c55e', guard: '#3b82f6' };
+        return {
+          hasOrder: !!ord,
+          ordText: ord ? ord.label + ' → ' + ord.target : '',
+          ordIcon: ord ? 'width:13px;height:13px;flex:0 0 auto;background-color:' + CL[ord.cluster] + ';-webkit-mask:url(\'assets/ui-pictograms/' + ord.pict + '.png\') center/contain no-repeat;mask:url(\'assets/ui-pictograms/' + ord.pict + '.png\') center/contain no-repeat;' : '',
+          retract: ord ? () => { this.setState((s2) => { const next = { ...s2.orders }; delete next[i]; return { orders: next }; }); } : () => {},
+        };
+      })(),
+      go: (this.state.pending && this.state.pending.cluster !== 'strike') ? () => this._lockOrder(o.name) : () => {},
+      wrap: (this.state.pending && this.state.pending.cluster !== 'strike')
+        ? 'cursor:crosshair; transform:scale(1.06); outline:1px dashed #22c55e; outline-offset:6px; background:rgba(34,197,94,.05);'
+        : (this.state.pending ? 'opacity:.45;' : ''),
+      disc: 'display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;box-sizing:border-box;border:2px solid ' + o.cc + ';box-shadow:0 0 12px ' + o.cc + '55, 0 4px 10px rgba(0,0,0,.6);overflow:hidden;font-family:\'Courier New\',monospace;font-weight:700;font-size:15px;color:#a68a2e;' + (o.img ? 'background:url(\'' + o.img + '\') center 15%/cover;' : 'background:#111;'),
+      pool: 'position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);width:44px;height:9px;border-radius:50%;background:radial-gradient(ellipse, ' + o.cc + '44, transparent 70%);',
+      thumb: 'display:flex;align-items:center;justify-content:center;width:30px;height:30px;box-sizing:border-box;border:1px solid ' + o.cc + '88;font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;color:#a68a2e;' + (o.img ? 'background:url(\'' + o.img + '\') center 15%/cover;' : 'background:#111;'),
+    }));
+
+    const choiceBase = (locked) => 'display:flex;flex-direction:column;gap:4px;min-width:168px;max-width:300px;flex:1 1 200px;padding:7px 9px;text-align:left;background:transparent;border:1px solid ' + (locked ? 'rgba(239,68,68,.55)' : '#a68a2e') + ';color:#a68a2e;cursor:' + (locked ? 'not-allowed' : 'pointer') + ';' + (locked ? 'opacity:.72;' : '');
+    const pStyle = (img, c) => 'flex:none;width:16px;height:16px;box-sizing:border-box;border:1px solid rgba(61,50,0,.8);display:inline-flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:' + c + ';' + (img ? 'background:url(\'' + img + '\') center 12%/cover;' : 'background:#111;');
+    const choices = [
+      { idx: '1.', label: 'Blutzoll entrichten', desc: 'Jemand macht einen Zustandsschritt. Bekannter Preis. Unumkehrbar.', volunteer: 'Marta Wolf', apt: 'GRD 9', img: 'assets/p-wolf.png', c: OPC.GRD, req: 'Voraussetzung: erfüllt', ok: true,
+        log: 'Wolf tritt vor. Die Schwelle nimmt. Wolf: Gestresst.' },
+      { idx: '2.', label: 'Bergegut opfern', desc: 'Die Barke nimmt Fracht statt Blut. 140 Chitin gehen unter.', volunteer: 'Ilsabet Voss', apt: 'PRP 9', img: 'assets/p-voss.png', c: OPC.PRP, req: 'Voraussetzung: erfüllt', ok: true,
+        log: 'Voss verliest die Abschreibung. Das Bergegut versinkt formvollendet.' },
+      { idx: '3.', label: 'Signaturtrick', desc: 'Fenn fälscht eine Rückgabe von 1926. Wenn es auffliegt, fliegt es laut auf.', volunteer: 'Corvin Fenn', apt: 'SAB 9', img: 'assets/p-fenn.png', c: '#ef4444', req: 'SAB 10 nötig — 9 im Trupp', ok: false,
+        log: '' },
+    ].map((c) => ({
+      idx: c.idx, label: c.label, desc: c.desc, volunteer: c.volunteer, apt: c.apt,
+      labelColor: c.ok ? '#f5c542' : '#a68a2e',
+      style: choiceBase(!c.ok),
+      locked: c.ok ? '' : '1',
+      portrait: pStyle(c.img, c.c), pMono: c.img ? '' : 'K9',
+      req: c.req,
+      reqColor: c.ok ? '#7cb87c' : '#ef4444',
+      reqWeight: c.ok ? '400' : '700',
+      go: c.ok ? () => { this._push('nar', c.log); this._push('sys', '[Z8] Begegnung gelöst. Flut +6%.'); this.setState((st) => ({ water: Math.min(100, st.water + 6) })); } : () => {},
+    }));
+
+    // ── Kampfmoment (kanonisch: Feindband + Combat-Bar nur im Kampf; Party-Karte weicht der Chronik) ──
+    const isCombat = (this.props.moment ?? 'combat') === 'combat';
+    const FOE_COND = { healthy: ['#ef4444', 0], damaged: ['#f59e0b', 0.34], critical: ['#f59e0b', 0.74] };
+    const FOE_INTENT = { low: '#3b82f6', medium: '#f59e0b', high: '#ef4444' };
+    const foes = [
+      { name: 'Akten-Wisp A', tier: 'minion', h: 84, img: 'assets/e-wraith.png', cond: 'healthy', facts: 'Gegner · Unversehrt', intent: 'Umkreist Fenn', threat: 'low' },
+      { name: 'Registratur-Wächter', tier: 'elite', h: 132, img: 'assets/e-warden.png', cond: 'damaged', facts: 'Elite · Beschädigt', intent: 'Verschlingt die Barke', threat: 'high', rank: '◆' },
+      { name: 'Akten-Wisp B', tier: 'minion', h: 84, img: 'assets/e-wraith.png', cond: 'critical', facts: 'Gegner · Kritisch', intent: '', threat: 'medium' },
+    ].map((f) => {
+      const [tint, wear] = FOE_COND[f.cond];
+      const p = this.state.pending;
+      const foeTarget = p && p.cluster === 'strike';
+      const AGN = [['Voss', 'assets/p-voss.png'], ['Fenn', 'assets/p-fenn.png'], ['Wolf', 'assets/p-wolf.png'], ['K-9', null]];
+      const attackers = Object.entries(this.state.orders)
+        .filter(([, o]) => o.cluster === 'strike' && o.target === f.name)
+        .map(([idx, o]) => {
+          const a = AGN[+idx];
+          return {
+            mono: a[1] ? '' : 'K9',
+            title: a[0] + ': ' + o.label,
+            thumb: 'display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;box-sizing:border-box;border:1px solid rgba(239,68,68,.7);font-size:6.5px;font-weight:700;color:#a68a2e;' + (a[1] ? 'background:url(\'' + a[1] + '\') center 12%/cover;' : 'background:#111;'),
+          };
+        });
+      return {
+        hasAttackers: attackers.length > 0, attackers,
+        name: f.name, facts: f.facts, tint,
+        rank: f.rank || '', hasRank: !!f.rank,
+        intent: f.intent, hasIntent: !!f.intent,
+        intentColor: FOE_INTENT[f.threat],
+        go: foeTarget ? () => this._lockOrder(f.name) : () => {},
+        wrap: foeTarget
+          ? 'cursor:crosshair; transform:scale(1.05); outline:1px dashed #f59e0b; outline-offset:8px; background:rgba(245,158,11,.04);'
+          : (p ? 'opacity:.35;' : ''),
+        art: 'width:' + Math.round(f.h * 0.78) + 'px;height:' + f.h + 'px;background:url(\'' + f.img + '\') center top/cover;filter:grayscale(' + wear + ') brightness(' + (1 - wear * 0.35).toFixed(2) + ') drop-shadow(0 6px 10px rgba(0,0,0,.6));',
+        pool: 'position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:' + Math.round(f.h * 0.7) + 'px;height:10px;border-radius:50%;background:radial-gradient(ellipse, ' + tint + '4d, transparent 70%);',
+      };
+    });
+    const PICT = 'assets/ui-pictograms/';
+    const CLUSTER = { strike: '#ef4444', aid: '#22c55e', guard: '#3b82f6' };
+    const KITS = [
+      [['propagandist_inspire', 'Inspirieren', 'aid'], ['propagandist_demoralize', 'Demoralisieren', 'strike'], ['propagandist_rally', 'Sammeln', 'aid'], ['basic_attack', 'Angriff', 'strike']],
+      [['spy_observe', 'Beobachten', 'guard'], ['spy_analyze_weakness', 'Schwäche analysieren', 'strike'], ['saboteur_disrupt', 'Stören', 'strike'], ['infiltrator_evade', 'Ausweichen', 'guard']],
+      [['guardian_shield', 'Schild', 'guard'], ['guardian_taunt', 'Provozieren', 'guard'], ['guardian_fortify', 'Verschanzen', 'guard'], ['basic_attack', 'Angriff', 'strike']],
+      [['infiltrator_backstab', 'Hinterhalt', 'strike'], ['saboteur_trap', 'Falle', 'strike'], ['spy_observe', 'Beobachten', 'guard'], ['basic_attack', 'Angriff', 'strike']],
+    ];
+    const CB_NAMES = [['Voss', 'assets/p-voss.png', '#22c55e'], ['Fenn', 'assets/p-fenn.png', '#f59e0b'], ['Wolf', 'assets/p-wolf.png', '#22c55e'], ['K-9', null, '#ef4444']];
+    const ci = this.state.cbAgent;
+    const cbTabs = CB_NAMES.map((n, i) => ({
+      name: n[0], cc: n[2],
+      hasOrder: !!this.state.orders[i],
+      mono: n[1] ? '' : 'K9',
+      thumb: 'display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;box-sizing:border-box;border:1px solid rgba(61,50,0,.8);font-size:7px;font-weight:700;color:#a68a2e;' + (n[1] ? 'background:url(\'' + n[1] + '\') center 12%/cover;' : 'background:#111;'),
+      go: () => this.setState({ cbAgent: i }),
+      style: 'display:flex;align-items:center;gap:7px;padding:5px 10px;font-size:10px;letter-spacing:.5px;border:1px solid ' + (i === ci ? '#f59e0b' : 'rgba(166,138,46,.4)') + ';color:' + (i === ci ? '#f5c542' : '#a68a2e') + ';background:' + (i === ci ? 'rgba(245,158,11,.08)' : 'transparent') + ';',
+    }));
+    const pend = this.state.pending;
+    const cbAbilities = KITS[ci].map((k) => ({
+      label: k[1], cluster: { strike: 'Strike', aid: 'Aid', guard: 'Guard' }[k[2]],
+      clusterColor: CLUSTER[k[2]],
+      icon: 'width:18px;height:18px;flex:0 0 auto;background-color:' + CLUSTER[k[2]] + ';-webkit-mask:url(\'' + PICT + k[0] + '.png\') center/contain no-repeat;mask:url(\'' + PICT + k[0] + '.png\') center/contain no-repeat;',
+      go: () => {
+        if (pend && pend.agent === ci && pend.label === k[1]) { this.setState({ pending: null }); return; }
+        this.setState({ pending: { agent: ci, label: k[1], cluster: k[2], who: CB_NAMES[ci][0], pict: k[0] } });
+      },
+    }));
+    const orderSlots = CB_NAMES.map((n, i) => {
+      const o = this.state.orders[i];
+      return {
+        num: '\u2460\u2461\u2462\u2463'[i],
+        set: !!o,
+        text: o ? n[0] + ' — ' + o.label + ' → ' + o.target : n[0] + ' — Auto-Verteidigung',
+        go: o ? () => { this.setState((s) => { const next = { ...s.orders }; delete next[i]; return { orders: next }; }); this._push('sys', n[0] + ': Befehl zurückgenommen.'); } : () => this.setState({ cbAgent: i }),
+        style: 'display:inline-flex; align-items:center; gap:6px; padding:6px 10px; font-size:9.5px; letter-spacing:.5px; cursor:pointer; border:1px ' + (o ? 'solid rgba(245,158,11,.6); color:#f5c542; background:rgba(245,158,11,.06);' : 'dashed rgba(166,138,46,.35); color:#6b5a1c;'),
+      };
+    });
+    const orderCount = Object.keys(this.state.orders).length;
+
+    const vBtn = (on) => 'padding:8px 14px;font-family:\'Courier New\',monospace;font-weight:700;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;' + (on ? 'color:#0a0a0a;background:#f59e0b;' : 'color:#a68a2e;');
+    return {
+      gridCols: (s.rail ? '320px' : '40px') + ' 1fr 340px',
+      gridColsWide: (s.rail ? '360px' : '40px') + ' 1fr 380px',
+      railOpen: s.rail, railClosed: !s.rail,
+      railToggle: () => this.setState((st) => ({ rail: !st.rail })),
+      isGfx: s.view === 'gfx', isTrm: s.view === 'trm',
+      vGfx: () => this.setState({ view: 'gfx' }), vTrm: () => this.setState({ view: 'trm' }),
+      vGfxStyle: vBtn(s.view === 'gfx'), vTrmStyle: vBtn(s.view === 'trm'),
+      water: String(s.water),
+      // ── Pressure-Ebene pro FX-Profil (dungeon-environment.ts: 8 Archetypen → 9 Profile).
+      // Wasser (Deluge) ist die bodenverankerte Zone; alle anderen sind Voll-Szenen-Overlays,
+      // deren Intensität am Pegel hängt. Gleiche Mechanik, profilgerechte Erscheinung.
+      ...(() => {
+        const fx = this.props.fx ?? 'water';
+        const p = s.water / 100;
+        const FX = {
+          water: { label: 'Flutwasser', ac: '#3b82f6', dim: '#a8c4e8', ov: 'display:none;' },
+          darkness: { label: 'Sicht', ac: '#94a3b8', dim: '#b6c2cf', ov: 'background:radial-gradient(ellipse at 50% 42%, transparent ' + Math.round(46 - p * 24) + '%, rgba(2,3,4,' + (0.5 + p * 0.45).toFixed(2) + ') 100%);' },
+          decay: { label: 'Zerfall', ac: '#a8a29e', dim: '#c7c2bd', ov: 'background:repeating-linear-gradient(0deg, rgba(0,0,0,' + (p * 0.16).toFixed(2) + ') 0 1px, transparent 1px 3px), rgba(96,88,70,' + (p * 0.3).toFixed(2) + ');' },
+          tilt: { label: 'Stabilität', ac: '#f59e0b', dim: '#e8d6a8', ov: 'background:linear-gradient(' + Math.round(90 + p * 9) + 'deg, rgba(0,0,0,' + (p * 0.5).toFixed(2) + '), transparent 36%, transparent 62%, rgba(0,0,0,' + (p * 0.6).toFixed(2) + '));' },
+          pulse: { label: 'Bindung', ac: '#dc2626', dim: '#e8b6b6', ov: 'background:radial-gradient(ellipse at 50% 55%, rgba(220,38,38,' + (0.1 + p * 0.24).toFixed(2) + '), transparent 62%);animation:pulse-breathe ' + (3.8 - p * 2).toFixed(1) + 's ease-in-out infinite;' },
+          forge: { label: 'Einsicht', ac: '#ea580c', dim: '#f0c8a8', ov: 'background:linear-gradient(to top, rgba(234,88,12,' + (0.22 + p * 0.3).toFixed(2) + '), rgba(160,45,0,' + (p * 0.2).toFixed(2) + ') 32%, transparent 62%);box-shadow:inset 0 -46px 60px rgba(255,120,30,' + (p * 0.3).toFixed(2) + ');' },
+          shards: { label: 'Fraktur', ac: '#94a3b8', dim: '#c3ccd8', ov: 'background:repeating-linear-gradient(115deg, transparent 0 46px, rgba(148,163,184,' + (p * 0.18).toFixed(2) + ') 46px 48px, transparent 48px 112px), repeating-linear-gradient(63deg, transparent 0 68px, rgba(148,163,184,' + (p * 0.13).toFixed(2) + ') 68px 70px);' },
+          flicker: { label: 'Déjà-vu', ac: '#c084fc', dim: '#d8c2ec', ov: 'background:rgba(226,232,240,.07);animation:fx-flicker ' + (1.8 - p * 1).toFixed(2) + 's steps(2, jump-none) infinite;' },
+        };
+        const F = FX[fx] || FX.water;
+        return {
+          fx,
+          fxIsWater: fx === 'water',
+          fxOverlay: fx === 'water' ? 'display:none;' : 'position:absolute;inset:0;pointer-events:none;' + F.ov,
+          meterLabel: F.label,
+          meterBox: 'position:relative; z-index:2; justify-self:start; margin:12px 0 0 12px; padding:6px 10px; background:rgba(4,6,8,.8); border:1px solid ' + F.ac + '59; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:' + F.dim + '; min-width:210px;',
+          meterValStyle: 'color:' + F.ac + '; font-weight:700;',
+          meterTrack: 'height:5px; background:' + F.ac + '26; position:relative; overflow:hidden;',
+          waterFill: 'position:absolute;inset:0;display:block;width:' + s.water + '%;background:' + F.ac + ';transition:width .6s;',
+        };
+      })(),
+      // Flut als Grid-Ebene hinter Textpanel-Zone, Oberkante fix 26px ÜBER dem Panel —
+      // immer sichtbar, nie durch die Agenten-Discs (32px Bodenabstand im Band).
+      // Der Pegelwert treibt die INTENSITÄT (Dichte + Glow); die Zahl steht im Readout.
+      waterPlane: ((this.props.fx ?? 'water') !== 'water' ? 'display:none;' : '') + 'grid-row:4 / 5;grid-column:1;z-index:0;pointer-events:none;align-self:stretch;margin-top:-26px;background:linear-gradient(180deg, rgba(59,130,246,0) 0, rgba(59,130,246,' + (0.2 + s.water / 250).toFixed(2) + ') 18px, rgba(16,42,74,' + (0.5 + s.water / 200).toFixed(2) + ') 100%);box-shadow:0 -18px 30px rgba(26,181,200,' + (0.12 + s.water / 300).toFixed(2) + ');transition:background .8s ease;animation:skel 4.5s ease-in-out infinite;',
+      ops, choices,
+      isCombat, isEncounter: !isCombat,
+      foes, cbTabs, cbAbilities, orderSlots,
+      orderCount: String(orderCount),
+      targeting: !!pend,
+      pendingHint: pend ? 'Ziel wählen für „' + pend.label + '" — ' + (pend.cluster === 'strike' ? 'Gegner markiert' : 'Verbündete markiert') : '',
+      pendingCancel: () => this.setState({ pending: null }),
+      cbExec: () => {
+        if (!orderCount) { this._push('sys', 'Keine Befehle gesetzt — Trupp geht in Auto-Verteidigung.'); return; }
+        this._push('nar', 'Runde aufgelöst: ' + orderCount + ' Befehle, ' + (4 - orderCount) + '× Auto-Verteidigung. Die Flut steigt +2%.');
+        this.setState((s) => ({ orders: {}, water: Math.min(100, s.water + 2) }));
+      },
+      chron: s.chron.map((c, i) => ({
+        text: c.text,
+        showRoom: i === 0 || c.room !== s.chron[i - 1].room,
+        roomLabel: c.room,
+        style: this._chronStyle(c.t) + (c.fresh && i === s.chron.length - 1 ? 'animation:chron-in .35s ease both;' : ''),
+      })),
+      chronCount: String(s.chron.length),
+      qaLook: () => this._push('sys', 'Umsehen: Barke, Katalogschrank, zwei Ausgänge. Das Schild besteht auf der Unterschrift.'),
+      qaStatus: () => this._push('sys', 'Status: Trupp 4/4 · Flut ' + s.water + '% · Raum 04 · Zug 7.'),
+      qaSeal: () => { this._push('sys', 'Leck versiegelt. Flut −8%.'); this.setState((st) => ({ water: Math.max(6, st.water - 8) })); },
+    };
+  }
+}
+</script>
+</body>
+</html>

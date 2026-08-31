@@ -1,0 +1,91 @@
+/* === Color Tokens === */
+/* Platform-dark default: the platform chrome (header, dashboard, forge, admin)
+   is always dark. Simulation views override via ThemeService on <velg-simulation-shell>. */
+
+:root {
+  color-scheme: dark;
+
+  /* === SEMANTIC COLORS === */
+  --color-primary: #f59e0b;
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 80%, var(--color-text-primary));
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 70%, var(--color-text-primary));
+  --color-primary-bg: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+  --color-primary-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  --color-primary-border: color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+  --color-danger: #ef4444;
+  --color-danger-hover: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary));
+  --color-danger-bg: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+  --color-danger-border: color-mix(in srgb, var(--color-danger) 30%, transparent);
+  --color-danger-glow: color-mix(in srgb, var(--color-danger) 15%, transparent);
+
+  --color-success: #22c55e;
+  --color-success-hover: color-mix(in srgb, var(--color-success) 80%, var(--color-text-primary));
+  --color-success-bg: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+  --color-success-border: color-mix(in srgb, var(--color-success) 30%, transparent);
+  --color-success-glow: color-mix(in srgb, var(--color-success) 15%, transparent);
+
+  --color-warning: #f59e0b;
+  --color-warning-hover: color-mix(in srgb, var(--color-warning) 80%, var(--color-text-primary));
+  --color-warning-bg: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+  --color-warning-border: color-mix(in srgb, var(--color-warning) 30%, transparent);
+  --color-warning-glow: color-mix(in srgb, var(--color-warning) 15%, transparent);
+
+  --color-info: #3b82f6;
+  --color-info-hover: color-mix(in srgb, var(--color-info) 80%, var(--color-text-primary));
+  --color-info-bg: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
+  --color-info-border: color-mix(in srgb, var(--color-info) 30%, transparent);
+  --color-info-glow: color-mix(in srgb, var(--color-info) 15%, transparent);
+
+  /* === SURFACE COLORS === */
+  --color-surface: #0a0a0a;
+  --color-surface-raised: #111111;
+  --color-surface-raised-critical: #0d0808;
+  --color-surface-raised-ascendant: #0d0b08;
+  --color-surface-sunken: #060606;
+  --color-surface-overlay: #111111;
+  --color-surface-header: #0a0a0a;
+  --color-surface-inverse: #ffffff;
+
+  /* === TEXT COLORS === */
+  --color-text-primary: #e5e5e5;
+  --color-text-secondary: #a0a0a0;
+  --color-text-tertiary: color-mix(in srgb, var(--color-text-secondary) 60%, var(--color-text-muted));
+  --color-text-muted: #888888;
+  --color-text-inverse: #0a0a0a;
+  --color-text-link: var(--color-info);
+  --color-text-danger: var(--color-danger);
+
+  /* === ICON COLORS === */
+  --color-icon: var(--color-text-muted);
+
+  /* === BORDER COLORS === */
+  --color-border: #333333;
+  --color-border-light: #222222;
+  --color-border-focus: var(--color-primary);
+  --color-border-danger: var(--color-danger);
+  --color-separator: color-mix(in srgb, var(--color-border) 50%, transparent);
+
+  /* === PLATFORM ACCENT (non-themeable chrome — always amber) === */
+  --color-accent-amber: #f59e0b;
+  --color-accent-amber-hover: #fbbf24;
+  --color-accent-amber-dim: #b45309;
+  --color-accent-amber-glow: rgba(245, 158, 11, 0.15);
+  --color-accent-green: #4ade80;
+  --color-mint-brass: #b8860b;
+
+  /* === DRIFT BLEED-VECTOR PALETTE ===
+     The 7 frequency colors of the DRIFT travel chart, one per bleed vector
+     (concept §6.1 order). The Three.js renderer reads these via getComputedStyle
+     (the token bridge — the canvas palette comes from the design system, not
+     duplicated constants). Indices match traveler_profiles.affinities key order
+     and the chart frequency_mask bits. */
+  --drift-freq-0: #d8a64a; /* commerce     — Handel */
+  --drift-freq-1: #5fd4e8; /* language     — Sprache */
+  --drift-freq-2: #9a7fe8; /* memory       — Gedächtnis (P0 vector) */
+  --drift-freq-3: #5fe8a0; /* resonance    — Resonanz */
+  --drift-freq-4: #7fa6d8; /* architecture — Architektur (P0 pair) */
+  --drift-freq-5: #c75fe8; /* dream        — Traum */
+  --drift-freq-6: #e85f7f; /* desire       — Begehren */
+
+}

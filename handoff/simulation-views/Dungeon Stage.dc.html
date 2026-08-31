@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; padding: 0; background: #060606; }
+    body { -webkit-font-smoothing: antialiased; }
+    a { color: #f59e0b; } a:hover { color: #fbbf24; }
+    ::selection { background: rgba(59,130,246,.35); }
+    @keyframes pulse-dot { 0%,100% { opacity: 1;} 50% { opacity: .45;} }
+    @keyframes node-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,.45);} 50% { box-shadow: 0 0 0 9px rgba(245,158,11,0);} }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: translateY(0);} }
+    @keyframes card-deal { from { opacity: 0; transform: translateY(60px) rotate(0deg) scale(.82);} 60% { opacity: 1;} to { opacity: 1;} }
+    @keyframes storylet-in { from { opacity: 0; transform: translateY(30px) scale(.96);} to { opacity: 1; transform: translateY(0) scale(1);} }
+    @keyframes dmg-float { 0% { opacity: 0; transform: translateY(6px) scale(.8);} 15% { opacity: 1; transform: translateY(-4px) scale(1.15);} 100% { opacity: 0; transform: translateY(-38px) scale(1);} }
+    @keyframes shake { 0%,100% { transform: translate(0,0);} 20% { transform: translate(3px,-2px);} 40% { transform: translate(-3px,2px);} 60% { transform: translate(2px,2px);} 80% { transform: translate(-2px,-2px);} }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes tele-dash { to { stroke-dashoffset: -20; } }
+    @keyframes wave { 0% { background-position-x: 0; } 100% { background-position-x: 220px; } }
+    @keyframes water-glow { 0%,100% { opacity: .75;} 50% { opacity: 1;} }
+    @keyframes stamp-in { from { opacity: 0; transform: rotate(-8deg) scale(1.7);} to { opacity: 1; transform: rotate(-3deg) scale(1);} }
+    @keyframes sheen { 0% { transform: translateX(-160%) skewX(-18deg);} 100% { transform: translateX(320%) skewX(-18deg);} }
+    @keyframes timer-crit { 0%,100% { background: rgba(239,68,68,.12);} 50% { background: rgba(239,68,68,.28);} }
+    @keyframes splash-band { from { transform: rotate(-2deg) scaleX(0); opacity: 0;} 60% { opacity: 1;} to { transform: rotate(-2deg) scaleX(1); opacity: 1;} }
+    @keyframes splash-text { from { letter-spacing: .1em; opacity: 0;} to { letter-spacing: .32em; opacity: 1;} }
+    @keyframes idle-bob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(-3px);} }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#060606;color:#e5e5e5;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:relative;display:flex;flex-direction:column">
+  <div style="position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.012) 2px,rgba(255,255,255,.012) 4px);pointer-events:none;z-index:90"></div>
+
+  <!-- ── Expedition Header ─────────────────────── -->
+  <header style="border-bottom:2px solid #333333;background:#0a0a0a;position:relative;z-index:10">
+    <div style="max-width:min(1920px, calc(100vw - 48px));margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:14px;min-width:0">
+        <span style="border:1px solid rgba(59,130,246,.55);background:rgba(59,130,246,.08);color:#5fa8f6;font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;white-space:nowrap">{{ L.archetype }}</span>
+        <div style="min-width:0">
+          <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:#e5e5e5;white-space:nowrap">{{ L.dungeonName }}</div>
+          <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#666666">{{ L.signature }}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#888888">{{ L.depthLabel }}</span>
+        <span style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:16px;color:#e5e5e5;font-variant-numeric:tabular-nums">{{ depthLabel }}</span>
+        <span style="display:flex;gap:4px">
+          <sc-for list="{{ depthPips }}" as="dp" hint-placeholder-count="5"><span style="{{ dp }}"></span></sc-for>
+        </span>
+      </div>
+      <!-- Water barometer -->
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:170px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px">
+            <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#5fa8f6">{{ L.waterLabel }}</span>
+            <span style="{{ waterTierStyle }}">{{ waterTierLabel }}</span>
+          </div>
+          <div style="height:9px;background:#141a22;border:1px solid rgba(59,130,246,.3);position:relative;overflow:hidden">
+            <div style="{{ waterBarStyle }}"></div>
+            <span style="position:absolute;top:0;bottom:0;left:60%;width:1px;background:rgba(239,68,68,.55)"></span>
+            <span style="position:absolute;top:0;bottom:0;left:85%;width:1px;background:#ef4444"></span>
+          </div>
+        </div>
+        <button onClick="{{ sealBreach }}" style="{{ sealBtnStyle }}">{{ sealBtnLabel }}</button>
+        <button onMouseDown="{{ retreatStart }}" onMouseUp="{{ retreatEnd }}" onMouseLeave="{{ retreatEnd }}" onTouchStart="{{ retreatStart }}" onTouchEnd="{{ retreatEnd }}" style="position:relative;overflow:hidden;background:transparent;border:1px solid rgba(239,68,68,.45);color:#ef4444;font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:9px 14px;cursor:pointer;user-select:none;-webkit-user-select:none" style-hover="background:rgba(239,68,68,.08)">
+          <span style="{{ retreatFillStyle }}"></span>
+          <span style="position:relative">{{ L.retreatBtn }}</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main: Stage + Party ───────────────────── -->
+  <div style="flex:1;max-width:min(1920px, calc(100vw - 48px));width:100%;margin:0 auto;padding:18px 20px 30px;display:flex;gap:18px;align-items:stretch;position:relative;z-index:5;box-sizing:border-box">
+
+    <!-- STAGE -->
+    <div style="{{ stageStyle }}">
+
+      <!-- MAP (always mounted; dimmed under overlays) -->
+      <div style="{{ mapWrapStyle }}">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+          <sc-for list="{{ mapEdges }}" as="ed" hint-placeholder-count="10">
+            <line x1="{{ ed.x1 }}" y1="{{ ed.y1 }}" x2="{{ ed.x2 }}" y2="{{ ed.y2 }}" stroke="{{ ed.stroke }}" stroke-width="{{ ed.w }}" stroke-dasharray="{{ ed.dash }}" vector-effect="non-scaling-stroke"></line>
+          </sc-for>
+        </svg>
+        <!-- water overlay -->
+        <div style="{{ waterOverlayStyle }}">
+          <div style="position:absolute;top:-7px;left:0;right:0;height:8px;background:repeating-linear-gradient(90deg,rgba(95,168,246,.5) 0 26px,transparent 26px 55px);border-top:1px solid rgba(95,168,246,.7);animation:wave 7s linear infinite,water-glow 3.5s ease-in-out infinite"></div>
+        </div>
+        <sc-for list="{{ mapNodes }}" as="nd" hint-placeholder-count="12">
+          <div onClick="{{ nd.onClick }}" style="{{ nd.style }}" style-hover="{{ nd.hoverStyle }}">
+            <span style="font-size:15px;line-height:1">{{ nd.glyph }}</span>
+            <span style="{{ nd.labelStyle }}">{{ nd.label }}</span>
+          </div>
+        </sc-for>
+        <!-- banter toast -->
+        <sc-if value="{{ banterShow }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:16px;bottom:14px;max-width:52%;border:1px solid #333333;border-left:3px solid #f59e0b;background:rgba(10,10,10,.92);padding:10px 14px;animation:rise-in .3s ease;z-index:6">
+            <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#f59e0b;margin-bottom:4px">{{ banterWho }}</div>
+            <div style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:13.5px;line-height:1.5;color:#c9c7c1">{{ banterText }}</div>
+          </div>
+        </sc-if>
+        <!-- barometer prose -->
+        <div style="position:absolute;right:16px;top:12px;max-width:40%;text-align:right;z-index:6">
+          <div style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:12.5px;line-height:1.5;color:rgba(95,168,246,.75)">{{ barometerProse }}</div>
+        </div>
+      </div>
+
+      <!-- Quick actions under map -->
+      <sc-if value="{{ showMapActions }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:8px;padding:12px 14px;border-top:1px solid #1c1c1c;flex-wrap:wrap;align-items:center">
+          <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#555555;margin-right:4px">{{ L.yourMove }}</span>
+          <sc-for list="{{ moveButtons }}" as="mb" hint-placeholder-count="2">
+            <button onClick="{{ mb.onClick }}" style="{{ mb.style }}" style-hover="{{ mb.hoverStyle }}">{{ mb.label }}</button>
+          </sc-for>
+          <button onClick="{{ doScout }}" style="{{ scoutBtnStyle }}">{{ scoutLabel }}</button>
+        </div>
+      </sc-if>
+
+      <!-- ══ STORYLET OVERLAY ══ -->
+      <sc-if value="{{ showStorylet }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(4,4,4,.78);backdrop-filter:blur(2px);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+          <div style="width:min(620px,94%);border:1px solid #333333;background:#0d0d0d;box-shadow:10px 12px 0 #000000, 0 0 60px rgba(59,130,246,.08);animation:storylet-in .4s cubic-bezier(.22,1,.36,1);position:relative">
+            <div style="position:absolute;top:7px;left:7px;width:15px;height:15px;border-top:1px solid #555;border-left:1px solid #555"></div>
+            <div style="position:absolute;bottom:7px;right:7px;width:15px;height:15px;border-bottom:1px solid #555;border-right:1px solid #555"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 16px;background:rgba(59,130,246,.07);border-bottom:1px solid #333333">
+              <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5fa8f6">{{ storyKicker }}</span>
+              <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;color:#666666">{{ storyId }}</span>
+            </div>
+            <sc-if value="{{ storyArtShow }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ storyArtStyle }}">
+                <div style="position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(75deg,transparent,rgba(255,255,255,.05),transparent);animation:sheen 6s ease-in-out infinite"></div>
+              </div>
+            </sc-if>
+            <div style="padding:24px 26px 22px">
+              <h2 style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase;color:#e5e5e5;margin:0 0 12px">{{ storyTitle }}</h2>
+              <p style="font-family:Spectral,Georgia,serif;font-size:15.5px;line-height:1.7;color:#c9c7c1;margin:0 0 6px">{{ storyDesc }}</p>
+              <sc-if value="{{ storyResultShow }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ storyResultStyle }}">
+                  <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:7px;color:{{ storyResultColor }}">{{ storyResultTag }}</div>
+                  <p style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:14.5px;line-height:1.65;color:#c9c7c1;margin:0 0 10px">{{ storyResultText }}</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ storyEffects }}" as="fx" hint-placeholder-count="2"><span style="{{ fx.style }}">{{ fx.label }}</span></sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:18px">
+                <sc-for list="{{ storyChoices }}" as="ch" hint-placeholder-count="3">
+                  <button onClick="{{ ch.onClick }}" style="{{ ch.style }}" style-hover="{{ ch.hoverStyle }}">
+                    <span style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+                      <span>{{ ch.label }}</span>
+                      <span style="{{ ch.oddsStyle }}">{{ ch.odds }}</span>
+                    </span>
+                    <span style="display:block;font-family:Spectral,Georgia,serif;font-style:italic;font-size:12px;color:#8f8d87;margin-top:3px;text-transform:none;letter-spacing:0;font-weight:400">{{ ch.sub }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ COMBAT SCENE ══ -->
+      <sc-if value="{{ showCombat }}" hint-placeholder-val="{{ false }}">
+        <div style="{{ combatSceneStyle }}">
+          <!-- timer -->
+          <div style="{{ timerRowStyle }}">
+            <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#888888">{{ combatPhaseLabel }}</span>
+            <span style="{{ ordersStyle }}">{{ ordersLabel }}</span>
+            <span style="flex:1"></span>
+            <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:10px;letter-spacing:.08em;color:#5fa8f6">≈ {{ combatWaterLabel }}</span>
+            <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:10px;letter-spacing:.1em;color:#666666">{{ roundLabel }}</span>
+          </div>
+
+          <div style="position:relative;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between">
+            <!-- telegraph lines -->
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1">
+              <sc-for list="{{ telegraphs }}" as="tg" hint-placeholder-count="2">
+                <line x1="{{ tg.x1 }}" y1="{{ tg.y1 }}" x2="{{ tg.x2 }}" y2="{{ tg.y2 }}" stroke="{{ tg.stroke }}" stroke-width="{{ tg.w }}" stroke-dasharray="5 4" vector-effect="non-scaling-stroke" style="animation:tele-dash 1.2s linear infinite"></line>
+                <circle cx="{{ tg.x2 }}" cy="{{ tg.y2 }}" r="1.4" fill="{{ tg.stroke }}"></circle>
+              </sc-for>
+            </svg>
+
+            <!-- enemies -->
+            <div style="{{ enemyRowStyle }}">
+              <sc-for list="{{ enemyCards }}" as="en" hint-placeholder-count="2">
+                <div onClick="{{ en.onClick }}" style="{{ en.style }}" style-hover="{{ en.hoverStyle }}">
+                  <div style="{{ en.stripStyle }}">
+                    <span>{{ en.threatLabel }}</span>
+                    <span style="{{ en.condLamp }}"></span>
+                  </div>
+                  <div style="{{ en.artStyle }}">
+                    <div style="position:absolute;top:0;bottom:0;left:0;width:44%;background:linear-gradient(75deg,transparent,rgba(255,255,255,.07),transparent);animation:sheen 5s ease-in-out infinite"></div>
+                  </div>
+                  <div style="padding:10px 12px 8px;text-align:center">
+                    <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:#e5e5e5;margin-bottom:2px">{{ en.name }}</div>
+                    <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:{{ en.condColor }}">{{ en.condLabel }}</div>
+                  </div>
+                  <div style="{{ en.intentStyle }}">
+                    <span style="font-size:10px">⚠</span> {{ en.intentText }}
+                  </div>
+                  <div style="{{ en.expectStyle }}">{{ en.expectText }}</div>
+                  <sc-if value="{{ en.showReticle }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;inset:-7px;border:2px dashed #f59e0b;pointer-events:none;animation:pulse-dot 1s ease-in-out infinite"></div>
+                  </sc-if>
+                  <sc-if value="{{ en.dmgPop }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:22px;color:#f59e0b;text-shadow:0 0 12px rgba(245,158,11,.6);animation:dmg-float 1.1s ease-out forwards;pointer-events:none">{{ en.dmgVal }}</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- resolving ticker -->
+            <sc-if value="{{ showTicker }}" hint-placeholder-val="{{ false }}">
+              <div style="align-self:center;width:min(560px,92%);max-height:150px;overflow-y:auto;border:1px solid #1c1c1c;background:rgba(6,6,6,.9);padding:10px 16px;position:relative;z-index:3">
+                <sc-for list="{{ tickerLines }}" as="tl" hint-placeholder-count="3">
+                  <div style="{{ tl.style }}">{{ tl.text }}</div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- party chips -->
+            <div style="{{ partyRowStyle }}">
+              <sc-for list="{{ agentChips }}" as="ag" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+                <div onClick="{{ ag.onClick }}" style="{{ ag.style }}" style-hover="{{ ag.hoverStyle }}">
+                  <div style="display:flex;align-items:center;gap:9px">
+                    <div style="{{ ag.imgStyle }}"></div>
+                    <div>
+                      <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:12px;letter-spacing:.03em;text-transform:uppercase;color:#e5e5e5">{{ ag.name }}</div>
+                      <div style="{{ ag.actionStyle }}">{{ ag.actionLabel }}</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ ag.threatened }}" hint-placeholder-val="{{ false }}"><span style="{{ ag.threatStyle }}">⚠ {{ L.targeted }}</span></sc-if>
+                  <sc-if value="{{ ag.orderShow }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ ag.orderStyle }}">
+                      <span style="{{ ag.orderNameStyle }}">{{ ag.orderAb }}</span>
+                      <span style="{{ ag.orderTgtStyle }}">{{ ag.orderTarget }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ ag.showReticle }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;inset:-7px;border:2px dashed #4ade80;pointer-events:none;animation:pulse-dot 1s ease-in-out infinite"></div>
+                  </sc-if>
+                  <sc-if value="{{ ag.dmgPop }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:20px;color:#ef4444;text-shadow:0 0 12px rgba(239,68,68,.6);animation:dmg-float 1.1s ease-out forwards;pointer-events:none">{{ ag.dmgVal }}</div>
+                  </sc-if>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;justify-content:center;max-width:284px">
+                  <sc-for list="{{ ag.cards }}" as="mc" hint-placeholder-count="4">
+                    <div onClick="{{ mc.onClick }}" style="{{ mc.style }}" style-hover="{{ mc.hoverStyle }}">
+                      <div style="{{ mc.nameStyle }}">{{ mc.name }}</div>
+                      <div style="{{ mc.fxStyle }}">{{ mc.fx }}</div>
+                      <div style="{{ mc.checkStyle }}">{{ mc.check }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- ability hand + execute -->
+          <sc-if value="{{ showHand }}" hint-placeholder-val="{{ false }}">
+            <div style="border-top:1px solid #1c1c1c">
+              <div style="{{ instrBg }}">
+                <span style="{{ instrStyle }}">{{ instrText }}</span>
+                <sc-if value="{{ pendingActive }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ cancelPending }}" style="background:transparent;border:1px solid #333333;color:#888888;font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;cursor:pointer" style-hover="border-color:#888888;color:#e5e5e5">✕ {{ L.cancel }}</button>
+                </sc-if>
+              </div>
+              <div style="padding:10px 14px 12px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;gap:8px;align-items:center;padding-bottom:6px">
+                <button onMouseDown="{{ execStart }}" onMouseUp="{{ execEnd }}" onMouseLeave="{{ execEnd }}" onTouchStart="{{ execStart }}" onTouchEnd="{{ execEnd }}" style="{{ execBtnStyle }}">
+                  <span style="{{ execFillStyle }}"></span>
+                  <span style="position:relative">{{ execLabel }}</span>
+                </button>
+                <sc-if value="{{ autoDefendShow }}" hint-placeholder-val="{{ false }}"><span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:8.5px;letter-spacing:.06em;color:#666666;max-width:200px;text-align:center;line-height:1.5">{{ L.autoDefendHint }}</span></sc-if>
+              </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ══ SPLASH BANNER ══ -->
+      <sc-if value="{{ splashShow }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden">
+          <div style="{{ splashBarStyle }}">
+            <span style="{{ splashTextStyle }}">{{ splashText }}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ LOOT DISTRIBUTION ══ -->
+      <sc-if value="{{ showDistrib }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(4,4,4,.86);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+          <div style="width:min(760px,96%);animation:storylet-in .4s cubic-bezier(.22,1,.36,1)">
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="display:inline-block;border:1px solid rgba(245,158,11,.5);color:#f59e0b;font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;padding:5px 14px;margin-bottom:12px">{{ L.distribKicker }}</div>
+              <h2 style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:22px;letter-spacing:.08em;text-transform:uppercase;color:#e5e5e5;margin:0 0 6px">{{ L.distribTitle }}</h2>
+              <p style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:14px;color:#a0a0a0;margin:0">{{ L.distribHint }}</p>
+            </div>
+            <div style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:22px">
+              <sc-for list="{{ lootCards }}" as="lc" hint-placeholder-count="3">
+                <div onClick="{{ lc.onClick }}" style="{{ lc.style }}" style-hover="{{ lc.hoverStyle }}">
+                  <div style="{{ lc.tierStyle }}">{{ lc.tierLabel }}</div>
+                  <div style="padding:12px 13px;flex:1">
+                    <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:12.5px;letter-spacing:.02em;text-transform:uppercase;color:#e5e5e5;margin-bottom:5px">{{ lc.name }}</div>
+                    <div style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:11.5px;line-height:1.5;color:#8f8d87">{{ lc.desc }}</div>
+                  </div>
+                  <div style="{{ lc.assignStyle }}">{{ lc.assignLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+              <sc-for list="{{ distribAgents }}" as="da" hint-placeholder-count="3">
+                <button onClick="{{ da.onClick }}" style="{{ da.style }}" style-hover="{{ da.hoverStyle }}"><span style="{{ da.imgStyle }}"></span>{{ da.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:center">
+              <button onClick="{{ confirmDistrib }}" style="{{ confirmStyle }}">{{ L.confirmDistrib }} →</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ══ END PANEL ══ -->
+      <sc-if value="{{ showEnd }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(4,4,4,.9);z-index:22;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+          <div style="text-align:center;max-width:560px;animation:storylet-in .45s cubic-bezier(.22,1,.36,1)">
+            <div style="{{ endStampStyle }}">{{ endStamp }}</div>
+            <h2 style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:24px;letter-spacing:.08em;text-transform:uppercase;color:#e5e5e5;margin:22px 0 12px">{{ L.dungeonName }}</h2>
+            <p style="font-family:Spectral,Georgia,serif;font-style:italic;font-size:15.5px;line-height:1.7;color:#a0a0a0;margin:0 0 22px">{{ endText }}</p>
+            <div style="display:flex;justify-content:center;gap:0;border:1px solid #222222;margin-bottom:24px">
+              <sc-for list="{{ endStats }}" as="es" hint-placeholder-count="4">
+                <div style="flex:1;padding:12px 16px;border-right:1px solid #222222">
+                  <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:20px;color:#e5e5e5">{{ es.value }}</div>
+                  <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#888888;margin-top:3px">{{ es.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ restartRun }}" style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.5);color:#f59e0b;font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:13px 26px;cursor:pointer" style-hover="background:rgba(245,158,11,.2)">{{ L.newRun }}</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- PARTY SIDEBAR -->
+    <aside style="width:284px;flex-shrink:0;display:flex;flex-direction:column;gap:12px">
+      <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#666666;padding:2px 2px 0">{{ L.partyLabel }}</div>
+      <sc-for list="{{ partyCards }}" as="pc" hint-placeholder-count="3">
+        <div style="{{ pc.style }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #1c1c1c">
+            <div style="{{ pc.imgStyle }}"></div>
+            <div style="min-width:0;flex:1">
+              <div style="font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:#e5e5e5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pc.name }}</div>
+              <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;letter-spacing:.08em;color:#f59e0b">{{ pc.role }}</div>
+            </div>
+            <sc-if value="{{ pc.afflicted }}" hint-placeholder-val="{{ false }}">
+              <span style="{{ pc.afflictStyle }}">{{ pc.afflictLabel }}</span>
+            </sc-if>
+          </div>
+          <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#666666">{{ L.condLabel }}</span>
+                <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9px;color:#4ade80;font-variant-numeric:tabular-nums">{{ pc.condNum }}</span>
+              </div>
+              <div style="height:7px;background:#1a1a1a;position:relative;overflow:hidden"><div style="{{ pc.condFill }}"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#666666">{{ L.stressLabel }}</span>
+                <span style="{{ pc.stressNumStyle }}">{{ pc.stressNum }}</span>
+              </div>
+              <div style="height:7px;background:#1a1a1a;position:relative;overflow:hidden">
+                <div style="{{ pc.stressFill }}"></div>
+                <span style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(245,158,11,.5)"></span>
+                <span style="position:absolute;top:0;bottom:0;left:75%;width:1px;background:rgba(239,68,68,.6)"></span>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;min-height:16px">
+              <sc-for list="{{ pc.buffs }}" as="bf" hint-placeholder-count="1"><span style="{{ bf.style }}">{{ bf.label }}</span></sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </aside>
+  </div>
+
+  <!-- ── Console Log Drawer ─────────────────────── -->
+  <div style="position:sticky;bottom:0;z-index:30;border-top:2px solid #333333;background:#060606">
+    <button onClick="{{ toggleLog }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;background:#0a0a0a;border:none;padding:8px 20px;cursor:pointer" style-hover="background:#101010">
+      <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#4ade80">▮ {{ L.consoleLabel }}</span>
+      <span style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:10px;color:#666666">{{ logToggleGlyph }}</span>
+    </button>
+    <sc-if value="{{ logOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="max-height:180px;overflow-y:auto;padding:10px 20px 14px;border-top:1px solid #1c1c1c;display:flex;flex-direction:column-reverse">
+        <div>
+          <sc-for list="{{ logLines }}" as="ll" hint-placeholder-count="4">
+            <div style="font-family:'SF Mono',Monaco,'Roboto Mono',monospace;font-size:11px;line-height:1.7;color:#7a9a7a;white-space:pre-wrap">{{ ll }}</div>
+          </sc-for>
+          <span style="display:inline-block;width:8px;height:13px;background:#4ade80;animation:blink 1s step-end infinite;vertical-align:-2px"></span>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;sprache&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;de&quot;, &quot;en&quot;], &quot;default&quot;: &quot;de&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Demo&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    lang: null,
+    phase: 'storylet', // entry|exploring|storylet|combat|distributing|completed|retreated
+    rooms: this.ROOMS().map((r) => ({ ...r, cleared: r.i === 0, revealed: [0, 1, 2].includes(r.i), scouted: r.i === 0 })),
+    current: 0, water: 8, sealCd: 0, moves: 0,
+    party: this.PARTY(),
+    story: { kind: 'entry' }, // {kind,id,result}
+    combat: null,
+    banter: null, barometerTier: 0,
+    log: [], logOpen: false,
+    lootBag: 0, roomsCleared: 0,
+    pendingLoot: null, assignments: {}, activeLoot: null,
+    retreatPct: 0, execPct: 0,
+    combatTimer: 30, combatTimerMax: 30, firstCombatDone: false,
+    endKind: null,
+  };
+
+  get lang() { return this.state.lang ?? this.props.sprache ?? 'de'; }
+
+  ROOMS() {
+    return [
+      { i: 0, d: 0, t: 'entrance', x: 50, y: 7, conn: [1, 2] },
+      { i: 1, d: 1, t: 'combat', x: 30, y: 22, conn: [3, 4] },
+      { i: 2, d: 1, t: 'encounter', x: 70, y: 22, conn: [4, 5] },
+      { i: 3, d: 2, t: 'treasure', x: 16, y: 38, conn: [6] },
+      { i: 4, d: 2, t: 'combat', x: 50, y: 38, conn: [6, 7] },
+      { i: 5, d: 2, t: 'rest', x: 84, y: 38, conn: [7] },
+      { i: 6, d: 3, t: 'threshold', x: 33, y: 54, conn: [8] },
+      { i: 7, d: 3, t: 'encounter', x: 67, y: 54, conn: [8, 9] },
+      { i: 8, d: 4, t: 'elite', x: 41, y: 70, conn: [10] },
+      { i: 9, d: 4, t: 'rest', x: 75, y: 70, conn: [10] },
+      { i: 10, d: 5, t: 'boss', x: 58, y: 84, conn: [11] },
+      { i: 11, d: 5, t: 'exit', x: 58, y: 96, conn: [] },
+    ];
+  }
+
+  PARTY() {
+    return [
+      { id: 'fenn', name: 'Doktor Fenn', role: 'INFILTRATOR 9', cond: 100, stress: 12, buffs: [], img: 'assets/p-fenn.png' },
+      { id: 'voss', name: 'Elena Voss', role: 'SPY 9', cond: 100, stress: 8, buffs: [], img: 'assets/p-voss.png' },
+      { id: 'wolf', name: 'General Wolf', role: 'ASSASSIN 9', cond: 100, stress: 15, buffs: [], img: 'assets/p-wolf.png' },
+    ];
+  }
+
+  ABILITIES(lang) {
+    const de = lang === 'de';
+    const bE = de ? '⚔ Ein Gegner' : '⚔ One enemy';
+    const bA = de ? '✚ Ein Verbündeter' : '✚ One ally';
+    const bG = de ? '◈ Gruppe' : '◈ Party';
+    const bAll = de ? '☄ Alle Gegner' : '☄ All enemies';
+    return {
+      fenn: [
+        { id: 'flash', name: de ? 'Blendsatz' : 'Flash Round', school: 'INF', target: 'enemy', power: 2, badge: bE, fx: de ? '2–3 Schaden an einem Gegner' : '2–3 damage to one enemy', check: de ? 'Treffer 85 % · INF 9' : 'Hit 85% · INF 9', desc: de ? 'Ein Lichtblitz, der Panzer und Gewissheit spaltet.' : 'A flash that splits armour and certainty alike.' },
+        { id: 'smoke', name: de ? 'Nebelwand' : 'Smokescreen', school: 'PRP', target: 'none', power: 0, badge: bG, fx: de ? 'Ganze Gruppe gedeckt: Gegner-Schaden −60 % (diese Runde)' : 'Whole party covered: enemy damage −60% (this round)', check: de ? 'Wirkt immer' : 'Always works', desc: de ? 'Deckung für alle — eine Runde lang ist die Flut blind.' : 'Cover for all — for one round the tide is blind.' },
+        { id: 'scalpel', name: de ? 'Skalpell' : 'Scalpel', school: 'INF', target: 'enemy', power: 3, badge: bE, fx: de ? '3–4 Schaden an einem Gegner' : '3–4 damage to one enemy', check: de ? 'Treffer 85 % · INF 9' : 'Hit 85% · INF 9', desc: de ? 'Präzise. Leise. Endgültig.' : 'Precise. Quiet. Final.' },
+        { id: 'blackproto', name: de ? 'Schwarzprotokoll' : 'Black Protocol', school: 'ULT', target: 'all', power: 3, ult: true, badge: bAll, fx: de ? '3–4 Schaden an ALLEN Gegnern' : '3–4 damage to ALL enemies', check: de ? 'Treffer 85 % je Ziel' : 'Hit 85% per target', desc: de ? 'Das Bureau streicht diesen Raum aus der Akte.' : 'The Bureau strikes this room from the record.' },
+      ],
+      voss: [
+        { id: 'observe', name: de ? 'Beobachten' : 'Observe', school: 'SPY', target: 'none', power: 0, badge: de ? '◈ Selbst' : '◈ Self', fx: de ? 'Voss gedeckt: erlittener Schaden −60 % (diese Runde)' : 'Voss covered: damage taken −60% (this round)', check: de ? 'Wirkt immer' : 'Always works', desc: de ? 'Wer alles sieht, wird selten getroffen.' : 'Those who see everything are rarely hit.' },
+        { id: 'needle', name: de ? 'Giftnadel' : 'Poison Needle', school: 'SPY', target: 'enemy', power: 2, badge: bE, fx: de ? '2–3 Schaden an einem Gegner' : '2–3 damage to one enemy', check: de ? 'Treffer 85 % · SPY 9' : 'Hit 85% · SPY 9', desc: de ? 'Ein Stich, der erst morgen wehtut.' : 'A sting that hurts tomorrow.' },
+        { id: 'whisper', name: de ? 'Zuflüstern' : 'Whisper', school: 'PRP', target: 'ally', power: -15, badge: bA, fx: de ? '−15 Stress bei einem Verbündeten' : '−15 stress on one ally', check: de ? 'Wirkt immer' : 'Always works', desc: de ? 'Drei Worte gegen die Flut im Kopf.' : 'Three words against the flood in the head.' },
+        { id: 'nameless', name: de ? 'Namenlos' : 'Nameless', school: 'ULT', target: 'enemy', power: 4, ult: true, badge: bE, fx: de ? '4–5 Schaden an einem Gegner' : '4–5 damage to one enemy', check: de ? 'Treffer 85 % · SPY 9' : 'Hit 85% · SPY 9', desc: de ? 'Für eine Runde existiert sie nicht. Dann existiert das Ziel nicht.' : 'For one round she does not exist. Then the target does not.' },
+      ],
+      wolf: [
+        { id: 'execute', name: de ? 'Exekution' : 'Execution', school: 'ASN', target: 'enemy', power: 3, badge: bE, fx: de ? '3–4 Schaden an einem Gegner' : '3–4 damage to one enemy', check: de ? 'Treffer 85 % · ASN 9' : 'Hit 85% · ASN 9', desc: de ? 'Das Urteil wurde unterwegs gefällt.' : 'The verdict was passed on the way in.' },
+        { id: 'guard', name: de ? 'Deckung' : 'Guard', school: 'GRD', target: 'ally', power: 0, badge: bA, fx: de ? 'Deckt einen Verbündeten: dessen Schaden −60 % (diese Runde)' : 'Covers one ally: their damage taken −60% (this round)', check: de ? 'Wirkt immer' : 'Always works', desc: de ? 'Der General steht, wo das Wasser steigt.' : 'The General stands where the water rises.' },
+        { id: 'intimidate', name: de ? 'Einschüchtern' : 'Intimidate', school: 'GRD', target: 'enemy', power: 1, badge: bE, fx: de ? '1–2 Schaden an einem Gegner' : '1–2 damage to one enemy', check: de ? 'Treffer 85 % · GRD 9' : 'Hit 85% · GRD 9', desc: de ? 'Auch Ertrunkene kennen Angst.' : 'Even the drowned know fear.' },
+        { id: 'martial', name: de ? 'Standrecht' : 'Martial Law', school: 'ULT', target: 'enemy', power: 5, ult: true, badge: bE, fx: de ? '5–6 Schaden an einem Gegner' : '5–6 damage to one enemy', check: de ? 'Treffer 85 % · ASN 9' : 'Hit 85% · ASN 9', desc: de ? 'Ein Schlag, der das Protokoll ersetzt.' : 'One blow in place of due process.' },
+      ],
+    };
+  }
+
+  ENEMY_SETS(lang) {
+    const de = lang === 'de';
+    const clerk = { name: de ? 'Ertrunkener Aktuar' : 'Drowned Clerk', hp: 5, threat: 'standard', img: 'assets/e-clerk.png', intents: de ? ['Aktenklammer', 'Nasse Paraphe', 'Zwangsvollstreckung'] : ['Paper clamp', 'Wet initial', 'Foreclosure'] };
+    const wraith = { name: de ? 'Gezeiten-Schemen' : 'Tide Wraith', hp: 7, threat: 'high', img: 'assets/e-wraith.png', intents: de ? ['Sog', 'Unterströmung', 'Salzgriff'] : ['Undertow', 'Riptide', 'Salt grip'] };
+    const warden = { name: de ? 'Sogwärter' : 'Undertow Warden', hp: 10, threat: 'high', img: 'assets/e-warden.png', intents: de ? ['Pegelurteil', 'Brecher', 'Tiefenzwang'] : ['Water-level verdict', 'Breaker', 'Depth writ'] };
+    const court = { name: de ? 'Der Steigende Gerichtshof' : 'The Rising Court', hp: 14, threat: 'critical', img: 'assets/e-court.png', intents: de ? ['Letzte Instanz', 'Flutbeschluss', 'Versiegelung'] : ['Final instance', 'Flood decree', 'Sealing'] };
+    return {
+      1: [{ ...clerk }, { ...clerk, name: clerk.name + ' II' }],
+      4: [{ ...clerk }, { ...wraith }],
+      8: [{ ...warden }, { ...clerk }],
+      10: [{ ...court }, { ...wraith }],
+    };
+  }
+
+  LOOT(lang) {
+    const de = lang === 'de';
+    return [
+      { id: 'l1', tier: 1, name: de ? 'Wasserdichte Depesche' : 'Watertight Dispatch', desc: de ? 'Eine Erinnerung, die die Flut nicht bekam. +1 Memory.' : 'A memory the flood never got. +1 memory.', suggest: 'voss' },
+      { id: 'l2', tier: 2, name: de ? 'Siegelwachs der Tiefe' : 'Seal-Wax of the Deep', desc: de ? 'Härtet jede Unterschrift. +1 Aptitude (GRD).' : 'Hardens any signature. +1 aptitude (GRD).', suggest: 'wolf' },
+      { id: 'l3', tier: 3, name: de ? 'Die Trockene Krone' : 'The Dry Crown', desc: de ? 'Was sie berührt, kann nicht mehr ertrinken. Stress-Resistenz, permanent.' : 'What it touches can no longer drown. Permanent stress resistance.', suggest: 'fenn' },
+    ];
+  }
+
+  strings(lang) {
+    const de = lang === 'de';
+    return {
+      archetype: 'The Deluge', dungeonName: de ? 'Die Steigende Flut' : 'The Rising Flood',
+      signature: 'RES-DELUGE · biological_tide · ' + (de ? 'Stufe' : 'Tier') + ' III',
+      depthLabel: de ? 'Tiefe' : 'Depth', waterLabel: de ? 'Wasserstand' : 'Water level',
+      retreatBtn: de ? 'Rückzug (halten)' : 'Retreat (hold)',
+      yourMove: de ? 'Dein Zug' : 'Your move', scout: de ? 'Spähen' : 'Scout', scoutUsed: de ? 'Gespäht' : 'Scouted',
+      sealBreach: de ? 'Leck versiegeln' : 'Seal breach', sealCd: de ? 'Versiegelt' : 'Sealed',
+      partyLabel: de ? 'Einsatztrupp' : 'Expedition party', condLabel: de ? 'Zustand' : 'Condition', stressLabel: 'Stress',
+      consoleLabel: de ? 'Bureau-Konsole' : 'Bureau console',
+      tense: de ? 'Angespannt' : 'Tense', critical: de ? 'Kritisch' : 'Critical',
+      planningLabel: de ? 'Planungsphase' : 'Planning phase', resolvingLabel: de ? 'Auflösung' : 'Resolving', outcomeLabel: de ? 'Runde beendet' : 'Round complete',
+      execute: de ? 'Ausführen (halten)' : 'Execute (hold)', executing: de ? 'Wird ausgeführt…' : 'Executing…',
+      cancel: de ? 'Abbrechen' : 'Cancel',
+      targeted: de ? 'im Visier' : 'targeted',
+      autoDefendHint: de ? 'Agenten ohne Befehl verteidigen automatisch' : 'Agents without orders auto-defend',
+      handHintPick: de ? 'Wähle eine Fähigkeit' : 'Pick an ability', handHintTarget: de ? 'Wähle ein Ziel' : 'Pick a target', handHintReady: de ? 'Alle Befehle gesetzt' : 'All orders set',
+      distribKicker: de ? 'Verteilungsphase' : 'Distribution phase', distribTitle: de ? 'Die Beute der Flut' : 'Spoils of the flood',
+      distribHint: de ? 'Weise jede Beute einem Agenten zu — die Wirkung ist permanent und folgt ihm zurück in die Simulation.' : 'Assign each item to an agent — its effect is permanent and follows them back into the simulation.',
+      confirmDistrib: de ? 'Verteilung besiegeln' : 'Seal distribution',
+      newRun: de ? 'Neuer Durchlauf' : 'New run',
+      condHealthy: de ? 'Unversehrt' : 'Healthy', condDamaged: de ? 'Beschädigt' : 'Damaged', condCritical: de ? 'Kritisch' : 'Critical', condDown: de ? 'Gefallen' : 'Down',
+      targets: de ? 'zielt auf' : 'targets',
+      tierLabels: [de ? 'Gering' : 'Minor', de ? 'Bedeutend' : 'Major', de ? 'Legendär' : 'Legendary'],
+      assignTo: de ? 'Zuweisen an…' : 'Assign to…', unassigned: de ? 'Nicht zugewiesen' : 'Unassigned',
+      completedStamp: de ? 'Expedition abgeschlossen' : 'Expedition complete',
+      retreatedStamp: de ? 'Rückzug protokolliert' : 'Retreat on record',
+      completedText: de ? 'Der Gerichtshof ist vertagt — auf unbestimmte Zeit. Die Flut sinkt hinter euch, und was ihr trägt, gehört jetzt der Simulation.' : 'The court stands adjourned — indefinitely. The flood recedes behind you, and what you carry now belongs to the simulation.',
+      retreatedText: de ? 'Das Bureau wertet einen geordneten Rückzug nicht als Niederlage. Die Flut schon.' : 'The Bureau does not count an orderly retreat as defeat. The flood does.',
+      statRooms: de ? 'Räume' : 'Rooms', statLoot: de ? 'Beute' : 'Loot', statWater: de ? 'Pegel max.' : 'Peak water', statRounds: de ? 'Kampfrunden' : 'Combat rounds',
+      waterTiers: de ? ['Knöcheltief', 'Knietief', 'Hüfthoch', 'Brusthoch', 'Über Kopf'] : ['Ankle-deep', 'Knee-deep', 'Waist-high', 'Chest-high', 'Overhead'],
+      barometer: de
+        ? ['Das Wasser ist nur ein Flüstern zwischen den Dielen.', 'Die Korridore atmen feucht. Papier wellt sich in den Regalen.', 'Die Flut führt jetzt Buch. Jeder Schritt wird verzeichnet.', 'Die Architektur hat aufgehört, so zu tun, als wäre sie trocken.', 'Das Haus gehört jetzt dem Wasser. Ihr seid nur noch geduldet.']
+        : ['The water is only a whisper between the floorboards.', 'The corridors breathe damp. Paper curls on the shelves.', 'The flood keeps records now. Every step is entered.', 'The architecture has stopped pretending to be dry.', 'The house belongs to the water now. You are merely tolerated.'],
+      roomNames: {
+        entrance: de ? 'Eingang' : 'Entrance', combat: de ? 'Gefecht' : 'Combat', elite: 'Elite', encounter: de ? 'Begegnung' : 'Encounter',
+        treasure: de ? 'Schatz' : 'Treasure', rest: de ? 'Rast' : 'Rest', threshold: de ? 'Schwelle' : 'Threshold', boss: 'Boss', exit: de ? 'Ausgang' : 'Exit', unknown: '?',
+      },
+    };
+  }
+
+  // ── lifecycle ──────────────────────────────
+  componentDidMount() {
+    if (!this.state.log.length) {
+      this.pushLog('> dungeon deluge auto');
+      this.pushLog('[RUN] The Deluge · D5 · Fenn, Voss, Wolf');
+    }
+  }
+  componentWillUnmount() { this.clearTimers(); }
+  clearTimers() {
+    ['_iv', '_tick'].forEach((k) => { if (this[k]) { clearInterval(this[k]); this[k] = null; } });
+    ['_raf', '_raf2'].forEach((k) => { if (this[k]) { cancelAnimationFrame(this[k]); this[k] = null; } });
+    if (this._timeouts) { this._timeouts.forEach(clearTimeout); }
+    this._timeouts = [];
+  }
+  later(fn, ms) { this._timeouts = this._timeouts || []; this._timeouts.push(setTimeout(fn, ms)); }
+  showSplash(text, color) {
+    this._splashN = (this._splashN || 0) + 1;
+    const n = this._splashN;
+    this.setState({ splash: { text, color } });
+    this.later(() => { if (this._splashN === n) this.setState({ splash: null }); }, 1600);
+  }
+  pushLog(line) { this.setState({ log: [...this.state.log, line].slice(-60) }); }
+
+  // ── exploration ────────────────────────────
+  moveTo(idx) {
+    const s = this.state;
+    const rooms = s.rooms.map((r) => ({ ...r }));
+    const target = rooms[idx];
+    target.revealed = true; target.scouted = true;
+    const water = Math.min(100, s.water + 6);
+    const sealCd = Math.max(0, s.sealCd - 1);
+    this.pushLog('> move ' + idx + '  (' + target.t + ')');
+    const de = this.lang === 'de';
+    const banters = de
+      ? [{ w: 'Elena Voss', t: 'Hört ihr das? Das Wasser blättert in Akten.' }, { w: 'Doktor Fenn', t: 'Notiz: Die Wände schwitzen. Oder sie weinen. Medizinisch schwer zu unterscheiden.' }, { w: 'General Wolf', t: 'Weitergehen. Ertrinken können wir auch im Stehen.' }]
+      : [{ w: 'Elena Voss', t: 'Do you hear that? The water is leafing through files.' }, { w: 'Doktor Fenn', t: 'Note: the walls are sweating. Or weeping. Medically hard to tell.' }, { w: 'General Wolf', t: 'Keep moving. We can drown standing still just as well.' }];
+    const banter = Math.random() < 0.5 ? banters[s.moves % banters.length] : null;
+    const patch = { rooms, current: idx, water, sealCd, moves: s.moves + 1, banter };
+    if (target.t === 'combat' || target.t === 'elite' || target.t === 'boss') {
+      patch.phase = 'combat';
+      patch.combat = this.initCombat(idx);
+      patch.firstCombatDone = true;
+      this.pushLog('[COMBAT] ' + (de ? 'Feindkontakt — Planungsphase 30s' : 'Contact — planning phase 30s'));
+      this.showSplash(target.t === 'boss' ? (de ? 'Der Gerichtshof tagt' : 'The court is in session') : (de ? 'Feindkontakt' : 'Contact'), '#ef4444');
+    } else if (target.t === 'encounter' || target.t === 'rest' || target.t === 'threshold') {
+      patch.phase = 'storylet';
+      patch.story = { kind: target.t, room: idx, result: null };
+    } else if (target.t === 'treasure') {
+      target.cleared = true;
+      patch.phase = 'storylet';
+      patch.story = { kind: 'treasure', room: idx, result: null };
+      patch.lootBag = s.lootBag + 1;
+      patch.roomsCleared = s.roomsCleared + 1;
+      this.revealConn(rooms, idx);
+    } else if (target.t === 'exit') {
+      patch.phase = 'distributing';
+      patch.pendingLoot = this.LOOT(this.lang);
+      patch.assignments = {};
+    }
+    this.setState(patch);
+  }
+
+  revealConn(rooms, idx) { rooms[idx].conn.forEach((c) => { rooms[c].revealed = true; }); }
+
+  clearRoom(extraPatch) {
+    const s = this.state;
+    const rooms = s.rooms.map((r) => ({ ...r }));
+    rooms[s.current].cleared = true;
+    this.revealConn(rooms, s.current);
+    this.setState({ rooms, roomsCleared: s.roomsCleared + 1, phase: 'exploring', story: null, combat: null, ...extraPatch });
+  }
+
+  scout() {
+    const s = this.state;
+    const rooms = s.rooms.map((r) => ({ ...r }));
+    let n = 0;
+    rooms.forEach((r) => { if (r.revealed && !r.scouted) { r.scouted = true; n++; } });
+    const party = s.party.map((p) => p.id === 'voss' ? { ...p, stress: Math.min(100, p.stress + 5) } : p);
+    this.pushLog('> scout voss  (+' + n + ' ' + (this.lang === 'de' ? 'Räume' : 'rooms') + ', Voss +5 Stress)');
+    this.setState({ rooms, party, scouted: true });
+  }
+
+  doSeal() {
+    const s = this.state;
+    if (s.sealCd > 0 || s.water < 20) return;
+    const party = s.party.map((p) => p.id === 'wolf' ? { ...p, stress: Math.min(100, p.stress + 12) } : p);
+    this.pushLog('> seal-breach wolf  (−20 ' + (this.lang === 'de' ? 'Pegel' : 'water') + ', Wolf +12 Stress)');
+    this.setState({ water: Math.max(0, s.water - 20), sealCd: 2, party });
+  }
+
+  // ── combat engine (simulated) ──────────────
+  // ── Karten-System: geteiltes Party-Deck ────
+  // Jede Runde werden 5 Karten gezogen. Jede Karte gehört einem Agenten.
+  // Max. 1 ausgespielte Karte pro Agent; Agenten ohne Karte verteidigen.
+  buildHand() {
+    const cards = [];
+    this.state.party.filter((p) => p.cond > 0).forEach((p) => {
+      this.ABILITIES(this.lang)[p.id].forEach((ab, i) => cards.push({ ...ab, agentId: p.id, cardId: p.id + ':' + ab.id }));
+    });
+    for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
+    // Fairness: mindestens eine Karte des ersten lebenden Agenten sicherstellen
+    const hand = cards.slice(0, 5);
+    return hand;
+  }
+
+  initCombat(roomIdx) {
+    const enemies = this.ENEMY_SETS(this.lang)[roomIdx].map((e, i) => ({ ...e, id: 'e' + i, maxHp: e.hp, alive: true }));
+    return { room: roomIdx, round: 1, rounds: 0, enemies, sel: {}, pending: null, timer: 30, phase: 'planning', ticker: [], pops: {} };
+  }
+
+  // Kein Echtzeit-Timer im Solo-Spiel: Der Zeitdruck kommt aus der Flut (+2 % pro Kampfrunde).
+  playCard(card) {
+    const c = this.state.combat;
+    if (!c || c.phase !== 'planning') return;
+    if (c.sel[card.agentId]) return; // Agent hat bereits gespielt
+    if (card.ult) {
+      const ag = this.state.party.find((p) => p.id === card.agentId);
+      if (!ag || ag.stress < 50) return; // Ultimate erst ab Stress 50 entriegelt
+    }
+    if (card.target === 'enemy' || card.target === 'ally') {
+      this.setState({ combat: { ...c, pending: card } });
+    } else {
+      this.setOrder(card, null);
+    }
+  }
+
+  setOrder(card, target) {
+    const c = this.state.combat;
+    const sel = { ...c.sel, [card.agentId]: { ability: card, target } };
+    this.setState({ combat: { ...c, sel, pending: null } });
+    this.pushLog('> play ' + card.cardId + (target ? ' @' + target : ''));
+    if (card.ult) this.showSplash(card.name, '#f59e0b');
+  }
+
+  clearOrder(agentId) {
+    const c = this.state.combat;
+    if (!c || c.phase !== 'planning' || !c.sel[agentId]) return;
+    const sel = { ...c.sel };
+    delete sel[agentId];
+    this.setState({ combat: { ...c, sel, pending: null } });
+    this.pushLog('> unplay ' + agentId);
+  }
+
+  targetAlly(pid) {
+    const c = this.state.combat;
+    if (!c || !c.pending || c.pending.target !== 'ally') return;
+    this.setOrder(c.pending, pid);
+  }
+
+  targetEnemy(eid) {
+    const c = this.state.combat;
+    if (!c || !c.pending || c.pending.target !== 'enemy') return;
+    this.setOrder(c.pending, eid);
+  }
+
+  resolveRound() {
+    const s = this.state;
+    const c = s.combat;
+    if (!c) return;
+    const de = this.lang === 'de';
+    const L = this.strings(this.lang);
+    // fill missing with defend
+    const sel = { ...c.sel };
+    s.party.filter((p) => p.cond > 0).forEach((p) => { if (!sel[p.id]) sel[p.id] = { ability: { id: 'defend', name: de ? 'Verteidigen' : 'Defend', power: 0, target: 'none' }, target: null }; });
+    // build events
+    const enemies = c.enemies.map((e) => ({ ...e }));
+    const party = s.party.map((p) => ({ ...p }));
+    const events = [];
+    s.party.filter((p) => p.cond > 0).forEach((p) => {
+      const a = sel[p.id];
+      if (a.ability.target === 'enemy' || a.ability.target === 'all') {
+        const targets = a.ability.target === 'all' ? enemies.filter((e) => e.alive) : enemies.filter((e) => e.alive && e.id === a.target).slice(0, 1);
+        targets.forEach((tgt) => {
+          const hit = Math.random() > 0.15;
+          const dmg = hit ? a.ability.power + (Math.random() < 0.3 ? 1 : 0) : 0;
+          if (hit) { tgt.hp = Math.max(0, tgt.hp - dmg); if (tgt.hp === 0) tgt.alive = false; }
+          events.push({ kind: 'atk', who: p.name, ab: a.ability.name, tgt: tgt.id, tgtName: tgt.name, dmg, hit, kill: tgt.hp === 0 && hit });
+        });
+      } else if (a.ability.target === 'ally' && a.ability.power < 0) {
+        const ally = party.find((x) => x.id === a.target) || p;
+        ally.stress = Math.max(0, ally.stress + a.ability.power);
+        events.push({ kind: 'heal', who: p.name, ab: a.ability.name, tgtName: ally.name, dmg: a.ability.power });
+      } else {
+        events.push({ kind: 'guard', who: p.name, ab: a.ability.name });
+      }
+    });
+    // enemy turn
+    enemies.filter((e) => e.alive).forEach((e) => {
+      const victims = party.filter((p) => p.cond > 0);
+      if (!victims.length) return;
+      const v = victims[Math.floor(Math.random() * victims.length)];
+      const guarded = Object.values(sel).some((a) => a.ability.id === 'smoke' || (a.ability.id === 'guard' && a.target === v.id)) || (sel[v.id] && sel[v.id].ability.id === 'observe');
+      const dmg = guarded ? 4 : 9 + Math.floor(Math.random() * 8);
+      const stress = guarded ? 3 : 6 + Math.floor(Math.random() * 8);
+      v.cond = Math.max(0, v.cond - dmg);
+      v.stress = Math.min(100, v.stress + stress);
+      events.push({ kind: 'enemy', who: e.name, intent: e.intents[Math.floor(Math.random() * e.intents.length)], tgt: v.id, tgtName: v.name, dmg, stress, guarded });
+    });
+    const victory = enemies.every((e) => !e.alive);
+    // play ticker
+    this.setState({ combat: { ...c, phase: 'resolving', sel, ticker: [], pops: {} } });
+    let i = 0;
+    const step = () => {
+      if (i >= events.length) {
+        this.later(() => this.finishRound(enemies, party, victory), 900);
+        return;
+      }
+      const ev = events[i];
+      const cc = this.state.combat;
+      const line = ev.kind === 'atk'
+        ? `${ev.who} — ${ev.ab} → ${ev.tgtName}: ${ev.hit ? '−' + ev.dmg + (ev.kill ? (de ? ' · GEFALLEN' : ' · DOWN') : '') : (de ? 'VERFEHLT' : 'MISS')}`
+        : ev.kind === 'heal' ? `${ev.who} — ${ev.ab} → ${ev.tgtName}: ${ev.dmg} Stress`
+        : ev.kind === 'guard' ? `${ev.who} — ${ev.ab}`
+        : `${ev.who} — ${ev.intent} → ${ev.tgtName}: −${ev.dmg} · +${ev.stress} Stress${ev.guarded ? (de ? ' (gedeckt)' : ' (guarded)') : ''}`;
+      const pops = {};
+      if (ev.kind === 'atk' && ev.hit) pops[ev.tgt] = { val: '−' + ev.dmg, t: Date.now() };
+      if (ev.kind === 'enemy') pops[ev.tgt] = { val: '−' + ev.dmg, t: Date.now() };
+      // apply incremental visual state
+      const enemiesNow = cc.enemies.map((e) => { const fin = enemies.find((x) => x.id === e.id); return (ev.kind === 'atk' && ev.tgt === e.id) ? { ...e, hp: Math.max(fin.hp, e.hp - ev.dmg), alive: !(ev.kill) && e.alive } : e; });
+      const partyNow = this.state.party.map((p) => (ev.tgt === p.id && ev.kind === 'enemy') ? { ...p, cond: Math.max(0, p.cond - ev.dmg), stress: Math.min(100, p.stress + ev.stress) } : (ev.kind === 'heal' && ev.tgtName === p.name ? { ...p, stress: Math.max(0, p.stress + ev.dmg) } : p));
+      this.setState({ combat: { ...cc, enemies: enemiesNow, ticker: [...cc.ticker, { text: line, kind: ev.kind }], pops }, party: partyNow });
+      i++;
+      this.later(step, 950);
+    };
+    step();
+  }
+
+  finishRound(enemies, party, victory) {
+    const s = this.state;
+    const c = s.combat;
+    const de = this.lang === 'de';
+    this.setState({ party, combat: { ...c, enemies, pops: {} } });
+    if (victory) {
+      this.pushLog('[VICTORY] ' + (de ? 'Raum gesichert' : 'Room secured'));
+      const isBoss = s.rooms[s.current].t === 'boss';
+      this.showSplash(isBoss ? (de ? 'Der Gerichtshof fällt' : 'The court falls') : (de ? 'Raum gesichert' : 'Room secured'), '#4ade80');
+      this.later(() => {
+        this.clearRoom({ lootBag: s.lootBag + (isBoss ? 2 : 1), water: Math.min(100, s.water + 4), banter: null });
+        if (isBoss) this.pushLog('[BOSS] ' + (de ? 'Der Gerichtshof ist vertagt.' : 'The court stands adjourned.'));
+      }, 700);
+    } else if (party.every((p) => p.cond <= 0)) {
+      this.setState({ phase: 'completed', endKind: 'wiped' });
+    } else {
+      const next = { ...c, enemies, round: c.round + 1, rounds: c.rounds + 1, sel: {}, pending: null, timer: 30, phase: 'planning', ticker: [], pops: {} };
+      this.setState({ combat: next, combatRounds: (s.combatRounds || 0) + 1, water: Math.min(100, this.state.water + 2) });
+      this.showSplash((de ? 'Runde ' : 'Round ') + next.round + ' · ' + (de ? 'Flut +2 %' : 'Flood +2%'), '#f59e0b');
+    }
+  }
+
+  // ── storylets ──────────────────────────────
+  storyData(kind, room) {
+    const de = this.lang === 'de';
+    if (kind === 'entry') return {
+      kicker: 'The Deluge', id: 'STORYLET-000', title: de ? 'Der Abstieg' : 'The Descent',
+      desc: de ? 'Die Korridore neigen sich abwärts, mit einer Absicht, die kein Zufall sein kann: Jemand hat diesen Ort gebaut, um beansprucht zu werden. Das Wasser steigt fünf Zentimeter pro Raum, und die Mathematik verhandelt nicht.' : 'The corridors slope downward with an intent that cannot be accidental: someone built this place to be claimed. The water rises five centimetres per room, and the math does not negotiate.',
+      choices: [{ id: 'go', label: de ? 'Vordringen' : 'Press on', sub: de ? 'Die Flut wartet nicht.' : 'The flood does not wait.', act: () => { this.setState({ phase: 'exploring', story: null }); this.pushLog('> enter'); } }],
+    };
+    if (kind === 'encounter' && room === 2) return {
+      kicker: de ? 'Begegnung' : 'Encounter', id: 'DELUGE-ARCH-01', title: de ? 'Das Flutarchiv' : 'The Flood Archive',
+      desc: de ? 'Regale voller Verfahren, die das Wasser neu ordnet. Ein Schrank steht noch über der Linie — seine Akten atmen trocken. Irgendwo gurgelt eine Schleuse.' : 'Shelves of proceedings the water is re-filing. One cabinet still stands above the line — its files breathe dry. Somewhere, a sluice gurgles.',
+      choices: [
+        { id: 'salvage', label: de ? 'Akten bergen' : 'Salvage the files', odds: 'SPY 9 · 75%', sub: de ? 'Voss riskiert nasse Hände und trockene Wahrheiten.' : 'Voss risks wet hands and dry truths.', act: () => this.storyResolve(0.75, { loot: 1, stress: ['voss', 8] }, de ? 'Voss zieht drei Bündel über die Wasserlinie. Eines trägt ein Siegel, das es nicht geben dürfte.' : 'Voss lifts three bundles above the waterline. One bears a seal that should not exist.', de ? 'Die Akten zerfallen zu grauem Brei. Etwas darin hat Voss gelesen — und sie es.' : 'The files dissolve to grey pulp. Something in them read Voss — and she it.', { stress: ['voss', 16] }) },
+        { id: 'sluice', label: de ? 'Die Schleuse öffnen' : 'Open the sluice', odds: 'SAB 7 · 60%', sub: de ? 'Der Pegel würde fallen. Der Lärm wäre beträchtlich.' : 'The level would drop. The noise would be considerable.', act: () => this.storyResolve(0.6, { water: -14 }, de ? 'Ein Ruck, ein Sog — das Wasser weicht murrend in die Tiefe.' : 'A jolt, a pull — the water recedes, grumbling, into the deep.', de ? 'Der Hebel bricht. Der Lärm ruft etwas herbei, das jetzt den Flur kennt.' : 'The lever snaps. The noise summons something that now knows the corridor.', { stress: ['fenn', 10], water: 4 }) },
+        { id: 'leave', label: de ? 'Weitergehen' : 'Move on', sub: de ? 'Nicht jede Akte will gelesen werden.' : 'Not every file wants to be read.', act: () => this.storyResolve(1, {}, de ? 'Ihr lasst das Archiv seiner neuen Ordnung.' : 'You leave the archive to its new order.', '', {}) },
+      ],
+    };
+    if (kind === 'encounter') return {
+      kicker: de ? 'Begegnung' : 'Encounter', id: 'DELUGE-TEAR-02', title: de ? 'Die Träne im Deich' : 'The Tear in the Dike',
+      desc: de ? 'Ein haarfeiner Riss, der singt. Dahinter: Druck, geduldig wie ein Gläubiger. General Wolf legt die Hand auf die Wand und nickt langsam.' : 'A hairline crack that sings. Behind it: pressure, patient as a creditor. General Wolf lays a hand on the wall and nods slowly.',
+      choices: [
+        { id: 'seal', label: de ? 'Mit bloßen Händen dichten' : 'Seal it bare-handed', odds: 'GRD 9 · 70%', sub: de ? 'Wolf gegen das Meer. Der Pegel würde deutlich fallen.' : 'Wolf versus the sea. The level would drop sharply.', act: () => this.storyResolve(0.7, { water: -18, stress: ['wolf', 10] }, de ? 'Wolf presst die Handfläche in den Riss, bis der Gesang verstummt.' : 'Wolf presses his palm into the crack until the singing stops.', de ? 'Der Riss beißt zurück. Wasser nimmt, was Haut hergibt.' : 'The crack bites back. Water takes what skin will give.', { stress: ['wolf', 18], water: 6 }) },
+        { id: 'listen', label: de ? 'Dem Riss zuhören' : 'Listen to the crack', odds: 'INF 9 · 82%', sub: de ? 'Fenn glaubt, das Wasser verrät seine Route.' : 'Fenn believes the water betrays its route.', act: () => this.storyResolve(0.82, { scoutAll: true }, de ? 'Der Riss singt eine Karte. Fenn notiert die Tiefe mit ruhiger Hand.' : 'The crack sings a map. Fenn writes down the deep with a steady hand.', de ? 'Der Gesang ist ein Verhör. Fenn beantwortet zu viel.' : 'The song is an interrogation. Fenn answers too much.', { stress: ['fenn', 12] }) },
+        { id: 'leave', label: de ? 'Nicht anfassen' : 'Do not touch it', sub: de ? 'Manche Risse sind Türen.' : 'Some cracks are doors.', act: () => this.storyResolve(1, {}, de ? 'Ihr geht weiter. Hinter euch singt es ein wenig lauter.' : 'You move on. Behind you, the singing grows a little louder.', '', {}) },
+      ],
+    };
+    if (kind === 'rest') return {
+      kicker: de ? 'Rastplatz' : 'Rest site', id: 'DELUGE-REST', title: de ? 'Die Trockene Kammer' : 'The Dry Chamber',
+      desc: de ? 'Ein Raum, den die Flut übersehen hat — oder aufspart. Eine Stunde Stille ist hier unten eine Währung.' : 'A room the flood has overlooked — or is saving. An hour of quiet is currency down here.',
+      choices: [
+        { id: 'rest', label: de ? 'Rasten (alle)' : 'Rest (all)', odds: de ? '20% Überfall' : '20% ambush', sub: de ? '+Zustand, −Stress. Die Flut hört mit.' : '+condition, −stress. The flood is listening.', act: () => this.storyResolve(0.8, { restAll: true }, de ? 'Eine Stunde ohne Wasseruhr. Der Trupp atmet aus.' : 'An hour without the water-clock. The party exhales.', de ? 'Die Stille war geliehen. Etwas klopft die Zinsen ein.' : 'The quiet was borrowed. Something comes to collect.', { stress: ['fenn', 8], stress2: ['wolf', 8] }) },
+        { id: 'leave', label: de ? 'Keine Zeit' : 'No time', sub: de ? 'Der Pegel entscheidet den Kalender.' : 'The water level keeps the calendar.', act: () => this.storyResolve(1, {}, de ? 'Ihr gönnt der Kammer keinen Blick zurück.' : 'You do not grant the chamber a backward glance.', '', {}) },
+      ],
+    };
+    if (kind === 'threshold') return {
+      kicker: de ? 'Schwelle' : 'Threshold', id: 'DELUGE-TOLL', title: de ? 'Der Zoll der Tiefe' : 'The Toll of the Deep',
+      desc: de ? 'Ein Drehkreuz aus Messing, blank poliert vom Wasser. Es verlangt keinen Ausweis. Es verlangt Gewicht.' : 'A brass turnstile, polished bright by the water. It asks for no papers. It asks for weight.',
+      choices: [
+        { id: 'stress', label: de ? 'Mit Nerven bezahlen' : 'Pay in nerve', sub: de ? 'Jeder gibt +8 Stress. Das Drehkreuz nimmt Erinnerungen als Pfand.' : 'Everyone takes +8 stress. The turnstile holds memories as collateral.', act: () => this.storyResolve(1, { stressAll: 8 }, de ? 'Das Kreuz dreht sich. Jeder von euch hat kurz einen Namen vergessen.' : 'The turnstile turns. Each of you briefly forgets a name.', '', {}) },
+        { id: 'loot', label: de ? 'Mit Beute bezahlen' : 'Pay in loot', sub: de ? '−1 Beute. Sauber, schmerzlos, teuer.' : '−1 loot. Clean, painless, expensive.', act: () => this.storyResolve(1, { loot: -1 }, de ? 'Das Messing schluckt euer Fundstück mit der Diskretion einer Amtskasse.' : 'The brass swallows your find with the discretion of a treasury.', '', {}) },
+      ],
+    };
+    if (kind === 'treasure') return {
+      kicker: de ? 'Fund' : 'Find', id: 'DELUGE-CACHE', title: de ? 'Die Versiegelte Kiste' : 'The Sealed Crate',
+      desc: de ? 'Wachs, Blei und drei Schichten Eid. Was auch immer hier trocken bleiben sollte — es ist es geblieben.' : 'Wax, lead, and three layers of oath. Whatever was meant to stay dry here — it has.',
+      choices: [{ id: 'take', label: de ? 'Mitnehmen (+1 Beute)' : 'Take it (+1 loot)', sub: de ? 'Die Verteilung erfolgt nach dem Boss. Bureau-Protokoll.' : 'Distribution happens after the boss. Bureau protocol.', act: () => { this.setState({ phase: 'exploring', story: null }); this.pushLog('[LOOT] +1'); } }],
+    };
+    if (kind === 'boss_deploy') return { kicker: 'Boss', id: 'DELUGE-COURT', title: de ? 'Der Steigende Gerichtshof' : 'The Rising Court', desc: '', choices: [] };
+    return null;
+  }
+
+  storyResolve(prob, fx, okText, failText, failFx) {
+    const ok = Math.random() < prob;
+    const s = this.state;
+    const de = this.lang === 'de';
+    const eff = ok ? fx : failFx;
+    let party = s.party.map((p) => ({ ...p }));
+    let water = s.water; let lootBag = s.lootBag;
+    let rooms = s.rooms;
+    const chips = [];
+    const apply = (e) => {
+      if (!e) return;
+      if (e.stress) { const [id, v] = e.stress; party = party.map((p) => p.id === id ? { ...p, stress: Math.min(100, p.stress + v) } : p); chips.push({ label: id.toUpperCase() + ' +' + v + ' Stress', bad: true }); }
+      if (e.stress2) { const [id, v] = e.stress2; party = party.map((p) => p.id === id ? { ...p, stress: Math.min(100, p.stress + v) } : p); chips.push({ label: id.toUpperCase() + ' +' + v + ' Stress', bad: true }); }
+      if (e.stressAll) { party = party.map((p) => ({ ...p, stress: Math.min(100, p.stress + e.stressAll) })); chips.push({ label: (de ? 'Alle +' : 'All +') + e.stressAll + ' Stress', bad: true }); }
+      if (e.restAll) { party = party.map((p) => ({ ...p, cond: Math.min(100, p.cond + 20), stress: Math.max(0, p.stress - 18) })); chips.push({ label: de ? 'Alle +20 Zustand · −18 Stress' : 'All +20 cond · −18 stress', bad: false }); }
+      if (e.water) { water = Math.max(0, Math.min(100, water + e.water)); chips.push({ label: (de ? 'Pegel ' : 'Water ') + (e.water > 0 ? '+' : '') + e.water + '%', bad: e.water > 0 }); }
+      if (e.loot) { lootBag = Math.max(0, lootBag + e.loot); chips.push({ label: (e.loot > 0 ? '+' : '') + e.loot + (de ? ' Beute' : ' loot'), bad: e.loot < 0 }); }
+      if (e.scoutAll) { rooms = rooms.map((r) => r.revealed ? { ...r, scouted: true } : r); chips.push({ label: de ? 'Karte enthüllt' : 'Map revealed', bad: false }); }
+    };
+    apply(eff);
+    this.pushLog('[CHECK] ' + (ok ? 'SUCCESS' : 'FAIL'));
+    this.setState({ party, water, lootBag, rooms, story: { ...s.story, result: { ok, text: ok ? okText : failText, chips } } });
+  }
+
+  closeStory() {
+    this.clearRoom({});
+  }
+
+  // ── boss deploy / retreat / distribution ───
+  retreatHold(start) {
+    if (!start) { if (this._raf2) cancelAnimationFrame(this._raf2); this._raf2 = null; this.setState({ retreatPct: 0 }); return; }
+    const t0 = Date.now();
+    const loop = () => {
+      const pct = Math.min(100, ((Date.now() - t0) / 1500) * 100);
+      this.setState({ retreatPct: pct });
+      if (pct >= 100) { this._raf2 = null; this.clearTimers(); this.setState({ phase: 'completed', endKind: 'retreated', retreatPct: 0 }); this.pushLog('> retreat  [CONFIRMED]'); return; }
+      this._raf2 = requestAnimationFrame(loop);
+    };
+    this._raf2 = requestAnimationFrame(loop);
+  }
+
+  execHold(start) {
+    const c = this.state.combat;
+    if (!c || c.phase !== 'planning') return;
+    if (!start) { if (this._raf) cancelAnimationFrame(this._raf); this._raf = null; this.setState({ execPct: 0 }); return; }
+    const t0 = Date.now();
+    const loop = () => {
+      const pct = Math.min(100, ((Date.now() - t0) / 900) * 100);
+      this.setState({ execPct: pct });
+      if (pct >= 100) { this._raf = null; this.setState({ execPct: 0 }); if (this._tick) { clearInterval(this._tick); this._tick = null; } this.pushLog('> submit'); this.resolveRound(); return; }
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+  }
+
+  // ── renderVals ─────────────────────────────
+  renderVals() {
+    const s = this.state;
+    const lang = this.lang;
+    const de = lang === 'de';
+    const L = this.strings(lang);
+    const MONO = "font-family:'SF Mono',Monaco,'Roboto Mono',monospace;";
+    if (!s.rooms) return { L, isBooting: true };
+
+    const ROOM_META = {
+      entrance: { g: '▣', c: '#888888' }, combat: { g: '⚔', c: '#ef4444' }, elite: { g: '⚔', c: '#ef4444' },
+      encounter: { g: '◈', c: '#f59e0b' }, treasure: { g: '⬡', c: '#4ade80' }, rest: { g: '☾', c: '#4ade80' },
+      threshold: { g: '◫', c: '#5fa8f6' }, boss: { g: '♆', c: '#ef4444' }, exit: { g: '◎', c: '#e5e5e5' }, unknown: { g: '?', c: '#555555' },
+    };
+
+    // map
+    const cur = s.rooms[s.current];
+    const adjacent = cur.conn.filter((c) => s.rooms[c].revealed);
+    const canMove = s.phase === 'exploring';
+    const waterY = 100 - s.water * 0.92;
+    const mapNodes = s.rooms.filter((r) => r.revealed).map((r) => {
+      const known = r.scouted || r.cleared;
+      const meta = ROOM_META[known ? r.t : 'unknown'];
+      const isCur = r.i === s.current;
+      const movable = canMove && adjacent.includes(r.i);
+      const submerged = r.y > waterY;
+      const border = isCur ? '#f59e0b' : r.cleared ? 'rgba(74,222,128,.55)' : movable ? meta.c : '#333333';
+      return {
+        glyph: r.cleared && !isCur ? '✓' : meta.g,
+        label: known ? L.roomNames[r.t] : '?',
+        labelStyle: `${MONO}font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:${isCur ? '#f59e0b' : '#888888'}`,
+        onClick: movable ? () => this.moveTo(r.i) : () => {},
+        style: `position:absolute;left:${r.x}%;top:${r.y}%;transform:translate(-50%,-50%);width:58px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:${submerged ? 'rgba(13,21,32,.9)' : '#0d0d0d'};border:${isCur ? '2px' : '1px'} solid ${border};color:${isCur ? '#f59e0b' : r.cleared ? '#4ade80' : meta.c};cursor:${movable ? 'pointer' : 'default'};z-index:4;transition:all .2s;${movable ? 'animation:node-pulse 2s ease-in-out infinite;' : ''}${submerged ? 'filter:saturate(.6) brightness(.8);' : ''}box-shadow:4px 4px 0 #000000`,
+        hoverStyle: movable ? 'transform:translate(-50%,-50%) scale(1.12);border-color:#f59e0b' : '',
+      };
+    });
+    const mapEdges = [];
+    s.rooms.forEach((r) => {
+      if (!r.revealed) return;
+      r.conn.forEach((cIdx) => {
+        const c2 = s.rooms[cIdx];
+        if (!c2.revealed) return;
+        const active = (r.i === s.current && adjacent.includes(cIdx));
+        mapEdges.push({ x1: r.x, y1: r.y, x2: c2.x, y2: c2.y, stroke: active ? 'rgba(245,158,11,.6)' : r.cleared && c2.cleared ? 'rgba(74,222,128,.3)' : 'rgba(85,85,85,.4)', w: active ? 2 : 1, dash: active ? '4 3' : '2 4' });
+      });
+    });
+
+    // barometer
+    const tier = Math.min(4, Math.floor(s.water / 20));
+    const waterColor = s.water >= 85 ? '#ef4444' : s.water >= 60 ? '#f59e0b' : '#5fa8f6';
+
+    // storylet
+    const story = s.story ? this.storyData(s.story.kind, s.story.room) : null;
+    const result = s.story && s.story.result;
+    const storyChoices = (story && !result ? story.choices : []).map((ch) => ({
+      label: ch.label, sub: ch.sub || '', odds: ch.odds || '', onClick: ch.act,
+      oddsStyle: `${MONO}font-size:10px;letter-spacing:.06em;color:#4ade80;white-space:nowrap`,
+      style: `text-align:left;background:#111111;border:1px solid #333333;color:#e5e5e5;font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;padding:12px 16px;cursor:pointer;transition:all .15s`,
+      hoverStyle: 'border-color:#5fa8f6;background:#131a24;transform:translate(-2px,-2px);box-shadow:4px 4px 0 #000000',
+    }));
+    const continueChoice = result ? [{ label: de ? 'Weiter' : 'Continue', sub: '', odds: '', onClick: () => this.closeStory(), oddsStyle: '', style: `text-align:center;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.5);color:#4ade80;font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:12px 16px;cursor:pointer`, hoverStyle: 'background:rgba(74,222,128,.2)' }] : [];
+
+    // combat
+    const c = s.combat;
+    let combatVals = {};
+    if (s.phase === 'combat' && c) {
+      const aliveParty = s.party.filter((p) => p.cond > 0);
+      const aliveEnemies = c.enemies.filter((e) => e.alive);
+      const nSel = Object.keys(c.sel).length;
+      const nE = c.enemies.length; const nP = s.party.length;
+      const enemyX = (i) => ((i + 0.5) / nE) * 100;
+      const partyX = (i) => ((i + 0.5) / nP) * 100;
+      const threatColor = { standard: '#f59e0b', high: '#ef4444', critical: '#ef4444' };
+      const condOf = (e) => !e.alive ? [L.condDown, '#555555'] : e.hp > e.maxHp * 0.6 ? [L.condHealthy, '#4ade80'] : e.hp > e.maxHp * 0.25 ? [L.condDamaged, '#f59e0b'] : [L.condCritical, '#ef4444'];
+      // stable per-round intent targets
+      const intentTarget = (i) => aliveParty[(i + c.round) % aliveParty.length];
+      const threatenedIds = new Set(c.phase === 'planning' ? aliveEnemies.map((e, i) => intentTarget(i).id) : []);
+      combatVals = {
+        showCombat: true,
+        combatSceneStyle: `position:absolute;inset:0;z-index:15;background:linear-gradient(rgba(6,6,6,.9),rgba(6,6,6,.96)),url('assets/deluge-art-1200.png') center 35%/cover;display:flex;flex-direction:column;${c.ticker.length && c.pops && Object.keys(c.pops).length ? 'animation:shake .3s linear;' : ''}`,
+        timerRowStyle: 'display:flex;align-items:center;gap:16px;padding:10px 16px;border-bottom:1px solid #1c1c1c;flex-wrap:wrap',
+        combatPhaseLabel: c.phase === 'planning' ? L.planningLabel : c.phase === 'resolving' ? L.resolvingLabel : L.outcomeLabel,
+        ordersLabel: (de ? 'Befehle ' : 'Orders ') + nSel + '/' + aliveParty.length,
+        ordersStyle: `${MONO}font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${nSel >= aliveParty.length ? '#4ade80' : '#f59e0b'};font-variant-numeric:tabular-nums`,
+        combatWaterLabel: (de ? 'Flut ' : 'Flood ') + s.water + ' % · +2 %/' + (de ? 'Runde' : 'round'),
+        enemyRowStyle: `display:flex;flex-wrap:wrap;gap:18px 26px;justify-content:center;align-items:flex-start;padding:16px 10px 0;position:relative;z-index:2;transition:opacity .3s,filter .3s;${c.pending && c.pending.target === 'ally' ? 'opacity:.35;filter:saturate(.4);pointer-events:none;' : ''}`,
+        partyRowStyle: `display:flex;flex-wrap:wrap;gap:22px 30px;justify-content:center;align-items:flex-end;padding:18px 10px 12px;position:relative;z-index:2;transition:opacity .3s,filter .3s;${c.pending && c.pending.target === 'enemy' ? 'opacity:.4;filter:saturate(.5);pointer-events:none;' : ''}`,
+        handRowStyle: `flex:1;display:flex;justify-content:center;align-items:flex-end;min-height:150px;transition:opacity .3s;${c.pending ? 'opacity:.35;pointer-events:none;' : ''}`,
+        roundLabel: (de ? 'Runde ' : 'Round ') + c.round,
+        telegraphs: c.phase === 'planning' ? c.enemies.filter((e) => e.alive).map((e, i) => {
+          const tgt = intentTarget(i);
+          const tIdx = s.party.findIndex((p) => p.id === tgt.id);
+          return { x1: enemyX(c.enemies.indexOf(e)), y1: 30, x2: partyX(tIdx), y2: 76, stroke: threatColor[e.threat], w: e.threat === 'critical' ? 2.5 : 1.5 };
+        }) : [],
+        enemyCards: c.enemies.map((e, i) => {
+          const [cl, cc2] = condOf(e);
+          const tgt = intentTarget(Math.max(0, aliveEnemies.indexOf(e)));
+          const targetable = !!c.pending && c.pending.target === 'enemy' && e.alive;
+          const pop = c.pops && c.pops[e.id];
+          return {
+            name: e.name, condLabel: cl, condColor: cc2,
+            threatLabel: e.threat.toUpperCase(),
+            stripStyle: `display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:rgba(239,68,68,.07);border-bottom:1px solid #1c1c1c;${MONO}font-size:8px;letter-spacing:.16em;color:${threatColor[e.threat]}`,
+            condLamp: `width:8px;height:8px;border-radius:50%;background:${cc2};${e.alive ? 'animation:pulse-dot 2s ease-in-out infinite;' : ''}`,
+            intentText: e.alive && c.phase === 'planning' ? `${e.intents[(c.round) % e.intents.length]} → ${tgt.name.split(' ').pop()}` : e.alive ? '…' : (de ? 'Gefallen' : 'Down'),
+            expectText: e.alive && c.phase === 'planning' ? (de ? 'erwartet: −9…16 Zustand · +6…13 Stress (gedeckt: −60 %)' : 'expect: −9…16 cond · +6…13 stress (covered: −60%)') : '',
+            expectStyle: `padding:4px 10px 7px;${MONO}font-size:8px;letter-spacing:.03em;line-height:1.5;color:#77787f;text-align:center;${e.alive && c.phase === 'planning' ? '' : 'display:none;'}`,
+            intentStyle: `padding:6px 10px;border-top:1px solid #1c1c1c;${MONO}font-size:9px;letter-spacing:.04em;color:${e.alive ? threatColor[e.threat] : '#555555'};display:flex;align-items:center;gap:6px;justify-content:center`,
+            artStyle: `height:88px;position:relative;overflow:hidden;border-bottom:1px solid #1c1c1c;background:linear-gradient(180deg,transparent 40%,rgba(6,6,6,.5)),url('${e.img}') center/cover;${!e.alive ? 'filter:grayscale(1) brightness(.5);' : ''}`,
+            style: `position:relative;width:196px;background:#0d0d0d;border:1px solid ${e.alive ? (targetable ? '#f59e0b' : '#333333') : '#222222'};box-shadow:${pop ? '0 0 30px rgba(245,158,11,.45), 5px 5px 0 #000000' : '5px 5px 0 #000000'};cursor:${targetable ? 'crosshair' : 'default'};${!e.alive ? 'opacity:.4;filter:grayscale(.8);' : (c.phase === 'planning' ? 'animation:idle-bob 3.4s ease-in-out infinite;' : '')}transition:all .2s`,
+            hoverStyle: targetable ? 'transform:translateY(-4px);border-color:#fbbf24' : '',
+            onClick: targetable ? () => this.targetEnemy(e.id) : () => {},
+            showReticle: targetable,
+            dmgPop: !!pop, dmgVal: pop ? pop.val : '',
+          };
+        }),
+        showTicker: c.ticker.length > 0,
+        tickerLines: c.ticker.map((t, i) => ({
+          text: t.text,
+          style: `${MONO}font-size:11.5px;line-height:1.8;color:${t.kind === 'enemy' ? '#ef8888' : t.kind === 'heal' ? '#4ade80' : '#c9c7c1'};${i === c.ticker.length - 1 ? 'animation:rise-in .3s ease;' : 'opacity:.6;'}`,
+        })),
+        agentChips: s.party.map((p, i) => {
+          const selAb = c.sel[p.id];
+          const isActive = false;
+          const hasOrder = !!selAb && c.phase === 'planning';
+          const pop = c.pops && c.pops[p.id];
+          const down = p.cond <= 0;
+          const allyTargetable = c.phase === 'planning' && !!c.pending && c.pending.target === 'ally' && !down;
+          return {
+            showReticle: allyTargetable,
+            threatened: c.phase === 'planning' && threatenedIds.has(p.id) && !down,
+            threatStyle: `position:absolute;top:-11px;left:8px;background:#170b0b;border:1px solid #ef4444;color:#ef4444;${MONO}font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;animation:pulse-dot 1.6s ease-in-out infinite;z-index:4;white-space:nowrap`,
+            name: p.name.split(' ').pop(), letter: p.name.replace(/^(Doktor |General )/, '').charAt(0),
+            actionLabel: down ? (de ? 'Gefallen' : 'Down') : selAb ? (de ? '✓ Befehl gesetzt' : '✓ order set') : isActive ? (de ? '– wählt –' : '– choosing –') : (de ? 'wartet' : 'waiting'),
+            orderShow: !!selAb && !down,
+            orderStyle: `position:relative;margin-top:9px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#0d0d0d;border:1px solid ${selAb && selAb.ability.ult ? '#f59e0b' : 'rgba(74,222,128,.6)'};border-left-width:3px;padding:6px 10px;box-shadow:2px 2px 0 #000000;z-index:3;animation:rise-in .3s cubic-bezier(.22,1,.36,1) both`,
+            orderAb: selAb ? selAb.ability.name : '',
+            orderNameStyle: `font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;color:#e5e5e5;white-space:nowrap`,
+            orderTarget: selAb ? (selAb.target ? '→ ' + (((c.enemies.find((x) => x.id === selAb.target) || s.party.find((x) => x.id === selAb.target) || {}).name || '').split(' ').pop()) : selAb.ability.badge) : '',
+            orderTgtStyle: `${MONO}font-size:8px;letter-spacing:.06em;color:${selAb && selAb.ability.ult ? '#f59e0b' : '#4ade80'};white-space:nowrap`,
+            cards: this.ABILITIES(lang)[p.id].map((ab) => {
+              const card = { ...ab, agentId: p.id, cardId: p.id + ':' + ab.id };
+              const locked = !!ab.ult && p.stress < 50;
+              const isPend = c.pending && c.pending.cardId === card.cardId;
+              const played = !!selAb;
+              const dead = down || c.phase !== 'planning';
+              const clickable = !locked && !played && !dead && !c.pending;
+              const tintAg = p.id === 'fenn' ? '#4ade80' : p.id === 'voss' ? '#5fa8f6' : '#f59e0b';
+              return {
+                name: ab.name,
+                fx: ab.fx,
+                check: locked ? (de ? '🔒 ab Stress 50' : '🔒 at stress 50+') : ab.check,
+                onClick: clickable ? () => this.playCard(card) : () => {},
+                style: `width:132px;min-height:96px;display:flex;flex-direction:column;background:#0d0d0d;border:1px solid ${isPend ? '#f59e0b' : ab.ult && !locked ? 'rgba(245,158,11,.6)' : '#2c2c2c'};box-shadow:3px 3px 0 #000000;${played || locked || down ? 'opacity:.35;filter:grayscale(.6);' : ''}cursor:${clickable ? 'pointer' : 'default'};transition:all .2s cubic-bezier(.22,1,.36,1);position:relative;${ab.ult && !locked && !played ? 'box-shadow:3px 3px 0 #000000, 0 0 14px rgba(245,158,11,.2);' : ''}`,
+                hoverStyle: clickable ? `transform:translateY(-6px);z-index:40;border-color:${tintAg};box-shadow:5px 9px 20px rgba(0,0,0,.8), 0 0 16px ${tintAg}33` : '',
+                nameStyle: `font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:10.5px;letter-spacing:.02em;text-transform:uppercase;color:${ab.ult ? '#f59e0b' : '#e5e5e5'};padding:7px 9px 4px;line-height:1.25`,
+                fxStyle: `${MONO}font-size:9px;line-height:1.5;color:#a8a8a0;padding:0 9px 6px;flex:1`,
+                checkStyle: `${MONO}font-size:8.5px;letter-spacing:.02em;color:#5fa8f6;padding:4px 9px;border-top:1px solid #1c1c1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis`,
+              };
+            }),
+            actionStyle: `${MONO}font-size:9px;letter-spacing:.06em;color:${down ? '#ef4444' : selAb ? '#4ade80' : isActive ? '#f59e0b' : '#555555'}`,
+            imgStyle: `width:40px;height:40px;flex-shrink:0;background:url('${p.img}') center/cover;border:2px solid ${isActive ? '#f59e0b' : down ? '#ef4444' : 'rgba(74,222,128,.5)'};${down ? 'filter:grayscale(1) brightness(.6);' : ''}${isActive ? 'box-shadow:0 0 14px rgba(245,158,11,.4);' : ''}transition:all .2s`,
+            style: `position:relative;padding:10px 14px;background:${isActive ? 'rgba(245,158,11,.08)' : '#0d0d0d'};border:1px solid ${allyTargetable ? '#4ade80' : isActive ? '#f59e0b' : '#333333'};box-shadow:${pop ? '0 0 26px rgba(239,68,68,.45), 4px 4px 0 #000000' : allyTargetable ? '0 0 18px rgba(74,222,128,.25), 4px 4px 0 #000000' : '4px 4px 0 #000000'};cursor:${allyTargetable ? 'crosshair' : (c.phase === 'planning' && !down ? 'pointer' : 'default')};${down ? 'opacity:.45;' : ''}transition:all .2s`,
+            hoverStyle: allyTargetable ? 'transform:translateY(-3px);border-color:#4ade80' : (hasOrder ? 'border-color:#ef4444' : ''),
+            onClick: allyTargetable ? () => this.targetAlly(p.id) : (hasOrder ? () => this.clearOrder(p.id) : () => {}),
+            dmgPop: !!pop, dmgVal: pop ? pop.val : '',
+          };
+        }),
+        showHand: c.phase === 'planning',
+        handCards: (c.hand || []).map((ab, i, arr) => {
+          const mid = (arr.length - 1) / 2;
+          const rot = (i - mid) * 5;
+          const arc = Math.abs(i - mid) * 9;
+          const isPending = c.pending && c.pending.cardId === ab.cardId;
+          const played = !!c.sel[ab.agentId];
+          const agent = s.party.find((p) => p.id === ab.agentId) || {};
+          const tint = ab.agentId === 'fenn' ? '#4ade80' : ab.agentId === 'voss' ? '#5fa8f6' : '#f59e0b';
+          return {
+            name: ab.name, desc: ab.desc, check: ab.check, ult: !!ab.ult,
+            school: ab.school + ' · ' + ab.badge,
+            fx: ab.fx,
+            fxStyle: `${MONO}font-size:9.5px;letter-spacing:.02em;line-height:1.45;color:${ab.ult ? '#f59e0b' : '#4ade80'};margin-bottom:5px`,
+            agent: ((agent.name || '').split(' ').pop()),
+            agentStrip: `display:flex;align-items:center;gap:7px;padding:5px 10px;background:${tint}14;border-bottom:1px solid #1c1c1c;${MONO}font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:${tint}`,
+            agentDot: `display:inline-block;width:16px;height:16px;background:url('${agent.img}') center/cover;border:1px solid ${tint};flex-shrink:0`,
+            headStyle: `display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:rgba(${ab.ult ? '245,158,11' : '74,222,128'},.08);border-bottom:1px solid #1c1c1c;${MONO}font-size:8.5px;letter-spacing:.16em;color:${ab.ult ? '#f59e0b' : '#4ade80'}`,
+            checkStyle: `padding:5px 10px;border-top:1px solid #1c1c1c;${MONO}font-size:9px;letter-spacing:.05em;color:#5fa8f6;text-align:center`,
+            onClick: played ? () => {} : () => this.playCard(ab),
+            style: `width:156px;display:flex;flex-direction:column;background:#0d0d0d;border:1px solid ${isPending ? '#f59e0b' : played ? '#222222' : '#333333'};transform-origin:bottom center;transform:rotate(${rot}deg) translateY(${arc}px)${isPending ? ' translateY(-14px)' : ''};${i > 0 ? 'margin-left:-16px;' : ''}z-index:${isPending ? 15 : i + 1};box-shadow:6px 8px 18px rgba(0,0,0,.6);${played ? 'opacity:.3;filter:grayscale(.8);' : ''}cursor:${played ? 'default' : 'pointer'};transition:all .25s cubic-bezier(.22,1,.36,1);animation:card-deal .45s cubic-bezier(.22,1,.36,1) both;animation-delay:${i * 90}ms;position:relative`,
+            hoverStyle: played ? '' : `transform:translateY(-16px) scale(1.06);z-index:20;border-color:${tint};box-shadow:8px 12px 26px rgba(0,0,0,.7), 0 0 22px ${tint}33`,
+          };
+        }),
+        handHint: '',
+        instrText: c.pending
+          ? (de ? `② Klicke ${c.pending.target === 'enemy' ? 'einen GEGNER (oben)' : 'einen VERBÜNDETEN (unten)'} für „${c.pending.name}"` : `② Click ${c.pending.target === 'enemy' ? 'an ENEMY (top)' : 'an ALLY (bottom)'} for “${c.pending.name}”`)
+          : nSel < aliveParty.length
+            ? (de ? `① Spiele für jeden Agenten eine Karte aus seinem Kit (${nSel}/${aliveParty.length} gesetzt)` : `① Play one card from each agent's kit (${nSel}/${aliveParty.length} set)`)
+            : (de ? '③ Alle Agenten haben gespielt — halte AUSFÜHREN. Klick auf eine Befehlskarte nimmt sie zurück.' : '③ All agents have played — hold EXECUTE. Click a played order to take it back.'),
+        instrStyle: `${MONO}font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:${c.pending ? (c.pending.target === 'enemy' ? '#f59e0b' : '#4ade80') : nSel < aliveParty.length ? '#e5e5e5' : '#4ade80'};text-align:center`,
+        instrBg: `display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 14px;border-bottom:1px solid #1c1c1c;background:${c.pending ? (c.pending.target === 'enemy' ? 'rgba(245,158,11,.07)' : 'rgba(74,222,128,.07)') : 'rgba(255,255,255,.02)'}`,
+        pendingActive: !!c.pending,
+        cancelPending: () => this.setState({ combat: { ...c, pending: null } }),
+        execBtnStyle: `position:relative;overflow:hidden;background:#170b0b;border:2px solid #ef4444;color:#ef4444;font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:16px 30px;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:5px 5px 0 #000000`,
+        execFillStyle: `position:absolute;top:0;left:0;bottom:0;width:${s.execPct}%;background:rgba(239,68,68,.35);transition:width .05s linear`,
+        execLabel: L.execute + ' · ' + nSel + '/' + aliveParty.length,
+        autoDefendShow: nSel < aliveParty.length,
+        execStart: () => this.execHold(true),
+        execEnd: () => this.execHold(false),
+      };
+    }
+
+    // party sidebar
+    const partyCards = s.party.map((p) => {
+      const stress = p.stress;
+      const affl = stress >= 75 ? [L.critical, '#ef4444'] : stress >= 50 ? [L.tense, '#f59e0b'] : null;
+      return {
+        name: p.name, role: p.role, letter: p.name.replace(/^(Doktor |General )/, '').charAt(0),
+        style: `border:1px solid ${p.cond <= 0 ? 'rgba(239,68,68,.5)' : '#333333'};background:#0d0d0d;box-shadow:4px 4px 0 #000000;${p.cond <= 0 ? 'opacity:.6;' : ''}`,
+        imgStyle: `width:46px;height:46px;flex-shrink:0;background:url('${p.img}') center/cover;border:2px solid ${stress >= 75 ? '#ef4444' : stress >= 50 ? 'rgba(245,158,11,.6)' : 'rgba(74,222,128,.5)'};${p.cond <= 0 ? 'filter:grayscale(1) brightness(.6);' : ''}transition:border-color .3s`,
+        condNum: String(p.cond), condFill: `position:absolute;inset:0;width:${p.cond}%;background:${p.cond > 50 ? '#22c55e' : p.cond > 25 ? '#f59e0b' : '#ef4444'};transition:width .5s cubic-bezier(.22,1,.36,1)`,
+        stressNum: String(stress),
+        stressNumStyle: `${MONO}font-size:9px;font-variant-numeric:tabular-nums;color:${stress >= 75 ? '#ef4444' : stress >= 50 ? '#f59e0b' : '#a0a0a0'}`,
+        stressFill: `position:absolute;inset:0;width:${stress}%;background:linear-gradient(90deg,#b45309,#f59e0b${stress >= 75 ? ',#ef4444' : ''});transition:width .5s cubic-bezier(.22,1,.36,1)`,
+        afflicted: !!affl,
+        afflictLabel: affl ? affl[0] : '', afflictStyle: affl ? `${MONO}font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:${affl[1]};border:1px solid ${affl[1]};padding:3px 7px;transform:rotate(-2deg);animation:pulse-dot 1.6s ease-in-out infinite` : '',
+        buffs: (p.buffs || []).map((b) => ({ label: b, style: `${MONO}font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#5fa8f6;border:1px solid rgba(95,168,246,.4);padding:2px 6px` })),
+      };
+    });
+
+    // distribution
+    let distribVals = { showDistrib: false };
+    if (s.phase === 'distributing' && s.pendingLoot) {
+      const tierC = ['#888888', '#5fa8f6', '#f59e0b'];
+      const allAssigned = s.pendingLoot.every((l) => s.assignments[l.id]);
+      distribVals = {
+        showDistrib: true,
+        lootCards: s.pendingLoot.map((l) => {
+          const asg = s.assignments[l.id];
+          const active = s.activeLoot === l.id;
+          const agent = asg ? s.party.find((p) => p.id === asg) : null;
+          return {
+            name: l.name, desc: l.desc,
+            tierLabel: L.tierLabels[l.tier - 1], tierStyle: `padding:5px 12px;border-bottom:1px solid #1c1c1c;${MONO}font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:${tierC[l.tier - 1]};background:rgba(245,158,11,${l.tier === 3 ? '.09' : '.03'})`,
+            assignLabel: agent ? '→ ' + agent.name : L.assignTo,
+            assignStyle: `padding:7px 12px;border-top:1px solid #1c1c1c;${MONO}font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${agent ? '#4ade80' : '#666666'}`,
+            onClick: () => this.setState({ activeLoot: l.id }),
+            style: `width:200px;display:flex;flex-direction:column;background:#0d0d0d;border:1px solid ${active ? '#f59e0b' : agent ? 'rgba(74,222,128,.5)' : l.tier === 3 ? 'rgba(245,158,11,.5)' : '#333333'};box-shadow:6px 6px 0 #000000;cursor:pointer;transition:all .2s;animation:card-deal .5s cubic-bezier(.22,1,.36,1) both`,
+            hoverStyle: 'transform:translateY(-5px);border-color:#f59e0b',
+          };
+        }),
+        distribAgents: s.party.map((p) => ({
+          label: p.name,
+          imgStyle: `display:inline-block;width:26px;height:26px;background:url('${p.img}') center/cover;border:1px solid #333333;flex-shrink:0`,
+          onClick: () => { if (s.activeLoot) { this.setState({ assignments: { ...s.assignments, [s.activeLoot]: p.id }, activeLoot: null }); this.pushLog('> assign ' + s.activeLoot + ' ' + p.id); } },
+          style: `display:inline-flex;align-items:center;gap:9px;background:${s.activeLoot ? 'rgba(74,222,128,.08)' : 'transparent'};border:1px solid ${s.activeLoot ? 'rgba(74,222,128,.5)' : '#333333'};color:${s.activeLoot ? '#4ade80' : '#888888'};${MONO}font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px 8px 9px;cursor:${s.activeLoot ? 'pointer' : 'default'};transition:all .2s`,
+          hoverStyle: s.activeLoot ? 'background:rgba(74,222,128,.16)' : '',
+        })),
+        confirmDistrib: () => { if (allAssigned) { this.setState({ phase: 'completed', endKind: 'completed' }); this.pushLog('> distribute confirm'); } },
+        confirmStyle: `background:${allAssigned ? 'rgba(245,158,11,.14)' : 'transparent'};border:1px solid ${allAssigned ? 'rgba(245,158,11,.6)' : '#333333'};color:${allAssigned ? '#f59e0b' : '#555555'};font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;padding:15px 32px;cursor:${allAssigned ? 'pointer' : 'not-allowed'};box-shadow:5px 5px 0 #000000`,
+      };
+    }
+
+    // end
+    const endVals = s.phase === 'completed' ? {
+      showEnd: true,
+      endStamp: s.endKind === 'retreated' ? L.retreatedStamp : L.completedStamp,
+      endStampStyle: `display:inline-block;border:3px double ${s.endKind === 'retreated' ? '#f59e0b' : '#4ade80'};color:${s.endKind === 'retreated' ? '#f59e0b' : '#4ade80'};font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:clamp(18px,3vw,26px);letter-spacing:.14em;text-transform:uppercase;padding:14px 28px;transform:rotate(-3deg);animation:stamp-in .5s cubic-bezier(.22,1,.36,1)`,
+      endText: s.endKind === 'retreated' ? L.retreatedText : L.completedText,
+      endStats: [
+        { value: String(s.roomsCleared), label: L.statRooms },
+        { value: String(s.pendingLoot ? s.pendingLoot.length : s.lootBag), label: L.statLoot },
+        { value: s.water + '%', label: L.statWater },
+        { value: String((s.combatRounds || 0)), label: L.statRounds },
+      ],
+      restartRun: () => {
+        this.clearTimers();
+        this.setState({
+          phase: 'storylet', story: { kind: 'entry' },
+          rooms: this.ROOMS().map((r) => ({ ...r, cleared: r.i === 0, revealed: [0, 1, 2].includes(r.i), scouted: r.i === 0 })),
+          party: this.PARTY(), scouted: false,
+          water: 8, sealCd: 0, moves: 0, current: 0, lootBag: 0, roomsCleared: 0, combatRounds: 0,
+          combatTimer: 30, combatTimerMax: 30, firstCombatDone: false,
+          pendingLoot: null, assignments: {}, activeLoot: null, endKind: null, combat: null, banter: null,
+          log: ['> dungeon deluge auto', '[RUN] The Deluge · D5 · Fenn, Voss, Wolf'],
+        });
+      },
+    } : { showEnd: false };
+
+    return {
+      L,
+      depthLabel: 'D' + cur.d + '/5',
+      depthPips: Array.from({ length: 6 }, (_, i) => `display:inline-block;width:12px;height:5px;background:${i <= cur.d ? '#f59e0b' : '#2a2a2a'}`),
+      waterTierLabel: L.waterTiers[tier] + ' · ' + s.water + '%',
+      waterTierStyle: `${MONO}font-size:9px;letter-spacing:.06em;color:${waterColor};font-variant-numeric:tabular-nums`,
+      waterBarStyle: `position:absolute;inset:0;width:${s.water}%;background:linear-gradient(90deg,#1d4ed8,#5fa8f6);transition:width .6s cubic-bezier(.22,1,.36,1);box-shadow:0 0 10px rgba(95,168,246,.5)`,
+      sealBreach: () => this.doSeal(),
+      sealBtnLabel: s.sealCd > 0 ? L.sealCd + ' (' + s.sealCd + ')' : L.sealBreach,
+      sealBtnStyle: `background:${s.sealCd > 0 || s.water < 20 ? 'transparent' : 'rgba(95,168,246,.1)'};border:1px solid ${s.sealCd > 0 || s.water < 20 ? '#333333' : 'rgba(95,168,246,.5)'};color:${s.sealCd > 0 || s.water < 20 ? '#555555' : '#5fa8f6'};${MONO}font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:9px 14px;cursor:${s.sealCd > 0 || s.water < 20 ? 'not-allowed' : 'pointer'}`,
+      retreatStart: () => this.retreatHold(true),
+      retreatEnd: () => this.retreatHold(false),
+      retreatFillStyle: `position:absolute;top:0;left:0;bottom:0;width:${s.retreatPct}%;background:rgba(239,68,68,.35);transition:width .05s linear`,
+      stageStyle: 'flex:1;min-width:0;position:relative;border:1px solid #333333;background:#0a0a0a;box-shadow:8px 8px 0 #000000;display:flex;flex-direction:column;min-height:640px;overflow:hidden',
+      mapWrapStyle: `position:relative;flex:1;min-height:520px;background:radial-gradient(ellipse at 50% 20%,rgba(95,168,246,.04),transparent 65%),#0a0a0a;${s.phase !== 'exploring' ? 'filter:brightness(.55);' : ''}transition:filter .4s`,
+      mapNodes, mapEdges,
+      waterOverlayStyle: `position:absolute;left:0;right:0;bottom:0;height:${s.water * 0.92}%;background:linear-gradient(180deg,rgba(29,78,216,.12),rgba(29,78,216,.3));border-top:0;pointer-events:none;z-index:3;transition:height .8s cubic-bezier(.22,1,.36,1)`,
+      banterShow: !!s.banter && s.phase === 'exploring',
+      banterWho: s.banter ? s.banter.w : '', banterText: s.banter ? s.banter.t : '',
+      barometerProse: '» ' + L.barometer[tier],
+      showMapActions: s.phase === 'exploring',
+      moveButtons: adjacent.map((i) => {
+        const r = s.rooms[i];
+        const known = r.scouted || r.cleared;
+        const meta = ROOM_META[known ? r.t : 'unknown'];
+        return {
+          label: (de ? 'Raum ' : 'Room ') + i + ' · ' + (known ? L.roomNames[r.t] : '?'),
+          onClick: () => this.moveTo(i),
+          style: `background:transparent;border:1px solid ${meta.c}66;color:${meta.c};${MONO}font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;cursor:pointer;transition:all .15s`,
+          hoverStyle: `background:${meta.c}14;transform:translate(-1px,-1px)`,
+        };
+      }),
+      doScout: () => { if (!s.scouted) this.scout(); },
+      scoutLabel: (s.scouted ? L.scoutUsed : L.scout + ' (Voss · +5 Stress)'),
+      scoutBtnStyle: `background:transparent;border:1px dashed ${s.scouted ? '#333333' : 'rgba(74,222,128,.5)'};color:${s.scouted ? '#555555' : '#4ade80'};${MONO}font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;cursor:${s.scouted ? 'default' : 'pointer'};margin-left:auto`,
+      // splash
+      splashShow: !!s.splash,
+      splashText: s.splash ? s.splash.text : '',
+      splashBarStyle: s.splash ? `width:112%;transform:rotate(-2deg);background:linear-gradient(90deg,transparent,${s.splash.color}18 18%,${s.splash.color}30 50%,${s.splash.color}18 82%,transparent);border-top:1px solid ${s.splash.color};border-bottom:1px solid ${s.splash.color};padding:22px 0;text-align:center;animation:splash-band .45s cubic-bezier(.22,1,.36,1) both;backdrop-filter:blur(2px)` : '',
+      splashTextStyle: s.splash ? `font-family:'Courier New',Monaco,monospace;font-weight:700;font-size:clamp(24px,3.6vw,38px);text-transform:uppercase;color:${s.splash.color};text-shadow:0 0 24px ${s.splash.color}88;animation:splash-text .6s cubic-bezier(.22,1,.36,1) both` : '',
+      // storylet
+      showStorylet: s.phase === 'storylet' && !!story,
+      storyArtShow: !!story && (s.story.kind === 'entry' || s.story.kind === 'treasure'),
+      storyArtStyle: `height:150px;position:relative;overflow:hidden;border-bottom:1px solid #1c1c1c;background:linear-gradient(180deg,rgba(6,6,6,.1),rgba(6,6,6,.85)),url('assets/deluge-art-1200.png') center ${s.story && s.story.kind === 'treasure' ? '70%' : '25%'}/cover`,
+      storyKicker: story ? story.kicker : '', storyId: story ? story.id : '', storyTitle: story ? story.title : '', storyDesc: story ? story.desc : '',
+      storyChoices: result ? continueChoice : storyChoices,
+      storyResultShow: !!result,
+      storyResultStyle: `margin-top:16px;border:1px solid ${result && result.ok ? 'rgba(74,222,128,.45)' : 'rgba(239,68,68,.45)'};background:${result && result.ok ? 'rgba(74,222,128,.04)' : 'rgba(239,68,68,.04)'};padding:14px 16px;animation:rise-in .35s ease`,
+      storyResultColor: result && result.ok ? '#4ade80' : '#ef4444',
+      storyResultTag: result ? (result.ok ? (de ? '✓ Erfolg' : '✓ Success') : (de ? '✗ Fehlschlag' : '✗ Failure')) : '',
+      storyResultText: result ? result.text : '',
+      storyEffects: result ? result.chips.map((chp) => ({ label: chp.label, style: `${MONO}font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:${chp.bad ? '#ef4444' : '#4ade80'};border:1px solid ${chp.bad ? 'rgba(239,68,68,.5)' : 'rgba(74,222,128,.5)'};padding:3px 9px` })) : [],
+      // combat defaults
+      showCombat: false, telegraphs: [], enemyCards: [], agentChips: [], handCards: [], showHand: false, showTicker: false, tickerLines: [],
+      ...combatVals,
+      partyCards,
+      ...distribVals,
+      ...endVals,
+      logOpen: s.logOpen,
+      toggleLog: () => this.setState({ logOpen: !s.logOpen }),
+      logToggleGlyph: s.logOpen ? '▼' : '▲ ' + s.log.length,
+      logLines: s.log,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes rise { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .hv-amber { transition:background .2s, transform .2s, box-shadow .2s; cursor:pointer; }
+    .hv-amber:hover { background:#fbbf24 !important; transform:translate(-1px,-1px); box-shadow:3px 3px 0 #000 !important; }
+    .nav-tab { transition:background .18s, color .18s; cursor:pointer; flex:0 0 auto; white-space:nowrap; }
+    .nav-tab:hover { background:#111111; color:#e5e5e5 !important; }
+    .art { transition:background .18s; cursor:pointer; }
+    .art:hover { background:#0f0f0f; }
+    .art:hover .art-h { color:#f5f5f5 !important; text-decoration:underline; text-decoration-color:#f59e0b; text-underline-offset:3px; }
+    .arch-row { transition:background .18s, color .18s; cursor:pointer; }
+    .arch-row:hover { background:#101010; }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1b — 4K-PROBE (2560px) ═══════════════ -->
+  <div id="1b" data-screen-label="1b Broadsheet 2560" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">4K-Probe — <a href="#1a">1a</a> bei 2560px, Papier-Regel: Chrome full-bleed, das BLATT behält sein Satzmaß (1220px zentriert) — eine Zeitung wird nicht breiter, nur der Tisch</span>
+    </div>
+
+    <div style="position:relative; width:2560px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>Blatt</span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ edSub }}</span>
+      </div>
+
+      <!-- Nav: Blatt aktiv -->
+      <div style="display:flex; align-items:stretch; background:#060606; border-bottom:1px solid #222; overflow:hidden;">
+        <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="10">
+          <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+        </sc-for>
+        <span style="flex:1;"></span>
+        <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+      </div>
+
+      <!-- Editorial-Leiste (nur Architekt) -->
+      <div style="background:#0a0a0a; border-bottom:1px solid #222;"><div style="display:flex; align-items:flex-end; gap:14px; padding:14px 40px; max-width:1220px; margin:0 auto; box-sizing:border-box;">
+        <label style="display:flex; flex-direction:column; gap:5px;">
+          <span style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#666;">Periode Beginn</span>
+          <input type="date" value="2026-08-27" style="background:#060606; border:1px solid #2a2a2a; color:#a0a0a0; font-family:'SF Mono',ui-monospace,monospace; font-size:11px; padding:7px 10px; outline:none; color-scheme:dark;">
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px;">
+          <span style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#666;">Periode Ende</span>
+          <input type="date" value="2026-08-31" style="background:#060606; border:1px solid #2a2a2a; color:#a0a0a0; font-family:'SF Mono',ui-monospace,monospace; font-size:11px; padding:7px 10px; outline:none; color-scheme:dark;">
+        </label>
+        <span class="hv-amber" onClick="{{ compile }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000;">✦ Edition kompilieren</span>
+        <sc-if value="{{ pressOn }}" hint-placeholder-val="{{ false }}">
+          <span style="display:inline-flex; align-items:center; gap:9px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;"><span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:rec-blink 1s ease-in-out infinite;"></span>{{ pressPhase }}</span>
+        </sc-if>
+        <span style="margin-left:auto; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">Presseraum · Architekten-Funktion</span>
+      </div></div>
+
+      <!-- Breaking (voice=alarmed) -->
+      <sc-if value="{{ alarmed }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 20px; background:rgba(239,68,68,.1); border-bottom:1px solid rgba(239,68,68,.35); font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#ef4444;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.2s ease-in-out infinite;"></span>
+          Breaking News – Lage kritisch
+        </div>
+      </sc-if>
+
+      <!-- Zeitung -->
+      <div style="max-width:1220px; margin:0 auto; padding:44px 40px 56px;">
+
+        <!-- Masthead -->
+        <div style="text-align:center; border-top:3px double #333; border-bottom:3px double #333; padding:22px 0 18px; margin-bottom:0; animation:rise .5s ease both;">
+          <div style="font-size:9px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">Bureau Gazette · Klassifizierung: Öffentlich</div>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:44px; letter-spacing:.04em; text-transform:uppercase; color:#e5e5e5; margin:0;">The Chitinous Mandate Broadsheet</h1>
+          <div style="display:flex; justify-content:center; gap:22px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-top:12px;">
+            <span>{{ edSub }}</span><span style="color:#333;">|</span><span>Zyklus 7 · Lampenstunde</span><span style="color:#333;">|</span><span>Preis: 1 Duftmarke</span>
+          </div>
+        </div>
+
+        <!-- Ticker -->
+        <div style="overflow:hidden; border-bottom:1px solid #222; padding:9px 0;">
+          <div style="display:flex; gap:48px; width:max-content; animation:ticker 36s linear infinite; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; white-space:nowrap;">
+            <sc-for list="{{ tickerItems }}" as="ti" hint-placeholder-count="8">
+              <span>{{ ti.text }}</span><span style="color:#f59e0b;">✦</span>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="art" style="position:relative; padding:30px 26px 24px; border-bottom:1px solid #222; animation:rise .5s ease .1s both;">
+          <sc-if value="{{ alarmed }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute; top:18px; right:20px; font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#ef4444; border:1.5px solid #ef4444; padding:4px 10px; background:rgba(239,68,68,.06);">Breaking</span>
+          </sc-if>
+          <div style="display:inline-flex; align-items:center; gap:7px; font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:{{ heroSrcColor }}; margin-bottom:12px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ heroSrcColor }};"></span>{{ heroSrc }}</div>
+          <h2 class="art-h" style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:38px; line-height:1.18; color:#efefec; margin:0 0 16px; max-width:900px; text-wrap:pretty; transition:color .18s;">{{ heroHead }}</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:17px; line-height:1.7; color:#a8a8a4; margin:0; max-width:820px;">{{ heroLede }}</p>
+          <div style="display:flex; align-items:center; gap:14px; margin-top:18px; padding-top:12px; border-top:1px solid #1a1a1a; font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#666;">
+            <span>{{ heroAgent }}</span><span style="color:#333;">/</span><span>{{ heroTags }}</span>
+          </div>
+        </div>
+
+        <!-- Spalten -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); border-bottom:1px solid #222;">
+          <sc-for list="{{ articles }}" as="a" hint-placeholder-count="6">
+            <div class="art" style="{{ a.cell }}">
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ a.srcColor }}; margin-bottom:9px;"><span style="width:5px; height:5px; border-radius:50%; background:{{ a.srcColor }};"></span>{{ a.src }}</div>
+              <h3 class="art-h" style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:18.5px; line-height:1.3; color:#dededa; margin:0 0 9px; text-wrap:pretty; transition:color .18s;">{{ a.head }}</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.7; color:#8f8f8b; margin:0 0 10px; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;">{{ a.excerpt }}</p>
+              <span style="font-size:9px; letter-spacing:.04em; color:#666;">{{ a.agent }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Health -->
+        <div style="display:grid; grid-template-columns:220px 1fr 1fr 1fr; gap:26px; align-items:center; padding:20px 26px; border-bottom:1px solid #222; background:#0a0a0a;">
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Zustand der Kolonie</div>
+            <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#a0a0a0;">„Stabil, aber die Waben summen falsch."</div>
+          </div>
+          <sc-for list="{{ health }}" as="h" hint-placeholder-count="3">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:6px;"><span>{{ h.label }}</span><b style="color:{{ h.color }};">{{ h.val }}%</b></div>
+              <div style="height:5px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ h.bar }}"></span></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Fold -->
+        <div style="display:flex; align-items:center; gap:12px; padding:16px 0 14px;">
+          <span style="flex:1; border-top:1px dashed #2a2a2a;"></span>
+          <span style="font-size:8px; letter-spacing:3px; text-transform:uppercase; color:#555;">Unter dem Falz</span>
+          <span style="flex:1; border-top:1px dashed #2a2a2a;"></span>
+        </div>
+
+        <!-- Wire + Archiv -->
+        <div style="display:grid; grid-template-columns:1fr 340px; gap:32px;">
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Gazette-Draht · Kurzmeldungen</div>
+            <div style="display:flex; flex-direction:column;">
+              <sc-for list="{{ wire }}" as="w" hint-placeholder-count="5">
+                <div style="display:grid; grid-template-columns:52px 1fr; gap:14px; padding:9px 4px; border-bottom:1px dashed #1a1a1a; font-size:11px; line-height:1.55;">
+                  <span style="color:#555; letter-spacing:.5px;">{{ w.time }}</span>
+                  <span style="color:#9a9a96;">{{ w.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Frühere Ausgaben</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ archive }}" as="ar" hint-placeholder-count="3">
+                <div class="arch-row" onClick="{{ ar.go }}" style="{{ ar.style }}">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:{{ ar.numColor }};">#{{ ar.num }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-family:'Spectral',Georgia,serif; font-size:12.5px; color:#c9c9c5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ar.title }}</div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#555; margin-top:3px;">{{ ar.date }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center; border-top:3px double #333; margin-top:34px; padding-top:16px;">
+          <div style="font-size:14px; color:#f59e0b; margin-bottom:7px;">✦</div>
+          <div style="font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:#666;">Geschrieben, gesetzt und gedruckt von den Bürgern selbst — während du fort warst · Ende der Ausgabe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ 1a — BROADSHEET (1440) ═══════════════ -->
+  <div id="1a" data-screen-label="1a Broadsheet" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Broadsheet („Blatt") — nach SimulationBroadsheet.ts: Masthead, Editorial-Leiste, Hero, Spalten mit Quellen-Dots, Health, Wire, Fold, Archiv</span>
+    </div>
+
+    <div style="position:relative; width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>Blatt</span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ edSub }}</span>
+      </div>
+
+      <!-- Nav: Blatt aktiv -->
+      <div style="display:flex; align-items:stretch; background:#060606; border-bottom:1px solid #222; overflow:hidden;">
+        <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="10">
+          <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+        </sc-for>
+        <span style="flex:1;"></span>
+        <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+      </div>
+
+      <!-- Editorial-Leiste (nur Architekt) -->
+      <div style="display:flex; align-items:flex-end; gap:14px; padding:14px 40px; background:#0a0a0a; border-bottom:1px solid #222;">
+        <label style="display:flex; flex-direction:column; gap:5px;">
+          <span style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#666;">Periode Beginn</span>
+          <input type="date" value="2026-08-27" style="background:#060606; border:1px solid #2a2a2a; color:#a0a0a0; font-family:'SF Mono',ui-monospace,monospace; font-size:11px; padding:7px 10px; outline:none; color-scheme:dark;">
+        </label>
+        <label style="display:flex; flex-direction:column; gap:5px;">
+          <span style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#666;">Periode Ende</span>
+          <input type="date" value="2026-08-31" style="background:#060606; border:1px solid #2a2a2a; color:#a0a0a0; font-family:'SF Mono',ui-monospace,monospace; font-size:11px; padding:7px 10px; outline:none; color-scheme:dark;">
+        </label>
+        <span class="hv-amber" onClick="{{ compile }}" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:2px 2px 0 #000;">✦ Edition kompilieren</span>
+        <sc-if value="{{ pressOn }}" hint-placeholder-val="{{ false }}">
+          <span style="display:inline-flex; align-items:center; gap:9px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;"><span style="width:6px; height:6px; border-radius:50%; background:#f59e0b; animation:rec-blink 1s ease-in-out infinite;"></span>{{ pressPhase }}</span>
+        </sc-if>
+        <span style="margin-left:auto; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">Presseraum · Architekten-Funktion</span>
+      </div>
+
+      <!-- Breaking (voice=alarmed) -->
+      <sc-if value="{{ alarmed }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px; padding:8px 20px; background:rgba(239,68,68,.1); border-bottom:1px solid rgba(239,68,68,.35); font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#ef4444;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.2s ease-in-out infinite;"></span>
+          Breaking News – Lage kritisch
+        </div>
+      </sc-if>
+
+      <!-- Zeitung -->
+      <div style="max-width:1220px; margin:0 auto; padding:36px 40px 48px;">
+
+        <!-- Masthead -->
+        <div style="text-align:center; border-top:3px double #333; border-bottom:3px double #333; padding:22px 0 18px; margin-bottom:0; animation:rise .5s ease both;">
+          <div style="font-size:9px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">Bureau Gazette · Klassifizierung: Öffentlich</div>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:44px; letter-spacing:.04em; text-transform:uppercase; color:#e5e5e5; margin:0;">The Chitinous Mandate Broadsheet</h1>
+          <div style="display:flex; justify-content:center; gap:22px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-top:12px;">
+            <span>{{ edSub }}</span><span style="color:#333;">|</span><span>Zyklus 7 · Lampenstunde</span><span style="color:#333;">|</span><span>Preis: 1 Duftmarke</span>
+          </div>
+        </div>
+
+        <!-- Ticker -->
+        <div style="overflow:hidden; border-bottom:1px solid #222; padding:9px 0;">
+          <div style="display:flex; gap:48px; width:max-content; animation:ticker 36s linear infinite; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; white-space:nowrap;">
+            <sc-for list="{{ tickerItems }}" as="ti" hint-placeholder-count="8">
+              <span>{{ ti.text }}</span><span style="color:#f59e0b;">✦</span>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Hero -->
+        <div class="art" style="position:relative; padding:30px 26px 24px; border-bottom:1px solid #222; animation:rise .5s ease .1s both;">
+          <sc-if value="{{ alarmed }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute; top:18px; right:20px; font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#ef4444; border:1.5px solid #ef4444; padding:4px 10px; background:rgba(239,68,68,.06);">Breaking</span>
+          </sc-if>
+          <div style="display:inline-flex; align-items:center; gap:7px; font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:{{ heroSrcColor }}; margin-bottom:12px;"><span style="width:6px; height:6px; border-radius:50%; background:{{ heroSrcColor }};"></span>{{ heroSrc }}</div>
+          <h2 class="art-h" style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:38px; line-height:1.18; color:#efefec; margin:0 0 16px; max-width:900px; text-wrap:pretty; transition:color .18s;">{{ heroHead }}</h2>
+          <p style="font-family:'Spectral',Georgia,serif; font-size:17px; line-height:1.7; color:#a8a8a4; margin:0; max-width:820px;">{{ heroLede }}</p>
+          <div style="display:flex; align-items:center; gap:14px; margin-top:18px; padding-top:12px; border-top:1px solid #1a1a1a; font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#666;">
+            <span>{{ heroAgent }}</span><span style="color:#333;">/</span><span>{{ heroTags }}</span>
+          </div>
+        </div>
+
+        <!-- Spalten -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); border-bottom:1px solid #222;">
+          <sc-for list="{{ articles }}" as="a" hint-placeholder-count="6">
+            <div class="art" style="{{ a.cell }}">
+              <div style="display:inline-flex; align-items:center; gap:6px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ a.srcColor }}; margin-bottom:9px;"><span style="width:5px; height:5px; border-radius:50%; background:{{ a.srcColor }};"></span>{{ a.src }}</div>
+              <h3 class="art-h" style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:18.5px; line-height:1.3; color:#dededa; margin:0 0 9px; text-wrap:pretty; transition:color .18s;">{{ a.head }}</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.7; color:#8f8f8b; margin:0 0 10px; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;">{{ a.excerpt }}</p>
+              <span style="font-size:9px; letter-spacing:.04em; color:#666;">{{ a.agent }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Health -->
+        <div style="display:grid; grid-template-columns:220px 1fr 1fr 1fr; gap:26px; align-items:center; padding:20px 26px; border-bottom:1px solid #222; background:#0a0a0a;">
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Zustand der Kolonie</div>
+            <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#a0a0a0;">„Stabil, aber die Waben summen falsch."</div>
+          </div>
+          <sc-for list="{{ health }}" as="h" hint-placeholder-count="3">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:6px;"><span>{{ h.label }}</span><b style="color:{{ h.color }};">{{ h.val }}%</b></div>
+              <div style="height:5px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ h.bar }}"></span></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Fold -->
+        <div style="display:flex; align-items:center; gap:12px; padding:16px 0 14px;">
+          <span style="flex:1; border-top:1px dashed #2a2a2a;"></span>
+          <span style="font-size:8px; letter-spacing:3px; text-transform:uppercase; color:#555;">Unter dem Falz</span>
+          <span style="flex:1; border-top:1px dashed #2a2a2a;"></span>
+        </div>
+
+        <!-- Wire + Archiv -->
+        <div style="display:grid; grid-template-columns:1fr 340px; gap:32px;">
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Gazette-Draht · Kurzmeldungen</div>
+            <div style="display:flex; flex-direction:column;">
+              <sc-for list="{{ wire }}" as="w" hint-placeholder-count="5">
+                <div style="display:grid; grid-template-columns:52px 1fr; gap:14px; padding:9px 4px; border-bottom:1px dashed #1a1a1a; font-size:11px; line-height:1.55;">
+                  <span style="color:#555; letter-spacing:.5px;">{{ w.time }}</span>
+                  <span style="color:#9a9a96;">{{ w.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:8.5px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Frühere Ausgaben</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ archive }}" as="ar" hint-placeholder-count="3">
+                <div class="arch-row" onClick="{{ ar.go }}" style="{{ ar.style }}">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:{{ ar.numColor }};">#{{ ar.num }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-family:'Spectral',Georgia,serif; font-size:12.5px; color:#c9c9c5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ ar.title }}</div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#555; margin-top:3px;">{{ ar.date }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center; border-top:3px double #333; margin-top:34px; padding-top:16px;">
+          <div style="font-size:14px; color:#f59e0b; margin-bottom:7px;">✦</div>
+          <div style="font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:#666;">Geschrieben, gesetzt und gedruckt von den Bürgern selbst — während du fort warst · Ende der Ausgabe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1536, &quot;height&quot;: 980 },
+  &quot;voice&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;neutral&quot;, &quot;alarmed&quot;], &quot;default&quot;: &quot;neutral&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Stimme&quot; }
+}">
+class Component extends DCLogic {
+  state = { edition: 0, press: false };
+
+  componentWillUnmount() { clearTimeout(this._pt); }
+
+  _editions() {
+    const SRC = { event: ['Ereignis', '#3b82f6'], resonance: ['Resonanz', '#a78bfa'], activity: ['Aktivität', '#4ade80'], gazette: ['Gazette', '#f59e0b'] };
+    return [
+      {
+        sub: 'Edition #12 · Periode Zyklus 6–7',
+        hero: { src: SRC.event, head: 'Unregistrierte Häutung in der Unterwabe — das Register schweigt, die Waben nicht', lede: 'Zum ersten Mal seit vier Zyklen ist eine Bürgerin ohne Signatur aus dem alten Panzer gestiegen. Der Molt-Registrator verweigert die Stellungnahme, die Pheromon-Schreiberin verweigert die Meldung, und in der Unterwabe riecht es nach etwas, das der Kanon nicht kennt: nach Absicht.', agent: 'Gemeldet: Ledger-Drone K-9', tags: 'Unterwabe / Register / Häutungsgesetz' },
+        articles: [
+          { s: SRC.event, head: 'Dekret #114 atmet schwer: Gehorsam verzögert sich um vier Atemzüge', ex: 'Die Messstationen im Pheromon-Viertel melden verlangsamte Befolgung. Sister Aquila spricht von „Rezeptions-Schwankungen". Die unteren Bezirke sprechen gar nicht.', ag: 'Sister Aquila' },
+          { s: SRC.resonance, head: 'Resonanz absorbiert: Hitzewelle der Außenwelt wird Brutfieber', ex: 'Die Substrate-Störung der letzten Woche hat die Brutgewölbe erreicht. Dun Ovis lässt kühlen Wachs auflegen und singt die Gesetze langsamer. Die Eier hören trotzdem zu.', ag: 'Brutgewölbe-Protokoll' },
+          { s: SRC.activity, head: 'Wachs-Börse: Fremde Panzer notieren 12 % über Vorzyklus', ex: 'Sela Myrr bestreitet jede Verbindung zwischen Kursanstieg und Häutungsvorfall. Ihr Stand war am Morgen dennoch ausverkauft — inklusive der Ränge, die es offiziell nicht gibt.', ag: 'Wachs-Börse / Marktaufsicht' },
+          { s: SRC.gazette, head: 'Quarantäne-Waben: neun Insassen, ein leeres Bett, keine Erklärung', ex: 'Das Register führt neun. Die Wärter zählen acht. Über die Differenz schweigen beide Seiten mit bemerkenswerter Disziplin.', ag: 'Gazette-Redaktion' },
+          { s: SRC.event, head: 'Warteschlange vor der Häutungshalle erreicht historische Länge', ex: 'Zweiundvierzig Anträge in einem Zyklus — Praetor Vosk prüft jeden Klang persönlich. „Macht liegt im Zögern vor dem Stempel", zitiert ihn ein Schreiber. Der Stempel fiel elfmal.', ag: 'Obere Waben' },
+          { s: SRC.activity, head: 'K-9 stellt Randnotiz-Rekord auf: 44 Fragen, keine programmiert', ex: 'Die letzte Zensus-Drohne der alten Kohorte zählt weiter fehlerfrei — und fragt weiter. Die jüngste Randnotiz lautet: „Wer zählt mich?" Die Verwaltung prüft die Zuständigkeit.', ag: 'Ledger-Distrikt' },
+        ],
+        wire: [
+          { time: '06:10', text: 'Duftmarke gegen Wachsmark stabil bei 1:4 — die Börse öffnet ruhig.' },
+          { time: '08:40', text: 'Zwei Zeugen für Molt-Antrag 4.113 gesucht. Klangprüfung am Nachmittag.' },
+          { time: '11:02', text: 'Stiller Bienenstand: Anwohner melden erneut die Melodie. Das Register vermerkt: kein Vorgang.' },
+          { time: '14:55', text: 'Epoche der Brüchigen Kronen: Botschafter-Konvoi der Saltmeridian am Broadcast-Rand gesichtet.' },
+          { time: '17:30', text: 'Lampenstunde verschoben um vier Minuten. Grund: Der Docht widersprach.' },
+        ],
+      },
+      {
+        sub: 'Edition #11 · Periode Zyklus 5–6',
+        hero: { src: SRC.resonance, head: 'Der Kanon kippt eine Silbe: Gesetz #89 roch drei Stunden lang nach seinem Gegenteil', lede: 'Ein falsch gesetztes Molekül — mehr brauchte es nicht. Drei Stunden lang war das Verbot der freien Zucht, gerochen in der Unterwabe, eine Einladung. Sister Aquila nennt es einen Setzfehler. Die Imker nennen es die schönsten drei Stunden des Zyklus.', agent: 'Gemeldet: Pheromon-Archiv', tags: 'Duftkanon / Archiv / Unterwabe' },
+        articles: [
+          { s: SRC.event, head: 'Marn Tell demontiert: drei Panzer, drei verschiedene Urteile', ex: 'Der Panzer-Prüfer klopfte denselben Panzer dreimal ab und hörte dreimal etwas anderes. Die Schuldenliste des Prüfers wird nun ihrerseits geprüft.', ag: 'Ledger-Distrikt' },
+          { s: SRC.gazette, head: 'Old Cassar liest wieder: „Was man besser nie beschließt", Kapitel vier', ex: 'Der Magistrat a.D. füllte das Pheromon-Viertel bis auf den letzten Sitzplatz. Sein einziges Bedauern erwähnte er nicht. Alle wussten es trotzdem.', ag: 'Pheromon-Viertel' },
+          { s: SRC.activity, head: 'Brutgewölbe melden Rekordreife: 116 von 120 Kammern belegt', ex: 'Dun Ovis flüstert Überstunden. Die nächste Generation wird geboren, die Gesetze bereits kennend — und, so munkelt man, auch schon eine Meinung dazu.', ag: 'Dun Ovis' },
+          { s: SRC.event, head: 'Rang-Spindel: oberste Kammer bleibt leer, Bewerbung zurückgezogen', ex: 'Die Luft dort oben sei zu dünn für Lügen, heißt es. Der Bewerber zog nach der zweiten Treppe zurück. Sein Panzer klang danach eine Oktave tiefer.', ag: 'Obere Waben' },
+          { s: SRC.resonance, head: 'Substrate-Tremor: Wahlen der Außenwelt erreichen die Combs als Flüstern', ex: 'Die Resonanz wurde absorbiert und durch den Anker gebogen: Aus einer Wahl wurde die Frage, ob man einen Panzer wählen kann. Die Antwort steht aus.', ag: 'Substrate-Monitor' },
+          { s: SRC.gazette, head: 'Leserbrief: „Ich habe meinen alten Panzer besucht. Er fehlt mir nicht."', ex: 'Anonym eingesandt, auf Wachs gepresst, ohne Duftsignatur. Die Redaktion druckt ihn gegen den Rat des Registers — und mit voller Absicht.', ag: 'Anonym' },
+        ],
+        wire: [
+          { time: '05:44', text: 'Klangprüfungen des Vortags: elf bestanden, drei vertagt, einer verklungen.' },
+          { time: '09:12', text: 'Das Archiv sucht einen Atemschutz-Lehrling. Voraussetzung: Geduld, kein Geruchssinn.' },
+          { time: '13:20', text: 'Wachs-Börse schließt früh — der Handel roch nach Regen.' },
+          { time: '16:05', text: 'K-9 Randnotiz des Tages: „Zählung korrekt. Bedeutung unklar."' },
+          { time: '19:40', text: 'Lampenstunde pünktlich. Der Docht hatte keine Einwände.' },
+        ],
+      },
+    ];
+  }
+
+  renderVals() {
+    const NAV = ['◈ Übersicht', 'Lore', 'Agenten', 'Gebäude', 'Blatt', 'Chronik', 'Ereignisse', 'Terminal', 'Dungeon', 'Mehr (9) ▾'];
+    const navTabs = NAV.map((label) => ({
+      label,
+      style: 'padding:13px 15px;font-size:10px;letter-spacing:2px;text-transform:uppercase;' + (label === 'Blatt' ? 'color:#f59e0b;background:#0a0a0a;box-shadow:inset 0 -2px 0 #f59e0b;' : 'color:#888;'),
+    }));
+    const eds = this._editions();
+    const ei = this.state.edition;
+    const ed = eds[ei];
+    const alarmed = (this.props.voice ?? 'neutral') === 'alarmed';
+
+    const articles = ed.articles.map((a, i) => ({
+      src: a.s[0], srcColor: a.s[1], head: a.head, excerpt: a.ex, agent: a.ag,
+      cell: 'padding:22px 26px;' + (i % 3 !== 2 ? 'border-right:1px solid #1a1a1a;' : '') + (i < 3 ? 'border-bottom:1px solid #1a1a1a;' : ''),
+    }));
+
+    const health = [
+      { label: 'Stabilität', val: 62, color: '#f59e0b' },
+      { label: 'Unruhe', val: alarmed ? 71 : 34, color: alarmed ? '#ef4444' : '#4ade80' },
+      { label: 'Vorräte', val: 78, color: '#4ade80' },
+    ].map((h) => ({
+      ...h, val: String(h.val),
+      bar: 'position:absolute;inset:0;display:block;width:' + h.val + '%;background:' + h.color + ';',
+    }));
+
+    const archive = [
+      { num: 12, title: 'Unregistrierte Häutung in der Unterwabe', date: 'Zyklus 7 · aktuell' },
+      { num: 11, title: 'Der Kanon kippt eine Silbe', date: 'Zyklus 6' },
+      { num: 10, title: 'Die Börse handelt Erinnerungen', date: 'Zyklus 5 · Archiv gesperrt' },
+    ].map((a, i) => ({
+      num: String(a.num), title: a.title, date: a.date,
+      numColor: i === ei ? '#f59e0b' : '#666',
+      go: i < 2 ? () => this.setState({ edition: i }) : () => {},
+      style: 'display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;padding:11px 14px;' + (i === ei ? 'background:rgba(245,158,11,.06);outline:1px solid rgba(245,158,11,.45);outline-offset:-1px;' : 'background:#0a0a0a;') + (i === 2 ? 'opacity:.45;cursor:not-allowed;' : ''),
+    }));
+
+    return {
+      navTabs, alarmed,
+      edSub: ed.sub,
+      heroSrc: ed.hero.src[0], heroSrcColor: ed.hero.src[1],
+      heroHead: ed.hero.head, heroLede: ed.hero.lede, heroAgent: ed.hero.agent, heroTags: ed.hero.tags,
+      articles, health, archive,
+      wire: ed.wire,
+      tickerItems: ed.articles.map((a) => ({ text: a.head })).concat(ed.articles.map((a) => ({ text: a.head }))),
+      pressOn: this.state.press,
+      pressPhase: 'Ranke Artikel nach Signifikanz…',
+      compile: () => {
+        if (this.state.press) return;
+        this.setState({ press: true });
+        clearTimeout(this._pt);
+        this._pt = setTimeout(() => this.setState({ press: false }), 2600);
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

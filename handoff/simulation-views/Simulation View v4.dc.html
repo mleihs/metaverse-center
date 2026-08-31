@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes kb { from{transform:scale(1)} to{transform:scale(1.06)} }
+    @keyframes rise { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:none} }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    @keyframes bar-grow { from{width:0} }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    @keyframes lore-in-a { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+    @keyframes lore-in-b { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+    .nav-scroll { overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+    .nav-scroll::-webkit-scrollbar { display:none; }
+    .nav-tab { transition:background .18s, color .18s; cursor:pointer; flex:0 0 auto; white-space:nowrap; }
+    .nav-tab:hover { background:#111111; color:#e5e5e5 !important; }
+    .toc-row { transition:background .2s; cursor:pointer; }
+    .toc-row:hover { background:#0f0f0f; }
+    .toc-row .toc-t { transition:color .2s, transform .2s; }
+    .toc-row:hover .toc-t { color:#f59e0b; transform:translateX(8px); }
+    .hv-amber { transition:background .2s, transform .2s, box-shadow .2s; }
+    .hv-amber:hover { background:#fbbf24 !important; transform:translateY(-2px); box-shadow:4px 4px 0 #000, 0 0 20px rgba(245,158,11,.3) !important; }
+    .hv-arrow .arr { display:inline-block; transition:transform .2s; }
+    .hv-arrow:hover .arr { transform:translateX(5px); }
+    .hv-lift { transition:transform .3s cubic-bezier(.22,1,.36,1), border-color .3s; }
+    .hv-lift:hover { transform:translateY(-4px); }
+    .sig-row { transition:background .2s; cursor:pointer; }
+    .sig-row:hover { background:#0d0d0d; }
+    .car-btn { transition:background .2s, border-color .2s; }
+    .car-btn:hover { background:rgba(245,158,11,.12); border-color:#f59e0b; }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 1b — 4K-PROBE (2560px) ═══════════════ -->
+  <div id="1b" data-screen-label="1b Simulation View v4 2560" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">4K-Probe — <a href="#1a">1a</a> bei 2560px, Container-Regel: Chrome/Masthead full-bleed, Inhalt im zentrierten 1920-Äquivalent (360px-Ränder), Rail 440</span>
+    </div>
+
+    <div style="position:relative; width:2560px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip (immer dunkel/amber, nie getheamt) -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>{{ crumbTab }}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:10px; letter-spacing:2px; text-transform:uppercase;">
+          <span style="color:#888;">Forge Tokens: <b style="color:#f59e0b;">12</b></span>
+          <span style="color:#333;">|</span>
+          <div style="display:flex; gap:8px;">
+            <span onClick="{{ deGo }}" style="{{ deStyle }}">DE</span>
+            <span style="color:#444;">/</span>
+            <span onClick="{{ enGo }}" style="{{ enStyle }}">EN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Masthead -->
+      <div style="position:relative; overflow:hidden; border-bottom:1px solid #222;">
+        <div style="position:absolute; inset:0; background-image:url('assets/b-apiary.png'); background-size:cover; background-position:center 35%; filter:brightness(.62) saturate(.85); animation:kb 34s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(94deg, rgba(6,6,6,.97) 28%, rgba(6,6,6,.72) 56%, rgba(6,6,6,.22) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(6,6,6,.55), transparent 32%, transparent 60%, rgba(6,6,6,.85));"></div>
+        <sc-if value="{{ scanlinesOn }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.12) 3px, rgba(0,0,0,.12) 6px); pointer-events:none;"></div>
+        </sc-if>
+        <div style="position:relative; padding:66px 360px 54px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; animation:rise .6s ease both;">
+            <span style="display:inline-flex; align-items:center; gap:7px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#4ade80;"><span style="width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:rec-blink 2.2s ease-in-out infinite;"></span>{{ sActive }}</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; border:1px solid #333; padding:3px 9px; background:rgba(6,6,6,.6);">{{ sClass }}</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:{{ threatColor }}; border:1px solid; border-color:{{ threatColor }}; padding:3px 9px; background:rgba(6,6,6,.6);">{{ sThreatLabel }}: {{ sThreatValue }}</span>
+          </div>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:74px; line-height:.96; letter-spacing:.01em; text-transform:uppercase; margin:0 0 22px; color:#e5e5e5; text-shadow:0 5px 40px rgba(0,0,0,.75); animation:rise .7s ease .1s both;">The Chitinous<br>Mandate<span style="color:#f59e0b;">.</span></h1>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:56px; animation:rise .7s ease .25s both;">
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:18px; line-height:1.6; color:#a0a0a0; margin:0; max-width:620px; text-wrap:pretty;">{{ sTagline }}</p>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:11px; flex:0 0 auto;">
+              <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:15px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Bureau Terminal →</span>
+              <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666;">8 {{ sAgentsWord }} · 7 {{ sBldgWord }} · Cycle 7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kanon-Nav: Kern-Tabs sichtbar, Rest im "Mehr"-Register — nichts wird je geclippt -->
+      <div style="position:relative; background:#060606; border-bottom:1px solid #222;">
+        <div class="nav-scroll" style="display:flex; align-items:stretch; padding:0 345px;">
+          <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="8">
+            <span class="nav-tab" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</span>
+          </sc-for>
+          <span class="nav-tab" onClick="{{ moreToggle }}" style="{{ moreStyle }}">{{ moreLabel }}</span>
+          <span style="flex:1;"></span>
+          <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+        </div>
+        <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:100%; right:0; left:auto; z-index:40; display:grid; grid-template-columns:repeat(3, 170px); background:#0a0a0a; border:1px solid #333; box-shadow:6px 6px 0 #000;">
+            <sc-for list="{{ moreTabs }}" as="t" hint-placeholder-count="9">
+              <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- ══ OVERVIEW PAGE ══ -->
+      <sc-if value="{{ tabOverview }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid; grid-template-columns:1fr 440px; gap:48px; padding:48px 360px;">
+        <div style="min-width:0;">
+
+          <!-- Philosophischer Anker -->
+          <div style="border:1px solid #222; background:#0a0a0a; padding:24px 28px; margin-bottom:36px; display:flex; gap:28px; align-items:baseline;">
+            <div style="flex:0 0 190px;">
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">{{ sAnchorLabel }}</div>
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; line-height:1.35;">{{ sAnchorTitle }}</div>
+            </div>
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:16.5px; line-height:1.65; color:#a0a0a0; margin:0;">“{{ sAnchorQuestion }}”</p>
+          </div>
+
+          <!-- Dossier-Teaser → Lore-Seite -->
+          <div style="border:1px solid #222; background:#0a0a0a; padding:26px 30px;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">{{ sPublicRecord }}</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">{{ sDossierHead }}</h2>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.75; color:#a0a0a0; margin:0 0 18px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">{{ loreTeaser }}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:20px;">
+              <a onClick="{{ goLore }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open dossier <span class="arr">→</span></a>
+              <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555;">4 {{ sSectionsWord }} · 1 {{ sClassifiedTag }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Bureau Rail -->
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="border:1px solid #222; background:#0a0a0a; padding:20px 22px;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:16px;">Bureau Status</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+              <span style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">{{ sThreatLabel }}</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:{{ threatColor }};">{{ sThreatValue }}</span>
+            </div>
+            <div style="display:flex; gap:4px; margin-bottom:18px;">
+              <sc-for list="{{ threatSegs }}" as="seg" hint-placeholder-count="5"><span style="{{ seg }}"></span></sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:9px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">
+              <div style="display:flex; justify-content:space-between;"><span>Classification</span><b style="color:#e5e5e5;">{{ sClass }}</b></div>
+              <div style="display:flex; justify-content:space-between;"><span>Cycle</span><b style="color:#e5e5e5;">7 · Epoch active</b></div>
+              <div style="display:flex; justify-content:space-between;"><span>Resonances</span><b style="color:#e5e5e5;">3 held</b></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Signals // Pulse</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ signals }}" as="g" hint-placeholder-count="3">
+                <div class="sig-row" style="display:grid; grid-template-columns:10px 1fr 30px; gap:12px; align-items:center; background:#0a0a0a; padding:13px 14px;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ g.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0;">{{ g.text }}</span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ g.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:20px 22px; flex:1; display:flex; flex-direction:column;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:14px;">On Duty</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ onDuty }}" as="a" hint-placeholder-count="3">
+                <div class="sig-row" style="display:grid; grid-template-columns:38px 1fr auto; gap:13px; align-items:center; padding:4px 2px;">
+                  <span style="{{ a.thumb }}">{{ a.mono }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.name }}</div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-top:3px;">{{ a.role }}</div>
+                  </div>
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; color:{{ a.tint }};">{{ a.sum }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:auto; padding-top:14px;">
+              <a href="#1b" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;">Full roster below <span class="arr">↓</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </sc-if>
+
+      <!-- ══ LORE PAGE ══ -->
+      <sc-if value="{{ tabLore }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:44px 360px 56px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">{{ sPublicRecord }}</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sDossierHead }}</h2>
+          </div>
+          <span onClick="{{ caseToggle }}" style="{{ caseBtnStyle }}">{{ caseBtnLabel }}</span>
+        </div>
+        <div style="display:grid; grid-template-columns:280px 1fr; border:1px solid #222; background:#0a0a0a;">
+          <div style="border-right:1px solid #222; display:flex; flex-direction:column;">
+            <sc-for list="{{ toc }}" as="s" hint-placeholder-count="4">
+              <div class="toc-row" onClick="{{ s.go }}" style="{{ s.style }}">
+                <span style="font-size:11px; color:#666;">{{ s.idx }}</span>
+                <div style="min-width:0;">
+                  <div class="toc-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1px; text-transform:uppercase; color:{{ s.tColor }};">{{ s.title }}</div>
+                  <sc-if value="{{ s.classified }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#ef4444; margin-top:4px;">{{ sClassifiedTag }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+            <div style="flex:1;"></div>
+            <div style="border-top:1px solid #1a1a1a; padding:16px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#555; line-height:1.8;">4 {{ sSectionsWord }} · 1 {{ sClassifiedTag }}<br>{{ sAnchorLabel }}: {{ sAnchorTitle }}</div>
+          </div>
+          <div style="padding:36px 44px; min-height:460px;">
+            <div style="{{ loreAnim }}; max-width:740px;">
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">{{ loreTitle }}</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:14px; line-height:1.6; color:#888; margin:0 0 22px;">“{{ loreEpigraph }}” <span style="font-family:'SF Mono',ui-monospace,monospace; font-style:normal; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#666;">— {{ loreEpiWho }}</span></p>
+              <sc-if value="{{ loreVisible }}" hint-placeholder-val="{{ true }}">
+                <div style="margin:0 0 22px;">
+                  <div onClick="{{ imgOpen }}" style="{{ loreImg }}" title="Vergrößern"></div>
+                  <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#666; margin-top:8px;">Fig. {{ loreFig }} — {{ loreCaption }}</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ loreRedacted }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:18px;">
+                  <sc-for list="{{ redactBars }}" as="b" hint-placeholder-count="6"><span style="{{ b }}"></span></sc-for>
+                </div>
+                <p style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin:0;">{{ sRedactedHint }}</p>
+              </sc-if>
+              <sc-if value="{{ loreVisible }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ loreParas }}" as="p" hint-placeholder-count="2">
+                  <p style="font-family:'Spectral',Georgia,serif; font-size:16.5px; line-height:1.85; color:#a0a0a0; margin:0 0 18px;">{{ p.text }}</p>
+                </sc-for>
+              </sc-if>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #1a1a1a; margin-top:26px; padding-top:16px;">
+                <a onClick="{{ lorePrev }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; color:#888;"><span class="arr">←</span> {{ lorePrevTitle }}</a>
+                <a onClick="{{ loreNext }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer;">{{ loreNextTitle }} <span class="arr">→</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        <sc-if value="{{ imgLbOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:95;">
+            <div onClick="{{ imgClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(2px); cursor:zoom-out;"></div>
+            <div style="position:absolute; top:110px; left:50%; transform:translateX(-50%); width:980px;">
+              <div style="position:relative; border:1px solid #333; box-shadow:8px 8px 0 #000; overflow:hidden;">
+                <div style="{{ imgLbArt }}"></div>
+                <span onClick="{{ imgClose }}" style="position:absolute; top:12px; right:14px; font-family:'Courier New',monospace; font-size:14px; color:#a0a0a0; cursor:pointer; padding:4px 9px; background:rgba(6,6,6,.7);" style-hover="color:#f59e0b;">✕</span>
+              </div>
+              <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#888; margin-top:10px;">Fig. {{ loreFig }} — {{ loreCaption }}</div>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- ══ AGENTS PAGE ══ -->
+      <sc-if value="{{ tabAgents }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:44px 360px 56px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:32px; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Agents</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sRosterTitle }} <span style="color:#666; font-size:14px;">{{ agCount }}</span></h2>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <sc-for list="{{ agChips }}" as="ch" hint-placeholder-count="4">
+              <span onClick="{{ ch.onClick }}" style="{{ ch.style }}">{{ ch.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position:relative; margin-bottom:24px;">
+          <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:13px; color:#666;">⌕</span>
+          <input onInput="{{ agSearch }}" placeholder="{{ sSearchAgents }}" style="width:100%; box-sizing:border-box; background:#0a0a0a; border:1px solid #2a2a2a; color:#e5e5e5; font-family:'SF Mono',ui-monospace,monospace; font-size:13px; letter-spacing:1px; padding:14px 16px 14px 42px; outline:none;" style-focus="border-color:#f59e0b;">
+        </div>
+        <sc-if value="{{ agDetailOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:90;">
+            <div onClick="{{ agClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(2px); cursor:pointer;"></div>
+            <div style="position:absolute; top:150px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px;">
+            <button onClick="{{ agPrev }}" class="car-btn" aria-label="Vorheriger" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">←</button>
+            <div style="width:880px; display:grid; grid-template-columns:280px 1fr; border:1px solid #333; background:#0a0a0a; box-shadow:8px 8px 0 #000; animation:lore-in-a .3s ease both;">
+            <div style="position:relative; min-height:300px; overflow:hidden; border-right:1px solid #222; background:#080808;">
+              <div style="{{ dArt }}">{{ dMono }}</div>
+              <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(8,8,8,.9), transparent 45%); pointer-events:none;"></div>
+              <span style="position:absolute; bottom:12px; left:14px; font-size:8px; letter-spacing:.14em; text-transform:uppercase; color:{{ dTint }};">★ {{ dRarity }}</span>
+            </div>
+            <div style="padding:26px 30px; position:relative;">
+              <span onClick="{{ agClose }}" style="position:absolute; top:14px; right:16px; font-family:'Courier New',monospace; font-size:14px; color:#666; cursor:pointer; padding:4px 8px;" style-hover="color:#f59e0b;">✕</span>
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:{{ dTint }}; margin-bottom:8px;">{{ sDossierSection }}</div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px;">✦ {{ dName }} ✦</h3>
+              <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:16px;">{{ dRole }} · {{ dZone }}</div>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.7; color:#a0a0a0; margin:0 0 20px; max-width:640px;">{{ dDesc }}</p>
+              <div style="display:flex; gap:36px; flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">{{ sAptitudes }}</div>
+                  <div style="display:flex; gap:12px;">
+                    <sc-for list="{{ dPips }}" as="p" hint-placeholder-count="6">
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <span style="{{ p.dot }}">{{ p.val }}</span>
+                        <span style="font-size:7px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="min-width:220px;">
+                  <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">{{ sRelations }}</div>
+                  <sc-if value="{{ dHasRels }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <sc-for list="{{ dRels }}" as="r" hint-placeholder-count="2">
+                        <div style="font-size:10.5px; color:#a0a0a0;"><b style="color:#e5e5e5;">{{ r.who }}</b> — <span style="font-family:'Spectral',Georgia,serif; font-style:italic;">{{ r.note }}</span></div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ dNoRels }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10px; letter-spacing:1px; color:#555;">—</div>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="position:absolute; bottom:14px; right:16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; color:#666;">{{ dCounter }}</div>
+            </div>
+            </div>
+            <button onClick="{{ agNext }}" class="car-btn" aria-label="Nächster" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">→</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ agEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:70px 0; text-align:center; font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ sNoResults }}</div>
+        </sc-if>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;">
+          <sc-for list="{{ agCards }}" as="a" hint-placeholder-count="8">
+            <div class="hv-lift" onClick="{{ a.go }}" style="{{ a.card }}">
+              <div style="position:relative; height:168px; overflow:hidden; border-radius:5px 5px 0 0; background:#080808;">
+                <div style="{{ a.art }}">{{ a.artMono }}</div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; box-shadow:inset 0 -40px 34px -16px rgba(8,8,8,.95); pointer-events:none;"></div>
+                <span style="position:absolute; top:8px; left:9px; font-size:7px; letter-spacing:.14em; text-transform:uppercase; color:{{ a.tint }}; background:rgba(6,6,6,.7); padding:2px 6px;">{{ a.rarity }}</span>
+              </div>
+              <div style="padding:13px 14px 15px; text-align:center;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">✦ {{ a.name }} ✦</div>
+                <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ a.role }} · {{ a.zone }}</div>
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11px; line-height:1.5; color:#96948e; margin:9px 0 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">“{{ a.blurb }}”</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                  <span style="{{ a.gemL }}">{{ a.sum }}</span>
+                  <span style="font-size:7.5px; letter-spacing:.1em; color:#555;">{{ a.relsCount }}</span>
+                  <span style="{{ a.gemR }}">{{ a.best }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ══ BUILDINGS PAGE ══ -->
+      <sc-if value="{{ tabBuildings }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:44px 360px 56px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Buildings</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sFootprintTitle }} <span style="color:#666; font-size:14px;">7</span></h2>
+          </div>
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ sCapacity }}: ●&nbsp;≥66% · ◐&nbsp;≥33% · ○&nbsp;kritisch/Ruine</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+          <sc-for list="{{ footprint }}" as="b" hint-placeholder-count="7">
+            <div class="hv-lift" onClick="{{ b.go }}" style="border:1px solid #222; background:#0a0a0a; cursor:pointer; overflow:hidden; display:flex; flex-direction:column;">
+              <div style="position:relative; height:172px; overflow:hidden; background:#080808;">
+                <div class="monitor-img" style="{{ b.art }}"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                <span style="position:absolute; top:10px; left:12px; font-size:20px; line-height:1; color:{{ b.tint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ b.glyph }}</span>
+                <span style="position:absolute; top:10px; right:12px; font-size:13px; color:{{ b.condColor }}; background:rgba(6,6,6,.7); padding:2px 7px;">{{ b.cond }}</span>
+              </div>
+              <div style="padding:15px 18px 18px; display:flex; flex-direction:column; flex:1;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; margin-bottom:5px;">{{ b.name }}</div>
+                <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:11px;">{{ b.type }} · {{ b.zone }}</div>
+                <p style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.65; color:#96948e; margin:0 0 14px; flex:1;">{{ b.desc }}</p>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="flex:1; height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ b.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; flex:0 0 auto;">{{ b.capText }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+        <sc-if value="{{ bDetailOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:90;">
+            <div onClick="{{ bClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(2px); cursor:pointer;"></div>
+            <div style="position:absolute; top:150px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px;">
+              <button onClick="{{ bPrev }}" class="car-btn" aria-label="Vorheriges" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">←</button>
+              <div style="width:880px; border:1px solid #333; background:#0a0a0a; box-shadow:8px 8px 0 #000; animation:lore-in-a .3s ease both;">
+                <div style="position:relative; height:300px; overflow:hidden; background:#080808;">
+                  <div style="{{ bdArt }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                  <span onClick="{{ bClose }}" style="position:absolute; top:12px; right:14px; font-family:'Courier New',monospace; font-size:14px; color:#a0a0a0; cursor:pointer; padding:4px 9px; background:rgba(6,6,6,.7);" style-hover="color:#f59e0b;">✕</span>
+                  <span style="position:absolute; bottom:14px; left:20px; font-size:26px; line-height:1; color:{{ bdTint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ bdGlyph }}</span>
+                </div>
+                <div style="padding:24px 30px 26px; position:relative;">
+                  <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px;">{{ bdName }}</h3>
+                  <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:14px;">{{ bdType }} · {{ bdZone }} · <span style="color:{{ bdCondColor }};">{{ bdCond }}</span></div>
+                  <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.7; color:#a0a0a0; margin:0 0 18px; max-width:700px;">{{ bdDesc }}</p>
+                  <div style="display:flex; align-items:center; gap:12px; max-width:420px;">
+                    <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666; flex:0 0 auto;">{{ sCapacity }}</span>
+                    <span style="flex:1; height:5px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ bdBar }}"></span></span>
+                    <span style="font-size:10px; color:#888; flex:0 0 auto;">{{ bdCapText }}</span>
+                  </div>
+                  <div style="position:absolute; bottom:14px; right:16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; color:#666;">{{ bdCounter }}</div>
+                </div>
+              </div>
+              <button onClick="{{ bNext }}" class="car-btn" aria-label="Nächstes" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">→</button>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- Kompakt-Strips (nur Lore-Seite): Roster -->
+      <sc-if value="{{ tabLore }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:8px 360px 52px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Agents</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sRosterTitle }} <span style="color:#666; font-size:13px;">8</span></h2>
+          </div>
+          <a onClick="{{ goAgents }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open Agents <span class="arr">→</span></a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:14px;">
+          <sc-for list="{{ roster }}" as="a" hint-placeholder-count="8">
+            <div class="hv-lift" style="{{ a.card }}">
+              <div style="position:relative; height:128px; overflow:hidden; border-radius:5px 5px 0 0; background:#080808;">
+                <div style="{{ a.art }}">{{ a.artMono }}</div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; box-shadow:inset 0 -34px 30px -14px rgba(8,8,8,.95); pointer-events:none;"></div>
+                <span style="position:absolute; top:7px; left:8px; font-size:7px; letter-spacing:.14em; text-transform:uppercase; color:{{ a.tint }}; background:rgba(6,6,6,.7); padding:2px 6px;">{{ a.rarity }}</span>
+              </div>
+              <div style="padding:10px 10px 12px; text-align:center;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">✦ {{ a.name }} ✦</div>
+                <div style="font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.role }}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                  <span style="{{ a.gemL }}">{{ a.sum }}</span>
+                  <span style="font-size:7px; letter-spacing:.1em; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px;">{{ a.zone }}</span>
+                  <span style="{{ a.gemR }}">{{ a.best }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Architectural Footprint -->
+      <div style="padding:0 360px 56px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Buildings</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sFootprintTitle }} <span style="color:#666; font-size:13px;">7</span></h2>
+          </div>
+          <a onClick="{{ goBuildings }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open Buildings <span class="arr">→</span></a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;">
+          <sc-for list="{{ footprint }}" as="b" hint-placeholder-count="7">
+            <div class="hv-lift" style="border:1px solid #222; background:#0a0a0a; cursor:pointer; overflow:hidden;">
+              <div style="position:relative; height:124px; overflow:hidden; background:#080808;">
+                <div class="monitor-img" style="{{ b.art }}"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                <span style="position:absolute; top:9px; left:11px; font-size:18px; line-height:1; color:{{ b.tint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ b.glyph }}</span>
+                <span style="position:absolute; top:9px; right:11px; font-size:13px; color:{{ b.condColor }}; background:rgba(6,6,6,.7); padding:2px 7px;">{{ b.cond }}</span>
+              </div>
+              <div style="padding:13px 16px 16px;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ b.name }}</div>
+                <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:13px;">{{ b.type }} · {{ b.zone }}</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="flex:1; height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ b.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; flex:0 0 auto;">{{ b.capText }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+          <div class="hv-lift" onClick="{{ goBuildings }}" style="border:1px solid #222; background:#0a0a0a; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; min-height:120px;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; color:#f59e0b;">→</span>
+            <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">Open Buildings</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker 44s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// {{ sTicker }} //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// {{ sTicker }} //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 1a — BROADCAST MASTHEAD (1440) ═══════════════ -->
+  <div id="1a" data-screen-label="1a Simulation View v4" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Simulation View v4 — Broadcast-Masthead, Kanon-Nav ohne Clipping (nowrap + scroll), Lore-TOC + Fallakte, Bureau-Rail</span>
+    </div>
+
+    <div style="position:relative; width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Platform strip (immer dunkel/amber, nie getheamt) -->
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.65); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span style="color:#666;">Simulations /</span>
+          <span style="color:#e5e5e5;">The Chitinous Mandate</span>
+          <span style="color:#333;">|</span>
+          <span>{{ crumbTab }}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px; font-size:10px; letter-spacing:2px; text-transform:uppercase;">
+          <span style="color:#888;">Forge Tokens: <b style="color:#f59e0b;">12</b></span>
+          <span style="color:#333;">|</span>
+          <div style="display:flex; gap:8px;">
+            <span onClick="{{ deGo }}" style="{{ deStyle }}">DE</span>
+            <span style="color:#444;">/</span>
+            <span onClick="{{ enGo }}" style="{{ enStyle }}">EN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Masthead -->
+      <div style="position:relative; overflow:hidden; border-bottom:1px solid #222;">
+        <div style="position:absolute; inset:0; background-image:url('assets/b-apiary.png'); background-size:cover; background-position:center 35%; filter:brightness(.62) saturate(.85); animation:kb 34s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(94deg, rgba(6,6,6,.97) 28%, rgba(6,6,6,.72) 56%, rgba(6,6,6,.22) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(6,6,6,.55), transparent 32%, transparent 60%, rgba(6,6,6,.85));"></div>
+        <sc-if value="{{ scanlinesOn }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.12) 3px, rgba(0,0,0,.12) 6px); pointer-events:none;"></div>
+        </sc-if>
+        <div style="position:relative; padding:58px 40px 46px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px; animation:rise .6s ease both;">
+            <span style="display:inline-flex; align-items:center; gap:7px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#4ade80;"><span style="width:6px; height:6px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:rec-blink 2.2s ease-in-out infinite;"></span>{{ sActive }}</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; border:1px solid #333; padding:3px 9px; background:rgba(6,6,6,.6);">{{ sClass }}</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:{{ threatColor }}; border:1px solid; border-color:{{ threatColor }}; padding:3px 9px; background:rgba(6,6,6,.6);">{{ sThreatLabel }}: {{ sThreatValue }}</span>
+          </div>
+          <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:74px; line-height:.96; letter-spacing:.01em; text-transform:uppercase; margin:0 0 22px; color:#e5e5e5; text-shadow:0 5px 40px rgba(0,0,0,.75); animation:rise .7s ease .1s both;">The Chitinous<br>Mandate<span style="color:#f59e0b;">.</span></h1>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:56px; animation:rise .7s ease .25s both;">
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:18px; line-height:1.6; color:#a0a0a0; margin:0; max-width:620px; text-wrap:pretty;">{{ sTagline }}</p>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:11px; flex:0 0 auto;">
+              <span class="hv-amber" style="display:inline-flex; align-items:center; gap:10px; padding:15px 32px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">Bureau Terminal →</span>
+              <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666;">8 {{ sAgentsWord }} · 7 {{ sBldgWord }} · Cycle 7</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kanon-Nav: Kern-Tabs sichtbar, Rest im "Mehr"-Register — nichts wird je geclippt -->
+      <div style="position:relative; background:#060606; border-bottom:1px solid #222;">
+        <div class="nav-scroll" style="display:flex; align-items:stretch;">
+          <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="8">
+            <span class="nav-tab" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</span>
+          </sc-for>
+          <span class="nav-tab" onClick="{{ moreToggle }}" style="{{ moreStyle }}">{{ moreLabel }}</span>
+          <span style="flex:1;"></span>
+          <span style="display:inline-flex; align-items:center; padding:0 16px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555; white-space:nowrap;">Cycle 7 · Epoch active</span>
+        </div>
+        <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; top:100%; right:0; left:auto; z-index:40; display:grid; grid-template-columns:repeat(3, 170px); background:#0a0a0a; border:1px solid #333; box-shadow:6px 6px 0 #000;">
+            <sc-for list="{{ moreTabs }}" as="t" hint-placeholder-count="9">
+              <span class="nav-tab" style="{{ t.style }}">{{ t.label }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+
+      <!-- ══ OVERVIEW PAGE ══ -->
+      <sc-if value="{{ tabOverview }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid; grid-template-columns:1fr 400px; gap:40px; padding:40px;">
+        <div style="min-width:0;">
+
+          <!-- Philosophischer Anker -->
+          <div style="border:1px solid #222; background:#0a0a0a; padding:24px 28px; margin-bottom:36px; display:flex; gap:28px; align-items:baseline;">
+            <div style="flex:0 0 190px;">
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">{{ sAnchorLabel }}</div>
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; line-height:1.35;">{{ sAnchorTitle }}</div>
+            </div>
+            <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:16.5px; line-height:1.65; color:#a0a0a0; margin:0;">“{{ sAnchorQuestion }}”</p>
+          </div>
+
+          <!-- Dossier-Teaser → Lore-Seite -->
+          <div style="border:1px solid #222; background:#0a0a0a; padding:26px 30px;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">{{ sPublicRecord }}</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">{{ sDossierHead }}</h2>
+            <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.75; color:#a0a0a0; margin:0 0 18px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">{{ loreTeaser }}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:20px;">
+              <a onClick="{{ goLore }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open dossier <span class="arr">→</span></a>
+              <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#555;">4 {{ sSectionsWord }} · 1 {{ sClassifiedTag }}</span>
+            </div>
+          </div>
+        </div>
+        <!-- Bureau Rail -->
+        <div style="display:flex; flex-direction:column; gap:26px;">
+          <div style="border:1px solid #222; background:#0a0a0a; padding:20px 22px;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:16px;">Bureau Status</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;">
+              <span style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">{{ sThreatLabel }}</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:{{ threatColor }};">{{ sThreatValue }}</span>
+            </div>
+            <div style="display:flex; gap:4px; margin-bottom:18px;">
+              <sc-for list="{{ threatSegs }}" as="seg" hint-placeholder-count="5"><span style="{{ seg }}"></span></sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:9px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">
+              <div style="display:flex; justify-content:space-between;"><span>Classification</span><b style="color:#e5e5e5;">{{ sClass }}</b></div>
+              <div style="display:flex; justify-content:space-between;"><span>Cycle</span><b style="color:#e5e5e5;">7 · Epoch active</b></div>
+              <div style="display:flex; justify-content:space-between;"><span>Resonances</span><b style="color:#e5e5e5;">3 held</b></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Signals // Pulse</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ signals }}" as="g" hint-placeholder-count="3">
+                <div class="sig-row" style="display:grid; grid-template-columns:10px 1fr 30px; gap:12px; align-items:center; background:#0a0a0a; padding:13px 14px;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ g.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0;">{{ g.text }}</span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ g.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:20px 22px; flex:1; display:flex; flex-direction:column;">
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:14px;">On Duty</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <sc-for list="{{ onDuty }}" as="a" hint-placeholder-count="3">
+                <div class="sig-row" style="display:grid; grid-template-columns:38px 1fr auto; gap:13px; align-items:center; padding:4px 2px;">
+                  <span style="{{ a.thumb }}">{{ a.mono }}</span>
+                  <div style="min-width:0;">
+                    <div style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.name }}</div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-top:3px;">{{ a.role }}</div>
+                  </div>
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; color:{{ a.tint }};">{{ a.sum }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:auto; padding-top:14px;">
+              <a href="#1a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;">Full roster below <span class="arr">↓</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </sc-if>
+
+      <!-- ══ LORE PAGE ══ -->
+      <sc-if value="{{ tabLore }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:36px 40px 48px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">{{ sPublicRecord }}</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sDossierHead }}</h2>
+          </div>
+          <span onClick="{{ caseToggle }}" style="{{ caseBtnStyle }}">{{ caseBtnLabel }}</span>
+        </div>
+        <div style="display:grid; grid-template-columns:280px 1fr; border:1px solid #222; background:#0a0a0a;">
+          <div style="border-right:1px solid #222; display:flex; flex-direction:column;">
+            <sc-for list="{{ toc }}" as="s" hint-placeholder-count="4">
+              <div class="toc-row" onClick="{{ s.go }}" style="{{ s.style }}">
+                <span style="font-size:11px; color:#666;">{{ s.idx }}</span>
+                <div style="min-width:0;">
+                  <div class="toc-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1px; text-transform:uppercase; color:{{ s.tColor }};">{{ s.title }}</div>
+                  <sc-if value="{{ s.classified }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#ef4444; margin-top:4px;">{{ sClassifiedTag }}</div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+            <div style="flex:1;"></div>
+            <div style="border-top:1px solid #1a1a1a; padding:16px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#555; line-height:1.8;">4 {{ sSectionsWord }} · 1 {{ sClassifiedTag }}<br>{{ sAnchorLabel }}: {{ sAnchorTitle }}</div>
+          </div>
+          <div style="padding:36px 44px; min-height:460px;">
+            <div style="{{ loreAnim }}; max-width:740px;">
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 10px;">{{ loreTitle }}</h3>
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:14px; line-height:1.6; color:#888; margin:0 0 22px;">“{{ loreEpigraph }}” <span style="font-family:'SF Mono',ui-monospace,monospace; font-style:normal; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#666;">— {{ loreEpiWho }}</span></p>
+              <sc-if value="{{ loreVisible }}" hint-placeholder-val="{{ true }}">
+                <div style="margin:0 0 22px;">
+                  <div onClick="{{ imgOpen }}" style="{{ loreImg }}" title="Vergrößern"></div>
+                  <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#666; margin-top:8px;">Fig. {{ loreFig }} — {{ loreCaption }}</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ loreRedacted }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:18px;">
+                  <sc-for list="{{ redactBars }}" as="b" hint-placeholder-count="6"><span style="{{ b }}"></span></sc-for>
+                </div>
+                <p style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin:0;">{{ sRedactedHint }}</p>
+              </sc-if>
+              <sc-if value="{{ loreVisible }}" hint-placeholder-val="{{ true }}">
+                <sc-for list="{{ loreParas }}" as="p" hint-placeholder-count="2">
+                  <p style="font-family:'Spectral',Georgia,serif; font-size:16.5px; line-height:1.85; color:#a0a0a0; margin:0 0 18px;">{{ p.text }}</p>
+                </sc-for>
+              </sc-if>
+              <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #1a1a1a; margin-top:26px; padding-top:16px;">
+                <a onClick="{{ lorePrev }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; color:#888;"><span class="arr">←</span> {{ lorePrevTitle }}</a>
+                <a onClick="{{ loreNext }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer;">{{ loreNextTitle }} <span class="arr">→</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        <sc-if value="{{ imgLbOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:95;">
+            <div onClick="{{ imgClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(2px); cursor:zoom-out;"></div>
+            <div style="position:absolute; top:110px; left:50%; transform:translateX(-50%); width:980px;">
+              <div style="position:relative; border:1px solid #333; box-shadow:8px 8px 0 #000; overflow:hidden;">
+                <div style="{{ imgLbArt }}"></div>
+                <span onClick="{{ imgClose }}" style="position:absolute; top:12px; right:14px; font-family:'Courier New',monospace; font-size:14px; color:#a0a0a0; cursor:pointer; padding:4px 9px; background:rgba(6,6,6,.7);" style-hover="color:#f59e0b;">✕</span>
+              </div>
+              <div style="font-family:'SF Mono',ui-monospace,monospace; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#888; margin-top:10px;">Fig. {{ loreFig }} — {{ loreCaption }}</div>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- ══ AGENTS PAGE ══ -->
+      <sc-if value="{{ tabAgents }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:36px 40px 48px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:32px; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Agents</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sRosterTitle }} <span style="color:#666; font-size:14px;">{{ agCount }}</span></h2>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <sc-for list="{{ agChips }}" as="ch" hint-placeholder-count="4">
+              <span onClick="{{ ch.onClick }}" style="{{ ch.style }}">{{ ch.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position:relative; margin-bottom:24px;">
+          <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:13px; color:#666;">⌕</span>
+          <input onInput="{{ agSearch }}" placeholder="{{ sSearchAgents }}" style="width:100%; box-sizing:border-box; background:#0a0a0a; border:1px solid #2a2a2a; color:#e5e5e5; font-family:'SF Mono',ui-monospace,monospace; font-size:13px; letter-spacing:1px; padding:14px 16px 14px 42px; outline:none;" style-focus="border-color:#f59e0b;">
+        </div>
+        <sc-if value="{{ agDetailOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:90;">
+            <div onClick="{{ agClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(2px); cursor:pointer;"></div>
+            <div style="position:absolute; top:150px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px;">
+            <button onClick="{{ agPrev }}" class="car-btn" aria-label="Vorheriger" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">←</button>
+            <div style="width:880px; display:grid; grid-template-columns:280px 1fr; border:1px solid #333; background:#0a0a0a; box-shadow:8px 8px 0 #000; animation:lore-in-a .3s ease both;">
+            <div style="position:relative; min-height:300px; overflow:hidden; border-right:1px solid #222; background:#080808;">
+              <div style="{{ dArt }}">{{ dMono }}</div>
+              <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(to top, rgba(8,8,8,.9), transparent 45%); pointer-events:none;"></div>
+              <span style="position:absolute; bottom:12px; left:14px; font-size:8px; letter-spacing:.14em; text-transform:uppercase; color:{{ dTint }};">★ {{ dRarity }}</span>
+            </div>
+            <div style="padding:26px 30px; position:relative;">
+              <span onClick="{{ agClose }}" style="position:absolute; top:14px; right:16px; font-family:'Courier New',monospace; font-size:14px; color:#666; cursor:pointer; padding:4px 8px;" style-hover="color:#f59e0b;">✕</span>
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:{{ dTint }}; margin-bottom:8px;">{{ sDossierSection }}</div>
+              <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px;">✦ {{ dName }} ✦</h3>
+              <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:16px;">{{ dRole }} · {{ dZone }}</div>
+              <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.7; color:#a0a0a0; margin:0 0 20px; max-width:640px;">{{ dDesc }}</p>
+              <div style="display:flex; gap:36px; flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">{{ sAptitudes }}</div>
+                  <div style="display:flex; gap:12px;">
+                    <sc-for list="{{ dPips }}" as="p" hint-placeholder-count="6">
+                      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <span style="{{ p.dot }}">{{ p.val }}</span>
+                        <span style="font-size:7px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="min-width:220px;">
+                  <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:10px;">{{ sRelations }}</div>
+                  <sc-if value="{{ dHasRels }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; flex-direction:column; gap:7px;">
+                      <sc-for list="{{ dRels }}" as="r" hint-placeholder-count="2">
+                        <div style="font-size:10.5px; color:#a0a0a0;"><b style="color:#e5e5e5;">{{ r.who }}</b> — <span style="font-family:'Spectral',Georgia,serif; font-style:italic;">{{ r.note }}</span></div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ dNoRels }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10px; letter-spacing:1px; color:#555;">—</div>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="position:absolute; bottom:14px; right:16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; color:#666;">{{ dCounter }}</div>
+            </div>
+            </div>
+            <button onClick="{{ agNext }}" class="car-btn" aria-label="Nächster" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">→</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ agEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:70px 0; text-align:center; font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ sNoResults }}</div>
+        </sc-if>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;">
+          <sc-for list="{{ agCards }}" as="a" hint-placeholder-count="8">
+            <div class="hv-lift" onClick="{{ a.go }}" style="{{ a.card }}">
+              <div style="position:relative; height:168px; overflow:hidden; border-radius:5px 5px 0 0; background:#080808;">
+                <div style="{{ a.art }}">{{ a.artMono }}</div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; box-shadow:inset 0 -40px 34px -16px rgba(8,8,8,.95); pointer-events:none;"></div>
+                <span style="position:absolute; top:8px; left:9px; font-size:7px; letter-spacing:.14em; text-transform:uppercase; color:{{ a.tint }}; background:rgba(6,6,6,.7); padding:2px 6px;">{{ a.rarity }}</span>
+              </div>
+              <div style="padding:13px 14px 15px; text-align:center;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">✦ {{ a.name }} ✦</div>
+                <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ a.role }} · {{ a.zone }}</div>
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11px; line-height:1.5; color:#96948e; margin:9px 0 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">“{{ a.blurb }}”</p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                  <span style="{{ a.gemL }}">{{ a.sum }}</span>
+                  <span style="font-size:7.5px; letter-spacing:.1em; color:#555;">{{ a.relsCount }}</span>
+                  <span style="{{ a.gemR }}">{{ a.best }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ══ BUILDINGS PAGE ══ -->
+      <sc-if value="{{ tabBuildings }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:36px 40px 48px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Buildings</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sFootprintTitle }} <span style="color:#666; font-size:14px;">7</span></h2>
+          </div>
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666;">{{ sCapacity }}: ●&nbsp;≥66% · ◐&nbsp;≥33% · ○&nbsp;kritisch/Ruine</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+          <sc-for list="{{ footprint }}" as="b" hint-placeholder-count="7">
+            <div class="hv-lift" onClick="{{ b.go }}" style="border:1px solid #222; background:#0a0a0a; cursor:pointer; overflow:hidden; display:flex; flex-direction:column;">
+              <div style="position:relative; height:172px; overflow:hidden; background:#080808;">
+                <div class="monitor-img" style="{{ b.art }}"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                <span style="position:absolute; top:10px; left:12px; font-size:20px; line-height:1; color:{{ b.tint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ b.glyph }}</span>
+                <span style="position:absolute; top:10px; right:12px; font-size:13px; color:{{ b.condColor }}; background:rgba(6,6,6,.7); padding:2px 7px;">{{ b.cond }}</span>
+              </div>
+              <div style="padding:15px 18px 18px; display:flex; flex-direction:column; flex:1;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:14.5px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; margin-bottom:5px;">{{ b.name }}</div>
+                <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:11px;">{{ b.type }} · {{ b.zone }}</div>
+                <p style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.65; color:#96948e; margin:0 0 14px; flex:1;">{{ b.desc }}</p>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="flex:1; height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ b.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; flex:0 0 auto;">{{ b.capText }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+        <sc-if value="{{ bDetailOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:90;">
+            <div onClick="{{ bClose }}" style="position:absolute; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(2px); cursor:pointer;"></div>
+            <div style="position:absolute; top:150px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px;">
+              <button onClick="{{ bPrev }}" class="car-btn" aria-label="Vorheriges" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">←</button>
+              <div style="width:880px; border:1px solid #333; background:#0a0a0a; box-shadow:8px 8px 0 #000; animation:lore-in-a .3s ease both;">
+                <div style="position:relative; height:300px; overflow:hidden; background:#080808;">
+                  <div style="{{ bdArt }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                  <span onClick="{{ bClose }}" style="position:absolute; top:12px; right:14px; font-family:'Courier New',monospace; font-size:14px; color:#a0a0a0; cursor:pointer; padding:4px 9px; background:rgba(6,6,6,.7);" style-hover="color:#f59e0b;">✕</span>
+                  <span style="position:absolute; bottom:14px; left:20px; font-size:26px; line-height:1; color:{{ bdTint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ bdGlyph }}</span>
+                </div>
+                <div style="padding:24px 30px 26px; position:relative;">
+                  <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; margin:0 0 6px;">{{ bdName }}</h3>
+                  <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:14px;">{{ bdType }} · {{ bdZone }} · <span style="color:{{ bdCondColor }};">{{ bdCond }}</span></div>
+                  <p style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.7; color:#a0a0a0; margin:0 0 18px; max-width:700px;">{{ bdDesc }}</p>
+                  <div style="display:flex; align-items:center; gap:12px; max-width:420px;">
+                    <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666; flex:0 0 auto;">{{ sCapacity }}</span>
+                    <span style="flex:1; height:5px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ bdBar }}"></span></span>
+                    <span style="font-size:10px; color:#888; flex:0 0 auto;">{{ bdCapText }}</span>
+                  </div>
+                  <div style="position:absolute; bottom:14px; right:16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; color:#666;">{{ bdCounter }}</div>
+                </div>
+              </div>
+              <button onClick="{{ bNext }}" class="car-btn" aria-label="Nächstes" style="width:42px; height:42px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:17px; cursor:pointer; flex:0 0 auto;">→</button>
+            </div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <!-- Kompakt-Strips (nur Lore-Seite): Roster -->
+      <sc-if value="{{ tabLore }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:8px 40px 44px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Agents</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sRosterTitle }} <span style="color:#666; font-size:13px;">8</span></h2>
+          </div>
+          <a onClick="{{ goAgents }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open Agents <span class="arr">→</span></a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(8, 1fr); gap:14px;">
+          <sc-for list="{{ roster }}" as="a" hint-placeholder-count="8">
+            <div class="hv-lift" style="{{ a.card }}">
+              <div style="position:relative; height:128px; overflow:hidden; border-radius:5px 5px 0 0; background:#080808;">
+                <div style="{{ a.art }}">{{ a.artMono }}</div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; box-shadow:inset 0 -34px 30px -14px rgba(8,8,8,.95); pointer-events:none;"></div>
+                <span style="position:absolute; top:7px; left:8px; font-size:7px; letter-spacing:.14em; text-transform:uppercase; color:{{ a.tint }}; background:rgba(6,6,6,.7); padding:2px 6px;">{{ a.rarity }}</span>
+              </div>
+              <div style="padding:10px 10px 12px; text-align:center;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">✦ {{ a.name }} ✦</div>
+                <div style="font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ a.role }}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                  <span style="{{ a.gemL }}">{{ a.sum }}</span>
+                  <span style="font-size:7px; letter-spacing:.1em; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 4px;">{{ a.zone }}</span>
+                  <span style="{{ a.gemR }}">{{ a.best }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Architectural Footprint -->
+      <div style="padding:0 40px 48px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Buildings</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">{{ sFootprintTitle }} <span style="color:#666; font-size:13px;">7</span></h2>
+          </div>
+          <a onClick="{{ goBuildings }}" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; cursor:pointer;">Open Buildings <span class="arr">→</span></a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;">
+          <sc-for list="{{ footprint }}" as="b" hint-placeholder-count="7">
+            <div class="hv-lift" style="border:1px solid #222; background:#0a0a0a; cursor:pointer; overflow:hidden;">
+              <div style="position:relative; height:124px; overflow:hidden; background:#080808;">
+                <div class="monitor-img" style="{{ b.art }}"></div>
+                <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px); pointer-events:none;"></div>
+                <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 55%); pointer-events:none;"></div>
+                <span style="position:absolute; top:9px; left:11px; font-size:18px; line-height:1; color:{{ b.tint }}; text-shadow:0 2px 8px rgba(0,0,0,.8);">{{ b.glyph }}</span>
+                <span style="position:absolute; top:9px; right:11px; font-size:13px; color:{{ b.condColor }}; background:rgba(6,6,6,.7); padding:2px 7px;">{{ b.cond }}</span>
+              </div>
+              <div style="padding:13px 16px 16px;">
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ b.name }}</div>
+                <div style="font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:13px;">{{ b.type }} · {{ b.zone }}</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="flex:1; height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ b.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; flex:0 0 auto;">{{ b.capText }}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+          <div class="hv-lift" onClick="{{ goBuildings }}" style="border:1px solid #222; background:#0a0a0a; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; min-height:120px;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; color:#f59e0b;">→</span>
+            <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">Open Buildings</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker 44s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// {{ sTicker }} //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// {{ sTicker }} //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;scanlines&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Look&quot; },
+  &quot;threat&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;calm&quot;, &quot;elevated&quot;, &quot;critical&quot;], &quot;default&quot;: &quot;elevated&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Zustand&quot; }
+}">
+class Component extends DCLogic {
+  state = { lang: 'en', lore: 0, caseFile: false, moreOpen: false, tab: 'overview', aq: '', af: 'all', agentSel: null, bSel: null, imgLb: false };
+
+  async componentDidMount() {
+    // Tastatursteuerung der Lightbox (wie EntityLightbox im Live-Code): ←/→ blättern, Esc schließt
+    this._onKey = (e) => {
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const s = this.state;
+      if (s.imgLb) {
+        if (e.key === 'Escape') { e.preventDefault(); this.setState({ imgLb: false }); }
+        return;
+      }
+      if (s.agentSel != null) {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); this._agStep(-1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); this._agStep(1); }
+        else if (e.key === 'Escape') { e.preventDefault(); this.setState({ agentSel: null }); }
+      } else if (s.bSel != null) {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); this._bStep(-1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); this._bStep(1); }
+        else if (e.key === 'Escape') { e.preventDefault(); this.setState({ bSel: null }); }
+      }
+    };
+    window.addEventListener('keydown', this._onKey);
+    this._m = await import('./sim-data.js');
+    this.forceUpdate();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this._onKey);
+  }
+
+  // Gefilterte Agentenliste — EINE Quelle für Grid, Pfeil-Buttons und Tastatur
+  _agList() {
+    if (!this._m) return [];
+    const de = this.state.lang === 'de';
+    const q = (this.state.aq || '').toLowerCase();
+    const af = this.state.af;
+    return this._m.AGENTS(this.state.lang).filter((a) => {
+      const roleTxt = (de ? a.roleDe : a.roleEn).toLowerCase();
+      if (q && !a.name.toLowerCase().includes(q) && !roleTxt.includes(q)) return false;
+      if (af === 'leg') return a.ambassador || Math.max(...a.apt) >= 9;
+      if (af === 'amb') return a.ambassador;
+      if (af === 'ai') return a.ai;
+      return true;
+    });
+  }
+
+  _agStep(d) {
+    const list = this._agList();
+    if (!list.length) return;
+    const i = list.findIndex((a) => a.key === this.state.agentSel);
+    this.setState({ agentSel: list[((i < 0 ? 0 : i) + d + list.length) % list.length].key });
+  }
+
+  _bStep(d) {
+    if (!this._m) return;
+    const keys = this._m.BUILDINGS(this.state.lang).map((b) => b.key);
+    const i = keys.indexOf(this.state.bSel);
+    this.setState({ bSel: keys[((i < 0 ? 0 : i) + d + keys.length) % keys.length] });
+  }
+
+  renderVals() {
+    const m = this._m;
+    const lang = this.state.lang;
+    const de = lang === 'de';
+    if (!m) return { scanlinesOn: this.props.scanlines ?? true, loreVisible: false, loreRedacted: false, navTabs: [], toc: [], signals: [], onDuty: [], roster: [], footprint: [], threatSegs: [], redactBars: [], loreParas: [] };
+    const S = m.strings(lang);
+    const OPC = m.OPC();
+    const OPL = ['SPY', 'GRD', 'SAB', 'PRP', 'INF', 'ASN'];
+    const agents = m.AGENTS(lang);
+    const buildings = m.BUILDINGS(lang);
+    const lore = m.loreContent(lang);
+
+    const threat = this.props.threat ?? 'elevated';
+    const T = { calm: ['#4ade80', 1, de ? 'Ruhig' : 'Calm'], elevated: ['#f59e0b', 3, de ? 'Erhöht' : 'Elevated'], critical: ['#ef4444', 5, de ? 'Kritisch' : 'Critical'] }[threat] || ['#f59e0b', 3, 'Elevated'];
+    const threatSegs = Array.from({ length: 5 }, (_, i) => 'display:inline-block;flex:1;height:8px;' + (i < T[1] ? 'background:' + T[0] + ';' : 'background:#1a1a1a;'));
+
+    // Kanon-Reihenfolge; Kern sichtbar, Rest im "Mehr"-Register (nichts wird geclippt)
+    const NAV_CORE = de
+      ? ['◈ Übersicht', 'Lore', 'Agenten', 'Gebäude', 'Blatt', 'Chronik', 'Ereignisse', 'Terminal', 'Dungeon']
+      : ['◈ Overview', 'Lore', 'Agents', 'Buildings', 'Broadsheet', 'Chronicle', 'Events', 'Terminal', 'Dungeon'];
+    const NAV_MORE = de
+      ? ['Gesundheit', 'Puls', 'Bindungen', 'Chat', 'Soziales', 'Orte', 'Atlas', 'Drift', 'Einstellungen']
+      : ['Health', 'Pulse', 'Bonds', 'Chat', 'Social', 'Locations', 'Atlas', 'Drift', 'Settings'];
+    const tabStyle = (active, inMenu) => 'padding:13px 15px;font-size:10px;letter-spacing:2px;text-transform:uppercase;' + (inMenu ? 'border-bottom:1px solid #1a1a1a;' : '') + (active ? 'color:#f59e0b;background:#0a0a0a;box-shadow:inset 0 -2px 0 #f59e0b;' : 'color:#888;');
+    const TAB_KEYS = ['overview', 'lore', 'agents', 'buildings', null, null, null, null, null];
+    const tab = this.state.tab;
+    const navTabs = NAV_CORE.map((label, i) => ({
+      label,
+      style: tabStyle(TAB_KEYS[i] === tab, false),
+      go: TAB_KEYS[i] ? () => this.setState({ tab: TAB_KEYS[i], moreOpen: false, agentSel: null }) : () => {},
+    }));
+    const moreTabs = NAV_MORE.map((label) => ({ label, style: tabStyle(false, true) }));
+
+    const li = Math.min(this.state.lore, lore.length - 1);
+    const sec = lore[li];
+    const toc = lore.map((s, i) => ({
+      idx: '0' + (i + 1), title: s.title, classified: !!s.classified,
+      tColor: i === li ? '#f59e0b' : '#e5e5e5',
+      go: () => this.setState({ lore: i }),
+      style: 'display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;padding:17px 16px;' + (i > 0 ? 'border-top:1px solid #1a1a1a;' : '') + (i === li ? 'background:rgba(245,158,11,.06);outline:1px solid rgba(245,158,11,.4);outline-offset:-1px;' : ''),
+    }));
+    const loreRedacted = !!sec.classified && !this.state.caseFile;
+    const redactBars = [92, 84, 96, 70, 88, 42].map((w) => 'display:block;height:13px;width:' + w + '%;background:repeating-linear-gradient(90deg,#1c1c1c 0 16px,#141414 16px 22px);');
+
+    const best = (apt) => { const b = apt.indexOf(Math.max(...apt)); return { i: b, v: apt[b], c: OPC[OPL[b]] }; };
+    const rarity = (a) => a.ambassador || Math.max(...a.apt) >= 9 ? S.rarityLegendary : (a.rels.length > 0 || a.ai ? S.rarityRare : S.rarityCommon);
+    const tintOf = (a) => (a.ambassador || Math.max(...a.apt) >= 9) ? '#f59e0b' : best(a.apt).c;
+    const sum = (a) => a.apt.reduce((x, y) => x + y, 0);
+
+    const onDuty = agents.slice().sort((a, b) => sum(b) - sum(a)).slice(0, 3).map((a) => ({
+      name: a.name, role: de ? a.roleDe : a.roleEn, sum: String(sum(a)), tint: tintOf(a),
+      mono: a.img ? '' : a.name.split(' ').map((w) => w[0]).join('').slice(0, 2),
+      thumb: 'display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid ' + tintOf(a) + '55;box-sizing:border-box;font-family:\'Courier New\',monospace;font-weight:700;font-size:12px;color:' + tintOf(a) + ';' + (a.img ? 'background:url(\'' + a.img + '\') center 20%/cover;' : 'background:#111;'),
+    }));
+
+    const roster = agents.map((a, i) => {
+      const t = tintOf(a), b = best(a.apt), leg = a.ambassador || Math.max(...a.apt) >= 9;
+      return {
+        name: a.name, role: de ? a.roleDe : a.roleEn, zone: a.zone, rarity: rarity(a), tint: t,
+        sum: String(sum(a)), best: String(b.v),
+        card: 'border:1px solid ' + (leg ? '#f59e0b66' : '#222') + ';border-radius:6px;background:#0a0a0a;cursor:pointer;overflow:hidden;animation:rise .5s ease both;animation-delay:' + (i * 60) + 'ms;' + (leg ? 'box-shadow:0 0 14px rgba(245,158,11,.14);' : ''),
+        art: a.img
+          ? 'position:absolute;inset:0;background:url(\'' + a.img + '\') center 18%/cover;filter:saturate(.85) brightness(.95);'
+          : 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Courier New\',monospace;font-weight:700;font-size:26px;color:' + t + ';background:linear-gradient(180deg,#0f0f0f,#0a0a0a);',
+        artMono: a.img ? '' : a.name.split(' ').map((w) => w[0]).join('').slice(0, 2),
+        gemL: 'display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid ' + t + ';color:' + t + ';font-family:\'Courier New\',monospace;font-weight:700;font-size:9.5px;flex:0 0 auto;',
+        gemR: 'display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid ' + b.c + ';color:' + b.c + ';font-family:\'Courier New\',monospace;font-weight:700;font-size:9.5px;flex:0 0 auto;',
+      };
+    });
+
+    const BIMG = { hall: 'b-hall', archive: 'b-archive', apiary: 'b-apiary', spire: 'e-wraith', vaults: 'e-court', exchange: 'e-clerk', quarantine: 'e-warden' };
+    const footprint = buildings.map((b) => {
+      const ruin = b.cap[1] === 0;
+      const r = ruin ? 0 : b.cap[0] / b.cap[1];
+      const cond = ruin ? ['○', '#666'] : r >= 0.66 ? ['●', '#4ade80'] : r >= 0.33 ? ['◐', '#f59e0b'] : ['○', '#ef4444'];
+      return {
+        art: 'position:absolute;inset:0;background:url(\'assets/' + (BIMG[b.key] || 'b-hall') + '.png\') center 30%/cover;opacity:' + (ruin ? '.4' : '.75') + ';filter:saturate(.8)' + (ruin ? ' grayscale(.6)' : '') + ';',
+        desc: de ? b.descDe : b.descEn,
+        go: () => this.setState({ bSel: b.key }),
+        key: b.key,
+        name: b.name, glyph: b.glyph, zone: b.zone, type: de ? b.typeDe : b.typeEn,
+        tint: b.legendary ? '#f59e0b' : '#888',
+        cond: cond[0], condColor: cond[1],
+        capText: ruin ? '—' : b.cap[0] + '/' + b.cap[1],
+        bar: 'position:absolute;inset:0;display:block;width:' + Math.round(r * 100) + '%;background:' + cond[1] + ';animation:bar-grow .9s ease-out both;',
+      };
+    });
+
+    const signals = de ? [
+      { color: '#ef4444', text: 'Unregistrierte Häutung gemeldet — Unterwabe', time: '12m' },
+      { color: '#f59e0b', text: 'Duft-Dekret #114 in die Waben entlassen', time: '2h' },
+      { color: '#3b82f6', text: 'Resonanz absorbiert: Hitzewelle → Brutfieber', time: '1d' },
+    ] : [
+      { color: '#ef4444', text: 'Unregistered molt reported — Undercomb', time: '12m' },
+      { color: '#f59e0b', text: 'Scent decree #114 released into the combs', time: '2h' },
+      { color: '#3b82f6', text: 'Resonance absorbed: heatwave → brood fever', time: '1d' },
+    ];
+
+    const langChip = (on) => 'cursor:pointer;letter-spacing:2px;' + (on ? 'color:#f59e0b;font-weight:700;' : 'color:#888;');
+    return {
+      scanlinesOn: this.props.scanlines ?? true,
+      deGo: () => this.setState({ lang: 'de' }), enGo: () => this.setState({ lang: 'en' }),
+      deStyle: langChip(de), enStyle: langChip(!de),
+      sActive: S.statusActive, sClass: S.classification,
+      sThreatLabel: S.threatLabel, sThreatValue: T[2], threatColor: T[0], threatSegs,
+      sTagline: S.tagline,
+      sAnchorLabel: S.anchorLabel, sAnchorTitle: S.anchorTitle, sAnchorQuestion: S.anchorQuestion,
+      sPublicRecord: S.publicRecord, sDossierHead: S.dossierHead, sClassifiedTag: S.classifiedTag, sRedactedHint: S.redactedHint,
+      sRosterTitle: S.rosterTitle, sFootprintTitle: S.footprintTitle,
+      sAgentsWord: S.loreStatAgents, sBldgWord: S.loreStatBuildings,
+      caseToggle: () => this.setState((st) => ({ caseFile: !st.caseFile })),
+      caseBtnLabel: this.state.caseFile ? S.caseFileOn : S.caseFileBtn,
+      caseBtnStyle: 'display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;' + (this.state.caseFile ? 'color:#0a0a0a;background:#f59e0b;border:1px solid #b45309;box-shadow:3px 3px 0 #000;' : 'color:#f59e0b;border:1px solid #f59e0b;background:transparent;'),
+      tabOverview: tab === 'overview', tabLore: tab === 'lore', tabAgents: tab === 'agents', tabBuildings: tab === 'buildings',
+      crumbTab: (NAV_CORE[['overview', 'lore', 'agents', 'buildings'].indexOf(tab)] || NAV_CORE[0]).replace('◈ ', ''),
+      goAgents: () => this.setState({ tab: 'agents' }),
+      goBuildings: () => this.setState({ tab: 'buildings' }),
+      goLore: () => this.setState({ tab: 'lore' }),
+      loreTeaser: lore[0].paras[0],
+      sSectionsWord: de ? 'Abschnitte' : 'sections',
+      ...(() => {
+        const LX = [
+          { img: 'assets/e-court.png', epi: de ? 'Du bist, was du trägst, bis du daran stirbst.' : 'You are what you wear until you die of it.', who: de ? 'Sprichwort des Wachs-Parlaments' : 'Wax Parliament proverb', cap: de ? 'Die Oberen Waben zur Lampenstunde' : 'The Upper Combs at lamp-hour' },
+          { img: 'assets/b-hall.png', epi: de ? 'Keine Häutung ohne Unterschrift.' : 'No molt without a signature.', who: de ? 'Erste Zeile des Registrator-Eids' : 'First line of the Registrar\u2019s oath', cap: de ? 'Die Häutungshalle — getäfelt mit abgelegten Panzern' : 'The Molting Hall — panelled with shed carapaces' },
+          { img: 'assets/b-archive.png', epi: de ? 'Das Gesetz liegt in der Luft. Atme vorsichtig.' : 'The law is in the air. Breathe carefully.', who: de ? 'Warnung über der Archivtür' : 'Warning above the Archive door', cap: de ? 'Versiegelte Duftproben im Pheromon-Archiv' : 'Sealed scent-samples in the Pheromone Archive' },
+          { img: 'assets/b-apiary.png', epi: de ? 'Eine misslungene Häutung von der Revolte entfernt.' : 'One bad molt away from revolt.', who: de ? 'Lagebeurteilung ZETA, letzte Zeile' : 'Field Assessment ZETA, final line', cap: de ? 'Der Stille Bienenstand. Aufnahme nicht autorisiert.' : 'The Silent Apiary. Photograph unauthorized.' },
+        ];
+        const lx = LX[li % LX.length];
+        return {
+          loreEpigraph: lx.epi, loreEpiWho: lx.who, loreCaption: lx.cap,
+          loreFig: String(li + 1).padStart(2, '0'),
+          loreImg: 'aspect-ratio:16/7;background:url(\'' + lx.img + '\') center 32%/cover;border:1px solid #222;cursor:zoom-in;filter:saturate(.85);',
+          imgOpen: () => this.setState({ imgLb: true }),
+          imgClose: () => this.setState({ imgLb: false }),
+          imgLbOn: this.state.imgLb,
+          imgLbArt: 'aspect-ratio:16/9;background:url(\'' + lx.img + '\') center/cover;',
+        };
+      })(),
+      lorePrev: () => this.setState({ lore: (li - 1 + lore.length) % lore.length }),
+      loreNext: () => this.setState({ lore: (li + 1) % lore.length }),
+      lorePrevTitle: lore[(li - 1 + lore.length) % lore.length].title,
+      loreNextTitle: lore[(li + 1) % lore.length].title,
+      ...(() => {
+        const q = (this.state.aq || '').toLowerCase();
+        const af = this.state.af;
+        const chip = (on) => 'font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;padding:8px 14px;transition:all .18s;border:1px solid ' + (on ? '#f59e0b' : '#2a2a2a') + ';color:' + (on ? '#f59e0b' : '#888') + ';background:' + (on ? 'rgba(245,158,11,.1)' : 'transparent') + ';';
+        const agChips = [['all', S.fAll], ['leg', S.fLegendary], ['amb', S.fAmbassadorsShort], ['ai', S.fAI]].map((c) => ({
+          label: c[1], onClick: () => this.setState({ af: c[0] }), style: chip(af === c[0]),
+        }));
+        const list = this._agList();
+        const agCards = list.map((a, i) => {
+          const t = tintOf(a), b2 = best(a.apt), leg = a.ambassador || Math.max(...a.apt) >= 9;
+          return {
+            name: a.name, role: de ? a.roleDe : a.roleEn, zone: a.zone, rarity: rarity(a), tint: t,
+            sum: String(sum(a)), best: String(b2.v), blurb: de ? a.blurbDe : a.blurbEn,
+            relsCount: a.rels.length ? a.rels.length + (de ? ' BINDUNGEN' : ' TIES') : '—',
+            go: () => this.setState({ agentSel: a.key }),
+            card: 'border:1px solid ' + (leg ? '#f59e0b66' : '#222') + ';border-radius:6px;background:#0a0a0a;cursor:pointer;overflow:hidden;animation:rise .4s ease both;animation-delay:' + (i * 45) + 'ms;' + (leg ? 'box-shadow:0 0 14px rgba(245,158,11,.14);' : ''),
+            art: a.img
+              ? 'position:absolute;inset:0;background:url(\'' + a.img + '\') center 18%/cover;filter:saturate(.85) brightness(.95);'
+              : 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Courier New\',monospace;font-weight:700;font-size:30px;color:' + t + ';background:linear-gradient(180deg,#0f0f0f,#0a0a0a);',
+            artMono: a.img ? '' : a.name.split(' ').map((w) => w[0]).join('').slice(0, 2),
+            gemL: 'display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid ' + t + ';color:' + t + ';font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;flex:0 0 auto;',
+            gemR: 'display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:1px solid ' + b2.c + ';color:' + b2.c + ';font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;flex:0 0 auto;',
+          };
+        });
+        const sel = agents.find((a) => a.key === this.state.agentSel);
+        const selIdx = list.findIndex((a) => a.key === this.state.agentSel);
+        const out = {
+          agPrev: () => this._agStep(-1), agNext: () => this._agStep(1),
+          dCounter: selIdx >= 0 ? (selIdx + 1) + ' / ' + list.length : '',
+          agChips, agCards, agCount: String(list.length),
+          agSearch: (e) => this.setState({ aq: e.target.value }),
+          agEmpty: list.length === 0,
+          agDetailOn: !!sel,
+          agClose: () => this.setState({ agentSel: null }),
+          sSearchAgents: S.searchAgents, sNoResults: S.noResults,
+          sDossierSection: S.dossierSection, sAptitudes: S.aptitudesLabel, sRelations: S.relationsLabel, sCapacity: S.capacityLabel,
+        };
+        if (sel) {
+          const t = tintOf(sel), leg = sel.ambassador || Math.max(...sel.apt) >= 9;
+          out.dName = sel.name; out.dRole = de ? sel.roleDe : sel.roleEn; out.dZone = sel.zone;
+          out.dDesc = de ? sel.descDe : sel.descEn; out.dTint = t; out.dRarity = rarity(sel);
+          out.dMono = sel.img ? '' : sel.name.split(' ').map((w) => w[0]).join('').slice(0, 2);
+          out.dArt = sel.img
+            ? 'position:absolute;inset:0;background:url(\'' + sel.img + '\') center 15%/cover;filter:saturate(.85);'
+            : 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:\'Courier New\',monospace;font-weight:700;font-size:44px;color:' + t + ';background:linear-gradient(180deg,#0f0f0f,#0a0a0a);';
+          out.dPips = sel.apt.map((v, j) => ({
+            val: String(v), label: OPL[j],
+            dot: 'display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:\'SF Mono\',Monaco,monospace;font-weight:700;font-size:10px;color:#060606;background:' + OPC[OPL[j]] + ';' + (v <= 5 ? 'opacity:.38;' : v >= 8 ? 'box-shadow:0 0 8px ' + OPC[OPL[j]] + '90;' : ''),
+          }));
+          out.dRels = sel.rels.map((r) => ({ who: r[0], note: r[1] }));
+          out.dHasRels = sel.rels.length > 0;
+          out.dNoRels = sel.rels.length === 0;
+        } else {
+          out.dPips = []; out.dRels = []; out.dHasRels = false; out.dNoRels = true;
+        }
+        return out;
+      })(),
+      ...(() => {
+        const bi = footprint.findIndex((f) => f.key === this.state.bSel);
+        const bd = bi >= 0 ? footprint[bi] : null;
+        return {
+          bDetailOn: !!bd,
+          bClose: () => this.setState({ bSel: null }),
+          bPrev: () => this._bStep(-1), bNext: () => this._bStep(1),
+          bdArt: bd ? bd.art.replace('center 30%/cover', 'center 35%/cover') : '',
+          bdGlyph: bd ? bd.glyph : '', bdTint: bd ? bd.tint : '#888',
+          bdName: bd ? bd.name : '', bdType: bd ? bd.type : '', bdZone: bd ? bd.zone : '',
+          bdCond: bd ? bd.cond : '', bdCondColor: bd ? bd.condColor : '#888',
+          bdDesc: bd ? bd.desc : '', bdBar: bd ? bd.bar : '', bdCapText: bd ? bd.capText : '',
+          bdCounter: bi >= 0 ? (bi + 1) + ' / ' + footprint.length : '',
+        };
+      })(),
+      navTabs, moreTabs, toc,
+      moreOpen: this.state.moreOpen,
+      moreToggle: () => this.setState((st) => ({ moreOpen: !st.moreOpen })),
+      moreLabel: (de ? 'Mehr' : 'More') + ' (9) ' + (this.state.moreOpen ? '▴' : '▾'),
+      moreStyle: 'padding:13px 15px;font-size:10px;letter-spacing:2px;text-transform:uppercase;' + (this.state.moreOpen ? 'color:#f59e0b;background:#0a0a0a;' : 'color:#888;'),
+      loreTitle: sec.title,
+      loreRedacted, loreVisible: !loreRedacted,
+      loreParas: sec.paras.map((t) => ({ text: t })),
+      loreAnim: 'animation:lore-in-' + (li % 2 ? 'a' : 'b') + ' .35s ease both;',
+      redactBars, signals, onDuty, roster, footprint,
+      sTicker: de
+        ? 'Eine Welt ist ein Aktensystem mit Wetter. Das Mandat ordnet seine Bürger nach dem Panzer — und das Register vergisst nie eine Häutung.'
+        : 'A world is a filing system with weather. The Mandate files its citizens by shell — and the register never forgets a molt.',
+    };
+  }
+}
+</script>
+</body>
+</html>
