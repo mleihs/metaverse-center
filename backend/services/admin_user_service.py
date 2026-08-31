@@ -13,8 +13,12 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
+import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.services.email_service import EmailService, MailRecord
+from backend.services.email_templates import _nt, render_account_deleted
+from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
@@ -117,7 +121,15 @@ class AdminUserService:
         """Delete a user via Postgres ``admin_delete_user`` (migration 040, rewritten 113).
 
         Transfers simulation ownership to admin, nullifies FKs, cascades rest.
+
+        Sends the confirmation the GDPR expects (Handoff P2.23). The order is
+        the whole difficulty: `admin_delete_user` removes the auth record too,
+        so **the address and the world count have to be read before the RPC** —
+        afterwards there is nobody left to ask. What is gathered first is used
+        only if the deletion actually succeeds.
         """
+        contact = await cls._deletion_contact(admin_supabase, user_id)
+
         try:
             await admin_supabase.rpc(
                 "admin_delete_user",
@@ -127,6 +139,75 @@ class AdminUserService:
         except (PostgrestAPIError, httpx.HTTPError) as e:
             logger.warning("User deletion failed", extra={"user_id": str(user_id)}, exc_info=True)
             raise not_found(detail=f"User '{user_id}' not found or could not be deleted.") from e
+
+        await cls._send_deletion_confirmation(admin_supabase, user_id, contact)
+
+    @classmethod
+    async def _deletion_contact(cls, admin_supabase: Client, user_id: UUID) -> dict | None:
+        """Address, locale and world count — read BEFORE the account is gone."""
+        try:
+            profile = await maybe_single_data(
+                admin_supabase.table("user_profiles")
+                .select("email")
+                .eq("id", str(user_id))
+                .maybe_single()
+            )
+            email = (profile or {}).get("email")
+            if not email:
+                return None
+
+            prefs = await maybe_single_data(
+                admin_supabase.table("notification_preferences")
+                .select("email_locale")
+                .eq("user_id", str(user_id))
+                .maybe_single()
+            )
+            worlds = await (
+                admin_supabase.table("simulations")
+                .select("id", count="exact")
+                .eq("created_by_id", str(user_id))
+                .is_("deleted_at", "null")
+                .execute()
+            )
+            return {
+                "email": email,
+                "email_locale": (prefs or {}).get("email_locale") or "en",
+                "worlds": worlds.count or 0,
+            }
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            # A deletion must never fail because the confirmation could not be
+            # prepared. The right to be forgotten outranks the receipt.
+            logger.exception(
+                "Could not gather the deletion contact", extra={"user_id": str(user_id)}
+            )
+            return None
+
+    @classmethod
+    async def _send_deletion_confirmation(
+        cls, admin_supabase: Client, user_id: UUID, contact: dict | None
+    ) -> None:
+        """Best-effort: the account is already gone, the mail must not undo that."""
+        if not contact:
+            logger.warning(
+                "Account deleted without a confirmation — no address on file",
+                extra={"user_id": str(user_id)},
+            )
+            return
+        try:
+            await EmailService.send(
+                contact["email"],
+                _nt("deleted_subject", contact["email_locale"]),
+                render_account_deleted(
+                    email_locale=contact["email_locale"],
+                    worlds_transferred=contact["worlds"],
+                ),
+                record=MailRecord(template="account_deleted", user_id=str(user_id)),
+            )
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.exception(
+                "Deletion confirmation could not be sent", extra={"user_id": str(user_id)}
+            )
+            sentry_sdk.capture_exception()
 
     @classmethod
     async def add_membership(
