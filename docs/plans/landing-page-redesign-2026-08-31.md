@@ -72,13 +72,27 @@ Plattform-Schaltern (`platform_settings`, 31.08.2026):
 | 02 | Compete in Seasons (Epochen) | **0 laufende Epochen.** Mechanik da, Bestand leer |
 | 03 | Send Agents Below (Dungeons) | **offen** (Paket E abgeschlossen) |
 | 04 | Travel the In-Between (DRIFT) | `drift_p0_enabled = true`, aber `drift_fun_core_enabled = **false**` — die Reise geht, der Spielkern nicht |
-| 05 | Reality Bleeds In (Substrat/Resonanzen) | `resonance_auto_process_enabled` **existiert gar nicht** → fail-closed, also aus. Bestand: 1 Resonanz |
+| 05 | Reality Bleeds In (Substrat/Resonanzen) | **nicht abgeschaltet, sondern ungefüttert.** Der Zeitgeber LÄUFT (kein Eintrag, aber `_DEFAULT_ENABLED = True`; die eine Resonanz steht auf `subsiding`, ist also verarbeitet worden). Leer ist es, weil `news_scanner_enabled = false` — es kommt nichts Neues herein. Bestand: 1 Resonanz, 14 Wirkungen |
 | 06 | Play It as Text (Terminal) | **offen** |
 
 Vier von sechs stehen also ganz oder halb still. Der Entwurf verspricht für 05
 wörtlich „Real events echo through every simulation as resonances" — bei einer
 einzigen je aufgenommenen Resonanz ist das kein Versprechen, sondern eine
 Behauptung über einen Zustand, der noch nicht eingetreten ist.
+
+> **Korrektur vom 31.08. nachmittags** (gemessen von `velgarien-rebuild-45`,
+> hier bestätigt): 05 ist **nicht abgeschaltet**. Ich hatte aus dem fehlenden
+> Eintrag auf ein geschlossenes Tor geschlossen; tatsächlich steht
+> `_DEFAULT_ENABLED = True` und die Schleife überschreibt die Vorgabe nur, wenn
+> eine Zeile ankommt. Der Zeitgeber läuft, und die eine Resonanz auf Prod steht
+> auf `subsiding` — sie ist verarbeitet worden. Leer ist das System, weil
+> `news_scanner_enabled = false`: es wird nichts hineingefüttert.
+>
+> Für Entscheidung 1 ist das ein Unterschied: 05 braucht keine Freigabe,
+> sondern Futter. **Und die Lehre dahinter gilt für den ganzen Plan: ein
+> fail-closed PARSER ist keine fail-closed ABWESENHEIT.** Was mit einem
+> ankommenden Wert geschieht, sagt nichts darüber, was ohne Zeile geschieht —
+> das entscheidet die Vorgabe des Aufrufers, und die muss man lesen.
 
 **Nebenbefund, der das erklärt und die Reihenfolge bestimmt** (gemessen von
 `velgarien-rebuild-45`): für `platform_settings`-Schalter gibt es **keine
