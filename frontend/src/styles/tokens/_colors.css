@@ -40,7 +40,8 @@
      `color-mix()` in einer Custom Property loest gegen das Element auf, auf dem
      es DEKLARIERT ist — hier auf `:root`, also gegen die Plattform-Vorgaben.
      Ohne die Neuableitung erbt ein getheamter Teilbaum eine Farbe aus den
-     falschen zwei Eingaben. Dieselbe Falle wie bei `--color-text-quiet`. */
+     falschen zwei Eingaben. Dieselbe Falle wie bei `--color-text-quiet`.
+
      ⚠ NACHTRAG: DASSELBE TOKEN LOEST EIN ZWEITES, GROESSERES PROBLEM
      Diese Token entstanden fuer Text auf einer Toenung DERSELBEN Farbe. Beim
      Nachmessen der ZWEITEN Paarung — eine Statusfarbe als Text auf der blossen
