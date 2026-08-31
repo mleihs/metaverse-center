@@ -6,6 +6,7 @@
 
 import { msg, str } from '@lit/localize';
 import { computed, signal } from '@preact/signals-core';
+import type { DungeonNarrationLine, DungeonRoomStamp } from '../types/dungeon.js';
 import type {
   Agent,
   Building,
@@ -21,7 +22,6 @@ import type {
   TerminalLine,
   TerminalPersistedState,
 } from '../types/terminal.js';
-import type { DungeonNarrationLine, DungeonRoomStamp } from '../types/dungeon.js';
 import { captureError } from './SentryService.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
