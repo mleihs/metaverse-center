@@ -11,8 +11,8 @@
  * 3. Request / Response — API contract
  */
 
-import type { TerminalLine } from './terminal.js';
 import type { UUID } from './index.js';
+import type { TerminalLine } from './terminal.js';
 
 // ── Archetype Constants ─────────────────────────────────────────────────────
 
