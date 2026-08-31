@@ -115,12 +115,39 @@ class LandingCitizen(BaseModel):
     simulation_name: str
 
 
+class LandingPrompt(BaseModel):
+    """Ein Satz, der eine Welt gemacht hat — zweisprachig wie alles hier.
+
+    Der Schmiede-Abschnitt tippt Beispielsätze. Bis zum 31.08.2026 standen
+    zwanzig davon fest im Bauteil; sie waren gut geschrieben und trotzdem
+    erfunden. Auf Prod liegen **26 echte Ausgangssätze** in
+    ``forge_drafts.seed_prompt``, davon 16 aus abgeschlossenen Läufen — die
+    tatsächlichen Sätze, aus denen die tatsächlichen Welten wurden.
+
+    ⚠ SIE SIND NOCH NICHT ANGESCHALTET. Ein Ausgangssatz ist von einem Menschen
+    geschrieben, und die Frontseite ist öffentlich; ihn dort zu zeigen ist eine
+    Veröffentlichung fremden Textes. Das ist eine Entscheidung des Nutzers, keine
+    Ermessensfrage der Umsetzung. Die Leitung liegt: ist die Liste gefüllt,
+    tippt der Abschnitt echte Sätze; ist sie leer, tippt er seine Beispiele und
+    nennt sie so.
+
+    Der Client wählt über ``t(prompt, 'text')`` — deshalb ``text``/``text_de``
+    und kein locale-Parameter.
+    """
+
+    text: str
+    text_de: str | None = None
+
+
 class LandingSnapshotResponse(BaseModel):
     """Alles, was die Frontseite braucht, in einem Aufruf."""
 
     counts: LandingCounts
     worlds: list[LandingWorld] = Field(default_factory=list)
     citizens: list[LandingCitizen] = Field(default_factory=list)
+    #: Echte Ausgangssätze für den Schmiede-Abschnitt. Leer, solange die
+    #: Veröffentlichung nicht freigegeben ist — siehe ``LandingPrompt``.
+    forge_prompts: list[LandingPrompt] = Field(default_factory=list)
 
     #: Wann gemessen wurde. Steht in der Antwort, weil eine Kennzahl ohne
     #: Zeitpunkt nicht prüfbar ist — und weil der Zwischenspeicher davorsitzt.

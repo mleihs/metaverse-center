@@ -220,7 +220,7 @@ def _participation(*, deadline=None, acted=False) -> dict:
             "config": {"rp_cap": 30, "cycle_hours": 8, "duration_days": 14},
             "cycle_deadline_at": deadline,
         },
-        "simulations": {"name": "Velgarien"},
+        "simulations": {"name": "Velgarien", "banner_url": "https://example/epoch.avif"},
         "user_id": "u1",
         "is_bot": False,
     }
@@ -234,6 +234,15 @@ async def test_a_missing_deadline_stays_missing():
     data = await _dashboard(_rows(epoch_participants=[_participation(deadline=None)]))
     assert len(data.active_epoch_participations) == 1
     assert data.active_epoch_participations[0].cycle_deadline_at is None
+
+
+@pytest.mark.asyncio
+async def test_the_stage_gets_the_real_world_art():
+    """Der Entwurf legte ein eigenes Bühnenbild bei. Gemessen tragen alle 20
+    Epochen-Klone auf Prod ein ``banner_url`` — das echte Bild der Welt, in der
+    gespielt wird, ist besser als ein mitgeliefertes Standbild."""
+    data = await _dashboard(_rows(epoch_participants=[_participation()]))
+    assert data.active_epoch_participations[0].simulation_banner_url == "https://example/epoch.avif"
 
 
 @pytest.mark.asyncio
@@ -265,6 +274,8 @@ async def test_a_world_carries_what_the_switcher_shows():
                 {
                     "simulation_id": _SIM,
                     "sort_order": 1,
+                    "title": "Zweite Kammer",
+                    "title_de": "Zweite Kammer",
                     "body": "second",
                     "body_de": "zweite",
                     "epigraph": "B",
@@ -273,6 +284,8 @@ async def test_a_world_carries_what_the_switcher_shows():
                 {
                     "simulation_id": _SIM,
                     "sort_order": 0,
+                    "title": "First Chamber",
+                    "title_de": "Erste Kammer",
                     "body": "first",
                     "body_de": "erste",
                     "epigraph": "A",
@@ -289,6 +302,8 @@ async def test_a_world_carries_what_the_switcher_shows():
     assert world.member_role == "architect"
     # Die ERSTE Kammer, nicht die zuerst gelieferte Zeile.
     assert (world.lore_body_de, world.lore_epigraph_de) == ("erste", "a")
+    # Die Quellenangabe unter dem Zitat ist die Kammer, nicht eine erfundene Stimme.
+    assert world.lore_title_de == "Erste Kammer"
 
 
 @pytest.mark.asyncio

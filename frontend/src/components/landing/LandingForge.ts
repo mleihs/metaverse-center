@@ -23,7 +23,9 @@
 
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import type { LandingPrompt } from '../../types/index.js';
+import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
@@ -265,6 +267,10 @@ export class VelgLandingForge extends LitElement {
   `,
   ];
 
+  /** Echte Ausgangssätze aus dem Bestand. Leer heisst: es gibt (noch) keine
+   *  freigegebenen, dann tippt der Abschnitt seine Beispiele. */
+  @property({ attribute: false }) prompts: LandingPrompt[] = [];
+
   @state() private _typed = '';
   @state() private _anchor = 0;
 
@@ -281,7 +287,20 @@ export class VelgLandingForge extends LitElement {
    * beim Sprachwechsel nicht neu ausgewertet wird - eine Falle, die dieses
    * Werk schon einmal getroffen hat (siehe `i18n-gotchas`).
    */
+  /** Die Sätze, die getippt werden.
+   *
+   *  ZWEI QUELLEN, EINE RANGFOLGE — und das ist keine Doppelung, sondern eine
+   *  Aussage: liegen echte Ausgangssätze vor, gewinnen sie IMMER. Die
+   *  Beispiele unten sind erfunden, sie sagen das auch (die Überschrift des
+   *  Abschnitts nennt sie Beispiele), und sie existieren nur, damit die Seite
+   *  nicht leer ist, solange keine echten freigegeben sind.
+   *
+   *  Auf Prod liegen 26 echte Sätze in `forge_drafts.seed_prompt`, 16 davon
+   *  aus abgeschlossenen Läufen. Sie sind noch nicht freigegeben, weil sie von
+   *  Menschen geschrieben sind und die Frontseite öffentlich ist — siehe
+   *  `LandingPrompt` im Rücken. */
   private _prompts(): string[] {
+    if (this.prompts.length) return this.prompts.map((p) => t(p, 'text')).filter(Boolean);
     return [
       msg(
         'A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books: one for the living, one for the sea.',

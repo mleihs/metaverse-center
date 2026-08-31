@@ -88,8 +88,7 @@ class LandingService:
         response = await (
             anon.table("simulations")
             .select(
-                "id, slug, name, name_de, description, description_de, "
-                "banner_url, theme, last_heartbeat_at",
+                "id, slug, name, name_de, description, description_de, banner_url, theme, last_heartbeat_at",
             )
             .eq("simulation_type", "template")
             .eq("status", "active")
@@ -113,10 +112,7 @@ class LandingService:
             .in_("simulation_id", world_ids)
             .execute()
         )
-        return {
-            str(row["simulation_id"]): int(row.get("agent_count") or 0)
-            for row in extract_list(response)
-        }
+        return {str(row["simulation_id"]): int(row.get("agent_count") or 0) for row in extract_list(response)}
 
     @staticmethod
     async def _count(anon: Client, table: str, world_ids: list[str]) -> int:
@@ -143,9 +139,7 @@ class LandingService:
         """
         if not world_ids:
             return 0
-        response = await (
-            anon.table("zones").select("id", count="exact").in_("simulation_id", world_ids).execute()
-        )
+        response = await anon.table("zones").select("id", count="exact").in_("simulation_id", world_ids).execute()
         return response.count or 0
 
     @staticmethod
@@ -181,18 +175,12 @@ class LandingService:
         if not world_ids:
             return 0
         agents = await (
-            anon.table("agents")
-            .select("id")
-            .in_("simulation_id", world_ids)
-            .is_("deleted_at", "null")
-            .execute()
+            anon.table("agents").select("id").in_("simulation_id", world_ids).is_("deleted_at", "null").execute()
         )
         agent_ids = [str(row["id"]) for row in extract_list(agents)]
         if not agent_ids:
             return 0
-        response = await (
-            anon.table("agent_memories").select("id", count="exact").in_("agent_id", agent_ids).execute()
-        )
+        response = await anon.table("agent_memories").select("id", count="exact").in_("agent_id", agent_ids).execute()
         return response.count or 0
 
     @staticmethod
@@ -313,6 +301,29 @@ class LandingService:
 
         return {
             "counts": counts,
+            # ⚠ NOCH LEER, UND ZWAR ABSICHTLICH. Auf Prod liegen 26 echte
+            # Ausgangssätze in `forge_drafts.seed_prompt` (16 aus
+            # abgeschlossenen Läufen). Sie hier auszugeben hieße, fremden,
+            # von Hand geschriebenen Text auf einer öffentlichen Seite zu
+            # veröffentlichen — das ist eine Entscheidung des Nutzers.
+            #
+            # Zum Anschalten genügt diese Abfrage; die Leitung bis in den
+            # Schreibmaschinen-Effekt ist gebaut und getestet:
+            #
+            #     rows = extract_list(await (
+            #         anon.table("forge_drafts")
+            #         .select("seed_prompt")
+            #         .eq("status", "completed")
+            #         .not_.is_("seed_prompt", "null")
+            #         .limit(20)
+            #         .execute()))
+            #     prompts = [{"text": r["seed_prompt"]} for r in rows]
+            #
+            # ⚠ `forge_drafts` ist RLS-geschützt; der anon-Client käme nicht
+            # heran. Es bräuchte zusätzlich eine Sicht oder eine Policy, die
+            # NUR `seed_prompt` abgeschlossener Läufe öffentlich macht — nicht
+            # `user_id`, nicht die Zwischenstände.
+            "forge_prompts": [],
             "worlds": [
                 {
                     "slug": world["slug"],

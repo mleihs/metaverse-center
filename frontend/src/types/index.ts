@@ -837,6 +837,9 @@ export interface ActiveEpochParticipation {
   simulation_name: string;
   rank: number;
   participant_count: number;
+  /** Das Weltbild der Epochen-Simulation. Alle 20 Klone auf Prod tragen eines;
+   *  die Bühne zeigt damit die eigene Welt statt eines Standbilds. */
+  simulation_banner_url: string | null;
   /** Ende des laufenden Zyklus. `null` heisst nicht „kein Zyklus", sondern
    *  „fuer diese Epoche laeuft keine Uhr" — auf Prod bei allen sieben der
    *  Fall. Die Oberflaeche muss den leeren Countdown ehrlich zeigen. */
@@ -872,6 +875,10 @@ export interface DashboardWorld {
   lore_body_de: string | null;
   lore_epigraph: string | null;
   lore_epigraph_de: string | null;
+  /** Titel der Kammer — die Herkunft des Zitats. Eine Person, die es gesagt
+   *  hätte, gibt es nicht; die Kammer gibt es. */
+  lore_title: string | null;
+  lore_title_de: string | null;
 }
 
 export interface DashboardData {
@@ -1683,11 +1690,22 @@ export interface LandingCitizen {
   simulation_name: string;
 }
 
+/** Ein Satz, der eine Welt gemacht hat. Über `t(prompt, 'text')` wählen. */
+export interface LandingPrompt {
+  text: string;
+  text_de: string | null;
+}
+
 export interface LandingSnapshot {
   counts: LandingCounts;
   worlds: LandingWorld[];
   citizens: LandingCitizen[];
   measured_at: string;
+  /** Echte Ausgangssätze für den Schmiede-Abschnitt. Leer, solange die
+   *  Veröffentlichung nicht freigegeben ist — es sind von Menschen
+   *  geschriebene Texte. Ist die Liste leer, tippt der Abschnitt seine
+   *  Beispiele und nennt sie so. */
+  forge_prompts: LandingPrompt[];
 }
 
 export interface FeatureGate {
