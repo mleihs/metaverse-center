@@ -146,6 +146,46 @@ statt einer Zweitschrift ohne beides. Das ist tragfähig, aber nicht das Ziel.
 
 ---
 
+## T11 · `building_condition` trägt zwei Achsen, und der Generator schreibt in beide
+
+**Gemessen:** 31.08.2026 auf Prod, beim Einhängen der Sprossen (Migration 320).
+
+Von den 13 Zustandswörtern, die 18 Welten führen, sagen vier nicht, wie
+abgenutzt ein Ort ist, sondern **was er ist oder wer hinein darf**:
+
+    anomalous    4 Bauten   „ein Raum, der auf keinem Grundriss erscheint"
+    sealed       1          „ein versiegelter Betonkubus"
+    restricted   1          „die tiefste zugängliche Ebene"
+    compromised  1          „ein versiegeltes Labor" nach einem Vorfall
+
+`fn_degrade_building` ÜBERSCHREIBT `building_condition`. Diese vier stehen seit
+Migration 320 auf der Leiter — auf ausdrückliche Entscheidung des Nutzers, damit
+alle Bauten denselben Regeln folgen. **Der Preis ist benannt und angenommen:**
+der Statische Raum hört beim ersten Verfallstick auf, versiegelt zu heissen.
+
+**Die Ursache liegt eine Schicht früher.** Der Bau-Generator entscheidet frei,
+welches der 13 Wörter er schreibt, und unterscheidet die zwei Achsen nicht. Bis
+er das tut, entstehen neue Bauten, deren „Zustand" eine Aussage über ihr Wesen
+ist — und die Verfallsmechanik löscht sie.
+
+**Zwei Wege, beide inhaltlich:**
+* Eine zweite Achse (Spalte oder eigener `taxonomy_type`) für Zugang/Wesen; die
+  vier Wörter wandern dorthin, `building_condition` behält nur Verschleiss.
+* Oder der Generator wird auf die Verschleiss-Wörter festgelegt und die vier
+  bleiben, was sie heute sind: Sprossen, die überschrieben werden dürfen.
+
+**Nicht gemessen:** wo genau der Generator das Wort wählt (Prompt, Schema in
+`backend/models/forge.py`, oder Freitext des Modells) — das ist der erste
+Schritt, nicht das Ändern einer Taxonomie.
+
+**Nebenbefund, schon behoben:** zwei Wörter (`critical`, `makeshift`) stehen in
+18 Welten bereit und werden von KEINEM Bau getragen. Sie haben trotzdem eine
+Sprosse bekommen — wer nur die 14 belegten Paare eingehängt hätte, hätte die
+Ursache stehen lassen und den nächsten `makeshift`-Bau wieder herausfallen
+lassen.
+
+---
+
 ## T5 · `/platform-stats` sollte verschwinden
 
 **Gemessen:** 31.08.2026.
