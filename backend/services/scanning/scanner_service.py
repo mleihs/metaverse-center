@@ -25,7 +25,7 @@ from backend.services.scanning.registry import get_adapter, get_adapter_info, ge
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
-from backend.utils.settings import upsert_platform_setting
+from backend.utils.settings import parse_setting_bool, upsert_platform_setting
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
@@ -97,7 +97,12 @@ class ScannerService(BaseSchedulerMixin):
                 key = row["setting_key"]
                 val = row["setting_value"]
                 if key == "news_scanner_enabled":
-                    config["enabled"] = str(val).lower() not in ("false", "0", "no")
+                    # F32-Semantik wie an jedem anderen *_enabled-Tor. Bis zum
+                    # 31.08.2026 stand hier die alte, freizügige Verneinung
+                    # (`not in ("false", "0", "no")`) — die letzte im Werk. Sie
+                    # las jsonb-null, "null" und jeden Tippfehler als AN und
+                    # hätte den Scanner damit still scharf gestellt.
+                    config["enabled"] = parse_setting_bool(val)
                 elif key == "news_scanner_interval_seconds":
                     try:
                         config["interval"] = max(_FLOOR_INTERVAL, int(val))

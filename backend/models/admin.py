@@ -27,6 +27,63 @@ class PlatformSettingResponse(BaseModel):
     setting_value: Any = None
 
 
+# ── Feature Gates ────────────────────────────────────────────────────────
+
+
+class FeatureGateResponse(BaseModel):
+    """Ein Merkmalstor mit seiner Erklärung und seinem gemessenen Zustand.
+
+    Die erklärenden Felder stammen aus ``services/platform_gate_contracts``, die
+    Zustandsfelder aus ``platform_settings``. Beides zusammen, weil die Frage
+    "steht das an?" ohne "was passiert, wenn es aus ist?" keine Antwort ist.
+    """
+
+    key: str
+    group: str
+    label: str
+    turns_on: str
+    absence_costs: str
+    reader: str
+
+    #: Was die Lesestelle benutzt, wenn die Zeile fehlt. Nicht überall False —
+    #: Herzschlag, Autonomie und die Resonanzverarbeitung sind Notaus-Schalter.
+    default_when_missing: bool
+
+    #: Ändert das Umlegen heute etwas? Fünf DRIFT-Tore stehen auf Prod, ohne
+    #: dass irgendetwas sie liest.
+    wired: bool
+
+    #: Hat ``platform_settings`` überhaupt eine Zeile für diesen Schlüssel?
+    has_row: bool
+
+    #: Der wirksame Zustand: die Zeile, wenn es sie gibt, sonst die Vorgabe.
+    enabled: bool
+
+    #: Der rohe Wert, wie er in der Tabelle steht — für den Fall, dass dort
+    #: etwas Nicht-Kanonisches liegt und man es sehen muss.
+    raw_value: str | None = None
+
+
+class UndeclaredGateResponse(BaseModel):
+    """Eine ``*_enabled``-Zeile in der Tabelle, die keine Erklärung hat.
+
+    Existiert, damit ein Schlüssel sich nicht dadurch verstecken kann, dass
+    niemand ihn erklärt hat. Erscheint in der Oberfläche als Warnung.
+    """
+
+    key: str
+    enabled: bool
+    raw_value: str | None = None
+
+
+class FeatureGateListResponse(BaseModel):
+    """Alle erklärten Tore plus alles, was in der Tabelle unerklärt liegt."""
+
+    gates: list[FeatureGateResponse]
+    undeclared: list[UndeclaredGateResponse] = Field(default_factory=list)
+    groups: list[str] = Field(default_factory=list)
+
+
 # ── User Management ─────────────────────────────────────────────────────
 
 

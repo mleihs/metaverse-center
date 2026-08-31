@@ -8,8 +8,9 @@ import './AdminModelsTab.js';
 import './AdminResearchTab.js';
 import './AdminCachingTab.js';
 import './AdminAnnouncementsTab.js';
+import './AdminFeatureGatesTab.js';
 
-type PlatformSection = 'apikeys' | 'models' | 'research' | 'caching' | 'announcements';
+type PlatformSection = 'gates' | 'apikeys' | 'models' | 'research' | 'caching' | 'announcements';
 
 @localized()
 @customElement('velg-admin-platform-config-tab')
@@ -23,11 +24,19 @@ export class VelgAdminPlatformConfigTab extends LitElement {
     `,
   ];
 
-  @state() private _section: PlatformSection = 'apikeys';
+  @state() private _section: PlatformSection = 'gates';
 
   protected render() {
     return html`
       <div class="subnav" role="tablist" aria-label=${msg('Platform configuration sections')}>
+        <button
+          class="subnav__btn ${this._section === 'gates' ? 'subnav__btn--active' : ''}"
+          role="tab"
+          aria-selected=${this._section === 'gates'}
+          @click=${() => {
+            this._section = 'gates';
+          }}
+        >${msg('Feature Gates')}</button>
         <button
           class="subnav__btn ${this._section === 'apikeys' ? 'subnav__btn--active' : ''}"
           role="tab"
@@ -78,6 +87,8 @@ export class VelgAdminPlatformConfigTab extends LitElement {
 
   private _renderSection() {
     switch (this._section) {
+      case 'gates':
+        return html`<velg-admin-feature-gates-tab></velg-admin-feature-gates-tab>`;
       case 'apikeys':
         return html`<velg-admin-api-keys-tab></velg-admin-api-keys-tab>`;
       case 'models':

@@ -6,6 +6,7 @@ import type {
   CleanupPreviewResult,
   CleanupStats,
   CleanupType,
+  FeatureGateList,
   PlatformSetting,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
@@ -22,6 +23,17 @@ export class AdminApiService extends BaseApiService {
 
   async updateSetting(key: string, value: string | number): Promise<ApiResponse<PlatformSetting>> {
     return this.put(`/admin/settings/${key}`, { value });
+  }
+
+  /**
+   * Jedes Merkmalstor der Plattform mit Erklaerung und wirksamem Zustand.
+   *
+   * Eigener Endpunkt und nicht `listSettings()`, weil der wirksame Zustand bei
+   * fehlender Zeile nicht ueberall `false` ist. Geschrieben wird weiterhin
+   * ueber `updateSetting` - ein Tor ist eine gewoehnliche Einstellung.
+   */
+  async listFeatureGates(): Promise<ApiResponse<FeatureGateList>> {
+    return this.get('/admin/feature-gates');
   }
 
   async listUsers(

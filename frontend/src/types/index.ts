@@ -1587,6 +1587,43 @@ export interface PlatformSetting {
   updated_at: string;
 }
 
+/**
+ * Ein Merkmalstor der Plattform, wie `GET /admin/feature-gates` es liefert.
+ *
+ * Die erklaerenden Felder kommen aus `backend/services/platform_gate_contracts.py`
+ * und nicht aus dem Client: die Namen werden im Ruecken gelesen, also gehoert
+ * die Erklaerung dorthin, wo ein AST-Test sie an ihre Lesestelle binden kann.
+ */
+export interface FeatureGate {
+  key: string;
+  group: string;
+  label: string;
+  turns_on: string;
+  absence_costs: string;
+  reader: string;
+  /** Was die Lesestelle benutzt, wenn die Zeile fehlt - nicht ueberall false. */
+  default_when_missing: boolean;
+  /** Liest ueberhaupt jemand diesen Schluessel? Fuenf DRIFT-Tore: nein. */
+  wired: boolean;
+  has_row: boolean;
+  /** Der wirksame Zustand: die Zeile, wenn es sie gibt, sonst die Vorgabe. */
+  enabled: boolean;
+  raw_value: string | null;
+}
+
+/** Eine `*_enabled`-Zeile in der Tabelle, fuer die es keine Erklaerung gibt. */
+export interface UndeclaredGate {
+  key: string;
+  enabled: boolean;
+  raw_value: string | null;
+}
+
+export interface FeatureGateList {
+  gates: FeatureGate[];
+  undeclared: UndeclaredGate[];
+  groups: string[];
+}
+
 export interface AdminUser {
   id: string;
   email: string;

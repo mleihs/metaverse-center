@@ -27,6 +27,7 @@ from backend.models.admin import (
     DungeonOverrideListEntry,
     DungeonOverrideResponse,
     EnvironmentResponse,
+    FeatureGateListResponse,
     HealthEffectsDashboard,
     HealthEffectsToggleResponse,
     ImpersonateResponse,
@@ -156,6 +157,23 @@ async def list_settings(
 ) -> SuccessResponse[list[PlatformSettingResponse]]:
     """List all platform settings."""
     data = await PlatformSettingsService.list_all(admin_supabase, mask_sensitive=True)
+    return SuccessResponse(data=data)
+
+
+@router.get("/feature-gates")
+async def list_feature_gates(
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[FeatureGateListResponse]:
+    """Jedes Merkmalstor der Plattform, erklärt, mit seinem wirksamen Zustand.
+
+    Eigener Endpunkt und nicht ``/settings``, weil die Antwort mehr trägt als
+    Zeilen: die Erklärung je Tor stammt aus ``platform_gate_contracts``, und
+    der wirksame Zustand ist bei fehlender Zeile nicht überall ``false``.
+    Geschrieben wird weiterhin über ``PUT /settings/{key}`` — ein Tor ist eine
+    gewöhnliche Einstellung, es fehlte nur die Übersicht.
+    """
+    data = await PlatformSettingsService.list_feature_gates(admin_supabase)
     return SuccessResponse(data=data)
 
 
