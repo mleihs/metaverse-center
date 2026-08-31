@@ -24,6 +24,7 @@ import {
   mapLoreSectionsForLocale,
 } from './lore-content.js';
 
+import './LoreDossier.js';
 import '../platform/LoreScroll.js';
 import './LoreEditor.js';
 import './VelgDossierPreview.js';
@@ -379,28 +380,42 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
         }
 
         ${
+          /*
+           * The dossier reader replaced the accordion here (2026-08-31 handoff,
+           * "Tab Lore"). `velg-lore-scroll` keeps the PLATFORM lore page, whose
+           * job is browsing; a world's dossier is read, so it gets a register on
+           * the left and one chapter in the panel.
+           *
+           * TWO THINGS SHARE THE NAME "CASE FILE" AND ARE NOT THE SAME THING.
+           * The handoff's chip UNREDACTS classified chapters in place. The live
+           * toolbar's button SWITCHES PRESENTATION, to `velg-case-file` with its
+           * ALPHA–ZETA tabs. The button here is the second one — it dispatches
+           * the same toggle the toolbar does, and deleting the case-file view to
+           * match the handoff would have removed a working feature to satisfy a
+           * prototype that never knew about it.
+           *
+           * Which leaves `caseFileOpen`, the redaction switch, bound to
+           * `hasDossier`. Worth being explicit that this makes the redaction
+           * path currently UNREACHABLE, and why that is right rather than dead:
+           * the API is public-first, so a classified section either arrives (and
+           * is readable) or was never generated (and there is nothing to mark).
+           * There is no live state in which a reader holds a classified section
+           * they may not read. The bars stay built because the public-first
+           * promise is that browsing never 403s — the day a section is withheld,
+           * it must arrive redacted rather than missing, and that is this path.
+           */
           !this._caseFileMode
-            ? html`<velg-lore-scroll
+            ? html`<velg-lore-dossier
               .sections=${sections ?? []}
               .basePath=${`${slug}/lore`}
               .classifiedSectionIds=${classifiedIds}
               ?generating=${forgeStateManager.imageTrackingSlug.value === slug}
               .pendingImageSlugs=${this._computePendingImageSlugs()}
-              style="
-                --lore-text: var(--color-text-primary);
-                --lore-heading: var(--color-text-primary);
-                --lore-muted: var(--color-text-secondary);
-                --lore-faint: var(--color-text-muted);
-                --lore-accent: var(--color-primary);
-                --lore-accent-strong: var(--color-primary-hover, var(--color-primary));
-                --lore-surface: var(--color-surface-sunken);
-                --lore-surface-hover: var(--color-surface);
-                --lore-divider: var(--color-border-light);
-                --lore-image-border: var(--color-border-light);
-                --lore-btn-border: var(--color-border);
-                --lore-btn-text: var(--color-text-secondary);
-              "
-            ></velg-lore-scroll>`
+              ?caseFileOpen=${hasDossier}
+              ?hasCaseFile=${hasDossier}
+              .anchorTitle=${appState.currentSimulation.value?.philosophical_anchor?.title ?? ''}
+              @case-file-toggle=${this._toggleCaseFile}
+            ></velg-lore-dossier>`
             : nothing
         }
 
