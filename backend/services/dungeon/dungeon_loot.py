@@ -27,7 +27,10 @@ from __future__ import annotations
 import random
 
 from backend.models.resonance_dungeon import LootItem
-from backend.services.dungeon.dungeon_archetypes import ARCHETYPE_CONFIGS
+from backend.services.dungeon.dungeon_archetypes import (
+    ARCHETYPE_CONFIGS,
+    DIFFICULTY_MULTIPLIERS,
+)
 from backend.services.dungeon_content_service import get_loot_registry
 
 # ── Deluge: Debris Pool (Tier 0, auto-apply, deposited by the current) ──────
@@ -254,5 +257,23 @@ def roll_loot(
             if tier1_table:
                 tier1_weights = [item.drop_weight for item in tier1_table]
                 selected = random.choices(tier1_table, weights=tier1_weights, k=1)
+
+    # Difficulty tier upgrade — LAST, and only on an item the archetype did not
+    # already lift. `loot_quality` (1.0 … 1.75) had no reader at all until
+    # 2026-08-31: a run on difficulty 5 dropped exactly the same loot as one on
+    # difficulty 1 (Befund D13). The surplus over 1.0 IS the chance, so
+    # difficulty 1 changes nothing and difficulty 5 upgrades three rolls in four.
+    #
+    # After the archetype block rather than before it, and gated on the item
+    # still being tier 1: placed first, it changed what the archetype rules did
+    # (three Tower tests went red, correctly). Difficulty is a second, INDEPENDENT
+    # chance on top of the world's own logic — not a competing one.
+    quality = float(DIFFICULTY_MULTIPLIERS.get(difficulty, DIFFICULTY_MULTIPLIERS[1])["loot_quality"])
+    if tier == 1 and selected and selected[0].tier == 1 and random.random() < (quality - 1.0):
+        tier2_table = loot_tables.get(2, [])
+        if tier2_table:
+            selected = random.choices(
+                tier2_table, weights=[item.drop_weight for item in tier2_table], k=1
+            )
 
     return selected

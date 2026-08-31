@@ -239,8 +239,11 @@ def generate_enemy_actions(
             enemy_id=enemy.instance_id,
             action_type=chosen,
             target_agent_id=target.agent_id,
-            power=template.get("attack_power", 3),
-            stress_power=template.get("stress_attack_power", 3),
+            # From the INSTANCE, not the template: the instance carries the
+            # difficulty-scaled value (`spawn_enemies`). Reading the template
+            # here is what made `enemy_power` inert.
+            power=enemy.attack_power,
+            stress_power=enemy.stress_attack_power,
         )
 
         # Generate telegraphed intent (Into the Breach style)
