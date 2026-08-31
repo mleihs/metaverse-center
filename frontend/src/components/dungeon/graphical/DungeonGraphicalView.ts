@@ -29,7 +29,7 @@
  * Pattern: DungeonTerminalView.ts (SignalWatcher, forced-dark, command routing).
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -44,9 +44,11 @@ import type {
   Condition,
   DungeonPhase,
   DungeonRunCreate,
+  PendingOrder,
 } from '../../../types/dungeon.js';
 import type { Agent, AptitudeSet } from '../../../types/index.js';
 import type { TerminalLine } from '../../../types/terminal.js';
+import { abilityIntent, abilityPictogramUrl } from '../../../utils/ability-pictograms.js';
 import { dungeonBackdropUrl } from '../../../utils/dungeon-backdrop-data.js';
 import { dungeonEnemyArtUrl } from '../../../utils/dungeon-enemy-art.js';
 import {
@@ -67,6 +69,7 @@ import {
   topAptitudes,
 } from '../../../utils/dungeon-formatters.js';
 import { icons } from '../../../utils/icons.js';
+import { localized as localizedValue } from '../../../utils/locale-fields.js';
 import { OPERATIVE_LABEL } from '../../../utils/operative-constants.js';
 import { parseAndExecute } from '../../../utils/terminal-commands.js';
 import { initializeTerminalZones } from '../../../utils/terminal-initialization.js';
@@ -97,6 +100,13 @@ import type { RoomDescription } from '../../../utils/dungeon-room-text.js';
 /** localStorage key for the map-rail collapsed preference (client-only UI
  *  state, like the view-mode key — never reset by applyState()/clear()). */
 const RAIL_COLLAPSED_STORAGE_KEY = 'dungeon_map_rail_collapsed';
+
+/** Viewport width below which the map rail may collapse. Mirrors the
+ *  `max-width: 1199px` media query in dungeon-graphical-styles.ts, where the
+ *  HUD drops from three columns to one. Above it the rail costs the stage
+ *  nothing it cannot spare, so the handoff strikes the control (README §4.1:
+ *  "bei fehlender Platznot kein UX-Wert"). */
+const RAIL_COLLAPSE_MEDIA = '(max-width: 1199px)';
 
 /** Localized meter labels per fx profile (resolver returns no user strings). */
 function meterLabelFor(fx: FxProfile): string {
@@ -146,6 +156,15 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
    *  width). Client-only UI preference, persisted to localStorage and never
    *  touched by applyState()/clear() — mirrors viewMode. */
   @state() private _railCollapsed = this._getPersistedRailCollapsed();
+  /** Whether the viewport is narrow enough for that preference to apply.
+   *
+   *  The collapse is a small-screen affordance, and on desktop it is now gone.
+   *  Removing only the BUTTON would have been the shallower fix and a real bug:
+   *  the preference outlives the session in localStorage, so a viewer who
+   *  collapsed the rail on a phone would meet a 40px strip on a desktop with no
+   *  control to reopen it. The preference is therefore kept and made inert —
+   *  narrow viewports behave exactly as before. */
+  @state() private _railCollapsible = false;
   /** Backdrop URL that failed to load (local storage missing the asset, 404,
    *  etc.) → fall back to the CSS-only chamber for that URL. Keyed by URL so a
    *  new archetype's backdrop is retried. */
@@ -195,6 +214,10 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
   private _wakeLock: WakeLockReleasable | null = null;
   private _resizeObserver: ResizeObserver | null = null;
+  private _railMedia: MediaQueryList | null = null;
+  private readonly _onRailMediaChange = (event: MediaQueryListEvent): void => {
+    this._railCollapsible = event.matches;
+  };
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -205,6 +228,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     requestAnimationFrame(() => this._measureHostOffset());
     this._resizeObserver = new ResizeObserver(() => this._measureHostOffset());
     this._resizeObserver.observe(document.documentElement);
+    // Optional chaining, not a guard: happy-dom supplies no matchMedia, and a
+    // missing one must leave the rail expanded (the desktop shape), never throw.
+    this._railMedia = globalThis.matchMedia?.(RAIL_COLLAPSE_MEDIA) ?? null;
+    if (this._railMedia) {
+      this._railCollapsible = this._railMedia.matches;
+      this._railMedia.addEventListener('change', this._onRailMediaChange);
+    }
     await this._initialize();
   }
 
@@ -212,6 +242,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
+    this._railMedia?.removeEventListener('change', this._onRailMediaChange);
+    this._railMedia = null;
     this._releaseWakeLock();
     terminalState.clearDungeon();
     terminalState.dispose();
@@ -329,6 +361,12 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   // dispatches a `terminal-command` move that the .dungeon-hud @terminal-command
   // handler routes through the same pipeline. The rail can be collapsed to a
   // thin strip to reclaim scene width; the preference persists in localStorage.
+
+  /** The preference AND the room for it. One source for the HUD class and the
+   *  rail renderer, so the 40px column and the strip control can never disagree. */
+  private get _railIsCollapsed(): boolean {
+    return this._railCollapsed && this._railCollapsible;
+  }
 
   private _toggleRail(): void {
     this._railCollapsed = !this._railCollapsed;
@@ -489,10 +527,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const accent = ACCENT_BY_FX[env.fxProfile];
     const backdropUrl = dungeonBackdropUrl(archetype);
     const showArt = backdropUrl !== null && backdropUrl !== this._failedBackdrop;
+    // The aim, read once for the whole scene: the spotlight class, the hint bar
+    // and the two bands all derive from this one value rather than each asking
+    // the store again. (README §4.6 — one data source, three anchors.)
+    const pending = dungeonState.pendingOrder.value;
 
     return html`
       <div
-        class="dungeon-hud ${this._railCollapsed ? 'dungeon-hud--rail-collapsed' : ''} ${
+        class="dungeon-hud ${this._railIsCollapsed ? 'dungeon-hud--rail-collapsed' : ''} ${
           inCombat ? 'dungeon-hud--combat' : ''
         }"
         @terminal-command=${this._handleTerminalCommand}
@@ -508,10 +550,11 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
 
         <div class="dungeon-hud__main" role="main" aria-label=${msg('Dungeon scene')}>
           <div
-            class="scene"
+            class="scene ${pending ? `scene--aiming scene--aiming-${pending.scope}` : ''}"
             data-tier=${env.tier}
             style="--_pressure:${env.pressure01};--_fx-accent:${accent}"
           >
+            ${this._renderAimBar(pending)}
             <div class="scene__backdrop" data-fx=${env.fxProfile} aria-hidden="true">
               <div class="scene__plane"></div>
             </div>
@@ -611,7 +654,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
    *  width. Collapses to a thin strip to reclaim scene width. The map dispatches
    *  `terminal-command` move events that bubble to the .dungeon-hud handler. */
   private _renderRail() {
-    if (this._railCollapsed) {
+    if (this._railIsCollapsed) {
       return html`
         <div class="dungeon-hud__rail" role="region" aria-label=${msg('Dungeon map')}>
           <div class="rail-strip">
@@ -630,17 +673,28 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     }
     return html`
       <div class="dungeon-hud__rail" role="region" aria-label=${msg('Dungeon map')}>
-        <div class="rail-header">
-          <button
-            class="rail-collapse-btn"
-            @click=${this._toggleRail}
-            aria-label=${msg('Hide dungeon map')}
-            aria-expanded="true"
-          >
-            <span class="rail-collapse-btn__icon">${icons.chevronRight(12)}</span>
-            <span>${msg('Hide')}</span>
-          </button>
-        </div>
+        ${
+          // Omitted rather than hidden: `.rail-header` carries `display: flex`,
+          // which outranks the UA rule behind the `hidden` attribute inside a
+          // shadow root — the button would have stayed visible and only looked
+          // handled. No header row on desktop also returns its 5px of padding
+          // to the map.
+          this._railCollapsible
+            ? html`
+                <div class="rail-header">
+                  <button
+                    class="rail-collapse-btn"
+                    @click=${this._toggleRail}
+                    aria-label=${msg('Hide dungeon map')}
+                    aria-expanded="true"
+                  >
+                    <span class="rail-collapse-btn__icon">${icons.chevronRight(12)}</span>
+                    <span>${msg('Hide')}</span>
+                  </button>
+                </div>
+              `
+            : nothing
+        }
         <velg-dungeon-map persistent></velg-dungeon-map>
       </div>
     `;
@@ -649,19 +703,130 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
   /** In-scene party presence: the operatives standing in the chamber. Reads the
    *  same server-authoritative party signal the side panel uses; condition tints
    *  each figure's halo so health reads from the stage alone. */
+  /**
+   * The hint bar: what the stage is waiting for, in words, while an aim is
+   * pending.
+   *
+   * A spotlight alone says "something changed"; it does not say what to do, and
+   * a player who arrives at a dimmed party band mid-fight has no way to guess
+   * that Escape is the way out. The bar names the ability, the scope and the
+   * exit. It is `aria-live` because the state it announces is entered by a
+   * click somewhere else entirely — down in the combat bar.
+   */
+  private _renderAimBar(pending: PendingOrder | null) {
+    if (!pending) return nothing;
+    const agent = dungeonState.party.value.find((a) => a.agent_id === pending.agent_id);
+    const ability = agent?.available_abilities.find((ab) => ab.id === pending.ability_id) ?? null;
+    const abilityName = ability ? localizedValue(ability, 'name') : pending.ability_id;
+
+    return html`
+      <div class="aimbar" role="status" aria-live="polite">
+        <span class="aimbar__text">
+          ${
+            pending.scope === 'enemy'
+              ? msg(str`Choose a target for ${abilityName}`)
+              : msg(str`Choose whom to support with ${abilityName}`)
+          }
+        </span>
+        <button
+          class="aimbar__cancel"
+          type="button"
+          @click=${() => dungeonState.cancelTargeting()}
+        >
+          ${msg('Esc')} <span aria-hidden="true">\u2715</span>
+        </button>
+      </div>
+    `;
+  }
+
   private _renderParty() {
     const party = dungeonState.party.value;
     if (party.length === 0) return nothing;
+    const pending = dungeonState.pendingOrder.value;
+    const selected = dungeonState.selectedActions.value;
+    const aimingAllies = pending?.scope === 'ally';
+    const enemyNames = dungeonState.combat.value
+      ? buildEnemyDisplayNames(dungeonState.combat.value.enemies)
+      : new Map<string, string>();
+
+    // No longer aria-hidden as a whole: while an aim is pending these figures
+    // are the choice itself, and a decorative band cannot be one. The name and
+    // the order travel on the button's label; the purely atmospheric parts
+    // (beam, pool) stay hidden.
     return html`
-      <div class="scene__party" data-fx-band="party" aria-hidden="true">
+      <div class="scene__party" data-fx-band="party">
         ${party.map((agent: AgentCombatStateClient, i: number) => {
           const portrait = agent.portrait_url;
+          const order = selected.get(agent.agent_id);
+          const ability = order
+            ? (agent.available_abilities.find((ab) => ab.id === order.ability_id) ?? null)
+            : null;
+          const abilityName = ability ? localizedValue(ability, 'name') : null;
+          const targetName = order?.target_id
+            ? (enemyNames.get(order.target_id) ??
+              party.find((a) => a.agent_id === order.target_id)?.agent_name ??
+              null)
+            : null;
+          // Only a living ally other than the aiming operative can receive aid.
+          const selectable =
+            aimingAllies && agent.agent_id !== pending?.agent_id && agent.condition !== 'captured';
+          const pictogram = order ? abilityPictogramUrl(order.ability_id) : null;
+          const orderIntent = ability ? abilityIntent(ability.targets) : 'strike';
+
           return html`
             <div
-              class="op ${agent.condition === 'captured' ? 'op--down' : ''}"
+              class="op ${agent.condition === 'captured' ? 'op--down' : ''} ${
+                selectable ? 'op--selectable' : ''
+              } ${pending && !selectable ? 'op--muted' : ''}"
               style="--i:${i};--_cond:${CONDITION_RING[agent.condition]}"
             >
-              <div class="op__figure">
+              ${
+                // Anchor 1 of the placed order: the command card, standing over
+                // the operative who will carry it out. Cause and effect in one
+                // place — the alternative is a list somewhere else that the
+                // player has to hold against the stage in their head.
+                abilityName
+                  ? html`<div class="op__order" data-intent=${orderIntent}>
+                      ${
+                        // Pictogram as a MASK, tinted by the intent cluster —
+                        // never an <img>, so a missing file cannot leave a
+                        // broken box on the stage. The colour comes from a
+                        // data attribute and a CSS rule, the way the combat
+                        // bar already does it, rather than a second colour
+                        // table living in TypeScript.
+                        pictogram
+                          ? html`<span
+                              class="op__order-glyph"
+                              aria-hidden="true"
+                              style="--_mask:url(${pictogram})"
+                            ></span>`
+                          : nothing
+                      }
+                      <span class="op__order-text"
+                        >${targetName ? `${abilityName} \u2192 ${targetName}` : abilityName}</span
+                      >
+                      <button
+                        class="op__order-drop"
+                        type="button"
+                        @click=${() => this._withdrawOrder(agent.agent_id)}
+                        aria-label=${msg(str`Withdraw ${agent.agent_name}'s order`)}
+                      >
+                        <span aria-hidden="true">\u2715</span>
+                      </button>
+                    </div>`
+                  : nothing
+              }
+              ${
+                selectable
+                  ? html`<button
+                      class="op__pick"
+                      type="button"
+                      @click=${() => this._placeOnTarget(agent.agent_id)}
+                      aria-label=${msg(str`Support ${agent.agent_name}`)}
+                    ></button>`
+                  : nothing
+              }
+              <div class="op__figure" aria-hidden="true">
                 <div class="op__beam"></div>
                 <div class="op__disc">
                   ${
@@ -672,12 +837,73 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                 </div>
                 <div class="op__pool"></div>
               </div>
-              <span class="op__name">${agent.agent_name}</span>
+              <span class="op__name" aria-hidden="true">${agent.agent_name}</span>
             </div>
           `;
         })}
       </div>
     `;
+  }
+
+  /**
+   * Anchor 2: the "in your sights" tag on a creature, carrying a small portrait
+   * of every operative aimed at it.
+   *
+   * Portraits rather than a count, and this is the acceptance criterion of
+   * §4.6: two operatives on one creature must read as two faces. A number ("2")
+   * would say how many but not who, and "who" is the whole question a player
+   * asks when deciding whether a creature is already handled. The list comes
+   * from `ordersByTarget`, which is derived from the orders themselves, so it
+   * cannot say two while the strip says one.
+   */
+  private _renderSightsTag(
+    targetId: string,
+    ordersByTarget: ReadonlyMap<string, readonly string[]>,
+    party: readonly AgentCombatStateClient[],
+    targetName: string,
+  ) {
+    const attackerIds = ordersByTarget.get(targetId);
+    if (!attackerIds || attackerIds.length === 0) return nothing;
+    const attackers = attackerIds
+      .map((id) => party.find((a) => a.agent_id === id))
+      .filter((a): a is AgentCombatStateClient => a !== undefined);
+    if (attackers.length === 0) return nothing;
+
+    const names = attackers.map((a) => a.agent_name).join(', ');
+    return html`
+      <div
+        class="foe__sights"
+        title=${msg(str`${names} — aimed at ${targetName}`)}
+        aria-label=${msg(str`${names} — aimed at ${targetName}`)}
+      >
+        <span class="foe__sights-label">${msg('In sights')}</span>
+        <span class="foe__sights-faces" aria-hidden="true">
+          ${attackers.map(
+            (a) => html`
+              <span class="foe__sights-face" title=${a.agent_name}>
+                ${
+                  a.portrait_url
+                    ? html`<img src=${a.portrait_url} alt="" />`
+                    : html`<span>${getInitials(a.agent_name)}</span>`
+                }
+              </span>
+            `,
+          )}
+        </span>
+      </div>
+    `;
+  }
+
+  /** Place the pending order on a target. The store clears the aim itself. */
+  private _placeOnTarget(targetId: string): void {
+    const pending = dungeonState.pendingOrder.value;
+    if (!pending) return;
+    dungeonState.selectAction(pending.agent_id, pending.ability_id, targetId);
+  }
+
+  /** Withdraw a placed order from any of its three anchors. */
+  private _withdrawOrder(agentId: string): void {
+    dungeonState.deselectAction(agentId);
   }
 
   /** Retire one creature's art after a failed load and fall back to its
@@ -705,6 +931,13 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     // Reuse the panel's naming so a duplicate pair reads as "Wisp A" / "Wisp B"
     // in BOTH surfaces instead of drifting apart.
     const displayNames = buildEnemyDisplayNames(combat.enemies);
+    const pending = dungeonState.pendingOrder.value;
+    const aimingEnemies = pending?.scope === 'enemy';
+    // Anchor 2 reads this and nothing else. Two operatives aimed at one
+    // creature therefore MUST show two portraits — there is no per-creature
+    // counter that could have been incremented once and forgotten.
+    const ordersByTarget = dungeonState.ordersByTarget.value;
+    const party = dungeonState.party.value;
 
     return html`
       <div
@@ -727,7 +960,9 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
           const facts = describeEnemy(enemy, displayName);
           return html`
             <div
-              class="foe ${dead ? 'foe--dead' : ''}"
+              class="foe ${dead ? 'foe--dead' : ''} ${
+                aimingEnemies && !dead ? 'foe--selectable' : ''
+              } ${pending && (dead || !aimingEnemies) ? 'foe--muted' : ''}"
               role="listitem"
               data-tier=${enemy.threat_level}
               style="--i:${i};--_cond:${cond.tint};--_wear:${cond.wear};--_intent:${intent};--_foe-scale:${geom.scale};--_foe-glow:${geom.scale};--_foe-ratio:${geom.ratio};--_foe-shape:${geom.shape};--_foe-eye-top:${geom.eyeTop}"
@@ -738,6 +973,17 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
                       ${icons.alertTriangle(8)}
                       <span class="foe__intent-text">${action.intent}</span>
                     </div>`
+                  : nothing
+              }
+              ${this._renderSightsTag(enemy.instance_id, ordersByTarget, party, displayName)}
+              ${
+                aimingEnemies && !dead
+                  ? html`<button
+                      class="foe__pick"
+                      type="button"
+                      @click=${() => this._placeOnTarget(enemy.instance_id)}
+                      aria-label=${msg(str`Target ${displayName}`)}
+                    ></button>`
                   : nothing
               }
               <div class="foe__figure ${showArt ? '' : 'foe__figure--silhouette'}">

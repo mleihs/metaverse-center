@@ -22,6 +22,7 @@ import type {
   DungeonClientState,
   DungeonPhase,
   EncounterChoiceClient,
+  PendingOrder,
   PhaseTimer,
   RoomNodeClient,
 } from '../types/dungeon.js';
@@ -144,6 +145,17 @@ class DungeonStateManager {
   /** Selected combat actions keyed by agent_id. Cleared on phase change. */
   readonly selectedActions = signal<Map<string, CombatAction>>(new Map());
 
+  /** The order currently being AIMED, or null when nothing is pending.
+   *
+   *  This lives in the store rather than inside the combat bar, where the older
+   *  targeting flags sat, because the targeting chain has anchors in two
+   *  sibling components: the stage draws the spotlight, the command card over
+   *  the operative and the "in your sights" tag on the creature; the bar draws
+   *  the tick on the tab and the order strip. Local state would have obliged
+   *  the bar to TELL the stage, and a told state is a second source that can
+   *  fall out of step with the first. One signal, read by both. */
+  readonly pendingOrder = signal<PendingOrder | null>(null);
+
   /** Whether combat submission is in flight. */
   readonly combatSubmitting = signal(false);
 
@@ -225,6 +237,31 @@ class DungeonStateManager {
     );
     if (canAct.length === 0) return false;
     return canAct.every((a) => this.selectedActions.value.has(a.agent_id));
+  });
+
+  /** Who is aiming at what: target id -> the agent ids whose PLACED order names
+   *  it, in party order.
+   *
+   *  Derived from `selectedActions` alone. This is what makes the three anchors
+   *  of a placed order one thing rather than three: the creature's sights tag,
+   *  the operative's command card and the order strip all read this (or the map
+   *  it is built from), so a withdrawal at any one of them is a withdrawal at
+   *  all three — there is no second copy left to forget.
+   *
+   *  Keyed in PARTY order rather than Map insertion order: the portraits inside
+   *  one sights tag must sit in the same sequence as the tabs in the bar, or
+   *  two operatives on one creature read as two different pairs depending on
+   *  where the player happens to look. */
+  readonly ordersByTarget = computed((): ReadonlyMap<string, readonly string[]> => {
+    const byTarget = new Map<string, string[]>();
+    for (const agent of this.party.value) {
+      const action = this.selectedActions.value.get(agent.agent_id);
+      if (!action?.target_id) continue;
+      const existing = byTarget.get(action.target_id);
+      if (existing) existing.push(agent.agent_id);
+      else byTarget.set(action.target_id, [agent.agent_id]);
+    }
+    return byTarget;
   });
 
   /** Dungeon depth progress as fraction (0-1). */
@@ -324,6 +361,11 @@ class DungeonStateManager {
     // Reset combat selections when leaving planning phase
     if (state.phase !== 'combat_planning') {
       this.selectedActions.value = new Map();
+      // An aim must not outlive the phase it was taken in. Without this the
+      // spotlight would still be lit over a round that has already resolved,
+      // and the next click would place an order against a creature that is no
+      // longer standing there.
+      this.pendingOrder.value = null;
     }
 
     // Restore or clear encounter choices based on phase
@@ -355,6 +397,11 @@ class DungeonStateManager {
       target_id: targetId ?? null,
     });
     this.selectedActions.value = next;
+    // Placing an order ends the aim, whoever placed it. Only one order is aimed
+    // at a time, so this needs no agent comparison — and doing it HERE, at the
+    // one seam every placement passes through, is why no caller can leave a
+    // spotlight burning on the stage over an order that is already given.
+    this.pendingOrder.value = null;
   }
 
   /** Deselect an agent's combat action. */
@@ -362,6 +409,19 @@ class DungeonStateManager {
     const next = new Map(this.selectedActions.value);
     next.delete(agentId);
     this.selectedActions.value = next;
+  }
+
+  /** Begin aiming: the operative has chosen an ability and is choosing a target.
+   *  Replaces any aim already in progress — a second ability click re-aims
+   *  rather than stacking. */
+  beginTargeting(agentId: string, abilityId: string, scope: 'enemy' | 'ally'): void {
+    this.pendingOrder.value = { agent_id: agentId, ability_id: abilityId, scope };
+  }
+
+  /** Abandon the aim without placing an order (Escape, or a second click on the
+   *  same ability). Placed orders are untouched. */
+  cancelTargeting(): void {
+    this.pendingOrder.value = null;
   }
 
   /**
@@ -380,6 +440,7 @@ class DungeonStateManager {
     this.clientState.value = null;
     this.runId.value = null;
     this.selectedActions.value = new Map();
+    this.pendingOrder.value = null;
     this.lastRoomDescription.value = null;
     this.lastRoundResult.value = null;
     this.error.value = null;
