@@ -73,7 +73,37 @@ umhängen, oder es so lassen und nur wissen.
 
 ---
 
-## T3 · `pristine` steht neben der Leiter
+## T3 · `pristine` steht neben der Leiter — ⚠ ÜBERHOLT, die Prämisse stimmt nicht mehr
+
+> **Nachgemessen auf Prod, 31.08.2026 (Sitzung `-88`), gegen `fn_building_condition_ladder`
+> statt gegen eine Kernleiter.** Die Leiter ist **pro Welt**, nicht global — und `pristine`
+> steht bei den fünf Welten, die es benutzen, **auf** ihrer Leiter:
+>
+>     pristine|good|fair|poor|ruined     4 Welten,  29 Bauten
+>     pristine|fair|poor|ruined          1 Welt,     7 Bauten
+>
+> Die sechs `pristine`-Bauten verfallen also. Der Befund unten war vor Migration 308–311
+> richtig und ist es seither nicht mehr; er bleibt als Messweg stehen, weil die Frage
+> „welche Bauten verfallen nicht?" gültig bleibt — nur ist die Antwort eine andere.
+>
+> **Der ECHTE Rest sind 17 Bauten in 7 lebenden Welten** (5,9 % von 290), alle in Welten
+> mit der Standardleiter `excellent → good → fair → poor → ruined`, mit zwölf Wörtern
+> daneben: `anomalous` 4, `illuminated` 2, `restored` 2, `thriving` 2, dazu je einmal
+> `compromised`, `functional`, `obsolete`, `operational`, `preserved`, `restricted`,
+> `sealed`. Diese verfallen nicht — Sabotage und Krisenereignisse laufen an ihnen vorbei.
+> Weitere 34 Bauten hängen an GELÖSCHTEN Welten und haben gar keine Leiter; das ist
+> stimmig, kein Fehler (siehe T8).
+>
+> **Und ein zweiter Befund, der nicht hierher gehörte und trotzdem hier auffiel:** das
+> Frontend-Vokabular (`utils/building-condition.ts`) kennt `pristine | good | fair | poor
+> | ruined` — es passt damit auf **5 von 36** Welten. **26 Welten haben `excellent` als
+> oberste Sprosse**, und die 10 Bauten, die es tragen, zeigen deshalb einen leeren
+> Edelstein, obwohl sie auf der höchsten Sprosse ihrer Welt stehen. Das ist keine
+> Inhaltsentscheidung, sondern ein fehlendes Wort in einer Liste. Gebiet
+> `velgarien-rebuild-af` (gemeldet).
+
+### Der ursprüngliche Befund (Stand vor der Messung)
+
 
 **Gemessen:** 31.08.2026 auf Prod, beim Nachmessen von Migration 308.
 
