@@ -31,16 +31,23 @@ export class ChatBubble extends LitElement {
     :host {
       display: block;
       max-width: 100%;
-      --_bubble-user-bg: var(--color-primary);
+      /* Own messages are TINTED, not filled. A solid amber slab made the
+         player the loudest voice in a room whose whole subject is the
+         world's voice; the tint says "mine" without shouting it. */
+      --_bubble-user-bg: color-mix(in srgb, var(--color-accent-amber) 7%, transparent);
+      --_bubble-user-border: color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
+      --_bubble-user-text: color-mix(in srgb, var(--color-accent-amber) 30%, var(--color-text-primary));
       --_bubble-agent-bg: var(--color-surface-raised);
+      /* One step below primary text: the agent speaks, the player answers,
+         and the answer should sit a shade brighter than the question. */
+      --_bubble-agent-text: color-mix(in srgb, var(--color-text-primary) 55%, var(--color-text-secondary));
       --_bubble-system-bg: transparent;
-      --_bubble-border-width: 3px;
     }
 
     /* --- Base bubble surface --- */
     .bubble {
       padding: var(--space-3) var(--space-4);
-      font-family: var(--font-body);
+      font-family: var(--font-bureau, var(--font-prose));
       font-size: var(--text-sm);
       line-height: var(--leading-normal);
       word-break: break-word;
@@ -52,19 +59,16 @@ export class ChatBubble extends LitElement {
     /* --- User bubble --- */
     .bubble--user {
       background: var(--_bubble-user-bg);
-      color: var(--color-text-inverse);
-      border: var(--border-default);
-      border-right: var(--_bubble-border-width) solid var(--color-primary);
-      border-radius: 2px;
+      color: var(--_bubble-user-text);
+      border: var(--border-width-thin) solid var(--_bubble-user-border);
       white-space: pre-wrap;
     }
 
     /* --- Assistant bubble --- */
     .bubble--assistant {
       background: var(--_bubble-agent-bg);
-      color: var(--color-text-primary);
-      border: var(--border-medium);
-      border-left: var(--_bubble-border-width) solid var(--_accent, var(--color-border));
+      color: var(--_bubble-agent-text);
+      border: var(--border-width-thin) solid var(--color-border-light);
       box-shadow: var(--shadow-xs);
     }
 
@@ -130,7 +134,11 @@ export class ChatBubble extends LitElement {
       padding: var(--space-0-5) var(--space-2);
       margin: var(--space-1) 0;
       background: color-mix(in srgb, var(--_accent, var(--color-border)) 8%, transparent);
-      border-left: 2px solid color-mix(in srgb, var(--_accent, var(--color-border)) 40%, transparent);
+      /* A quote rule, not a category slab: 1px and NEUTRAL. The gate names
+         this device explicitly ("a quote rule is typography, and predates
+         the web"); the agent's own colour stays in the tint behind the
+         words, which is where it says something. */
+      border-left: var(--border-width-thin) solid var(--color-border);
       font-size: 0.92em;
       color: var(--color-text-secondary);
     }

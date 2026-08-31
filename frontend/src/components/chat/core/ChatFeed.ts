@@ -76,7 +76,12 @@ export class ChatFeed extends LitElement {
       overscroll-behavior-y: contain;
       display: flex;
       flex-direction: column;
-      padding: var(--space-4) var(--space-6);
+      /* Cockpit rule: the WINDOW takes every pixel the shell gives it, but
+         the CONVERSATION keeps a reading measure. Centring the padding
+         instead of the box is what lets the scrollbar and the background
+         stay at the far edge while the words stay legible at 2560px. */
+      padding-block: var(--space-4);
+      padding-inline: max(var(--space-6), calc((100% - 1080px) / 2));
       gap: 0;
     }
 
@@ -140,7 +145,7 @@ export class ChatFeed extends LitElement {
       flex: 1;
       height: 0;
       border: none;
-      border-top: var(--border-width-thin) solid var(--color-border-light);
+      border-top: var(--border-width-thin) dashed var(--color-border-light);
     }
 
     .date-separator__label {
