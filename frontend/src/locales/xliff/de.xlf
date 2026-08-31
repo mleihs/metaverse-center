@@ -12169,7 +12169,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <target>über</target></trans-unit>
 <trans-unit id="s5770bbe58e94e02d">
   <source>sections</source>
-<target>Sektionen</target></trans-unit>
+<target>Abschnitte</target></trans-unit>
 <trans-unit id="sfa302b67aeeb7595">
   <source>Request Bureau Update</source>
 <target>Bureau-Update anfordern</target></trans-unit>
@@ -24305,7 +24305,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Verstanden – weiter zur Übertragung</target></trans-unit>
 <trans-unit id="sf6faa5d805f8a53e">
   <source>classified</source>
-<target>classified</target></trans-unit>
+<target>klassifiziert</target></trans-unit>
 <trans-unit id="s1ca92e4b0a029c4f">
   <source>redacted: <x id="0" equiv-text="${labelText}"/></source>
 <target>geschwärzt: <x id="0" equiv-text="${labelText}"/></target></trans-unit>
@@ -29820,7 +29820,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <target>Diesem Agenten einen Befehl geben</target>
 </trans-unit>
 <trans-unit id="s2d32f3ecf59e80cc">
-  <source>Room <x id="0" equiv-text="${number}"/>: <x id="1" equiv-text="${room.label}"/></source>
+  <source>Room <x id="0" equiv-text="${number}"/>: <x id="1" equiv-text="${label}"/></source>
   <target>Raum <x id="0" equiv-text="${number}"/>: <x id="1" equiv-text="${room.label}"/></target>
 </trans-unit>
 <trans-unit id="saba795e29b436b10">
@@ -29979,17 +29979,17 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Auto-defence</source>
   <target>Auto-Verteidigung</target>
 </trans-unit>
-<trans-unit id="sb0e97584dc715a5c">
-  <source>Full</source>
-  <target>Voll belegt</target>
+<trans-unit id="s15bcda218d799fc6">
+  <source>Only the architect of this world can compile an edition.</source>
+<target>Nur der Architekt dieser Welt kann eine Ausgabe zusammenstellen.</target>
 </trans-unit>
-<trans-unit id="s083ba71e12037cba">
-  <source>Partly held</source>
-  <target>Teils belegt</target>
+<trans-unit id="sa699eae1563fe6ec">
+  <source>section</source>
+<target>Abschnitt</target>
 </trans-unit>
-<trans-unit id="s5015a8fb33b98872">
-  <source>Thin</source>
-  <target>Dünn belegt</target>
+<trans-unit id="sc46e1690f33904af">
+  <source><x id="0" equiv-text="${agent.name}"/>, strongest as <x id="1" equiv-text="${operativeName(entry.best.type)}"/>, <x id="2" equiv-text="${entry.sum}"/> in total</source>
+<target><x id="0" equiv-text="${agent.name}"/>, am stärksten als <x id="1" equiv-text="${operativeName(entry.best.type)}"/>, <x id="2" equiv-text="${entry.sum}"/> insgesamt</target>
 </trans-unit>
 </body>
 </file>

@@ -216,6 +216,46 @@ lassen.
 
 ---
 
+## T12 · In `msg()` steht Deutsch — die ENGLISCHE Oberflaeche zeigt es
+
+**Gemessen:** 31.08.2026 abends, ueber `frontend/src/locales/xliff/de.xlf`
+(8 198 Einheiten).
+
+    Ziel identisch mit Quelle                          565
+      davon Quelle eindeutig DEUTSCH (Umlaut/Funktionswort)   96
+      davon Quelle englisch/neutral (legitim: Name, Status,
+      Zone, Admin, Chat, Portrait, Slug, NewsAPI ...)        469
+
+Die 96 sind kein Uebersetzungsfehler, sondern ein Quellfehler: jemand hat
+Deutsch in `msg()` geschrieben. Deutsch stimmt dann zufaellig, und **Englisch
+zeigt Deutsch** — z. B. „Anfrage wird vorbereitet...", „Dies kann 1-2 Minuten
+dauern", „Bildgenerierung fehlgeschlagen.", „Vorabuebertragung · Fragment 42
+von ???".
+
+⚠ **96 ist eine UNTERGRENZE.** Der Erkenner sucht Umlaute und deutsche
+Funktionswoerter; „Verarbeite Antwort..." und „KI generiert Portrait..." stehen
+deshalb in der zweiten Gruppe, obwohl sie Deutsch sind. Wer das abraeumt, geht
+die 565 einmal von Hand durch — automatisch trennbar ist es nicht.
+
+**Warum es nicht nebenbei zu beheben ist:** die Zeichenketten stehen in
+Komponenten (fremde Gebiete), das Umschreiben ist eine INHALTLICHE Arbeit (der
+englische Satz muss erst geschrieben werden), und jede Aenderung an einer
+`msg()`-Quelle erzeugt eine neue Einheit, deren deutsche Uebersetzung dann
+nachzuziehen ist. Also: erst entscheiden, dann in einem Zug, und die Extraktion
+macht `-88`.
+
+**Nebenbefund, schon behoben:** `classified` war mit „classified" uebersetzt —
+ein Ziel, das die Quelle wiederholt, sieht fuer jedes Messgeraet uebersetzt aus.
+Jetzt „klassifiziert". Ebenso `sections`: „Sektionen" ist ein Lehnwort und liest
+sich technisch; ein Dossier hat „Abschnitte".
+
+🔑 **Und die Lehre am Messgeraet:** die erste Zaehlung meldete „0 unuebersetzt".
+`lit-localize` laesst das `<target>`-Element bei unuebersetzten Einheiten GANZ
+WEG, das Muster suchte aber nach `<target/>`. Drei neue Zeichenketten waren
+unsichtbar. Ein Muster, das die leere Form sucht, findet die fehlende nicht.
+
+---
+
 ## T5 · `/platform-stats` sollte verschwinden - ERLEDIGT (nachgemessen 31.08. abends)
 
 > Alle vier Loeschstellen sind weg. Gemessen: kein `@router.get("/platform-stats")`,
