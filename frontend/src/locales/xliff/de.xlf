@@ -29923,6 +29923,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Open buildings</source>
   <target>Gebäude öffnen</target>
 </trans-unit>
+<trans-unit id="se469ab255696b8e4">
+  <source>Epoch <x id="0" equiv-text="${status.toLocaleLowerCase()}"/></source>
+  <target>Epoche <x id="0" equiv-text="${status.toLocaleLowerCase()}"/></target>
+</trans-unit>
+<trans-unit id="s9799497d1741646b">
+  <source>Case file open</source>
+  <target>Fallakte offen</target>
+</trans-unit>
+<trans-unit id="s65eea02a8adb1843">
+  <source>Open case file</source>
+  <target>Fallakte öffnen</target>
+</trans-unit>
+<trans-unit id="s6e194242d3bc37c1">
+  <source>This chapter is sealed. Open the case file to read it.</source>
+  <target>Dieses Kapitel ist versiegelt. Öffne die Fallakte, um es zu lesen.</target>
+</trans-unit>
+<trans-unit id="s251d36935bc3fb94">
+  <source>Figure is being drawn</source>
+  <target>Die Abbildung entsteht</target>
+</trans-unit>
+<trans-unit id="sd1e6dd84eea8e7c1">
+  <source>Fig.</source>
+  <target>Abb.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
