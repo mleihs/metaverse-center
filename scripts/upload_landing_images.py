@@ -54,6 +54,25 @@ _MIME = {
 #: Ein Jahr, unveränderlich — der datierte Vorsatz macht jede URL endgültig.
 #: (Die Regel aus `asset-error-immutable-poisoning`: `immutable` ist nur dann
 #: harmlos, wenn die URL sich nie wieder ändert. Genau das leistet das Datum.)
+#:
+#: ⚠ GEMESSEN 31.08.2026, und die Messung widerspricht der Absicht: der
+#: Endpunkt ``/storage/v1/object/public/…`` liefert **immer**
+#: ``cache-control: no-cache``, gleichgültig was hier steht. Der Wert kommt
+#: zwar korrekt in ``storage.objects.metadata->>'cacheControl'`` an, aber die
+#: Auslieferung ignoriert ihn — auch mit Cache-Buster und
+#: ``cf-cache-status: MISS``, also direkt vom Ursprung. Das betrifft JEDES
+#: Bild der Plattform, nicht nur diese: Weltbanner und Agentenporträts
+#: liefern denselben Kopf. (Der Transformationspfad
+#: ``/storage/v1/render/image/public/…`` hält sich daran, kodiert aber neu
+#: und macht damit die AVIF-Ableitung wieder zunichte.)
+#:
+#: Halb so schlimm, wie es klingt, und auch das ist gemessen: ``no-cache``
+#: heißt „neu prüfen", nicht „nicht speichern". Der Ursprung setzt einen
+#: ETag, und eine bedingte Anfrage beantwortet er mit **304 und null Bytes**.
+#: Ein wiederholter Besuch kostet also einen Rundlauf je Bild, keine Nutzlast.
+#: Der Kopf bleibt trotzdem gesetzt: er ist richtig, er steht in den
+#: Metadaten, und sobald die Auslieferung ihn beachtet, wirkt er ohne dass
+#: jemand die Bilder neu ablegen muss.
 _CACHE_CONTROL = "public, max-age=31536000, immutable"
 
 
