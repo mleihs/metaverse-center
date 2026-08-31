@@ -26,10 +26,7 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import sys
 from collections.abc import Callable
-from pathlib import Path
 
 from backend.services.content_packs.loader import (
     DEFAULT_PACK_ROOT,
@@ -48,6 +45,7 @@ from backend.services.content_packs.row_builders import (
     build_loot_rows,
     build_spawn_rows,
 )
+from backend.services.content_packs.seed_cli import run_seed_cli
 from backend.services.content_packs.seed_emit import render_seed_document
 from backend.services.content_packs.sql_primitives import SqlValue
 from backend.services.content_packs.table_specs import (
@@ -116,61 +114,18 @@ def generate_sql(result: PackLoadResult, *, truncate: bool = True) -> tuple[str,
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
+    """Die Befehlszeile steht seit dem Zusammenlegen in ``seed_cli``.
+
+    Hier bleibt nur, was diesen Generator ausmacht: welche Packungen er lädt
+    und welches SQL er daraus erzeugt.
+    """
+    return run_seed_cli(
+        argv,
         description="Generate dungeon content seed SQL from YAML packs.",
+        root_help=f"Pack root (defaults to {DEFAULT_PACK_ROOT}).",
+        build=lambda root, truncate: generate_sql(load_packs(root), truncate=truncate),
     )
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=None,
-        help=f"Pack root (defaults to {DEFAULT_PACK_ROOT}).",
-    )
-    output_mode = parser.add_mutually_exclusive_group()
-    output_mode.add_argument(
-        "--output",
-        type=Path,
-        default=None,
-        help="Write generated SQL to this file.",
-    )
-    output_mode.add_argument(
-        "--stdout",
-        action="store_true",
-        help="Write generated SQL to stdout.",
-    )
-    output_mode.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Load packs and count rows, but emit no SQL.",
-    )
-    parser.add_argument(
-        "--no-truncate",
-        action="store_true",
-        help="Skip the TRUNCATE prefix (additive migration, ID-stability required).",
-    )
-    args = parser.parse_args(argv)
 
-    result = load_packs(args.root)
-    sql, counts = generate_sql(result, truncate=not args.no_truncate)
-
-    if args.dry_run or (not args.output and not args.stdout):
-        _print_counts(counts)
-        return 0
-
-    if args.stdout:
-        sys.stdout.write(sql)
-        return 0
-
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(sql, encoding="utf-8")
-    _print_counts(counts)
-    print(f"Wrote {sum(counts.values())} rows to {args.output}")
-    return 0
-
-
-def _print_counts(counts: dict[str, int]) -> None:
-    for table, n in counts.items():
-        print(f"  {table:<30} {n:>5}")
-    print(f"  {'TOTAL':<30} {sum(counts.values()):>5}")
 
 
 if __name__ == "__main__":
