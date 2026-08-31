@@ -1,7 +1,7 @@
 # Fortsetzungs-Prompt (nach Context-Clear einfügen)
 
 > Stand: 31.08.2026 abends, Sitzung `velgarien-rebuild-88`.
-> **Zehn Commits lokal, NICHTS gepusht.** Parallel: `velgarien-rebuild-45`.
+> **Alles gepusht** (`origin/main` = `5c04631d`). Parallel: `velgarien-rebuild-45`.
 > **Backend zum ersten Mal komplett grün: 4 915 bestanden, 41 übersprungen, 0 rot.**
 
 ---
@@ -11,24 +11,30 @@
 Der Deploy landete 08:03 UTC, der erste Tick danach lief um 09:00. Gemessen auf
 Prod, vorher → nachher:
 
-    Bedarfs-Moodlets                    0 →  26   (19 Agenten)
-    Gruppen                             –  →  need_safety, need_social, need_stimulation
-    Stärken                             –  →  −15 … −3
-    schlechteste Laune der Plattform   −1 →  −22
-    Agenten mit negativer Laune         0 →  55
-    Agenten unter −20                   0 →   1
-    Agenten mit Stress > 0              0 →   1  (max. 7)
-    Moodlets gesamt                   188 → 213
+                                     vorher   nach 1 Welt   nach 13 Welten
+    Agenten mit Bedarfs-Moodlet            0        19            77
+    schlechteste Laune der Plattform      −1       −22           −25
+    Agenten mit negativer Laune            0        55            65
+    Agenten unter −20                      0         1             6
+    Agenten mit Stress > 0                 0         1             6
+    Meinungsspanne                    0 … 45    0 … 45        0 … 45
+
+    Gruppen: need_safety, need_social, need_stimulation
+    Stärken: −15 … −3
+
+Die Vorhersage aus `scripts/measure_mood_reachability.py` lautete „2 von 258
+Agenten unter −20". Gemessen nach einer vollen Runde: **6**. Dieselbe
+Größenordnung, etwas mehr — die Rate ist ein Gleichgewicht, keine Bahn, und die
+Bevölkerung war beim Messen satter als jetzt.
 
 🔑 **Die Kette, die elf Monate lang nicht anspringen konnte, läuft.** Bis heute
 war die schlechteste Laune, die je ein Agent hatte, **−1** — bei einem Tor von
 −20. Jetzt steht sie bei −22, und `fn_update_stress_levels` baut zum ersten Mal
 Stress auf (vorher `count(distinct stress_level) = 1` über alle 258 Agenten).
 
-Erst vier von vierzehn Welten haben getickt (station-null,
-metabolic-currency, the-gaslit-reach, the-metamorphosis-of-memory);
-**velgarien und the-m-bius-academy stehen noch auf 05:57/05:58** und kommen
-beim nächsten Lauf (`heartbeat_interval_seconds = 14400`, also 4 h).
+Dreizehn Welten haben inzwischen getickt. **velgarien und
+the-m-bius-academy stehen noch auf 05:57/05:58** und kommen gegen 09:57
+(`heartbeat_interval_seconds = 14400`, also 4 h).
 
 **`events` in den letzten 24 h steht weiter auf 0**, und das ist erwartet: die
 zwei verbleibenden Tore sind weit. `relationship_threshold` braucht |Meinung|
@@ -51,11 +57,15 @@ DROP FUNCTION fn_apply_need_moodlets(uuid, jsonb);
 |---|---|---|---|
 | 308 | Abgeschlossenheit der Bauzustands-Vokabulare | ✅ 2× | ❌ |
 | 309 | Die Beschriftung folgt dem Zustand | ✅ 2× | ❌ |
-| 310 | `json_repair_enabled = false` | ✅ 2× | ❌ |
+| 310 | `json_repair_enabled = false` | ✅ 2× | ✅ |
+| 311 | **T3** — `pristine` auf die Leiter, weltbewusster Schritt | ✅ 2× | ❌ |
+
+Migration 312 gehört der Nachbarsitzung (Welt-Übersetzungen) und ist auf Prod.
+**308, 309, 310 sind angewandt und am Schema belegt**; nur 311 wartet noch.
 
 Alle drei transaktional gegen die **echten Prod-Daten** geprobt
 (`BEGIN … ROLLBACK`), jede zweimal in derselben Transaktion angewandt.
-Nächste freie Nummer: **311**, Zeitstempel ab `20260831200000`.
+Nächste freie Nummer: **313**, Zeitstempel ab `20260831220000`.
 
 Gemessene Wirkung von 308+309 zusammen:
 
