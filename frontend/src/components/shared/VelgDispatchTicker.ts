@@ -51,7 +51,7 @@ export class VelgDispatchTicker extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
       letter-spacing: 1px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
       flex-shrink: 0;
     }

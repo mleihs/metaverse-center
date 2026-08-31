@@ -98,7 +98,7 @@ export const dispatchStyles = css`
     font-family: var(--font-mono, 'Courier New', monospace);
     font-size: 11px;
     line-height: 1.6;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   /* ── Source Attribution ────────────────────────────── */
@@ -140,7 +140,7 @@ export const dispatchStyles = css`
   .dispatch__meta {
     font-family: var(--font-mono, 'SF Mono', monospace);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: 1px;
   }
 
@@ -180,7 +180,7 @@ export const dispatchStyles = css`
   .dispatch__masthead {
     font-family: var(--font-bureau, 'Spectral', Georgia, serif);
     font-size: 13px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-style: italic;
     margin: 0;
   }
@@ -221,7 +221,7 @@ export const dispatchStyles = css`
     font-weight: var(--font-bold, 700);
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-bottom: var(--space-3);
     padding-bottom: var(--space-1);
     border-bottom: 1px dashed var(--color-border-light);
@@ -234,7 +234,7 @@ export const dispatchStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin: 0;
   }
 
@@ -279,7 +279,7 @@ export const dispatchStyles = css`
     font-family: var(--font-mono, 'SF Mono', monospace);
     font-size: 9px;
     letter-spacing: 0.06em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
   }
 

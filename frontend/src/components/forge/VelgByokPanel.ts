@@ -87,7 +87,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__subtitle {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-5, 20px);
     }
 
@@ -139,7 +139,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__bypass-key--missing {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .byok__benefits {
@@ -187,7 +187,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__awareness-desc {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: var(--leading-relaxed, 1.625);
       margin: 0;
     }
@@ -249,7 +249,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__key-codename {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .byok__key-status {
@@ -268,7 +268,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__key-status--unset {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Key Card Description ────────────────────────── */
@@ -276,7 +276,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__key-desc {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: var(--leading-relaxed, 1.625);
       margin: 0 0 var(--space-3, 12px);
     }
@@ -323,7 +323,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .byok__input:focus {
@@ -342,7 +342,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       padding: var(--space-2, 8px);
       min-width: 44px;
@@ -365,7 +365,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__remove-btn {
       background: none;
       border: 1px solid var(--color-border-light);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       padding: var(--space-1-5, 6px) var(--space-2-5, 10px);
       display: flex;
@@ -461,7 +461,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
 
     .byok__test-badge--testing {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @keyframes byok-pulse {
@@ -475,7 +475,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__test-detail {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Hide native browser password toggles ──────── */
@@ -542,7 +542,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     .byok__hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Admin Mode Overrides ────────────────────────── */

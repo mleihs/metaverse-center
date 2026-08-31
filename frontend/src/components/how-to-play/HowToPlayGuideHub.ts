@@ -123,7 +123,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     .search__icon {
       position: absolute;
       left: var(--space-4);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       pointer-events: none;
       z-index: 1;
     }
@@ -143,7 +143,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     }
 
     .search__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -206,7 +206,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
     }
 
@@ -227,7 +227,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
 
     .search__result-match {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: var(--leading-normal);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -243,7 +243,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       padding: var(--space-4);
       text-align: center;
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -407,7 +407,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       font-size: 10px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .card__arrow {

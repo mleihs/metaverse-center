@@ -60,7 +60,7 @@ export class VelgEchoCard extends LitElement {
 
     .card__arrow {
       flex-shrink: 0;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-lg);
       line-height: 1;
     }
@@ -114,7 +114,7 @@ export class VelgEchoCard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
   `;
 

@@ -83,7 +83,7 @@ export class VelgDriftEffectCards extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-brutalist);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .sheet__title {
@@ -199,7 +199,7 @@ export class VelgDriftEffectCards extends LitElement {
         margin: var(--space-1) 0 0;
         font-size: var(--text-xs);
         line-height: var(--leading-snug);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .card__link {
@@ -222,7 +222,7 @@ export class VelgDriftEffectCards extends LitElement {
         margin: 0 0 var(--space-4);
         font-family: var(--font-bureau);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       @media (prefers-reduced-motion: reduce) {

@@ -56,7 +56,7 @@ export class VelgChronicleExport extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.3em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Card Grid ── */
@@ -216,7 +216,7 @@ export class VelgChronicleExport extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
     }
 
@@ -247,7 +247,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .history__date {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex: 1;
     }
 

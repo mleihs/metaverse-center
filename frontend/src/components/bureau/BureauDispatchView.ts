@@ -234,7 +234,7 @@ export class VelgBureauDispatch extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-2);
     }
 
@@ -251,7 +251,7 @@ export class VelgBureauDispatch extends LitElement {
     .bureau-heading__sub {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -298,7 +298,7 @@ export class VelgBureauDispatch extends LitElement {
     }
 
     .decoder__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }
@@ -404,7 +404,7 @@ export class VelgBureauDispatch extends LitElement {
     .error-msg__attempts {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Rate limited state ───────────────────────────────────────── */
@@ -441,7 +441,7 @@ export class VelgBureauDispatch extends LitElement {
     .rate-limited__sub {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Success / Reward ─────────────────────────────────────────── */
@@ -551,7 +551,7 @@ export class VelgBureauDispatch extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: 1px solid var(--color-border);
       border-radius: var(--space-1);
@@ -579,7 +579,7 @@ export class VelgBureauDispatch extends LitElement {
       background: var(--_bezel);
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: var(--tracking-wide);
     }
 

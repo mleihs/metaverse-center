@@ -176,7 +176,7 @@ export class VelgAttunementPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -189,7 +189,7 @@ export class VelgAttunementPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -226,7 +226,7 @@ export class VelgAttunementPanel extends LitElement {
       font-size: var(--text-sm);
       font-style: italic;
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
       flex: 1;
     }
@@ -238,7 +238,7 @@ export class VelgAttunementPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 

@@ -61,7 +61,7 @@ export const forgeButtonStyles = css`
   .btn--ghost {
     background: transparent;
     border-color: var(--color-border);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .btn--ghost:hover {
@@ -139,7 +139,7 @@ export const forgeFieldStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .field__input,
@@ -170,7 +170,7 @@ export const forgeFieldStyles = css`
 
   .field__input::placeholder,
   .field__textarea::placeholder {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .field__input:disabled,
@@ -214,7 +214,7 @@ export const forgeRangeStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -314,7 +314,7 @@ export const forgeRangeStyles = css`
     width: 100%;
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: 1.4;
   }
 `;
@@ -327,7 +327,7 @@ export const forgeResearchHintStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: 10px;
     letter-spacing: 0.03em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--color-border-light);
     background: var(--color-surface-sunken);
@@ -374,7 +374,7 @@ export const forgeResearchHintStyles = css`
     background: var(--color-surface-sunken);
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .research-sources__summary {
@@ -581,7 +581,7 @@ export const forgeBackButtonStyles = css`
   .btn--back {
     background: transparent;
     border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     padding: var(--space-2) var(--space-4);
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold, 700);

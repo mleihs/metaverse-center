@@ -127,7 +127,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
@@ -294,7 +294,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .theme-card__actions {
@@ -578,7 +578,7 @@ export class VelgDarkroomStudio extends LitElement {
     .atelier__text {
       font-family: var(--font-body);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
     }
 
@@ -931,7 +931,7 @@ export class VelgDarkroomStudio extends LitElement {
             </div>
           `
             : html`
-            <p style="font-size: var(--text-sm); color: var(--color-text-muted);">
+            <p style="font-size: var(--text-sm); color: var(--color-text-quiet);">
               ${msg('No entity images found for this simulation.')}
             </p>
           `

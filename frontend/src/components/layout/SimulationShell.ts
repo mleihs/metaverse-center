@@ -102,7 +102,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: var(--color-surface-sunken);
       border-bottom: 1px solid var(--color-border);
       overflow-x: auto;

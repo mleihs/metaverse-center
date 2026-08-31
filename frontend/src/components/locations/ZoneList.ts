@@ -93,7 +93,7 @@ export class VelgZoneList extends LitElement {
 
     .item__meta {
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .item__badges {
@@ -137,7 +137,7 @@ export class VelgZoneList extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 
@@ -239,7 +239,7 @@ export class VelgZoneList extends LitElement {
 
     .item__risk-hint {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -319,7 +319,7 @@ export class VelgZoneList extends LitElement {
     .item__pressure-text {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -351,7 +351,7 @@ export class VelgZoneList extends LitElement {
     .item__weather-temp {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-0-5);
     }
   `;

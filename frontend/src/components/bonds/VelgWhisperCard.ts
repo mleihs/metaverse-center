@@ -72,7 +72,7 @@ export class VelgWhisperCard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-0-5) var(--space-2);
       border: 1px solid var(--color-border-light);
       line-height: 1;
@@ -86,7 +86,7 @@ export class VelgWhisperCard extends LitElement {
     .whisper__time {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .whisper__body {
@@ -109,7 +109,7 @@ export class VelgWhisperCard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 1px dashed var(--color-border);
       padding: var(--space-1-5) var(--space-4);

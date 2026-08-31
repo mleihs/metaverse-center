@@ -97,7 +97,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
       .group__count {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* Eine Sprosse pro Tor. Grid statt flex, damit der Schalter aller
@@ -152,7 +152,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
       .gate__key {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         word-break: break-all;
       }
 
@@ -170,7 +170,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
       }
 
       .gate__cost {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .gate__cost strong {
@@ -181,7 +181,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
       .gate__reader {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-2);
         opacity: 0.75;
         word-break: break-all;
@@ -208,7 +208,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -278,7 +278,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       @media (max-width: 640px) {

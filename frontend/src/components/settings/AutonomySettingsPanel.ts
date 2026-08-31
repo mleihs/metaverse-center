@@ -48,7 +48,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         border: var(--border-default);
         font-family: var(--font-body);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.5;
       }
 
@@ -112,7 +112,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
       .cost-estimate {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-sunken);
         border: 1px solid var(--color-border-light);

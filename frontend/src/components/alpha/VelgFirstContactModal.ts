@@ -80,7 +80,7 @@ export class VelgFirstContactModal extends SignalWatcher(LitElement) {
       font-size: 10px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-top: 1px dashed var(--color-border);
       padding-top: var(--space-3, 12px);
       margin-top: var(--space-5, 20px);

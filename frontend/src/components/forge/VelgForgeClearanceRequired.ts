@@ -112,7 +112,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       font-size: var(--text-xs, 10px);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .alt-separator::before,
@@ -188,7 +188,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: var(--text-xs, 10px);
       line-height: var(--leading-normal, 1.5);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 

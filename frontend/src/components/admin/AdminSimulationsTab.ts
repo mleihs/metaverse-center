@@ -53,7 +53,7 @@ export class VelgAdminSimulationsTab extends LitElement {
     }
 
     .search-input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .sim-count {
@@ -61,7 +61,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* --- View Toggle --- */
@@ -80,7 +80,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px solid var(--color-border);
       cursor: pointer;
       transition:
@@ -161,12 +161,12 @@ export class VelgAdminSimulationsTab extends LitElement {
 
     .sim-slug {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .sim-date {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -268,14 +268,14 @@ export class VelgAdminSimulationsTab extends LitElement {
     .empty-state {
       padding: var(--space-8);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
     }
 
     .loading-state {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       text-transform: uppercase;

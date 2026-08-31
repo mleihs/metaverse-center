@@ -103,7 +103,7 @@ export class VelgEpochResultsView extends LitElement {
     .header__subtitle {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.05em;
     }
 
@@ -238,7 +238,7 @@ export class VelgEpochResultsView extends LitElement {
     .podium__team {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ═══════════════════════════════════════════
@@ -256,7 +256,7 @@ export class VelgEpochResultsView extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.2em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-4);
       display: flex;
       align-items: center;
@@ -323,7 +323,7 @@ export class VelgEpochResultsView extends LitElement {
     .stat-card__label {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -421,7 +421,7 @@ export class VelgEpochResultsView extends LitElement {
     .mvp-card__desc {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: 1.5;
     }
 
@@ -491,7 +491,7 @@ export class VelgEpochResultsView extends LitElement {
     .dim-card__name {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       width: 80px;
       white-space: nowrap;
       overflow: hidden;
@@ -548,7 +548,7 @@ export class VelgEpochResultsView extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: left;
       padding: var(--space-2);
       border-bottom: 2px solid var(--color-border);
@@ -608,7 +608,7 @@ export class VelgEpochResultsView extends LitElement {
     .standings-dim {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
@@ -639,7 +639,7 @@ export class VelgEpochResultsView extends LitElement {
     .loading__text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ═══════════════════════════════════════════

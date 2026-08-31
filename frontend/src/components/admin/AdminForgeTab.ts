@@ -187,7 +187,7 @@ export class VelgAdminForgeTab extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .bundle-edit-form__input {
@@ -233,7 +233,7 @@ export class VelgAdminForgeTab extends LitElement {
         letter-spacing: var(--tracking-wide);
         border: 1px solid var(--color-border);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition: all var(--transition-fast);
       }
@@ -265,7 +265,7 @@ export class VelgAdminForgeTab extends LitElement {
       .ledger-pagination__info {
         font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .ledger-pagination__buttons {
@@ -310,7 +310,7 @@ export class VelgAdminForgeTab extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .grant-form__input {
@@ -372,7 +372,7 @@ export class VelgAdminForgeTab extends LitElement {
       .empty-state {
         font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: center;
         padding: var(--space-8) 0;
         letter-spacing: 1px;
@@ -945,7 +945,7 @@ export class VelgAdminForgeTab extends LitElement {
         <td>
           ${
             isSystem
-              ? html`<span style="color: var(--color-text-muted)">${msg('System')}</span>`
+              ? html`<span style="color: var(--color-text-quiet)">${msg('System')}</span>`
               : html`
               <velg-toggle
                 variant="scif"

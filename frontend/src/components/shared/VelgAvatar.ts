@@ -92,7 +92,7 @@ export class VelgAvatar extends LitElement {
       font-weight: var(--font-black);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     :host([size='xs']) .avatar__initials {

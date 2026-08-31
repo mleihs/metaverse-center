@@ -116,7 +116,7 @@ export class VelgLandingCitizens extends LitElement {
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 0;
       padding: var(--space-1) 0;

@@ -142,7 +142,7 @@ export class VelgEventCard extends LitElement {
 
     .card__meta-icon {
       flex-shrink: 0;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .card__tags {

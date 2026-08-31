@@ -224,7 +224,7 @@ export class VelgEpochCreationWizard extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.1em;
         text-align: center;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: var(--color-surface);
         border-right: 1px solid var(--color-border);
         position: relative;
@@ -283,7 +283,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .field__input {
@@ -303,7 +303,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .field__input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .field__textarea {
@@ -327,7 +327,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .field__hint {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Range Slider ────────────────────── */
@@ -401,7 +401,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
         line-height: var(--leading-snug);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .config-warning {
@@ -445,7 +445,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .toggle {
@@ -486,7 +486,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .toggle-hint {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: var(--space-1) 0 0;
       }
 
@@ -578,7 +578,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: var(--color-surface);
         border: 1px solid var(--color-border);
         cursor: pointer;
@@ -613,7 +613,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
       }
 
@@ -626,7 +626,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .summary__key {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .summary__val {
@@ -642,7 +642,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .summary__note {
         margin: 0;
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.5;
       }
 
@@ -684,7 +684,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .btn--ghost {
         background: transparent;
         border-color: var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .btn--ghost:hover:not(:disabled) {
@@ -760,7 +760,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .format-presets {
@@ -821,7 +821,7 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .format-card__icon {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
                     color 0.15s ease;
         display: flex;
@@ -853,7 +853,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
         letter-spacing: 0.05em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: var(--color-surface-raised);
         border: 1px solid var(--color-border);
       }
@@ -868,12 +868,12 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
         line-height: 1.5;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-1);
       }
 
       .format-card[aria-selected="true"] .format-card__desc {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .format-custom-reveal {

@@ -40,7 +40,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       gap: var(--space-4);
       overflow: hidden;
     }
@@ -69,7 +69,7 @@ export class VelgBureauArchives extends LitElement {
     }
 
     .archives__header-count {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 640px) {
@@ -107,7 +107,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       white-space: nowrap;
       padding: var(--space-1) var(--space-3);
@@ -163,7 +163,7 @@ export class VelgBureauArchives extends LitElement {
     .chapter-divider__count {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Dossier Card ── */
@@ -222,7 +222,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-prose);
       font-style: italic;
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       /* Zitatlinie, neutral. Ein Epigraph ist Typografie und keine Statusmeldung;
          die Linie darf bleiben, die Statusfarbe nicht. */
       border-left: 1px solid var(--color-border);
@@ -262,7 +262,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-2);
       letter-spacing: var(--tracking-wider);
     }
@@ -275,7 +275,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       display: flex;
       justify-content: space-between;
     }
@@ -342,7 +342,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-3);
     }
 

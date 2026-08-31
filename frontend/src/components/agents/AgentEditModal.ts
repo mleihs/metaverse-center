@@ -69,7 +69,7 @@ export class VelgAgentEditModal extends LitElement {
       font-weight: var(--font-black);
       font-size: var(--text-2xl);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .portrait-section__buttons {

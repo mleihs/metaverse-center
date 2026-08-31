@@ -170,7 +170,7 @@ export class VelgWarRoomPanel extends LitElement {
     .cycle-nav__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 70px;
       text-align: center;
       text-transform: uppercase;
@@ -212,7 +212,7 @@ export class VelgWarRoomPanel extends LitElement {
 
     .stat-box__label {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -310,7 +310,7 @@ export class VelgWarRoomPanel extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       text-transform: uppercase;
@@ -344,7 +344,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
       padding-bottom: var(--space-2);
     }
@@ -427,7 +427,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) 0;
       border-bottom: 1px dashed var(--color-border);
       margin-top: var(--space-2);
@@ -439,7 +439,7 @@ export class VelgWarRoomPanel extends LitElement {
     }
 
     .empty-state {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
       text-align: center;
       padding: var(--space-6);
@@ -676,7 +676,7 @@ export class VelgWarRoomPanel extends LitElement {
               ? html`<span class="sitrep__generating"><span class="pulse-dot"></span> ${msg('Generating...')}</span>`
               : this._sitrepRevealed
                 ? this._sitrepRevealed
-                : html`<span style="color: var(--color-text-muted)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`
+                : html`<span style="color: var(--color-text-quiet)">${msg('Click Generate SITREP to request an intelligence briefing for this cycle.')}</span>`
           }
         </div>
       </div>

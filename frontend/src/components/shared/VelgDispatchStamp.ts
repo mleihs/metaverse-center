@@ -44,7 +44,7 @@ export class VelgDispatchStamp extends LitElement {
       text-transform: uppercase;
     }
 
-    .stamp--inline.tone--default { color: var(--color-text-muted); }
+    .stamp--inline.tone--default { color: var(--color-text-quiet); }
     .stamp--inline.tone--success { color: var(--color-success-glow); }
     .stamp--inline.tone--danger  { color: var(--color-danger); }
     .stamp--inline.tone--warning { color: var(--color-warning); }
@@ -63,7 +63,7 @@ export class VelgDispatchStamp extends LitElement {
     }
 
     .stamp--badge.tone--default {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
     }
     .stamp--badge.tone--success {

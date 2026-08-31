@@ -23,7 +23,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
     css`
       .notif-intro {
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.6;
         margin: 0 0 var(--space-2);
       }
@@ -59,7 +59,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
 
       .notif-toggle-desc {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.4;
       }
 
@@ -170,7 +170,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
   protected render() {
     if (this._loading) {
       return html`<div class="settings-panel">
-        <p style="color:var(--color-text-muted);font-size:var(--text-sm);">
+        <p style="color: var(--color-text-quiet);font-size:var(--text-sm);">
           ${msg('Loading...')}
         </p>
       </div>`;

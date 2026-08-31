@@ -69,7 +69,7 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0 0 var(--space-4);
         padding-bottom: var(--space-3);
         border-bottom: 1px solid var(--color-border);
@@ -120,7 +120,7 @@ export class VelgForgeIgnition extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
       }
 

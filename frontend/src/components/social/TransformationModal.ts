@@ -55,7 +55,7 @@ export class VelgTransformationModal extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-surface-sunken);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: var(--border-width-default) solid var(--color-border);
       transition: all var(--duration-normal, 200ms);
       white-space: nowrap;
@@ -81,7 +81,7 @@ export class VelgTransformationModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: -1px;
       flex-shrink: 0;
     }
@@ -162,7 +162,7 @@ export class VelgTransformationModal extends LitElement {
       border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
       font-family: var(--font-body);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -177,7 +177,7 @@ export class VelgTransformationModal extends LitElement {
     }
 
     .clipping__byline a {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: underline;
       text-underline-offset: 2px;
     }
@@ -215,7 +215,7 @@ export class VelgTransformationModal extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -319,7 +319,7 @@ export class VelgTransformationModal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       display: flex;
       align-items: center;
       gap: var(--space-2);

@@ -65,7 +65,7 @@ export class VelgLocationsView extends LitElement {
     }
 
     .view__separator {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Crossfade when drilling between city/zone/street levels */
@@ -92,7 +92,7 @@ export class VelgLocationsView extends LitElement {
       padding: var(--space-1, 4px) var(--space-3, 12px);
       background: none;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       font-weight: 600;

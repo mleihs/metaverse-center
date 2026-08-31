@@ -203,7 +203,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
         align-items: center;
         justify-content: center;
         margin: 0 auto;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .dispatch__seal-text {
@@ -211,7 +211,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
         font-size: 7px;
         text-transform: uppercase;
         letter-spacing: 0.14em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-1);
       }
 

@@ -75,7 +75,7 @@ export class VelgLandingSeoFooter extends LitElement {
       font-family: var(--font-prose);
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-5);
       max-width: 300px;
     }
@@ -97,7 +97,7 @@ export class VelgLandingSeoFooter extends LitElement {
       cursor: pointer;
       font: inherit;
       letter-spacing: inherit;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: color var(--transition-normal);
     }
 
@@ -160,7 +160,7 @@ export class VelgLandingSeoFooter extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .legal b {

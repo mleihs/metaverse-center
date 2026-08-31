@@ -277,7 +277,7 @@ export class VelgAdminModelsTab extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: 2px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .env-badge {
@@ -410,7 +410,7 @@ export class VelgAdminModelsTab extends LitElement {
         padding: var(--space-2);
         background: none;
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition:
           color 0.2s ease,
@@ -455,13 +455,13 @@ export class VelgAdminModelsTab extends LitElement {
       }
 
       .model-card__custom-input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         opacity: 0.6;
       }
 
       .model-card__default {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: var(--space-2) 0 0 0;
       }
 

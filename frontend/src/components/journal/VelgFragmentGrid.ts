@@ -58,7 +58,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding-right: var(--space-2);
     }
 
@@ -94,7 +94,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
       letter-spacing: var(--tracking-wide);
       background: transparent;
       border: 1px dashed var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3);
       cursor: pointer;
       min-height: 36px;
@@ -138,7 +138,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .pager {

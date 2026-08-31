@@ -184,7 +184,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-size: var(--text-xs, 12px);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-4, 16px);
       }
 
@@ -329,18 +329,18 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
 
       .mint__history-price {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .mint__history-date {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-size: var(--text-xs, 12px);
       }
 
       .mint__history-empty {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding: var(--space-4, 16px);
         text-align: center;
       }
@@ -350,7 +350,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .mint__callout {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: center;
         border: 1px dashed var(--color-mint-brass);
         padding: var(--space-4, 16px) var(--space-6, 24px);

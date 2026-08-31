@@ -146,7 +146,7 @@ export class VelgEpochLobbyActions extends LitElement {
 
     .draft-status--pending {
       border-color: var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Simulation Picker ─────────────────── */
@@ -164,7 +164,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: 9px;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-1);
     }
 
@@ -382,7 +382,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-size: 10px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -403,7 +403,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       letter-spacing: 1px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: 2px 8px;
       border: 1px solid var(--color-border);
     }
@@ -508,7 +508,7 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot__status--pending {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
     }
 
@@ -524,7 +524,7 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot--vacant .slot__icon {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px dashed var(--color-text-muted);
       background: transparent;
       animation: vacant-pulse 3s ease-in-out infinite;
@@ -533,7 +533,7 @@ export class VelgEpochLobbyActions extends LitElement {
     @keyframes vacant-pulse {
       0%, 100% {
         border-color: var(--color-text-muted);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       50% {
         border-color: color-mix(in srgb, var(--color-epoch-accent) 50%, transparent);
@@ -542,13 +542,13 @@ export class VelgEpochLobbyActions extends LitElement {
     }
 
     .slot--vacant .slot__name {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
       letter-spacing: 2px;
     }
 
     .slot--vacant .slot__tag {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Admin Controls ────────────────────── */

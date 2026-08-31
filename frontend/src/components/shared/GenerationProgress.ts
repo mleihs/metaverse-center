@@ -168,7 +168,7 @@ export class VelgGenerationProgress extends LitElement {
     .progress-text__sub {
       font-family: var(--font-body);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -249,7 +249,7 @@ export class VelgGenerationProgress extends LitElement {
 
     .step--completed .step__label {
       text-decoration: line-through;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* --- Progress bar --- */

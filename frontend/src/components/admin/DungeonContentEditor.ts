@@ -113,7 +113,7 @@ export class DungeonContentEditor extends LitElement {
         padding: var(--space-1-5);
         background: transparent;
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         font-size: 14px;
         line-height: 1;
@@ -178,7 +178,7 @@ export class DungeonContentEditor extends LitElement {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
       }
 
@@ -202,7 +202,7 @@ export class DungeonContentEditor extends LitElement {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .bilingual__textarea {
@@ -232,7 +232,7 @@ export class DungeonContentEditor extends LitElement {
 
       .bilingual__charcount {
         font-size: 9px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: right;
       }
 
@@ -263,7 +263,7 @@ export class DungeonContentEditor extends LitElement {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .editor-field__input,
@@ -391,7 +391,7 @@ export class DungeonContentEditor extends LitElement {
 
       .sheet__timestamp {
         font-size: 9px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Responsive ── */

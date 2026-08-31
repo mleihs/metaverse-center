@@ -58,7 +58,7 @@ export const settingsStyles = css`
 
   .settings-form__hint {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-family: var(--font-body);
     text-transform: none;
     letter-spacing: normal;
@@ -95,12 +95,12 @@ export const settingsStyles = css`
 
   .settings-form__input::placeholder,
   .settings-form__textarea::placeholder {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .settings-form__input--readonly {
     background: var(--color-surface-sunken);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     cursor: not-allowed;
   }
 
@@ -158,7 +158,7 @@ export const settingsStyles = css`
   .settings-section__help {
     font-family: var(--font-body);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin: 0;
     line-height: 1.4;
   }
@@ -254,7 +254,7 @@ export const settingsStyles = css`
 
   .settings-sensitive-hint {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-family: var(--font-body);
   }
 

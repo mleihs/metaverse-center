@@ -164,7 +164,7 @@ export class VelgMissionCard extends LitElement {
 			font-family: var(--font-mono, monospace);
 			font-size: 8px;
 			line-height: 1.3;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			max-height: 44px;
 			overflow: hidden;
 			display: -webkit-box;
@@ -178,7 +178,7 @@ export class VelgMissionCard extends LitElement {
 			gap: 2px;
 			margin-top: 2px;
 			font-size: 7px;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
 		}

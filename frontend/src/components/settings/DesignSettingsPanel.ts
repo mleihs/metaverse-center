@@ -541,7 +541,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
     }
 
     .form__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .form__textarea {
@@ -567,7 +567,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
 
     .form__hint {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-body);
     }
 

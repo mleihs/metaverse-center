@@ -94,7 +94,7 @@ export class VelgClearanceQueue extends LitElement {
     .request-card__date {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .request-card__message {
@@ -141,7 +141,7 @@ export class VelgClearanceQueue extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-1);
     }
 
@@ -212,7 +212,7 @@ export class VelgClearanceQueue extends LitElement {
     .empty-state {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-8) 0;
       letter-spacing: 1px;
@@ -251,7 +251,7 @@ export class VelgClearanceQueue extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     :host([variant="compact"]) .section-header__title {

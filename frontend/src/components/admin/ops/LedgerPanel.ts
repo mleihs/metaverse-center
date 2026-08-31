@@ -61,7 +61,7 @@ export class VelgOpsLedgerPanel extends LitElement {
     .heading__timestamp {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-variant-numeric: tabular-nums;
     }
 
@@ -101,7 +101,7 @@ export class VelgOpsLedgerPanel extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -113,7 +113,7 @@ export class VelgOpsLedgerPanel extends LitElement {
     .tile__sub {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       margin-top: var(--space-1);
@@ -150,7 +150,7 @@ export class VelgOpsLedgerPanel extends LitElement {
     }
 
     .breakdown__table th {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -163,7 +163,7 @@ export class VelgOpsLedgerPanel extends LitElement {
 
     .empty {
       padding: var(--space-4);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       font-size: var(--text-sm);
     }

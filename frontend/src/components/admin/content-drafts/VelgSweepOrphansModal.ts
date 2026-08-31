@@ -75,7 +75,7 @@ export class VelgSweepOrphansModal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3);
       background: var(--color-surface-sunken);
       border: 1px solid var(--color-border-light);
@@ -137,12 +137,12 @@ export class VelgSweepOrphansModal extends LitElement {
       color: var(--color-text-primary);
     }
     .row__age {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
       white-space: nowrap;
     }
     .row__pr {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
       white-space: nowrap;
     }
@@ -169,7 +169,7 @@ export class VelgSweepOrphansModal extends LitElement {
       grid-column: 2 / -1;
       padding-top: 2px;
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
       line-height: 1.4;
     }
@@ -177,13 +177,13 @@ export class VelgSweepOrphansModal extends LitElement {
     .empty {
       padding: var(--space-5);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
     }
     .loading {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
     }
 

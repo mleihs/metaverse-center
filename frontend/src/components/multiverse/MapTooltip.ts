@@ -44,7 +44,7 @@ export class VelgMapTooltip extends LitElement {
       display: flex;
       gap: var(--space-3, 12px);
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .tooltip__stat-value {
@@ -71,7 +71,7 @@ export class VelgMapTooltip extends LitElement {
     }
 
     .tooltip__score-label {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       font-size: 9px;
       letter-spacing: 0.06em;

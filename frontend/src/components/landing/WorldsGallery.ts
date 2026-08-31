@@ -108,7 +108,7 @@ export class VelgWorldsGallery extends LitElement {
     }
 
     .search-input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .search-input:focus {
@@ -119,7 +119,7 @@ export class VelgWorldsGallery extends LitElement {
     .results-count {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 1px;
       text-transform: uppercase;
     }
@@ -283,7 +283,7 @@ export class VelgWorldsGallery extends LitElement {
       font-size: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .world-card__stat-value {
@@ -327,7 +327,7 @@ export class VelgWorldsGallery extends LitElement {
     .gallery-empty__text {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 13px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Loading ────────────────────────────── */
@@ -344,7 +344,7 @@ export class VelgWorldsGallery extends LitElement {
       font-size: 12px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       animation: pulse-text 1.5s ease-in-out infinite;
     }
 

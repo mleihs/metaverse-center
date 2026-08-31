@@ -244,7 +244,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .pulse-header__countdown {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -302,7 +302,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
       padding: var(--space-2) var(--space-3);
       background: transparent;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: all var(--transition-fast);
       min-height: 44px;
@@ -475,7 +475,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .tick-header__count {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Tick Summary ── */
@@ -814,7 +814,7 @@ export class VelgSimulationPulse extends SignalWatcher(LitElement) {
     .empty, .loading {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-8) var(--space-4);
     }

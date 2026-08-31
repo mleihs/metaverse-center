@@ -166,7 +166,7 @@ export class VelgEntityLightbox extends LitElement {
     .lightbox__counter {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
       padding: 0 var(--space-3);
     }

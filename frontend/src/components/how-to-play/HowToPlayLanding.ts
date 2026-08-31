@@ -235,7 +235,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .door__arrow {
@@ -267,7 +267,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
     .search__icon {
       position: absolute;
       left: var(--space-4);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       pointer-events: none;
     }
 
@@ -286,7 +286,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
     }
 
     .search__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -309,7 +309,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-right: var(--space-2);
     }
 

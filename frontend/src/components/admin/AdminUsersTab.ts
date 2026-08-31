@@ -51,7 +51,7 @@ export class VelgAdminUsersTab extends LitElement {
     }
 
     .search-input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .user-count {
@@ -59,7 +59,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* --- User list --- */
@@ -105,7 +105,7 @@ export class VelgAdminUsersTab extends LitElement {
 
     .user-date {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -177,7 +177,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3) 0;
     }
 
@@ -308,7 +308,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       font-weight: bold;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 120px;
     }
 
@@ -322,7 +322,7 @@ export class VelgAdminUsersTab extends LitElement {
     .empty {
       text-align: center;
       padding: var(--space-8);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
@@ -361,7 +361,7 @@ export class VelgAdminUsersTab extends LitElement {
 
     .pagination__info {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 768px) {
@@ -625,7 +625,7 @@ export class VelgAdminUsersTab extends LitElement {
 
     return html`
       <div class="user-detail" @click=${(e: Event) => e.stopPropagation()}>
-        <p style="margin:0 0 var(--space-3);font-size:var(--text-xs);color:var(--color-text-muted)">
+        <p style="margin:0 0 var(--space-3);font-size:var(--text-xs);color: var(--color-text-quiet)">
           ${msg(str`Last sign in: ${lastSign}`)}
         </p>
 
@@ -633,7 +633,7 @@ export class VelgAdminUsersTab extends LitElement {
 
         ${
           detail.memberships.length === 0
-            ? html`<p style="font-size:var(--text-sm);color:var(--color-text-muted)">${msg('No memberships.')}</p>`
+            ? html`<p style="font-size:var(--text-sm);color: var(--color-text-quiet)">${msg('No memberships.')}</p>`
             : html`
             <div class="membership-list">
               ${detail.memberships.map((m) => this._renderMembershipRow(detail.id, m))}

@@ -136,7 +136,7 @@ export class VelgAdminCleanupTab extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-4) 0;
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
@@ -253,7 +253,7 @@ export class VelgAdminCleanupTab extends LitElement {
 
     .cleanup-unit {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Buttons ──────────────────────────────────── */
@@ -324,7 +324,7 @@ export class VelgAdminCleanupTab extends LitElement {
 
     .preview__corner {
       position: absolute;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
       opacity: 0.5;
     }
@@ -339,7 +339,7 @@ export class VelgAdminCleanupTab extends LitElement {
     }
 
     .preview__zero {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .preview__tree-line {
@@ -348,7 +348,7 @@ export class VelgAdminCleanupTab extends LitElement {
     }
 
     .preview__tree-branch {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .preview__tree-count {
@@ -359,7 +359,7 @@ export class VelgAdminCleanupTab extends LitElement {
       border-top: 1px solid var(--color-border);
       padding-top: var(--space-1);
       margin-top: var(--space-1);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-weight: var(--font-bold);
     }
 
@@ -398,7 +398,7 @@ export class VelgAdminCleanupTab extends LitElement {
     }
 
     .item-row__age {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
       white-space: nowrap;
     }

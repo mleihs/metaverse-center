@@ -108,7 +108,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
     .template__meta {
       display: flex; gap: var(--space-2); font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .template__badge {
@@ -168,7 +168,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
     .form__row--3 { grid-template-columns: 1fr 1fr 1fr; }
 
-    .form__hint { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .form__hint { font-size: var(--text-xs); color: var(--color-text-quiet); }
 
     .form__error {
       font-family: var(--font-brutalist); font-weight: var(--font-bold);

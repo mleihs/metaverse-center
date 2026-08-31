@@ -115,7 +115,7 @@ export class VelgClearanceCard extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: 4px;
     }
 
@@ -193,7 +193,7 @@ export class VelgClearanceCard extends LitElement {
     .note {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       margin-top: 12px;
       letter-spacing: 1px;
@@ -237,13 +237,13 @@ export class VelgClearanceCard extends LitElement {
 
     .pending-date {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .pending-note {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       margin-top: 12px;
       letter-spacing: 1px;

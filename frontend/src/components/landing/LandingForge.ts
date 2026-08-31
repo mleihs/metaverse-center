@@ -168,7 +168,7 @@ export class VelgLandingForge extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: var(--border-width-thin) solid var(--color-border-light);
       background: transparent;
       transition: color var(--transition-slow), border-color var(--transition-slow),
@@ -186,7 +186,7 @@ export class VelgLandingForge extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       width: 100%;
       margin-top: var(--space-1);
     }
@@ -229,7 +229,7 @@ export class VelgLandingForge extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── BREITBILD (Entwurf v2, ≥1920) ──────────────────────────────────

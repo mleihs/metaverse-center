@@ -149,7 +149,7 @@ export class VelgDriftLedgerStrip extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       font-variant-numeric: tabular-nums;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .rank__bar {
@@ -230,7 +230,7 @@ export class VelgDriftLedgerStrip extends LitElement {
       margin: var(--space-2) 0 0;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .scars__debt {

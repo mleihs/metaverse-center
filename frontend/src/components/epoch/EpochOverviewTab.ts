@@ -196,7 +196,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .action-btn:disabled {
       opacity: 0.5;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: not-allowed;
       pointer-events: none;
       border-color: var(--color-surface-raised);
@@ -302,7 +302,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .mission__detail {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission__status {
@@ -329,7 +329,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .mission__status--failed {
       border-color: var(--color-text-muted);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission__status--detected {
@@ -401,7 +401,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .fortify-zone-btn__security {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
     }
 
@@ -473,7 +473,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .fort-manifest__count {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .fort-entry {
@@ -544,13 +544,13 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry--expired .fort-entry__zone {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .fort-entry__level {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       flex-shrink: 0;
     }
@@ -558,7 +558,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .fort-entry__expiry {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
       white-space: nowrap;
     }
@@ -580,7 +580,7 @@ export class VelgEpochOverviewTab extends LitElement {
     }
 
     .fort-entry__tag--expired {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
     }
 
@@ -612,7 +612,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-4);
     }

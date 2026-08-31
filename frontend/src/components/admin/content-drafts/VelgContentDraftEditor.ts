@@ -101,7 +101,7 @@ export class VelgContentDraftEditor extends LitElement {
     .head__sub {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       word-break: break-all;
     }
 
@@ -150,7 +150,7 @@ export class VelgContentDraftEditor extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -200,7 +200,7 @@ export class VelgContentDraftEditor extends LitElement {
     .entry-row__remove {
       background: transparent;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       padding: 0;
       width: 18px;
@@ -222,7 +222,7 @@ export class VelgContentDraftEditor extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* CodeMirror mount host. Height is bounded so the panel scrolls only
@@ -254,7 +254,7 @@ export class VelgContentDraftEditor extends LitElement {
       text-align: center;
       padding: var(--space-8) var(--space-4);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px dashed var(--color-border-light);
     }
 
@@ -271,7 +271,7 @@ export class VelgContentDraftEditor extends LitElement {
     .footer__hint {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .footer__actions { display: flex; gap: var(--space-2); }
 
@@ -312,7 +312,7 @@ export class VelgContentDraftEditor extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .field__control,
     .field select,
@@ -334,7 +334,7 @@ export class VelgContentDraftEditor extends LitElement {
     .field__hint {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 768px) {

@@ -163,7 +163,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       height: 28px;
       background: none;
       border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -259,7 +259,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     .action__nav-hint {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       opacity: 0;

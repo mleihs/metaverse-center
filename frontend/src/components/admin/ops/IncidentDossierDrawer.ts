@@ -178,7 +178,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
     }
 
     .entry__actor {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
     }
 
@@ -200,7 +200,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .empty,
@@ -209,7 +209,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
       text-align: center;
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 

@@ -225,7 +225,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
     }
 
     .rule__meta {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
     }
 
@@ -370,7 +370,7 @@ export class VelgOpsSentryRulesPanel extends LitElement {
     .empty {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-3);
       text-align: center;
       font-style: italic;

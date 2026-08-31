@@ -202,7 +202,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .config-item__value {
@@ -354,7 +354,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         margin-left: auto;
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: var(--color-border-light);
         padding: 1px 6px;
         border: 1px solid var(--color-border);
@@ -376,7 +376,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       .stat__label {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .stat__value {
@@ -388,7 +388,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       .sim-card__countdown {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-3);
       }
 
@@ -454,7 +454,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .override-select {
@@ -510,7 +510,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Cascade Rules Table ──────────────── */
@@ -533,7 +533,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: left;
         padding: var(--space-2) var(--space-3);
         border-bottom: 1px solid var(--color-border);
@@ -560,7 +560,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       }
 
       .rules-table__arrow {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-size: var(--text-xs);
       }
 
@@ -570,7 +570,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
 
       .rules-table__timestamp {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Status Dots (unique to HeartbeatTab) ── */

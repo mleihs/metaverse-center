@@ -33,7 +33,7 @@ export class VelgPlatformFooter extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-wrap: wrap;
     }
 
@@ -43,7 +43,7 @@ export class VelgPlatformFooter extends LitElement {
     }
 
     a {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: none;
       transition: color var(--transition-fast);
     }
@@ -79,7 +79,7 @@ export class VelgPlatformFooter extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-3);
     }
   `;

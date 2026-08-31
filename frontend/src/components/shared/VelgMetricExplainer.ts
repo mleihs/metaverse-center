@@ -72,7 +72,7 @@ export class VelgMetricExplainer extends LitElement {
       margin-left: var(--space-1);
       border: var(--border-width-thin) solid var(--color-border);
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);

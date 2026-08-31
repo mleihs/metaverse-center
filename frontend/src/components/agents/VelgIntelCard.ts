@@ -160,7 +160,7 @@ export class VelgIntelCard extends LitElement {
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-1);
     }
 
@@ -174,7 +174,7 @@ export class VelgIntelCard extends LitElement {
 
     .intel__annotation {
       font-style: italic;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-xs);
       border-top: 1px solid var(--color-border);
       padding-top: var(--space-2);

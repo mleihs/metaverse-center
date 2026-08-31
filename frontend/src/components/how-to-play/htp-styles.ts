@@ -85,7 +85,7 @@ export const htpStyles = css`
   .hero__sub {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-base);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     margin: 0;
@@ -145,7 +145,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin: 0 0 var(--space-4);
   }
 
@@ -163,7 +163,7 @@ export const htpStyles = css`
     padding: var(--space-1-5) var(--space-2);
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -219,7 +219,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     flex-shrink: 0;
   }
 
@@ -240,7 +240,7 @@ export const htpStyles = css`
   }
 
   .section__text {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: var(--leading-relaxed);
     max-width: 65ch;
   }
@@ -304,7 +304,7 @@ export const htpStyles = css`
 
   .phase__desc {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: center;
     margin-top: var(--space-1);
     padding: 0 var(--space-1);
@@ -331,7 +331,7 @@ export const htpStyles = css`
   }
 
   .readout__label {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
   }
 
@@ -392,7 +392,7 @@ export const htpStyles = css`
 
   .op-card__cost-label {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
     margin-left: 2px;
   }
@@ -410,7 +410,7 @@ export const htpStyles = css`
 
   .op-card__stat-label {
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
   }
@@ -422,7 +422,7 @@ export const htpStyles = css`
   }
 
   .op-card__desc {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -490,10 +490,10 @@ export const htpStyles = css`
   .tactic-card__badge--timing   { color: var(--color-warning); border: 1px solid var(--color-warning); }
   .tactic-card__badge--economy  { color: var(--color-info); border: 1px solid var(--color-info); }
   .tactic-card__badge--counter  { color: var(--color-danger); border: 1px solid var(--color-danger); }
-  .tactic-card__badge--preset   { color: var(--color-text-muted); border: 1px solid var(--color-text-muted); }
+  .tactic-card__badge--preset   { color: var(--color-text-quiet); border: 1px solid var(--color-text-muted); }
 
   .tactic-card__desc {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
     line-height: 1.6;
   }
@@ -540,7 +540,7 @@ export const htpStyles = css`
 
   .dim-row__value {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: right;
   }
 
@@ -557,7 +557,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: center;
     padding: var(--space-2);
     border-bottom: 2px solid var(--color-border-light);
@@ -620,7 +620,7 @@ export const htpStyles = css`
   .callout--info   .callout__label { color: var(--color-info); }
 
   .callout__text {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 12px;
     line-height: 1.6;
   }
@@ -678,7 +678,7 @@ export const htpStyles = css`
 
   .match__subtitle {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
   }
@@ -691,14 +691,14 @@ export const htpStyles = css`
 
   .match__meta-tag {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     padding: var(--space-0-5) var(--space-2);
     border: 1px solid var(--color-border);
   }
 
   .match__toggle {
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     transition: transform var(--transition-fast);
   }
 
@@ -714,7 +714,7 @@ export const htpStyles = css`
   }
 
   .match__desc {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 12px;
     line-height: 1.6;
   }
@@ -744,7 +744,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
   }
 
@@ -765,7 +765,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: left;
     padding: var(--space-1-5) var(--space-2);
     border-bottom: 2px solid var(--color-border-light);
@@ -797,11 +797,11 @@ export const htpStyles = css`
 
   .outcome--success  { color: var(--color-success); }
   .outcome--detected { color: var(--color-danger); }
-  .outcome--failed   { color: var(--color-text-muted); }
+  .outcome--failed   { color: var(--color-text-quiet); }
 
   .cycle-note {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-style: italic;
   }
 
@@ -813,7 +813,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
   }
 
@@ -828,7 +828,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: center;
     padding: var(--space-1-5) var(--space-2);
     border-bottom: 2px solid var(--color-border-light);
@@ -853,7 +853,7 @@ export const htpStyles = css`
   }
 
   .standings-rank--1 { color: var(--color-warning); }
-  .standings-rank--2 { color: var(--color-text-muted); }
+  .standings-rank--2 { color: var(--color-text-quiet); }
   .standings-rank--3 { color: var(--color-warning-hover); }
 
   .standings-title {
@@ -875,7 +875,7 @@ export const htpStyles = css`
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
   }
 
@@ -892,7 +892,7 @@ export const htpStyles = css`
     padding-left: var(--space-4);
     position: relative;
     font-size: 12px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: 1.5;
   }
 
@@ -934,7 +934,7 @@ export const htpStyles = css`
   }
 
   .vector-card__desc {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -950,7 +950,7 @@ export const htpStyles = css`
     font-size: 9px;
     padding: 1px 5px;
     border: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   /* ═══ DIMENSION FORMULAS ═════════════════════════ */
@@ -994,7 +994,7 @@ export const htpStyles = css`
   }
 
   .dim-block__explanation {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -1031,7 +1031,7 @@ export const htpStyles = css`
   }
 
   .lifecycle__arrow {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 10px;
     margin: 0 var(--space-2);
   }
@@ -1055,7 +1055,7 @@ export const htpStyles = css`
   }
 
   .analytics-sub__desc {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 11px;
     line-height: 1.5;
     margin-bottom: var(--space-4);
@@ -1202,7 +1202,7 @@ export const htpStyles = css`
 
   .profile-card__rate-label {
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     display: block;
@@ -1217,7 +1217,7 @@ export const htpStyles = css`
   }
 
   .profile-card__rate-value--na {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: 10px;
   }
 
@@ -1229,7 +1229,7 @@ export const htpStyles = css`
   }
 
   .profile-card__ci-label {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
     font-family: var(--font-brutalist);
@@ -1255,7 +1255,7 @@ export const htpStyles = css`
 
   .profile-card__ci-range {
     font-family: var(--font-mono, monospace);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     flex-shrink: 0;
   }
 
@@ -1274,7 +1274,7 @@ export const htpStyles = css`
   }
 
   .profile-card__text-value {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   /* ═══ ANALYTICS: STRATEGY TIERS ═════════════════ */
@@ -1337,7 +1337,7 @@ export const htpStyles = css`
     gap: var(--space-2);
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     flex-shrink: 0;
   }
 
@@ -1358,7 +1358,7 @@ export const htpStyles = css`
 
   .strat-entry__desc {
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: 1.4;
   }
 
@@ -1405,7 +1405,7 @@ export const htpStyles = css`
   .impact-row__std {
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-align: right;
   }
 
@@ -1447,7 +1447,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .verdict-card__value {
@@ -1460,7 +1460,7 @@ export const htpStyles = css`
 
   .verdict-card__desc {
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: 1.5;
   }
 
@@ -1655,7 +1655,7 @@ export const htpStyles = css`
   .intel-chart__grade {
     font-family: var(--font-mono, monospace);
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wide);
     flex-shrink: 0;
   }
@@ -1765,7 +1765,7 @@ export const htpStyles = css`
     font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     white-space: nowrap;
   }
 
@@ -1814,7 +1814,7 @@ export const htpStyles = css`
     font-family: var(--font-mono);
     font-size: var(--text-lg);
     font-weight: var(--font-bold);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: 1;
   }
 
@@ -1830,7 +1830,7 @@ export const htpStyles = css`
     white-space: nowrap;
   }
 
-  .demo-step__phase--lobby       { color: var(--color-text-muted); border-color: var(--color-border); }
+  .demo-step__phase--lobby       { color: var(--color-text-quiet); border-color: var(--color-border); }
   .demo-step__phase--draft        { color: var(--color-warning); border-color: var(--color-warning); }
   .demo-step__phase--foundation   { color: var(--color-success); border-color: var(--color-success); }
   .demo-step__phase--competition  { color: var(--color-warning); border-color: var(--color-warning); }
@@ -1858,7 +1858,7 @@ export const htpStyles = css`
   }
 
   .demo-step__detail {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: var(--text-xs);
     line-height: var(--leading-relaxed);
     margin: 0 0 var(--space-3);
@@ -1890,7 +1890,7 @@ export const htpStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .demo-readout__value {

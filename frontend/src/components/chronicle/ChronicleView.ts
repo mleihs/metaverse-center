@@ -76,7 +76,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.35em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: var(--space-1) 0 var(--space-2);
     }
 
@@ -104,7 +104,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .dateline__sim {
@@ -135,7 +135,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .editorial__input {
@@ -231,7 +231,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
     .press-status__phase {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .press-status__elapsed {
@@ -239,7 +239,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       align-self: center;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 3ch;
       text-align: right;
     }
@@ -281,7 +281,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -353,7 +353,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-wrap: wrap;
     }
 
@@ -458,7 +458,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       flex-shrink: 0;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.04em;
     }
 

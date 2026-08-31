@@ -128,7 +128,7 @@ export class VelgDriftDockPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .dock__cast-label {
       display: flex;
@@ -140,7 +140,7 @@ export class VelgDriftDockPanel extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .dock__agents {
       list-style: none;
@@ -173,7 +173,7 @@ export class VelgDriftDockPanel extends LitElement {
     }
     .dock__agent-role {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     @keyframes dock-in {
       from {

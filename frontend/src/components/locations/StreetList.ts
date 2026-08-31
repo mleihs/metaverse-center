@@ -61,7 +61,7 @@ export class VelgStreetList extends LitElement {
 
     .item__length {
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
   `;
 

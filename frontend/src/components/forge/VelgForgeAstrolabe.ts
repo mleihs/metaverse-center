@@ -98,7 +98,7 @@ export class VelgForgeAstrolabe extends LitElement {
       }
 
       .seed-box textarea::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .seed-box textarea:disabled {
@@ -127,7 +127,7 @@ export class VelgForgeAstrolabe extends LitElement {
         gap: var(--space-1);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         letter-spacing: 0.03em;
       }
 
@@ -139,7 +139,7 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         letter-spacing: 0.05em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: right;
         white-space: nowrap;
         transition: color 0.2s;

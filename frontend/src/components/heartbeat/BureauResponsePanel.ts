@@ -103,7 +103,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -174,7 +174,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .plate__effect {
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .plate__locked {
@@ -206,7 +206,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .roster__count {
       font-family: var(--font-mono);
       letter-spacing: var(--tracking-normal);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .roster__count--met {
@@ -317,7 +317,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Filed order (the carbon copy) ─────────────────────── */
@@ -433,7 +433,7 @@ export class VelgBureauResponsePanel extends LitElement {
 
     .dispatch-btn[disabled] {
       border-color: var(--_rule);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: not-allowed;
       box-shadow: none;
     }
@@ -464,7 +464,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .hint {
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .hint--warning {
@@ -486,7 +486,7 @@ export class VelgBureauResponsePanel extends LitElement {
       gap: var(--space-2);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 640px) {

@@ -50,7 +50,7 @@ export class VelgResonanceJournal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -91,7 +91,7 @@ export class VelgResonanceJournal extends LitElement {
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-3) var(--space-4);
       cursor: pointer;
       min-height: 44px;
@@ -115,7 +115,7 @@ export class VelgResonanceJournal extends LitElement {
     }
 
     .tab[disabled] {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.55;
       cursor: default;
     }

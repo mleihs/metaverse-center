@@ -69,7 +69,7 @@ export class VelgOpsBurnRatePanel extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .row__value {
@@ -93,7 +93,7 @@ export class VelgOpsBurnRatePanel extends LitElement {
 
     .empty {
       padding: var(--space-4);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       font-size: var(--text-sm);
     }

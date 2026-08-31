@@ -110,7 +110,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
       margin-left: calc(20px + var(--space-3));
     }
@@ -135,7 +135,7 @@ export class VelgAdminScannerTab extends LitElement {
     }
 
     .scanner-header__status--inactive {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
     }
 
@@ -177,7 +177,7 @@ export class VelgAdminScannerTab extends LitElement {
       padding: var(--space-2) var(--space-4);
       background: none;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       position: relative;
       transition: color 0.2s ease, background 0.2s ease;
@@ -232,7 +232,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-3);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
@@ -473,7 +473,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
     }
 
@@ -589,7 +589,7 @@ export class VelgAdminScannerTab extends LitElement {
       padding: var(--space-1) var(--space-3);
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: all 0.15s ease;
     }
@@ -752,7 +752,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Magnitude bar (horizontal) */
@@ -805,7 +805,7 @@ export class VelgAdminScannerTab extends LitElement {
     .candidate__reason {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
       line-height: 1.4;
     }
@@ -851,7 +851,7 @@ export class VelgAdminScannerTab extends LitElement {
     .card-footer__source {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -966,7 +966,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
       margin-top: var(--space-4);
       display: flex;
@@ -1025,7 +1025,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3);
       text-align: left;
       border-bottom: 2px solid var(--color-border);
@@ -1059,7 +1059,7 @@ export class VelgAdminScannerTab extends LitElement {
     }
 
     .log-unclassified {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── States ───────────────────────────────────────────── */
@@ -1082,7 +1082,7 @@ export class VelgAdminScannerTab extends LitElement {
     .loading-state {
       padding: var(--space-8);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       text-transform: uppercase;
@@ -1109,7 +1109,7 @@ export class VelgAdminScannerTab extends LitElement {
     .empty-state {
       padding: var(--space-8) var(--space-4);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
       font-family: var(--font-brutalist);
       text-transform: uppercase;

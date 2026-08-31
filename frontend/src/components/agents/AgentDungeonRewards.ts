@@ -54,7 +54,7 @@ export class VelgAgentDungeonRewards extends LitElement {
     .empty {
       padding: var(--space-4) var(--space-3);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: 0.04em;
@@ -149,7 +149,7 @@ export class VelgAgentDungeonRewards extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: 1px var(--space-1);
       border: 1px solid var(--color-border-light);
     }
@@ -175,7 +175,7 @@ export class VelgAgentDungeonRewards extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .reward__source-icon {

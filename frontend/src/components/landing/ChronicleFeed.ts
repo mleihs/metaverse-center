@@ -104,7 +104,7 @@ export class VelgChronicleFeed extends LitElement {
         font-size: 12px;
         letter-spacing: 3px;
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         animation: pulse-text 1.5s ease-in-out infinite;
       }
 
@@ -131,7 +131,7 @@ export class VelgChronicleFeed extends LitElement {
       .feed-empty__text {
         font-family: var(--font-mono, 'SF Mono', monospace);
         font-size: 13px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Pagination ──────────────────────── */

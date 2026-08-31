@@ -50,7 +50,7 @@ export const caseFileStyles = css`
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-top: var(--space-1);
   }
 
@@ -70,7 +70,7 @@ export const caseFileStyles = css`
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
@@ -149,7 +149,7 @@ export const caseFileStyles = css`
   .panel__epigraph {
     font-style: italic;
     font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     /* Zitatlinie eines Epigraphs, neutral. */
     border-left: 1px solid var(--color-border);
     padding-left: var(--space-3);

@@ -141,7 +141,7 @@ export class VelgOpsHeatmapPanel extends LitElement {
     .loading {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-6);
       text-align: center;
       font-style: italic;

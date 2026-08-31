@@ -210,7 +210,7 @@ export class VelgToast extends LitElement {
     .dispatch__timestamp {
       font-family: var(--font-brutalist);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.08em;
       flex-shrink: 0;
       margin-left: auto;
@@ -228,7 +228,7 @@ export class VelgToast extends LitElement {
       padding: 0;
       background: transparent;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       z-index: 3;
       transition: color 150ms;

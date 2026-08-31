@@ -311,7 +311,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.18em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ══════════════════════════════════════════════════════
@@ -362,7 +362,7 @@ export class VelgAdminInstagramTab extends LitElement {
       display: flex;
       justify-content: space-between;
       font-size: 7px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
     }
 
@@ -440,7 +440,7 @@ export class VelgAdminInstagramTab extends LitElement {
     .stories-header__count {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -500,7 +500,7 @@ export class VelgAdminInstagramTab extends LitElement {
     }
 
     .seq-header__chevron {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: transform 0.2s ease;
       flex-shrink: 0;
     }
@@ -524,7 +524,7 @@ export class VelgAdminInstagramTab extends LitElement {
       gap: var(--space-2);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .seq-mag-bar {
@@ -548,7 +548,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .seq-body {
@@ -594,7 +594,7 @@ export class VelgAdminInstagramTab extends LitElement {
       align-items: center;
       justify-content: center;
       font-size: 7px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .story-card__body {
@@ -625,12 +625,12 @@ export class VelgAdminInstagramTab extends LitElement {
     .story-card__seq {
       font-family: var(--font-mono);
       font-size: 8px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .story-card__time {
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -659,7 +659,7 @@ export class VelgAdminInstagramTab extends LitElement {
     .story-empty {
       padding: var(--space-6) var(--space-4);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
     }
 
@@ -753,7 +753,7 @@ export class VelgAdminInstagramTab extends LitElement {
 
     .config-card__status--inactive {
       background: color-mix(in srgb, var(--color-text-muted) 10%, transparent);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Row layout + dividers + label-group + --disabled come from
@@ -786,7 +786,7 @@ export class VelgAdminInstagramTab extends LitElement {
 
     .config-row__desc {
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 280px;
     }
 
@@ -809,7 +809,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: none;
       border-right: 1px solid var(--color-border);
@@ -915,7 +915,7 @@ export class VelgAdminInstagramTab extends LitElement {
     .mix-row__pct {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
     }
 
@@ -959,7 +959,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: color-mix(in srgb, var(--color-border) 30%, transparent);
       border-left: 1px solid var(--color-border);
     }
@@ -996,7 +996,7 @@ export class VelgAdminInstagramTab extends LitElement {
 
     .blocklist-editor__hint {
       font-size: 8px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.02em;
     }
 
@@ -1033,7 +1033,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-bottom: 1px solid var(--color-border);
     }
 
@@ -1053,7 +1053,7 @@ export class VelgAdminInstagramTab extends LitElement {
     .empty-state {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 11px;
     }
 
@@ -1066,7 +1066,7 @@ export class VelgAdminInstagramTab extends LitElement {
     .loading-state {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 11px;
     }
 
@@ -1117,7 +1117,7 @@ export class VelgAdminInstagramTab extends LitElement {
 
     .reject-modal__sub {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-4);
     }
 
@@ -2559,7 +2559,7 @@ export class VelgAdminInstagramTab extends LitElement {
                   <div class="cipher-table__row">
                     <span>${formatDateTimeShort(r.redeemed_at, { fallback: '\u2013' })}</span>
                     <span class="dispatch__type-tag">${r.reward_type}</span>
-                    <span style="color: var(--color-text-muted)">
+                    <span style="color: var(--color-text-quiet)">
                       ${r.user_id ? `${r.user_id.slice(0, 8)}\u2026` : msg('Anonymous')}
                     </span>
                   </div>

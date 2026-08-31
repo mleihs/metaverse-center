@@ -87,7 +87,7 @@ export class VelgOpsFirehosePanel extends LitElement {
       gap: var(--space-2);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .status__dot {

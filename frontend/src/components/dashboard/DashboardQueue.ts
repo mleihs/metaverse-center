@@ -135,7 +135,7 @@ export class VelgDashboardQueue extends LitElement {
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
         white-space: nowrap;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .chip__dot {
@@ -174,7 +174,7 @@ export class VelgDashboardQueue extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .cell__foot {
@@ -205,7 +205,7 @@ export class VelgDashboardQueue extends LitElement {
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
         white-space: nowrap;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .cell__arrow {

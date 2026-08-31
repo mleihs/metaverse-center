@@ -79,7 +79,7 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
       .coord-hint {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-1);
       }
 
@@ -101,7 +101,7 @@ export class VelgWeatherSettingsPanel extends BaseSettingsPanel {
         border: var(--border-default);
         font-family: var(--font-body);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.5;
       }
 

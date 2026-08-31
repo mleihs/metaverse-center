@@ -47,7 +47,7 @@ export class VelgNotificationsSettingsView extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-2);
     }
 
@@ -92,7 +92,7 @@ export class VelgNotificationsSettingsView extends SignalWatcher(LitElement) {
       padding-top: var(--space-4);
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .note__heading {

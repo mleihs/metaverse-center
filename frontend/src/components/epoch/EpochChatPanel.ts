@@ -59,7 +59,7 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-size: 10px;
       font-weight: 900;
@@ -112,7 +112,7 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
       text-align: center;
       font-size: 10px;
       letter-spacing: 2px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       background: var(--color-surface);
       border-top: 1px solid var(--color-border);

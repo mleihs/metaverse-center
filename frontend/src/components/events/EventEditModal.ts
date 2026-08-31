@@ -131,7 +131,7 @@ export class VelgEventEditModal extends LitElement {
 
     .form__tag-hint {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
   `,

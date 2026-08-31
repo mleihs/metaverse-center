@@ -110,7 +110,7 @@ export class VelgStyleReferenceModal extends LitElement {
       .strength-hint {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-1);
       }
 

@@ -161,7 +161,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
     }
 
     .cell__detail {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -178,7 +178,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
     .empty {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-3);
       text-align: center;
       font-style: italic;

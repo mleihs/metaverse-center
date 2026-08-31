@@ -60,7 +60,7 @@ export const formStyles = css`
 
   .form__input::placeholder,
   .form__textarea::placeholder {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .form__textarea {

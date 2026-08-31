@@ -255,7 +255,7 @@ export class VelgLoreDossier extends LitElement {
       font-style: italic;
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-6);
     }
 
@@ -397,7 +397,7 @@ export class VelgLoreDossier extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: none;
       padding: 0;

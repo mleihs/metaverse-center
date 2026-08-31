@@ -103,7 +103,7 @@ export class VelgOpsDispatchTicker extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       pointer-events: none;
     }
 
@@ -111,7 +111,7 @@ export class VelgOpsDispatchTicker extends LitElement {
       padding: var(--space-3) var(--space-4);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
     }
 

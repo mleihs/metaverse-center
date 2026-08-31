@@ -72,7 +72,7 @@ export class VelgStyleReferencePanel extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border-light);
       margin-bottom: var(--space-2);
@@ -170,7 +170,7 @@ export class VelgStyleReferencePanel extends LitElement {
       height: 28px;
       background: transparent;
       border: 1px solid transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       padding: 0;
       flex-shrink: 0;
@@ -199,7 +199,7 @@ export class VelgStyleReferencePanel extends LitElement {
     .empty__text {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }

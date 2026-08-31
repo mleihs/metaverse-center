@@ -49,7 +49,7 @@ export class MapLayerToggle extends LitElement {
       background: none;
       border: none;
       border-right: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       font-weight: 600;
