@@ -100,6 +100,27 @@ def _max_history_messages(model_id: str) -> int:
     return max(_MIN_MESSAGES, min(estimated, _MAX_MESSAGES_HARD))
 
 
+@dataclass(slots=True)
+class _GroupTurnSetup:
+    """Alles, was eine Gruppenantwort braucht, bevor der erste Agent spricht.
+
+    Existiert, weil ``generate_group_response`` und ``stream_group_response``
+    diesen Block ZEICHENGLEICH trugen — sechzehn Zeilen, sechs davon
+    Netzwerkaufrufe. Zwei Kopien einer Reihenfolge sind zwei Gelegenheiten, sie
+    unterschiedlich zu ändern; hier hätte das bedeutet, dass eine neue
+    Kontextquelle in der einen Fassung ankommt und in der gestreamten still
+    fehlt. Dieselbe Bauart wie die doppelte Zustandsleiter vor Migration 303.
+    """
+
+    agents: list[dict]
+    agent_names: list[str]
+    simulation: dict | None
+    locale: str
+    prompt_template: Any
+    model: ResolvedModel
+    event_context: str
+
+
 @dataclass
 class SSEEvent:
     """A Server-Sent Event for chat streaming.
@@ -776,6 +797,36 @@ class ChatAIService:
         )
         return response_text
 
+    async def _prepare_group_turn(self, conversation_id: UUID) -> _GroupTurnSetup:
+        """Der gemeinsame Vorlauf beider Gruppenfassungen — sechs Netzwerkaufrufe.
+
+        Stand bis dahin ZEICHENGLEICH in ``generate_group_response`` und
+        ``stream_group_response``. Er steht jetzt einmal da, damit eine neue
+        Kontextquelle nicht in der einen Fassung ankommen und in der anderen
+        fehlen kann.
+        """
+        agents = await self._load_conversation_agents(conversation_id)
+        event_refs = await self._load_event_references(conversation_id)
+        simulation = await self._load_simulation()
+        locale = await self._get_locale()
+        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
+        model = await self._model_resolver.resolve_text_model("chat_response")
+
+        event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
+        agent_ids = [str(a["id"]) for a in agents]
+        reactions = await self._load_event_reactions(event_ids, agent_ids)
+        event_context = await self._build_event_context(event_refs, reactions, locale)
+
+        return _GroupTurnSetup(
+            agents=agents,
+            agent_names=[a.get("name", "Agent") for a in agents],
+            simulation=simulation,
+            locale=locale,
+            prompt_template=prompt_template,
+            model=model,
+            event_context=event_context,
+        )
+
     async def generate_group_response(
         self,
         conversation_id: UUID,
@@ -786,21 +837,11 @@ class ChatAIService:
         Each agent responds sequentially, seeing previous agents' responses.
         Returns list of saved message dicts.
         """
-        # Load shared context
-        agents = await self._load_conversation_agents(conversation_id)
-        event_refs = await self._load_event_references(conversation_id)
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
-
-        # Build event context block
-        event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
-        agent_ids = [str(a["id"]) for a in agents]
-        reactions = await self._load_event_reactions(event_ids, agent_ids)
-        event_context = await self._build_event_context(event_refs, reactions, locale)
-
-        agent_names = [a.get("name", "Agent") for a in agents]
+        setup = await self._prepare_group_turn(conversation_id)
+        agents, agent_names = setup.agents, setup.agent_names
+        simulation, locale = setup.simulation, setup.locale
+        prompt_template, model = setup.prompt_template, setup.model
+        event_context = setup.event_context
         saved_messages: list[dict] = []
 
         for idx, agent in enumerate(agents):
@@ -875,19 +916,11 @@ class ChatAIService:
         Each agent responds sequentially — the next agent sees the previous
         agent's completed response in history. Yields interleaved SSEEvents.
         """
-        agents = await self._load_conversation_agents(conversation_id)
-        event_refs = await self._load_event_references(conversation_id)
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
-
-        event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
-        agent_ids = [str(a["id"]) for a in agents]
-        reactions = await self._load_event_reactions(event_ids, agent_ids)
-        event_context = await self._build_event_context(event_refs, reactions, locale)
-
-        agent_names = [a.get("name", "Agent") for a in agents]
+        setup = await self._prepare_group_turn(conversation_id)
+        agents, agent_names = setup.agents, setup.agent_names
+        simulation, locale = setup.simulation, setup.locale
+        prompt_template, model = setup.prompt_template, setup.model
+        event_context = setup.event_context
         saved_messages: list[dict] = []
 
         for idx, agent in enumerate(agents):
