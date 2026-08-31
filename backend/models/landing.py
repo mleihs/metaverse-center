@@ -63,6 +63,9 @@ class LandingCounts(BaseModel):
     #: Ereignisse in lebenden Welten (109).
     events: int = 0
 
+    #: Zonen in lebenden Welten (70).
+    zones: int = 0
+
 
 class LandingWorld(BaseModel):
     """Eine Welt fürs Raster „Läuft bereits".

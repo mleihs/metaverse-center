@@ -131,6 +131,22 @@ class LandingService:
         return response.count or 0
 
     @staticmethod
+    async def _zone_count(anon: Client, world_ids: list[str]) -> int:
+        """Zonen lebender Welten.
+
+        Eigener Zähler und nicht ``_count``: ``zones`` führt keine Spalte
+        ``deleted_at``, der gemeinsame Zähler würde also auf eine Spalte
+        filtern, die es nicht gibt — und postgrest antwortet darauf mit einem
+        Fehler, nicht mit null.
+        """
+        if not world_ids:
+            return 0
+        response = await (
+            anon.table("zones").select("id", count="exact").in_("simulation_id", world_ids).execute()
+        )
+        return response.count or 0
+
+    @staticmethod
     async def _epochs_in_play(anon: Client, now: datetime) -> int:
         """Epochen in einem spielenden Status, die sich auch bewegt haben.
 
@@ -290,6 +306,7 @@ class LandingService:
             "buildings": await cls._count(anon, "buildings", world_ids),
             "memories": await cls._memory_count(anon, world_ids),
             "events": await cls._count(anon, "events", world_ids),
+            "zones": await cls._zone_count(anon, world_ids),
         }
 
         return {
