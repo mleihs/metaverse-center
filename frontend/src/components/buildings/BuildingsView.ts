@@ -10,6 +10,10 @@ import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type { ApiResponse, Building } from '../../types/index.js';
+import {
+  OCCUPANCY_LEGEND,
+  type OccupancyLevel,
+} from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { updateUrl } from '../../utils/navigation.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
@@ -497,24 +501,21 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
    * legend that only appears on hover is unreachable on touch, and this is
    * the key to a mark that appears on every card in the view.
    *
-   * The thresholds are NOT restated here - they come from `occupancyLevel()`
-   * in utils/building-condition.ts, and the percentages in these strings are
-   * the same numbers by hand. If they ever disagree, the util is right.
+   * Neither the thresholds NOR the words live here: both come from
+   * utils/building-condition.ts. The words used to be stated twice - this
+   * view said "Well used / Half taken / Nearly empty" while the overview
+   * strip said "Full / Partly held / Thin" for the same three levels, so a
+   * reader who saw both learned two scales for one measurement.
    */
   private _renderLegend() {
-    const items: Array<[string, string]> = [
-      ['full', msg('Well used \u2013 two thirds of its places or more')],
-      ['partial', msg('Half taken \u2013 a third of its places or more')],
-      ['sparse', msg('Nearly empty \u2013 below a third')],
-      ['ruined', msg('A ruin \u2013 its places are not counted')],
-    ];
+    const items: OccupancyLevel[] = ['full', 'partial', 'sparse', 'ruined'];
     return html`
       <div class="legend" role="note" aria-label=${msg('How to read the occupancy marks')}>
         ${items.map(
-          ([key, label]) => html`
+          (level) => html`
             <span class="legend__item">
-              <span class="legend__mark legend__mark--${key}" aria-hidden="true"></span>
-              <span>${label}</span>
+              <span class="legend__mark legend__mark--${level}" aria-hidden="true"></span>
+              <span>${OCCUPANCY_LEGEND[level]()}</span>
             </span>
           `,
         )}

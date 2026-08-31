@@ -1,3 +1,5 @@
+import { msg } from '@lit/localize';
+
 /**
  * Building condition — the single mapping from the backend's condition
  * vocabulary to the three-dot gem and the badge variant on `<velg-game-card>`.
@@ -121,3 +123,44 @@ export function occupancyVariant(level: OccupancyLevel): ConditionVariant {
       return 'default';
   }
 }
+
+/**
+ * What each occupancy level is CALLED — the one vocabulary for the one scale.
+ *
+ * The thresholds moved here first and the words stayed behind, so the same
+ * scale ended up with two names: the buildings tab said "Well used / Half
+ * taken / Nearly empty", the overview strip said "Full / Partly held / Thin".
+ * Two independent `OCCUPANCY_LABEL` maps, same identifier, different files.
+ * A reader who sees both learns two scales for one measurement — and a
+ * translator has to guess whether the difference means anything. (It did not:
+ * the German binds all six through one word, "belegt".)
+ *
+ * Consolidating the numbers without the words is half a consolidation, which
+ * is the same shape of mistake as a unification that leaves one end behind.
+ *
+ * Thunks, not strings: `msg()` resolves against the locale active when it
+ * RUNS. A module-level constant of resolved strings freezes whichever language
+ * happened to be loaded first, and no language switch ever reaches it.
+ */
+export const OCCUPANCY_LABEL: Readonly<Record<OccupancyLevel, () => string>> = {
+  full: () => msg('Well used'),
+  partial: () => msg('Half taken'),
+  sparse: () => msg('Nearly empty'),
+  ruined: () => msg('Ruined'),
+};
+
+/**
+ * The legend line for each level — the scale written out once, for the note
+ * under a grid where the marks appear.
+ *
+ * Separate from the badge label on purpose: a badge on a card has room for two
+ * words, a legend has room for the reason. The percentages are the same
+ * numbers as `occupancyLevel()` above, written by hand; if they ever disagree,
+ * the function is right.
+ */
+export const OCCUPANCY_LEGEND: Readonly<Record<OccupancyLevel, () => string>> = {
+  full: () => msg('Well used \u2013 two thirds of its places or more'),
+  partial: () => msg('Half taken \u2013 a third of its places or more'),
+  sparse: () => msg('Nearly empty \u2013 below a third'),
+  ruined: () => msg('A ruin \u2013 its places are not counted'),
+};

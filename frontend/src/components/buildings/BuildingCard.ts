@@ -3,30 +3,17 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building, Simulation } from '../../types/index.js';
-import { conditionDots, conditionVariant, occupancyLevel, occupancyVariant } from '../../utils/building-condition.js';
+import {
+  conditionDots,
+  conditionVariant,
+  OCCUPANCY_LABEL,
+  occupancyLevel,
+  occupancyVariant,
+} from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
-
-/**
- * Wording for the occupancy mark.
- *
- * Functions, not constants: a module-level `msg()` is evaluated once at import
- * and freezes whatever locale happened to be active then, so a language switch
- * never reaches it. Calling at render time is the documented shape for this
- * (see the i18n notes on module-level msg()).
- *
- * The mark itself is DRAWN, not typed: the handoff sketches it as the glyphs
- * "●◐○", but those denote a state rather than decorate one, and a glyph is not
- * an icon. The word carries the meaning here; the disc beside it carries the
- * degree.
- */
-const OCCUPANCY_LABEL = {
-  full: () => msg('Well used'),
-  partial: () => msg('Half taken'),
-  sparse: () => msg('Nearly empty'),
-} as const;
 
 @localized()
 @customElement('velg-building-card')
