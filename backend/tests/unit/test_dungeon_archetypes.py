@@ -149,9 +149,21 @@ class TestDifficultyMultipliers:
             assert DIFFICULTY_MULTIPLIERS[i + 1]["loot_quality"] >= DIFFICULTY_MULTIPLIERS[i]["loot_quality"]
 
     def test_difficulty_1_baseline(self):
+        """Difficulty 1 is the unscaled baseline — for the factors where 1.0
+        actually MEANS unscaled.
+
+        `enemy_condition` used to be pinned here at 1.0 too. It is a balance
+        number, not a definition: it was re-derived on 2026-08-31 with
+        `scripts/simulate_dungeon_combat.py` because the old column produced a
+        100 % win rate and a two-round fight on every level (Befund D13).
+        Pinning a balance value in an equality assertion turns every measured
+        retune into a test edit and makes a snapshot look like a specification.
+        The properties that DO hold — monotone across the five levels, no two
+        levels equal — are asserted in `test_difficulty_contract.py`.
+        """
         d1 = DIFFICULTY_MULTIPLIERS[1]
-        assert d1["enemy_power"] == 1.0
-        assert d1["enemy_condition"] == 1.0
+        assert d1["enemy_power"] == 1.0, "keine Angriffsskalierung auf der Grundstufe"
+        assert d1["loot_quality"] == 1.0, "kein Beutebonus auf der Grundstufe"
         assert d1["depth"] == 4
 
     def test_difficulty_5_peak(self):

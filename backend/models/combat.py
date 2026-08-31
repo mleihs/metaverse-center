@@ -71,6 +71,17 @@ class EnemyInstance(BaseModel):
     threat_level: ThreatLevel = "standard"  # From template — minion/standard/elite/boss
     stress_resistance: int
     evasion: int
+    attack_power: int = 3
+    """Attack power AFTER difficulty scaling, denormalized at spawn.
+
+    The combat engine used to read `attack_power` straight from the template
+    dict, so `DIFFICULTY_MULTIPLIERS[*]["enemy_power"]` reached nothing and an
+    enemy hit exactly as hard at difficulty 5 as at difficulty 1 (Befund D13).
+    Scaled once at spawn rather than per round: the value belongs to this
+    encounter, and a checkpoint has to carry it.
+    """
+    stress_attack_power: int = 3
+    """Stress attack power after difficulty scaling — see `attack_power`."""
     is_alive: bool = True
     active_effects: list[str] = Field(default_factory=list)
     image_path: str | None = None

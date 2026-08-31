@@ -90,6 +90,20 @@ def spawn_enemies(
                     threat_level=template.threat_level,
                     stress_resistance=template.stress_resistance,
                     evasion=template.evasion,
+                    # `enemy_power` had no reader at all until 2026-08-31: an
+                    # enemy hit exactly as hard on difficulty 5 as on 1. Scaled
+                    # here so it crosses the existing >= 7 damage threshold
+                    # rather than through a second damage formula — 4 of 42
+                    # enemies deal two steps at difficulty 1, 19 of 42 at 5.
+                    attack_power=max(1, round(template.attack_power * diff_mult["enemy_power"])),
+                    # Stress scales on its OWN knob, not on `enemy_power`:
+                    # stress is the channel with resolution (10..150 per hit)
+                    # and the only one that still lands when no condition
+                    # damage does. Conflating the two would leave `stress_mult`
+                    # as inert as it was.
+                    stress_attack_power=max(
+                        1, round(template.stress_attack_power * diff_mult["stress_mult"])
+                    ),
                     image_path=template.image_path,
                 )
             )

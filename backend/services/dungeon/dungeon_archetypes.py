@@ -515,12 +515,43 @@ ARCHETYPE_ROOM_DISTRIBUTIONS: dict[str, dict[str, int]] = {
 
 # ── Difficulty Scaling ──────────────────────────────────────────────────────
 
+# Was jede Spalte tut und WO sie gelesen wird, steht einmal in
+# `backend/services/dungeon/difficulty_contract.py`. Bis zum 31.08.2026 hatte
+# genau EINE der fünf einen Leser (`enemy_condition`); `enemy_power`,
+# `stress_mult` und `loot_quality` wurden nirgends konsultiert (Befund D13).
+#
+# Die `enemy_condition`-Spalte wurde am 31.08.2026 neu gesetzt, gemessen mit
+# `scripts/simulate_dungeon_combat.py` (480 Kämpfe je Stufe, feste Saat).
+# Vorher 1,0/1,0/1,3/1,6/1,8 — und damit:
+#
+#     Stufe 1..5:  Sieg 100 %, Wipe 0 %, Median ZWEI Runden, Gruppenschaden 0,
+#                  Stress 0. Auf JEDER Stufe. Die Wahl war keine Wahl, und
+#                  Stufe 1 und 2 trugen sogar denselben Wert.
+#
+# Nachher (die Zahlen unten):
+#
+#     Stufe   Sieg   Patt   Runden   Stress
+#         1   100 %   0 %       2        0
+#         3   100 %   0 %       2       57
+#         5    98 %   2 %       4      228
+#
+# Bewusst die vorsichtigere von zwei gemessenen Spalten: die Simulation
+# unterschätzt die Gruppe (vier Generalisten, feste Politik, nur
+# Schadensfähigkeiten — keine Schilde, keine Stressheilung), also fällt das
+# echte Spiel härter aus als die Messung. Die aggressivere Spalte
+# (1,4/1,9/2,5/3,1/3,8) trieb den Patt-Anteil auf Stufe 5 auf 6 %, und ein Patt
+# räumt den Raum ohne Beute — der unbefriedigendste Ausgang von allen.
+#
+# NICHT geändert wurde die Schadensformel (`_calculate_attack_damage`, Befund
+# D14 „Schaden ist ein Bool"). Gemessen enden 49 % aller Kämpfe, ohne dass ein
+# Gegner ein einziges Mal trifft; mehr Agentenschaden würde Kämpfe verkürzen,
+# die ohnehin zu kurz sind. Die naheliegende Reparatur wäre die falsche gewesen.
 DIFFICULTY_MULTIPLIERS: dict[int, dict[str, float | int]] = {
-    1: {"enemy_power": 1.0, "enemy_condition": 1.0, "stress_mult": 0.8, "loot_quality": 1.0, "depth": 4},
-    2: {"enemy_power": 1.15, "enemy_condition": 1.0, "stress_mult": 1.0, "loot_quality": 1.15, "depth": 5},
-    3: {"enemy_power": 1.25, "enemy_condition": 1.3, "stress_mult": 1.15, "loot_quality": 1.3, "depth": 5},
-    4: {"enemy_power": 1.4, "enemy_condition": 1.6, "stress_mult": 1.3, "loot_quality": 1.5, "depth": 6},
-    5: {"enemy_power": 1.6, "enemy_condition": 1.8, "stress_mult": 1.5, "loot_quality": 1.75, "depth": 7},
+    1: {"enemy_power": 1.0, "enemy_condition": 1.2, "stress_mult": 0.8, "loot_quality": 1.0, "depth": 4},
+    2: {"enemy_power": 1.15, "enemy_condition": 1.6, "stress_mult": 1.0, "loot_quality": 1.15, "depth": 5},
+    3: {"enemy_power": 1.25, "enemy_condition": 2.1, "stress_mult": 1.15, "loot_quality": 1.3, "depth": 5},
+    4: {"enemy_power": 1.4, "enemy_condition": 2.6, "stress_mult": 1.3, "loot_quality": 1.5, "depth": 6},
+    5: {"enemy_power": 1.6, "enemy_condition": 3.2, "stress_mult": 1.5, "loot_quality": 1.75, "depth": 7},
 }
 
 

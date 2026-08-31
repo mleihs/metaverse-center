@@ -417,7 +417,11 @@ class TestRollLoot:
         assert "scar_tissue_reduction" in ids
 
     def test_tier_1_returns_one_item(self):
-        items = roll_loot(1, 3, 3)
+        # Difficulty 1: `loot_quality` is 1.0, so the difficulty tier upgrade
+        # (added 2026-08-31, Befund D13) cannot fire and this asserts the base
+        # roll alone. On difficulty 3 the same call legitimately yields tier 2
+        # three times in ten — see TestRollLootDifficultyQuality below.
+        items = roll_loot(1, 1, 3)
         assert len(items) == 1
         assert items[0].tier == 1
 
@@ -1118,6 +1122,54 @@ class TestTowerLootTables:
         assert not overlap, f"Overlapping loot IDs: {overlap}"
 
 
+class TestRollLootDifficultyQuality:
+    """`loot_quality` — the difficulty column that had no reader at all.
+
+    A run on difficulty 5 dropped exactly the same loot as one on difficulty 1
+    (Befund D13). The surplus over 1.0 is the upgrade chance, applied AFTER the
+    archetype rules and only to an item they did not already lift.
+    """
+
+    def test_difficulty_one_never_upgrades(self):
+        """`loot_quality` is 1.0 at difficulty 1 — chance zero, by construction."""
+        with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.0):
+            items = roll_loot(1, 1, 3, archetype_state={"stability": 50}, archetype="The Tower")
+            assert items[0].tier == 1
+
+    def test_difficulty_five_upgrades_on_a_favourable_roll(self):
+        """0.75 chance at difficulty 5 (loot_quality 1.75)."""
+        with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.5):
+            items = roll_loot(1, 5, 3, archetype_state={"stability": 50}, archetype="The Tower")
+            assert items[0].tier == 2
+
+    def test_difficulty_five_does_not_upgrade_on_an_unfavourable_roll(self):
+        with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.9):
+            items = roll_loot(1, 5, 3, archetype_state={"stability": 50}, archetype="The Tower")
+            assert items[0].tier == 1
+
+    def test_tier_two_is_never_lifted_further(self):
+        """The upgrade is 1→2 only; there is no tier-3 drop outside a boss."""
+        with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.0):
+            items = roll_loot(2, 5, 3, archetype_state={"stability": 50}, archetype="The Tower")
+            assert items[0].tier == 2
+
+    def test_the_share_of_tier_two_rises_with_difficulty(self):
+        """The property that matters, measured rather than asserted per roll."""
+        import random as _random
+
+        shares = []
+        for difficulty in (1, 3, 5):
+            _random.seed(20260831)
+            upgraded = sum(
+                1
+                for _ in range(300)
+                if roll_loot(1, difficulty, 3, {}, "The Tower")[0].tier == 2
+            )
+            shares.append(upgraded)
+        assert shares == sorted(shares), f"Anteil steigt nicht mit der Stufe: {shares}"
+        assert shares[2] > shares[0], f"Stufe 5 wie Stufe 1: {shares}"
+
+
 class TestRollLootTower:
     """roll_loot with Tower archetype."""
 
@@ -1131,8 +1183,13 @@ class TestRollLootTower:
         assert "foundation_attunement" in ids
 
     def test_tier_1_returns_one_item(self):
-        """Tier 1 returns exactly 1 item (stability < 80 to avoid upgrade)."""
-        items = roll_loot(1, 3, 3, archetype="The Tower", archetype_state={"stability": 50})
+        """Tier 1 returns exactly 1 item.
+
+        Stability < 80 rules out the archetype upgrade, difficulty 1 rules out
+        the difficulty upgrade (`loot_quality` 1.0). Both have to be excluded
+        for the base roll to be observable at all.
+        """
+        items = roll_loot(1, 1, 3, archetype="The Tower", archetype_state={"stability": 50})
         assert len(items) == 1
         assert items[0].tier == 1
 
@@ -1155,9 +1212,14 @@ class TestRollLootTower:
             assert items[0].tier == 1  # not upgraded
 
     def test_low_stability_no_upgrade(self):
-        """Tower: stability < 80 → no upgrade even with favorable random."""
+        """Tower: stability < 80 → no upgrade even with favorable random.
+
+        Difficulty 1 so the archetype rule is tested alone: the difficulty
+        upgrade shares this patched `random.random`, and at difficulty 3 it
+        would fire on 0.1 < 0.3 and hide what this test is about.
+        """
         with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.1):
-            items = roll_loot(1, 3, 3, archetype_state={"stability": 50}, archetype="The Tower")
+            items = roll_loot(1, 1, 3, archetype_state={"stability": 50}, archetype="The Tower")
             assert items[0].tier == 1
 
     def test_stability_no_upgrade_for_tier_2(self):
@@ -1179,9 +1241,9 @@ class TestRollLootTower:
         assert items[0].tier == 1
 
     def test_stability_boundary_79_no_upgrade(self):
-        """Stability 79 is NOT >= 80, so no upgrade."""
+        """Stability 79 is NOT >= 80, so no upgrade. Difficulty 1 isolates it."""
         with patch("backend.services.dungeon.dungeon_loot.random.random", return_value=0.1):
-            items = roll_loot(1, 3, 3, archetype_state={"stability": 79}, archetype="The Tower")
+            items = roll_loot(1, 1, 3, archetype_state={"stability": 79}, archetype="The Tower")
             assert items[0].tier == 1
 
     def test_stability_boundary_80_eligible(self):
