@@ -91,6 +91,7 @@ export class VelgLandingPage extends LitElement {
     const counts = snapshot?.counts ?? null;
     const worlds = snapshot?.worlds ?? [];
     const citizens = snapshot?.citizens ?? [];
+    const prompts = snapshot?.forge_prompts ?? [];
 
     // Kein eigener Sprungverweis und kein eigenes <main>: die Huelle
     // (`app-shell`) liefert beides bereits. Die alte Fassung trug sie
@@ -103,7 +104,7 @@ export class VelgLandingPage extends LitElement {
       <velg-landing-systems .counts=${counts}></velg-landing-systems>
       <velg-landing-worlds .worlds=${worlds} .counts=${counts}></velg-landing-worlds>
       <velg-landing-citizens .citizens=${citizens}></velg-landing-citizens>
-      <velg-landing-forge></velg-landing-forge>
+      <velg-landing-forge .prompts=${prompts}></velg-landing-forge>
       <velg-landing-seo-footer .worlds=${worlds}></velg-landing-seo-footer>
     `;
   }

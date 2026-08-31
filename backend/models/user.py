@@ -68,6 +68,12 @@ class DashboardWorld(BaseModel):
     lore_body_de: str | None = None
     lore_epigraph: str | None = None
     lore_epigraph_de: str | None = None
+    #: Der Titel der Kammer. Der Entwurf zeigt unter dem Zitat eine
+    #: Quellenangabe; eine Person, die es gesagt hätte, gibt es nicht — wohl
+    #: aber die Kammer, aus der es stammt. Eine echte Herkunft ist besser als
+    #: eine erfundene Stimme.
+    lore_title: str | None = None
+    lore_title_de: str | None = None
 
 
 class ActiveEpochParticipation(BaseModel):
@@ -82,6 +88,11 @@ class ActiveEpochParticipation(BaseModel):
     current_rp: int
     rp_cap: int
     simulation_name: str
+    #: Das Weltbild der Epochen-Simulation. Der Entwurf legte dem Dashboard ein
+    #: eigenes Bühnenbild bei; gemessen tragen aber ALLE 20 Epochen-Klone auf
+    #: Prod ein ``banner_url``. Das echte Bild der eigenen Welt ist besser als
+    #: ein mitgeliefertes Standbild — es zeigt, WO man spielt.
+    simulation_banner_url: str | None = None
     rank: int = 0
     participant_count: int = 0
     #: Ende des laufenden Zyklus. ``None`` heißt NICHT „kein Zyklus", sondern

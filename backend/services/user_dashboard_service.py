@@ -117,7 +117,7 @@ class UserDashboardService:
             # Auslegung.
             lore_resp = await (
                 supabase.table("simulation_lore")
-                .select("simulation_id, sort_order, body, body_de, epigraph, epigraph_de")
+                .select("simulation_id, sort_order, title, title_de, body, body_de, epigraph, epigraph_de")
                 .in_("simulation_id", sim_ids)
                 .order("sort_order")
                 .execute()
@@ -144,6 +144,8 @@ class UserDashboardService:
                         lore_body_de=lore.get("body_de"),
                         lore_epigraph=lore.get("epigraph"),
                         lore_epigraph_de=lore.get("epigraph_de"),
+                        lore_title=lore.get("title"),
+                        lore_title_de=lore.get("title_de"),
                     )
                 )
 
@@ -154,7 +156,7 @@ class UserDashboardService:
             .select(
                 "epoch_id, current_rp, has_acted_this_cycle, "
                 "game_epochs(id, name, status, epoch_type, current_cycle, config, cycle_deadline_at), "
-                "simulations(name)"
+                "simulations(name, banner_url)"
             )
             .eq("user_id", user_id_str)
             .eq("is_bot", False)
@@ -184,6 +186,7 @@ class UserDashboardService:
                     current_rp=row.get("current_rp", 0),
                     rp_cap=rp_cap,
                     simulation_name=sim.get("name", ""),
+                    simulation_banner_url=sim.get("banner_url"),
                     # Kann `None` sein, und das ist auf Prod der Regelfall —
                     # siehe das Feld im Modell. Nicht auffüllen.
                     cycle_deadline_at=epoch.get("cycle_deadline_at"),
