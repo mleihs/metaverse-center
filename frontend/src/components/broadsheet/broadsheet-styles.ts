@@ -14,10 +14,18 @@ export const broadsheetStyles = css`
 
   .broadsheet {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    /* One column. The health readout and the gazette wire used to sit in a
+       280px rail; the handoff runs both across the full measure, in the
+       reading order of a paper: columns, then the state of the colony, then
+       the fold, then the wire. A newspaper has no sidebar. */
+    grid-template-columns: 1fr;
     grid-auto-rows: auto;
     gap: var(--space-6);
-    max-width: var(--container-xl);
+    /* The PAPER rule, not the container ladder. --container-xl is a token for
+       sizing a TOOL; this is a type measure, and it is named so nobody
+       "upgrades" it to --container-2xl on a wide screen. A newspaper does not
+       get wider - only the table does. */
+    max-width: var(--_paper-measure, 1220px);
     margin: 0 auto;
     padding: 0 var(--space-6);
     position: relative;
@@ -49,26 +57,23 @@ export const broadsheetStyles = css`
   /* ── Multi-Column Articles ───────────────────────── */
 
   .broadsheet__columns {
-    grid-column: 1;
+    grid-column: 1 / -1;
     column-width: 28ch;
     column-gap: var(--space-6);
     column-rule: 1px solid var(--color-border-light);
     column-fill: balance;
   }
 
-  /* ── Health Sidebar (sticky) ─────────────────────── */
+  /* ── State of the Colony (full measure) ──────────── */
 
   .broadsheet__health {
-    grid-column: 2;
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-4));
-    height: fit-content;
+    grid-column: 1 / -1;
   }
 
-  /* ── Gazette Wire Sidebar ────────────────────────── */
+  /* ── Gazette Wire (below the fold) ───────────────── */
 
   .broadsheet__wire {
-    grid-column: 2;
+    grid-column: 1 / -1;
   }
 
   /* ── Fold Line (broadsheet crease) ───────────────── */
@@ -299,19 +304,11 @@ export const broadsheetStyles = css`
   /* ── Responsive ──────────────────────────────────── */
 
   @media (max-width: 1024px) {
-    .broadsheet {
-      grid-template-columns: 1fr;
-    }
-    .broadsheet__health {
-      grid-column: 1;
-      position: static;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: var(--space-3);
-    }
-    .broadsheet__wire {
-      grid-column: 1;
-    }
+    /* The two-column overrides that used to live here are gone with the rail:
+       the base layout is already one column, so grid-template-columns: 1fr,
+       grid-column: 1 and position: static all said what was already true.
+       A dead override reads like a decision and is the reason nobody dares
+       touch the block it sits in. */
     .broadsheet__columns {
       column-width: 24ch;
     }
