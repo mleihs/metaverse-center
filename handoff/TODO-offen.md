@@ -260,6 +260,66 @@ Befund zu melden haette 107 absichtliche Zeichenketten zu Arbeit gemacht.
 
 ---
 
+## T13 · 56 RLS-Richtlinien wickeln `auth.uid()` nicht - GEMESSEN, bewusst NICHT repariert
+
+**Gemessen:** 31.08.2026 abends auf Prod, aus einer Erhebung aller harten Regeln
+in CLAUDE.md.
+
+CLAUDE.md verlangt `(SELECT auth.uid())` statt `auth.uid()` in RLS-Richtlinien
+(initPlan-Optimierung, Migration 183, dort mit 94-99 % Verbesserung gemessen).
+Der Stand:
+
+    Richtlinien gesamt                      384
+    nennen auth.uid()                        90
+      davon gewickelt                        34
+      NICHT gewickelt                        56
+    user_has_simulation_access               29 / 29 gewickelt
+    user_has_simulation_role                 79 / 79 gewickelt
+
+**Und warum es trotzdem nichts kostet:** die 56 sitzen ausnahmslos auf kleinen
+Tabellen. Die groesste ist `audit_log` mit 332 Zeilen, dann `agent_aptitudes`
+mit 210; alles uebrige liegt unter 100.
+
+    Tabellen ueber 400 Zeilen mit Richtlinien:   9
+    davon mit ungewickeltem auth.uid():          0
+
+`agent_activities` (89 092), `heartbeat_entries` (19 667),
+`simulation_heartbeats` (11 343), `simulation_taxonomies`, `simulation_settings`,
+`agent_opinions` - alle sauber. Migration 183 hat die heissen Pfade erwischt.
+
+**Deshalb nicht repariert.** 56 ZUGRIFFSRICHTLINIEN auf Produktion umzuschreiben,
+damit eine Tabelle mit 332 Zeilen schneller wird, ist Risiko ohne Ertrag. Die
+Umschreibung waere mechanisch und bedeutungsgleich - aber jede falsch
+zurueckgeschriebene Richtlinie ist entweder eine Aussperrung oder ein Leck.
+
+**Ein Tor dafuer waere auch falsch:** es haette 56 Ausnahmen und wuerde uebergangen.
+Und ein Tor, das man uebergeht, ist schlechter als keines.
+
+🔑 **Die Lehre steckt in der ersten Messung, nicht im Ergebnis.** Meine erste
+Abfrage meldete „keine" - ihr Muster verlangte ein Zeichen unmittelbar vor
+`auth.uid()`, und dort steht immer ein Leerzeichen oder eine Klammer. Erst die
+Gegenprobe („wie viele sind denn GEWICKELT?") zeigte, dass die Abfrage nichts
+sehen konnte. **Eine Null ist erst ein Ergebnis, wenn das Messgeraet bewiesen
+hat, dass es etwas finden KANN.**
+
+### Was die Erhebung sonst ergab
+
+    26 „Never…"-Regeln in CLAUDE.md, 5 mit Tor, 21 ohne
+    davon mechanisch pruefbar: ~10
+
+    Regel  5  response_model=                NEUES TOR (und CLAUDE.md war falsch:
+                                             „sole exception" - es sind zwei)
+    Regel 13  get_supabase in Routern        NEUES TOR (nur drift.py, dokumentiert)
+    Regel  7  active_*-Sichten aktuell       ✓ 26/26, 30/30, 27/27, 32/32 Spalten
+    Regel 10  httpx/requests auf Nutzer-URLs ✓ keine
+    Regel 17  platform_settings per .update  ✓ keine
+    Regel 19  Karten-Geometrie aus Python    ✓ keine
+    Regel 20  inline API-Service-Klassen     ✓ keine
+    Regel 24  MapLibre im Shadow DOM         ✓ createRenderRoot vorhanden
+    Regel 12  RLS-Wicklung                   ⚠ dieser Punkt
+
+---
+
 ## T5 · `/platform-stats` sollte verschwinden - ERLEDIGT (nachgemessen 31.08. abends)
 
 > Alle vier Loeschstellen sind weg. Gemessen: kein `@router.get("/platform-stats")`,
