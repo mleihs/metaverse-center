@@ -142,6 +142,34 @@ class CycleSitrepDraft(BaseModel):
     model_used: str
 
 
+class AutonomousEventNarrative(BaseModel):
+    """The bilingual narrative an LLM writes for an autonomous world event.
+
+    The shape is dictated by ``_EVENT_NARRATIVE_SYSTEM`` in
+    ``autonomous_event_service`` ('Return JSON: {"title", "description",
+    "title_de", "description_de"}') and matched key-for-key by
+    ``_template_narrative``, the fallback that runs when the model is
+    unavailable or over budget. Both halves of that either/or must produce the
+    same keys, because ``_insert_event`` reads them without looking.
+    """
+
+    title: str
+    description: str
+    title_de: str
+    description_de: str
+
+
+class MorningBriefingNarrative(BaseModel):
+    """The bilingual daily briefing text.
+
+    Shape from ``_BRIEFING_SYSTEM`` ('Return JSON: {"narrative_en",
+    "narrative_de"}').
+    """
+
+    narrative_en: str
+    narrative_de: str
+
+
 class SocialTransformDraft(BaseModel):
     """A social-media post rewritten into the simulation's register."""
 
