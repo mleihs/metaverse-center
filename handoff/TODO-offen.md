@@ -501,7 +501,54 @@ schlimmer als der Fehler.
 
 ---
 
-## T9 · Gesprächstitel und `user_id` sind öffentlich lesbar — absichtlich?
+## T9 · Gesprächstitel und `user_id` sind öffentlich lesbar — ✅ ENTSCHIEDEN: nicht öffentlich (Migration 317)
+
+> **Entscheidung des Nutzers, 31.08.2026 nachts:** „nicht öffentlich machen."
+>
+> **Migration 317** entfernt die anonymen Leserichtlinien — und zwar **vier**,
+> nicht zwei. Die Chat-Familie hat noch zwei weitere, die beim ersten Messen
+> nicht auffielen:
+>
+>     chat_conversations         conversations_anon_select
+>     chat_messages              messages_anon_select
+>     chat_conversation_agents   chat_conv_agents_anon_select
+>     chat_event_references      chat_event_refs_anon_select
+>
+> 🔑 Zwei davon zu entfernen wäre schlimmer als keine gewesen: die Nachrichten
+> blieben offen, und der Punkt sähe erledigt aus.
+>
+> **Warum es nichts bricht, gemessen statt angenommen:** kein öffentlicher
+> Endpunkt liest Chat (`routers/public.py`, `public_service.py`: kein Treffer);
+> alle 12 Routen in `routers/chat.py` verlangen `get_current_user` UND
+> `require_role`; das Frontend greift nicht direkt zu; und
+> `conversation_summaries` ist seit 316 zu. Die vier Richtlinien hatten keinen
+> Verbraucher.
+>
+> **Probe (transaktional gegen die echten Prod-Daten, zweimal angewandt):**
+>
+>     als anon, nachher     Gespräche 0 · Nachrichten 0 · Agenten der Gespräche 0
+>                           · Ereignisbezüge 0
+>     zum Vergleich         Agenten 228 · Welten 36   ← Public-First unberührt
+>
+> Die zweite Zeile ist die eigentliche Aussage: die WELT bleibt öffentlich, die
+> Handlung des Menschen nicht.
+>
+> Der Abnahmeblock misst beide Richtungen — dass keine anonyme Richtlinie mehr
+> steht, UND dass die vier eigentümergebundenen stehen bleiben (ein `DROP` zu
+> viel bestünde die erste Prüfung ebenfalls und liesse den Chat für seinen
+> eigenen Nutzer leer), UND dass überhaupt etwas da war, das man verbergen kann.
+> Am Fuss der Migration stehen die vier `CREATE POLICY` der Rücknahme wörtlich.
+>
+> Gebunden von `backend/tests/unit/test_chat_is_not_anon_readable.py` (17 Fälle).
+>
+> ⚠ **Ausdrücklich NICHT mitgegangen: `epoch_chat_messages`.** Ihre Richtlinie
+> `epoch_chat_select_anon` gibt Kanäle mit `channel_type = 'epoch'` frei — das
+> ist Kommunikation zwischen Spielenden IM Spiel und eine eigene Frage. Sie
+> steht als offener Punkt, nicht als Versehen.
+>
+> ⏳ Migration 317 wartet auf das Wort für Prod.
+
+### Der ursprüngliche Befund
 
 **Gemessen:** 31.08.2026 auf Prod, beim Abschluss von T8.
 
