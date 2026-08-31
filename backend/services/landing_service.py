@@ -9,11 +9,13 @@ kommt.
 
 Zwei Fallen, die beim Messen aufgingen und die hier ausdrücklich vermieden werden:
 
-**Erstens: der Bestandsfilter.** `SimulationService.get_platform_stats` zählt
-`simulation_type='template' AND deleted_at IS NULL` — ohne `status`. Heute ist
-das Ergebnis richtig, weil zufällig alle 16 Vorlagen `active` sind; sobald eine
-archiviert wird, wirbt die Frontseite mit ihr weiter. Derselbe Fehler steckt in
-der Sicht `active_agents` (N3). Hier wird `status` mitgefiltert.
+**Erstens: der Bestandsfilter.** `SimulationService.get_platform_stats` zählte
+`simulation_type='template' AND deleted_at IS NULL` — ohne `status`. Das Ergebnis
+war richtig, weil zufällig alle 16 Vorlagen `active` sind; mit der ersten
+archivierten Welt hätte die Frontseite mit ihr weitergeworben. Der Zähler filtert
+`status` seit dem 31.08.2026 mit (`simulation_service.py`); dieser Dienst tat es
+von Anfang an, und beide schneiden jetzt gleich. Derselbe Fehler steckt weiterhin
+in der Sicht `active_agents` (N3).
 
 **Zweitens: ein Status ist kein Betrieb.** `game_epochs` kennt gar kein
 `status='active'` — die Werte auf Prod sind `foundation`, `competition`, `lobby`.
