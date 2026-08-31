@@ -136,6 +136,10 @@ jobs:
         run: bash scripts/lint-no-content-in-python.sh
         working-directory: .
 
+      - name: Backend lint (migration timestamps unique, numbers in the same order)
+        run: bash scripts/lint-migration-order.sh
+        working-directory: .
+
       - name: Backend lint (no unreachable guard after .single())
         run: bash scripts/lint-no-dead-single-guard.sh
         working-directory: .

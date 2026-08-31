@@ -31,7 +31,11 @@ from pathlib import Path
 
 import pytest
 
-from backend.models.forge import BUILDING_CONDITION_CORE, ForgeBuildingDraft
+from backend.models.forge import (
+    BUILDING_CONDITION_CORE,
+    BUILDING_CONDITION_CORE_RUNGS,
+    ForgeBuildingDraft,
+)
 
 BACKEND = Path(__file__).resolve().parents[2]
 ORCHESTRATOR = BACKEND / "services" / "forge_orchestrator_service.py"
@@ -116,3 +120,42 @@ def test_no_second_hardcoded_condition_list(path: Path) -> None:
         "Das Vokabular kommt aus BUILDING_CONDITION_CORE. Zwei Listen in einer "
         "Anfrage haben dem Modell schon einmal zwei Wahrheiten gegeben."
     )
+
+
+def test_the_core_rungs_match_the_database_map() -> None:
+    """Die Abschrift der Sprossenkarte darf nicht von ihrem Original wegdriften.
+
+    `BUILDING_CONDITION_CORE_RUNGS` ist unvermeidlich eine zweite Fassung: die
+    Karte lebt in `fn_building_condition_rungs()` (Migration 322), aber ein
+    Prompt kann keine Datenbank abfragen — das Modell muss die Anker LESEN.
+
+    Statt die Zahlen hier ein drittes Mal hinzuschreiben, liest dieser Test die
+    `VALUES`-Liste aus der Migration, die die Funktion definiert. Damit ist die
+    Abschrift an ihr Original gebunden statt an eine Erinnerung.
+    """
+    # Über den INHALT suchen, nicht über eine Nummer: eine Migration kann
+    # umnummeriert werden (und wurde es heute — ein Zeitstempel kollidierte),
+    # und ein Test, der an einer Nummer hängt, sucht danach an der falschen
+    # Datei und meldet „nicht gefunden" statt „stimmt nicht".
+    migrations = sorted((BACKEND.parent / "supabase" / "migrations").glob("*.sql"))
+    block = None
+    for path in migrations:
+        sql = path.read_text(encoding="utf-8")
+        m = re.search(
+            r"CREATE OR REPLACE FUNCTION public\.fn_building_condition_rungs\(\)(.*?)\$function\$;",
+            sql,
+            re.S,
+        )
+        if m:
+            block = m.group(1)  # die LETZTE Definition gewinnt, wie in der Datenbank
+    assert block, "fn_building_condition_rungs in keiner Migration gefunden"
+    pairs = {w: int(n) for w, n in re.findall(r"\('([a-z]+)',\s*(\d+)\)", block)}
+    # Nicht leer bestehen: ein Regex, der nichts findet, wäre sonst grün.
+    assert len(pairs) >= 15, f"nur {len(pairs)} Sprossen aus der Migration gelesen"
+
+    for word, rung in BUILDING_CONDITION_CORE_RUNGS.items():
+        assert pairs.get(word) == rung, (
+            f"{word}: Python sagt {rung}, die Datenbank sagt {pairs.get(word)}. "
+            "Die Anker im Prompt hätten dem Modell eine Skala genannt, die es "
+            "nicht gibt."
+        )
