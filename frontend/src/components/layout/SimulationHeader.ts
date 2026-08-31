@@ -14,8 +14,6 @@ import {
   isClassifiedSection,
 } from '../lore/lore-content.js';
 
-import '../lore/VelgThreatLevel.js';
-
 @localized()
 @customElement('velg-simulation-header')
 export class VelgSimulationHeader extends SignalWatcher(LitElement) {

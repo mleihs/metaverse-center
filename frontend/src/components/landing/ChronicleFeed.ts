@@ -368,7 +368,7 @@ export class VelgChronicleFeed extends LitElement {
           <span class="dispatch__source-dot"></span>
           <a
             class="dispatch__source-link"
-            href="/simulations/${simSlug}/lore"
+            href="/simulations/${simSlug}/${DEFAULT_TAB}"
             @click=${(e: Event) => {
               e.preventDefault();
               if (simSlug) navigate(`/simulations/${simSlug}/${DEFAULT_TAB}`);

@@ -612,7 +612,7 @@ export class VelgWorldsGallery extends LitElement {
                     <a
                       class="world-card scroll-reveal"
                       style="--i: ${i}"
-                      href="/simulations/${sim.slug || sim.id}/lore"
+                      href="/simulations/${sim.slug || sim.id}/${DEFAULT_TAB}"
                       @click=${(e: Event) => {
                         e.preventDefault();
                         navigate(`/simulations/${sim.slug || sim.id}/${DEFAULT_TAB}`);
