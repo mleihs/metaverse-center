@@ -12,10 +12,23 @@
  * how DesignSettingsPanel saves them.
  */
 
+import { formatRgb, liftForContrast, parseColor } from '../utils/contrast-lift.js';
 import { settingsApi } from './api/index.js';
 import { activeCardFrame, cardFrameFromConfig } from './card-frame.js';
+import { captureError } from './SentryService.js';
 import type { ThemePresetName } from './theme-presets.js';
 import { THEME_PRESETS } from './theme-presets.js';
+
+/**
+ * WCAG AA for normal text. Used for every text role, including ones that only
+ * ever render large: a token does not know the font size of its consumers, and
+ * over-delivering contrast on a heading is a smaller error than under-
+ * delivering it on a caption.
+ */
+const TEXT_CONTRAST_AA = 4.5;
+
+/** Distinct unparseable colour values already reported this session. */
+const unparseableSeen = new Set<string>();
 
 /** Maximum allowed size for custom CSS (bytes). */
 const MAX_CUSTOM_CSS_BYTES = 10_240;
@@ -268,6 +281,21 @@ class ThemeService {
       }
     }
 
+    // 1b. Guarantee that the text roles are legible on this world's own
+    //     surfaces. See `enforceTextContrast` for why this layer exists.
+    //
+    //     The count is published on the host rather than dropped. A correction
+    //     nobody can see is a correction nobody can check, and the number
+    //     separates the two cases that look identical from the outside: a
+    //     world with one role lifted has a colour that drifted, a world with
+    //     both lifted has a palette that was never checked against itself.
+    const lifted = this.enforceTextContrast(hostElement, tokensApplied);
+    if (lifted > 0) {
+      hostElement.dataset.contrastLifted = String(lifted);
+    } else {
+      delete hostElement.dataset.contrastLifted;
+    }
+
     // 2. Compute and apply shadow tokens
     const shadowStyle = config.shadow_style as ShadowStyle | undefined;
     const shadowColor = config.shadow_color ?? '#000000';
@@ -465,6 +493,104 @@ class ThemeService {
 
   /** Remove only the tokens we applied to THIS host (avoids clearing unrelated inline
    *  styles, and avoids one host's reset touching another host's tokens). */
+  /**
+   * Lift the text roles until they are legible on this world's own surfaces.
+   *
+   * WHY THIS LAYER EXISTS
+   *   Step 1 writes a world's stored colours straight through to CSS custom
+   *   properties. Between the value a world saves and the text it paints,
+   *   nothing looked. Measured on prod (Staatspathographie, a light world) on
+   *   2026-08-31, on the page as rendered rather than against the palette:
+   *
+   *       --color-text-muted   rgb(138,138,158)   2.98 : 1   32 Stellen
+   *       --color-accent-amber rgb(245,158,11)    1.89 : 1
+   *       --color-primary      rgb(26,26,46)     15.04 : 1   (besteht)
+   *
+   *   The third line is why this is not a call-site problem. In that world
+   *   `--color-primary` IS `--color-text-primary`, so the sweep first proposed
+   *   here (81 files, `--color-primary` -> `-readable`) would have touched 81
+   *   files and fixed none of the 32: mixing 45 % X with 55 % X is X.
+   *
+   *   Nor is it a data problem. rgb(138,138,158) appears in no preset — it is
+   *   the world's own `simulation_settings` row. Repainting the worlds that
+   *   fail today would not reach the world the Forge writes tomorrow.
+   *
+   *   So the guarantee belongs where every theme passes through, once.
+   *
+   * WHAT IT CHANGES, AND WHAT IT DOES NOT
+   *   The colours belong to the worlds; legibility belongs to the platform.
+   *   This moves a role along the line toward `--color-text-primary` by the
+   *   smallest step that clears AA — the hue survives, the lightness moves.
+   *   A world author who saved #8a8a9e will see it render a little darker on
+   *   their cream, and that is deliberate, not drift.
+   *
+   *   `--color-text-primary` itself is measured but never moved: it is the
+   *   target, and a world whose own text colour fails on its own background
+   *   cannot be repaired by mixing it with itself. That case is reported
+   *   rather than papered over.
+   *
+   *   Status colours (`--color-primary`, `--color-danger`, ...) stay untouched.
+   *   They land on tinted grounds as often as on plain ones, so the honest
+   *   fix there is the `-readable` pairing at the call site, not a lift here.
+   *
+   * @returns how many roles had to be lifted, for the caller that wants to
+   *   know. A world where every role needs lifting has a different problem
+   *   from one where a single role does.
+   */
+  private enforceTextContrast(hostElement: HTMLElement, tokensApplied: string[]): number {
+    const resolved = getComputedStyle(hostElement);
+    const read = (token: string): string => resolved.getPropertyValue(token).trim();
+
+    // Only the three platform surfaces. A role lands on ~45 different grounds
+    // across the codebase, but 856 of the ~880 `--color-text-muted` sites sit
+    // on one of these three; the rest are tints layered OVER one of them, so
+    // clearing the worst of the three is the conservative answer for those too.
+    const grounds = ['--color-surface', '--color-surface-raised', '--color-surface-sunken']
+      .map((t) => parseColor(read(t)))
+      .filter((c): c is NonNullable<typeof c> => c !== null);
+
+    const toward = parseColor(read('--color-text-primary'));
+
+    // No measurable ground, or no target: leave the theme exactly as the world
+    // saved it. Applying an unmeasured "correction" would be worse than none,
+    // and the host is simply not laid out yet in that case.
+    if (grounds.length === 0 || toward === null) return 0;
+
+    let lifted = 0;
+    for (const token of ['--color-text-secondary', '--color-text-muted']) {
+      const raw = read(token);
+      const fg = parseColor(raw);
+      if (fg === null) {
+        this.reportUnparseable(token, raw);
+        continue;
+      }
+      const out = liftForContrast(fg, grounds, toward, TEXT_CONTRAST_AA);
+      if (out.moved === 0) continue;
+      hostElement.style.setProperty(token, formatRgb(out.colour));
+      tokensApplied.push(token);
+      lifted++;
+    }
+    return lifted;
+  }
+
+  /**
+   * A colour form none of our parsers has seen before.
+   *
+   * Reported once per distinct value per session: a theme that stores `hsl()`
+   * would otherwise fire on every page view, and a channel that floods is a
+   * channel nobody reads. Silence would be worse — `parseColor` returning
+   * `null` means something is painting in a shape we cannot measure, which is
+   * a finding about our own reach, not about the world.
+   */
+  private reportUnparseable(token: string, value: string): void {
+    const key = `${token}:${value}`;
+    if (unparseableSeen.has(key)) return;
+    unparseableSeen.add(key);
+    captureError(new Error(`ThemeService: cannot parse ${token} = "${value}"`), {
+      source: 'ThemeService.enforceTextContrast',
+    });
+  }
+
   private clearInlineTokens(hostElement: HTMLElement): void {
     const tokens = this.appliedTokensByHost.get(hostElement);
     if (!tokens) return;
