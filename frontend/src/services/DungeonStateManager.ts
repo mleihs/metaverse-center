@@ -33,7 +33,9 @@ import {
   formatCombatResolution,
   formatDungeonComplete,
   formatLootDrop,
-  formatPartyWipe, getRoomTypeLabel } from '../utils/dungeon-formatters.js';
+  formatPartyWipe,
+  getRoomTypeLabel,
+} from '../utils/dungeon-formatters.js';
 import {
   describeRoom,
   mergeRoomDescription,
