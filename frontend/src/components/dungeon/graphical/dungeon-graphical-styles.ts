@@ -501,18 +501,10 @@ export const dungeonGraphicalStyles = css`
         pointer-events: none;
       }
 
-      /* WATER — rising tide from the bottom, height = pressure. */
-      .scene__backdrop[data-fx='water'] .scene__plane {
-        top: auto;
-        height: calc(var(--_p) * 100%);
-        background: linear-gradient(
-          to bottom,
-          color-mix(in srgb, var(--color-info) 22%, transparent),
-          color-mix(in srgb, var(--color-info) 55%, transparent)
-        );
-        border-top: 1px solid color-mix(in srgb, var(--color-info) 60%, transparent);
-        animation: tide 6s var(--ease-in-out, ease-in-out) infinite;
-      }
+      /* WATER is the one profile that is NOT drawn here.
+         It is the only floor-anchored treatment, so it lives in the stage GRID
+         as .scene__flood (row 4, shared with the chamber panel) rather than as
+         a full-bleed plane inside the backdrop. Reason below, at .scene__flood. */
 
       /* DARKNESS — closing inset vignette; radius shrinks with pressure. */
       .scene__backdrop[data-fx='darkness'] .scene__plane {
@@ -1063,7 +1055,10 @@ export const dungeonGraphicalStyles = css`
         background: var(--color-surface-raised);
         font-family: var(--_mono);
         font-size: 7px;
-        color: var(--_phosphor-dim);
+        /* Initials at 7px, and only when a portrait is missing — the smallest
+           type on the stage carries the brightest phosphor, not the dimmest.
+           The dim token measured 4.31 to 1 here against the raised surface. */
+        color: var(--_phosphor);
       }
       .foe__sights-face:first-child {
         margin-left: 0;
@@ -1477,12 +1472,89 @@ export const dungeonGraphicalStyles = css`
          coloured bar down the left of a panel is the one gesture that marks an
          interface as machine-assembled, and it was doing no work here that the
          gradient does not do better. ── */
+      /* ── FLOOD (README §4.4) ────────────────────────────────────────────
+         The rising water of the Deluge archetype, and the only environment
+         profile anchored to the FLOOR rather than to the whole scene.
+
+         It shares grid row 4 with the chamber panel, and BOTH are pinned
+         explicitly — grid auto-flow would otherwise push the second one into
+         an implicit row of zero height, which is the bug §4.10 warns about and
+         which costs an hour to find because nothing errors, the layer is simply
+         not there.
+
+         align-self: stretch plus the negative margin puts the waterline a fixed
+         26px ABOVE the panel, never at a computed height. That is the whole
+         point: the level drives INTENSITY — the alpha of the gradient and the
+         glow along the edge — and never the geometry. Height-as-level was the
+         old behaviour and it cut the scene at an arbitrary line: at high water
+         the surface crossed the creature band and sliced figures and name
+         labels in half. A player cannot tell a deliberate composition from a
+         layout accident, and the water was making the accident every round.
+         With the edge fixed and the party band standing 32px off the floor,
+         nothing is ever cut; the flood gets darker and brighter instead, which
+         is what pressure feels like anyway.
+
+         Soft edge, no border: an 18px gradient rather than a 1px line, because
+         a hard rule reads as a UI element sitting on the picture. ── */
+      .scene__flood {
+        grid-area: text;
+        align-self: stretch;
+        margin-top: -26px;
+        z-index: 3;
+        pointer-events: none;
+        background: linear-gradient(
+          to bottom,
+          transparent 0,
+          color-mix(in srgb, var(--color-info) calc(6% + var(--_p) * 20%), transparent) 18px,
+          color-mix(in srgb, var(--color-info) calc(14% + var(--_p) * 34%), transparent) 100%
+        );
+        box-shadow: inset 0 1px 12px
+          color-mix(in srgb, var(--color-info) calc(10% + var(--_p) * 40%), transparent);
+        transition:
+          background 800ms var(--ease-out, ease),
+          box-shadow 800ms var(--ease-out, ease);
+      }
+      /* The surface moves, the LEVEL does not. A slow vertical drift of a few
+         pixels reads as a living body of water without ever moving the edge far
+         enough to touch the band above it. */
+      @media (prefers-reduced-motion: no-preference) {
+        .scene__flood::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            to bottom,
+            transparent 0 7px,
+            color-mix(in srgb, var(--color-info) calc(4% + var(--_p) * 10%), transparent) 7px 8px
+          );
+          animation: flood-drift 7s linear infinite;
+        }
+        @keyframes flood-drift {
+          from {
+            transform: translateY(0);
+          }
+          to {
+            transform: translateY(8px);
+          }
+        }
+      }
+      .scene__flood {
+        position: relative;
+        overflow: hidden;
+      }
+
       .chamber {
         grid-area: text;
         z-index: 4;
         min-height: 0;
         padding: 16px 16px 14px;
-        max-height: min(38vh, 260px);
+        /* No fixed cap (README §4.4). The row is minmax(0, auto): with slack it
+           takes its content height and does not scroll at all; under pressure
+           the grid compresses it toward 0 and the overflow below takes over.
+           A 38vh/260px ceiling did the same job at one arbitrary height and
+           scrolled a three-line paragraph on a tall screen for no reason. The
+           creature band keeps its own 132px floor, so the prose yielding can
+           never squeeze a creature out of the scene. */
         overflow-y: auto;
         overscroll-behavior: contain;
         background: linear-gradient(
@@ -2019,7 +2091,12 @@ export const dungeonGraphicalStyles = css`
          agent. Dashed and dimmed so they cannot be mistaken for a measurement. */
       .apt-chip--baseline {
         border-style: dashed;
-        color: color-mix(in srgb, var(--_phosphor-dim) 70%, transparent);
+        /* The dash carries "not measured"; the colour does not have to carry it
+           too. Dimming a token that is already the dim one, and dimming it
+           against the transparent keyword at that, measured 1.70 : 1 — the number
+           unreadable, which is not what "provisional" should mean. The dashed
+           border and the surrounding label say it instead. */
+        color: var(--_phosphor-dim);
       }
       .apt-chip--unknown {
         border-style: dashed;
