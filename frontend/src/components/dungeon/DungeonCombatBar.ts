@@ -43,6 +43,7 @@ import {
 import { localized as localizedValue } from '../../utils/locale-fields.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
+import '../shared/VelgHoldButton.js';
 
 /** Timer urgency thresholds (milliseconds). */
 const TIMER_WARNING_MS = 10_000;
@@ -595,6 +596,133 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
 
       .target--ally:focus-visible {
         outline-color: var(--_phosphor);
+      }
+
+      /* -- Order strip: the round in words (README §4.6, third anchor) --
+         A row of slots, one per operative, sitting between the ability desk and
+         the commit button — the last thing crossed on the way to Execute, which
+         is where a summary belongs. Grid rather than flex so four slots take
+         four equal shares: a long ability name must not squeeze its neighbour
+         into an ellipsis, because the point of the strip is that all four
+         orders are readable at once. */
+      .orders {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: 1px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid color-mix(in srgb, var(--_border) 30%, transparent);
+        background: color-mix(in srgb, var(--_border) 22%, transparent);
+      }
+      .orders__slot {
+        display: flex;
+        min-width: 0;
+      }
+      .order {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        padding: 5px 8px;
+        border: 0;
+        background: var(--_screen-bg);
+        color: var(--_phosphor-dim);
+        font-family: var(--_mono);
+        font-size: 10px;
+        text-align: left;
+        cursor: pointer;
+        transition:
+          color var(--transition-fast, 100ms ease),
+          background var(--transition-fast, 100ms ease);
+      }
+      .order:hover {
+        color: var(--_phosphor);
+      }
+      .order:focus-visible {
+        outline: 2px solid var(--_phosphor);
+        outline-offset: -2px;
+      }
+      .order__index {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        display: grid;
+        place-items: center;
+        border: 1px solid color-mix(in srgb, var(--_phosphor) 30%, transparent);
+        font-size: 9px;
+        font-weight: 700;
+        /* Tabular figures: the four indices must sit on one baseline grid, or
+           the strip reads as four unrelated buttons rather than one list. */
+        font-variant-numeric: tabular-nums;
+      }
+      .order__body {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.25;
+      }
+      .order__who {
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .order__what {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        opacity: 0.85;
+      }
+      /* Set: the amber of a placed order, the same accent the command card and
+         the sights tag carry, so the eye ties the three together. */
+      .order--set {
+        color: var(--color-accent-amber);
+      }
+      .order--set .order__index {
+        border-color: color-mix(in srgb, var(--color-accent-amber) 55%, transparent);
+        background: color-mix(in srgb, var(--color-accent-amber) 12%, transparent);
+      }
+      .order__drop {
+        flex: none;
+        margin-left: auto;
+        opacity: 0.5;
+      }
+      .order--set:hover .order__drop {
+        opacity: 1;
+      }
+      /* Aiming: this slot is the one the stage is waiting on. */
+      .order--aiming {
+        color: var(--color-accent-amber);
+        background: color-mix(in srgb, var(--color-accent-amber) 8%, var(--_screen-bg));
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .order--aiming .order__index {
+          animation: order-aim-pulse 1.4s var(--ease-in-out, ease-in-out) infinite;
+        }
+        @keyframes order-aim-pulse {
+          0%,
+          100% {
+            border-color: color-mix(in srgb, var(--color-accent-amber) 35%, transparent);
+          }
+          50% {
+            border-color: var(--color-accent-amber);
+          }
+        }
+      }
+
+      .execute-hold {
+        flex: 1;
+        --hold-btn-color: var(--color-accent-amber);
+        --hold-btn-fill: color-mix(in srgb, var(--color-accent-amber) 26%, transparent);
+        --hold-btn-border: 2px solid color-mix(in srgb, var(--color-accent-amber) 55%, transparent);
+        font-family: var(--font-brutalist, var(--_mono));
+        font-weight: 900;
+        font-size: 12px;
+        letter-spacing: 3px;
       }
 
       /* -- Footer: Counter + Submit -- */
@@ -1168,14 +1296,40 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
    */
   @state() private _activeAgentId: string | null = null;
 
-  /** Agent ID currently awaiting target selection. */
-  @state() private _targetingAgentId: string | null = null;
-
-  /** Ability ID selected for the agent in targeting mode. */
-  @state() private _targetingAbilityId: string | null = null;
+  /** The aim in progress is read from `dungeonState.pendingOrder`, not held
+   *  here. It used to be two local fields, which meant the stage could not see
+   *  it: the spotlight, the command card and the creature's sights tag would
+   *  each have needed their own copy. See DungeonStateManager.pendingOrder. */
 
   /** Combat onboarding briefing (shown once, persisted via localStorage). */
   @state() private _showOnboarding = !globalThis.localStorage?.getItem('dungeon_combat_onboarded');
+
+  /** Escape abandons an aim in progress.
+   *
+   *  Bound on the document rather than on this element because the target is
+   *  clicked on the STAGE, which is a sibling: by the time a player wants out,
+   *  focus is rarely inside the bar. The listener does nothing at all unless an
+   *  aim is pending, so it never competes with a dialog's own Escape — and it
+   *  does not stop propagation, since an aim and an open dialog closing
+   *  together is the behaviour a player expects, not a conflict. */
+  private readonly _onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    if (!dungeonState.pendingOrder.value) return;
+    dungeonState.cancelTargeting();
+  };
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    document.addEventListener('keydown', this._onKeyDown);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    document.removeEventListener('keydown', this._onKeyDown);
+    // An aim cannot survive the bar that owns it — leaving it set would light
+    // the stage's spotlight with no way left to place or cancel the order.
+    dungeonState.cancelTargeting();
+  }
 
   // -- Event Dispatch -------------------------------------------------------
 
@@ -1249,6 +1403,8 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
               </div>`
         }
 
+        ${this.compact ? this._renderOrderStrip(actionable, selected, enemies) : nothing}
+
         <div class="footer">
           <span class="counter" aria-live="polite">
             ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length} ${msg('ACTIONS')}
@@ -1260,17 +1416,128 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
               ? nothing
               : html`<span class="footer__hint">${msg('or type "submit" in terminal')}</span>`
           }
-          <button
-            class="execute ${allSelected && !submitting ? 'execute--ready' : ''}"
-            ?disabled=${!allSelected || submitting}
-            @click=${this._handleSubmit}
-            aria-label=${msg('Execute combat actions')}
-          >
-            ${submitting ? msg('Submitting...') : msg('Execute')}
-          </button>
+          ${
+            // A held button, not a click, and only on the stage. Committing the
+            // round is the one irreversible act in the phase — the prototype's
+            // Dungeon Stage makes it a hold for that reason, and a mis-click
+            // next to the ability grid costs a whole round. The terminal path
+            // keeps its plain button: there the same commit is one typed word,
+            // already deliberate.
+            this.compact
+              ? html`<velg-hold-button
+                  class="execute-hold"
+                  .duration=${600}
+                  .label=${`${msg('Execute')} \u00b7 ${actionable.filter((a) => selected.has(a.agent_id)).length}/${actionable.length}`}
+                  .holdingLabel=${msg('Hold to commit the round')}
+                  .executingLabel=${msg('Submitting...')}
+                  ?disabled=${!allSelected || submitting}
+                  ?executing=${submitting}
+                  @hold-confirmed=${this._handleSubmit}
+                ></velg-hold-button>`
+              : html`<button
+                  class="execute ${allSelected && !submitting ? 'execute--ready' : ''}"
+                  ?disabled=${!allSelected || submitting}
+                  @click=${this._handleSubmit}
+                  aria-label=${msg('Execute combat actions')}
+                >
+                  ${submitting ? msg('Submitting...') : msg('Execute')}
+                </button>`
+          }
         </div>
       </div>
     `;
+  }
+
+  /**
+   * The order strip: one numbered slot per operative, reading out in plain
+   * words what each of them is about to do.
+   *
+   * This is the third anchor of §4.6, and the only one that is legible without
+   * looking at the stage. The other two — the command card over the operative,
+   * the sights tag on the creature — say the same thing spatially; a player
+   * checking "have I actually given four orders" should not have to read a
+   * picture. All three are projections of `selectedActions`, so a withdrawal
+   * here is the same withdrawal as a click on the card's cross.
+   *
+   * An empty slot is not blank. It names what will happen if the round is
+   * committed anyway: the operative defends. That is the state a player most
+   * needs to see and the one a bare gap hides.
+   */
+  private _renderOrderStrip(
+    actionable: AgentCombatStateClient[],
+    selected: Map<string, CombatAction>,
+    enemies: EnemyCombatStateClient[],
+  ) {
+    if (actionable.length === 0) return nothing;
+    const enemyNames = buildEnemyDisplayNames(enemies);
+    const pending = dungeonState.pendingOrder.value;
+
+    return html`
+      <ol class="orders" aria-label=${msg('Orders this round')}>
+        ${actionable.map((agent, index) => {
+          const action = selected.get(agent.agent_id);
+          const ability = action
+            ? (agent.available_abilities.find((ab) => ab.id === action.ability_id) ?? null)
+            : null;
+          const abilityName = ability ? localizedValue(ability, 'name') : null;
+          const targetName = action?.target_id
+            ? (enemyNames.get(action.target_id) ??
+              dungeonState.party.value.find((a) => a.agent_id === action.target_id)?.agent_name ??
+              null)
+            : null;
+          const aiming = pending?.agent_id === agent.agent_id;
+          const firstName = agent.agent_name.split(' ')[0];
+
+          // Plain words, assembled here rather than in the template, so the
+          // three shapes an order can take stay visible side by side.
+          const text = abilityName
+            ? targetName
+              ? `${abilityName} \u2192 ${targetName}`
+              : abilityName
+            : aiming
+              ? msg('Choosing a target…')
+              : msg('Defends');
+
+          return html`
+            <li class="orders__slot">
+              <button
+                class="order ${action ? 'order--set' : ''} ${aiming ? 'order--aiming' : ''}"
+                type="button"
+                @click=${() => this._handleOrderSlotClick(agent.agent_id, !!action)}
+                aria-label=${
+                  action
+                    ? `${firstName}: ${text}. ${msg('Withdraw this order')}`
+                    : `${firstName}: ${text}. ${msg('Give this operative an order')}`
+                }
+                title=${`${agent.agent_name} \u2013 ${text}`}
+              >
+                <span class="order__index" aria-hidden="true">${index + 1}</span>
+                <span class="order__body">
+                  <span class="order__who">${firstName}</span>
+                  <span class="order__what">${text}</span>
+                </span>
+                ${
+                  action
+                    ? html`<span class="order__drop" aria-hidden="true">\u2715</span>`
+                    : nothing
+                }
+              </button>
+            </li>
+          `;
+        })}
+      </ol>
+    `;
+  }
+
+  /** A set slot withdraws its order; an empty one opens that operative's desk.
+   *  One click, two meanings, decided by the slot's own state — the same rule
+   *  the command card over the operative follows. */
+  private _handleOrderSlotClick(agentId: string, hasOrder: boolean): void {
+    if (hasOrder) {
+      dungeonState.deselectAction(agentId);
+      dungeonState.cancelTargeting();
+    }
+    this._activeAgentId = agentId;
   }
 
   private _renderTimer(remainingMs: number | null, totalMs: number) {
@@ -1360,8 +1627,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         title=${`${agent.agent_name} \u2013 ${state}`}
         @click=${() => {
           this._activeAgentId = agent.agent_id;
-          this._targetingAgentId = null;
-          this._targetingAbilityId = null;
+          dungeonState.cancelTargeting();
         }}
       >
         <velg-avatar
@@ -1386,15 +1652,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     enemies: EnemyCombatStateClient[],
   ) {
     const selection = selected.get(agent.agent_id);
-    const targetingAbility = this._targetingAbilityId
-      ? agent.available_abilities.find((a) => a.id === this._targetingAbilityId)
-      : null;
-    const isTargeting =
-      this._targetingAgentId === agent.agent_id &&
-      !!targetingAbility &&
-      targetingAbility.targets !== 'self' &&
-      targetingAbility.targets !== 'all_enemies' &&
-      targetingAbility.targets !== 'all_allies';
+    const pending = dungeonState.pendingOrder.value;
+    // An aim only opens THIS desk's target row when it belongs to this agent.
+    // The scope was decided once, when the aim was taken, so no second reading
+    // of `targets` can disagree with the one the stage is spotlighting.
+    const isTargeting = pending?.agent_id === agent.agent_id;
 
     return html`
       <div class="desk" role="tabpanel" aria-label=${`${agent.agent_name} ${msg('actions')}`}>
@@ -1421,17 +1683,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
     enemies: EnemyCombatStateClient[],
   ) {
     const selection = selected.get(agent.agent_id);
-    // Only show target picker if targeting state is valid AND ability still needs a target.
-    // Prevents stale picker when switching from attack to self-targeting ability.
-    const targetingAbility = this._targetingAbilityId
-      ? agent.available_abilities.find((a) => a.id === this._targetingAbilityId)
-      : null;
-    const isTargeting =
-      this._targetingAgentId === agent.agent_id &&
-      !!targetingAbility &&
-      targetingAbility.targets !== 'self' &&
-      targetingAbility.targets !== 'all_enemies' &&
-      targetingAbility.targets !== 'all_allies';
+    // One reading of the aim, from the store. The stale-picker guard the old
+    // code needed here is gone with the cause: an aim is only ever created for
+    // an ability that actually wants a target, so there is no combination of
+    // flags left that could describe a picker for a self-cast.
+    const isTargeting = dungeonState.pendingOrder.value?.agent_id === agent.agent_id;
     const hasSelection = !!selection;
 
     const stripClass = [
@@ -1636,11 +1892,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
   }
 
   private _renderTargetPicker(agent: AgentCombatStateClient, enemies: EnemyCombatStateClient[]) {
-    // Determine if targeting allies or enemies based on selected ability
-    const selectedAbility = agent.available_abilities.find(
-      (a) => a.id === this._targetingAbilityId,
-    );
-    if (selectedAbility?.targets === 'single_ally') {
+    if (dungeonState.pendingOrder.value?.scope === 'ally') {
       const allies = dungeonState.party.value.filter(
         (a) => a.agent_id !== agent.agent_id && a.condition !== 'captured',
       );
@@ -1728,6 +1980,16 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
   ): void {
     if (ability.cooldown_remaining > 0) return;
 
+    // Clicking the ability you are already aiming with puts it down again. The
+    // alternative — re-arming the same aim — leaves a player who clicked by
+    // mistake hunting for the way out; Escape is the other way, but only one of
+    // the two is discoverable by clicking.
+    const aimed = dungeonState.pendingOrder.value;
+    if (aimed?.agent_id === agent.agent_id && aimed.ability_id === ability.id) {
+      dungeonState.cancelTargeting();
+      return;
+    }
+
     // Auto-dismiss onboarding briefing on first ability selection (UX-04)
     if (this._showOnboarding) this._dismissOnboarding();
 
@@ -1760,10 +2022,8 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         this._advance();
         return;
       }
-      // Multiple allies: auto-target first, allow override via target click
-      dungeonState.selectAction(agent.agent_id, ability.id, allies[0].agent_id);
-      this._targetingAgentId = agent.agent_id;
-      this._targetingAbilityId = ability.id;
+      // Several allies: aim, and place nothing yet.
+      dungeonState.beginTargeting(agent.agent_id, ability.id, 'ally');
       return;
     }
 
@@ -1775,17 +2035,24 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       return;
     }
 
-    // Multiple enemies: auto-target first enemy, allow override via target click.
-    // Without the default, the action registers with target_id: null and the
-    // backend silently drops it (no damage, no miss — invisible failure).
-    dungeonState.selectAction(agent.agent_id, ability.id, alive[0].instance_id);
-    this._targetingAgentId = agent.agent_id;
-    this._targetingAbilityId = ability.id;
+    // Several creatures: aim, and place nothing yet.
+    //
+    // This used to place the order on the FIRST creature and let a later click
+    // move it. That was a defence against a real failure — an action submitted
+    // with target_id: null is dropped by the backend in silence, no damage and
+    // no miss — but it defended by guessing: a player who clicked an ability
+    // and then Execute struck whatever happened to be leftmost, and nothing on
+    // screen had ever claimed otherwise. The aim is the honest form of the same
+    // guarantee: while it is pending NOTHING is placed, so nothing can be
+    // submitted half-formed, and the operative simply counts as not ready yet
+    // (allActionsSelected sees no entry, Execute stays shut). The three anchors
+    // of §4.6 then have something true to show — a spotlight for "choosing",
+    // a command card for "chosen" — where before both states looked alike.
+    dungeonState.beginTargeting(agent.agent_id, ability.id, 'enemy');
   }
 
   private _clearTargeting(): void {
-    this._targetingAgentId = null;
-    this._targetingAbilityId = null;
+    dungeonState.cancelTargeting();
   }
 
   private _renderOnboarding() {
@@ -1814,11 +2081,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
   }
 
   private _handleTargetClick(targetId: string): void {
-    if (this._targetingAgentId && this._targetingAbilityId) {
-      dungeonState.selectAction(this._targetingAgentId, this._targetingAbilityId, targetId);
-    }
-    this._targetingAgentId = null;
-    this._targetingAbilityId = null;
+    const pending = dungeonState.pendingOrder.value;
+    if (!pending) return;
+    // selectAction clears the aim itself, at the one seam every placement
+    // passes through — so there is nothing to reset here.
+    dungeonState.selectAction(pending.agent_id, pending.ability_id, targetId);
     this._advance();
   }
 

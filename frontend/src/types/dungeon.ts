@@ -468,6 +468,22 @@ export interface CombatAction {
   target_id?: string | null;
 }
 
+/** An order being AIMED but not yet placed: the operative has chosen what to
+ *  do and is choosing whom to do it to.
+ *
+ *  Deliberately not a `CombatAction` with a null `target_id`. That shape once
+ *  reached the backend, which drops a targeted action without a target in
+ *  silence — no damage, no miss, nothing to see. Keeping the aim in its own
+ *  type means an untargeted order cannot be submitted by construction rather
+ *  than by remembering to check. */
+export interface PendingOrder {
+  agent_id: UUID;
+  ability_id: string;
+  /** Whom the ability may be aimed at, which decides what the stage lights up:
+   *  hostile targets spotlight the enemy band, friendly ones the party band. */
+  scope: 'enemy' | 'ally';
+}
+
 /** POST /dungeons/runs/{id}/combat/submit — all actions for one planning phase. */
 export interface CombatSubmission {
   actions: CombatAction[];

@@ -93,9 +93,15 @@ export const dungeonGraphicalStyles = css`
         min-height: 0;
         gap: 0;
       }
-      .dungeon-hud--rail-collapsed {
-        grid-template-columns: 40px 1fr 340px;
-      }
+      /* No collapsed three-column shape any more. The 40px rail track used to
+         live here; it could only ever apply at >=1200px, and that is exactly
+         where the collapse control is now gone (README §4.1 — with no space
+         pressure the control has no UX value). Below 1200px the media query
+         further down flattens every column to a single 1fr track, so the rule
+         was unreachable in both directions: one that cannot fire still
+         describes a layout to whoever reads it next. The collapsed STRIP styles
+         (.rail-strip, .rail-expand-btn--vertical) stay — they serve the narrow
+         viewport, where the preference is still honoured. */
       /* The view toggle rides in the header row rather than floating over the
          HUD: as a fixed overlay it covered the first operative in the party
          column. Header content takes the width it needs, the toggle the rest. */
@@ -114,9 +120,15 @@ export const dungeonGraphicalStyles = css`
         flex: none;
         padding: 6px 4px 0 0;
       }
+      /* Rows 2 AND 3: the rail runs past the stage and alongside the actions
+         row, so all three columns end on one bottom edge. Spanning only row 2
+         left the rail floating 60-odd px short of the side column — the HUD
+         read as three panels of different lengths rather than one instrument.
+         (README §4.1.) The narrow-viewport block below re-pins it to a single
+         stacked row and is unaffected. */
       .dungeon-hud__rail {
         grid-column: 1;
-        grid-row: 2;
+        grid-row: 2 / 4;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -136,7 +148,7 @@ export const dungeonGraphicalStyles = css`
          readable while the chronicle runs on underneath it. */
       .dungeon-hud__side {
         grid-column: 3;
-        grid-row: 2;
+        grid-row: 2 / 4;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -798,6 +810,271 @@ export const dungeonGraphicalStyles = css`
       }
       .op--down .op__beam {
         opacity: 0.4;
+      }
+
+      /* ══ TARGETING (README §4.6) ═══════════════════════════════════════
+         One aim, three anchors, and one colour knob.
+
+         --selection-color is the project-wide selection variable from
+         shared/marker-styles.ts. It is SET here per scope and never
+         re-implemented: strike keeps the platform amber, aid and guard turn
+         green, and everything below reads the variable rather than naming a
+         colour of its own. Change the scope, and the hint bar, the candidate
+         outlines, the command card and the sights tag all move together. ── */
+      .scene--aiming {
+        --selection-color: var(--color-accent-amber);
+      }
+      .scene--aiming-ally {
+        --selection-color: var(--color-success);
+      }
+
+      /* The hint bar: what the stage is waiting for. Sits over the readout row
+         rather than inside it — it is transient, and displacing the pressure
+         reading every time an ability is clicked would make the scene jump. */
+      .aimbar {
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 6;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: calc(100% - 32px);
+        padding: 5px 10px;
+        border: 1px solid color-mix(in srgb, var(--selection-color) 55%, transparent);
+        background: color-mix(in srgb, var(--color-surface) 88%, var(--selection-color));
+        box-shadow: var(--shadow-sm, 3px 3px 0 var(--color-surface-sunken));
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--selection-color);
+      }
+      .aimbar__text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .aimbar__cancel {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        border: 1px solid color-mix(in srgb, var(--selection-color) 40%, transparent);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      .aimbar__cancel:hover {
+        background: color-mix(in srgb, var(--selection-color) 18%, transparent);
+      }
+      .aimbar__cancel:focus-visible {
+        outline: 2px solid var(--selection-color);
+        outline-offset: 2px;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .aimbar {
+          animation: aimbar-in var(--duration-normal, 200ms) var(--ease-dramatic, ease) both;
+        }
+        @keyframes aimbar-in {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -6px);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+          }
+        }
+      }
+
+      /* Candidates and the rest. Dimming the non-candidates is what makes the
+         choice readable at a glance; outlining the candidates is what makes it
+         actionable. Both are needed — outline alone leaves four bright figures
+         competing for the eye, dimming alone gives no target edge to aim at. */
+      .foe--muted,
+      .op--muted {
+        opacity: 0.45;
+        transition: opacity var(--transition-normal, 200ms ease);
+      }
+      .foe--selectable,
+      .op--selectable {
+        position: relative;
+      }
+      .foe--selectable .foe__figure,
+      .op--selectable .op__figure {
+        outline: 2px solid color-mix(in srgb, var(--selection-color) 70%, transparent);
+        outline-offset: 3px;
+        background: color-mix(in srgb, var(--selection-color) 8%, transparent);
+      }
+      /* The full-figure hit area. .scene__party and .scene__enemies are both
+         pointer-events:none (they are scenery), so the affordance has to switch
+         them back on for itself alone — a scene that swallowed clicks would
+         also swallow the map and the chronicle behind it. */
+      .foe__pick,
+      .op__pick {
+        position: absolute;
+        inset: -4px;
+        z-index: 5;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        pointer-events: auto;
+        cursor: crosshair;
+      }
+      .op--selectable .op__pick {
+        cursor: pointer;
+      }
+      .foe__pick:focus-visible,
+      .op__pick:focus-visible {
+        outline: 2px solid var(--selection-color);
+        outline-offset: 2px;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .foe--selectable .foe__figure,
+        .op--selectable .op__figure {
+          animation: aim-breathe 1.6s var(--ease-in-out, ease-in-out) infinite;
+        }
+        @keyframes aim-breathe {
+          0%,
+          100% {
+            outline-color: color-mix(in srgb, var(--selection-color) 40%, transparent);
+          }
+          50% {
+            outline-color: var(--selection-color);
+          }
+        }
+      }
+
+      /* ── Anchor 1: the command card, over the operative who carries it ── */
+      .op__order {
+        --_intent: var(--color-accent-amber);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        max-width: 168px;
+        padding: 3px 5px;
+        border: 1px solid color-mix(in srgb, var(--_intent) 50%, transparent);
+        background: color-mix(in srgb, var(--color-surface) 90%, var(--_intent));
+        pointer-events: auto;
+        font-family: var(--_mono);
+        font-size: 9px;
+        color: var(--_intent);
+      }
+      /* Same three clusters as the ability tiles in the bar, so a red order
+         card and a red ability button are recognisably the same statement. */
+      .op__order[data-intent='strike'] {
+        --_intent: var(--color-danger);
+      }
+      .op__order[data-intent='aid'] {
+        --_intent: var(--color-success);
+      }
+      .op__order[data-intent='guard'] {
+        --_intent: var(--color-info);
+      }
+      .op__order-glyph {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        background-color: var(--_intent);
+        mask: var(--_mask) center / contain no-repeat;
+        -webkit-mask: var(--_mask) center / contain no-repeat;
+      }
+      .op__order-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        letter-spacing: 0.3px;
+      }
+      .op__order-drop {
+        flex: none;
+        padding: 0 2px;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        opacity: 0.6;
+        cursor: pointer;
+      }
+      .op__order-drop:hover {
+        opacity: 1;
+      }
+      .op__order-drop:focus-visible {
+        outline: 1px solid var(--_intent);
+        outline-offset: 1px;
+        opacity: 1;
+      }
+      /* The .op is the positioning context for both the card and the hit area;
+         without this they would anchor to the scene and drift across the band. */
+      .op {
+        position: relative;
+      }
+
+      /* ── Anchor 2: the sights tag, on the creature being aimed at ──
+         Faces, not a count: "who is on this one" is the question a player
+         actually asks, and two operatives on one creature must read as two
+         portraits (the acceptance criterion of §4.6). */
+      .foe__sights {
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 5px;
+        border: 1px solid color-mix(in srgb, var(--color-accent-amber) 55%, transparent);
+        background: color-mix(in srgb, var(--color-surface) 88%, var(--color-accent-amber));
+        pointer-events: auto;
+        white-space: nowrap;
+      }
+      .foe__sights-label {
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--color-accent-amber);
+      }
+      .foe__sights-faces {
+        display: flex;
+      }
+      /* Overlapped, like the conversation stacks in the chat sidebar: the tag
+         must not grow wider than the creature it labels when four operatives
+         pile onto one boss. */
+      .foe__sights-face {
+        width: 16px;
+        height: 16px;
+        margin-left: -5px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid color-mix(in srgb, var(--color-accent-amber) 70%, transparent);
+        background: var(--color-surface-raised);
+        font-family: var(--_mono);
+        font-size: 7px;
+        color: var(--_phosphor-dim);
+      }
+      .foe__sights-face:first-child {
+        margin-left: 0;
+      }
+      .foe__sights-face img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .foe {
+        position: relative;
       }
 
       /* In-scene hostiles — the mirror of the party band. They stand DEEPER in
