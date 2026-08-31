@@ -165,7 +165,6 @@ export const htpStyles = css`
     font-size: 11px;
     color: var(--color-text-muted);
     text-decoration: none;
-    border-left: 2px solid transparent;
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
@@ -175,7 +174,6 @@ export const htpStyles = css`
 
   .toc__link:hover {
     color: var(--color-text-tertiary);
-    border-left-color: var(--color-border);
   }
 
   .toc__link:focus-visible {
@@ -183,10 +181,17 @@ export const htpStyles = css`
     outline-offset: -2px;
   }
 
+  /* Position in the list, said the way the whole platform says it: a tinted
+     face plus a 1px outline. NOT an edge bar - the handoff names this exact
+     element ("aktiver Eintrag getoent+Umriss, KEIN Kantenstreifen").
+     An outline and not a border, so the list does not shift by a pixel when
+     the active entry changes. The tinted background was already here; the
+     bar only said a second time what the fill already said. */
   .toc__link--active {
     color: var(--color-text-primary);
-    border-left-color: var(--color-warning);
     background: var(--color-ascendant-gold);
+    outline: 1px solid color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+    outline-offset: -1px;
   }
 
   /* ═══ MAIN CONTENT ═══════════════════════════════ */
