@@ -208,3 +208,23 @@ async def scheduled_ai_spend_allowed(admin: Client) -> bool:
     """
     settings = await load_platform_settings(admin, [SCHEDULED_AI_SPEND_SETTING])
     return parse_setting_bool(settings.get(SCHEDULED_AI_SPEND_SETTING))
+
+
+JSON_REPAIR_SETTING = "json_repair_enabled"
+
+
+async def json_repair_allowed(admin: Client) -> bool:
+    """Darf eine misslungene JSON-Antwort ein zweites Mal ans Modell?
+
+    ``GenerationService._parse_or_repair_json`` schickt eine unbrauchbare
+    Antwort samt Zielform noch einmal zum Modell. Das ist ein ZWEITER bezahlter
+    Aufruf auf eine Antwort, die schon misslungen ist — ob sich das lohnt,
+    hängt daran, wie oft überhaupt etwas misslingt, und diese Zahl gibt es erst
+    seit ``_observe_json_failure`` sie erhebt.
+
+    Fail-closed wie ``scheduled_ai_spend_allowed``: fehlt die Zeile oder ist
+    sie unlesbar, lautet die Antwort Nein. Ein Riegel, der bei Abwesenheit
+    öffnet, ist kein Riegel.
+    """
+    settings = await load_platform_settings(admin, [JSON_REPAIR_SETTING])
+    return parse_setting_bool(settings.get(JSON_REPAIR_SETTING))

@@ -39,6 +39,7 @@ from backend.services.external.openrouter import (
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver, PromptSource
+from backend.utils.settings import json_repair_allowed
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -87,7 +88,7 @@ class GenerationService:
         )
 
         # Parse JSON from LLM response to extract structured fields
-        parsed = self._parse_json_content(result.get("content", ""))
+        parsed = self._parse_json_object(result.get("content", ""), source="generate_agent_full")
         if parsed:
             for field in ("character", "background", "description"):
                 if field in parsed:
@@ -117,7 +118,7 @@ class GenerationService:
         )
 
         # Parse JSON from LLM response to extract structured fields
-        parsed = self._parse_json_content(result.get("content", ""))
+        parsed = self._parse_json_object(result.get("content", ""), source="generate_agent_partial")
         if parsed:
             for field in ("character", "background", "description"):
                 if field in parsed:
@@ -159,7 +160,7 @@ class GenerationService:
         )
 
         # Parse JSON from LLM response to extract structured fields
-        parsed = self._parse_json_content(result.get("content", ""))
+        parsed = self._parse_json_object(result.get("content", ""), source="generate_building")
         if parsed:
             result["content"] = parsed.get("description", result.get("content", ""))
             if "name" in parsed:
@@ -471,7 +472,7 @@ class GenerationService:
         raw_content = result.get("content", "")
 
         # Parse JSON from LLM response (same pattern as agent/building)
-        parsed = self._parse_json_content(raw_content)
+        parsed = self._parse_json_object(raw_content, source="generate_news_transformation")
         if parsed:
             for field in ("title", "description", "event_type", "impact_level"):
                 if field in parsed:
@@ -556,7 +557,7 @@ class GenerationService:
             variables={"post_content": post_content},
             locale=locale,
         )
-        parsed = self._parse_json_content(result.get("content", "")) or {}
+        parsed = self._parse_json_object(result.get("content", ""), source="generate_social_media_sentiment") or {}
         return SentimentAnalysis(
             sentiment=parsed.get("sentiment", "neutral"),
             confidence=float(parsed.get("confidence", 0.0)),
@@ -612,11 +613,20 @@ class GenerationService:
             locale=locale,
         )
 
-        parsed = self._parse_json_content(result.get("content", ""))
-        if parsed and isinstance(parsed.get("relationships"), list):
-            return parsed["relationships"]
+        # Die einzige Stelle, die eine LISTE annimmt: manche Modelle antworten
+        # mit `[…]` statt `{"relationships": […]}`, und beides ist hier gemeint.
+        # Deshalb `_parse_json_payload` und nicht `_parse_json_object`.
+        #
+        # ⚠ Die Reihenfolge der beiden Prüfungen war eine Falle: `parsed.get(…)`
+        # lief zuerst und wäre an genau der Liste gescheitert, die die Zeile
+        # darunter behandeln will — AttributeError statt Ergebnis. Sichtbar
+        # wurde das erst, als die Annotation von `_parse_json_content` von
+        # `dict | None` auf die Wahrheit gerichtet wurde.
+        parsed = self._parse_json_payload(result.get("content", ""), source="generate_agent_relationships")
         if isinstance(parsed, list):
             return parsed
+        if isinstance(parsed, dict) and isinstance(parsed.get("relationships"), list):
+            return parsed["relationships"]
         return []
 
     async def generate_echo_transformation(
@@ -654,7 +664,7 @@ class GenerationService:
             game_context=game_context,
         )
 
-        parsed = self._parse_json_content(result.get("content", ""))
+        parsed = self._parse_json_object(result.get("content", ""), source="generate_echo_transformation")
         if parsed:
             return {
                 "title": parsed.get("title", source_event.get("title", "")),
@@ -703,7 +713,7 @@ class GenerationService:
         )
 
         raw_content = result.get("content", "")
-        parsed = self._parse_json_content(raw_content)
+        parsed = self._parse_json_object(raw_content, source="generate_resonance_event")
         if parsed:
             return {
                 "title": parsed.get("title", f"{archetype_name} — {event_type}"),
@@ -790,7 +800,7 @@ class GenerationService:
             },
             locale="en",
         )
-        parsed = GenerationService._parse_json_content(result.get("content", ""))
+        parsed = GenerationService._parse_json_object(result.get("content", ""), source="extract_memory_observations")
         raw = parsed.get("observations", []) if parsed else []
         observations: list[MemoryObservation] = []
         for obs in raw:
@@ -828,7 +838,7 @@ class GenerationService:
             },
             locale=locale,
         )
-        parsed = GenerationService._parse_json_content(result.get("content", ""))
+        parsed = GenerationService._parse_json_object(result.get("content", ""), source="reflect_on_memories")
         raw = parsed.get("reflections", []) if parsed else []
         reflections: list[MemoryReflection] = []
         for ref in raw:
@@ -879,7 +889,7 @@ class GenerationService:
             locale=locale,
         )
         raw_content = result.get("content", "")
-        parsed = GenerationService._parse_json_content(raw_content)
+        parsed = GenerationService._parse_json_object(raw_content, source="generate_chronicle_entry")
         default_title = f"Chronicle Edition #{edition_number}"
         if parsed:
             title = parsed.get("title") or default_title
@@ -960,39 +970,124 @@ class GenerationService:
 
     # --- JSON parsing ---
 
+    @classmethod
+    def _observe_json_failure(cls, content: str, *, source: str, reason: str) -> None:
+        """Eine misslungene Auswertung hinterlässt eine Spur.
+
+        Vorher tat sie das nicht. Alle elf Auswertungsstellen dieses Dienstes
+        fielen bei ``None`` still auf einen Ersatzwert zurück — ein
+        Stimmungsbild wurde `neutral` mit Zuversicht 0,0, eine
+        Gedächtnisernte kam leer zurück, eine Chronik bekam einen erfundenen
+        Titel und den ROHTEXT als Inhalt. Das Modell war bezahlt, die Antwort
+        verworfen, und niemand erfuhr davon.
+
+        🔑 Deshalb liess sich die Frage, ob sich eine LLM-Reparatur lohnt, gar
+        nicht beantworten: es gab keine Zahl. Diese Funktion erzeugt sie. Sie
+        kostet nichts und entscheidet nichts.
+
+        Der Ausschnitt ist auf 500 Zeichen begrenzt und geht als
+        Sentry-Nachricht mit Etiketten, nicht als Ausnahme — es ist ein
+        Messwert, kein Absturz.
+        """
+        sample = content.strip()[:500]
+        logger.warning(
+            "LLM JSON parse failed",
+            extra={"source": source, "reason": reason, "sample": sample, "length": len(content)},
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("service", "GenerationService")
+            scope.set_tag("json_parse_source", source)
+            scope.set_tag("json_parse_reason", reason)
+            scope.set_context("llm_output", {"length": len(content), "sample": sample})
+            sentry_sdk.capture_message(f"LLM JSON parse failed: {source} ({reason})", level="warning")
+
+    @classmethod
+    def _parse_json_payload(cls, content: str, *, source: str) -> dict | list | None:
+        """Auswerten und, wenn es misslingt, das Misslingen festhalten."""
+        parsed = cls._parse_json_content(content)
+        if parsed is None:
+            cls._observe_json_failure(content, source=source, reason="unparseable")
+        return parsed
+
+    @classmethod
+    def _parse_json_object(cls, content: str, *, source: str) -> dict | None:
+        """Wie oben, aber es MUSS ein Objekt sein.
+
+        ``_parse_json_content`` gibt zurück, was ``json.loads`` liefert — und
+        das ist bei einer Antwort, die mit ``[`` beginnt, eine Liste. Die
+        Rückgabeannotation sagte ``dict | None`` und log damit; zehn der elf
+        Aufrufer lesen anschliessend ``parsed.get(...)`` und wären an einer
+        Liste mit ``AttributeError`` gescheitert. Genau die Antwort, die man
+        von einem Modell erwarten muss, das die Form verfehlt.
+
+        Ein Feld, das ein Objekt sein sollte und eine Liste ist, ist ein
+        Misserfolg wie jeder andere — und wird als solcher gemeldet, statt
+        weiter unten zu krachen.
+        """
+        parsed = cls._parse_json_payload(content, source=source)
+        if parsed is None:
+            return None
+        if not isinstance(parsed, dict):
+            cls._observe_json_failure(content, source=source, reason="not_an_object")
+            return None
+        return parsed
+
     async def _parse_or_repair_json(
         self,
         content: str,
         model_id: str,
         pydantic_model: type | None = None,
         budget: BudgetContext | None = None,
+        *,
+        source: str = "unknown",
     ) -> dict | None:
-        """Parse JSON from LLM response, with LLM repair as last resort.
+        """JSON auswerten, notfalls vom Modell reparieren lassen.
 
-        Tries _parse_json_content() first. If that fails and a pydantic_model
-        is provided, asks the LLM to fix the malformed output.
+        HERKUNFT
+        --------
+        Diese Methode hatte am 31.08.2026 **null Aufrufer**. Alle elf
+        Auswertungsstellen riefen ``_parse_json_content`` unmittelbar und gaben
+        bei ``None`` auf. Die Reparatur ist in diesem Werk nie gelaufen — und
+        konnte es bis D10-7 auch nicht, weil die zwei Dienste, die
+        ``repair_json_output`` DOCH riefen, ein Argument an eine
+        Vier-Argument-Koroutine gaben und der ``TypeError`` gefangen wurde.
 
-        ⚠ **This method has no caller** (measured 31.08.2026). All eleven JSON
-        parse sites in this service call ``_parse_json_content`` directly and
-        give up when it returns None. The repair path has therefore never run
-        in production — and until D10-7 it could not have, because the two
-        services that DID call ``repair_json_output`` passed one argument to a
-        four-argument coroutine and the resulting TypeError was swallowed.
+        WAS SICH GEÄNDERT HAT
+        ---------------------
+        Die elf Stellen laufen jetzt über ``_parse_json_object`` bzw.
+        ``_parse_json_payload``, und ein Misserfolg hinterlässt eine Spur
+        (``_observe_json_failure``). Damit gibt es zum ersten Mal eine ZAHL —
+        vorher liess sich die Frage „lohnt sich die Reparatur?" nicht
+        beantworten, weil niemand wusste, wie oft überhaupt etwas misslingt.
 
-        Wiring the eleven sites is not a mechanical change: every repair is a
-        second paid model call on an answer that already failed, so whether it
-        should run at all is a cost decision. Left in place deliberately as the
-        one correct call site to copy from — deleting it would mean rebuilding
-        it before the decision could be acted on.
+        DER RIEGEL
+        ----------
+        Jede Reparatur ist ein zweiter bezahlter Modellaufruf auf eine Antwort,
+        die schon misslungen ist. Ob er stattfinden soll, ist eine
+        Kostenentscheidung und keine, die im Code steht: sie hängt an
+        ``json_repair_enabled`` in ``platform_settings`` und ist
+        **fail-closed** — fehlt die Zeile, ist die Reparatur aus. Ohne
+        ``pydantic_model`` läuft sie ohnehin nicht, denn ohne Zielform hätte
+        die Reparatur nichts, woran sie sich messen könnte.
+
+        Sie ist damit erreichbar, ohne dass sich heute etwas ändert oder etwas
+        kostet. Der Schalter ist die Entscheidung, nicht ein Umbau.
         """
-        parsed = self._parse_json_content(content)
+        parsed = self._parse_json_object(content, source=source)
         if parsed is not None:
             return parsed
 
         if pydantic_model is None:
             return None
 
-        logger.warning("Attempting LLM repair for malformed JSON output")
+        if not await json_repair_allowed(await get_admin_supabase()):
+            logger.info(
+                "LLM JSON repair is switched off — leaving the malformed answer alone",
+                extra={"source": source},
+            )
+            return None
+
+        logger.warning("Attempting LLM repair for malformed JSON output", extra={"source": source})
         return await repair_json_output(
             openrouter=self._openrouter,
             model=model_id,
@@ -1002,8 +1097,15 @@ class GenerationService:
         )
 
     @staticmethod
-    def _parse_json_content(content: str) -> dict | None:
+    def _parse_json_content(content: str) -> dict | list | None:
         """Extract and parse JSON from LLM response.
+
+        ⚠ Gibt zurück, was ``json.loads`` liefert: bei einer Antwort, die mit
+        ``[`` beginnt, eine LISTE. Die Annotation lautete ``dict | None`` und
+        war damit eine Zusage, die die Funktion nicht halten kann — ein
+        Rückgabetyp, der enger ist als die Wirklichkeit, ist ein Cast ohne
+        Schlüsselwort (siehe ``widening-to-string-is-a-cast``, nur andersherum).
+        Wer ein Objekt braucht, ruft ``_parse_json_object``.
 
         Handles:
         1. Embedded ```json ... ``` blocks within mixed narrative+JSON content
