@@ -393,9 +393,9 @@ async function handleExamine(ctx: CommandContext): Promise<TerminalLine[]> {
     // Fetch detailed data in parallel
     const [detailResp, moodResp, needsResp, moodletsResp] = await Promise.all([
       agentsApi.getById(sid, agent.id, simMode()),
-      agentAutonomyApi.getAgentMood(sid, agent.id),
-      agentAutonomyApi.getAgentNeeds(sid, agent.id),
-      agentAutonomyApi.getAgentMoodlets(sid, agent.id),
+      agentAutonomyApi.getAgentMood(sid, agent.id, simMode()),
+      agentAutonomyApi.getAgentNeeds(sid, agent.id, simMode()),
+      agentAutonomyApi.getAgentMoodlets(sid, agent.id, simMode()),
     ]);
     const fullAgent = detailResp.success && detailResp.data ? detailResp.data : agent;
     const mood = moodResp.success && moodResp.data ? moodResp.data : null;

@@ -134,18 +134,44 @@ export interface MorningBriefing {
 export class AgentAutonomyApiService extends BaseApiService {
   // ── Agent Mood ────────────────────────────────────────────────
 
-  getAgentMood(simulationId: string, agentId: string): Promise<ApiResponse<AgentMood | null>> {
-    return this.get(`/simulations/${simulationId}/agents/${agentId}/mood`);
+  /**
+   * Stimmung eines Agenten. `mode` ist Pflicht und wird am Aufrufort gewählt.
+   *
+   * Public-First-Befund D11/S19: diese drei Lesungen liefen ausnahmslos über
+   * `this.get`, also mit Authorization-Kopf gegen die Mitgliederroute — und
+   * die verlangt `require_role("viewer")`. Für eine anonyme Besucherin endete
+   * damit das Betrachten eines Agenten in 403, obwohl die Tabellen auf Prod
+   * seit jeher eine Richtlinie `*_public_read` mit `USING (true)` tragen. Die
+   * Datenbank sagte „öffentlich", das API-Tor sagte „Mitglieder"; das Tor war
+   * das striktere und das falsche.
+   *
+   * Es traf echte Oberflächen: der `examine`-Befehl des Terminals holt alle
+   * drei in einem Zug, dazu Chat und Stimmungsfeld.
+   */
+  getAgentMood(
+    simulationId: string,
+    agentId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentMood | null>> {
+    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/mood`, mode);
   }
 
-  getAgentMoodlets(simulationId: string, agentId: string): Promise<ApiResponse<AgentMoodlet[]>> {
-    return this.get(`/simulations/${simulationId}/agents/${agentId}/moodlets`);
+  getAgentMoodlets(
+    simulationId: string,
+    agentId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentMoodlet[]>> {
+    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/moodlets`, mode);
   }
 
   // ── Agent Needs ───────────────────────────────────────────────
 
-  getAgentNeeds(simulationId: string, agentId: string): Promise<ApiResponse<AgentNeeds | null>> {
-    return this.get(`/simulations/${simulationId}/agents/${agentId}/needs`);
+  getAgentNeeds(
+    simulationId: string,
+    agentId: string,
+    mode: 'public' | 'member',
+  ): Promise<ApiResponse<AgentNeeds | null>> {
+    return this.getSimulationData(`/simulations/${simulationId}/agents/${agentId}/needs`, mode);
   }
 
   // ── Agent Opinions ────────────────────────────────────────────

@@ -489,7 +489,13 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     if (agents.length === 0) return;
 
     const results = await Promise.allSettled(
-      agents.map((a) => agentAutonomyApi.getAgentMood(this.simulationId, a.id)),
+      agents.map((a) =>
+        agentAutonomyApi.getAgentMood(
+          this.simulationId,
+          a.id,
+          appState.currentSimulationMode.value,
+        ),
+      ),
     );
     this._agentMoods.clear();
     results.forEach((r, i) => {
