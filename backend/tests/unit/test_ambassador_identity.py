@@ -43,12 +43,21 @@ import pytest
 BACKEND = Path(__file__).resolve().parents[2]
 REPO = BACKEND.parent
 MIGRATION = REPO / "supabase/migrations/20260831127000_304_ambassador_is_identified_by_id.sql"
+#: Seit Migration 322 steht die Regel in der Sicht `active_ambassadors`; 304
+#: bleibt die Datei, die die Kennung VOR den Namen gestellt hat.
+SINGLE_SOURCE = REPO / "supabase/migrations/20260901040000_322_an_ambassador_is_decided_in_one_place.sql"
 
 
 @pytest.fixture(scope="module")
 def sql() -> str:
     assert MIGRATION.is_file(), f"Migration nicht gefunden: {MIGRATION}"
     return MIGRATION.read_text(encoding="utf-8")
+
+
+@pytest.fixture(scope="module")
+def view_sql() -> str:
+    assert SINGLE_SOURCE.is_file(), f"Migration nicht gefunden: {SINGLE_SOURCE}"
+    return SINGLE_SOURCE.read_text(encoding="utf-8")
 
 
 def _body(sql: str) -> str:
@@ -91,41 +100,80 @@ class TestTheSqlResolvesIdFirst:
         assert body.count("* 0.3") == 2, "Professions- und Botschafteranteil müssen beide 0,3 sein"
 
 
-class TestThePythonResolvesTheSameWay:
-    def test_it_collects_ids_and_names(self) -> None:
+class TestThePythonDoesNotResolveAtAll:
+    """Seit Migration 322 gibt es die zweite Fassung nicht mehr.
+
+    Diese Klasse hiess ``TestThePythonResolvesTheSameWay`` und prüfte, dass die
+    Python-Kopie der Regel dieselben Felder in derselben Reihenfolge liest wie
+    die SQL-Kopie. Das war die bestmögliche Prüfung, solange es ZWEI Kopien gab
+    — und sie hat den Unterschied trotzdem nicht gefunden, den es gab: SQL prüft
+    ``id ODER (id fehlt UND name)``, Python prüfte ``id ODER name`` und sammelte
+    den Namen also auch aus Botschaften, die bereits eine Kennung tragen.
+
+    Die Prüfung konnte ihn nicht finden, weil sie fragte, ob beide Seiten
+    DIESELBEN FELDER nennen, nicht ob sie dieselbe ANTWORT geben. Zwei Regeln
+    aus denselben Zutaten können verschiedene Gerichte sein.
+
+    Auf Prod gemessen (31.08.2026): beide Fassungen fanden dieselben 14 Paare,
+    Differenz 0/0 — die Abweichung war latent und wäre beim ersten doppelten
+    Agentennamen aufgewacht, lautlos.
+
+    Was jetzt geprüft wird, ist deshalb das Gegenteil: dass Python die Regel
+    NICHT mehr kennt.
+    """
+
+    def test_python_reads_the_view_instead_of_deriving(self) -> None:
         from backend.services.agent_service import AgentService
 
         source = inspect.getsource(AgentService._enrich_ambassador_flag)
-        assert 'block.get("agent_id")' in source, "die Kennung wird nicht gelesen"
-        assert 'block.get("name")' in source, "der Namens-Rückfall fehlt"
-
-    def test_the_id_is_checked_before_the_name(self) -> None:
-        from backend.services.agent_service import AgentService
-
-        source = inspect.getsource(AgentService._enrich_ambassador_flag)
-        line = next(row for row in source.splitlines() if "is_ambassador = " in row and "or" in row)
-        assert line.index("ambassador_ids") < line.index("ambassador_names"), (
-            "die Kennung muss zuerst geprüft werden, sonst entscheidet wieder der Name"
+        assert "active_ambassadors" in source, (
+            "die Anreicherung liest die Sicht nicht — dann gibt es wieder zwei Stellen"
         )
 
-    def test_the_blocked_until_rule_survived(self) -> None:
-        """Ein gesperrter Botschafter zählt nicht — in beiden Fassungen."""
+    def test_python_no_longer_knows_the_rule(self) -> None:
+        """Kein Feldname der Botschafts-Struktur darf hier noch vorkommen."""
         from backend.services.agent_service import AgentService
 
         source = inspect.getsource(AgentService._enrich_ambassador_flag)
-        assert "ambassador_blocked_until" in source
-        assert "is_ambassador = False" in source
+        # Nur den Code, ohne den Docstring — der DARF die Geschichte erzählen.
+        code = source.split('"""')[-1]
+        # Die Schlüsselform, nicht der blosse Teilstring: `ambassador_b` ist ein
+        # Präfix von `ambassador_blocked_until`, und die erste Fassung dieses
+        # Tests fand deshalb ihren eigenen Docstring. Ein Vergleich, der zu viel
+        # findet, ist so unbrauchbar wie einer, der zu wenig findet.
+        for leaked in ('"ambassador_a"', '"ambassador_b"', '"embassy_metadata"'):
+            assert leaked not in code, (
+                f"{leaked} steht wieder im Python-Code — die Regel ist zurückgekehrt"
+            )
 
+    def test_the_blocked_rule_moved_and_did_not_vanish(self, sql: str) -> None:
+        """Die Sperre gilt weiter — sie steht jetzt in der Sicht, nicht in Python.
 
-class TestTheTwoSidesAgree:
-    def test_both_name_the_same_two_fields(self, sql: str) -> None:
+        Der Unterschied ist wichtig genug für einen eigenen Test: eine Regel,
+        die aus einer Datei verschwindet, ist entweder umgezogen oder verloren,
+        und die beiden sehen im Diff gleich aus.
+        """
         from backend.services.agent_service import AgentService
 
-        body = _body(sql)
         python = inspect.getsource(AgentService._enrich_ambassador_flag)
-        for field in ("agent_id", "name"):
-            assert f"'{field}'" in body, f"{field} fehlt in SQL"
-            assert f'"{field}"' in python, f"{field} fehlt in Python"
-        for side in ("ambassador_a", "ambassador_b"):
-            assert f"'{side}'" in body, f"{side} fehlt in SQL"
-            assert f'"{side}"' in python, f"{side} fehlt in Python"
+        assert "ambassador_blocked_until" not in python.split('"""')[-1], (
+            "die Sperrprüfung steht wieder in Python"
+        )
+        assert "ambassador_blocked_until" in sql, "die Sperrprüfung fehlt in der Sicht"
+
+
+class TestTheSingleSourceIsTheView:
+    def test_the_view_carries_the_rule(self, view_sql: str) -> None:
+        for field in ("agent_id", "name", "ambassador_a", "ambassador_b"):
+            assert f"'{field}'" in view_sql, f"{field} fehlt in der Sicht"
+
+    def test_the_influence_function_reads_the_view(self, view_sql: str) -> None:
+        """Die Einflusszahl darf die Regel nicht ein zweites Mal ausschreiben."""
+        assert "active_ambassadors" in view_sql
+        # Der Funktionsrumpf beginnt nach dem CREATE FUNCTION und endet am
+        # abschliessenden Dollar-Tag; nur dort darf die Regel nicht stehen.
+        fn = view_sql.split("CREATE OR REPLACE FUNCTION")[-1]
+        body = fn.split("AS $function$")[-1].split("$function$")[0]
+        assert "embassy_metadata" not in body, (
+            "der Funktionsrumpf schreibt die Regel wieder aus"
+        )
