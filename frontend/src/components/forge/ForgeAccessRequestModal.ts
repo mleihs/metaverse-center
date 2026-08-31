@@ -281,7 +281,7 @@ export class VelgForgeAccessModal extends LitElement {
     /* Submit — amber brutalist */
     .btn--submit {
       padding: 8px 20px;
-      color: var(--color-text-inverse);
+      color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: none;
       box-shadow: 3px 3px 0 var(--color-accent-amber-glow);

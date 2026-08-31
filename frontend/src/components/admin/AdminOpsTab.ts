@@ -140,7 +140,7 @@ export class VelgAdminOpsTab extends LitElement {
     .ops-dossier-btn:hover,
     .ops-dossier-btn:focus-visible {
       background: var(--color-accent-amber);
-      color: var(--color-text-inverse);
+      color: var(--color-on-accent-amber);
       border-color: var(--color-accent-amber);
       outline: none;
     }

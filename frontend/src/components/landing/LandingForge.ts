@@ -208,7 +208,7 @@ export class VelgLandingForge extends LitElement {
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-inverse);
+      color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: var(--border-width-thin) solid var(--color-accent-amber-dim);
       box-shadow: var(--shadow-md);

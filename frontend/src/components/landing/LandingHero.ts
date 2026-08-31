@@ -132,7 +132,7 @@ export class VelgLandingHero extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-inverse);
+      color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: var(--border-width-thin) solid var(--color-accent-amber-dim);
       box-shadow: var(--shadow-sm);

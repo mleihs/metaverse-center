@@ -162,7 +162,7 @@ export class VelgClearanceCard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      color: var(--color-text-inverse);
+      color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: none;
       cursor: pointer;

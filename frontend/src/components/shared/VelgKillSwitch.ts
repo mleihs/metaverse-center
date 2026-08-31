@@ -114,7 +114,11 @@ export class VelgKillSwitch extends LitElement {
       justify-content: center;
       background: color-mix(in srgb, var(--color-surface-inverse) 18%, transparent);
       border: 2px solid var(--color-border);
-      color: var(--color-text-primary);
+      /* The cover sits on --color-surface-inverse, a platform constant that no
+         theme overrides. --color-text-primary is right for a light theme and
+         unreadable in every dark one: 1.04:1 in cyberpunk, 1.19 in sunless-sea,
+         1.26 on the platform default. A constant surface takes a constant ink. */
+      color: var(--color-on-surface-inverse);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
