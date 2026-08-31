@@ -29687,16 +29687,16 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Substrat:</target></trans-unit>
 <trans-unit id="s57c9b3bcbf77ba24">
   <source>Anomalous</source>
-<target>Anomal</target></trans-unit>
+<target>Unruhig</target></trans-unit>
 <trans-unit id="sd02b4efd02006c57">
   <source><x id="0" equiv-text="${this.tremors}" /> tremor(s) on record, at least one still disturbing the substrate</source>
 <target><x id="0" equiv-text="${this.tremors}" /> Beben verzeichnet, mindestens eines stört das Substrat weiterhin</target></trans-unit>
 <trans-unit id="s6085d3c9c69a2739">
   <source>Requires you // <x id="0" equiv-text="${open}" /> of <x id="1" equiv-text="${rows.length}" /> awaiting your move</source>
-<target>Verlangt dich // <x id="0" equiv-text="${open}" /> von <x id="1" equiv-text="${rows.length}" /> warten auf deinen Zug</target></trans-unit>
+<target>Liegt bei dir // <x id="0" equiv-text="${open}" /> von <x id="1" equiv-text="${rows.length}" /> warten auf deinen Zug</target></trans-unit>
 <trans-unit id="sacfba3f9e09e4a95">
   <source>Requires you // nothing awaiting your move</source>
-<target>Verlangt dich // nichts wartet auf deinen Zug</target></trans-unit>
+<target>Liegt bei dir // nichts wartet auf deinen Zug</target></trans-unit>
 <trans-unit id="scbd61c6420429da7">
   <source>Awaiting your move</source>
 <target>Wartet auf deinen Zug</target></trans-unit>
@@ -29744,31 +29744,31 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target><x id="0" equiv-text="${world.agent_count ?? 0}" /> AG · <x id="1" equiv-text="${world.building_count ?? 0}" /> GEB</target></trans-unit>
 <trans-unit id="s1274b7648466bcb5">
   <source>Priority // Cycle <x id="0" equiv-text="${p.current_cycle}" /> resolves in</source>
-<target>Vorrang // Zyklus <x id="0" equiv-text="${p.current_cycle}" /> löst auf in</target></trans-unit>
+<target>Vorrang // Zyklus <x id="0" equiv-text="${p.current_cycle}" /> wird aufgelöst in</target></trans-unit>
 <trans-unit id="s2b80308b9d278398">
   <source>Priority // Cycle <x id="0" equiv-text="${p.current_cycle}" /> of <x id="1" equiv-text="${p.total_cycles}" /></source>
 <target>Vorrang // Zyklus <x id="0" equiv-text="${p.current_cycle}" /> von <x id="1" equiv-text="${p.total_cycles}" /></target></trans-unit>
 <trans-unit id="sab611e755df00e14">
   <source><x id="0" equiv-text="${Math.floor(this._remainingMs / 3600000)}" /> hours left in this cycle</source>
-<target><x id="0" equiv-text="${Math.floor(this._remainingMs / 3600000)}" /> Stunden bleiben in diesem Zyklus</target></trans-unit>
+<target>Noch <x id="0" equiv-text="${Math.floor(this._remainingMs / 3600000)}" /> Stunden in diesem Zyklus</target></trans-unit>
 <trans-unit id="s46dc76dfb3029a01">
   <source>No cycle clock running</source>
-<target>Keine Zyklusuhr läuft</target></trans-unit>
+<target>Es läuft keine Uhr</target></trans-unit>
 <trans-unit id="s143e469fbca59151">
   <source>This epoch has no cycle deadline set, so nothing is counting down. The cycle advances when the epoch is resolved.</source>
 <target>Für diese Epoche ist keine Zyklusfrist gesetzt, es zählt also nichts herunter. Der Zyklus rückt vor, wenn die Epoche aufgelöst wird.</target></trans-unit>
 <trans-unit id="s69d691b38408ffcc">
   <source>Acted this cycle</source>
-<target>In diesem Zyklus gehandelt</target></trans-unit>
+<target>Zug gemacht</target></trans-unit>
 <trans-unit id="s4a841a2cfaebedef">
   <source>Not acted this cycle</source>
-<target>In diesem Zyklus nicht gehandelt</target></trans-unit>
+<target>Zug offen</target></trans-unit>
 <trans-unit id="saf4b558404af59b6">
   <source>Enter War Room</source>
 <target>Kriegsraum betreten</target></trans-unit>
 <trans-unit id="seae5443765303268">
   <source>Review standing orders</source>
-<target>Stehende Befehle prüfen</target></trans-unit>
+<target>Dauerbefehle prüfen</target></trans-unit>
 <trans-unit id="s6cd11a89c6718652">
   <source>Cycle <x id="0" equiv-text="${p.current_cycle}" /> of <x id="1" equiv-text="${total}" /></source>
 <target>Zyklus <x id="0" equiv-text="${p.current_cycle}" /> von <x id="1" equiv-text="${total}" /></target></trans-unit>
@@ -29777,16 +29777,16 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Vorrang // Kein laufender Einsatz</target></trans-unit>
 <trans-unit id="s8ac6900426383e65">
   <source>Nothing requires you</source>
-<target>Nichts verlangt dich</target></trans-unit>
+<target>Nichts liegt an</target></trans-unit>
 <trans-unit id="s8de071a4112d0bd1">
   <source>You are not taking part in any running epoch. Join one, or keep building your worlds.</source>
 <target>Du nimmst an keiner laufenden Epoche teil. Tritt einer bei, oder bau weiter an deinen Welten.</target></trans-unit>
 <trans-unit id="scd1ec7d318ef4e6f">
   <source>Browse epochs</source>
-<target>Epochen durchsehen</target></trans-unit>
+<target>Epochen einsehen</target></trans-unit>
 <trans-unit id="s36538edf2140d51d">
   <source>Simulation Roster</source>
-<target>Simulationsverzeichnis</target></trans-unit>
+<target>Simulationsbestand</target></trans-unit>
 <trans-unit id="s49deb8d615de7651">
   <source>One sentence in. A civilization out.</source>
 <target>Ein Satz hinein. Eine Zivilisation heraus.</target></trans-unit>
