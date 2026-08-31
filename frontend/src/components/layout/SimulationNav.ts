@@ -116,7 +116,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
        * here by its own Definition of Done; see
        * handoff/simulation-views/DESIGN-AUTORITAET.md, point 4.
        */
-      --_context-text: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
+      --_context-text: var(--color-text-quiet);
 
       /* Hairline between register cells — half a step below --color-border-light. */
       --_register-rule: color-mix(in srgb, var(--color-border-light) 70%, var(--color-surface));

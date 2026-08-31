@@ -65,7 +65,7 @@ export class VelgBureauArchives extends LitElement {
      * value as the breadcrumb separator in SimulationShell.
      */
     .archives__header-sep {
-      color: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
+      color: var(--color-text-quiet);
     }
 
     .archives__header-count {

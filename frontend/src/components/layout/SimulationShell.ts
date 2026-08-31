@@ -113,7 +113,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
 
     .breadcrumb__sep {
-      color: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
+      color: var(--color-text-quiet);
       user-select: none;
       flex-shrink: 0;
     }
@@ -408,7 +408,23 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
           radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.3) 100%),
           var(--color-surface);
       }
-      .shell__content {
+      /*
+       * :not(--immersive) states the exception instead of relying on order.
+       *
+       * This block used to read .shell__content { max-width: … }. Both it and
+       * the cockpit rule ninety lines above have specificity 0,1,0 — a media
+       * query adds none — so the later one won, and above 2560px the chat and
+       * the dungeon were capped at 1600px again with 480px of dead margin on
+       * each side. The class was set; its effect was overwritten. Below 2560 it
+       * looked right, which is why 1440 and 1920 never showed it.
+       *
+       * Measured by velgarien-rebuild-88 in the running app, and only because
+       * the extension's window renders at 2560 — at the 1440 the check was aimed
+       * at, the bug is invisible. Ordering the rules the other way would also
+       * work and would break again the next time someone inserts a block; this
+       * says what it means.
+       */
+      .shell__content:not(.shell__content--immersive) {
         max-width: var(--container-max, 1600px);
       }
     }
