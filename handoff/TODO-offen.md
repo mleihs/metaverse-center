@@ -629,3 +629,116 @@ doch einer war:
 
 🔑 **Dieselbe Zahl ist einmal die Architektur und einmal der Fehler.** Sie zu
 lesen erfordert die Absicht daneben, nicht nur die Messung.
+
+---
+
+## T10 · N5, eine Schicht tiefer: die Meinung kann nicht sinken
+
+**Gemessen:** 31.08.2026 nachts auf Prod und am Quelltext, nachdem N5 lief.
+
+Nach dem Deploy vom Morgen bewegt sich alles, was sich bewegen sollte:
+
+    Bedarfs-Moodlets              0 →  120
+    schlechteste Laune           −1 →  −25
+    Agenten unter dem −20-Tor      0 →    6
+    max. Stress                    0 →    8   (Tor bei 800)
+    **Meinungsspanne          0 … 45 → 0 … 45**   ← unverändert, 1 177 Zeilen, null negative
+
+Die Meinungsspanne war als „nächste Zahl, auf die es ankommt" notiert, weil
+`relationship_threshold` |Meinung| ≥ 60 braucht. Sie steht. Hier ist, warum —
+und es ist kein Zufall, sondern eine geschlossene Schleife.
+
+### Die Rechnung
+
+`fn_recalculate_opinion_scores` (Migr. 145):
+
+    opinion_score = clamp(base_compatibility * 20 + Σ opinion_change, −100, 100)
+
+Beide Summanden sind gemessen:
+
+    base_compatibility     min 0, max 0, über ALLE 1 177 Meinungen
+    Modifikatoren                 109 Zeilen, **null davon negativ**
+      good_conversation    72 × +8
+      shared_experience    37 × +5
+
+### Schloss 1 · Die Grundlage ist überall 0
+
+`AgentOpinionService._ensure_opinion_record` legt jede Meinung mit
+`"base_compatibility": 0.0` an — fest verdrahtet. Berechnet würde sie von
+`PersonalityExtractionService.compute_base_compatibility`, und die hat im
+Betrieb keinen Aufrufer (derselbe Befund wie A3 zu
+`fn_initialize_agent_autonomy`).
+
+Sie könnte auch gar nicht rechnen: **alle 258 Agenten tragen
+`personality_profile = '{}'`** — nicht NULL, sondern ein leeres Objekt. Das ist
+genau die zurückgestellte „Persönlichkeits-Rückfüllung" (0,03 USD, 258 Aufrufe).
+Ohne Persönlichkeit keine Verträglichkeit, ohne Verträglichkeit keine Grundlage
+— und damit hängt die Meinung allein an den Modifikatoren.
+
+### Schloss 2 · Nur zwei Handlungen senken eine Meinung, und beide setzen sie voraus
+
+`SOCIAL_INTERACTIONS`, vollständig, nach Gewicht:
+
+    Interaktion               Gew  Laune-Fenster   Meinungs-Fenster   Δ Meinung
+    casual_chat                50  (−50, 100)      (−30, 100)             —
+    deep_conversation          30  (−20, 100)      (−10, 100)            +8
+    collaboration              20  (−10, 100)      (  0, 100)            +5
+    seek_comfort_interaction   15  (−100, −30)     ( 20, 100)           +18
+    insult                      5  (−100, −20)     (−100, −20)          −15
+    confrontation               3  (−100, −40)     (−100, −50)          −12
+
+🔑 **`insult` verlangt, dass die Meinung schon bei −20 oder darunter steht — und
+`insult` ist eine der nur zwei Quellen, aus denen eine Meinung überhaupt sinken
+kann.** `confrontation` verlangt −50. Die Bedingung der Ursache ist ihre eigene
+Wirkung.
+
+Das ist **wörtlich dieselbe Form wie N5 selbst**, eine Schicht tiefer. N5 lautete:
+„um unglücklich zu werden, muss man beleidigt werden — und wer beleidigt, muss
+unglücklich sein." Der Laune-Teil ist heute Morgen aufgebrochen worden
+(Bedarfs-Moodlets, 6 Agenten unter −20). Der Meinungs-Teil steht noch, und er
+war nie das Laune-Fenster: **er ist das Meinungs-Fenster.**
+
+### Schloss 3 · Zwei negative Vorlagen haben gar keinen Erzeuger
+
+`profession_rivalry` (−5) und `betrayal` (−25) stehen in `OPINION_PRESETS` und
+werden von **keiner Stelle** geschrieben. Der einzige lebende Schreiber von
+Modifikatoren ist `AgentActivityService._execute_interaction`;
+`add_proximity_modifiers` und `add_event_modifiers` nennen sich in ihren eigenen
+Docstrings „currently dormant — no callers exist" (auch das dieselbe Bauart wie
+[[a-door-that-only-opens-for-those-inside]]).
+
+### Was NICHT das Problem ist
+
+Die Stapelkappen reichen aus. Wäre die erste Beleidigung möglich, käme man ans
+Tor:
+
+    insult      −15 × Kappe 5 (social_negative)  = −75   ≥ 60 ✓
+    argument    −12 × Kappe 5                    = −60   ≥ 60 ✓
+    betrayal    −25 × Kappe 2                    = −50   < 60
+    rivalry      −5 × Kappe 1                    =  −5
+
+**Also ist `relationship_threshold` erreichbar** — es fehlt ausschliesslich der
+erste Schritt unter Null. Die Schwelle zu senken wäre die falsche Reparatur; sie
+ist nicht zu hoch, der Weg dorthin beginnt nicht.
+
+### Zu entscheiden (drei Wege, alle inhaltlich)
+
+1. **Das Meinungs-Fenster von `insult` öffnen** — z. B. `(−100, 20)` statt
+   `(−100, −20)`: eine schlecht gelaunte Figur kann jemanden anfahren, den sie
+   bisher neutral sah. Kleinster Eingriff, eine Zeile, und er passt zur Fiktion:
+   schlechte Laune sucht sich ein Ziel, nicht einen Feind.
+2. **Die Grundlage füllen** — die Persönlichkeits-Rückfüllung nachholen
+   (0,03 USD) und `compute_base_compatibility` an einen Aufrufer hängen. Dann
+   streut `base_compatibility * 20` die Meinungen von vornherein um Null, und
+   `insult` findet seine Voraussetzung von selbst. Der teurere, aber
+   ursächlichere Weg — und er macht Agenten zugleich unterscheidbar.
+3. **Einen Erzeuger für `profession_rivalry` bauen** — zwei Agenten desselben
+   Berufs beginnen bei −5. Passt zur Fiktion, ist aber allein zu schwach
+   (Kappe 1).
+
+⚠ Wege 1 und 2 zusammen wären wahrscheinlich zu viel auf einmal. Nach N5 gilt
+dieselbe Vorsicht wie heute Morgen: **ein Schloss öffnen, eine Runde messen.**
+
+**Nicht gemessen:** wie oft `_execute_interaction` je Tick überhaupt läuft, also
+wie schnell sich eine geöffnete Schleife füllen würde. Das entscheidet nicht,
+WELCHER Weg richtig ist, aber es sagt, wie lange man auf die Wirkung wartet.
