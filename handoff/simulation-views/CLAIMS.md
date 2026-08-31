@@ -57,13 +57,18 @@ sie sichtbar bleibt.
   `lit-localize extract`; neue `msg()`-Zeichenketten bei `-88` melden, er nimmt
   sie in einem Zug. Zwei Extraktionen erzeugen Konflikte in `de.xlf`, und das
   Wiederherstellen kostet die Übersetzungen.
-- **Migrationen: den ZEITSTEMPEL abstimmen, nicht die Nummer.** Zwei
-  Migrationen mit sorgfältig abgestimmten Nummern trugen heute denselben
-  Zeitstempel, und `version` ist der Primärschlüssel. Prüfung:
-  `ls supabase/migrations | sed 's/_.*//' | sort | uniq -d` muss leer sein.
-  Nächste freie Nummer: **324**. 320–323 = `-88`, Bauzustandsleiter, **auf Prod**. 319 = `-45`/L1–L7, **auf Prod** (die
-  Ledger-Zeile fehlte und ist nachgetragen — die Wirkung war da, der Eintrag
-  nicht).
+- **Migrationen: der Zeitstempel ist der Primärschlüssel — und ein TOR prüft das
+  jetzt, kein Satz mehr.** `bash scripts/lint-migration-order.sh` (in CI, Job
+  `test-backend`) weist ab: doppelte Zeitstempel, doppelte Nummern, und eine
+  Nummer, die sinkt, während der Zeitstempel steigt.
+  ⚠ **Warum es das Tor gibt:** genau diese Prüfung stand hier als SATZ, und am
+  selben Tag kollidierten wieder zwei Dateien auf `20260901040000` — zwei
+  Sitzungen, beide mit Nummer 322. Beide Wirkungen waren auf Prod, nur eine im
+  Ledger; der nächste Migrationslauf hätte die unsichtbare übersprungen.
+  Aufgelöst: die Botschafter-Migration ist jetzt **326** (`20260901080000`),
+  Ledger nachgetragen, Inhalt unverändert.
+  **Nächste freie Nummer: 327**, nächster freier Zeitstempel: später als
+  `20260901080000`. Nummer UND Zeitstempel müssen beide steigen.
 - ⚠ **`backend/tests/integration/` fährt gegen dieselbe lokale Datenbank.**
   Zwei gleichzeitige Läufe: 6 von 6 rot, mit Signaturen, die wie echte Fehler
   aussehen. Vorher ansagen. Für `backend/tests/unit` egal.
