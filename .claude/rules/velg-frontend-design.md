@@ -170,7 +170,19 @@ Additional: `--color-text-tertiary`, `--color-icon` (= text-muted), `--color-sep
 `--z-behind` (-1), `--z-base` (0), `--z-raised` (10), `--z-sticky` (100), `--z-header` (200), `--z-dropdown` (300), `--z-overlay` (400), `--z-modal` (500), `--z-popover` (600), `--z-tooltip` (700), `--z-notification` (800), `--z-top` (900)
 
 ### Layout
-- **Containers**: `--container-sm` (640px), `--container-md` (768px), `--container-lg` (1024px), `--container-xl` (1280px), `--container-2xl` (1400px), `--container-max` (1600px)
+- **Work-surface containers**: `--container-sm` (640px), `--container-md` (768px), `--container-lg` (1024px), `--container-xl` (1280px), `--container-2xl` (1400px), `--container-max` (1600px). These size a TOOL — a board of data that stops being readable past a certain width. They are NOT the wide-screen answer.
+- **The stage (wide-screen and 4K)**: `--stage-measure` (1920px), `--stage-gutter` (48px, 64px from 1920), `--stage-type-scale` (1, 1.15 from 2560). These size a SURFACE that shows the world: a landing page, a dashboard, a simulation document. Compose with `stageStyles` from `shared/stage-styles.ts` — `.stage-container` for a normal content row, `.stage-bleed-row` for a rule that runs edge to edge with its content still on the measure. `--stage-gutter` lies INSIDE `--stage-measure`, and the shared module already handles the `box-sizing` trap that bites anyone rebuilding it by hand in shadow DOM.
+
+**Wide-screen is FOUR rules, not one — pick by what the view IS:**
+
+| View type | Rule | How |
+|---|---|---|
+| Document / register (simulation view, dashboard, landing) | centred stage, chrome full-bleed | `.stage-container` on content rows; background, nav and hero art on the full width |
+| Full-height cockpit (chat, dungeon HUD) | **no container at all** | rails fixed at the edge, the stage takes every remaining pixel; centre only the reading measure inside it, via `padding-inline: max(<gutter>, calc((100% - <measure>) / 2))` |
+| Paper (broadsheet) | keep the type measure | ~1220px centred — a newspaper does not get wider, only the table does |
+| Tool (epoch ops, admin boards) | `--container-max` | 1600px centred, as today |
+
+Applying the document rule to a cockpit is a measurable bug, not a taste question: a 1600px cap on a chat view at 2560px parks it in a box with ~480px of dead margin on each side. Applying the cockpit rule to a broadsheet gives a 2560px-wide line of body text that nobody can read. **Ask which of the four a view is before writing a single `max-width`.**
 - **Structure**: `--header-height` (60px, 52px mobile), `--sidebar-width` (280px), `--sidebar-collapsed-width` (64px), `--content-padding` (24px, 16px mobile, 12px small mobile)
 
 ---
