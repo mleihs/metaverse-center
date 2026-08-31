@@ -19,6 +19,10 @@ from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.search import apply_search_filter
+from backend.utils.settings import (
+    HEARTBEAT_INTERVAL_DEFAULT_SECONDS,
+    HEARTBEAT_INTERVAL_SETTING,
+)
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
@@ -551,10 +555,16 @@ class EventService(BaseService):
                         .execute()
                     )
                     warding_effects = extract_list(_ward_resp)
+                    # The key is "heartbeat_interval_seconds" (migration 129) —
+                    # reading a key named "heartbeat_interval" returned the
+                    # default on every call, so a 10-tick ward expired after
+                    # 50 minutes instead of ~40 hours. Both the name and the
+                    # fallback now come from the one place HeartbeatService
+                    # reads them too.
                     heartbeat_interval = await PlatformConfigService.get(
                         supabase,
-                        "heartbeat_interval",
-                        300,
+                        HEARTBEAT_INTERVAL_SETTING,
+                        HEARTBEAT_INTERVAL_DEFAULT_SECONDS,
                     )
                     now = datetime.now(UTC)
                     for ward in warding_effects:

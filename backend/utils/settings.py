@@ -180,6 +180,21 @@ async def upsert_platform_setting(
 # Pfad, der aus einem Zeitgeber heraus ein Modell erreichen könnte, fragt sie
 # zuerst. Vom Menschen ausgelöste Pfade fragen sie NICHT — sie abzuschalten
 # wäre keine Kostenbremse, sondern ein kaputtes Produkt.
+# ── Heartbeat tick interval ────────────────────────────────────────────
+# The platform_settings key that carries the world-tick interval, and the
+# fallback used when the row is absent. TWO consumers read it and they must
+# agree: HeartbeatService's own scheduler (how often a world ticks) and
+# EventService's ward-expiry maths (how long a "duration_ticks" effect lasts
+# in wall-clock seconds). They disagreed until 31.08.2026 — EventService read
+# a key named "heartbeat_interval" that has never existed in any migration or
+# on production, so it silently fell back to 300 s and expired Deluge/Tower
+# T3 building protection after 50 minutes instead of the ~40 hours its
+# duration_ticks promised. A key name that is wrong reads exactly like a key
+# that is merely unset; naming it once is the only fix that stays fixed.
+HEARTBEAT_INTERVAL_SETTING = "heartbeat_interval_seconds"
+HEARTBEAT_INTERVAL_DEFAULT_SECONDS = 14400  # 4 hours (seed 129 wrote 28800; prod runs 14400)
+
+
 SCHEDULED_AI_SPEND_SETTING = "scheduled_ai_spend_enabled"
 
 
