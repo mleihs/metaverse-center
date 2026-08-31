@@ -49,7 +49,12 @@ from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
-from backend.utils.settings import parse_setting_bool, scheduled_ai_spend_allowed
+from backend.utils.settings import (
+    HEARTBEAT_INTERVAL_DEFAULT_SECONDS,
+    HEARTBEAT_INTERVAL_SETTING,
+    parse_setting_bool,
+    scheduled_ai_spend_allowed,
+)
 from backend.utils.timestamps import parse_timestamp
 from supabase import AsyncClient as Client
 
@@ -125,7 +130,7 @@ async def _run_phase(
 
 # Defaults (overridable via platform_settings)
 _DEFAULT_ENABLED = True
-_DEFAULT_INTERVAL = 14400  # 4 hours (was 8h, reduced for engagement)
+_DEFAULT_INTERVAL = HEARTBEAT_INTERVAL_DEFAULT_SECONDS  # 4 hours (was 8h, reduced for engagement)
 _DEFAULT_EVENT_AGING_RULES = {
     "active_to_escalating": 4,
     "escalating_to_resolving": 6,
@@ -178,7 +183,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     "setting_key",
                     [
                         "heartbeat_enabled",
-                        "heartbeat_interval_seconds",
+                        HEARTBEAT_INTERVAL_SETTING,
                     ],
                 )
                 .execute()
@@ -189,7 +194,7 @@ class HeartbeatService(BaseSchedulerMixin):
                 val = row["setting_value"]
                 if key == "heartbeat_enabled":
                     enabled = parse_setting_bool(val)
-                elif key == "heartbeat_interval_seconds":
+                elif key == HEARTBEAT_INTERVAL_SETTING:
                     try:
                         interval = max(7200, int(val))
                     except (ValueError, TypeError):

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
 
 from backend.services.game_mechanics_service import GameMechanicsService
@@ -52,60 +52,47 @@ class ZoneActionService:
             raise bad_request(f"Invalid action_type '{action_type}'.")
 
         config = ACTION_CONFIG[action_type]
-        now = datetime.now(UTC)
 
-        # Check for active action on this zone
-        active_check = await (
-            supabase.table("zone_actions")
-            .select("id, action_type, expires_at")
-            .eq("zone_id", str(zone_id))
-            .eq("simulation_id", str(simulation_id))
-            .is_("deleted_at", "null")
-            .gt("expires_at", now.isoformat())
-            .limit(1)
-            .execute()
-        )
-        if active_check.data:
-            raise conflict("Zone already has an active action. Cancel it first.")
+        # One atomic claim instead of check-check-insert (ADR-007, migration 301).
+        # The two SELECTs and the INSERT used to be three round trips: two
+        # concurrent requests for the same zone both read "no active action" and
+        # both inserted. fn_create_zone_action takes a per-zone advisory lock,
+        # re-reads both conditions and inserts inside one transaction, so the
+        # second request now waits, sees the first row and is refused.
+        #
+        # The game numbers stay here in ACTION_CONFIG and travel as parameters:
+        # SQL owns the integrity, Python owns the rule.
+        rpc_resp = await supabase.rpc(
+            "fn_create_zone_action",
+            {
+                "p_simulation_id": str(simulation_id),
+                "p_zone_id": str(zone_id),
+                "p_action_type": action_type,
+                "p_user_id": str(user_id),
+                "p_effect_value": config["effect_value"],
+                "p_duration_days": config["duration_days"],
+                "p_cooldown_days": config["cooldown_days"],
+            },
+        ).execute()
 
-        # Check cooldown — find most recent expired action of this type
-        cooldown_check = await (
-            supabase.table("zone_actions")
-            .select("cooldown_until")
-            .eq("zone_id", str(zone_id))
-            .eq("simulation_id", str(simulation_id))
-            .eq("action_type", action_type)
-            .order("created_at", desc=True)
-            .limit(1)
-            .execute()
-        )
-        if cooldown_check.data:
-            cooldown_until = datetime.fromisoformat(cooldown_check.data[0]["cooldown_until"].replace("Z", "+00:00"))
-            if cooldown_until > now:
-                remaining = cooldown_until - now
-                raise too_many_requests(f"Action on cooldown. {remaining.days} days remaining.")
-
-        expires_at = now + timedelta(days=config["duration_days"])
-        cooldown_until = expires_at + timedelta(days=config["cooldown_days"])
-
-        response = await (
-            supabase.table("zone_actions")
-            .insert(
-                {
-                    "zone_id": str(zone_id),
-                    "simulation_id": str(simulation_id),
-                    "action_type": action_type,
-                    "effect_value": config["effect_value"],
-                    "created_by_id": str(user_id),
-                    "expires_at": expires_at.isoformat(),
-                    "cooldown_until": cooldown_until.isoformat(),
-                }
-            )
-            .execute()
-        )
-
-        if not response.data:
+        result = rpc_resp.data
+        if not isinstance(result, dict):
             raise server_error("Failed to create zone action.")
+
+        status = result.get("status")
+        if status == "active_exists":
+            raise conflict("Zone already has an active action. Cancel it first.")
+        if status == "cooldown":
+            raw_until = result.get("cooldown_until")
+            remaining_days = 0
+            if isinstance(raw_until, str):
+                cooldown_until = datetime.fromisoformat(raw_until.replace("Z", "+00:00"))
+                remaining_days = max(0, (cooldown_until - datetime.now(UTC)).days)
+            raise too_many_requests(f"Action on cooldown. {remaining_days} days remaining.")
+        if status != "created" or not isinstance(result.get("action"), dict):
+            raise server_error("Failed to create zone action.")
+
+        created = result["action"]
 
         logger.info(
             "Zone action created",
@@ -118,7 +105,7 @@ class ZoneActionService:
         )
 
         await GameMechanicsService.refresh_metrics(supabase)
-        return response.data[0]
+        return created
 
     @staticmethod
     async def cancel_action(
