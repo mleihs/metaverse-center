@@ -64,7 +64,7 @@ export class VelgCookieConsent extends LitElement {
 
     .btn--decline {
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .btn--decline:hover {
@@ -72,7 +72,7 @@ export class VelgCookieConsent extends LitElement {
     }
 
     .banner__link {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: underline;
       font-size: var(--text-xs);
       transition: color var(--transition-fast);

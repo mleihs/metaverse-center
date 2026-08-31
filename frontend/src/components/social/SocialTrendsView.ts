@@ -232,7 +232,7 @@ export class VelgSocialTrendsView extends LitElement {
 
     .selected__meta {
       display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1-5);
-      font-size: var(--text-xs); color: var(--color-text-muted);
+      font-size: var(--text-xs); color: var(--color-text-quiet);
       margin-top: var(--space-2);
     }
 
@@ -361,7 +361,7 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .article-card__meta {
-      font-size: var(--text-xs); color: var(--color-text-muted);
+      font-size: var(--text-xs); color: var(--color-text-quiet);
       margin-top: auto;
     }
 
@@ -420,7 +420,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .staging__chips {
@@ -464,7 +464,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       flex-shrink: 0;
       transition: color var(--transition-fast);
@@ -587,7 +587,7 @@ export class VelgSocialTrendsView extends LitElement {
     .batch-results__item-meta {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       margin-top: var(--space-1);
@@ -670,7 +670,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -697,7 +697,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .embassy-intel__value {
@@ -784,7 +784,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex: 1;
       min-width: 0;
       overflow: hidden;
@@ -826,7 +826,7 @@ export class VelgSocialTrendsView extends LitElement {
 
     .embassy-card__building-type {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: capitalize;
     }
 
@@ -880,7 +880,7 @@ export class VelgSocialTrendsView extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Empty state ── */
@@ -895,7 +895,7 @@ export class VelgSocialTrendsView extends LitElement {
     }
 
     .embassy-empty__icon {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.4;
     }
 
@@ -905,13 +905,13 @@ export class VelgSocialTrendsView extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .embassy-empty__hint {
       font-family: var(--font-body);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 320px;
       line-height: 1.5;
     }

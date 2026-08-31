@@ -126,7 +126,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__profession-primary {
@@ -165,7 +165,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__reaction-chevron {
       flex-shrink: 0;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: transform var(--transition-fast);
     }
 
@@ -195,7 +195,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-surface-header);
       border: var(--border-width-thin) solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 
@@ -209,7 +209,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       background: transparent;
       border: none;
       cursor: pointer;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
       transition: color var(--transition-fast);
     }
@@ -236,14 +236,14 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-3);
     }
 
     .panel__empty {
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -342,7 +342,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__embassy-label {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }
@@ -370,7 +370,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__influence-value {
@@ -412,7 +412,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 
@@ -425,7 +425,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__influence-hint {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-1-5) var(--space-2);
       /* Doppelung: der Kasten steht bereits auf einer Warntoenung. */
       background: color-mix(in srgb, var(--color-warning) 4%, transparent);
@@ -553,7 +553,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__suggestion-desc {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: var(--leading-relaxed);
     }
 
@@ -587,7 +587,7 @@ export class VelgAgentDetailsPanel extends LitElement {
 
     .panel__suggestion-actions .panel__rel-btn--dismiss {
       border-color: var(--color-text-muted);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__suggestion-actions .panel__rel-btn--dismiss:hover {

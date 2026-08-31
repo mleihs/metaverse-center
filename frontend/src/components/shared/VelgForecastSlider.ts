@@ -241,7 +241,7 @@ export class VelgForecastSlider extends LitElement {
     }
 
     .slider__default-label {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: var(--tracking-wide);
       min-width: 0;
       overflow: hidden;
@@ -264,7 +264,7 @@ export class VelgForecastSlider extends LitElement {
     .slider__delta--down { color: var(--_delta-down); }
     .slider__delta--zero { color: var(--_delta-zero); }
     .slider__delta--placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.4;
     }
 

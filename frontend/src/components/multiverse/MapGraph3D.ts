@@ -168,7 +168,7 @@ export class VelgMapGraph3D extends LitElement {
 		}
 
 		.tooltip__stat {
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			font-size: 10px;
 			margin: 2px 0;
 		}
@@ -193,7 +193,7 @@ export class VelgMapGraph3D extends LitElement {
 			width: 56px;
 			text-transform: uppercase;
 			letter-spacing: 0.05em;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 		}
 
 		.tooltip__dim-track {

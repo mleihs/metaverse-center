@@ -111,7 +111,7 @@ export class VelgContentDraftsList extends LitElement {
     .header__count {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -173,7 +173,7 @@ export class VelgContentDraftsList extends LitElement {
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-3);
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: none;
       cursor: pointer;
       position: relative;
@@ -203,7 +203,7 @@ export class VelgContentDraftsList extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .scope-switch__buttons {
       display: inline-flex;
@@ -217,7 +217,7 @@ export class VelgContentDraftsList extends LitElement {
       letter-spacing: var(--tracking-wide);
       padding: 4px 10px;
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: none;
       cursor: pointer;
       transition: all var(--transition-fast);
@@ -249,7 +249,7 @@ export class VelgContentDraftsList extends LitElement {
       color: var(--color-text-secondary);
     }
     .pr-group__label {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .pr-group__link {
       color: var(--_accent);
@@ -306,7 +306,7 @@ export class VelgContentDraftsList extends LitElement {
     .row__resource {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -315,7 +315,7 @@ export class VelgContentDraftsList extends LitElement {
     .row__author {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0;
       text-align: left;
       overflow: hidden;
@@ -327,14 +327,14 @@ export class VelgContentDraftsList extends LitElement {
     .row__version {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
     }
 
     .row__time {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -352,7 +352,7 @@ export class VelgContentDraftsList extends LitElement {
       height: 28px;
       padding: 0;
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px solid transparent;
       cursor: pointer;
       transition: all var(--transition-fast);

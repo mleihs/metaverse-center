@@ -214,7 +214,7 @@ export const adminGlobalCardStyles = css`
 
   .global-card__status--disabled,
   .global-card__status--suppressed {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent);
   }
@@ -362,7 +362,7 @@ export const adminForgeSectionStyles = [
 
   .forge-section__desc {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-bottom: var(--space-4);
     padding-left: 1px;
   }
@@ -391,7 +391,7 @@ export const adminLoadingStyles = css`
   .loading {
     text-align: center;
     padding: var(--space-8);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-family: var(--font-brutalist);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
@@ -400,7 +400,7 @@ export const adminLoadingStyles = css`
   .empty {
     text-align: center;
     padding: var(--space-8);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-size: var(--text-sm);
   }
 `;
@@ -436,7 +436,7 @@ export const adminBadgeStyles = css`
   }
   .badge--muted {
     background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 `;
 
@@ -496,7 +496,7 @@ export const adminActionStyles = css`
   }
 
   .act--skip {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
   .act--skip:hover:not(:disabled) {
     border-color: var(--color-text-muted);
@@ -542,7 +542,7 @@ export const adminTabNavStyles = css`
     padding: var(--space-2) var(--space-4);
     background: none;
     border: none;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     cursor: pointer;
     position: relative;
     transition: color 0.15s ease;
@@ -613,7 +613,7 @@ export const adminStatusFilterStyles = css`
     padding: var(--space-1) var(--space-3);
     border: 1px solid transparent;
     background: none;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     cursor: pointer;
     transition: all 0.15s ease;
   }
@@ -638,7 +638,7 @@ export const adminStatusFilterStyles = css`
   .queue-total {
     margin-left: auto;
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 `;
 
@@ -687,7 +687,7 @@ export const adminConnectionCardStyles = css`
   .connection-card__detail,
   .connection-card__pds {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .connection-card__status {
@@ -699,7 +699,7 @@ export const adminConnectionCardStyles = css`
 
   .connection-card__status--ok { color: var(--color-success); }
   .connection-card__status--error { color: var(--color-danger); }
-  .connection-card__status--unconfigured { color: var(--color-text-muted); }
+  .connection-card__status--unconfigured { color: var(--color-text-quiet); }
 
   .btn-test {
     font-family: var(--font-brutalist);
@@ -776,7 +776,7 @@ export const adminDispatchStyles = css`
     align-items: center;
     justify-content: center;
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .dispatch__body {
@@ -807,13 +807,13 @@ export const adminDispatchStyles = css`
 
   .dispatch__shard {
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     font-style: italic;
   }
 
   .dispatch__timestamp {
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-left: auto;
   }
 
@@ -835,7 +835,7 @@ export const adminDispatchStyles = css`
 
   .dispatch__tag {
     font-size: 9px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .dispatch__metrics {
@@ -850,7 +850,7 @@ export const adminDispatchStyles = css`
     align-items: center;
     gap: 3px;
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .metric--accent {
@@ -914,7 +914,7 @@ export const adminSubNavStyles = css`
     letter-spacing: 0.08em;
     background: none;
     border: none;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease;

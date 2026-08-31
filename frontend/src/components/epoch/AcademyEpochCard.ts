@@ -104,7 +104,7 @@ export class VelgAcademyEpochCard extends LitElement {
     .header__status {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 1px;
     }
 
@@ -114,7 +114,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: 20px;
     }
 
@@ -207,7 +207,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 10px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .difficulty__pips {
@@ -234,7 +234,7 @@ export class VelgAcademyEpochCard extends LitElement {
       text-transform: uppercase;
       padding: 2px 8px;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── CTA Button ── */

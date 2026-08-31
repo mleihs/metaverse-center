@@ -61,7 +61,7 @@ export class VelgFilterBar extends LitElement {
     }
 
     .filter-bar__search::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .filter-bar__select {

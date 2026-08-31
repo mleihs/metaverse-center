@@ -118,7 +118,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     .tray__hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .tray__input {
@@ -250,7 +250,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     }
 
     .url-row__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .url-row__btn {
@@ -290,7 +290,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     .aspect-hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       margin-top: var(--space-1);
     }

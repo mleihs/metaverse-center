@@ -77,7 +77,7 @@ export class VelgAttunementConsole extends SignalWatcher(LitElement) {
     .console__rules {
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .console__count {
@@ -154,7 +154,7 @@ export class VelgAttunementConsole extends SignalWatcher(LitElement) {
     .signature__state {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .signature__state--harmonized {
@@ -220,14 +220,14 @@ export class VelgAttunementConsole extends SignalWatcher(LitElement) {
 
     .signature__release[disabled] {
       border-color: var(--_rule);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: not-allowed;
     }
 
     .note {
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 640px) {

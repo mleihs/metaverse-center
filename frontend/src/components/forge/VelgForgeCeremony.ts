@@ -602,7 +602,7 @@ export class VelgForgeCeremony extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0;
       transform: translateY(12px);
     }
@@ -635,7 +635,7 @@ export class VelgForgeCeremony extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Zone divider badge */
@@ -887,7 +887,7 @@ export class VelgForgeCeremony extends LitElement {
       margin: 0;
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .ceremony__shortfall-btn {

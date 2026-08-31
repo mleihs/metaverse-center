@@ -82,7 +82,7 @@ export class VelgDashboardRegistry extends LitElement {
       .head__count {
         font-family: var(--font-mono);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .head__all {
@@ -96,7 +96,7 @@ export class VelgDashboardRegistry extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         transition: color var(--transition-fast);
       }
 
@@ -185,7 +185,7 @@ export class VelgDashboardRegistry extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -199,7 +199,7 @@ export class VelgDashboardRegistry extends LitElement {
         padding: var(--space-4) var(--space-6);
         border: var(--border-width-thin) solid var(--_rule);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         font-family: var(--font-mono);
         font-size: var(--text-xs);

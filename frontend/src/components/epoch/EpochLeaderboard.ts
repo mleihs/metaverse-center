@@ -51,7 +51,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: left;
       padding: var(--space-2) var(--space-2);
       border-bottom: 2px solid var(--color-border-light);
@@ -145,7 +145,7 @@ export class VelgEpochLeaderboard extends LitElement {
     }
 
     .rank--1 { color: var(--color-warning); }
-    .rank--2 { color: var(--color-text-muted); }
+    .rank--2 { color: var(--color-text-quiet); }
     .rank--3 { color: var(--color-warning-hover); }
 
     /* ── Simulation Info ──────────────────── */
@@ -168,7 +168,7 @@ export class VelgEpochLeaderboard extends LitElement {
     .sim__team {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .sim__title {
@@ -286,7 +286,7 @@ export class VelgEpochLeaderboard extends LitElement {
     .dim-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
       display: flex;
       justify-content: space-between;
@@ -503,7 +503,7 @@ export class VelgEpochLeaderboard extends LitElement {
       return html`<p style="
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: center;
         padding: var(--space-4);
       ">${msg('No scores recorded yet.')}</p>`;

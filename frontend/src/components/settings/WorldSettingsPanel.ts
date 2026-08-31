@@ -124,7 +124,7 @@ export class VelgWorldSettingsPanel extends LitElement {
     .table__empty {
       text-align: center;
       padding: var(--space-6);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
@@ -247,7 +247,7 @@ export class VelgWorldSettingsPanel extends LitElement {
     }
 
     .form__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .add-form__actions {

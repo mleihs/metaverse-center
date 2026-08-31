@@ -99,7 +99,7 @@ export const propheticFragmentStyles = css`
     font-weight: 900;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
   }

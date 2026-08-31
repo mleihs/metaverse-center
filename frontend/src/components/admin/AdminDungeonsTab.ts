@@ -77,7 +77,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: none;
         border-right: 1px solid var(--color-border);
         cursor: pointer;
@@ -126,7 +126,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0 0 var(--space-2) 0;
       }
 
@@ -186,7 +186,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .threshold-unit {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Archetype Checkboxes ── */
@@ -242,7 +242,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .archetype-icon {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         width: 16px;
         text-align: center;
       }
@@ -255,7 +255,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .archetype-sig {
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-left: auto;
       }
 
@@ -280,7 +280,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -306,7 +306,7 @@ export class VelgAdminDungeonsTab extends LitElement {
       }
 
       .filter-bar__input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .filter-bar__input:focus {
@@ -317,7 +317,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .filter-bar__count {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Simulation Grid ── */
@@ -391,7 +391,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .sim-card__slug {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: var(--space-0-5) 0 0 0;
       }
 
@@ -411,7 +411,7 @@ export class VelgAdminDungeonsTab extends LitElement {
       }
 
       .provenance--inherited {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
         border: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent);
       }
@@ -423,7 +423,7 @@ export class VelgAdminDungeonsTab extends LitElement {
       }
 
       .provenance--off {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: color-mix(in srgb, var(--color-text-muted) 6%, transparent);
         border: 1px solid color-mix(in srgb, var(--color-text-muted) 12%, transparent);
       }
@@ -483,7 +483,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: 1px solid var(--color-border);
         cursor: pointer;
         white-space: nowrap;
@@ -799,7 +799,7 @@ export class VelgAdminDungeonsTab extends LitElement {
                 ${this._renderSegBtn('custom', gc.clearance_mode, () => this._setGlobalClearanceMode('custom'), msg('Custom'))}
               </div>
 
-              <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: var(--space-2) 0 0 0; line-height: 1.5;">
+              <p style="font-size: var(--text-xs); color: var(--color-text-quiet); margin: var(--space-2) 0 0 0; line-height: 1.5;">
                 ${
                   gc.clearance_mode === 'off'
                     ? msg('All dungeon commands are available immediately, no clearance required.')

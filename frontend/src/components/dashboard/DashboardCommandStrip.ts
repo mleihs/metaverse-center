@@ -53,7 +53,7 @@ export class VelgDashboardCommandStrip extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .strip__left {

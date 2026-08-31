@@ -118,7 +118,7 @@ export const terminalFormStyles = css`
   }
 
   .form-input::placeholder {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   /* ── CTA Button ── */
@@ -406,7 +406,7 @@ export const terminalWrapperStyles = css`
     padding: 40px;
     font-family: var(--font-mono, monospace);
     font-size: 13px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
   }
 
   .terminal-loading {

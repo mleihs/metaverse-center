@@ -107,18 +107,18 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .card--stale .card__name {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .card--stale .intel-row__value,
     .card--stale .guardian-count {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Veraltete Aufklaerung: die Zeile wird gedaempft. Der Kantenbalken, den
        sie frueher zurueckgenommen hat, existiert nicht mehr. */
     .card--stale .fort-row {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: var(--_stale-bg);
     }
 
@@ -164,7 +164,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     .card__cycle {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -204,7 +204,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 80px;
       flex-shrink: 0;
     }
@@ -266,7 +266,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     }
 
     .fort-row__expiry {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 10px;
     }
 
@@ -284,7 +284,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
     .card__reports {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Empty State ─────────────────────────── */
@@ -321,14 +321,14 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
     .empty__hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 340px;
       line-height: 1.6;
     }

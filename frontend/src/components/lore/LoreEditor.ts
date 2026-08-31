@@ -69,7 +69,7 @@ export class VelgLoreEditor extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .section-card__title {

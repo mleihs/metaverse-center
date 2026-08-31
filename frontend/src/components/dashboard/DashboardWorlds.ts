@@ -107,7 +107,7 @@ export class VelgDashboardWorlds extends LitElement {
       .head__count {
         font-family: var(--font-mono);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Die Liste ──────────────────────────────────────────────────── */
@@ -139,7 +139,7 @@ export class VelgDashboardWorlds extends LitElement {
       .row__index {
         font-family: var(--font-mono);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* min-width: 0 ausdrücklich — sonst wächst die Spalte über das Raster
@@ -179,7 +179,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .row__desc {
@@ -187,7 +187,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-family: var(--font-prose);
         font-size: var(--text-sm);
         line-height: var(--leading-relaxed);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         max-width: 62ch;
       }
 
@@ -199,7 +199,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -286,7 +286,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-wider);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         flex: 0 0 auto;
       }
 
@@ -342,7 +342,7 @@ export class VelgDashboardWorlds extends LitElement {
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
         line-height: var(--leading-snug);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .dossier__enter {
@@ -357,7 +357,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         transition: color var(--transition-fast);
       }
 

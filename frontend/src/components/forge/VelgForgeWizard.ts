@@ -123,7 +123,7 @@ export class VelgForgeWizard extends LitElement {
       .forge-hero__subtitle {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0;
         position: relative;
       }
@@ -223,7 +223,7 @@ export class VelgForgeWizard extends LitElement {
         font-size: var(--_forge-label);
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -274,7 +274,7 @@ export class VelgForgeWizard extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.1em;
         text-align: center;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: var(--color-surface);
         border-right: 1px solid var(--color-border);
         position: relative;

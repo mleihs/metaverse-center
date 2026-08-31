@@ -228,7 +228,7 @@ export class VelgSimulationHealthView extends LitElement {
       .panel__icon {
         display: flex;
         align-items: center;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Zone stability bars ── */
@@ -466,7 +466,7 @@ export class VelgSimulationHealthView extends LitElement {
 
       .zone-action-card__icon {
         display: flex;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .zone-action-card__name {
@@ -722,7 +722,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-weight: var(--font-black);
         text-transform: uppercase;
         letter-spacing: 0.15em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-1);
       }
 

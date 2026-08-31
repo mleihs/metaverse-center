@@ -131,7 +131,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
        row isn't present yet (fresh DB / migration lag). Muted + low
        opacity so it reads as "suggestion", not as a real value. */
     .number-input__field::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.55;
     }
 
@@ -159,7 +159,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       font-size: 10px;
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .saved-tick {
@@ -191,7 +191,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
     }
 
     .readout__time--unset {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 

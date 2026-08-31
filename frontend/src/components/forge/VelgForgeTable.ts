@@ -392,7 +392,7 @@ export class VelgForgeTable extends LitElement {
       .section-empty {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-transform: uppercase;
         letter-spacing: 0.08em;
         padding: var(--space-8) var(--space-4);

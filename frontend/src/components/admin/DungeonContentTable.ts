@@ -65,7 +65,7 @@ export class DungeonContentTable extends LitElement {
       }
 
       .filters__search::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .filters__chips {
@@ -82,7 +82,7 @@ export class DungeonContentTable extends LitElement {
         letter-spacing: 0.06em;
         border: 1px solid var(--color-border);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition: all 0.15s ease;
         white-space: nowrap;
@@ -101,7 +101,7 @@ export class DungeonContentTable extends LitElement {
 
       .filters__count {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-left: auto;
       }
 
@@ -128,7 +128,7 @@ export class DungeonContentTable extends LitElement {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: left;
         border-bottom: 1px solid var(--color-border);
         white-space: nowrap;
@@ -171,7 +171,7 @@ export class DungeonContentTable extends LitElement {
       .cell-id {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         max-width: 180px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -203,7 +203,7 @@ export class DungeonContentTable extends LitElement {
 
       .cell-meta {
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -212,7 +212,7 @@ export class DungeonContentTable extends LitElement {
       .empty {
         text-align: center;
         padding: var(--space-8);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-family: var(--font-brutalist);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
@@ -227,7 +227,7 @@ export class DungeonContentTable extends LitElement {
         padding: var(--space-2) var(--space-3);
         border-top: 1px solid var(--color-border);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .pagination__btns {
@@ -240,7 +240,7 @@ export class DungeonContentTable extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: 1px solid var(--color-border);
         cursor: pointer;
         transition: all 0.15s ease;

@@ -215,7 +215,7 @@ export class VelgFontPicker extends LitElement {
     }
 
     .picker__search::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .picker__list {
@@ -232,7 +232,7 @@ export class VelgFontPicker extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3) var(--space-1);
       border-top: 1px solid var(--color-border-light);
       user-select: none;
@@ -298,7 +298,7 @@ export class VelgFontPicker extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .picker__custom-row {

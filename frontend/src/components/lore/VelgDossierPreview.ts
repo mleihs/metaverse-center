@@ -113,7 +113,7 @@ export class VelgDossierPreview extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       line-height: 1.6;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .redacted {

@@ -243,7 +243,7 @@ export class VelgDailyBriefing extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -277,7 +277,7 @@ export class VelgDailyBriefing extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -398,7 +398,7 @@ export class VelgDailyBriefing extends LitElement {
     .weather-zone__temp {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
     }
 
@@ -464,7 +464,7 @@ export class VelgDailyBriefing extends LitElement {
     .arc__value {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       width: 32px;
       text-align: right;
       flex-shrink: 0;

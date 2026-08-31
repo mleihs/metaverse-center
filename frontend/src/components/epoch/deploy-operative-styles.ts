@@ -132,7 +132,7 @@ export const operativeOverlayStyles = css`
 		}
 
 		.footer__btn--cancel {
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			border-color: var(--color-border);
 			background: transparent;
 		}
@@ -189,7 +189,7 @@ export const deployOperativeStyles = [
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 		}
 
 		.header__rp {
@@ -214,7 +214,7 @@ export const deployOperativeStyles = [
 			padding: 0;
 			border: 1px solid var(--color-border);
 			background: transparent;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			cursor: pointer;
 			transition: all 150ms ease;
 		}
@@ -439,7 +439,7 @@ export const deployOperativeStyles = [
 			font-size: 10px;
 			text-transform: uppercase;
 			letter-spacing: 0.2em;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			margin-bottom: var(--space-1);
 			text-shadow: 0 1px 2px var(--_sh-heavy);
 		}
@@ -516,7 +516,7 @@ export const deployOperativeStyles = [
 			border: 1px solid var(--color-border);
 			border-radius: 50%;
 			background: var(--color-surface);
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			cursor: pointer;
 			opacity: 0;
 			transition: all 150ms ease;
@@ -1051,7 +1051,7 @@ export const deployOperativeStyles = [
 			font-size: 9px;
 			text-transform: uppercase;
 			letter-spacing: 0.08em;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 			white-space: nowrap;
 		}
 
@@ -1138,7 +1138,7 @@ export const deployOperativeStyles = [
 			justify-content: space-between;
 			font-family: var(--font-mono, monospace);
 			font-size: 10px;
-			color: var(--color-text-muted);
+			color: var(--color-text-quiet);
 		}
 
 		.targeting__val--pos { color: var(--color-success); font-weight: 700; }

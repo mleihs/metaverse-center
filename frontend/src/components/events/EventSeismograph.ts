@@ -44,7 +44,7 @@ export class VelgEventSeismograph extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .seismo__ranges {
@@ -61,7 +61,7 @@ export class VelgEventSeismograph extends LitElement {
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-raised);
       border: var(--border-width-thin) solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: background var(--duration-fast, 100ms),
         color var(--duration-fast, 100ms),
@@ -136,7 +136,7 @@ export class VelgEventSeismograph extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -148,7 +148,7 @@ export class VelgEventSeismograph extends LitElement {
 
     .seismo__brush-hint {
       font-style: normal;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.7;
     }
   `;

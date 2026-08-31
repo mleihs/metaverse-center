@@ -48,7 +48,7 @@ export class VelgAgentMemorySection extends LitElement {
     .mem-group__chevron {
       display: flex;
       align-items: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: transform 0.2s ease;
     }
 
@@ -69,7 +69,7 @@ export class VelgAgentMemorySection extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Timeline ───────────────────────────── */
@@ -162,7 +162,7 @@ export class VelgAgentMemorySection extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Importance pips ────────────────────── */

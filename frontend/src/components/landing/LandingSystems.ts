@@ -272,7 +272,7 @@ export class VelgLandingSystems extends LitElement {
     .row__num {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .row__title {
@@ -313,7 +313,7 @@ export class VelgLandingSystems extends LitElement {
       font-family: var(--font-prose);
       font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: var(--space-2) 0 0;
       max-width: 62ch;
     }
@@ -329,7 +329,7 @@ export class VelgLandingSystems extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -422,7 +422,7 @@ export class VelgLandingSystems extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex: 0 0 auto;
     }
 
@@ -516,7 +516,7 @@ export class VelgLandingSystems extends LitElement {
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -530,7 +530,7 @@ export class VelgLandingSystems extends LitElement {
       text-transform: uppercase;
       white-space: nowrap;
       flex: 0 0 auto;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 0;
       padding: 0;

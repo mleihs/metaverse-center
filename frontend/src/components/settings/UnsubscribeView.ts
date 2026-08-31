@@ -69,7 +69,7 @@ export class VelgUnsubscribeView extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0 0 var(--space-2);
       }
 
@@ -100,7 +100,7 @@ export class VelgUnsubscribeView extends LitElement {
         font-size: var(--text-xs);
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-bottom: var(--space-1-5);
       }
 

@@ -174,7 +174,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: 0;
       padding: var(--space-1) var(--space-2);
@@ -213,7 +213,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-weight: var(--font-normal);
       text-transform: none;
       letter-spacing: 0.005em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .name-input {
@@ -240,7 +240,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px dashed var(--color-border);
       padding: var(--space-1) var(--space-3);
     }
@@ -496,7 +496,7 @@ export class VelgConstellationCanvas extends LitElement {
     }
 
     .card--tremor .card__body {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.01em;
     }
 
@@ -514,13 +514,13 @@ export class VelgConstellationCanvas extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .card__remove {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: 0;
       padding: var(--space-1);
@@ -592,7 +592,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -671,7 +671,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
     }
 

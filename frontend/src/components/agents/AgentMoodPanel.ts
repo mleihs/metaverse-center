@@ -281,7 +281,7 @@ export class AgentMoodPanel extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: var(--tracking-brutalist);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-align: center;
       }
 
@@ -344,7 +344,7 @@ export class AgentMoodPanel extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin-top: var(--space-1);
         text-align: right;
       }
@@ -547,7 +547,7 @@ export class AgentMoodPanel extends LitElement {
 
       .moodlet__source {
         font-size: var(--_text-micro);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -594,7 +594,7 @@ export class AgentMoodPanel extends LitElement {
 
       .moodlets__empty {
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-style: italic;
         padding: var(--space-3);
         text-align: center;
@@ -615,7 +615,7 @@ export class AgentMoodPanel extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: var(--tracking-brutalist);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         animation: loading-pulse 1.5s ease-in-out infinite;
       }
 

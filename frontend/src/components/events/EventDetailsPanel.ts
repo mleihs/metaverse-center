@@ -163,7 +163,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 
@@ -187,7 +187,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-4);
     }
@@ -199,7 +199,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-3);
     }
 
@@ -335,7 +335,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -388,7 +388,7 @@ export class VelgEventDetailsPanel extends LitElement {
       background: transparent;
       border: none;
       cursor: pointer;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
       transition: color var(--duration-fast, 100ms);
     }
@@ -418,7 +418,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: color var(--duration-fast, 100ms),
         border-color var(--duration-fast, 100ms);
       width: 100%;
@@ -562,7 +562,7 @@ export class VelgEventDetailsPanel extends LitElement {
     .panel__chain-arrow {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 
@@ -586,7 +586,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-3);
     }
@@ -626,7 +626,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border-light);
@@ -648,7 +648,7 @@ export class VelgEventDetailsPanel extends LitElement {
 
     .panel__zone-link-source {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
     }
 

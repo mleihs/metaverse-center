@@ -118,7 +118,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
     .empty {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-3);
       text-align: center;
       font-style: italic;
@@ -497,7 +497,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
                       entry.state === 'open'
                         ? html`
                           <div
-                            style="font-size: var(--text-xs); color: var(--color-text-muted); padding-left: var(--space-3);"
+                            style="font-size: var(--text-xs); color: var(--color-text-quiet); padding-left: var(--space-3);"
                           >
                             ${msg(
                               str`${Math.round(entry.opens_until_s)}s until half-open probe • ${entry.consecutive_opens} consecutive opens`,

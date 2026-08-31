@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -11,7 +11,11 @@ import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/
 import { conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
-import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
+import {
+  OPERATIVE_COLORS,
+  OPERATIVE_TYPES,
+  operativeName,
+} from '../../utils/operative-constants.js';
 import { pluralCount } from '../../utils/text.js';
 import {
   extractThreatLevel,
@@ -289,7 +293,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .rail__row b {
@@ -404,7 +408,9 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      color: var(--_tint, var(--color-text-muted));
+      /* NICHT --_tint: die Rollenfarbe ist Text, sobald sie hier steht, und
+         als Text traegt sie nicht. Siehe .duty__sum. */
+      color: var(--color-text-secondary);
     }
 
     .duty__name {
@@ -437,7 +443,24 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      color: var(--_tint, var(--color-text-primary));
+      /*
+       * Die Rollenfarbe faerbte hier die Zahl. Gemessen am 31.08.2026 gegen
+       * die vier Plattform-Gruende:
+       *
+       *   als TEXT (4,5:1)   14 von 24 Paarungen fallen durch
+       *   als MARKE (3,0:1)   6 von 24
+       *
+       * Das ist keine schlechte Palettenwahl, sondern strukturell: guardian
+       * steht bei 7,80 auf Schwarz und 2,24 auf Creme. Keine sechs Farben
+       * koennen auf hellem UND dunklem Grund Text sein — eine Farbe, die auf
+       * dem einen traegt, faellt auf dem anderen durch, per Konstruktion.
+       *
+       * Also traegt die Farbe kuenftig nur noch die Marke (der Rahmen des
+       * Daumens, 3:1), und die Rolle steht im Namen der Schaltflaeche in
+       * Worten. Auch die Themen-Hebung in ThemeService (Schritt 1b) haette
+       * das hier NICHT erreicht: --_tint ist ein Inline-Wert, kein Token.
+       */
+      color: var(--color-text-primary);
       font-variant-numeric: tabular-nums;
     }
 
@@ -844,7 +867,12 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       : `--_tint: ${tint}`;
 
     return html`
-      <button class="duty" style="--_tint: ${tint}" @click=${() => this._go('agents')}>
+      <button
+        class="duty"
+        style="--_tint: ${tint}"
+        aria-label=${msg(str`${agent.name}, strongest as ${operativeName(entry.best.type)}, ${entry.sum} in total`)}
+        @click=${() => this._go('agents')}
+      >
         <span class="duty__thumb" style=${thumb} aria-hidden="true">
           ${agent.portrait_image_url ? '' : this._initials(agent.name)}
         </span>

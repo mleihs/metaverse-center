@@ -83,7 +83,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         min-width: 96px;
       }
 
@@ -145,7 +145,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         font-size: var(--text-xs);
         padding: 2px 8px;
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 

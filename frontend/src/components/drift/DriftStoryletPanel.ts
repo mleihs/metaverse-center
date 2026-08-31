@@ -229,7 +229,7 @@ export class VelgDriftStoryletPanel extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .manifest__item {
@@ -252,7 +252,7 @@ export class VelgDriftStoryletPanel extends LitElement {
     .manifest__hint {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .options {

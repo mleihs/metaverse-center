@@ -68,7 +68,7 @@ export const htpBackStyles = css`
     font-size: var(--text-xs);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-decoration: none;
     padding: var(--space-2) 0;
     margin-bottom: var(--space-8);

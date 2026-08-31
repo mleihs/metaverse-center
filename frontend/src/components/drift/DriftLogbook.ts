@@ -62,7 +62,7 @@ export class VelgDriftLogbook extends LitElement {
     .book__count {
       margin-left: auto;
       font-family: var(--font-mono);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .book__chevron {
@@ -110,7 +110,7 @@ export class VelgDriftLogbook extends LitElement {
     .entry__takt {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -118,7 +118,7 @@ export class VelgDriftLogbook extends LitElement {
       padding: var(--space-3);
       font-family: var(--font-bureau);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @keyframes entry-in {

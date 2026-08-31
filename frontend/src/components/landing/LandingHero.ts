@@ -109,7 +109,7 @@ export class VelgLandingHero extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 0;
       padding: var(--space-1) 0;
@@ -356,7 +356,7 @@ export class VelgLandingHero extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 0;
       padding: var(--space-1) 0;
@@ -397,7 +397,7 @@ export class VelgLandingHero extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
       padding-left: var(--space-14);
     }

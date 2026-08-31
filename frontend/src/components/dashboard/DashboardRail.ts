@@ -96,7 +96,7 @@ export class VelgDashboardRail extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .nav-btn {
@@ -107,7 +107,7 @@ export class VelgDashboardRail extends LitElement {
         justify-content: center;
         border: var(--border-width-thin) solid var(--_rule);
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition:
           color var(--transition-fast),
@@ -192,7 +192,7 @@ export class VelgDashboardRail extends LitElement {
       .tremor__age {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         white-space: nowrap;
       }
 
@@ -201,7 +201,7 @@ export class VelgDashboardRail extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       @media (prefers-reduced-motion: reduce) {

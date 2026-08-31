@@ -89,7 +89,7 @@ export class VelgDriftMarkerStack extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .site__digs {
@@ -108,7 +108,7 @@ export class VelgDriftMarkerStack extends LitElement {
     .stack__empty {
       font-family: var(--font-bureau);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* M-09: the seal-shaped marker punches in. Octagon = the Bureau's stamp language. */
@@ -266,7 +266,7 @@ export class VelgDriftMarkerStack extends LitElement {
       font-family: var(--font-bureau);
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .riss {

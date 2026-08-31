@@ -21,7 +21,7 @@ export class VelgCaseFileToc extends LitElement {
       font-weight: 700;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
       margin-bottom: var(--space-2);
@@ -93,7 +93,7 @@ export class VelgCaseFileToc extends LitElement {
     .toc__title {
       font-family: var(--font-body);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: 1.3;
     }
 
@@ -104,7 +104,7 @@ export class VelgCaseFileToc extends LitElement {
     .toc__words {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.5;
     }
   `;

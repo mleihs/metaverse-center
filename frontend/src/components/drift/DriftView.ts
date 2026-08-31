@@ -263,7 +263,7 @@ export class VelgDriftView extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-brutalist);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       .stage__ladder {
         display: flex;
@@ -279,7 +279,7 @@ export class VelgDriftView extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
         text-align: center;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: var(--border-width-thin) solid var(--_rung-shut);
         background: transparent;
         opacity: 0;
@@ -304,7 +304,7 @@ export class VelgDriftView extends LitElement {
         margin: 0;
         font-size: var(--text-xs);
         line-height: var(--leading-snug);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       @media (prefers-reduced-motion: reduce) {
         .stage__rung {
@@ -342,7 +342,7 @@ export class VelgDriftView extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       .stat__value {
         margin: 0;
@@ -388,7 +388,7 @@ export class VelgDriftView extends LitElement {
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       .hud__manifest,
       .hud__depesche {
@@ -424,7 +424,7 @@ export class VelgDriftView extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
       .depesche__title {
         margin: 0 0 var(--space-1);

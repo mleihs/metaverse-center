@@ -200,7 +200,7 @@ export class VelgDashboardStage extends LitElement {
         font-family: var(--font-body);
         font-size: var(--text-sm);
         line-height: var(--leading-snug);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .bottom {
@@ -296,7 +296,7 @@ export class VelgDashboardStage extends LitElement {
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
         text-transform: uppercase;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         transition: color var(--transition-fast);
       }
 

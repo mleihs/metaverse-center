@@ -216,7 +216,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       line-height: var(--leading-normal);
       text-transform: uppercase;
       letter-spacing: var(--_register-tracking);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: none;
       cursor: pointer;
@@ -266,7 +266,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
        * turns amber with it when active — it was never meant to be a second
        * colour, only a second shape.
        */
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: 1.1em;
       line-height: 1;
     }
@@ -471,7 +471,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         text-decoration: none;
         border: none;
         background: transparent;

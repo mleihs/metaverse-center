@@ -177,7 +177,7 @@ export class VelgAdminResearchTab extends LitElement {
         padding: 0;
         background: none;
         border: none;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition: color 0.15s ease;
         flex-shrink: 0;
@@ -194,7 +194,7 @@ export class VelgAdminResearchTab extends LitElement {
 
       .domain-chips--empty {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding: var(--space-1) 0;
         font-style: italic;
       }
@@ -227,7 +227,7 @@ export class VelgAdminResearchTab extends LitElement {
       }
 
       .domain-card__input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         opacity: 0.6;
       }
 
@@ -238,7 +238,7 @@ export class VelgAdminResearchTab extends LitElement {
         padding: var(--space-2);
         background: none;
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition:
           color 0.2s ease,

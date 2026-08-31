@@ -34,7 +34,7 @@ export class VelgMapConnectionPanel extends LitElement {
     }
 
     .panel__arrow {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-lg, 18px);
     }
 
@@ -49,7 +49,7 @@ export class VelgMapConnectionPanel extends LitElement {
       font-weight: var(--font-bold, 700);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .panel__value {

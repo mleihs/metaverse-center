@@ -79,7 +79,7 @@ export class VelgBureauNotice extends LitElement {
     .notice__text {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.5px;
       white-space: nowrap;
       overflow: hidden;
@@ -128,7 +128,7 @@ export class VelgBureauNotice extends LitElement {
     }
 
     .notice__dismiss:hover {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
     }
 

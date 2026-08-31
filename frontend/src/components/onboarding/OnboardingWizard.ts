@@ -230,7 +230,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       border: none;
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       padding: 4px 8px;
       letter-spacing: 0.5px;
@@ -238,7 +238,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     }
 
     .footer__skip:hover {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .footer__skip:focus-visible {
@@ -374,7 +374,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-size: 9px;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: 24px;
       opacity: 0;
       animation: card-enter 400ms var(--ease-dramatic) both 200ms;
@@ -410,7 +410,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       line-height: 1.6;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0;
       animation: card-enter 350ms var(--ease-dramatic) both;
     }
@@ -440,7 +440,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     .worlds__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 24px;
     }
 
@@ -487,7 +487,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       width: 36px;
       height: 36px;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .path-card[aria-selected="true"] .path-card__icon {
@@ -513,7 +513,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     .path-card__desc {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .path-card__arrow {
@@ -524,7 +524,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
 
     .path-card:hover .path-card__arrow,
     .path-card[aria-selected="true"] .path-card__arrow {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transform: translateX(2px);
     }
 
@@ -549,7 +549,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     .tour__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 20px;
     }
 
@@ -619,7 +619,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       line-height: 1.5;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ══════════════════════════════════════════
@@ -645,7 +645,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     .mission__subtext {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 24px;
       line-height: 1.6;
     }
@@ -706,7 +706,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       width: 40px;
       height: 40px;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission-card--primary .mission-card__icon {
@@ -732,7 +732,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       line-height: 1.5;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission-card__arrow {
@@ -742,7 +742,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
     }
 
     .mission-card:hover .mission-card__arrow {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transform: translateX(2px);
     }
 

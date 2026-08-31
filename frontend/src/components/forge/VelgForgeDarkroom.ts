@@ -119,7 +119,7 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: 9px;
         text-transform: none;
         letter-spacing: normal;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .color-field__row {
@@ -904,7 +904,7 @@ export class VelgForgeDarkroom extends LitElement {
             </label>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portraits')} – ${msg('agent character images')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Portraits')} – ${msg('agent character images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptPortrait}
                 @input=${(e: Event) => {
@@ -916,7 +916,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Buildings')} – ${msg('location and structure images')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Buildings')} – ${msg('location and structure images')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBuilding}
                 @input=${(e: Event) => {
@@ -928,7 +928,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Banner')} – ${msg('simulation hero image')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Banner')} – ${msg('simulation hero image')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptBanner}
                 @input=${(e: Event) => {
@@ -940,7 +940,7 @@ export class VelgForgeDarkroom extends LitElement {
             </div>
 
             <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-              <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Lore Illustrations')} – ${msg('world lore section art')}</label>
+              <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Lore Illustrations')} – ${msg('world lore section art')}</label>
               <textarea class="field__textarea" rows="2"
                 .value=${this._stylePromptLore}
                 @input=${(e: Event) => {
@@ -966,7 +966,7 @@ export class VelgForgeDarkroom extends LitElement {
             </label>
             <div class="color-grid">
               <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-                <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Portrait Reference')}</label>
+                <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Portrait Reference')}</label>
                 <velg-style-reference-upload
                   .referenceUrl=${this._styleRefPortrait}
                   entityType="portrait"
@@ -976,7 +976,7 @@ export class VelgForgeDarkroom extends LitElement {
                 ></velg-style-reference-upload>
               </div>
               <div style="display:flex;flex-direction:column;gap:var(--space-1)">
-                <label class="field__label" style="font-size:var(--text-xs);color:var(--color-text-muted)">${msg('Building Reference')}</label>
+                <label class="field__label" style="font-size:var(--text-xs);color: var(--color-text-quiet)">${msg('Building Reference')}</label>
                 <velg-style-reference-upload
                   .referenceUrl=${this._styleRefBuilding}
                   entityType="building"

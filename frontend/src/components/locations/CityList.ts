@@ -57,7 +57,7 @@ export class VelgCityList extends LitElement {
 
     .item__meta {
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .item__footer {

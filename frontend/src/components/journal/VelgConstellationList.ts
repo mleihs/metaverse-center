@@ -69,7 +69,7 @@ export class VelgConstellationList extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px dashed var(--color-border);
       padding: var(--space-2) var(--space-4);
       min-height: 36px;
@@ -191,7 +191,7 @@ export class VelgConstellationList extends LitElement {
       font-weight: var(--font-normal);
       text-transform: none;
       letter-spacing: 0.005em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .row__status {
@@ -199,7 +199,7 @@ export class VelgConstellationList extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -239,13 +239,13 @@ export class VelgConstellationList extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .row__time {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .empty-note {

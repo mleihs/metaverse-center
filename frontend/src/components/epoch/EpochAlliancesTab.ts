@@ -130,14 +130,14 @@ export class VelgEpochAlliancesTab extends LitElement {
     .alliance__upkeep {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
     }
 
     .alliance__member {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: 2px 0;
     }
 
@@ -167,7 +167,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .tension-meter__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
       display: flex;
       align-items: center;
@@ -287,13 +287,13 @@ export class VelgEpochAlliancesTab extends LitElement {
     .proposal-card__hint {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .proposal-card__expiry {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .proposal-card__tally {
@@ -437,7 +437,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     }
 
     .team-form__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Lobby button (for Create Alliance) ── */
@@ -494,7 +494,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .alliance-cta__hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 380px;
       line-height: 1.5;
     }
@@ -504,7 +504,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .participant__unaligned {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Empty ───────────────────────────────── */
@@ -512,7 +512,7 @@ export class VelgEpochAlliancesTab extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-4);
     }

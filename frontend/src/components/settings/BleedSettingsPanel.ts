@@ -46,7 +46,7 @@ export class VelgBleedSettingsPanel extends BaseSettingsPanel {
         border: var(--border-default);
         font-family: var(--font-body);
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: 1.5;
       }
 

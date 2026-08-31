@@ -92,7 +92,7 @@ export class VelgAdminBlueskyTab extends LitElement {
     }
 
     .scif-header__subtitle {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-xs);
     }
 
@@ -100,7 +100,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     .dispatch__ig-link {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -118,7 +118,7 @@ export class VelgAdminBlueskyTab extends LitElement {
     .loading-state, .empty-state {
       padding: var(--space-8);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .error-state {
@@ -178,7 +178,7 @@ export class VelgAdminBlueskyTab extends LitElement {
     }
 
     .config-card__status--active { color: var(--color-success); }
-    .config-card__status--inactive { color: var(--color-text-muted); }
+    .config-card__status--inactive { color: var(--color-text-quiet); }
 
     /* Row layout + dividers + label-group come from fieldRowStyles /
        fieldRowDividerStyles. Local overrides: tighter vertical padding
@@ -198,7 +198,7 @@ export class VelgAdminBlueskyTab extends LitElement {
 
     .config-row__desc {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .config-input {

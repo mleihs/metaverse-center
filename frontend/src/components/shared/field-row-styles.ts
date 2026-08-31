@@ -102,7 +102,7 @@ export const fieldRowStyles = css`
   }
 
   .field-row__label--muted {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -127,7 +127,7 @@ export const fieldRowStyles = css`
     margin-top: var(--space-1);
     font-family: var(--font-mono, monospace);
     font-size: 10px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-transform: none;
     letter-spacing: normal;
     font-weight: var(--font-normal);

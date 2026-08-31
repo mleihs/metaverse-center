@@ -331,7 +331,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 600;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.04em;
       white-space: nowrap;
     }
@@ -380,7 +380,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       font-weight: 600;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1-5);
       letter-spacing: 0.04em;
     }
@@ -389,7 +389,7 @@ export class AgentLifeTimeline extends LitElement {
 
     .entry__target {
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
     }
 
@@ -415,7 +415,7 @@ export class AgentLifeTimeline extends LitElement {
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       animation: empty-drift 4s ease-in-out infinite;
     }
 
@@ -426,7 +426,7 @@ export class AgentLifeTimeline extends LitElement {
 
     .empty__sub {
       font-size: var(--font-size-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-2);
       opacity: 0.6;
     }
@@ -491,7 +491,7 @@ export class AgentLifeTimeline extends LitElement {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       animation: loading-pulse 1.5s ease-in-out infinite;
     }
 

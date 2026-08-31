@@ -60,7 +60,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
 
       .danger-zone__description {
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         line-height: var(--leading-relaxed);
         margin: 0 0 var(--space-4) 0;
       }

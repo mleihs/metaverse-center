@@ -54,7 +54,7 @@ export class VelgAdminHealthTab extends LitElement {
       }
 
       .filter-bar__input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .filter-bar__input:focus {
@@ -65,7 +65,7 @@ export class VelgAdminHealthTab extends LitElement {
 
       .filter-bar__count {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* --- Simulation Grid --- */
@@ -118,7 +118,7 @@ export class VelgAdminHealthTab extends LitElement {
 
       .sim-card__slug {
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: var(--space-0-5) 0 0 0;
       }
 
@@ -140,7 +140,7 @@ export class VelgAdminHealthTab extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .health-bar__value {
@@ -207,7 +207,7 @@ export class VelgAdminHealthTab extends LitElement {
       }
 
       .badge--normal {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         background: color-mix(in srgb, var(--color-text-muted) 8%, transparent);
         border: 1px solid color-mix(in srgb, var(--color-text-muted) 15%, transparent);
       }
@@ -232,7 +232,7 @@ export class VelgAdminHealthTab extends LitElement {
 
       .sim-card__disabled-hint {
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-style: italic;
       }
 

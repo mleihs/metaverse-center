@@ -57,7 +57,7 @@ export class VelgPublishBatchModal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-3);
     }
 
@@ -89,7 +89,7 @@ export class VelgPublishBatchModal extends LitElement {
     }
     .drafts__path {
       font-family: var(--font-mono);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -101,7 +101,7 @@ export class VelgPublishBatchModal extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-widest);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .field__input {
       font-family: var(--font-mono);
@@ -122,7 +122,7 @@ export class VelgPublishBatchModal extends LitElement {
     .field__counter {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
     }
     .field__counter[data-over='true'] { color: var(--color-danger); }

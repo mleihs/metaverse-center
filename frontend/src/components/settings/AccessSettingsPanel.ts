@@ -76,7 +76,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
 
       .panel__denied-text {
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .radio-group {
@@ -230,7 +230,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         padding: var(--space-4);
         text-align: center;
         font-size: var(--text-sm);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* --- Invite Form --- */
@@ -357,7 +357,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
       }
 
       .invitations__status--expired {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .invitations__status--accepted {

@@ -56,7 +56,7 @@ export class VelgDraftRosterPanel extends LitElement {
       padding: 0;
       border: 1px solid var(--color-border);
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: all var(--transition-fast);
     }
@@ -148,7 +148,7 @@ export class VelgDraftRosterPanel extends LitElement {
       border: 1px solid var(--color-border);
       border-radius: 50%;
       background: var(--color-surface);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       opacity: 0;
       transition: all 150ms ease;
@@ -256,7 +256,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .meta-stat__value {
@@ -318,7 +318,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .counter-text--ready {

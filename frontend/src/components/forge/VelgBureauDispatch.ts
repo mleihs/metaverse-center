@@ -228,7 +228,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .dispatch__meta-value {
@@ -316,7 +316,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-body);
       font-size: var(--text-xs);
       line-height: 1.6;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
     }
 
@@ -401,7 +401,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .dispatch__ack-btn {

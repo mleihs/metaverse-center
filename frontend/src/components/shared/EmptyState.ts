@@ -22,7 +22,7 @@ export class VelgEmptyState extends LitElement {
     }
 
     .empty__icon {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       animation: empty-icon-enter 500ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
     }
 

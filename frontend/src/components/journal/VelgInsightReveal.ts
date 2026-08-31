@@ -118,7 +118,7 @@ export class VelgInsightReveal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
     }
 
@@ -174,7 +174,7 @@ export class VelgInsightReveal extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0;
       transition: opacity 300ms var(--ease-out);
       z-index: 3;

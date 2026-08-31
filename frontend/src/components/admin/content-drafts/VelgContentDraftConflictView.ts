@@ -89,7 +89,7 @@ export class VelgContentDraftConflictView extends LitElement {
       gap: var(--space-3);
       margin-top: var(--space-2);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
@@ -149,7 +149,7 @@ export class VelgContentDraftConflictView extends LitElement {
     }
 
     .summary__card--zero .summary__value {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .summary__label {
@@ -235,7 +235,7 @@ export class VelgContentDraftConflictView extends LitElement {
     .group__count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
     }
@@ -412,7 +412,7 @@ export class VelgContentDraftConflictView extends LitElement {
     }
 
     .column__payload--deleted {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
       background: var(--color-surface);
       text-align: center;
@@ -434,7 +434,7 @@ export class VelgContentDraftConflictView extends LitElement {
       color: var(--color-success);
     }
     .tok--null {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 
@@ -512,7 +512,7 @@ export class VelgContentDraftConflictView extends LitElement {
     .footer__spacer {
       flex: 1;
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .footer__btn {

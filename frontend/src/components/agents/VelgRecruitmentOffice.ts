@@ -153,7 +153,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .config__textarea {
@@ -209,7 +209,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .config__charcount {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
     }
 
@@ -283,7 +283,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .recruit-card--done {

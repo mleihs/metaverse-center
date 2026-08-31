@@ -114,7 +114,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       padding: var(--space-1, 4px) var(--space-2, 8px);
       background: none;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
@@ -149,7 +149,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       height: 24px;
       background: none;
       border: 1px solid var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: 12px;
       font-weight: 700;
@@ -165,7 +165,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     .desk__zoom-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 32px;
       text-align: center;
     }
@@ -196,7 +196,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       bottom: var(--space-4, 16px);
       right: var(--space-4, 16px);
       opacity: 0.08;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       pointer-events: none;
       z-index: 1;
       transition: opacity 0.3s ease;
@@ -214,7 +214,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       right: var(--space-3, 12px);
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.5;
       z-index: 1;
       pointer-events: none;
@@ -229,7 +229,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       padding: var(--space-1, 4px) var(--space-4, 16px);
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: var(--color-surface-raised);
       border-top: 1px solid var(--color-border);
       z-index: 3;
@@ -299,7 +299,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       height: 100%;
       min-height: 300px;
       gap: var(--space-3, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm, 14px);
     }

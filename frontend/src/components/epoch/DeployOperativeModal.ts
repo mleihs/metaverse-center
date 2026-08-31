@@ -881,7 +881,7 @@ export class VelgDeployOperativeModal extends LitElement {
 										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-text-muted);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform:uppercase">
 											${targetSimName}
 										</div>
 									</div>
@@ -892,7 +892,7 @@ export class VelgDeployOperativeModal extends LitElement {
 										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color:var(--color-text-muted);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform:uppercase">
 											${targetSimName}
 										</div>
 									</div>

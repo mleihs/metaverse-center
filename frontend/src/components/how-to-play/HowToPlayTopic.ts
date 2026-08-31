@@ -97,7 +97,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Back link margin override (tighter for topic pages) */
@@ -115,13 +115,13 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-6);
       flex-wrap: wrap;
     }
 
     .breadcrumbs__link {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: none;
       cursor: pointer;
       transition: color var(--duration-fast) var(--ease-default);
@@ -153,7 +153,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ═══ TL;DR BOX (EXECUTIVE SUMMARY) ═══════════════════════════════ */
@@ -298,7 +298,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .readout__value {
@@ -354,7 +354,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-sm);
       font-style: italic;
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
     }
 
@@ -381,7 +381,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .demo-step__readout-value {
@@ -470,12 +470,12 @@ export class VelgHowToPlayTopic extends LitElement {
 
     .topic-phase__desc {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       display: none;
     }
 
     .topic-phase__arrow {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-xs);
     }
 
@@ -523,7 +523,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
 
@@ -538,7 +538,7 @@ export class VelgHowToPlayTopic extends LitElement {
     .topic-op-card__effect {
       font-size: var(--text-xs);
       font-style: italic;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
     }
 
@@ -574,7 +574,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-prose);
       font-size: var(--text-xs);
       font-style: italic;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .topic-dim-block__formula {
@@ -671,7 +671,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 9px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px solid var(--color-border);
       padding: 1px var(--space-2);
     }
@@ -691,7 +691,7 @@ export class VelgHowToPlayTopic extends LitElement {
     }
 
     .topic-lifecycle__arrow {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ═══ RELATED TOPICS ═══════════════════════════════════════════════ */
@@ -708,7 +708,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-4);
     }
 
@@ -783,7 +783,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .topic-nav__title {
@@ -808,7 +808,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
@@ -829,7 +829,7 @@ export class VelgHowToPlayTopic extends LitElement {
     .sidebar__nav-link {
       display: block;
       padding: var(--space-1) var(--space-3);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: none;
       cursor: pointer;
       transition:
@@ -857,7 +857,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
@@ -873,7 +873,7 @@ export class VelgHowToPlayTopic extends LitElement {
       display: block;
       padding: var(--space-1) var(--space-3);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: none;
       cursor: pointer;
       transition: color var(--duration-fast) var(--ease-default);
@@ -929,7 +929,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 2px solid var(--color-border);
       padding: var(--space-2) var(--space-3);
@@ -945,7 +945,7 @@ export class VelgHowToPlayTopic extends LitElement {
 
     .sidebar-disclosure__chevron {
       transition: transform var(--duration-fast) var(--ease-default);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .sidebar-disclosure--open .sidebar-disclosure__chevron {

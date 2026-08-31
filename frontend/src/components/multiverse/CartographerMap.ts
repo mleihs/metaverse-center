@@ -88,7 +88,7 @@ export class VelgCartographerMap extends LitElement {
 
     .map__subtitle {
       font-size: var(--text-sm, 14px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: var(--space-1, 4px) 0 0;
     }
 
@@ -111,7 +111,7 @@ export class VelgCartographerMap extends LitElement {
     }
 
     .map__search::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .map__search:focus {
@@ -168,7 +168,7 @@ export class VelgCartographerMap extends LitElement {
 
     .mobile-card__stats {
       font-size: var(--text-xs, 12px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1, 4px);
     }
 
@@ -176,7 +176,7 @@ export class VelgCartographerMap extends LitElement {
       display: flex;
       justify-content: center;
       padding: var(--space-1, 4px) 0;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-xs, 12px);
     }
 
@@ -197,7 +197,7 @@ export class VelgCartographerMap extends LitElement {
     .view-toggle__btn {
       background: none;
       border: none;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist, monospace);
       font-size: 10px;
       font-weight: 700;

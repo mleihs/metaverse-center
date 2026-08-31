@@ -127,7 +127,7 @@ export const contentStyles = css`
   .hero__sub {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-base);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
     margin: 0;
@@ -154,7 +154,7 @@ export const contentStyles = css`
     margin-top: var(--space-4);
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     opacity: 0;
@@ -211,7 +211,7 @@ export const contentStyles = css`
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin: 0 0 var(--space-4);
   }
 
@@ -229,7 +229,7 @@ export const contentStyles = css`
     padding: var(--space-1-5) var(--space-2);
     font-family: var(--font-mono, monospace);
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -293,7 +293,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: 11px;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     flex-shrink: 0;
   }
 
@@ -314,7 +314,7 @@ export const contentStyles = css`
   }
 
   .section__text {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: var(--leading-relaxed);
     max-width: 65ch;
   }
@@ -381,7 +381,7 @@ export const contentStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
     font-style: normal;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -401,7 +401,7 @@ export const contentStyles = css`
   figcaption {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-top: var(--space-2);
     letter-spacing: var(--tracking-wide);
   }
@@ -437,7 +437,7 @@ export const contentStyles = css`
   }
 
   .callout__text {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: var(--leading-relaxed);
     max-width: 65ch;
   }
@@ -487,7 +487,7 @@ export const contentStyles = css`
   }
 
   .feature-card__text {
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: var(--leading-relaxed);
     font-size: var(--text-sm);
   }
@@ -562,7 +562,7 @@ export const contentStyles = css`
 
   .faq-item__answer {
     padding: 0 var(--space-4) var(--space-4) calc(var(--space-4) + 1.2em + var(--space-3));
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     line-height: var(--leading-relaxed);
     font-size: var(--text-sm);
   }

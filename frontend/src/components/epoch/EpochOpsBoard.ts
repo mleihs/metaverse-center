@@ -196,7 +196,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 8px;
       text-transform: uppercase;
       letter-spacing: 0.4em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .ops-board__title {
@@ -221,7 +221,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-bottom: var(--space-5);
       padding: var(--space-2) 0;
       border-bottom: 1px solid var(--color-border);
@@ -235,7 +235,7 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .ops-board__readout-value {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-weight: 600;
     }
 
@@ -411,11 +411,11 @@ export class VelgEpochOpsBoard extends LitElement {
     }
 
     .dossier-card--completed .dossier-card__name {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .dossier-card--completed .dossier-stat__value {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* Phase pulse animations — increasing intensity */
@@ -544,7 +544,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Segmented progress bar ──────────── */
@@ -592,7 +592,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .dossier-progress__text {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       flex-shrink: 0;
       min-width: 24px;
       text-align: right;
@@ -643,7 +643,7 @@ export class VelgEpochOpsBoard extends LitElement {
       padding: 0;
       background: transparent;
       border: 1px solid transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       transition: all 0.15s;
       flex-shrink: 0;
@@ -660,13 +660,13 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
       transition: color 0.2s;
     }
 
     .dossier-card:hover .dossier-card__view-hint {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Create New card ──────────────────── */
@@ -704,7 +704,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-3xl);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: 1;
       transition: color 0.2s, transform 0.2s;
     }
@@ -719,12 +719,12 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       transition: color 0.2s;
     }
 
     .dossier-card--create:hover .dossier-create__label {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Atmospheric empty state ─────────── */
@@ -793,7 +793,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.35em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       position: relative;
       z-index: 1;
       animation: empty-pulse 3s ease-in-out infinite;
@@ -807,7 +807,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .ops-board__empty-sub {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-2);
       position: relative;
       z-index: 1;
@@ -818,7 +818,7 @@ export class VelgEpochOpsBoard extends LitElement {
     .ops-board__no-auth {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-8);
       border: 1px dashed var(--color-border);
@@ -831,7 +831,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: var(--space-8) 0 var(--space-3);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
@@ -849,7 +849,7 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: 1px solid var(--color-border);
       cursor: pointer;
@@ -1027,7 +1027,7 @@ export class VelgEpochOpsBoard extends LitElement {
       justify-content: center;
       background: none;
       border: 1px solid transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       font-size: 10px;
       transition: all 0.2s;
@@ -1074,13 +1074,13 @@ export class VelgEpochOpsBoard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .comms-empty__desc {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       line-height: 1.5;
     }
 

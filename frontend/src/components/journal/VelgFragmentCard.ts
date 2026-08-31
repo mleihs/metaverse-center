@@ -113,7 +113,7 @@ export class VelgFragmentCard extends LitElement {
     }
 
     .fragment--tremor .body {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       letter-spacing: 0.01em;
       font-size: var(--text-sm);
     }
@@ -171,7 +171,7 @@ export class VelgFragmentCard extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .meta__rarity {
@@ -186,7 +186,7 @@ export class VelgFragmentCard extends LitElement {
     .meta__time {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @keyframes fragment-in {

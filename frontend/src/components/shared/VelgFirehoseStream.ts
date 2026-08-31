@@ -69,7 +69,7 @@ export class VelgFirehoseStream extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-bottom: 1px solid var(--color-border);
       white-space: nowrap;
     }
@@ -102,7 +102,7 @@ export class VelgFirehoseStream extends LitElement {
       letter-spacing: 0.08em;
       text-transform: uppercase;
       border: 1px solid currentColor;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .badge--ok { color: var(--_ok); }
@@ -111,7 +111,7 @@ export class VelgFirehoseStream extends LitElement {
     .empty {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
     }
 

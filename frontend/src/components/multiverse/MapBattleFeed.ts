@@ -119,7 +119,7 @@ export class VelgMapBattleFeed extends LitElement {
     .feed__empty {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     @media (max-width: 768px) {

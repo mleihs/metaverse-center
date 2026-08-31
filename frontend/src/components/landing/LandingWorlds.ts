@@ -85,7 +85,7 @@ export class VelgLandingWorlds extends LitElement {
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: 0;
       padding: var(--space-1) 0;
@@ -181,7 +181,7 @@ export class VelgLandingWorlds extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .card__beacon {
@@ -222,7 +222,7 @@ export class VelgLandingWorlds extends LitElement {
       font-family: var(--font-prose);
       font-size: var(--text-sm);
       line-height: var(--leading-snug);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: 0;
       display: -webkit-box;
       -webkit-line-clamp: 2;

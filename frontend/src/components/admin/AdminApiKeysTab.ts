@@ -129,7 +129,7 @@ export class VelgAdminApiKeysTab extends LitElement {
         font-weight: var(--font-bold);
         text-transform: uppercase;
         letter-spacing: var(--tracking-widest);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border-bottom: 1px solid var(--color-border);
         padding-bottom: var(--space-2);
         margin: 0 0 var(--space-4) 0;
@@ -191,7 +191,7 @@ export class VelgAdminApiKeysTab extends LitElement {
       }
 
       .key-card__status--empty {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: 1px solid var(--color-border);
       }
 
@@ -205,7 +205,7 @@ export class VelgAdminApiKeysTab extends LitElement {
       .key-card__masked {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0 0 var(--space-3) 0;
       }
 
@@ -235,7 +235,7 @@ export class VelgAdminApiKeysTab extends LitElement {
       }
 
       .key-card__input::placeholder {
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         opacity: 0.6;
       }
 
@@ -246,7 +246,7 @@ export class VelgAdminApiKeysTab extends LitElement {
         padding: var(--space-2);
         background: none;
         border: 1px solid var(--color-border);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         cursor: pointer;
         transition: color 0.2s ease, border-color 0.2s ease;
         white-space: nowrap;

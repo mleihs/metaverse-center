@@ -144,7 +144,7 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .tier-upgrade__current {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .tier-upgrade__arrow {
@@ -187,7 +187,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-weight: 400;
       text-transform: none;
       letter-spacing: normal;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .field-textarea {
@@ -207,7 +207,7 @@ export class VelgForgeAccessModal extends LitElement {
     }
 
     .field-textarea::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.5;
     }
 
@@ -225,7 +225,7 @@ export class VelgForgeAccessModal extends LitElement {
     .char-count {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: right;
       margin-top: 6px;
       letter-spacing: 1px;
@@ -263,7 +263,7 @@ export class VelgForgeAccessModal extends LitElement {
     /* Cancel — ghost */
     .btn--cancel {
       padding: 8px 16px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: transparent;
       border: 1px solid var(--color-border);
     }

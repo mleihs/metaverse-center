@@ -65,7 +65,7 @@ export class VelgBondSettingsPanel extends BaseSettingsPanel {
       .cost-note {
         font-family: var(--font-mono);
         font-size: 10px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-sunken);
         border: 1px solid var(--color-border-light);

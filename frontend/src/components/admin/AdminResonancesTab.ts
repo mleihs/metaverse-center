@@ -99,7 +99,7 @@ export class VelgAdminResonancesTab extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px solid var(--color-border);
       cursor: pointer;
       transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
@@ -157,7 +157,7 @@ export class VelgAdminResonancesTab extends LitElement {
     }
 
     .search-input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .filter-chips {
@@ -173,7 +173,7 @@ export class VelgAdminResonancesTab extends LitElement {
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: 1px solid var(--color-border);
       cursor: pointer;
       transition: all 0.15s ease;
@@ -209,7 +209,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-left: auto;
     }
 
@@ -279,7 +279,7 @@ export class VelgAdminResonancesTab extends LitElement {
       align-items: center;
       gap: var(--space-2);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .res-signature {
@@ -373,7 +373,7 @@ export class VelgAdminResonancesTab extends LitElement {
     }
 
     .badge--archived {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: color-mix(in srgb, var(--color-text-muted) 40%, transparent);
       background: color-mix(in srgb, var(--color-text-muted) 5%, transparent);
     }
@@ -388,7 +388,7 @@ export class VelgAdminResonancesTab extends LitElement {
 
     .res-meta {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
       text-align: right;
       min-width: 80px;
@@ -525,12 +525,12 @@ export class VelgAdminResonancesTab extends LitElement {
     }
 
     .impact-events {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .impact-empty {
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) 0;
     }
 
@@ -539,14 +539,14 @@ export class VelgAdminResonancesTab extends LitElement {
     .empty-state {
       padding: var(--space-8);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-size: var(--text-sm);
     }
 
     .loading-state {
       padding: var(--space-6);
       text-align: center;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       text-transform: uppercase;

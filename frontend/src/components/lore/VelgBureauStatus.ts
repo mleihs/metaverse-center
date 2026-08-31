@@ -161,7 +161,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .bureau__meta-value {
@@ -242,7 +242,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: 10px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
     }
 
@@ -256,7 +256,7 @@ export class VelgBureauStatus extends LitElement {
     .arcanum-slot__detail {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: 2px;
     }
 
@@ -331,7 +331,7 @@ export class VelgBureauStatus extends LitElement {
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 72px;
       flex-shrink: 0;
     }
@@ -367,7 +367,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: var(--space-2) 0;
     }
 

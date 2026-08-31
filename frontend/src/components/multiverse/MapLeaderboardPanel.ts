@@ -61,7 +61,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: var(--text-xl, 20px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       min-width: 28px;
       text-align: center;
     }
@@ -97,7 +97,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
     .bar-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -122,7 +122,7 @@ export class VelgMapLeaderboardPanel extends LitElement {
     .empty {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm, 14px);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-8, 32px) 0;
     }

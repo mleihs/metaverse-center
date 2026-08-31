@@ -109,7 +109,7 @@ export class AdminDungeonContentTab extends LitElement {
         text-transform: uppercase;
         letter-spacing: 0.06em;
         background: transparent;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         border: 1px solid var(--color-border);
         cursor: pointer;
         transition: all 0.15s ease;

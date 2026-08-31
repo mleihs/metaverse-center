@@ -70,7 +70,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .lineup__scroll {
@@ -128,7 +128,7 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
 
     .lineup__role {
       font-size: 8px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       white-space: nowrap;
       overflow: hidden;

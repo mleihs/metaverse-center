@@ -118,7 +118,7 @@ export const dossierRevealStyles = css`
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: var(--color-text-quiet);
     margin-top: var(--space-2);
   }
 

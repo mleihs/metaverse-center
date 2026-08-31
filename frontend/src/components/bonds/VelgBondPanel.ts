@@ -80,7 +80,7 @@ export class VelgBondPanel extends LitElement {
     .panel__count {
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Bond slots ─────────────────────────────────── */
@@ -164,7 +164,7 @@ export class VelgBondPanel extends LitElement {
     .slot__depth {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
     }
 
@@ -188,7 +188,7 @@ export class VelgBondPanel extends LitElement {
     .slot__empty-label {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       opacity: 0.5;
     }
 
@@ -315,7 +315,7 @@ export class VelgBondPanel extends LitElement {
     .dossier__empty {
       font-family: var(--font-prose);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-style: italic;
       padding: var(--space-10) 0;
       text-align: center;
@@ -342,7 +342,7 @@ export class VelgBondPanel extends LitElement {
       font-family: var(--font-prose);
       font-size: var(--text-base);
       line-height: var(--leading-relaxed);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 440px;
       margin: 0 auto;
     }
@@ -519,7 +519,7 @@ export class VelgBondPanel extends LitElement {
     return html`
       <div class="slot slot--empty" aria-hidden="true">
         <div style="width: 32px; height: 32px; opacity: 0.3; border: 1px dashed var(--color-border); display: flex; align-items: center; justify-content: center;">
-          <span style="color: var(--color-text-muted); font-size: var(--text-xs);">?</span>
+          <span style="color: var(--color-text-quiet); font-size: var(--text-xs);">?</span>
         </div>
         <span class="slot__empty-label">- - -</span>
       </div>

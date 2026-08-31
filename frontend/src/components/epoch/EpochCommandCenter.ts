@@ -147,7 +147,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .banner__sub {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin: var(--space-1) 0 0;
     }
 
@@ -184,11 +184,11 @@ export class VelgEpochCommandCenter extends LitElement {
     }
     .banner__phase--completed {
       border-color: var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
     .banner__phase--cancelled {
       border-color: var(--color-border);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: line-through;
     }
 
@@ -272,7 +272,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .stepper__label--upcoming {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Progress connector (replaces flat line) ── */
@@ -412,7 +412,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: 9px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .winner-banner__name {
@@ -498,7 +498,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .stat__label {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
     }
@@ -558,7 +558,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: var(--tracking-wide);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: none;
       border-bottom: 2px solid transparent;
@@ -700,7 +700,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .mission__detail {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission__status {
@@ -727,7 +727,7 @@ export class VelgEpochCommandCenter extends LitElement {
 
     .mission__status--failed {
       border-color: var(--color-text-muted);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .mission__status--detected {
@@ -783,7 +783,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .no-auth__text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     /* ── Alliance Card ────────────────────────── */
@@ -806,7 +806,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .alliance__member {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       padding: 2px 0;
     }
 
@@ -815,7 +815,7 @@ export class VelgEpochCommandCenter extends LitElement {
     .empty-hint {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-align: center;
       padding: var(--space-4);
     }
@@ -926,7 +926,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .lobby-btn--leave {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-color: var(--color-border);
       background: transparent;
     }
@@ -1078,7 +1078,7 @@ export class VelgEpochCommandCenter extends LitElement {
     }
 
     .team-form__input::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .alliance__actions {
@@ -1126,7 +1126,7 @@ export class VelgEpochCommandCenter extends LitElement {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       background: none;
       border: none;
       cursor: pointer;
