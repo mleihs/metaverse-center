@@ -47,6 +47,13 @@ STACKING_CAPS: dict[str, int] = {
     "celebration": 2,
     "loss": 3,
     "community_response": 2,
+    # An agent's feeling about what IT did (satisfaction after an insult, guilt
+    # after a confrontation), as opposed to what was done TO it — those are
+    # social_positive / social_negative. Separate group on purpose: sharing one
+    # cap would let an aggressor's satisfaction crowd out received kindness.
+    # The 5 is DEFAULT_STACKING_CAP, inherited rather than measured; if it is
+    # ever tuned it belongs in a measuring run, not in a guess (J7).
+    "social_self": 5,
     # NOTE: resonance_pressure moodlets are managed by fn_apply_resonance_moodlets
     # (atomic delete-and-replace per tick), NOT by add_moodlet(). No cap entry needed.
 }

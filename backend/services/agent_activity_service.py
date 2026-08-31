@@ -678,7 +678,16 @@ class AgentActivityService:
                     stacking_group="social_positive" if mood_effect > 0 else "social_negative",
                 )
 
-            # Apply aggressor mood effect (if any)
+            # Apply aggressor mood effect (if any).
+            #
+            # This call had no `stacking_group`, and fn_add_moodlet_capped skips
+            # the cap check entirely when the group is NULL (`IF p_stacking_group
+            # IS NOT NULL THEN`, migration 197). So this was the one moodlet
+            # source in the whole system with no upper bound — the moodlet a
+            # dozen paragraphs of cap logic exist to bound. It has produced zero
+            # rows on production so far, but only because the interaction that
+            # carries aggressor_mood_effect (`insult`) is itself unreachable;
+            # the moment that changes, this pile grows without limit.
             aggressor_effect = interaction.get("aggressor_mood_effect", 0)
             if aggressor_effect != 0:
                 await AgentMoodService.add_moodlet(
@@ -690,8 +699,10 @@ class AgentActivityService:
                     strength=aggressor_effect,
                     source_type="social",
                     source_id=agent_b["id"],
+                    source_description=f"{name} directed at {agent_b.get('name', 'agent')}",
                     decay_type="timed",
                     duration_hours=24,
+                    stacking_group="social_self",
                 )
 
             # Fulfill social need

@@ -141,6 +141,114 @@ Zwei naheliegende Erklärungen sind gemessen und ausgeschlossen:
 * **Nicht der Herzschlag.** Er läuft, tickt 14 Welten, und `phases_completed`
   steht auf 12 von 12.
 
+## Nachtrag vom 31.08.2026 nachmittags — die Ursache liegt eine Ebene tiefer
+
+> Gefunden beim Abarbeiten von D10-5 (ein Moodlet ohne Deckel), also nicht
+> gesucht. Es ändert die Empfehlung unten, deshalb steht es davor.
+
+### Die soziale Tabelle hat sechs Einträge, drei davon sind unerreichbar
+
+`SOCIAL_INTERACTIONS` (`agent_activity_service.py:101-177`) führt sechs
+Interaktionen. `_select_interaction` (`:612-634`) wählt aus ihnen mit **zwei**
+Toren gleichzeitig:
+
+```python
+if mood_min <= mood_a <= mood_max and op_min <= opinion_of_b <= op_max:
+```
+
+Gemessen auf Prod, 31.08.2026, über alle 258 Agenten und 1 176 Meinungen:
+Laune **−1 bis 18** (Mittel 0,98), Meinung **0 bis 45**, Stress **0 bis 0**.
+
+| Interaktion | verlangt Laune | verlangt Meinung | erreichbar |
+|---|---|---|---|
+| `deep_conversation` | −20 … 100 | −10 … 100 | ✅ |
+| `casual_chat` | −50 … 100 | −30 … 100 | ✅ |
+| `collaboration` | −10 … 100 | 0 … 100 | ✅ |
+| `insult` | **−100 … −20** | **−100 … −20** | ❌ beide Tore zu |
+| `seek_comfort_interaction` | **−100 … −30** | 20 … 100 | ❌ |
+| `confrontation` | **−100 … −40** | **−100 … −50** | ❌ beide Tore zu |
+
+Die Hälfte der sozialen Tabelle ist toter Inhalt. Bemerkenswert ist der dritte
+Fall: `seek_comfort_interaction` ist eine **positive** Interaktion — Trost —,
+und sie ist unerreichbar, weil sie Unglück voraussetzt. Die Welt kann nicht
+trösten, weil in ihr niemand traurig werden kann.
+
+### Und daraus folgt N5 vollständig
+
+Die vier unerreichbaren Ereignis-Auslöser oben sind keine vier Befunde. Sie
+sind **einer**, in vier Verkleidungen:
+
+```
+Es gibt genau EINE Quelle negativer Stimmung: resonance_pressure, Stärke −1,
+gedeckelt auf 1 Zeile je Agent (74 Zeilen, 74 Agenten, gemessen).
+        ↓
+Die Laune kann −1 nicht unterschreiten.
+        ↓
+insult / confrontation / seek_comfort werden NIE gewählt (Tor bei −20/−40/−30).
+        ↓
+Keine negativen Meinungsmodifikatoren  →  Meinung fällt nie unter 0
+        ↓                                        ↓
+Keine negativen Moodlets                  relationship_threshold (±60) tot
+        ↓
+fn_update_stress_levels erhöht nur bei mood < −20  →  Stress bleibt 0
+        ↓
+stress_breakdown (≥ 800) tot   ·   D6 (Zusammenbruch) konnte nie auslösen
+```
+
+**Der Kreis schließt sich, und das ist der Punkt:** um unglücklich zu werden,
+muss ein Agent beleidigt werden; um beleidigt zu werden, muss der Beleidiger
+unglücklich sein. Das System kann seine eigene negative Hälfte nicht
+anwerfen. Es ist kein Gleichgewichtsproblem — es ist ein fehlender Startimpuls.
+
+### Was das für die Empfehlung ändert
+
+**Weg 1 unten (Schwellen senken) repariert die Ursache NICHT.** Man kann das
+Stress-Tor auf `mood < −3` setzen und das Meinungs-Tor auf ±35; solange die
+einzige negative Quelle ein einzelnes −1-Moodlet je Agent ist, bleibt die Laune
+bei −1 und die Meinung bei 0. Die gesenkten Schwellen wären dann selbst wieder
+unerreichbar, nur knapper — und der nächste Prüfer fände denselben Befund mit
+kleineren Zahlen.
+
+Die Reparatur gehört an die **Quelle**. Mindestens eine der drei muss stimmen:
+
+1. **Eine negative Quelle, die nicht von negativer Laune abhängt.** Unerfüllte
+   Bedürfnisse sind der natürliche Kandidat — und **der Pfad existiert nicht.**
+   Nachgemessen: `agent_needs_service.py` enthält kein einziges Moodlet;
+   `fn_decay_agent_needs` (Migr. 145:546) senkt fünf Zahlen und tut sonst
+   nichts; keine Funktion und kein Dienst berührt `agent_needs` und
+   `agent_moodlets` zugleich in dieser Richtung. Bedürfnisse fallen, und
+   niemand fühlt es.
+
+   Dass sie fallen, ist auf Prod belegt: `social` reicht von **0** bis 100 —
+   es gibt also bereits Agenten mit **vollständig unerfülltem Sozialbedürfnis**,
+   deren Laune trotzdem bei ≥ −1 steht. `stimulation` steht bei 28…76 und
+   erreicht nirgends 100. Die Größe, die die Welt von selbst in Bewegung
+   bringen würde, bewegt sich also schon; sie ist nur an nichts angeschlossen.
+
+   **Das ist die Reparatur mit dem besten Verhältnis:** ein Moodlet je Bedürfnis
+   unterhalb einer Schwelle, Stärke nach Tiefe. Es erfindet keine Zahl aus dem
+   Nichts (die Bedürfnisse und ihre Zerfallsraten sind bereits eingestellt), es
+   ist von negativer Laune unabhängig und bricht damit den Kreis, und es macht
+   die drei toten Interaktionen ohne jede Toränderung erreichbar.
+2. **Die Tore der drei toten Interaktionen an den erreichbaren Bereich legen.**
+   Dann kann eine mittelmäßige Laune eine Reibung erzeugen, aus der die
+   schlechte entsteht. Billig, aber es verschiebt den Charakter der Welt —
+   Beleidigungen bei Laune 0 statt bei Laune −20.
+3. **`resonance_pressure` nicht deckeln oder verstärken.** Am wenigsten
+   überzeugend: die Resonanzen sind ein seltenes Ereignis (1 auf Prod), sie
+   taugen nicht als Motor des Alltags.
+
+**Empfehlung: Weg 1 messen, bevor irgendetwas geändert wird.** Der Bedürfnispfad
+ist der einzige, der die Welt von selbst in Bewegung bringt, ohne dass eine Zahl
+erfunden werden muss.
+
+### Das Messskript bekommt damit eine zusätzliche Aufgabe
+
+Der unten geforderte Probelauf muss nicht nur zählen, wie viele Ereignisse je
+Auslöser entstehen, sondern zuerst: **erreicht irgendein Agent über viele Ticks
+jemals eine Laune unter −1?** Wenn nein, ist jede Schwellenänderung wirkungslos,
+und das Skript sagt es in einem Satz, bevor jemand Zahlen wählt.
+
 ## Empfehlung
 
 Die Zahlen sind eine **Balance-Entscheidung** und gehören dem Nutzer. Zwei
