@@ -163,9 +163,29 @@ describe('applySimulationRouteMeta — list route (no entitySlug)', () => {
     expect(urls).toEqual([
       'https://metaverse.center/',
       'https://metaverse.center/dashboard',
-      'https://metaverse.center/simulations/velgarien/lore',
+      'https://metaverse.center/simulations/velgarien/overview',
       'https://metaverse.center/simulations/velgarien/lore',
     ]);
+  });
+
+  /*
+   * Die Weltkrume und die Ansichtskrume muessen VERSCHIEDEN sein.
+   *
+   * Die vorige Fassung erwartete zweimal `/lore` und war damit blind fuer
+   * genau den Fehler, den sie haette halten sollen: solange die Weltkrume auf
+   * die gerade offene Ansicht zeigt, sind die beiden letzten Eintraege immer
+   * gleich, und eine Brotkrume, die eine Unterseite das Ganze nennt, sieht
+   * aus wie eine, die stimmt. Diese Pruefung nennt die Bedingung selbst,
+   * nicht ihr Ergebnis auf einer Ansicht.
+   */
+  it('nennt als Welt die Eingangstuer, nicht die offene Ansicht', () => {
+    for (const view of ['lore', 'agents', 'buildings']) {
+      applySimulationRouteMeta(SIM, view, undefined, 'velgarien');
+      const urls = getBreadcrumbData()!.itemListElement.map((i) => i.item);
+      expect(urls[2]).toBe('https://metaverse.center/simulations/velgarien/overview');
+      expect(urls[3]).toBe(`https://metaverse.center/simulations/velgarien/${view}`);
+      if (view !== 'overview') expect(urls[2]).not.toBe(urls[3]);
+    }
   });
 
   it('tracks page_view with the list canonical path', () => {
