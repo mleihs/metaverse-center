@@ -61,7 +61,8 @@ sie sichtbar bleibt.
   Migrationen mit sorgfältig abgestimmten Nummern trugen heute denselben
   Zeitstempel, und `version` ist der Primärschlüssel. Prüfung:
   `ls supabase/migrations | sed 's/_.*//' | sort | uniq -d` muss leer sein.
-  Nächste freie Nummer: 319.
+  Nächste freie Nummer: **321** (319 = `-45`/L1–L7, auf Prod; 320 = `-88`,
+  Bauzustands-Sprossen, gebaut und auf Prod PROBEGELAUFEN, NICHT angewendet).
 - ⚠ **`backend/tests/integration/` fährt gegen dieselbe lokale Datenbank.**
   Zwei gleichzeitige Läufe: 6 von 6 rot, mit Signaturen, die wie echte Fehler
   aussehen. Vorher ansagen. Für `backend/tests/unit` egal.
