@@ -41,9 +41,30 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       display: block;
     }
 
+    /*
+     * 860px was the measure of the ACCORDION: one column of prose, and a
+     * sensible line length for it. The dossier reader that replaced it is two
+     * columns — a 280px register plus a reading panel — so the same 860 left
+     * the panel 578px wide and the prose inside it 498px, measured. The
+     * component asks for 740 and could never get it, silently, at every width.
+     *
+     * The wrapper now carries the stage measure and each child caps its own:
+     * the dossier holds prose at 740, the editor and the case file bring their
+     * own widths. A measure belongs to the thing being read, not to the box it
+     * happens to sit in — the same correction the shell needed one level up.
+     */
     .lore-view {
-      max-width: 860px;
+      max-width: var(--stage-measure, 1920px);
       margin: 0 auto;
+    }
+
+    /*
+     * The toolbar and the empty state are single columns and keep the old
+     * reading measure, so widening the wrapper does not stretch them.
+     */
+    .lore-view__empty {
+      max-width: 860px;
+      margin-inline: auto;
     }
 
     .lore-view__empty {

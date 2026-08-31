@@ -393,7 +393,6 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     this._stepBuilding(1);
   }
 
-
   private _handleEmbassyEstablish(e: CustomEvent<Building>): void {
     this._embassySourceBuilding = e.detail;
     this._showEmbassyModal = true;
