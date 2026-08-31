@@ -27,6 +27,7 @@ from backend.services.constants import (
     SECURITY_LEVEL_MAP,
 )
 from backend.services.epoch_service import EpochService
+from backend.services.event_service import EventService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
 from backend.utils.responses import extract_list
@@ -233,10 +234,7 @@ class OperativeMissionService:
         try:
             if body.target_simulation_id:
                 sim_data = await maybe_single_data(
-                    supabase.table("simulations")
-                    .select("name")
-                    .eq("id", str(body.target_simulation_id))
-                    .maybe_single()
+                    supabase.table("simulations").select("name").eq("id", str(body.target_simulation_id)).maybe_single()
                 )
                 if sim_data:
                     context["target_sim_name"] = sim_data["name"]
@@ -355,13 +353,19 @@ class OperativeMissionService:
                     base_eff *= 1.0 - penalty
                 else:
                     # Penalty expired — clear it lazily (fire-and-forget)
-                    await admin.table("embassies").update(
-                        {"infiltration_penalty": 0, "infiltration_penalty_expires_at": None}
-                    ).eq("id", str(body.embassy_id)).execute()
+                    await (
+                        admin.table("embassies")
+                        .update({"infiltration_penalty": 0, "infiltration_penalty_expires_at": None})
+                        .eq("id", str(body.embassy_id))
+                        .execute()
+                    )
             return base_eff
 
         aptitude, zone_security, guardian_count, embassy_eff = await asyncio.gather(
-            _fetch_aptitude(), _fetch_zone_security(), _fetch_guardian_count(), _fetch_embassy_eff(),
+            _fetch_aptitude(),
+            _fetch_zone_security(),
+            _fetch_guardian_count(),
+            _fetch_embassy_eff(),
         )
 
         # Guardian penalty: configurable per-unit and cap
@@ -545,6 +549,7 @@ class OperativeMissionService:
         )
 
         results = []
+        touched_simulations: set[str] = set()
         for mission in extract_list(resp):
             # Skip guardians (permanent)
             if mission["operative_type"] == "guardian":
@@ -565,13 +570,35 @@ class OperativeMissionService:
             # Resolve active missions
             result = await cls._resolve_mission(supabase, mission, epoch_config=epoch_config)
             results.append(result)
+            if result.get("event_created"):
+                touched_simulations.add(str(mission["target_simulation_id"]))
+
+        # Die Folgen der erzeugten Ereignisse — EINMAL je betroffener Welt,
+        # nicht je Mission (D2/S7).
+        #
+        # Sabotage und Propaganda schreiben Ereignisse in die ZIELwelt und
+        # riefen die Folgeverarbeitung nicht. Die Ereignisse standen dort und
+        # bewegten nichts: keine Kennzahlen, keine Kaskaden, keine Anbindung an
+        # einen Erzaehlbogen. Ein Angriff, der ankommt und nichts ausloest, ist
+        # aus Sicht der Angegriffenen kein Angriff.
+        #
+        # Am Stapelende und nicht in `_resolve_mission`, weil
+        # `apply_event_consequences` die materialisierten Sichten neu baut —
+        # je Mission waere das bei zwanzig Missionen zwanzig Neuaufbauten.
+        for sim_id in touched_simulations:
+            try:
+                await EventService.apply_event_consequences(supabase, UUID(sim_id))
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                logger.warning(
+                    "Folgeverarbeitung nach Operativ-Ereignissen fehlgeschlagen",
+                    extra={"simulation_id": sim_id},
+                    exc_info=True,
+                )
 
         return results
 
     @classmethod
-    async def _resolve_mission(
-        cls, supabase: Client, mission: dict, *, epoch_config: dict | None = None
-    ) -> dict:
+    async def _resolve_mission(cls, supabase: Client, mission: dict, *, epoch_config: dict | None = None) -> dict:
         """Resolve a single mission -- roll for success/failure.
 
         Detection uses a SEPARATE probability from success (configurable via
@@ -629,12 +656,18 @@ class OperativeMissionService:
                 # The actual pressure doubling is handled by the heartbeat — we flag
                 # it here via a tag that the heartbeat Phase 3 can detect.
                 try:
-                    await supabase.table("resonance_memory").insert({
-                        "simulation_id": mission["source_simulation_id"],
-                        "resonance_signature": "surge_riding_penalty",
-                        "effective_magnitude": 0.5,
-                        "was_mitigated": False,
-                    }).execute()
+                    await (
+                        supabase.table("resonance_memory")
+                        .insert(
+                            {
+                                "simulation_id": mission["source_simulation_id"],
+                                "resonance_signature": "surge_riding_penalty",
+                                "effective_magnitude": 0.5,
+                                "was_mitigated": False,
+                            }
+                        )
+                        .execute()
+                    )
                 except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                     logger.warning("Surge Riding penalty recording failed (non-fatal)")
 
@@ -785,8 +818,7 @@ class OperativeMissionService:
             zones_data = extract_list(zones_resp)
             zone_levels = [z["security_level"] for z in zones_data]
             zone_details = [
-                {"id": z["id"], "name": z["name"], "security_level": z["security_level"]}
-                for z in zones_data
+                {"id": z["id"], "name": z["name"], "security_level": z["security_level"]} for z in zones_data
             ]
             guardian_count = guardian_resp.count or 0
             buildings_data = extract_list(buildings_resp)
@@ -828,10 +860,7 @@ class OperativeMissionService:
                 ]
 
             epoch_data = await maybe_single_data(
-                supabase.table("game_epochs")
-                .select("current_cycle")
-                .eq("id", mission["epoch_id"])
-                .maybe_single()
+                supabase.table("game_epochs").select("current_cycle").eq("id", mission["epoch_id"]).maybe_single()
             )
             cycle = epoch_data.get("current_cycle", 1) if epoch_data else 1
 
@@ -1189,11 +1218,7 @@ class OperativeMissionService:
         # source = sweeping player (sees results), target = attacker origin sim.
         for mission in detected:
             op_type = mission.get("operative_type", "unknown")
-            agent_name = (
-                mission.get("agents", {}).get("name")
-                if isinstance(mission.get("agents"), dict)
-                else None
-            )
+            agent_name = mission.get("agents", {}).get("name") if isinstance(mission.get("agents"), dict) else None
             try:
                 await BattleLogService.log_event(
                     supabase,
@@ -1203,9 +1228,7 @@ class OperativeMissionService:
                     f"Counter-intel sweep detected a {op_type}.",
                     source_simulation_id=simulation_id,
                     target_simulation_id=(
-                        UUID(mission["source_simulation_id"])
-                        if mission.get("source_simulation_id")
-                        else None
+                        UUID(mission["source_simulation_id"]) if mission.get("source_simulation_id") else None
                     ),
                     mission_id=UUID(mission["id"]),
                     is_public=False,
@@ -1309,9 +1332,7 @@ class OperativeMissionService:
         # Hidden battle_log event — side-effect outside atomicity boundary.
         # Fetch zone name for the narrative; best-effort logging (a failed
         # log must not roll back the already-committed fortification state).
-        zone_resp = await (
-            supabase.table("zones").select("name").eq("id", str(zone_id)).single().execute()
-        )
+        zone_resp = await supabase.table("zones").select("name").eq("id", str(zone_id)).single().execute()
         zone_name = zone_resp.data.get("name") if zone_resp.data else ""
 
         cycle = epoch.get("current_cycle", 1)

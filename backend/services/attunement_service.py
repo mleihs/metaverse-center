@@ -11,7 +11,11 @@ import logging
 import random
 from uuid import UUID, uuid4
 
+import httpx
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.models.resonance import RESONANCE_SIGNATURES
+from backend.services.event_service import EventService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry
 from backend.services.platform_config_service import PlatformConfigService
 from backend.utils.errors import bad_request, conflict, not_found, server_error
@@ -186,6 +190,7 @@ class AttunementService:
     ) -> list[dict]:
         """Deepen attunements each tick via batch RPC. Called from HeartbeatService Phase 6."""
         entries: list[dict] = []
+        spawned_any = False
         growth_rate = config.get("attunement_growth_rate", 0.05)
         passive_rate = config.get("attunement_passive_growth_rate", 0.01)
 
@@ -262,6 +267,27 @@ class AttunementService:
                     )
                     if pos_entry:
                         entries.append(pos_entry)
+                        spawned_any = True
+
+        # Die Folgen der erzeugten Ereignisse — EINMAL fuer den Stapel (D2/S7).
+        #
+        # Diese Stelle hat mein Textsuchlauf uebersehen und erst der AST-Scan
+        # des Tors gefunden: der `.insert(...)` steht hier ueber mehrere Zeilen,
+        # ein `grep` nach `insert` auf derselben Zeile wie `table("events")`
+        # trifft ihn nicht. Vier Stellen hatte ich gezaehlt, fuenf sind es.
+        #
+        # Ein Einstimmungs-Ereignis ist positiv und traegt `heartbeat_pressure`
+        # von -0.1 — es soll Druck HEILEN. Ohne die Folgeverarbeitung wurde der
+        # Druck nie neu berechnet, die Heilung kam also nie an.
+        if spawned_any:
+            try:
+                await EventService.apply_event_consequences(admin, sim_id)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                logger.warning(
+                    "Folgeverarbeitung nach Einstimmungs-Ereignis fehlgeschlagen",
+                    extra={"simulation_id": str(sim_id)},
+                    exc_info=True,
+                )
 
         return entries
 

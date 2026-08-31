@@ -648,7 +648,7 @@ class ResonanceService(BaseService):
         # ── 10. Post-processing (non-fatal) ──
         if spawned_ids:
             try:
-                await EventService._post_event_mutation(supabase, UUID(sim_id))
+                await EventService.apply_event_consequences(supabase, UUID(sim_id))
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
                     "Post-mutation pipeline failed for %s (%s)",
