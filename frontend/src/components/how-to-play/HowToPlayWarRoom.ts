@@ -74,6 +74,9 @@ const SIM_HEX: Record<string, string> = {
 
 /* ── Component ────────────────────────────────────────── */
 
+/** Der Spielstand, gegen den die Balance-Analytik gemessen wurde. */
+const ANALYTICS_BASELINE_VERSION = 'v2.1';
+
 @localized()
 @customElement('velg-how-to-play-war-room')
 export class HowToPlayWarRoom extends LitElement {
@@ -551,6 +554,37 @@ export class HowToPlayWarRoom extends LitElement {
    *  TAB 3: INTELLIGENCE REPORT
    * ═══════════════════════════════════════════════════ */
 
+  /**
+   * Wie alt die Balance-Analytik ist, aus dem Changelog ABGELEITET.
+   *
+   * Die Zahlen dieses Berichts stammen aus 200 simulierten Partien gegen den
+   * Stand v2.1. Der Vermerk "v2.1 baseline" stand schon da; was fehlte, war der
+   * Abstand. Eine feste Zahl ("elf Ausgaben seither") wäre beim nächsten
+   * Changelog-Eintrag falsch, also wird sie gezählt statt geschrieben.
+   */
+  /** Der Satz, der sagt, wie alt diese Zahlen sind. Nichts, wenn nichts seither kam. */
+  private _renderAnalyticsAge() {
+    const { date, releasesSince } = this._analyticsAge();
+    if (releasesSince === 0) return nothing;
+    return html`
+      <p class="section__text">
+        ${msg(
+          str`Measured on ${date}. ${releasesSince} releases have shipped since, and the run has not been repeated. Read these as the shape of the balance, not as today's numbers.`,
+        )}
+      </p>
+    `;
+  }
+
+  private _analyticsAge(): { date: string; releasesSince: number } {
+    const entries = getChangelog();
+    const baseline = entries.find((e) => e.version === ANALYTICS_BASELINE_VERSION);
+    if (!baseline) return { date: '', releasesSince: 0 };
+    return {
+      date: baseline.date,
+      releasesSince: entries.filter((e) => e.date > baseline.date).length,
+    };
+  }
+
   private _renderIntelligence() {
     const elo = getEloRatings();
     const profiles = getSimulationProfiles();
@@ -566,6 +600,7 @@ export class HowToPlayWarRoom extends LitElement {
             'Compiled from 200 simulated epoch games (50 per player count, 2P through 5P) using v2.1 balance tuning. All data drawn from automated Monte Carlo simulation against the live game engine. 188 games produced valid results (12 empty leaderboards excluded).',
           )}
         </p>
+        ${this._renderAnalyticsAge()}
 
         <div class="callout callout--info" style="margin-bottom: var(--space-8)">
           <div class="callout__label">${msg('Methodology')}</div>
@@ -718,8 +753,9 @@ export class HowToPlayWarRoom extends LitElement {
           <div class="callout__label">${msg('Data Provenance')}</div>
           <div class="callout__text">
             ${msg(
-              'All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis. Future simulation runs will validate v2.2 impact.',
+              'All analytics data reflects v2.1 baseline (188 valid games from 200 simulated). The v2.2 balance changes above are informed by this analysis.',
             )}
+            ${this._renderAnalyticsAge()}
           </div>
         </div>
 
