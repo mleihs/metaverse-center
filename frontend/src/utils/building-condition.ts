@@ -90,12 +90,20 @@ const OCCUPANCY_FULL = 0.66;
 const OCCUPANCY_PARTIAL = 0.33;
 
 /**
- * @param current  places taken (agents living here)
+ * @param current  places taken, or `null`/`undefined` when the caller does not
+ *                 KNOW - which is not the same as zero. Measured against prod:
+ *                 the buildings LIST endpoint returns no `agents` field at all,
+ *                 so a call site that writes `b.agents?.length ?? 0` hands this
+ *                 function a confident 0 and every building with a capacity
+ *                 comes out "nearly empty". Pass `?? null`, not `?? 0`.
  * @param max      places the building has
  * @param condition the raw `building_condition`, which can override the ratio
- * @returns the level, or `null` when the building declares no capacity — an
- *          absent capacity is not an empty one, and painting "○ critical" onto
- *          a building nobody measured is a confident lie.
+ * @returns the level, or `null` when either end of the ratio is unknown.
+ *
+ * The two `null` cases are the same rule from both sides: an unmeasured
+ * capacity is not an empty building, and an unloaded occupant list is not an
+ * empty building either. Painting "nearly empty" onto either is a confident
+ * lie, and the first version of this function only guarded the denominator.
  */
 export function occupancyLevel(
   current: number | null | undefined,
@@ -104,7 +112,8 @@ export function occupancyLevel(
 ): OccupancyLevel | null {
   if (normalizeCondition(condition) === 'ruined') return 'ruined';
   if (max == null || max <= 0) return null;
-  const ratio = (current ?? 0) / max;
+  if (current == null) return null;
+  const ratio = current / max;
   if (ratio >= OCCUPANCY_FULL) return 'full';
   if (ratio >= OCCUPANCY_PARTIAL) return 'partial';
   return 'sparse';

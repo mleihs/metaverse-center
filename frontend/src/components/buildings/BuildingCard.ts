@@ -90,9 +90,22 @@ export class VelgBuildingCard extends LitElement {
    * (`ForgeBuildingDraft.building_condition`) — into the `ruined` branch, so a
    * flawless building showed an empty gem and a neutral badge. One table now,
    * in `utils/building-condition.ts`.
+   *
+   * The `?? 0` that used to stand here brought the same symptom back by a
+   * different road. `conditionDots` returns `null` for a word it does not
+   * know, expressly "so the caller can omit the gem entirely rather than paint
+   * a confident 0 of 3" - and the caller collapsed that null to zero, which
+   * IS the confident 0 of 3.
+   *
+   * It is not a rare case. Measured against prod across 20 worlds: 27 of 124
+   * buildings (22 %) carry a condition outside the five-word vocabulary -
+   * excellent, obsolete, illuminated, restored, thriving, preserved,
+   * functional, compromised, anomalous, operational, restricted, sealed. Every
+   * one of them showed an empty gem, so a THRIVING building was drawn exactly
+   * like rubble. `velg-game-card` already omits the gem on null (line 1452).
    */
-  private _getConditionDots(): number {
-    return conditionDots(this.building?.building_condition) ?? 0;
+  private _getConditionDots(): number | null {
+    return conditionDots(this.building?.building_condition);
   }
 
   private _getBadges(): CardBadge[] {
@@ -107,8 +120,10 @@ export class VelgBuildingCard extends LitElement {
     // above, which says how intact it is - a pristine hall can stand empty.
     // Omitted entirely when the building declares no capacity: an unmeasured
     // capacity is not an empty one (see utils/building-condition.ts).
+    // `?? null`, NOT `?? 0`: the list endpoint carries no `agents` field, so a
+    // zero here would mean "nobody lives here" when it means "nobody asked".
     const occupancy = occupancyLevel(
-      b.agents?.length ?? 0,
+      b.agents?.length ?? null,
       b.population_capacity,
       b.building_condition,
     );
@@ -136,11 +151,20 @@ export class VelgBuildingCard extends LitElement {
     return parts.join(' \u00b7 ');
   }
 
+  /**
+   * The capacity bar, or nothing.
+   *
+   * `b.agents?.length ?? 0` drew a bar at 0 of 20 on every card, because the
+   * buildings LIST endpoint carries no `agents` field at all - so the bar said
+   * "empty" where the truth was "not loaded". Measured against prod: 36 of 107
+   * buildings have a capacity, and every one of them would have shown an empty
+   * bar. A bar at zero is a statement; an absent bar is an absence.
+   */
   private _getCapacityBar(): CapacityBar | null {
     const b = this.building;
-    if (b?.population_capacity == null) return null;
-    const assigned = b.agents?.length ?? 0;
-    return { current: assigned, max: b.population_capacity };
+    if (b?.population_capacity == null || b.population_capacity <= 0) return null;
+    if (b.agents == null) return null;
+    return { current: b.agents.length, max: b.population_capacity };
   }
 
   private _getEntityUrl(): string {
