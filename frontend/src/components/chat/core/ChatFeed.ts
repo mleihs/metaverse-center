@@ -185,26 +185,27 @@ export class ChatFeed extends LitElement {
 
     .event-card__body {
       padding: var(--space-3) var(--space-4);
-      /* Akzent auf dem ganzen Rahmen; der Kasten war ohnehin umrandet. */
-      border: var(--border-default);
-      border-color: color-mix(in srgb, var(--color-info) 45%, var(--color-border));
-      background: color-mix(in srgb, var(--color-info) 6%, var(--color-surface-sunken));
+      /* Akzent auf dem ganzen Rahmen; der Kasten war ohnehin umrandet.
+         Gestrichelt, weil die Karte kein Beitrag im Gespraech ist, sondern
+         ein Verweis nach draussen - dieselbe Unterscheidung, die der
+         Zyklus-Teiler oben mit derselben Strichelung trifft. */
+      border: var(--border-width-thin) dashed
+        color-mix(in srgb, var(--color-accent-amber) 45%, var(--color-border));
+      background: color-mix(in srgb, var(--color-accent-amber) 6%, var(--color-surface-sunken));
       text-align: center;
-      max-width: 480px;
+      max-width: 560px;
       width: 100%;
       transition: background var(--transition-fast);
     }
 
     .event-card__body:hover {
-      background: color-mix(in srgb, var(--color-info) 10%, var(--color-surface-sunken));
+      background: color-mix(in srgb, var(--color-accent-amber) 10%, var(--color-surface-sunken));
     }
 
     .event-card__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
+      font-family: var(--font-bureau, var(--font-prose));
+      font-weight: var(--font-bold);
+      font-size: var(--text-sm);
       color: var(--color-text-primary);
     }
 
