@@ -11,6 +11,7 @@
  * 3. Request / Response — API contract
  */
 
+import type { TerminalLine } from './terminal.js';
 import type { UUID } from './index.js';
 
 // ── Archetype Constants ─────────────────────────────────────────────────────
@@ -466,6 +467,28 @@ export interface CombatAction {
   agent_id: UUID;
   ability_id: string;
   target_id?: string | null;
+}
+
+/** Which room a chronicle line was written in.
+ *
+ *  Stamped when the line is ABSORBED, never reconstructed afterwards. A beat
+ *  that arrives while the party stands in room 4 belongs to room 4 for good,
+ *  even though by the time anyone scrolls back the party is three rooms deeper.
+ *  Deriving the room at render time would relabel the whole history on every
+ *  move — the account of a descent has to be written as it happens. */
+export interface DungeonRoomStamp {
+  /** Room index as the backend numbers it. */
+  readonly index: number;
+  /** Localised room-type label, resolved at stamping time. */
+  readonly label: string;
+}
+
+/** A chronicle line, which is a terminal line that remembers where it happened.
+ *
+ *  Extends rather than replaces `TerminalLine`, so every existing consumer of
+ *  `dungeonNarration` keeps working unchanged — the stamp is additive. */
+export interface DungeonNarrationLine extends TerminalLine {
+  readonly room: DungeonRoomStamp | null;
 }
 
 /** An order being AIMED but not yet placed: the operative has chosen what to

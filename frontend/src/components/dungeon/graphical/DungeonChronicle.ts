@@ -33,13 +33,17 @@
  * here so a player switching views reads the same colours for the same things.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { terminalState } from '../../../services/TerminalStateManager.js';
+import type {
+  DungeonNarrationLine,
+  DungeonRoomStamp,
+} from '../../../types/dungeon.js';
 import type { TerminalLine, TerminalLineMeta } from '../../../types/terminal.js';
 import { icons } from '../../../utils/icons.js';
 import { a11yStyles } from '../../shared/a11y-styles.js';
@@ -54,6 +58,10 @@ interface Beat {
   readonly lines: TerminalLine[];
   /** Stable key for lit's repeat(). */
   readonly key: string;
+  /** The room this beat was written in, taken from its FIRST line. A beat is
+   *  one command and its answer; the party cannot move mid-beat, so the first
+   *  line's stamp holds for all of them. Null before the first room is known. */
+  readonly room: DungeonRoomStamp | null;
 }
 
 /**
@@ -63,19 +71,19 @@ interface Beat {
  * rhythm in a 500-line scrollback, and reproducing that in a narrow column
  * would leave more air than text. Spacing here is the feed's own.
  */
-function toBeats(lines: TerminalLine[]): Beat[] {
+function toBeats(lines: DungeonNarrationLine[]): Beat[] {
   const beats: Beat[] = [];
-  let current: Beat | null = null;
+  let current: (Beat & { lines: TerminalLine[] }) | null = null;
 
   for (const line of lines) {
     if (line.type === 'command') {
-      current = { command: line, lines: [], key: line.id };
+      current = { command: line, lines: [], key: line.id, room: line.room };
       beats.push(current);
       continue;
     }
     if (!line.content.trim()) continue;
     if (!current) {
-      current = { command: null, lines: [], key: `opening-${line.id}` };
+      current = { command: null, lines: [], key: `opening-${line.id}`, room: line.room };
       beats.push(current);
     }
     current.lines.push(line);
@@ -175,6 +183,37 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
         flex-direction: column;
         gap: 2px;
       }
+      /* ── ROOM DIVIDER (README §4.8) ──────────────────────────────────
+         Rule - label - rule. The label is the quietest type in the panel on
+         purpose: it is a wayfinding mark between two accounts, not one of
+         them. It must be readable and must not compete with the prose it
+         separates, which is why it sits a step below the system lines rather
+         than in a colour of its own. */
+      .room-divider {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2, 8px);
+        margin: var(--space-3, 12px) 0 var(--space-2, 8px);
+      }
+      .room-divider:first-child {
+        margin-top: 0;
+      }
+      .room-divider__rule {
+        flex: 1;
+        height: 0;
+        border-top: 1px dashed color-mix(in srgb, var(--_border) 55%, transparent);
+      }
+      .room-divider__label {
+        flex: none;
+        font-family: var(--font-brutalist, var(--_mono));
+        font-size: 7.5px;
+        font-weight: var(--font-bold, 700);
+        letter-spacing: var(--tracking-widest, 0.1em);
+        text-transform: uppercase;
+        color: var(--_phosphor-dim);
+        white-space: nowrap;
+      }
+
       .beat + .beat {
         padding-top: var(--space-2-5, 10px);
         border-top: 1px solid color-mix(in srgb, var(--_border) 40%, transparent);
@@ -559,7 +598,11 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
             : repeat(
                 beats,
                 (beat) => beat.key,
-                (beat, i) => this._renderBeat(beat, i === beats.length - 1),
+                (beat, i) =>
+                  html`${this._renderRoomDivider(beat, i === 0 ? null : beats[i - 1])}${this._renderBeat(
+                    beat,
+                    i === beats.length - 1,
+                  )}`,
               )
         }
       </div>
@@ -575,6 +618,36 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
           </button>`
           : nothing
       }
+    `;
+  }
+
+  /**
+   * A rule across the stream whenever the party has moved (README §4.8).
+   *
+   * The first beat always gets one: after a scroll or a trim it is the only
+   * thing telling the reader where the account they are looking at begins.
+   *
+   * It is drawn INSIDE the repeat entry rather than as a list of its own, so it
+   * never becomes a beat: `chron__count` keeps counting what happened, not how
+   * often the party walked through a door. A divider is punctuation.
+   */
+  private _renderRoomDivider(beat: Beat, previous: Beat | null) {
+    const room = beat.room;
+    if (!room) return nothing;
+    const previousRoom = previous?.room ?? null;
+    if (previousRoom && previousRoom.index === room.index) return nothing;
+
+    // Two-digit room numbers, so a column of dividers lines up. Not msg(): a
+    // number and its padding are the same in every language.
+    const number = String(room.index).padStart(2, '0');
+    return html`
+      <div class="room-divider" role="separator" aria-label=${msg(str`Room ${number}: ${room.label}`)}>
+        <span class="room-divider__rule"></span>
+        <span class="room-divider__label" aria-hidden="true"
+          >${msg(str`Room ${number}`)} \u00b7 ${room.label}</span
+        >
+        <span class="room-divider__rule"></span>
+      </div>
     `;
   }
 

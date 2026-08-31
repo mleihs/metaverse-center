@@ -31,7 +31,12 @@ vi.mock('../src/services/AnalyticsService.js', () => ({
 }));
 vi.mock('../src/services/SentryService.js', () => ({ captureError: vi.fn() }));
 vi.mock('../src/services/TerminalStateManager.js', () => ({
-  terminalState: { appendOutput: vi.fn(), clearDungeon: vi.fn() },
+  // setNarrationRoom is part of the contract since the chronicle started
+  // stamping each line with the room it was written in (README §4.8):
+  // applyState() hands the room over BEFORE the lines of that update are
+  // absorbed. A double without it makes recovery throw, which is the mock
+  // being wrong about the interface rather than the code being wrong.
+  terminalState: { appendOutput: vi.fn(), clearDungeon: vi.fn(), setNarrationRoom: vi.fn() },
 }));
 vi.mock('../src/services/api/AgentsApiService.js', () => ({ agentsApi: {} }));
 
