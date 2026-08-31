@@ -302,11 +302,28 @@ async def list_events(
     simulation_id: SimId,
     supabase: Annotated[Client, Depends(get_anon_supabase)],
     search: Annotated[str | None, Query()] = None,
+    event_type: Annotated[str | None, Query()] = None,
+    event_status: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 25,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaginatedResponse[EventResponse]:
-    """List events in a simulation (public)."""
-    data, total = await EventService.list(supabase, simulation_id, search=search, limit=limit, offset=offset)
+    """List events in a simulation (public).
+
+    Carries the same ``event_type`` / ``event_status`` filters as the member
+    endpoint. Without them the terminal's ``scan`` command showed a visitor a
+    different set of events than a member — the anonymous path could not ask
+    for "active only", so archived and resolved events came back mixed in.
+    Browsing must not depend on membership (Public-First).
+    """
+    data, total = await EventService.list(
+        supabase,
+        simulation_id,
+        search=search,
+        event_type=event_type,
+        event_status=event_status,
+        limit=limit,
+        offset=offset,
+    )
     return paginated(data, total, limit, offset)
 
 

@@ -2,6 +2,7 @@ import type { ApiResponse } from '../../types/index.js';
 import { appState } from '../AppStateManager.js';
 import { captureError } from '../SentryService.js';
 import { supabase } from '../supabase/client.js';
+import type { QueryParams } from './query-params';
 
 export class BaseApiService {
   private baseUrl: string;
@@ -23,7 +24,7 @@ export class BaseApiService {
     return headers;
   }
 
-  private buildUrl(path: string, params?: Record<string, string>): string {
+  private buildUrl(path: string, params?: QueryParams): string {
     const url = new URL(`${this.baseUrl}${path}`, window.location.origin);
     if (params) {
       for (const [key, value] of Object.entries(params)) {
@@ -93,7 +94,7 @@ export class BaseApiService {
     method: string,
     path: string,
     body?: unknown,
-    params?: Record<string, string>,
+    params?: QueryParams,
     extraHeaders?: Record<string, string>,
   ): Promise<ApiResponse<T>> {
     try {
@@ -123,7 +124,7 @@ export class BaseApiService {
     }
   }
 
-  protected get<T>(path: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
+  protected get<T>(path: string, params?: QueryParams): Promise<ApiResponse<T>> {
     return this.request<T>('GET', path, undefined, params);
   }
 
@@ -140,7 +141,7 @@ export class BaseApiService {
   protected getSimulationData<T>(
     path: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<T>> {
     return mode === 'member' ? this.get<T>(path, params) : this.getPublic<T>(path, params);
   }
@@ -149,10 +150,7 @@ export class BaseApiService {
    * Public GET — routes to /api/v1/public prefix, no Authorization header.
    * Used for anonymous read access to active simulation data.
    */
-  protected async getPublic<T>(
-    path: string,
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<T>> {
+  protected async getPublic<T>(path: string, params?: QueryParams): Promise<ApiResponse<T>> {
     try {
       const url = this.buildUrl(`/public${path}`, params);
       const response = await fetch(url, {
@@ -180,7 +178,7 @@ export class BaseApiService {
     return this.request<T>('PATCH', path, body);
   }
 
-  protected delete<T>(path: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
+  protected delete<T>(path: string, params?: QueryParams): Promise<ApiResponse<T>> {
     return this.request<T>('DELETE', path, undefined, params);
   }
 

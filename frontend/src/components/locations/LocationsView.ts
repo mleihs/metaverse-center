@@ -266,11 +266,12 @@ export class VelgLocationsView extends LitElement {
       const response = await heartbeatApi.listEntries(
         this.simulationId,
         appState.currentSimulationMode.value,
-        {
-          entry_type: 'ambient_weather',
-          limit: '20',
-          order: 'created_at.desc',
-        },
+        // No `order` here: the parameter never existed on the endpoint and
+        // FastAPI silently dropped it. It was also unnecessary —
+        // HeartbeatService.list_heartbeat_entries already orders by
+        // tick_number DESC, created_at DESC, which is what the loop below
+        // relies on when it keeps the first entry per zone.
+        { entry_type: 'ambient_weather', limit: '20' },
       );
       if (response.success && response.data) {
         const map = new Map<string, ZoneWeather>();

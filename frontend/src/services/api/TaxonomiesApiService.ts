@@ -1,11 +1,12 @@
 import type { ApiResponse, SimulationTaxonomy, TaxonomyType } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class TaxonomiesApiService extends BaseApiService {
   list(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<SimulationTaxonomy[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/taxonomies`, mode, params);
   }

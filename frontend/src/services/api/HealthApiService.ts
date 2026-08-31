@@ -6,6 +6,7 @@ import type {
   ZoneStability,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class HealthApiService extends BaseApiService {
   getDashboard(
@@ -18,7 +19,7 @@ export class HealthApiService extends BaseApiService {
   listBuildingReadiness(
     simulationId: string,
     mode: 'public' | 'member',
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<BuildingReadiness[]>> {
     return this.getSimulationData(`/simulations/${simulationId}/health/buildings`, mode, params);
   }
@@ -37,7 +38,7 @@ export class HealthApiService extends BaseApiService {
   executeThresholdAction(
     simulationId: string,
     actionType: string,
-    params?: Record<string, string>,
+    params?: QueryParams,
   ): Promise<ApiResponse<Record<string, unknown>>> {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
     return this.post(`/simulations/${simulationId}/threshold-actions/${actionType}${query}`);

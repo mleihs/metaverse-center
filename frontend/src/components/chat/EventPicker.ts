@@ -221,7 +221,7 @@ export class VelgEventPicker extends LitElement {
       const response = await eventsApi.list(
         this.simulationId,
         appState.currentSimulationMode.value,
-        { page_size: '100' },
+        { limit: '100' },
       );
       if (response.success && response.data) {
         this._events = Array.isArray(response.data) ? response.data : [];

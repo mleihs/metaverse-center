@@ -6,14 +6,12 @@ import type {
   EventReaction,
 } from '../../types/index.js';
 import { CrudApiService } from './CrudApiService.js';
+import type { QueryParams } from './query-params';
 
 export class AgentsApiService extends CrudApiService<Agent> {
   protected readonly resource = 'agents';
 
-  override listPublic(
-    simulationId: string,
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<Agent[]>> {
+  override listPublic(simulationId: string, params?: QueryParams): Promise<ApiResponse<Agent[]>> {
     return super.listPublic(simulationId, params);
   }
 

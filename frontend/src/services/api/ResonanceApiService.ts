@@ -1,5 +1,6 @@
 import type { ApiResponse, Resonance, ResonanceImpact, SourceCategory } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
+import type { QueryParams } from './query-params';
 
 export class ResonanceApiService extends BaseApiService {
   /**
@@ -9,10 +10,7 @@ export class ResonanceApiService extends BaseApiService {
    * Resonances are a global collection (not sim-scoped), so the typical
    * caller computes mode as `isAuthenticated ? 'member' : 'public'`.
    */
-  list(
-    mode: 'public' | 'member',
-    params?: Record<string, string>,
-  ): Promise<ApiResponse<Resonance[]>> {
+  list(mode: 'public' | 'member', params?: QueryParams): Promise<ApiResponse<Resonance[]>> {
     return mode === 'public'
       ? this.getPublic('/resonances', params)
       : this.get('/resonances', params);
