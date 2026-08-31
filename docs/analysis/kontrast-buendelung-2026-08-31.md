@@ -34,10 +34,29 @@ zusammen), und alle drei Token existieren bereits: `--color-text-quiet`,
 ## Die Klassen, die eine Entscheidung brauchen
 
 **Klasse 5 (198)** setzt ihre Farbe zur Laufzeit (`--_accent` je Agent, je
-Archetyp, je Ereignis). Statisch nicht messbar, und der Wert ist bewusst
-beweglich — hier hilft keine Tabelle, sondern die Frage, ob die betreffende
-Komponente ihren eigenen Grund mitbringt (wie der Dungeon es tut) oder auf
-dem des Themes sitzt.
+Archetyp, je Ereignis; dazu `--_danger` 14, `--_text-dim` 10, `--_stamp` 8).
+Statisch nicht messbar, und der Wert ist bewusst beweglich.
+
+**Die Regel hier ist nicht „heben", sondern „die Farbe von der Information
+trennen".** Sie stammt aus einem Fall im „Im Dienst"-Streifen, wo eine
+Rollenfarbe eine Zahl färbte: gegen die vier Gründe gemessen fielen **14 von
+24 Paarungen als Text durch, aber nur 6 von 24 als Marke** — `guardian` steht
+bei 7,80 auf Schwarz und 2,24 auf Creme. **Sechs Identitätsfarben können
+nicht gleichzeitig auf hellem und dunklem Grund Text sein, per Konstruktion.**
+Die Farbe trägt dort jetzt nur noch die Marke, die Rolle steht in Worten im
+zugänglichen Namen.
+
+⚠ Die Klasse ist aber **nicht einheitlich**, und das entscheidet die Arbeit.
+Stichprobe `archetypes/ArchetypeDetailView.ts` (11 Befunde): dort steht
+`--_accent` fast ausschliesslich in Flächen und Verläufen —
+`color-mix(… var(--_accent) 8%, transparent)`, Rasterlinien, Atmosphäre. Das
+ist bereits eine Marke und braucht keine Reparatur. Die Befunde entstehen an
+den wenigen Stellen, an denen dieselbe Farbe zusätzlich Text färbt.
+
+**Also je Komponente ansehen, nicht sweepen:** trägt die Laufzeitfarbe hier
+eine Marke (dann in Ordnung) oder eine Aussage (dann trennen)? Ein
+mechanischer Tausch würde die Atmosphäre zerstören, die in dieser Klasse der
+eigentliche Zweck der Farbe ist.
 
 **Klasse 4 (56)** ist ein Flächen-Token als *Vordergrund*
 (`color: var(--color-surface-sunken)`). Das ist fast immer eine gezeichnete
