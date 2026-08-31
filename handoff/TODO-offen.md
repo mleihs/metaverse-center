@@ -578,3 +578,54 @@ kann stimmen — aber nicht beides gleichzeitig, und heute steht beides da.
 **Nicht gemessen:** ob eine öffentliche Oberfläche Gesprächsinhalte anzeigt und
 damit von der anon-Richtlinie lebt. Das entscheidet, ob der zweite Weg oben
 folgenlos ist. `conversation_summaries` tut es nicht — sie liest niemand.
+
+---
+
+## Anhang · Die Prämisse von Migration 294, für alle acht Sichten zu Ende gemessen
+
+**Gemessen:** 31.08.2026 auf Prod, mit `SET LOCAL ROLE` in `BEGIN … ROLLBACK`.
+
+Migration 294 hat elf Sichten geprüft, drei geschlossen und acht mit einem Satz
+stehen lassen: „their base tables grant `anon` the same access by policy."
+Der Satz ist zweimal an einem Tag gebrochen (313, 316). Also alle acht
+nachgemessen, statt nur die, die auffielen.
+
+    Sicht                    über die Sicht   anon Basistabelle   Befund
+    active_agents                       258               228     30 · Migr. 313
+    active_buildings                    324               290     34 · Migr. 313
+    active_events                       109               109      0 · Migr. 313 vorsorglich
+    active_resonances                     1                 1      —
+    available_dungeons                    0                 –      —
+    conversation_summaries                3                 3      authenticated · Migr. 316
+    map_simulations                      36                36      —
+    simulation_dashboard                 36                36      —
+
+Nach 313 und 316 stimmt der Satz für alle acht. Vier waren von vornherein
+sauber; `available_dungeons` ist leer und damit ohne Aussage — bei der ersten
+Dungeon-Zeile erneut messen.
+
+### Die Zahl, die dabei erschreckt und keine ist
+
+    Basistabelle als `authenticated` ohne Token:
+    agents 0 · buildings 0 · events 0 · simulations 36 · substrate_resonances 1
+
+Das sieht aus, als sähe ein angemeldeter Nutzer WENIGER als ein anonymer. Zwei
+Gründe, warum das hier kein Befund ist, und einer, warum es bei den Gesprächen
+doch einer war:
+
+1. ⚠ **`SET LOCAL ROLE authenticated` ohne Token setzt `auth.uid()` auf NULL.**
+   Jede Richtlinie, die daran hängt (`user_has_simulation_access`), fällt
+   deshalb auf null — das misst nicht „ein angemeldeter Nutzer", sondern
+   „niemand mit der Rolle eines angemeldeten Nutzers". Falsch-Grün und
+   Falsch-Rot sind beide möglich (steht so im Gedächtnis seit dem 29.08.).
+2. Für Agenten, Bauten und Ereignisse ist die Ungleichheit **Absicht**: die
+   `active_*`-Sichten SIND der öffentliche Lesepfad (CLAUDE.md,
+   Public-First), und sie sind beiden Rollen bewusst gewährt, damit ein
+   angemeldeter Nicht-Mitglied browsen kann, ohne 403 zu bekommen.
+3. Bei `conversation_summaries` fehlt genau diese Absicht: ein Gespräch ist
+   keine Tatsache der Welt, die Sicht hat null Verwender, und daneben steht
+   eine Richtlinie, die dem Nutzer nur die eigenen Gespräche erlaubt. Deshalb
+   ist es dort ein Befund und hier keiner.
+
+🔑 **Dieselbe Zahl ist einmal die Architektur und einmal der Fehler.** Sie zu
+lesen erfordert die Absicht daneben, nicht nur die Messung.
