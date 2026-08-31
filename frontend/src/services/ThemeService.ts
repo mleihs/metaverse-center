@@ -348,6 +348,19 @@ class ThemeService {
           `--color-${status}-hover`,
           `color-mix(in srgb, var(--color-${status}) 80%, var(--color-text-primary))`,
         ],
+        /*
+         * Text in der Statusfarbe auf einer Tönung DERSELBEN Farbe — 168 Regeln
+         * in 74 Dateien. Die Tönung liegt nah am Grund, also muss der Text weit
+         * vom Grund weg. `-hover` (80 %) reicht dafür messbar nicht: über fünf
+         * echte Themes gerechnet kommt er auf 2,63 im schlechtesten Fall, 45 %
+         * auf 5,26. Muss hier stehen und nicht nur in `_colors.css`, weil ein
+         * `color-mix()` in einer Custom Property gegen das Element auflöst, auf
+         * dem es deklariert ist.
+         */
+        [
+          `--color-${status}-on-tint`,
+          `color-mix(in srgb, var(--color-${status}) 45%, var(--color-text-primary))`,
+        ],
       ];
       for (const [token, value] of pairs) {
         hostElement.style.setProperty(token, value);

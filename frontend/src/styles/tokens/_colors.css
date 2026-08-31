@@ -13,6 +13,40 @@
   --color-primary-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
   --color-primary-border: color-mix(in srgb, var(--color-primary) 30%, transparent);
 
+  /* === TEXT AUF EINER TÖNUNG DERSELBEN FARBE ==========================
+     Ein verbreitetes Muster: Text in einer Statusfarbe auf einer 8–12-%-Tönung
+     GENAU DIESER Farbe. Gemessen von `velgarien-rebuild-af`: 168 Regeln in 74
+     Dateien (danger 46 · primary 32 · success 32 · info 28 · warning 23).
+
+     Auf fast schwarzem Grund steht das bei 8,6 : 1, auf weissem bei 1,00 —
+     gruen auf blassgruen. Die Tönung liegt nah am GRUND, also muss der Text
+     weit vom Grund weg, und „weit vom Grund" heisst in jedem Theme
+     `--color-text-primary`.
+
+     WARUM NICHT `--color-<status>-hover`
+     Der Token ist fuer genau diese Richtung gebaut (80 % Basis + 20 %
+     text-primary) und reicht nicht. Ueber fuenf echte Themes und fuenf
+     Statusfarben gerechnet, schlechtester Wert gegen die 12-%-Toenung:
+
+         80 % Status (= -hover)   2,63     durchgefallen
+         55 % Status              4,18     durchgefallen
+         50 % Status              4,67     bestanden, knapp
+         45 % Status              5,26     bestanden, kein Einzelfall unter 5,0
+
+     45 % ist damit der kleinste Anteil mit Spielraum. Die Farbe bleibt als
+     Farbe erkennbar: auf dunklem Grund wird sie pastellig, auf hellem tief.
+
+     ⚠ Diese Token werden in `ThemeService` auf dem Theme-Host NEU gesetzt. Ein
+     `color-mix()` in einer Custom Property loest gegen das Element auf, auf dem
+     es DEKLARIERT ist — hier auf `:root`, also gegen die Plattform-Vorgaben.
+     Ohne die Neuableitung erbt ein getheamter Teilbaum eine Farbe aus den
+     falschen zwei Eingaben. Dieselbe Falle wie bei `--color-text-quiet`. */
+  --color-primary-on-tint: color-mix(in srgb, var(--color-primary) 45%, var(--color-text-primary));
+  --color-danger-on-tint: color-mix(in srgb, var(--color-danger) 45%, var(--color-text-primary));
+  --color-success-on-tint: color-mix(in srgb, var(--color-success) 45%, var(--color-text-primary));
+  --color-warning-on-tint: color-mix(in srgb, var(--color-warning) 45%, var(--color-text-primary));
+  --color-info-on-tint: color-mix(in srgb, var(--color-info) 45%, var(--color-text-primary));
+
   --color-danger: #ef4444;
   --color-danger-hover: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary));
   --color-danger-bg: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
