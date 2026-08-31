@@ -1,10 +1,21 @@
 /**
- * VelgBroadsheetHealthHero — Situation Report sidebar widget.
+ * VelgBroadsheetHealthHero — the state of the colony, across the measure.
  *
  * Renders a frozen health/mood snapshot from the broadsheet edition:
  * health bar, mood summary stats, and aggregate statistics.
  * Styled like a war room status panel with corner brackets and
  * colour-coded status indicators.
+ *
+ * It was a 280px rail until the paper rule removed the rail (a newspaper has
+ * no sidebar). It now runs the full type measure, so the column stack that
+ * suited a narrow rail became a row: heading and health bar on the left, the
+ * counts beside them instead of below.
+ *
+ * NOTE ON SCOPE: the handoff sketches this as "3 bars + a verdict quote" and
+ * flags the difference for consultation itself ("bei Abweichung vom
+ * gewünschten Umfang Rücksprache"). This keeps all seven readings rather than
+ * silently dropping four of them to match a sketch - dropping data is a
+ * decision for whoever owns the edition, not a side effect of a layout pass.
  *
  * @element velg-broadsheet-health-hero
  */
@@ -47,9 +58,40 @@ export class VelgBroadsheetHealthHero extends LitElement {
       }
 
       .sitrep {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
+        display: grid;
+        /* The readings sit BESIDE the bar, not under it: across the full
+           measure a single column left two thirds of the row empty and
+           pushed the fold down for nothing. */
+        grid-template-columns: minmax(260px, 1fr) 2fr;
+        align-items: start;
+        gap: var(--space-3) var(--space-8);
+        padding-block: var(--space-4);
+        border-block: 1px solid var(--color-border-light);
+      }
+
+      .sitrep__heading,
+      .sitrep__snapshot-label {
+        grid-column: 1;
+      }
+
+      .sitrep .health {
+        grid-column: 1;
+      }
+
+      .sitrep .stats {
+        grid-column: 2;
+      }
+
+      @media (max-width: 768px) {
+        .sitrep {
+          grid-template-columns: 1fr;
+        }
+        .sitrep__heading,
+        .sitrep__snapshot-label,
+        .sitrep .health,
+        .sitrep .stats {
+          grid-column: 1;
+        }
       }
 
       .sitrep__heading {
