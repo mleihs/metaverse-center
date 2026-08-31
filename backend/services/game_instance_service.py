@@ -29,9 +29,15 @@ class GameInstanceService:
     ) -> list[dict]:
         """Clone all participating simulations into game instances.
 
-        Uses Postgres ``clone_simulations_for_epoch`` (migration 035, updated 038/047/060)
-        for atomic batch cloning with embassy/connection remapping and normalized
-        gameplay values.
+        Uses Postgres ``clone_simulations_for_epoch`` (migration 035, updated
+        038/047/060, **295**) for atomic batch cloning with embassy/connection
+        remapping and normalized gameplay values.
+
+        Migration 295 stellte vier Dinge wieder her, die der Klon still verwarf:
+        die gedraftete Agentenauswahl (vorher die sechs ältesten der Welt), die
+        Eignungen, das Innenleben (Stimmung, Bedürfnisse, Startzone) und den
+        deutschen Welttitel. Die Signatur blieb dabei unverändert — dieser
+        Aufruf brauchte keine Anpassung.
 
         Args:
             admin_supabase: Supabase client with service_role (bypasses RLS)
