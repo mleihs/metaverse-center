@@ -31,6 +31,7 @@ from backend.services.email_templates import _nt, render_deadline_reminder
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
+from backend.utils.unsubscribe_tokens import unsubscribe_url
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -177,6 +178,16 @@ class EpochCycleScheduler(BaseSchedulerMixin):
             lang = recipient.get("email_locale") or "en"
             consecutive = int(pending[user_id].get("consecutive_afk_cycles") or 0)
 
+            # The signed one-click link, minted the same way the cycle briefing
+            # and the phase change mint theirs. It used to be an unsigned
+            # `{site}/unsubscribe?category=deadline_reminder`, and the endpoint
+            # requires a token (min_length 8) — so the List-Unsubscribe header
+            # pointed at a URL that could not unsubscribe anybody. A one-click
+            # unsubscribe that fails is worse than none: providers test it.
+            # `None` when no signing secret is available, and the footer then
+            # degrades to its manage-link rather than costing the mail.
+            opt_out = unsubscribe_url(user_id, "deadline_reminder")
+
             html = render_deadline_reminder(
                 email_locale=lang,
                 epoch_name=str(epoch.get("name") or "Epoch"),
@@ -187,6 +198,7 @@ class EpochCycleScheduler(BaseSchedulerMixin):
                 # Only when the NEXT miss actually crosses the threshold.
                 ai_takeover_next=penalty_enabled and (consecutive + 1) >= escalation,
                 cta_url=f"{site}/epoch/{epoch_id}",
+                unsubscribe_url=opt_out,
             )
             ok = await EmailService.send(
                 recipient["email"],
@@ -195,7 +207,7 @@ class EpochCycleScheduler(BaseSchedulerMixin):
                     hours=hours_left, epoch=str(epoch.get("name") or "Epoch"), cycle=cycle,
                 ),
                 html,
-                unsubscribe_url=f"{site}/unsubscribe?category=deadline_reminder",
+                unsubscribe_url=opt_out,
                 record=MailRecord(
                     template="deadline_reminder",
                     user_id=user_id,

@@ -155,7 +155,23 @@ class TestWhoGetsIt:
             participants=[{"user_id": "aaa", "consecutive_afk_cycles": 0}],
             recipients=[_ALICE],
         )
-        assert "category=deadline_reminder" in sent[0]["unsubscribe_url"]
+        # Diese Zusicherung hielt bis zum 31.08.2026 den DEFEKT fest: sie
+        # verlangte `category=deadline_reminder` in der URL — also genau die
+        # ungezeichnete Form `{site}/unsubscribe?category=…`, die der Endpunkt
+        # gar nicht annimmt (er verlangt ein `token`, min_length 8). Der
+        # List-Unsubscribe-Kopf zeigte damit auf eine Adresse, die niemanden
+        # abmelden kann, und der Test bestätigte das.
+        #
+        # Geprüft wird jetzt die Form, die funktioniert: die API-Route und ein
+        # gezeichnetes Token. Der Kategoriename steht IM Token, nicht in der
+        # Abfrage — deshalb wird er nicht mehr in der URL gesucht.
+        url = sent[0]["unsubscribe_url"]
+        assert "/api/v1/unsubscribe?token=" in url, url
+        from backend.utils.unsubscribe_tokens import verify_token
+
+        verified = verify_token(url.split("token=", 1)[1])
+        assert verified is not None, "das Token ist nicht gültig gezeichnet"
+        assert verified[1] == "deadline_reminder", verified
 
 
 class TestItThreatensOnlyWhatTheEpochDoes:

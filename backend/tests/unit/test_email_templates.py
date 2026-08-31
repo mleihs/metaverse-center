@@ -664,9 +664,23 @@ class TestRenderEpochInvitation:
         assert html.count("token=abc") >= 2
 
     def test_contains_footer(self):
+        """Die Einladung trägt seit P3.28 die Einladungsfußzeile.
+
+        Vorher stand hier „Manage all notifications" mit einem Verweis auf
+        `/settings/notifications`. Ein Eingeladener hat oft **kein Konto** —
+        der Link führte ihn zu einer Anmeldung für etwas, das er nicht hat,
+        ausgerechnet in der Mail, deren ganzer Zweck „komm herein" ist.
+        """
         html = self._render()
-        assert "Manage all notifications" in html
+        assert "/settings/notifications" not in html, (
+            "die Einladung verweist wieder auf Kontoeinstellungen"
+        )
+        assert "unsubscribe from" in html or "abzubestellen" in html, (
+            "der Satz, der erklärt, warum es nichts abzubestellen gibt, fehlt"
+        )
         assert "TRANSMISSION ORIGIN" in html
+        assert f"{settings.site_url}/privacy" in html
+        assert "Matthias Leihs" in html
 
     def test_escapes_epoch_name_xss(self):
         html = self._render(epoch_name='<script>alert("xss")</script>')
