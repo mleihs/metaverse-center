@@ -68,6 +68,25 @@ _IN_ENGLISH = "Written in English."
 # five worlds use it and it is theirs. It is simply not what a generator should
 # be told to reach for.
 BUILDING_CONDITION_CORE: tuple[str, ...] = ("excellent", "good", "fair", "poor", "ruined")
+
+# Die Kernsprossen mit ihrer Zahl — die Anker, an denen sich ein erfundenes Wort
+# ausrichtet. Spiegel von `fn_building_condition_rungs()` (Migration 322).
+#
+# WARUM ES HIER ÜBERHAUPT EINE ZWEITE FASSUNG GIBT
+# Die Karte liegt in SQL, und das ist richtig so: dort entscheidet sie, welche
+# Sprosse gilt. Aber das Modell muss die Skala im Prompt LESEN können, und ein
+# Prompt kann keine Datenbank abfragen. Diese Zeile ist also unvermeidlich eine
+# Abschrift — und deshalb bindet `test_building_condition_vocabulary.py` sie an
+# die Migration, die die Funktion definiert. Eine Abschrift ohne Wächter ist der
+# Fehler, der heute dreimal zugeschlagen hat.
+BUILDING_CONDITION_CORE_RUNGS: dict[str, int] = {
+    "pristine": 5,
+    "excellent": 10,
+    "good": 20,
+    "fair": 30,
+    "poor": 40,
+    "ruined": 50,
+}
 _WORLD_TONGUE = (
     "A proper name in the world's own language. It is never translated -- the same "
     "string is shown in every locale -- so do not write an English rendering of it."
@@ -695,11 +714,12 @@ class ForgeBuildingDraft(BaseModel):
         le=59,
         description=(
             "Where this condition word sits on a decay ladder from 1 (untouched) "
-            "to 59 (a ruin). Anchors: pristine 5, excellent 10, good 20, fair 30, "
-            "poor 40, ruined 50. A thematic word takes the number nearest its "
-            "meaning: 'thriving' about 18, 'sealed' about 36, 'critical' about 45. "
-            "Decay moves a building to HIGHER numbers, so a word that sounds "
-            "healthier than another must carry a lower number than it."
+            "to 59 (a ruin). Anchors: "
+            + ", ".join(f"{w} {n}" for w, n in BUILDING_CONDITION_CORE_RUNGS.items())
+            + ". A word of your own takes the number nearest its meaning, "
+            "between the two anchors it belongs between. Decay moves a building "
+            "to HIGHER numbers, so a word that sounds healthier than another "
+            "must carry a lower number than it."
         ),
     )
 
