@@ -25,7 +25,6 @@ import {
 } from './lore-content.js';
 
 import './LoreDossier.js';
-import '../platform/LoreScroll.js';
 import './LoreEditor.js';
 import './VelgDossierPreview.js';
 import './VelgDossierRequest.js';
@@ -403,9 +402,17 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
         ${
           /*
            * The dossier reader replaced the accordion here (2026-08-31 handoff,
-           * "Tab Lore"). `velg-lore-scroll` keeps the PLATFORM lore page, whose
-           * job is browsing; a world's dossier is read, so it gets a register on
-           * the left and one chapter in the panel.
+           * "Tab Lore"): a world's dossier is read, so it gets a register on the
+           * left and one chapter in the panel.
+           *
+           * ⚠ Die erste Fassung dieses Kommentars sagte, `velg-lore-scroll`
+           * behalte dafuer die Plattform-Lore. Das war beim Schreiben plausibel
+           * und ist falsch: die Plattform-Lore baut `BureauArchives` aus den
+           * HILFSFUNKTIONEN des Moduls (`getPlatformLoreSections`,
+           * `getPlatformPullQuotes`), das ELEMENT `<velg-lore-scroll>` wird
+           * nirgends mehr gerendert. Das Modul lebt als Typ- und Datenquelle
+           * weiter (`LoreSection` zieht es in fuenf Dateien), sein Element nicht.
+           * Gefunden von velgarien-rebuild-88 bei der Verdrahtungspruefung.
            *
            * TWO THINGS SHARE THE NAME "CASE FILE" AND ARE NOT THE SAME THING.
            * The handoff's chip UNREDACTS classified chapters in place. The live

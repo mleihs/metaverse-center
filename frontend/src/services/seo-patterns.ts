@@ -19,6 +19,7 @@
  */
 import type { Agent, Building, Simulation } from '../types/index.js';
 import { t } from '../utils/locale-fields.js';
+import { DEFAULT_TAB } from '../utils/sim-view-imports.js';
 import { analyticsService } from './AnalyticsService.js';
 import type { ForgeLoreSection } from './api/ForgeApiService.js';
 import { seoService } from './SeoService.js';
@@ -109,7 +110,13 @@ export function applySimulationRouteMeta(
     { name: 'Dashboard', url: `${BASE_URL}/dashboard` },
   ];
   if (name) {
-    breadcrumbs.push({ name, url: `${BASE_URL}/simulations/${slug}/lore` });
+    /*
+     * Die kanonische Adresse EINER WELT, nicht die ihrer Lore-Seite. Seit dem
+     * Reiter-Umbau ist die Uebersicht die Eingangstuer; eine Brotkrume, die auf
+     * /lore zeigt, schickt Suchmaschinen auf eine Unterseite und nennt sie das
+     * Ganze.
+     */
+    breadcrumbs.push({ name, url: `${BASE_URL}/simulations/${slug}/${DEFAULT_TAB}` });
   }
   breadcrumbs.push({
     name: viewLabel,
