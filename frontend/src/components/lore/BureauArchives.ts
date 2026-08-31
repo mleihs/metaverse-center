@@ -59,8 +59,13 @@ export class VelgBureauArchives extends LitElement {
       flex-shrink: 0;
     }
 
+    /*
+     * The "//" between the header's parts is text, not a rule, so it is held to
+     * the text threshold: --color-border measured 1.60:1 here. Same fix and same
+     * value as the breadcrumb separator in SimulationShell.
+     */
     .archives__header-sep {
-      color: var(--color-border);
+      color: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
     }
 
     .archives__header-count {
@@ -354,16 +359,29 @@ export class VelgBureauArchives extends LitElement {
       cursor: pointer;
     }
 
+    /*
+     * Measured 2026-08-31: this line stood at 1.09:1 on the ticker's own ground,
+     * and hovering it took it to 1.02:1 — the interaction made it LESS legible.
+     * Both values come from mixing toward transparent, which does not dim a
+     * colour, it makes it see-through: the result depends on whatever happens to
+     * lie underneath, and here that is a 60%-black plate over the sunken ground.
+     *
+     * Mixing toward the actual ground instead gives an opaque colour that can be
+     * measured at all. 70% of the muted text over that plate clears AA; the
+     * hover now brightens toward amber rather than toward the glow token, which
+     * is a 15% wash meant for shadows and was never a text colour.
+     */
     .substrate-ticker__text {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: color-mix(in srgb, var(--color-text-primary) 25%, transparent);
+      color: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-text-primary));
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
+      transition: color var(--transition-normal);
     }
 
     .substrate-ticker:hover .substrate-ticker__text {
-      color: var(--color-warning-glow);
+      color: var(--color-accent-amber);
     }
 
     /* ── Responsive ── */
