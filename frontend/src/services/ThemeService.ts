@@ -381,6 +381,17 @@ class ThemeService {
         'color-mix(in srgb, var(--color-text-secondary) 60%, var(--color-text-muted))',
       ],
       ['--color-icon', 'var(--color-text-muted)'],
+      /*
+       * Der Plattform-Akzent als Text. Reines Amber steht auf einer hellen
+       * Welt-Flaeche bei 1,89 : 1 (gemessen), auf dunkler bei 9,22 — es ist
+       * gegen die Theme-Primary immun, nicht gegen Unlesbarkeit. Muss hier
+       * stehen, weil das color-mix() sonst gegen die Plattform-Vorgaben
+       * aufloest statt gegen die des Themes.
+       */
+      [
+        '--color-accent-amber-readable',
+        'color-mix(in srgb, var(--color-accent-amber) 45%, var(--color-text-primary))',
+      ],
       ['--color-separator', 'color-mix(in srgb, var(--color-border) 50%, transparent)'],
       /*
        * The quiet tone, re-derived here for the same reason as the rest of this

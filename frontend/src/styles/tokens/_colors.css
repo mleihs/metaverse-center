@@ -167,6 +167,27 @@
    */
   --color-accent-amber-dim: #be5e09;
   --color-accent-amber-glow: rgba(245, 158, 11, 0.15);
+
+  /* Der Plattform-Akzent als TEXT auf einer gethemten Flaeche.
+     Gemessen am laufenden Programm (31.08.2026, Welt „State Pathography"):
+     reines Amber auf deren Flaeche = 1,89 : 1. Auf allen fuenf hellen Themes
+     liegt es zwischen 1,85 und 2,15 — meine Kicker, meine Links und die
+     Beschriftung des Terminal-Knopfes standen dort praktisch unsichtbar.
+     ⚠ Der Satz „Chrome nimmt Amber, das ist immun" stimmt nur, solange das
+     Chrome DUNKEL ist. Auf dunklem Grund steht Amber bei 9,22; auf hellem
+     faellt es durch, und es ist gegen die Theme-Primary immun, nicht gegen
+     Unlesbarkeit.
+     45 % zu `--color-text-primary` — dieselbe Richtung und derselbe Anteil wie
+     bei `-on-tint`: hell 5,67 im schlechtesten Fall, dunkel 8,45 bis 12,14.
+     Die FUELLUNGEN bleiben reines Amber (ein Knopf ist kein Text); nur was
+     gelesen wird, wandert. Wird in ThemeService neu abgeleitet. */
+  --color-accent-amber-readable: color-mix(in srgb, var(--color-accent-amber) 45%, var(--color-text-primary));
+
+  /* Beschriftung AUF einer Amber-Fuellung. Nicht `--color-text-inverse`: das
+     ist die Umkehrung der THEME-Textfarbe und wird in einem hellen Theme hell —
+     helle Schrift auf Amber ergibt 1,89. Die Fuellung ist nie gethemt, also ist
+     ihre Beschriftung es auch nicht: 9,22 gegen Amber, in jedem Theme. */
+  --color-on-accent-amber: #0a0a0a;
   --color-accent-green: #4ade80;
   --color-mint-brass: #b8860b;
 

@@ -120,7 +120,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
     }
 
     .breadcrumb__link {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       text-decoration: none;
       cursor: pointer;
       background: none;
@@ -158,7 +158,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       cursor: pointer;
       background: none;
       border: none;

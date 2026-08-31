@@ -59,7 +59,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
       text-transform: uppercase;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       margin-block-end: var(--space-1-5);
     }
 
@@ -83,7 +83,7 @@ export class VelgLoreDossier extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       background: transparent;
       border: var(--border-width-thin) solid var(--color-accent-amber);
       cursor: pointer;
@@ -151,7 +151,7 @@ export class VelgLoreDossier extends LitElement {
     }
 
     .toc__row:hover .toc__title {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       translate: 8px 0;
     }
 
@@ -175,7 +175,7 @@ export class VelgLoreDossier extends LitElement {
     }
 
     .toc__row[aria-current='true'] .toc__title {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
     }
 
     .toc__tag {
@@ -371,7 +371,7 @@ export class VelgLoreDossier extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       margin: 0;
     }
 
@@ -407,12 +407,12 @@ export class VelgLoreDossier extends LitElement {
     }
 
     .turn__btn:last-child {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       text-align: end;
     }
 
     .turn__btn:hover {
-      color: var(--color-accent-amber-hover);
+      color: var(--color-accent-amber);
     }
 
     .turn__label {
