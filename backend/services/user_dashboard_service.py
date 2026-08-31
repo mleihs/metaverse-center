@@ -107,7 +107,10 @@ class UserDashboardService:
             # vorhandene Antwort ein zweites Mal herzuleiten.
             sims_resp = await (
                 supabase.table("simulation_dashboard")
-                .select("simulation_id, name, name_de, slug, theme, banner_url, agent_count, building_count")
+                .select(
+                    "simulation_id, name, name_de, slug, description, description_de, "
+                    "theme, banner_url, agent_count, building_count"
+                )
                 .in_("simulation_id", sim_ids)
                 .execute()
             )
@@ -134,6 +137,8 @@ class UserDashboardService:
                         simulation_id=row["simulation_id"],
                         name=row.get("name") or "",
                         name_de=row.get("name_de"),
+                        description=row.get("description"),
+                        description_de=row.get("description_de"),
                         slug=row.get("slug") or "",
                         member_role=role_by_sim.get(sim_id, "observer"),
                         theme=row.get("theme"),

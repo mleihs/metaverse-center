@@ -135,6 +135,8 @@ def _rows(**over) -> dict[str, list[dict]]:
                 "name": "Velgarien",
                 "name_de": None,
                 "slug": "velgarien",
+                "description": "A dystopian world.",
+                "description_de": "Eine dystopische Welt.",
                 "theme": "dystopian",
                 "banner_url": "https://example/banner.avif",
                 "agent_count": 42,
@@ -300,6 +302,7 @@ async def test_a_world_carries_what_the_switcher_shows():
     assert world.banner_url == "https://example/banner.avif"
     assert (world.agent_count, world.building_count) == (42, 17)
     assert world.member_role == "architect"
+    assert world.description_de == "Eine dystopische Welt."
     # Die ERSTE Kammer, nicht die zuerst gelieferte Zeile.
     assert (world.lore_body_de, world.lore_epigraph_de) == ("erste", "a")
     # Die Quellenangabe unter dem Zitat ist die Kammer, nicht eine erfundene Stimme.
