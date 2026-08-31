@@ -66,14 +66,6 @@ class SimulationResponse(BaseModel):
     lore_progress: dict | None = None
 
 
-class PlatformStatsResponse(BaseModel):
-    """Aggregated platform statistics for the public landing page."""
-
-    simulation_count: int = 0
-    active_epoch_count: int = 0
-    resonance_count: int = 0
-
-
 class SimulationDashboardResponse(BaseModel):
     """Simulation with aggregated counts from the simulation_dashboard view."""
 

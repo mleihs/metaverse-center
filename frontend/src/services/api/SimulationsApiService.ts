@@ -47,17 +47,14 @@ export class SimulationsApiService extends BaseApiService {
     return this.getPublic(`/simulations/${simulationId}/anchor`);
   }
 
-  getPlatformStats<T = Record<string, number>>(): Promise<ApiResponse<T>> {
-    return this.getPublic<T>('/platform-stats');
-  }
-
   /**
    * Alles, was die Frontseite braucht, in einem Aufruf.
    *
-   * Nicht `getPlatformStats`: dessen drei Zaehler messen anders (er filtert
-   * `status` nicht mit und zaehlt Epochen allein am Status, auf Prod also 7
-   * statt 0). Die Frontseite darf nicht an einem Zaehler haengen, der fuer
-   * einen anderen Zweck geschnitten wurde.
+   * Loeste `getPlatformStats` / `/platform-stats` ab und hat es damit
+   * ueberfluessig gemacht: jener Zaehler filterte `status` nicht mit und
+   * zaehlte Epochen allein am Status (auf Prod 7 statt 0). Zwei Zaehler fuer
+   * dieselben drei Zahlen, verschieden geschnitten — der schlechtere ist
+   * geloescht, nicht repariert.
    */
   getLandingSnapshot(): Promise<ApiResponse<LandingSnapshot>> {
     return this.getPublic<LandingSnapshot>('/landing');

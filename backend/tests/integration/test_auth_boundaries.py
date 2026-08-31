@@ -668,7 +668,6 @@ class TestPublicEndpointIsolation:
 
     PUBLIC_GET_ROUTES = [
         "/api/v1/public/simulations",
-        "/api/v1/public/platform-stats",
         f"/api/v1/public/simulations/{SIM_A_ID}",
         f"/api/v1/public/simulations/{SIM_A_ID}/agents",
         f"/api/v1/public/simulations/{SIM_A_ID}/buildings",
