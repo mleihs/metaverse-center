@@ -56,6 +56,11 @@ class WorldLocale:
     name_de: str | None
     description_de: str | None
     note: str
+    #: Nur gesetzt, wo in der ENGLISCHEN Spalte kein englischer Text steht.
+    #: Das ist eine Korrektur, keine Übersetzung — und die einzige Stelle, an
+    #: der dieses Skript ein bereits gefülltes Feld überschreibt. Deshalb steht
+    #: sie hier eigens und nicht als Sonderfall in der Schreibschleife.
+    description_en_fix: str | None = None
 
 
 #: Die Vorschläge, Welt für Welt. Register: literarisch, knapp, im Ton des
@@ -170,14 +175,18 @@ PROPOSALS: tuple[WorldLocale, ...] = (
         slug="velgarien",
         name_de=None,
         note=(
-            "Eigenname. ⚠ ABER: description steht auf DEUTSCH in der ENGLISCHEN Spalte. "
-            "Der deutsche Text wird hier in description_de nachgetragen; die englische "
-            "Spalte bleibt vorerst, wie sie ist — sie zu überschreiben wäre eine zweite "
-            "Entscheidung und gehört nicht in einen Nachtrag."
+            "Eigenname. ⚠ description stand auf DEUTSCH in der ENGLISCHEN Spalte — auf "
+            "der englischen Seite las man deutschen Text. Der deutsche Text wandert nach "
+            "description_de, und description bekommt eine englische Fassung. Das ist die "
+            "EINZIGE Stelle, an der dieses Skript ein gefülltes Feld überschreibt."
         ),
         description_de=(
             "Eine dystopische Welt unter totaler Kontrolle. Das Regime durchdringt jeden "
             "Aspekt des Lebens – von der Wissenschaft bis zur Straße."
+        ),
+        description_en_fix=(
+            "A dystopian world under total control. The regime reaches into every aspect "
+            "of life – from the sciences to the street."
         ),
     ),
 )
@@ -212,7 +221,7 @@ def main() -> int:
         current = client.get(
             f"{url}/rest/v1/simulations",
             params={
-                "select": "slug,name,name_de,description_de",
+                "select": "slug,name,name_de,description,description_de",
                 "simulation_type": "eq.template",
                 "status": "eq.active",
                 "deleted_at": "is.null",
@@ -232,6 +241,10 @@ def main() -> int:
                 patch["name_de"] = entry.name_de
             if entry.description_de and not row.get("description_de"):
                 patch["description_de"] = entry.description_de
+            if entry.description_en_fix:
+                # Bewusst OHNE Leer-Prüfung: hier steht deutscher Text in der
+                # englischen Spalte, und genau der soll ersetzt werden.
+                patch["description"] = entry.description_en_fix
 
             print(f"\n{entry.slug}  ({row['name']})")
             print(f"  Hinweis: {entry.note}")
