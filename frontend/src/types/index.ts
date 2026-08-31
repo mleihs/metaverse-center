@@ -740,7 +740,22 @@ export interface ChatConversation {
   created_at: string;
   updated_at: string;
   messages?: ChatMessage[];
-  agent?: Agent;
+  /**
+   * The conversation's agent, as the API actually sends it: id, name, portrait.
+   *
+   * This said `Agent` — the full entity, thirty-odd fields — while
+   * `backend/models/chat.py:80` declares `agent: AgentBrief | None` and
+   * `ChatService` selects exactly `agents(id, name, portrait_image_url)`.
+   * Nothing read the missing fields YET, so nothing was broken; the type was
+   * simply an invitation. Anyone building the window head the handoff asks for
+   * ("Rolle · Bezirk", a live status) would have reached for
+   * `agent.primary_profession` and silently received `undefined` — no
+   * compiler error, no runtime error, an empty line in the interface.
+   *
+   * A type one writes oneself checks nothing; it claims. This one now claims
+   * what the contract delivers.
+   */
+  agent?: AgentBrief;
   agents?: AgentBrief[];
   event_references?: ChatEventReference[];
 }
