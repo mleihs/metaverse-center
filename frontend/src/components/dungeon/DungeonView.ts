@@ -26,6 +26,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import { captureError } from '../../services/SentryService.js';
+import { themeService } from '../../services/ThemeService.js';
+import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
 import './DungeonTerminalView.js';
 import './DungeonViewToggle.js';
 
@@ -70,6 +72,54 @@ export class VelgDungeonView extends SignalWatcher(LitElement) {
 
   /** Guards against duplicate import() calls. */
   private _graphicalLoading = false;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    /*
+     * Re-assert platform-dark for the WHOLE dungeon subtree.
+     *
+     * README §Grundsätze: "Simulation-Themes: Inhalte theme-fähig,
+     * Plattform-Chrome bleibt immer dunkel/amber." A dungeon HUD is an
+     * instrument, not content — §4.2 and §4.5 of the design package even name
+     * its ground literally (`rgba(10,10,8,.85)`, `rgba(5,9,13,.78)`).
+     *
+     * WHY HERE AND NOT IN CSS, WHICH IS WHERE IT WAS
+     * Both views used to carry an identical hand-written `:host` block that
+     * forced eleven tokens back to their platform values with eleven
+     * `lint-color-ok` pragmas each. Two copies of one truth, and the copy was
+     * INCOMPLETE in the same way the block's own comment warns against ("Any
+     * token a CHILD component may read has to be in this block"): it pinned
+     * surfaces, text and borders, but not the five status colours — which the
+     * children read 245 times. Measured against the pinned ground, across the
+     * ten sim presets:
+     *
+     *     --color-primary       1.06:1  (brutalist)   fails in 5/11
+     *     --color-text-inverse  1.91:1  (on amber)    fails in 4/11
+     *     --color-danger        2.35:1  (illuminated) fails in 4/11
+     *     --color-info          2.46:1  (illuminated) fails in 3/11
+     *     --color-success       3.09:1  (illuminated) fails in 2/11
+     *     --color-warning       3.88:1  (arc-raiders) fails in 2/11
+     *
+     * `applyConfig` closes all six and every derived Tier-2 token with them:
+     * ThemeService re-derives `--color-{status}-{bg,glow,border,hover}`,
+     * `--color-text-quiet` and friends on the host it writes to, because a
+     * `color-mix()` inside a custom property resolves where it is DECLARED —
+     * inheriting them from the themed shell would have carried the world's
+     * colours down into a pinned-dark subtree.
+     *
+     * Same mechanism, same config object and same reasoning as DriftView:566,
+     * which solved this exact problem for the Zwischenraum first.
+     * `PLATFORM_DARK_CONFIG` is bound to `:root` by
+     * `tests/drift-platform-theme.test.ts`, so the values cannot drift.
+     *
+     * Applied on this wrapper because it is the single root of BOTH views and
+     * of the toggle; custom properties inherit across shadow boundaries, and
+     * `display: contents` does not affect that. The element is destroyed on
+     * route change, taking its inline tokens with it — no teardown, and never
+     * `resetTheme`, which would remove the shell's shared custom-CSS element.
+     */
+    themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
+  }
 
   protected willUpdate(): void {
     // Lazy-load the graphical bundle the first time it is requested.
