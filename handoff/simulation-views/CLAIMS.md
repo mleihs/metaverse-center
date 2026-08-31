@@ -61,7 +61,7 @@ sie sichtbar bleibt.
   Migrationen mit sorgfältig abgestimmten Nummern trugen heute denselben
   Zeitstempel, und `version` ist der Primärschlüssel. Prüfung:
   `ls supabase/migrations | sed 's/_.*//' | sort | uniq -d` muss leer sein.
-  Nächste freie Nummer: **323**. 320–322 = `-88`, Bauzustandsleiter, **auf Prod**. 319 = `-45`/L1–L7, **auf Prod** (die
+  Nächste freie Nummer: **324**. 320–323 = `-88`, Bauzustandsleiter, **auf Prod**. 319 = `-45`/L1–L7, **auf Prod** (die
   Ledger-Zeile fehlte und ist nachgetragen — die Wirkung war da, der Eintrag
   nicht).
 - ⚠ **`backend/tests/integration/` fährt gegen dieselbe lokale Datenbank.**
