@@ -14,6 +14,7 @@ DEFAULT_NOTIFICATION_PREFERENCES = {
     "cycle_resolved": True,
     "phase_changed": True,
     "epoch_completed": True,
+    "deadline_reminder": True,
     "email_locale": "en",
 }
 
@@ -51,7 +52,7 @@ class UserProfileService:
         """
         data = await maybe_single_data(
             supabase.table("notification_preferences")
-            .select("cycle_resolved, phase_changed, epoch_completed, email_locale")
+            .select("cycle_resolved, phase_changed, epoch_completed, deadline_reminder, email_locale")
             .eq("user_id", str(user_id))
             .maybe_single()
         )
@@ -73,6 +74,9 @@ class UserProfileService:
         row = {
             "user_id": str(user_id),
             "cycle_resolved": data["cycle_resolved"],
+            # `.get` with the default, not `[...]`: a row written before
+            # migration 297 has no such key in a cached response.
+            "deadline_reminder": data.get("deadline_reminder", True),
             "phase_changed": data["phase_changed"],
             "epoch_completed": data["epoch_completed"],
             "email_locale": data["email_locale"],

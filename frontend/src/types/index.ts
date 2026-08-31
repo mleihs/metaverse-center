@@ -1616,6 +1616,8 @@ export interface NotificationPreferences {
   cycle_resolved: boolean;
   phase_changed: boolean;
   epoch_completed: boolean;
+  /** Warning 2h before a cycle resolves while orders are still open. */
+  deadline_reminder: boolean;
   email_locale: string;
 }
 

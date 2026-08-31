@@ -450,8 +450,14 @@ class TestRollLoot:
         assert items[0].tier == 2  # no upgrade to 3
 
     def test_no_archetype_state_defaults_vp3(self):
-        """No archetype_state → visibility defaults to 3 → no upgrade."""
-        items = roll_loot(1, 3, 3)
+        """No archetype_state → visibility defaults to 3 → no upgrade.
+
+        Difficulty 1, and this one was not a preference: at difficulty 3 the
+        `loot_quality` upgrade fires on an unpatched roll three times in ten, so
+        this assertion held about seven runs out of ten. A test that passes most
+        of the time is worse than one that fails, and it was mine.
+        """
+        items = roll_loot(1, 1, 3)
         assert items[0].tier == 1
 
     def test_unknown_tier_falls_back_to_tier_1(self):

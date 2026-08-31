@@ -11,6 +11,7 @@ const DEFAULT_PREFS: NotificationPreferences = {
   cycle_resolved: true,
   phase_changed: true,
   epoch_completed: true,
+  deadline_reminder: true,
   email_locale: 'en',
 };
 
@@ -113,6 +114,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
       this._prefs.cycle_resolved !== this._original.cycle_resolved ||
       this._prefs.phase_changed !== this._original.phase_changed ||
       this._prefs.epoch_completed !== this._original.epoch_completed ||
+      this._prefs.deadline_reminder !== this._original.deadline_reminder ||
       this._prefs.email_locale !== this._original.email_locale
     );
   }
@@ -146,7 +148,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
   }
 
   private _renderToggle(
-    field: 'cycle_resolved' | 'phase_changed' | 'epoch_completed',
+    field: 'cycle_resolved' | 'phase_changed' | 'epoch_completed' | 'deadline_reminder',
     label: string,
     description: string,
   ) {
@@ -179,7 +181,7 @@ export class VelgNotificationsSettingsPanel extends LitElement {
         <div class="settings-section">
           <p class="notif-intro">
             ${msg(
-              'Configure which epoch email notifications you receive. All emails are bilingual (English and German).',
+              'Configure which epoch email notifications you receive. Emails are sent in the language you choose below.',
             )}
           </p>
 
@@ -202,6 +204,13 @@ export class VelgNotificationsSettingsPanel extends LitElement {
             msg('Epoch Completed'),
             msg(
               'Receive a final standings email when an epoch completes, with the leaderboard and dimension titles.',
+            ),
+          )}
+          ${this._renderToggle(
+            'deadline_reminder',
+            msg('Deadline Reminder'),
+            msg(
+              'Receive a warning two hours before a cycle resolves while your orders are still open. Missing a cycle costs research points, and a second one hands your seat to an AI until you return.',
             ),
           )}
         </div>
