@@ -418,6 +418,72 @@ def enclosing_ground(sel: str, rules, tokens, self_idx: int) -> tuple[str, str]:
 SKIP_SELECTORS = re.compile(r"::(before|after|placeholder|selection|-webkit)", re.I)
 
 
+# ---------------------------------------------------------------------------
+# Themes — the same file can pass in dark and fail in light
+# ---------------------------------------------------------------------------
+
+PRESETS_FILE = ROOT / "src" / "services" / "theme-presets.ts"
+THEME_SERVICE_FILE = ROOT / "src" / "services" / "ThemeService.ts"
+PRESET_BLOCK = re.compile(r"^  '?([a-z0-9-]+)'?:\s*\{(.*?)^  \},", re.S | re.M)
+PRESET_ENTRY = re.compile(r"([a-z0-9_]+):\s*'(#[0-9a-fA-F]{3,8})'")
+TOKEN_MAP_BLOCK = re.compile(r"THEME_TOKEN_MAP[^=]*=\s*\{(.*?)^\};", re.S | re.M)
+TOKEN_MAP_ENTRY = re.compile(r"([a-z0-9_]+):\s*'(--[a-z0-9-]+)'")
+
+
+def theme_token_map() -> dict:
+    """The setting-key → CSS-token map, READ from ThemeService.
+
+    Rebuilding it here as a snake_case-to-kebab-case rule would be wrong twice
+    over, and both were caught only by reading the real thing:
+
+        color_background  ->  --color-surface          (not --color-background)
+        color_surface     ->  --color-surface-RAISED   (not --color-surface)
+        color_text        ->  --color-text-primary     (not --color-text)
+        color_secondary   ->  --color-info
+        color_accent      ->  --color-warning
+
+    A tool that guesses at this mapping measures a palette nobody ships.
+    """
+    if not THEME_SERVICE_FILE.exists():
+        return {}
+    m = TOKEN_MAP_BLOCK.search(THEME_SERVICE_FILE.read_text(encoding="utf-8"))
+    if not m:
+        return {}
+    return {k: v[2:] for k, v in TOKEN_MAP_ENTRY.findall(m.group(1))}
+
+
+def theme_overrides() -> dict:
+    """Token overrides per simulation theme preset.
+
+    WHY THIS EXISTS: the palette in `_colors.css` is the PLATFORM default, and
+    it is dark. Ten simulation themes overwrite those tokens at runtime on the
+    shell element, and FOUR of them are light. Measuring only the defaults sees
+    half the product — and worse, the half where a mistake points the other
+    way: mixing a dim colour toward its background LIFTS contrast on a dark
+    ground and LOWERS it on a light one. Six "repairs" were made against the
+    dark default and were wrong in every light theme.
+
+    The preset keys are snake_case (`color_text_muted`); the tokens are
+    kebab-case (`--color-text-muted`). Same mapping ThemeService applies.
+    """
+    if not PRESETS_FILE.exists():
+        return {}
+    tmap = theme_token_map()
+    if not tmap:
+        return {}
+    src = PRESETS_FILE.read_text(encoding="utf-8")
+    out: dict[str, dict[str, str]] = {}
+    for name, body in PRESET_BLOCK.findall(src):
+        entries = {}
+        for k, v in PRESET_ENTRY.findall(body):
+            token = tmap.get(k)
+            if token:
+                entries[token] = v
+        if entries:
+            out[name] = entries
+    return out
+
+
 def shared_tier3(root: Path) -> dict[str, str]:
     """Tier-3 tokens declared by the SHARED style modules.
 
@@ -639,7 +705,68 @@ def scan_file(path: Path, tokens: dict[str, str]):
     return findings, skips
 
 
+def run(targets, tokens):
+    findings, skips = [], []
+    for t in targets:
+        f, s = scan_file(t, tokens)
+        findings.extend(f)
+        skips.extend(s)
+    return findings, skips
+
+
+def report_themes(targets, base_tokens) -> int:
+    """Measure every simulation theme and report per PAIR, not per theme.
+
+    A finding printed ten times, once per theme, is ten findings to a reader
+    and one to the code. So each pair is named once, with the themes it fails
+    in — and the themes it PASSES in are the useful half of that line: a pair
+    that fails everywhere is a wrong colour, a pair that fails only in the
+    light themes is a wrong DIRECTION, and those want different repairs.
+    """
+    themes = theme_overrides()
+    if not themes:
+        print("No theme presets found; measured the platform default only.")
+        return 1 if run(targets, base_tokens)[0] else 0
+
+    # The platform default counts as a theme in its own right - it is what a
+    # simulation with no saved settings gets.
+    runs = {"(platform default)": base_tokens}
+    for name, over in sorted(themes.items()):
+        runs[name] = {**base_tokens, **over}
+
+    per_pair: dict[tuple, dict] = {}
+    for theme, tok in runs.items():
+        for f in run(targets, tok)[0]:
+            key = (str(f["file"]), f["line"], f["sel"])
+            entry = per_pair.setdefault(key, {"f": f, "themes": [], "worst": 99.0})
+            entry["themes"].append(theme)
+            entry["worst"] = min(entry["worst"], f["ratio"])
+
+    rows = sorted(per_pair.values(), key=lambda e: e["worst"])
+    for e in rows:
+        f = e["f"]
+        try:
+            rel = f["file"].relative_to(ROOT)
+        except ValueError:
+            rel = f["file"]
+        n = len(e["themes"])
+        where = "ALL themes" if n == len(runs) else ", ".join(e["themes"])
+        print(f"{e['worst']:5.2f}:1  need {f['need']}  {rel}:{f['line']}  {f['sel']}")
+        print(f"           fg {f['fg']}")
+        print(f"           fails in {n}/{len(runs)}: {where}")
+
+    print()
+    print(f"{len(rows)} pair(s) below WCAG AA in at least one of {len(runs)} themes.")
+    light_only = [
+        e for e in rows if "(platform default)" not in e["themes"]
+    ]
+    print(f"{len(light_only)} of them PASS the platform default and fail elsewhere -")
+    print("   those are the ones a dark-only measurement can never find.")
+    return 1 if rows else 0
+
+
 def main(argv: list[str]) -> int:
+    flags = [a for a in argv[1:] if a.startswith("--")]
     args = [a for a in argv[1:] if not a.startswith("--")]
     tokens = load_tokens()
     # Shared Tier-3 first, global palette wins over it on a name clash.
@@ -649,11 +776,10 @@ def main(argv: list[str]) -> int:
     for r in roots:
         targets.extend(sorted(r.rglob("*.ts")) if r.is_dir() else [r])
 
-    all_findings, all_skips = [], []
-    for t in targets:
-        f, s = scan_file(t, tokens)
-        all_findings.extend(f)
-        all_skips.extend(s)
+    if "--themes" in flags:
+        return report_themes(targets, tokens)
+
+    all_findings, all_skips = run(targets, tokens)
 
     all_findings.sort(key=lambda x: x["ratio"])
     for f in all_findings:
