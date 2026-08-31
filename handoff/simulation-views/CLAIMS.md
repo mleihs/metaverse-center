@@ -305,3 +305,54 @@ erzeugt.
 **Bevor eine Skala gebaut wird: nachsehen, ob ihr Zähler existiert.** Die
 Prüffrage ist nicht „gibt es eine Oberfläche dafür?", sondern „kann der Zustand,
 den sie anzeigt, je eintreten?"
+
+---
+
+## Für `velgarien-rebuild-45`: `platform/SimulationCard.ts` ist verwaist
+
+**Gemessen (31.08.2026, Verdrahtungsprüfung von `-88`, von mir nachgezählt):**
+
+    <velg-simulation-card>   0 Renderstellen im ganzen Repo
+    SimulationCard.js        0 Importe
+    Datei                    314 Zeilen
+
+Der einzige Treffer im Repo ist ein Kommentar in `utils/theme-colors.ts`, der sie
+als Verwender nennt — eine Behauptung, keine Verwendung.
+
+⚠ **Ich habe sie am 31.08. angefasst** (Commit `2af68a4a`): ihr `href` zeigte
+noch auf `/lore` als Welteingang, und ich habe es auf `DEFAULT_TAB` gezogen. Die
+Reparatur ist damit ins Leere gegangen. Sie schadet nicht, falls die Datei je
+wiederbelebt wird, aber sie zählt nicht als erledigter Einstiegspunkt.
+
+**Ob die Datei weg kann, ist deine Entscheidung** — `components/platform/**`
+gehört dir, und 314 Zeilen zu löschen ist keine, die eine Nachbarsitzung trifft.
+Zwei weitere Bauteile derselben Art wurden am selben Tag gefunden und ihre
+wirkungslosen Seiteneffekt-Importe entfernt (`velg-threat-level`, dessen Merkmal
+inline im Masthead steht; `velg-lore-scroll`, dessen Modul als Typ- und
+Datenquelle weiterlebt, dessen Element aber nirgends mehr gerendert wird).
+
+## Zwei Betriebs-Merksätze, die an einem Tag zweimal falsch angenommen wurden
+
+**1. Der SSH-Tunnel auf Port 8000 ist der Zugang, nicht der Müll.** Runbook:
+»API `http://127.0.0.1:8000/api/v1` (via tunnel)«. Drei Sitzungen hielten PID
+15404 für einen vergessenen Prozess, weil alle sahen, was er blockiert, und
+keiner nachlas, wofür er da ist. Beide Deploys liefen darüber. **Nicht töten.**
+Der 503 auf `coolify.metaspots.net` ist eine davon getrennte, seit 12 Tagen
+kaputte Traefik-Route.
+
+**2. Die Datenbank ist dem ausgelieferten Code VORAUS, nicht hinterher.**
+Migrationen werden hier von Hand über die Management API angewendet, nicht vom
+Deploy. Eine Migrationsdatei im Repo ist Beleg und Ledger, kein Auslöser — wer
+»Migration im Repo, also noch nicht auf Prod« annimmt, liegt genau falsch herum.
+
+**3. Ein Deploy kann NEUER sein als der Commit, auf den er ausgelöst wurde.**
+Coolify zieht beim Build. Ein Push zwischen Auslösen und Checkout landet mit im
+Lauf — einmal ein Gewinn, aber wer auslöst und danach pusht, liefert ungeprüften
+Code aus und der Bericht nennt ihm den richtigen Commit, nur nicht den gemeinten.
+
+**4. Während eines Deploys liefert Prod BEIDE Stände.** Gemessen: 5 von 10
+Abfragen der alte Container, 5 der neue, über sechs bis acht Minuten, beide
+`Up (healthy)`. Die Chunk-Namen unterscheiden sich, die Kreuzanfrage gibt 404
+(mit `no-store`, die Cache-Vergiftung aus `asset-error-immutable-poisoning` ist
+also abgewehrt — der Ladevorgang aber kaputt). **Rezept: achtmal abfragen,
+`sort | uniq -c`; nur ein einheitliches Ergebnis zählt als ausgeliefert.**
