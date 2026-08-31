@@ -1613,6 +1613,7 @@ export interface LandingCounts {
   buildings: number;
   memories: number;
   events: number;
+  zones: number;
 }
 
 export interface LandingWorld {
