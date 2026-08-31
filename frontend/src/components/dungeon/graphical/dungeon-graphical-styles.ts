@@ -36,25 +36,16 @@ export const dungeonGraphicalStyles = css`
         padding: 0 16px 16px;
         box-sizing: border-box;
 
-        /* Force platform-dark tokens regardless of simulation theme — same
-           rationale as DungeonTerminalView: sim themes (e.g. Velgarien
-           brutalist) override --color-surface to white and break contrast. */
-        --color-surface: #0a0a0a; /* lint-color-ok */
-        --color-surface-raised: #111111; /* lint-color-ok */
-        /* Was missing, and it showed: <velg-avatar> paints its initials
-           placeholder on --color-surface-sunken. Under a simulation theme that
-           lightens the surface scale (Velgarien brutalist sets it to white) the
-           token stayed light while everything around it was forced dark, so an
-           agent without a portrait became the single brightest rectangle on a
-           near-black screen — pointing at nothing. Any token a CHILD component
-           may read has to be in this block, not only the ones this file uses. */
-        --color-surface-sunken: #060606; /* lint-color-ok */
-        --color-surface-overlay: #111111; /* lint-color-ok */
-        --color-text-primary: #e5e5e5; /* lint-color-ok */
-        --color-text-secondary: #a0a0a0; /* lint-color-ok */
-        --color-text-muted: #888888; /* lint-color-ok */
-        --color-border: #333333; /* lint-color-ok */
-        --color-border-light: #222222; /* lint-color-ok */
+        /* The platform-dark pin that used to stand here — eleven tokens with
+           eleven lint-color-ok pragmas, byte-identical to a second copy in
+           DungeonTerminalView — now lives once in DungeonView.connectedCallback
+           as themeService.applyConfig(PLATFORM_DARK_CONFIG, this). That block
+           had already learned the lesson it could not finish: "Any token a
+           CHILD component may read has to be in this block" (the missing
+           --color-surface-sunken had turned an avatar's initials placeholder
+           into the brightest rectangle on a near-black screen). The five status
+           colours were still missing, and the config covers them plus every
+           derived Tier-2 token. See the comment there for the measurements. */
         background: var(--color-surface);
         font-family: var(--_mono);
         color: var(--_phosphor-dim);
