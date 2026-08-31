@@ -227,9 +227,28 @@ otp_expiry = 3600
 subject = "CLASSIFIED // Identity Verification"
 content_path = "./supabase/templates/confirmation.html"
 
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./templates/invite.html"
+# Sicherheitspost. Nuechterner Ton, kein Bureau-Rollenspiel (Handoff P2.22):
+# bei einer Mail ueber den Zugang zum eigenen Konto ist Klarheit die Marke.
+# Bis hierhin liefen Passwort-Reset, Magic-Link, Adresswechsel und Einladung im
+# Supabase-Standarddesign — ausgerechnet die Mails, die JEDER Nutzer sieht.
+#
+# Betreffzeilen ohne "CLASSIFIED //": eine Sicherheitsmail, die wie ein Spiel
+# aussieht, wird als Phishing gelesen oder gar nicht.
+[auth.email.template.recovery]
+subject = "Reset your password / Passwort zuruecksetzen"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your sign-in link / Dein Anmeldelink"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email address / Neue E-Mail-Adresse bestaetigen"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "You have been invited / Du wurdest eingeladen"
+content_path = "./supabase/templates/invite.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
