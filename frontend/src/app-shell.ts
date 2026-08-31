@@ -23,7 +23,7 @@ import './components/auth/LoginView.js';
 import './components/auth/LoginPanel.js';
 import './components/auth/RegisterView.js';
 import './components/platform/PlatformHeader.js';
-import './components/platform/SimulationsDashboard.js';
+import './components/dashboard/DashboardPage.js';
 import './components/layout/SimulationShell.js';
 import './components/platform/InvitationAcceptView.js';
 import './components/platform/CreateSimulationWizard.js';
@@ -168,7 +168,7 @@ export class VelgApp extends LitElement {
       },
       {
         path: '/dashboard',
-        render: () => html`<velg-simulations-dashboard></velg-simulations-dashboard>`,
+        render: () => html`<velg-operative-dashboard></velg-operative-dashboard>`,
         enter: async () => {
           await this._authReady;
           seoService.setTitle(['Operative Terminal']);
