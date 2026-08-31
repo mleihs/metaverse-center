@@ -40,10 +40,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { terminalState } from '../../../services/TerminalStateManager.js';
-import type {
-  DungeonNarrationLine,
-  DungeonRoomStamp,
-} from '../../../types/dungeon.js';
+import type { DungeonNarrationLine, DungeonRoomStamp } from '../../../types/dungeon.js';
 import type { TerminalLine, TerminalLineMeta } from '../../../types/terminal.js';
 import { icons } from '../../../utils/icons.js';
 import { a11yStyles } from '../../shared/a11y-styles.js';
