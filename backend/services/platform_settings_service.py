@@ -16,9 +16,15 @@ import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.settings import is_sensitive_key
+from backend.services.platform_gate_contracts import (
+    GATE_GROUPS,
+    PLATFORM_GATES,
+    gate_keys,
+)
 from backend.utils.encryption import decrypt, mask
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.settings import parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -113,6 +119,69 @@ class PlatformSettingsService:
         if not response.data:
             raise server_error(f"Failed to save platform setting '{key}'.")
         return response.data[0]
+
+    @classmethod
+    async def list_feature_gates(cls, admin_supabase: Client) -> dict:
+        """Jedes erklärte Merkmalstor mit seinem wirksamen Zustand.
+
+        Zwei Quellen, eine Antwort: die Erklärung aus
+        ``platform_gate_contracts`` und die Zeilen aus ``platform_settings``.
+        Der wirksame Zustand ist NICHT einfach der Tabellenwert — fehlt die
+        Zeile, gilt ``default_when_missing``, und der ist nicht überall gleich
+        (Herzschlag und Resonanzverarbeitung laufen ohne Zeile weiter, das
+        Journal nicht). Genau diese Ungleichheit hat ``journal_enabled``
+        monatelang unsichtbar ausgeschaltet gelassen.
+
+        ``undeclared`` trägt jede ``*_enabled``-Zeile der Tabelle, für die es
+        keine Erklärung gibt. Ohne diese Liste könnte ein Schlüssel sich
+        dadurch verstecken, dass niemand ihn aufgeschrieben hat — und das ist
+        der Zustand, aus dem dieser ganze Abschnitt entstanden ist.
+        """
+        response = await (
+            admin_supabase.table(cls.table_name).select("setting_key, setting_value").execute()
+        )
+        rows = {
+            str(row["setting_key"]): row.get("setting_value")
+            for row in extract_list(response)
+        }
+
+        def _raw(value: object) -> str | None:
+            if value is None:
+                return None
+            return str(value).strip().strip('"')
+
+        gates = []
+        for gate in PLATFORM_GATES:
+            has_row = gate.key in rows
+            raw = rows.get(gate.key)
+            gates.append(
+                {
+                    "key": gate.key,
+                    "group": gate.group,
+                    "label": gate.label,
+                    "turns_on": gate.turns_on,
+                    "absence_costs": gate.absence_costs,
+                    "reader": gate.reader,
+                    "default_when_missing": gate.default_when_missing,
+                    "wired": gate.wired,
+                    "has_row": has_row,
+                    "enabled": parse_setting_bool(raw) if has_row else gate.default_when_missing,
+                    "raw_value": _raw(raw),
+                },
+            )
+
+        declared = gate_keys()
+        undeclared = [
+            {
+                "key": key,
+                "enabled": parse_setting_bool(value),
+                "raw_value": _raw(value),
+            }
+            for key, value in sorted(rows.items())
+            if key.endswith("_enabled") and key not in declared
+        ]
+
+        return {"gates": gates, "undeclared": undeclared, "groups": list(GATE_GROUPS)}
 
     @classmethod
     async def get_cache_ttls(cls, admin_supabase: Client) -> dict[str, int]:
