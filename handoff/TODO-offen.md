@@ -13,7 +13,25 @@ NICHT gemessen wurde — damit der nächste nicht bei null anfängt.
 
 ---
 
-## T1 · Die Reiterleiste schneidet ihre eigenen Beschriftungen ab
+## T1 · Die Reiterleiste schneidet ihre eigenen Beschriftungen ab — ✅ ERLEDIGT, aber ÜBERHOLT
+
+> **Nachtrag 31.08.2026:** Die Simulationsansicht wird gerade von Claude Design
+> neu entworfen; ein Paket ist angekündigt. Die Ursache war zu dem Zeitpunkt
+> schon gemessen und mit einer Zeile behoben (`flex-shrink: 0`), also steht die
+> Korrektur — aber **an dieser Leiste wird nicht weitergearbeitet**, bis das
+> Paket da ist. Der gemessene Befund unten bleibt stehen, weil der neue Entwurf
+> denselben Fehler machen kann: vierzehn Reiter in einer Zeile bleiben vierzehn
+> Reiter in einer Zeile.
+>
+> **Die Ursache, für das nächste Mal:** ein Flex-Kind hat `min-width: auto` und
+> ist damit vor dem Schrumpfen unter seine Inhaltsbreite geschützt — **aber nur,
+> solange `overflow` auf `visible` steht.** `.nav__tab` trug `overflow: hidden`
+> (für den `::before`-Verlauf), die Mindestbreite fiel damit auf null, die
+> Reiter schrumpften, und das `overflow-x: auto` der Leiste kam nie zum Einsatz.
+> Dass Rollen die Absicht war, stand zwei Regeln weiter oben: die Leiste
+> versteckt eigens ihren Rollbalken.
+
+
 
 **Gemeldet:** 31.08.2026, vom Nutzer, mit Bildschirmfoto.
 **Wo:** Simulations-Navigation, zweite Zeile (`LORE · AGENTEN · GEBÄUDE · …`).
