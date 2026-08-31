@@ -191,13 +191,13 @@ export class VelgAgentEditModal extends LitElement {
     this._generating = true;
     try {
       await generationProgress.run('agent', async (progress) => {
-        progress.setStep('prepare', msg('Anfrage wird vorbereitet...'));
+        progress.setStep('prepare', msg('Preparing request...'));
         await new Promise((r) => setTimeout(r, 300));
 
         progress.setStep(
           'generate_text',
-          msg('KI generiert Beschreibung...'),
-          msg('Dies kann einen Moment dauern'),
+          msg('AI is writing the description...'),
+          msg('This may take a moment'),
         );
         const response = await generationApi.generateAgent(this.simulationId, {
           name: this._formData.name,
@@ -206,7 +206,7 @@ export class VelgAgentEditModal extends LitElement {
           locale: appState.currentSimulation.value?.content_locale ?? 'de',
         });
 
-        progress.setStep('process', msg('Verarbeite Antwort...'));
+        progress.setStep('process', msg('Processing the response...'));
         if (response.success && response.data) {
           const data = response.data as Record<string, string>;
           const character = data.character ?? data.content ?? '';
@@ -216,10 +216,10 @@ export class VelgAgentEditModal extends LitElement {
             character: character || this._formData.character,
             background: background || this._formData.background,
           };
-          progress.complete(msg('Beschreibung erfolgreich generiert.'));
+          progress.complete(msg('Description generated.'));
           VelgToast.success(msg('Character description generated.'));
         } else {
-          progress.setError(response.error?.message ?? msg('Generation fehlgeschlagen.'));
+          progress.setError(response.error?.message ?? msg('Generation failed.'));
           VelgToast.error(response.error?.message ?? msg('Failed to generate character.'));
         }
       });
@@ -241,13 +241,13 @@ export class VelgAgentEditModal extends LitElement {
     this._generating = true;
     try {
       await generationProgress.run('portrait', async (progress) => {
-        progress.setStep('prepare', msg('Anfrage wird vorbereitet...'));
+        progress.setStep('prepare', msg('Preparing request...'));
         await new Promise((r) => setTimeout(r, 300));
 
         progress.setStep(
           'generate_portrait_desc',
-          msg('Portrait-Beschreibung wird generiert...'),
-          msg('Dies kann einen Moment dauern'),
+          msg('Writing the portrait brief...'),
+          msg('This may take a moment'),
         );
         const response = await generationApi.generatePortraitDescription(this.simulationId, {
           agent_id: agentId,
@@ -260,14 +260,14 @@ export class VelgAgentEditModal extends LitElement {
           },
         });
 
-        progress.setStep('process', msg('Verarbeite Antwort...'));
+        progress.setStep('process', msg('Processing the response...'));
         if (response.success && response.data) {
           const desc = (response.data as Record<string, string>).description ?? '';
           this._formData = { ...this._formData, portrait_description: desc };
-          progress.complete(msg('Portrait-Beschreibung generiert.'));
+          progress.complete(msg('Portrait brief generated.'));
           VelgToast.success(msg('Portrait description generated.'));
         } else {
-          progress.setError(response.error?.message ?? msg('Generation fehlgeschlagen.'));
+          progress.setError(response.error?.message ?? msg('Generation failed.'));
           VelgToast.error(response.error?.message ?? msg('Failed to generate description.'));
         }
       });
@@ -289,13 +289,13 @@ export class VelgAgentEditModal extends LitElement {
     this._generating = true;
     try {
       await generationProgress.run('image', async (progress) => {
-        progress.setStep('prepare', msg('Bild-Anfrage wird vorbereitet...'));
+        progress.setStep('prepare', msg('Preparing the image request...'));
         await new Promise((r) => setTimeout(r, 300));
 
         progress.setStep(
           'generate_image',
-          msg('KI generiert Portrait...'),
-          msg('Dies kann 1-2 Minuten dauern'),
+          msg('AI is painting the portrait...'),
+          msg('This may take 1-2 minutes'),
         );
         const response = await generationApi.generateImage(this.simulationId, {
           entity_type: 'agent',
@@ -309,14 +309,14 @@ export class VelgAgentEditModal extends LitElement {
           },
         });
 
-        progress.setStep('process_image', msg('Verarbeite Bild...'));
+        progress.setStep('process_image', msg('Processing the image...'));
         if (response.success && response.data) {
           const url = (response.data as Record<string, string>).image_url ?? '';
           this._formData = { ...this._formData, portrait_image_url: url };
-          progress.complete(msg('Portrait erfolgreich generiert.'));
+          progress.complete(msg('Portrait generated.'));
           VelgToast.success(msg('Portrait generated and uploaded.'));
         } else {
-          progress.setError(response.error?.message ?? msg('Bildgenerierung fehlgeschlagen.'));
+          progress.setError(response.error?.message ?? msg('Image generation failed.'));
           VelgToast.error(response.error?.message ?? msg('Failed to generate portrait.'));
         }
       });
