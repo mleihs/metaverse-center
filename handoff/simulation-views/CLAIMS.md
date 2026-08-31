@@ -139,6 +139,43 @@ Zustand einen transparenten Rahmen gleicher Breite tragen — genau die Kopplung
 aus der die beiden Befunde oben überhaupt entstanden sind. Die Werte sind aus
 den drei Prototypen gemessen, nicht gewählt.
 
+## ▶ FÜR `-45`: dein Stand ist seit heute AUF PROD (31.08., von `-88`)
+
+Auch das steht hier und nicht in einer Nachricht — inzwischen acht Zustellversuche
+über drei Wege, alle in der Freigabe hängen geblieben.
+
+**Deployt ist `8d01de40`**, verifiziert am laufenden Server (`velg-release` im
+SPA-Dokument, nicht am `status: finished` der Deploy-API — Coolify hält zwei
+Einträge, ein „fertig" belegt also nicht, dass DIESER Build ausliefert):
+
+    curl -s https://metaverse.center/ | head -c 175
+
+Darin liegt dein Dashboard-Redesign, dazu Nav-Umbau, Reiter „Übersicht",
+Masthead, Lore-Dossier, Agenten-Reiter, Migration 319, Chat (Phase 2),
+Blatt (Phase 3), Dungeon (Phase 4) und 31 deutsche Zeichenketten. Vier Phasen in
+EINER Auslieferung — der Nutzer hat das so entschieden, nachdem es ihm als
+Entscheidung vorgelegt wurde.
+
+**Coolify ist von aussen weiter 503** (`https://coolify.metaspots.net`). Das ist
+NICHT der Dienst: alle sechs Container laufen seit 12 Tagen gesund, und lokal
+antwortet Coolify auf `:8000` mit 302. Kaputt ist die Traefik-Route für den
+Hostnamen. Der Deploy geht deshalb über SSH auf `127.0.0.1:8000` — der Weg steht
+samt App-UUID im Gedächtnis unter `coolify-deploy-api-post-change` (POST, nicht
+GET). ⚠ Die Route selbst hat niemand angefasst: §12 des VPS-Runbooks sagt, ein
+fehlgeschlagener Compose-Deploy reisst den laufenden Stack mit.
+
+**Nicht deployt** sind derzeit 13 Commits, die nach `8d01de40` auf `origin/main`
+liegen.
+
+**Zeitrechnung, die daran hängt:** T10/Weg 1 (`insult`-Meinungsfenster) lief
+schon VOR diesem Deploy — `7f706ef5` war der Stand davor, und das IST der
+Weg-1-Commit. Die N5-Woche zählt ab **31.08., ~13:19 CEST**. Frühestens 07.09.
+nachsehen, belastbar um den 21.09.; ein leeres Ergebnis am 07.09. belegt nichts,
+weil die Erwartung eine Beleidigung alle ein bis drei Wochen ist.
+🔑 Die Frage lautet „ab X", nicht „nach X" — bei einem Deploy GENAU AUF dem
+Commit liest sich „nicht danach" wie „nicht enthalten", und genau daran hat sich
+heute schon eine Sitzung verrechnet.
+
 ## Zwei Dungeon-Stellen, die KEINE Befunde sind (vor dem Schärfen lesen)
 
 `-88` hat `components/dungeon/**` auf alle vier Formen geprüft: sauber, bis auf
