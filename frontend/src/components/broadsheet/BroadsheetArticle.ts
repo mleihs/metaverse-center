@@ -54,10 +54,17 @@ export class VelgBroadsheetArticleEl extends LitElement {
         flex-shrink: 0;
       }
 
-      .article__source-dot--event { background: var(--color-danger); }
+      /* The source taxonomy, per handoff/simulation-views/README.md "Screen 3".
+         Three of the four were shifted by one: an event wore DANGER (every
+         happening read as a threat), activity wore the blue that belongs to
+         events, and the gazette wore green. Only resonance was right.
+         Amber for the gazette is the platform accent, not --color-primary:
+         the paper's own voice must stay amber when a world theme repaints
+         the content around it. */
+      .article__source-dot--event { background: var(--color-info); }
       .article__source-dot--resonance { background: var(--color-epoch-influence); }
-      .article__source-dot--activity { background: var(--color-info); }
-      .article__source-dot--gazette { background: var(--color-success); }
+      .article__source-dot--activity { background: var(--color-accent-green); }
+      .article__source-dot--gazette { background: var(--color-accent-amber); }
 
       .article__headline {
         font-family: var(--font-bureau, var(--font-prose));
