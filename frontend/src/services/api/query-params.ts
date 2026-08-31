@@ -74,6 +74,7 @@ export type ApiQueryParam =
   | 'order_by'
   | 'pack_slug'
   | 'page'
+  | 'part'
   | 'payment_method'
   | 'per_page'
   | 'policy'

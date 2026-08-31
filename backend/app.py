@@ -88,6 +88,7 @@ from backend.routers import (
     drift,
     dungeon_content_admin,
     echoes,
+    email_preview,
     embassies,
     epoch_chat,
     epoch_invitations,
@@ -372,6 +373,7 @@ app.include_router(admin_drafts.router)
 app.include_router(admin_content_packs.router)
 app.include_router(admin_ops.router)
 app.include_router(dungeon_content_admin.router)
+app.include_router(email_preview.router)
 app.include_router(users.router)
 app.include_router(unsubscribe.router)
 app.include_router(simulations.router)

@@ -176,7 +176,7 @@ def render_simulation_invitation(
               </p>
             </td>
           </tr>
-{_footer_row(email_locale)}"""
+{_invitation_footer_row(email_locale)}"""
 
     return _email_shell(
         f"CLASSIFIED // ACCESS REQUEST \u2014 {safe_sim}",
@@ -305,7 +305,6 @@ def render_epoch_invitation(
     email_locale: str | None = None,
     accent_color: str | None = None,
     cycle_hours: int = 8,
-    unsubscribe_url: str | None = None,
 ) -> str:
     """Render the epoch invitation email.
 
@@ -340,7 +339,7 @@ def render_epoch_invitation(
             cycle_hours=cycle_hours,
         ),
         _cta_button(invite_url, _nt("inv_cta", lang), accent=accent),
-        _footer_row(email_locale, unsubscribe_url=unsubscribe_url),
+        _invitation_footer_row(email_locale),
     ]
 
     content = "\n".join(blocks)
@@ -895,6 +894,54 @@ def _security_footer_row(email_locale: str | None = None) -> str:
               </p>
               <p style="margin:0;font-size:11px;line-height:1.6;">
                 <a href="{_esc(settings.site_url.rstrip("/"))}/privacy" style="color:{_TEXT_DIM};">{legal}</a>
+              </p>
+            </td>
+          </tr>"""
+
+
+def _invitation_footer_row(email_locale: str | None = None) -> str:
+    """Footer for mail whose reader may not have an account yet.
+
+    Both invitations used ``_footer_row``, which offers "manage all
+    notifications" pointing at ``/settings/notifications``. An invited person
+    often has no account at all — the link goes to a login for something they
+    have not got, in the one mail whose whole purpose is to say "come in".
+
+    Not ``_security_footer_row`` either, though it would pass the test: that
+    footer says "this is a security message about your account, it cannot be
+    unsubscribed from", and an invitation is neither about an account nor about
+    security. A footer that passes a check while telling the reader something
+    false is worse than the link it replaced.
+
+    So: the legal link, the operator, the origin line — and one honest sentence
+    about why there is nothing to unsubscribe from. Someone who was invited and
+    does nothing hears nothing further; that is worth saying, because the fear
+    the missing unsubscribe link raises is exactly "will this keep coming?".
+    """
+    lang = _resolve_lang(email_locale)
+    link_style = f"color:{_TEXT_DARK};text-decoration:underline;"
+    notice = (
+        "Du bekommst diese Nachricht, weil dich jemand eingeladen hat. "
+        "Es gibt nichts abzubestellen: Wenn du nichts tust, hörst du nichts weiter von uns."
+        if lang == "de"
+        else "You are getting this because someone invited you. There is nothing to "
+        "unsubscribe from: if you do nothing, you will not hear from us again."
+    )
+    legal = _nt("footer_legal", lang)
+    return f"""\
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid {_BORDER_SUBTLE};">
+              <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:{_TEXT_DARK};">
+                {notice}
+              </p>
+              <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:{_TEXT_DARK};">
+                <a href="{_esc(settings.site_url.rstrip("/"))}/privacy" style="{link_style}">{legal}</a>
+              </p>
+              <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:{_TEXT_DARK};">
+                {_nt("footer_operator", lang)}
+              </p>
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DARK};text-transform:uppercase;">
+                {_nt("footer_origin", lang)}
               </p>
             </td>
           </tr>"""
@@ -2978,6 +3025,7 @@ def render_deadline_reminder(
     penalty_rp: int | None = None,
     ai_takeover_next: bool = False,
     cta_url: str,
+    unsubscribe_url: str | None = None,
 ) -> str:
     """Render the deadline reminder (handoff P2.17) — the largest gap in the post.
 
@@ -3093,7 +3141,15 @@ def render_deadline_reminder(
     )
 
     blocks.append(_cta_button(cta_url, _nt("deadline_cta", lang), accent=accent))
-    blocks.append(_footer_row(email_locale))
+    # This is a NOTIFICATION mail, so it must carry the one-click unsubscribe
+    # like the cycle briefing and the phase change do (B14). It did not: the
+    # footer was called without the URL, which made this the only notification
+    # mail in the system without a List-Unsubscribe header — an omission that
+    # costs deliverability and leaves the reader only the logged-in settings
+    # page. Found by the property test in P3.28, which checks the presence AND
+    # the absence; a test that only looked for the header on security mail
+    # would have stayed green.
+    blocks.append(_footer_row(email_locale, unsubscribe_url=unsubscribe_url))
 
     return _email_shell(
         "CLASSIFIED // ORDERS OUTSTANDING",

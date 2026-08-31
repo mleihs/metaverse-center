@@ -115,5 +115,16 @@ class TestInvitationIsDelivered:
                 _client(), SIM_ID, USER_ID, invited_email="invitee@test.com"
             )
 
-        assert "unsubscribe" not in send.await_args.args[2]
+        # Gemeint war immer der LINK, nicht das Wort. Seit P3.28 trägt die
+        # Einladungsfußzeile den Satz „Es gibt nichts abzubestellen: Wenn du
+        # nichts tust, hörst du nichts weiter von uns." — der nennt das Wort
+        # und ist genau der Grund, warum keine Abmeldung nötig ist. Eine
+        # Zusicherung auf das Wort hätte diesen Satz verboten und damit die
+        # Erklärung, die den Leser beruhigt.
+        html = send.await_args.args[2]
+        assert "/unsubscribe?token=" not in html, "die Einladung trägt einen Abmeldelink"
+        assert "/settings/notifications" not in html, (
+            "die Einladung verweist auf Kontoeinstellungen; der Eingeladene hat "
+            "vielleicht gar kein Konto"
+        )
         assert send.await_args.kwargs.get("unsubscribe_url") is None

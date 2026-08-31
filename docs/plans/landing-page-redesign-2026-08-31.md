@@ -213,7 +213,25 @@ Pfeiltasten.
    alle sechs. **Empfehlung: (a)** — der Entwurf lebt von der Sechserreihe, und
    eine gekennzeichnete Baustelle ist glaubwürdiger als eine verschwiegene.
 2. **Die Laufband-Kennzahlen:** 0 auslassen (L2) oder andere Kennzahlen wählen,
-   die heute schon groß sind (108 Agenten, 20 053 Chronikzeilen, 64 Objektanker)?
+   die heute schon groß sind?
+
+   > **Korrektur vom 31.08. nachmittags.** Ich hatte hier „20 053 Chronikzeilen"
+   > geschrieben. Die Zahl stimmt, der Name nicht: es sind **`heartbeat_entries`**
+   > (heute 20 081, davon 20 076 in lebenden Welten, alle mit deutschem Text) —
+   > die Zahl aus G2. `simulation_chronicles` hat **9** Zeilen. Gefunden hat es
+   > die Parallelsitzung beim Bau von L1, weil sie die Tabelle suchte und nicht
+   > fand.
+   >
+   > Die ehrlichen großen Zahlen über LEBENDE Welten, alle von L1 gemessen:
+   > **20 076 Pulseinträge · 304 Erinnerungen · 124 Bauten · 109 Ereignisse ·
+   > 108 Bürger · 70 Zonen · 12 Beziehungen.**
+   >
+   > Und die Regel, die daraus folgt und wichtiger ist als jede einzelne Zahl:
+   > **zwei Zahlen nebeneinander, die verschiedene Grundgesamtheiten meinen,
+   > sind auch dann falsch, wenn beide für sich stimmen.** „16 Welten" neben
+   > einer Gesamtzahl, die archivierte Welten und Epochen-Klone mitzählt, ist
+   > eine Rechnung, die der Leser nicht nachvollziehen kann. Jede Zahl des
+   > Laufbands wird über dieselben 16 lebenden Welten gezählt.
 3. **Deutscher Titel für 11 von 16 Welten** — dieselbe offene Entscheidung wie
    bisher, aber die Frontseite macht sie sichtbar: ohne sie ist das Weltraster
    auf Deutsch halb englisch.
