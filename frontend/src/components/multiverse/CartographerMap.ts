@@ -21,6 +21,7 @@ import type { VelgMapMinimap } from './MapMinimap.js';
 import './MapMinimap.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 type MapView = 'svg' | '3d';
 
@@ -456,7 +457,7 @@ export class VelgCartographerMap extends LitElement {
       this._leaderboardOpen = true;
       return;
     }
-    navigate(`/simulations/${node.slug}/lore`);
+    navigate(`/simulations/${node.slug}/${DEFAULT_TAB}`);
   }
 
   private _handleEdgeClick(e: CustomEvent<MapEdgeData>): void {
@@ -511,7 +512,7 @@ export class VelgCartographerMap extends LitElement {
   }
 
   private _handleMobileCardClick(node: MapNodeData): void {
-    navigate(`/simulations/${node.slug}/lore`);
+    navigate(`/simulations/${node.slug}/${DEFAULT_TAB}`);
   }
 
   private _renderGraphView() {

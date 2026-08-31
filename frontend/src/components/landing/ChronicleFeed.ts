@@ -24,6 +24,7 @@ import '../shared/PlatformFooter.js';
 import '../shared/VelgDispatchMasthead.js';
 import '../shared/VelgDispatchStamp.js';
 import '../shared/VelgDispatchTicker.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
 import type { TickerItem } from '../shared/VelgDispatchTicker.js';
 
@@ -370,7 +371,7 @@ export class VelgChronicleFeed extends LitElement {
             href="/simulations/${simSlug}/lore"
             @click=${(e: Event) => {
               e.preventDefault();
-              if (simSlug) navigate(`/simulations/${simSlug}/lore`);
+              if (simSlug) navigate(`/simulations/${simSlug}/${DEFAULT_TAB}`);
             }}
           >
             <span class="dispatch__source-name">${simName}</span>

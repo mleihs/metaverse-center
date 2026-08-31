@@ -28,6 +28,7 @@ import '../shared/GenerationProgress.js';
 import '../shared/VelgGameCard.js';
 import '../shared/VelgHoldButton.js';
 import './VelgForgeCeremony.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 /**
  * Phase IV: The Ignition.
@@ -296,7 +297,7 @@ export class VelgForgeIgnition extends LitElement {
   private _handleFinish() {
     if (this._materializedSlug) {
       forgeStateManager.startImageTracking(this._materializedSlug);
-      navigate(`/simulations/${this._materializedSlug}/lore`);
+      navigate(`/simulations/${this._materializedSlug}/${DEFAULT_TAB}`);
     }
   }
 
