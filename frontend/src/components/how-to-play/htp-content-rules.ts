@@ -485,6 +485,206 @@ export function getEchoLifecycle(): { name: string; color: string }[] {
 
 export function getChangelog(): ChangelogEntry[] {
   return [
+    // Die sechs Einträge bis v2.6 endeten am 08.03.2026, während sechs Monate
+    // Arbeit weiterliefen: Dungeons, Atlas, DRIFT, Journal, Bindungen, die
+    // Epochen-Sanierung. Ein Changelog, der an einem Tag stehenbleibt, ist
+    // schlimmer als keiner — er behauptet, seither sei nichts geschehen.
+    //
+    // Die folgenden Einträge sind aus dem Commit-Verlauf ABGELEITET, nicht
+    // erinnert: `git log --since=... | grep feat` je Monat, dann nach Bereich
+    // gruppiert. Die Daten sind der jeweils letzte Tag des Bündels. Wo ein
+    // Merkmal eine Voraussetzung hat (eigener Modellschlüssel, Freigabe durch
+    // den Betrieb), steht sie dabei — das ist eine Eigenschaft des Merkmals und
+    // bleibt wahr, anders als „derzeit abgeschaltet".
+    {
+      version: 'v3.2',
+      date: '2026-08-31',
+      title: msg('The Repair Pass'),
+      highlights: [
+        msg('A full review of every game system, and the repairs that came out of it'),
+        msg('Agents now remember their conversations and carry their mood into them'),
+        msg(
+          'Every metric in the interface says what it is, why it stands there, and what you can do',
+        ),
+      ],
+      details: [
+        {
+          category: msg('Worlds & Agents'),
+          changes: [
+            msg('Agent chat reads memories and current mood instead of starting fresh every time'),
+            msg(
+              'Five different ways of writing an event existed; four of them triggered no consequences',
+            ),
+            msg('Terminal clearance points were spent and never replenished'),
+            msg(
+              'Agent influence is now computed by the server, so the card and the panel agree with the game',
+            ),
+            msg(
+              'Cloning an epoch kept the draft, the aptitudes, the inner life and the German title',
+            ),
+          ],
+        },
+        {
+          category: msg('Explanations'),
+          changes: [
+            msg('Nine metrics carry an explanation with three parts: what, why, and what to do'),
+            msg('Zone stability, world health and influence each state their reachable ceiling'),
+            msg('Tooltips no longer run off the edge of the window'),
+          ],
+        },
+        {
+          category: msg('Mail'),
+          changes: [
+            msg(
+              'The four account mails every user sees were still in the framework default design',
+            ),
+            msg('Signing up produced no message at all; there is a welcome now'),
+            msg('Deleting an account sends a confirmation and says which worlds outlive it'),
+            msg('A reminder goes out before an epoch deadline, naming the actual penalty'),
+          ],
+        },
+      ],
+    },
+    {
+      version: 'v3.1',
+      date: '2026-07-14',
+      title: msg('DRIFT: Every Move Says Something'),
+      highlights: [
+        msg('The economy of the Zwischenraum: dispatches and discharge finally pay'),
+        msg('A collapse became a decision: the Havarie scene with its own consequences'),
+        msg('The signal engine gives each move an answer instead of a number'),
+      ],
+      details: [
+        {
+          category: msg('Economy & Risk'),
+          changes: [
+            msg('Carrying dispatches and discharging them pay into an account you can read'),
+            msg('Effect cards and the check surfaced in the HUD rather than hidden in the result'),
+            msg('One move too far: probing, resonance rupture and the radio buoy'),
+            msg('A failure floor scatters cargo instead of ending the run'),
+          ],
+        },
+        {
+          category: msg('Signals'),
+          changes: [
+            msg('Signal scenes, marker stacks and a logbook that reads as a record'),
+            msg('Signals authored as a content pack, not written into the engine'),
+          ],
+        },
+        {
+          category: msg('Requirement'),
+          changes: [msg('The DRIFT core is released per platform by the operators')],
+        },
+      ],
+    },
+    {
+      version: 'v3.0',
+      date: '2026-06-17',
+      title: msg('DRIFT & The Graphical Dungeon'),
+      highlights: [
+        msg('DRIFT: travel through the Zwischenraum between worlds'),
+        msg('Resonance dungeons gained a graphical view alongside the terminal'),
+        msg('Both views show the same run; you can switch without losing anything'),
+      ],
+      details: [
+        {
+          category: msg('DRIFT'),
+          changes: [
+            msg('Star chart, routes and a public read path: you can look before you join'),
+            msg('Dispatches delivered as a content pack'),
+            msg('Its own help topic, gated the same way the navigation tab is'),
+          ],
+        },
+        {
+          category: msg('Graphical Dungeon'),
+          changes: [
+            msg('Populated scene with backdrop art, party and chamber'),
+            msg('Combat effects: hit-stop, trauma shake, overshoot numbers'),
+            msg('A persistent map rail instead of a modal you had to open'),
+            msg('Agent picker with the same party-composition warning the terminal gives'),
+          ],
+        },
+      ],
+    },
+    {
+      version: 'v2.9',
+      date: '2026-05-21',
+      title: msg('The Atlas'),
+      highlights: [
+        msg('Every world got its own map, drawn from its zones, streets and buildings'),
+        msg('Live overlays: event markers, agent roles, zone state'),
+      ],
+      details: [
+        {
+          category: msg('Per-Simulation Map'),
+          changes: [
+            msg('An OSM-style map generated per world instead of a shared schematic'),
+            msg('Event markers and live overlays on top of the geometry'),
+            msg('Marker tiers by zoom level and an agent-role tint'),
+            msg('Rendering overhaul: framing, colour, depth, marker de-confliction'),
+          ],
+        },
+      ],
+    },
+    {
+      version: 'v2.8',
+      date: '2026-04-22',
+      title: msg('Journal, Bonds & The Bureau'),
+      highlights: [
+        msg('The Resonance Journal: fragments, constellations and attunements'),
+        msg('Agent bonds: attention you pay to an agent deepens into whispers'),
+        msg('Bureau Ops: budget, ledger and the operator surfaces behind them'),
+      ],
+      details: [
+        {
+          category: msg('Resonance Journal'),
+          changes: [
+            msg('Fragments collected from five source systems, not authored by hand'),
+            msg('Constellations with a resonance detector and a revealed insight'),
+            msg('Pair-level resonance and attunement unlocking on crystallisation'),
+            msg('Requires a platform release and its own model budget'),
+          ],
+        },
+        {
+          category: msg('Bonds & Chat'),
+          changes: [
+            msg('Bond depth grows from attention and opens whispers at depth 2'),
+            msg('Agent chat redesigned end to end'),
+          ],
+        },
+        {
+          category: msg('Content & Operations'),
+          changes: [
+            msg('Dungeon content moved out of code into authored YAML packs'),
+            msg('Archetype pages, achievements and the Bureau Ops budget ledger'),
+          ],
+        },
+      ],
+    },
+    {
+      version: 'v2.7',
+      date: '2026-03-31',
+      title: msg('Resonance Dungeons'),
+      highlights: [
+        msg('Three archetypes playable in the terminal: the Chamber, the Tower, the Entropy'),
+        msg('Navigation with path labels, risk colours and depth indicators'),
+      ],
+      details: [
+        {
+          category: msg('Dungeons'),
+          changes: [
+            msg('The Tower: structural failure as a mechanic, not a message'),
+            msg('The Entropy: the third archetype'),
+            msg('Navigation UX: path labels, risk colours, depth indicators'),
+            msg('German text audit across the whole dungeon surface'),
+          ],
+        },
+        {
+          category: msg('Epochs'),
+          changes: [msg('Fog of war with a simulation battery and the spy intel extension')],
+        },
+      ],
+    },
     {
       version: 'v2.6',
       date: '2026-03-08',
