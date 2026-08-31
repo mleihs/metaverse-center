@@ -164,11 +164,30 @@ class TestHavarieOpens:
             # Out one hop with room to spare, then home again on an empty tank: the return
             # move pays Notfrequenz, the hull gives out, and it strands ON the home node.
             #
-            # The outbound hop draws a signal like any other move, and an interactive one
-            # parks the run (SIGNAL_PENDING) so the return move cannot happen. The draw is
-            # salted per run, so it is not something the test can wish away — it clears the
-            # scene the way the rest of the suite does, by writing the run row directly.
-            # What is under test is the Havarie catalogue at home, not the draw.
+            # The outbound hop draws a signal like any other move, and the draw is salted
+            # per run — so it is not something the test can wish away. Two of its outcomes
+            # reach into what is under test here, and BOTH are cleared below, by writing
+            # the run row directly the way the rest of the suite does:
+            #
+            #   * an interactive signal parks the run (SIGNAL_PENDING) so the return move
+            #     cannot happen at all → drop `pending_signal` from the checkpoint;
+            #   * a signal carrying `cargo_grant` (267, "Fund freight") inserts a
+            #     travel_cargo row → `cargo_aboard > 0` → drift_havarie_payload adds
+            #     `notabwurf` to the catalogue, and the exact list below is off by one.
+            #
+            # 🔑 Der zweite Fall war T7: der Test war nicht reihenfolge-, sondern
+            # ZIEHUNGSabhängig. Gemessen am 31.08.2026 über dreissig EINZELläufe: 2 rot
+            # (rund 7 %), jedes Mal mit ['rueckruf','notabwurf','notruf','zerfaserung'].
+            # Dass er allein grün und im Verband rot schien, war die Stichprobe, nicht die
+            # Ursache — und zwei Sitzungen, die sich dieselbe lokale Datenbank teilten.
+            #
+            # Die Ladung wird gelöscht, statt die Zusicherung aufzuweichen: Gegenstand des
+            # Tests ist der Katalog AM EIGENEN DOCK, und seine REIHENFOLGE ist die Aussage
+            # (das HUD rendert ihn in Reihenfolge). Eine Zusicherung über die Menge statt
+            # über die Liste gäbe genau das auf. Die Voraussetzung "keine Ladung an Bord"
+            # stand bisher nur ungeschrieben da und traf in rund 93 % der Fälle zu; jetzt
+            # steht sie. `travel_cargo.haul_value` speist `travel_runs.haul` über einen
+            # Auslöser (264/§3.2), das Löschen zieht den Haul also sauber mit zurück.
             run = client.rpc(
                 "fn_travel_move",
                 {"p_user": str(user), "p_run": run["id"],
@@ -176,6 +195,7 @@ class TestHavarieOpens:
             ).execute().data
             assert run["status"] == "active", "the outbound hop must not already strand it"
             checkpoint = {k: v for k, v in run["checkpoint"].items() if k != "pending_signal"}
+            admin_client.table("travel_cargo").delete().eq("run_id", run["id"]).execute()
             admin_client.table("travel_runs").update(
                 {"kohaerenz": 1, "bandbreite": 0, "checkpoint": checkpoint}
             ).eq("id", run["id"]).execute()
@@ -194,6 +214,12 @@ class TestHavarieOpens:
                 "the payload must read the node the run strands ON — it is built inside the "
                 "same UPDATE that sets position_node_id, so a plain row lookup would see "
                 "the node it LEFT (the W2.6/E snapshot trap)"
+            )
+            assert hav["cargo_aboard"] == 0, (
+                "die Voraussetzung selbst gemessen: ohne Ladung hat der Katalog drei "
+                "Einträge. Steht hier eine, hat der Ausgangssprung eine Fund-Fracht "
+                "gezogen und die Löschung oben nicht gegriffen — dann ist die Liste "
+                "unten zu Recht länger, und diese Zeile sagt WARUM statt nur DASS"
             )
             assert hav["options"] == ["rueckruf", "notruf", "zerfaserung"], (
                 "the recall leads: it is the best of the three at home, and the panel "

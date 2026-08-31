@@ -131,6 +131,37 @@ def _reset_admin_supabase_cache():
     yield
 
 
+@pytest.fixture(autouse=True)
+def _reset_platform_admin_id_cache():
+    """Kühle den Plattform-Admin-Zwischenspeicher vor jedem Test aus.
+
+    Warum: ``dependencies.is_platform_admin`` hält die Admin-IDs in zwei
+    MODULWEITEN Variablen mit 5-Minuten-Frist (``_platform_admin_ids``,
+    ``_platform_admin_ids_expires``). Ein Test, der die Frist füllt, schaltet
+    für die nächsten fünf Minuten Stufe 3 ab — und damit die einzige Stelle
+    im Rollentor, die den Admin-Client überhaupt anfasst.
+
+    Ohne diesen Rücksetzer hängt das Ergebnis eines Tests davon ab, WAS VORHER
+    LIEF. Gemessen am 31.08.2026: 26 Fälle in drei Dateien scheiterten allein
+    aufgerufen mit ``TypeError: object MagicMock can't be used in 'await'
+    expression`` und liefen im vollen Lauf grün — sie überschreiben
+    ``get_admin_supabase`` mit einem blanken ``MagicMock``, und im vollen Lauf
+    kam der Aufruf nie dort an.
+
+    Ein Test, der nur besteht, weil ein FRÜHERER Test einen globalen Zustand
+    gefüllt hat, besteht nicht — er wird übersprungen. Mit kaltem Speicher
+    scheitert eine falsche Attrappe immer und sichtbar, statt per Los.
+
+    Dasselbe Muster wie ``_reset_admin_supabase_cache`` direkt darüber, aus
+    demselben Grund: synchron, autouse, funktionsweit.
+    """
+    from backend import dependencies as _deps
+
+    _deps._platform_admin_ids = set()
+    _deps._platform_admin_ids_expires = 0.0
+    yield
+
+
 @pytest.fixture()
 def route_secdef_admin(monkeypatch):
     """Route migration-258 service_role RPC calls to a test's mock client.

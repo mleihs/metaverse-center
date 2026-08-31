@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_current_user, get_effective_supabase, get_supabase, require_role
 from backend.models.common import CurrentUser
+from backend.tests.conftest import make_async_supabase_mock
 
 # ---------------------------------------------------------------------------
 # Test users & simulations
@@ -521,6 +522,11 @@ class TestDataIsolation:
                     simulation_id=sim_id,
                     user=user_a,
                     supabase=mock_supabase_client,
+                    # Die Abhängigkeit wird hier DIREKT aufgerufen, nicht über FastAPI — also
+                    # muss der Test jede Abhängigkeit selbst stellen. Ohne diese Zeile bleibt
+                    # `admin_supabase` sein `Depends(...)`-Vorgabewert, und Stufe 3 von
+                    # `is_platform_admin` greift darauf zu.
+                    admin_supabase=make_async_supabase_mock(),
                 )
             )
         finally:
@@ -551,6 +557,11 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_b,
                         supabase=mock_supabase_client,
+                        # Die Abhängigkeit wird hier DIREKT aufgerufen, nicht über FastAPI — also
+                        # muss der Test jede Abhängigkeit selbst stellen. Ohne diese Zeile bleibt
+                        # `admin_supabase` sein `Depends(...)`-Vorgabewert, und Stufe 3 von
+                        # `is_platform_admin` greift darauf zu.
+                        admin_supabase=make_async_supabase_mock(),
                     )
                 )
             assert exc_info.value.status_code == 403
@@ -578,6 +589,11 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_a,
                         supabase=mock_supabase_client,
+                        # Die Abhängigkeit wird hier DIREKT aufgerufen, nicht über FastAPI — also
+                        # muss der Test jede Abhängigkeit selbst stellen. Ohne diese Zeile bleibt
+                        # `admin_supabase` sein `Depends(...)`-Vorgabewert, und Stufe 3 von
+                        # `is_platform_admin` greift darauf zu.
+                        admin_supabase=make_async_supabase_mock(),
                     )
                 )
             assert exc_info.value.status_code == 403
@@ -603,6 +619,11 @@ class TestDataIsolation:
                         simulation_id=sim_id,
                         user=user_a,
                         supabase=mock_supabase_client,
+                        # Die Abhängigkeit wird hier DIREKT aufgerufen, nicht über FastAPI — also
+                        # muss der Test jede Abhängigkeit selbst stellen. Ohne diese Zeile bleibt
+                        # `admin_supabase` sein `Depends(...)`-Vorgabewert, und Stufe 3 von
+                        # `is_platform_admin` greift darauf zu.
+                        admin_supabase=make_async_supabase_mock(),
                     )
                 )
                 assert result == "owner", f"Owner should satisfy '{required}' requirement"

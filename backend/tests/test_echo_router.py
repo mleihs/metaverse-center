@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from backend.app import app
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, get_supabase
 from backend.models.common import CurrentUser
-from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID
+from backend.tests.conftest import MOCK_USER_EMAIL, MOCK_USER_ID, make_async_supabase_mock
 
 SIM_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 SIM_B = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2")
@@ -65,6 +65,28 @@ def _mock_supabase_with_role(role: str = "admin") -> MagicMock:
     return mock
 
 
+def _mock_admin_supabase() -> MagicMock:
+    """Ein Admin-Client, der AWAITBAR ist.
+
+    `require_role` läuft über `is_platform_admin` (3-Stufen-Muster). Stufe 3
+    fragt `platform_admins` über den Admin-Client — und zwar mit `await`. Ein
+    blankes `MagicMock()` als Überschreibung erzeugt dort
+    `TypeError: object MagicMock can't be used in 'await' expression`.
+
+    Das fiel lange nicht auf, weil Stufe 3 nur bei KALTEM Zwischenspeicher
+    erreicht wird: im vollen Lauf hatte ein früherer Test die 5-Minuten-Frist
+    gefüllt, allein aufgerufen nicht. Seit `_reset_platform_admin_id_cache`
+    (conftest) ist der Speicher vor jedem Test kalt, und die Attrappe muss
+    tragen.
+
+    `make_async_supabase_mock()` antwortet mit `data = None`, und
+    `_refresh_platform_admin_ids` liest `resp.data or []` — der Testnutzer ist
+    also kein Plattform-Admin. Genau das sollen diese Tests prüfen: die Rolle
+    kommt aus `simulation_members`, nicht aus einer Sonderstellung.
+    """
+    return make_async_supabase_mock()
+
+
 @pytest.fixture()
 def client():
     """TestClient with auth, role-passing supabase, and admin supabase overrides."""
@@ -73,7 +95,7 @@ def client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    app.dependency_overrides[get_admin_supabase] = lambda: _mock_admin_supabase()
 
     yield TestClient(app)
     app.dependency_overrides.clear()
@@ -87,7 +109,7 @@ def viewer_client():
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
     app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: MagicMock()
+    app.dependency_overrides[get_admin_supabase] = lambda: _mock_admin_supabase()
 
     yield TestClient(app)
     app.dependency_overrides.clear()
