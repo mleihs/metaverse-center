@@ -39,6 +39,14 @@ _PROTECTED = ("token_economy_stats", "v_instagram_queue", "v_bluesky_queue")
 #: Views that stay public on purpose — their base tables grant `anon` the same
 #: access by policy. Touching them would be a behaviour change on public read
 #: surfaces, not the closing of a gap.
+#:
+#: ⚠ Der Satz oben trägt nur für das `deleted_at` der ZEILE. Für die Elternwelt
+#: trägt er nicht: `agents_anon_select` verlangt zusätzlich, dass die Welt weder
+#: archiviert noch gelöscht ist, und `active_agents` prüfte davon nichts — 30
+#: Agenten und 34 Bauten aus fünf gelöschten Welten waren dadurch anonym lesbar
+#: (gemessen 31.08.2026). Geschlossen von Migration 313; gebunden von
+#: `test_active_views_scope_to_living_worlds.py`. Diese Liste bleibt richtig:
+#: die acht Sichten sind weiterhin öffentlich, 294 fasst sie weiterhin nicht an.
 _PUBLIC = (
     "active_agents", "active_buildings", "active_events", "active_resonances",
     "available_dungeons", "conversation_summaries", "map_simulations",
