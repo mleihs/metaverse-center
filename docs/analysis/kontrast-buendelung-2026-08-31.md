@@ -58,6 +58,38 @@ eine Marke (dann in Ordnung) oder eine Aussage (dann trennen)? Ein
 mechanischer Tausch würde die Atmosphäre zerstören, die in dieser Klasse der
 eigentliche Zweck der Farbe ist.
 
+#### Zwei Schnitte, die die 198 handhabbar machen
+
+**Erster Schnitt: Marke oder Aussage.** Der Versuch, das aus dem Selektornamen
+zu lesen, lässt **100 von 198 unentschieden** — ein Name sagt nicht
+verlässlich, ob Text eine Aussage trägt (`.lore-intro__paragraph` ist
+offensichtlich eine, `.exit__gauge-full` schwer zu sagen). Die Regex an die
+Daten anzupassen wäre der Fehler gewesen; stattdessen ist die **Vorgabe
+umgedreht**: Text ist eine Aussage, es sei denn, sein Name sagt ausdrücklich,
+dass er ein Zeichen ist (`dot`, `glyph`, `icon`, `pip`, `caret`, …).
+
+Das ist die sichere Seite: **eine Aussage fälschlich für eine Marke zu halten
+verbirgt ein echtes Problem; umgekehrt entsteht nur Arbeit.**
+
+    Aussagen (Vorgabe)      184
+    Marken (Name sagt es)    15
+
+**Zweiter Schnitt, und er ist der nützlichere: fällt es auch auf
+Plattform-Dunkel durch?**
+
+    fällt AUCH auf der Vorgabe durch    31   ← echter Komponentenfehler, themenunabhängig
+    nur in gethemten Läufen            153   ← sitzt auf dem Grund des Themes
+
+**Die 31 sind die Arbeitsliste.** Sie sind auf jedem Grund kaputt, also ohne
+Diskussion über Themes zu reparieren. Die 153 stellen erst die Frage, die
+diese Klasse ausmacht: bringt das Bauteil seinen eigenen Grund mit (wie der
+Dungeon, dann ist der Befund gegenstandslos) oder sitzt es auf dem des Themes
+(dann greift die Trennungsregel)?
+
+⚠ Und Schritt 1b hilft hier **nicht**: er hebt `--color-text-secondary` und
+`--color-text-muted`, nicht die Tier-3-Token. Diese Klasse bleibt auch nach
+1b bestehen.
+
 **Klasse 4 (56)** ist ein Flächen-Token als *Vordergrund*
 (`color: var(--color-surface-sunken)`). Das ist fast immer eine gezeichnete
 Marke und kein Text. Die richtige Abhilfe ist meist `aria-hidden`, was die
