@@ -515,6 +515,39 @@ def local_tokens(rules, tokens: dict[str, str]) -> dict[str, str]:
     return local
 
 
+def hidden_from_readers(source: str, selector: str) -> bool:
+    """Does the element this rule paints carry aria-hidden="true"?
+
+    Suggested from a real run: after a round of fixes, the last remaining
+    finding in three directories was a 64px watermark at 4% opacity, and the
+    element was already `aria-hidden="true"`. The tool could only guess at that
+    ("fg == bg: likely a decorative block"). Reading the markup turns the guess
+    into a fact — and it is the honest way to drop such a pair, rather than an
+    allowlist entry that outlives its reason.
+
+    Deliberately narrow: the class must appear in the SAME tag as the attribute.
+    Inheriting hiddenness from an ancestor is real in the DOM but not decidable
+    from a template without building the tree, and a wrong SKIP is worse than a
+    finding a human dismisses in two seconds.
+    """
+    cls = selector.split(",")[0].strip().split()[-1] if selector.strip() else ""
+    for token in (":", "::"):
+        if token in cls:
+            cls = cls.split(token)[0]
+    if not cls.startswith(".") or len(cls) < 2:
+        return False
+    name = re.escape(cls[1:])
+    # A word boundary is not a class boundary: `\bicon\b` also matches
+    # class="icon-large", and that mismatch silently skipped pairs that were
+    # never hidden. A class name ends where a non-name character does.
+    edge = r"(?<![-\w])" + name + r"(?![-\w])"
+    tag = (
+        r"<[^>]*aria-hidden=[\"']true[\"'][^>]*class=[^>]*" + edge
+        + r"|<[^>]*class=[^>]*" + edge + r"[^>]*aria-hidden=[\"']true[\"']"
+    )
+    return re.search(tag, source, re.S) is not None
+
+
 def scan_file(path: Path, tokens: dict[str, str]):
     findings, skips = [], []
     source = path.read_text(encoding="utf-8")
@@ -532,6 +565,9 @@ def scan_file(path: Path, tokens: dict[str, str]):
             if "color" not in decls:
                 continue
             if SKIP_SELECTORS.search(sel):
+                continue
+            if hidden_from_readers(source, sel):
+                skips.append((path, sel, 'aria-hidden="true" in the markup'))
                 continue
             fg_raw = decls["color"]
             # `color: transparent` is concealment on purpose - a redaction bar
