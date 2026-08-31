@@ -168,6 +168,36 @@ welches der 13 Wörter er schreibt, und unterscheidet die zwei Achsen nicht. Bis
 er das tut, entstehen neue Bauten, deren „Zustand" eine Aussage über ihr Wesen
 ist — und die Verfallsmechanik löscht sie.
 
+### Nachtrag 31.08. — die Leitung ist repariert, die Frage darunter nicht
+
+Beim Nachgehen kamen drei Dinge heraus, zwei davon behoben:
+
+**① Der Widerspruch im Prompt — behoben.** Zwei Stellen nannten dem Modell die
+erlaubten Zustände, in DERSELBEN Anfrage, und sie waren nicht gleich: das Schema
+sagte `excellent`, die Anforderungszeile des Orchestrators sagte `pristine`.
+Daher die sechs `pristine`-Bauten. Beide bauen ihren Satz jetzt aus
+`BUILDING_CONDITION_CORE`; `backend/tests/unit/test_building_condition_vocabulary.py`
+weist eine zweite handgeschriebene Liste ab.
+
+**② Ableitung erzeugt eine MENGE, der Verfall braucht eine FOLGE — Leitung
+behoben (Migration 322).** `forge_taxonomies.py` leitet die Taxonomie einer Welt
+aus dem ab, was das Modell erfunden hat („konsistent von Konstruktion her"). Das
+garantiert `building_condition ∈ Taxonomie`, aber nicht `∈ Leiter` — die Leiter
+braucht eine Ordnung, und eine Ableitung kann keine erzeugen. Deshalb hätte JEDE
+künftig geschmiedete Welt ihre thematischen Wörter wieder ohne Sprosse bekommen.
+Die Sprossenkarte `fn_building_condition_rungs()` löst das an einer Stelle für
+alle Welten, statt 193-mal in `metadata`.
+
+**③ ⚠ OFFEN: ein NEUES Wort hat weiter keine Sprosse.** Erfindet das Modell
+`waterlogged`, kennt die Sprossenkarte es nicht, und der Bau verfällt wieder
+nicht. Die Ableitung kann das prinzipiell nicht lösen. Der nachhaltige Weg wäre,
+**dasselbe Modell, das das Wort erfindet, auch nach seinem Platz zu fragen** —
+ein Feld mehr im Entwurf (`condition_rung`, 5–50, „wo zwischen makellos und Ruine
+sitzt dieses Wort"), das die Materialisierung nach `metadata.rung` schreibt. Kein
+zweiter Aufruf, keine neue Fehlerquelle, und es passt zur Grundhaltung von
+Befund 30: das Modell weiss, was es gemeint hat. **Zu entscheiden**, weil es
+Schema, Prompt, `forge_taxonomies` und `fn_materialize_shard` berührt.
+
 **Zwei Wege, beide inhaltlich:**
 * Eine zweite Achse (Spalte oder eigener `taxonomy_type`) für Zugang/Wesen; die
   vier Wörter wandern dorthin, `building_condition` behält nur Verschleiss.
