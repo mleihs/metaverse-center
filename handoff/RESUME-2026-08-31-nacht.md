@@ -125,27 +125,45 @@ Paare trafen sich in 24 h, 6 von 258 Agenten liegen unter −20, `insult` hat
 9 % Anteil an den dann gültigen Wahlen). **Wer nach einem Tick nachmisst, sieht
 nichts und hält die Änderung fälschlich für wirkungslos.**
 
-**❓ OFFEN: hat der Deploy die Backend-Änderung mitgenommen?**
+**✅ BEANTWORTET (31.08., nach dem Clear): der Deploy trägt `7f706ef5` — Weg 1 LÄUFT.**
 
-⚠ **Über die Coolify-API war es nicht zu klären** (versucht am 31.08. nachts):
-`https://coolify.metaspots.net` antwortet **503**, `http://45.137.68.227:8000`
-nimmt keine Verbindung an. Token liegt in `~/.config/metaspots/coolify-api.token`,
-App-UUID `a6exg3b5euhidpc2r5009o0m`. Auch die Nachbarsitzung kann es nicht sagen
-— ihr Kontext wurde vor dem Deploy geleert, und sie rät zu Recht nicht.
+Ohne Coolify geklärt. Der Server sagt es selbst:
 
-Zweiter Weg, falls Coolify wieder da ist: das ausgelieferte deutsche
-Locale-Bündel prüfen. Enthält es **„Einsatzterminal"**, liegt der Deploy bei oder
-nach `5da147f8` — und damit NACH `7f706ef5`, also **läuft Weg 1**. Enthält es
-„Liegt bei dir" statt „Verlangt dich", ist sogar `e2edbb51` drin. Der Chunk wird
-verzögert geladen und stand nicht in `assets/index-*.js`; am schnellsten über die
-Netzwerkansicht des Browsers auf `/dashboard`.
+```
+curl -s https://metaverse.center/ | head -c 200
+→ <meta name="velg-release" content="7f706ef5f7e3cc95482e6788c0d654b3e80b49a9" />
+  <meta name="velg-commit"  content="7f706ef" />
+```
 
- Der
-Deploy ist durch (Dashboard live, health 200), aber er trägt sicher noch die
-ERSTE Fassung der Übersetzungen — also lag er vor `e2edbb51`. Ob er nach
-`7f706ef5` (Weg 1) lag, ist ungeklärt. **Erste Handlung nach dem Clear: bei
-`-45` nachfragen, welchen Commit der Deploy trug.** Davon hängt ab, ab wann die
-Woche zählt.
+🔑 **Diese Marke ist kein Build-Artefakt, sondern eine Laufzeit-Aussage** — und nur
+deshalb beweist sie etwas über das Backend. `backend/utils/spa_document.py` stempelt
+sie beim Ausliefern des SPA-Dokuments aus `build_identity.RELEASE`, und das liest
+`SENTRY_RELEASE` bzw. `SOURCE_COMMIT` aus der Umgebung des **laufenden
+Backend-Prozesses** (Coolify injiziert `SOURCE_COMMIT` zur Laufzeit in den Container,
+nicht als Build-Arg — der Modul-Docstring begründet das). Sie bezeugt damit genau die
+Schicht, in der `SOCIAL_INTERACTIONS["insult"]` lebt. Eine reine Frontend-Marke hätte
+das nicht getragen: für eine Backend-Änderung wäre sie die halbe Bedingung gewesen.
+
+Zwei unabhängige Gegenproben stimmen überein:
+
+* **Locale-Weg (der aus der Nacht vorgeschlagene):** das ausgelieferte
+  `assets/de-DyG1YvxT.js` (679 kB, echtes deutsches Bündel) enthält
+  **kein** „Einsatzterminal" → `5da147f8` ist nicht drin. Passt zu einem Deploy auf
+  `7f706ef5`. ⚠ Der Weg ist tückisch: „Verlangt dich" fehlt ebenfalls, aber die
+  Zeichenkette existiert lokal überhaupt nicht mehr — eine Abwesenheit belegt hier
+  also nichts. Erst der Abgleich mit dem lokalen Bündel machte die Probe gültig.
+* **Zeitprobe:** `last-modified` des Chunks = 31.08. 11:18:53 GMT = **13:18:53 CEST**,
+  vier Minuten nach `7f706ef5` (13:14:44 +0200). `5da147f8` kam 13:17:55 — der Build
+  hatte seinen HEAD zu dem Zeitpunkt schon gezogen.
+
+**Damit zählt die N5-Woche ab 31.08.2026, ~13:19 CEST.** Frühestens **07.09.**
+nachsehen — und auch dann zurückhaltend lesen: die Erwartung ist eine Beleidigung
+alle ein bis drei Wochen, ein leeres Ergebnis am 07.09. ist **kein** Beleg für
+Wirkungslosigkeit. Belastbar wird die Messung um den **21.09.**
+
+**Nebenbefund:** das Dashboard-Redesign ist live, aber `5da147f8` + `e2edbb51`
+(die 42 + 12 deutschen Zeichenketten dazu) sind **nicht** ausgeliefert — auf Prod
+steht das neue Dashboard gerade unübersetzt. Der nächste Deploy holt es nach.
 
 ---
 
