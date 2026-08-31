@@ -34,7 +34,6 @@ import {
   formatDungeonComplete,
   formatLootDrop,
   formatPartyWipe,
-  getRoomTypeLabel,
 } from '../utils/dungeon-formatters.js';
 import {
   describeRoom,
@@ -365,9 +364,7 @@ class DungeonStateManager {
     // party just LEFT — off by exactly one room, and only ever visible as a
     // divider in the wrong place.
     const room = this.currentRoom.value;
-    terminalState.setNarrationRoom(
-      room ? { index: room.index, label: getRoomTypeLabel(room.room_type) } : null,
-    );
+    terminalState.setNarrationRoom(room ? { index: room.index, roomType: room.room_type } : null);
 
     // Reset combat selections when leaving planning phase
     if (state.phase !== 'combat_planning') {

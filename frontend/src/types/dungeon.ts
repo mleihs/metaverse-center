@@ -479,8 +479,17 @@ export interface CombatAction {
 export interface DungeonRoomStamp {
   /** Room index as the backend numbers it. */
   readonly index: number;
-  /** Localised room-type label, resolved at stamping time. */
-  readonly label: string;
+  /** Raw room type (`combat`, `rest`, `threshold`, …), NOT a display label.
+   *
+   *  The stamp freezes WHICH room a line belongs to, never how that room is
+   *  spelled. Resolving the label here looked equivalent and was not: the
+   *  label was then fixed in whatever language happened to be active when the
+   *  line arrived, so switching to German left the divider reading
+   *  "RAUM 01 · COMBAT" — half translated, and no reload could repair it
+   *  because the English word was in the data by then. The type is stable, the
+   *  label is a rendering of it, and the two belong on different sides of the
+   *  stamp. */
+  readonly roomType: string;
 }
 
 /** A chronicle line, which is a terminal line that remembers where it happened.
