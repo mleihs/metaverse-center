@@ -539,6 +539,18 @@ export class VelgGameCard extends LitElement {
     :host([size="sm"]) .card__description { -webkit-line-clamp: 1; font-size: 7px; }
     :host([size="lg"]) .card__description { -webkit-line-clamp: 5; font-size: 10px; }
 
+    /*
+     * Placed after the size rules on purpose: it must win over all of them,
+     * including the size-lg clamp of 5. A building's description is prose and
+     * is not a caption of any length.
+     */
+    :host([full-description]) .card__description {
+      -webkit-line-clamp: unset;
+      line-clamp: unset;
+      display: block;
+      overflow: visible;
+    }
+
     .card__badges {
       display: flex;
       flex-wrap: wrap;
@@ -1169,6 +1181,17 @@ export class VelgGameCard extends LitElement {
   @property({ type: Boolean }) draggable = false;
   @property({ type: Boolean }) dimmed = false;
   @property({ type: Boolean }) highlighted = false;
+  /**
+   * Let the description run to its full length instead of clamping it.
+   *
+   * The clamp is right for an operative, whose blurb is a caption. It is
+   * wrong for a building, whose description is prose the world wrote about
+   * itself — the 2026-08-31 handoff asks for the full text there and two
+   * clamped lines on the agent card, in the same breath, which is what makes
+   * this a property rather than a change to the default.
+   */
+  @property({ type: Boolean, attribute: 'full-description', reflect: true })
+  fullDescription = false;
   @property({ type: Boolean, attribute: 'show-actions' }) showActions = false;
   @property({ type: Boolean }) editable = false;
   @property({ type: Boolean }) generating = false;

@@ -484,8 +484,21 @@ export class VelgEntityLightbox extends LitElement {
   // ── Keyboard (arrow nav only — Escape handled by native cancel event) ──
 
   private _handleKeyDown(e: KeyboardEvent): void {
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+    /*
+     * composedPath()[0], not e.target. Across a shadow boundary the event is
+     * retargeted to the HOST, so `e.target.tagName` reports the custom element
+     * and never the field inside it — the guard would pass for a keystroke that
+     * came from an input, and someone typing a name would page the dossier away
+     * on their first arrow key. composedPath()[0] is the element actually hit.
+     * (Found by velgarien-rebuild-af while building the buildings lightbox.)
+     */
+    const target = e.composedPath()[0] as HTMLElement | undefined;
+    if (
+      !target ||
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    ) {
       return;
     }
 
@@ -575,8 +588,20 @@ export class VelgEntityLightbox extends LitElement {
   // ── Render ──
 
   protected render() {
-    const hasPrev = this.currentIndex > 0;
-    const hasNext = this.currentIndex < this.totalEntities - 1;
+    /*
+     * The ring, not the line.
+     *
+     * These two used to be `currentIndex > 0` and `currentIndex < total - 1`,
+     * which disabled the buttons at both ends. The arrow KEYS, meanwhile, are
+     * cyclic in both consumers — so at the first entity the keyboard wrapped to
+     * the last while the button next to it sat greyed out. Two controls for one
+     * action, disagreeing about whether the action exists.
+     *
+     * Both consumers (AgentDetailsPanel, BuildingDetailsPanel) show a roster,
+     * and a roster is a ring: there is no last operative to stop at. So the
+     * buttons are live whenever there is more than one entity, which is exactly
+     * the condition that already decides whether to show them at all.
+     */
     const showNav = this.totalEntities > 1;
 
     return html`
@@ -633,13 +658,13 @@ export class VelgEntityLightbox extends LitElement {
                   ? html`
                     <button
                       class="lightbox__nav-btn lightbox__nav-btn--prev"
-                      ?disabled=${!hasPrev}
+                      ?disabled=${!showNav}
                       @click=${this._navigatePrev}
                       aria-label=${msg('Previous entity')}
                     >${icons.chevronRight(18)}</button>
                     <button
                       class="lightbox__nav-btn"
-                      ?disabled=${!hasNext}
+                      ?disabled=${!showNav}
                       @click=${this._navigateNext}
                       aria-label=${msg('Next entity')}
                     >${icons.chevronRight(18)}</button>
