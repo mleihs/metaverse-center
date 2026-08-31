@@ -52,8 +52,12 @@
 # Ledger-Zeile unter dem neuen Zeitstempel nachtragen, sonst läuft sie auf einer
 # frischen Datenbank doppelt.
 
+# Kein `set -e`: dieses Tor sammelt ALLE Verstoesse, statt beim ersten
+# stehenzubleiben. `grep` ohne Treffer gibt 1 zurueck, und das ist hier ein
+# gueltiges Ergebnis, kein Abbruchgrund.
 set -uo pipefail
-cd "$(dirname "$0")/.." || exit 1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 DIR="supabase/migrations"
 [ -d "$DIR" ] || { echo "FAIL: $DIR nicht gefunden"; exit 1; }
