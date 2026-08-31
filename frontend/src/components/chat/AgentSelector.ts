@@ -137,7 +137,7 @@ export class VelgAgentSelector extends LitElement {
       flex-shrink: 0;
       font-size: var(--text-sm);
       font-weight: var(--font-black);
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     .selector__checkbox--checked {

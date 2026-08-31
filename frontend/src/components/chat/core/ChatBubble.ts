@@ -200,7 +200,7 @@ export class ChatBubble extends LitElement {
 
     /* Links */
     .bubble--assistant a {
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
       text-decoration: underline;
       text-underline-offset: 2px;
     }
@@ -274,7 +274,7 @@ export class ChatBubble extends LitElement {
     }
 
     .code-block__copy:hover {
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     .code-block__copy:focus-visible {

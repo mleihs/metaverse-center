@@ -120,7 +120,7 @@ export const broadsheetStyles = css`
   .broadsheet__complete-mark {
     font-family: var(--font-brutalist);
     font-size: var(--text-4xl);
-    color: var(--color-primary);
+    color: var(--color-accent-amber);
     opacity: 0.15;
     line-height: 1;
     margin-bottom: var(--space-4);
@@ -274,7 +274,7 @@ export const broadsheetStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    color: var(--color-primary);
+    color: var(--color-accent-amber);
     min-width: 2.5ch;
     text-align: right;
   }
