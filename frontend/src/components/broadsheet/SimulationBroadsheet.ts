@@ -191,7 +191,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
       .press-status__icon {
         grid-row: 1 / 3;
         align-self: center;
-        color: var(--color-primary);
+        color: var(--color-accent-amber);
         animation: press-pulse 1.5s ease-in-out infinite;
       }
 

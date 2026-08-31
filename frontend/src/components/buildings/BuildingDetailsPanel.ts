@@ -173,7 +173,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
     }
 
     .panel__ambassador:hover .panel__ambassador-name {
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     .panel__ambassador-info {

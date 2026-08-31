@@ -149,7 +149,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .window__action-btn--active {
       background: var(--color-primary-bg);
       border-color: var(--color-primary);
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     .window__action-btn svg {

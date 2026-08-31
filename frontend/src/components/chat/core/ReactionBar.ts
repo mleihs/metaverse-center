@@ -105,7 +105,7 @@ export class ReactionBar extends LitElement {
     }
 
     .pill--active .pill__count {
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     /* --- Add reaction button --- */

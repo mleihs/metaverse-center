@@ -50,7 +50,7 @@ export class VelgEmbassyCreateModal extends LitElement {
 
       .steps__item--done {
         border-color: var(--color-primary);
-        color: var(--color-primary);
+        color: var(--color-accent-amber);
       }
 
       /* --- Building Preview --- */

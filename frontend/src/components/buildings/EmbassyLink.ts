@@ -93,7 +93,7 @@ export class VelgEmbassyLink extends LitElement {
     }
 
     .embassy__partner:hover .embassy__name {
-      color: var(--color-primary);
+      color: var(--color-accent-amber);
     }
 
     .embassy__thumb {
