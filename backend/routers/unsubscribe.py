@@ -47,7 +47,8 @@ _CATEGORY_COLUMNS: dict[str, tuple[str, ...]] = {
     "cycle_resolved": ("cycle_resolved",),
     "phase_changed": ("phase_changed",),
     "epoch_completed": ("epoch_completed",),
-    "all": ("cycle_resolved", "phase_changed", "epoch_completed"),
+    "deadline_reminder": ("deadline_reminder",),
+    "all": ("cycle_resolved", "phase_changed", "epoch_completed", "deadline_reminder"),
 }
 
 

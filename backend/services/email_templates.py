@@ -1479,6 +1479,53 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "CLASSIFIED // PHASE TRANSITION",
         "de": "GEHEIM // PHASENÜBERGANG",
     },
+    # ── Deadline reminder (P2.17) ──
+    # Das System zog RP ab und ersetzte den Spieler durch eine KI, OHNE vorher
+    # zu warnen — der Nutzer erfuhr von der Strafe erst im nächsten Lagebericht.
+    "deadline_header": {
+        "en": "ORDERS OUTSTANDING",
+        "de": "BEFEHLE AUSSTEHEND",
+    },
+    "pre_deadline": {
+        "en": "{hours}h left to file. Unfiled orders cost you.",
+        "de": "Noch {hours} Std. zum Einreichen. Nicht eingereichte Befehle kosten.",
+    },
+    "deadline_subject": {
+        "en": "{hours}h left \u2013 {epoch}, cycle {cycle}",
+        "de": "Noch {hours} Std. \u2013 {epoch}, Zyklus {cycle}",
+    },
+    "deadline_countdown": {
+        "en": "{hours}h REMAINING",
+        "de": "NOCH {hours} STD.",
+    },
+    "deadline_lead": {
+        "en": "Cycle {cycle} of {epoch} resolves without you unless these are filed.",
+        "de": "Zyklus {cycle} von {epoch} wird ohne dich aufgelöst, wenn diese offen bleiben.",
+    },
+    "deadline_open_label": {
+        "en": "STILL OPEN",
+        "de": "NOCH OFFEN",
+    },
+    "deadline_done_label": {
+        "en": "ALREADY FILED",
+        "de": "BEREITS EINGEREICHT",
+    },
+    "deadline_consequence_header": {
+        "en": "IF THE CYCLE RESOLVES WITHOUT YOU",
+        "de": "WENN DER ZYKLUS OHNE DICH AUFGELÖST WIRD",
+    },
+    "deadline_consequence_rp": {
+        "en": "You forfeit {rp} RP.",
+        "de": "Du verlierst {rp} RP.",
+    },
+    "deadline_consequence_ai": {
+        "en": "A second missed cycle hands your seat to an AI until you return.",
+        "de": "Ein zweiter versäumter Zyklus übergibt deinen Platz an eine KI, bis du zurückkehrst.",
+    },
+    "deadline_cta": {
+        "en": "FILE ORDERS",
+        "de": "BEFEHLE EINREICHEN",
+    },
     # ── Clearance request emails ──
     "clearance_granted_header": {
         "en": "CLEARANCE UPGRADE APPROVED",
@@ -2618,6 +2665,132 @@ def _render_completed_block(
     sections.append(stats_html)
 
     return "\n".join(s for s in sections if s)
+
+
+def render_deadline_reminder(
+    *,
+    email_locale: str | None = None,
+    epoch_name: str,
+    cycle_number: int,
+    hours_remaining: int,
+    open_items: list[str],
+    done_items: list[str] | None = None,
+    penalty_rp: int = 1,
+    ai_takeover_next: bool = False,
+    cta_url: str,
+) -> str:
+    """Render the deadline reminder (handoff P2.17) — the largest gap in the post.
+
+    The system deducts RP and hands a seat to an AI **without warning first**.
+    The player learned of the penalty from the next cycle briefing, after it had
+    already happened. A punishment nobody saw coming is not a rule, it is a
+    surprise.
+
+    Deliberately shaped around the loss, not the task: the countdown and the
+    consequence block carry the weight, the open items are the detail. Red
+    appears exactly once and only where something is actually forfeited
+    (handoff P1.14).
+
+    ``done_items`` is optional and counter-signed in green — the point of
+    listing what is already filed is that the reader can tell at a glance
+    whether this concerns them at all.
+    """
+    lang = _resolve_lang(email_locale)
+    accent = _AMBER
+
+    top = f"""\
+          <tr>
+            <td lang="{lang}" style="padding:24px 32px;border-bottom:2px solid {accent};">
+              <p style="margin:0;font-size:12px;letter-spacing:2px;color:{_TEXT_DIM};text-transform:uppercase;">
+                BUREAU OF MULTIVERSE OBSERVATION
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 4px;">
+              <h1 style="margin:0;font-size:22px;font-weight:900;color:{accent};letter-spacing:2px;text-transform:uppercase;font-family:{_MONO};">
+                {_nt("deadline_header", lang)}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 4px;">
+              <p style="margin:0;font-size:34px;line-height:1.1;font-weight:900;color:{accent};font-family:{_MONO};letter-spacing:1px;">
+                {_esc(_nt("deadline_countdown", lang, hours=hours_remaining))}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 32px 8px;">
+              <p style="margin:0;font-size:15px;line-height:1.5;color:{_TEXT};">
+                {_esc(_nt("deadline_lead", lang, cycle=cycle_number, epoch=epoch_name))}
+              </p>
+            </td>
+          </tr>"""
+
+    def _item_rows(items: list[str], colour: str, mark: str) -> str:
+        return "\n".join(
+            f"""\
+          <tr>
+            <td style="padding:2px 32px;">
+              <p style="margin:0;font-size:14px;line-height:1.6;color:{colour};font-family:{_MONO};">
+                {mark} {_esc(item)}
+              </p>
+            </td>
+          </tr>"""
+            for item in items
+        )
+
+    blocks: list[str] = [top]
+
+    if open_items:
+        blocks.append(_section_header(_nt("deadline_open_label", lang)))
+        # A dash, not a box glyph: a screen reader reads out every decorative
+        # character by name (handoff P1.10).
+        blocks.append(_item_rows(open_items, _TEXT, "&#8211;"))
+
+    if done_items:
+        blocks.append(_section_header(_nt("deadline_done_label", lang)))
+        blocks.append(_item_rows(done_items, _GREEN, "&#10003;"))
+
+    consequences = [_nt("deadline_consequence_rp", lang, rp=penalty_rp)]
+    if ai_takeover_next:
+        consequences.append(_nt("deadline_consequence_ai", lang))
+
+    consequence_lines = "".join(
+        f"""
+              <p style="margin:0 0 4px;font-size:14px;line-height:1.6;color:{_RED};">
+                {_esc(line)}
+              </p>"""
+        for line in consequences
+    )
+    blocks.append(
+        f"""\
+          <tr>
+            <td style="padding:20px 32px 4px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                     style="border:1px solid {_RED};">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 8px;font-size:12px;letter-spacing:2px;color:{_RED};text-transform:uppercase;font-family:{_MONO};">
+                      {_esc(_nt("deadline_consequence_header", lang))}
+                    </p>{consequence_lines}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>"""
+    )
+
+    blocks.append(_cta_button(cta_url, _nt("deadline_cta", lang), accent=accent))
+    blocks.append(_footer_row(email_locale))
+
+    return _email_shell(
+        "CLASSIFIED // ORDERS OUTSTANDING",
+        "\n".join(blocks),
+        lang=lang,
+        preheader=_nt("pre_deadline", lang, hours=hours_remaining),
+    )
 
 
 def render_epoch_completed(
