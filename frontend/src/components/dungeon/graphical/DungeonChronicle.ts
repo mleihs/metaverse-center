@@ -189,7 +189,13 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
         font-weight: var(--font-bold, 700);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wider, 0.05em);
-        color: color-mix(in srgb, var(--_phosphor) 62%, transparent);
+        /* Toward the surface, not toward the transparent keyword. Mixing a colour with
+           transparent does not dim it, it makes it TRANSLUCENT — the result
+           depends on whatever the layer happens to sit on, and here that was a
+           backdrop image, so the measured value was 2.14 : 1, the worst line in
+           the dungeon. Mixing toward the surface names the same visual dimming
+           as an opaque colour that can actually be measured. 78% clears AA. */
+        color: color-mix(in srgb, var(--_phosphor) 78%, var(--color-surface));
       }
       .beat__cmd svg {
         flex: none;
@@ -236,7 +242,9 @@ export class VelgDungeonChronicle extends SignalWatcher(LitElement) {
       }
       .entry--hint {
         font-style: italic;
-        color: color-mix(in srgb, var(--_text-dim) 85%, transparent);
+        /* Same correction as .beat__cmd: opaque against the surface instead of
+           translucent against whatever is behind it. */
+        color: color-mix(in srgb, var(--_text-dim) 92%, var(--color-surface));
       }
       .entry--error {
         color: color-mix(in srgb, var(--_danger) 82%, var(--_phosphor));

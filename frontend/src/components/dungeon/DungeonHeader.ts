@@ -613,7 +613,12 @@ export class VelgDungeonHeader extends SignalWatcher(LitElement) {
       }
 
       .water__label--critical {
-        color: color-mix(in srgb, var(--color-info) 30%, var(--color-danger));
+        /* 20%, not 30%. The flood blue is the darker of the two, so every point
+           of it spent on the LABEL costs legibility: at 30% the text measured
+           4.42 : 1, just under AA. The chip's own background above keeps its
+           30% — a background is not read, so it can carry the full blend and
+           the pairing still says "water, and it is bad". */
+        color: color-mix(in srgb, var(--color-info) 20%, var(--color-danger));
         font-weight: 700;
       }
 

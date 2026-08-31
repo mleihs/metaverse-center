@@ -1145,7 +1145,10 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
         font-family: var(--_mono);
         font-size: 9px;
         line-height: 1.3;
-        color: var(--_phosphor-dim);
+        /* The briefing sits on a slightly lifted ground, which costs the dim
+           amber the last tenth it needs. Nudged up its own ramp rather than
+           swapped for the bright token. */
+        color: color-mix(in srgb, var(--_phosphor) 18%, var(--_phosphor-dim));
         padding-left: 16px;
         position: relative;
       }
@@ -1167,7 +1170,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .briefing__alt {
         font-family: var(--_mono);
         font-size: 8px;
-        color: color-mix(in srgb, var(--_phosphor-dim) 50%, transparent);
+        /* Toward the screen ground, not toward the transparent keyword.
+           Halving a colour against transparency does not dim it, it makes it
+           translucent: measured 1.25 to 1, effectively invisible. An opaque
+           mix reads the same and can be measured. */
+        color: color-mix(in srgb, var(--_phosphor-dim) 82%, var(--_screen-bg));
         font-style: italic;
         flex: 1;
       }
@@ -1224,7 +1231,11 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
       .footer__hint {
         font-family: var(--_mono);
         font-size: 8px;
-        color: color-mix(in srgb, var(--_phosphor-dim) 50%, transparent);
+        /* Toward the screen ground, not toward the transparent keyword.
+           Halving a colour against transparency does not dim it, it makes it
+           translucent: measured 1.25 to 1, effectively invisible. An opaque
+           mix reads the same and can be measured. */
+        color: color-mix(in srgb, var(--_phosphor-dim) 82%, var(--_screen-bg));
         letter-spacing: 0.3px;
       }
 

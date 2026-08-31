@@ -587,6 +587,14 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
             }
             ${this._renderEnemies()}
             ${this._renderParty()}
+            ${
+              // The flood is a GRID child, not a plane inside the backdrop: it
+              // is the one profile anchored to the floor, and it shares row 4
+              // with the chamber panel (both pinned — see .scene__flood).
+              env.fxProfile === 'water'
+                ? html`<div class="scene__flood" aria-hidden="true"></div>`
+                : nothing
+            }
             <div class="scene__alarm" aria-hidden="true"></div>
 
             <velg-dungeon-combat-fx></velg-dungeon-combat-fx>
@@ -873,8 +881,8 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     return html`
       <div
         class="foe__sights"
-        title=${msg(str`${names} — aimed at ${targetName}`)}
-        aria-label=${msg(str`${names} — aimed at ${targetName}`)}
+        title=${msg(str`${names} – aimed at ${targetName}`)}
+        aria-label=${msg(str`${names} – aimed at ${targetName}`)}
       >
         <span class="foe__sights-label">${msg('In sights')}</span>
         <span class="foe__sights-faces" aria-hidden="true">
