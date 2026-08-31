@@ -57,6 +57,11 @@ class DashboardWorld(BaseModel):
     name_de: str | None = None
     slug: str
     member_role: str
+    #: Die Kurzbeschreibung der Welt — dieselbe, die auch die Frontseite zeigt,
+    #: seit Migration 312 in deutscher Fassung. Kommt aus derselben Sicht wie
+    #: Thema und Zählungen, kostet also keine zusätzliche Abfrage.
+    description: str | None = None
+    description_de: str | None = None
     theme: str | None = None
     banner_url: str | None = None
     agent_count: int = 0

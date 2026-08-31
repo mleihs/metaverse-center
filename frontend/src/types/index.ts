@@ -867,6 +867,10 @@ export interface DashboardWorld {
   name_de: string | null;
   slug: string;
   member_role: string;
+  /** Kurzbeschreibung, seit Migration 312 auch auf Deutsch. Über
+   *  `t(world, 'description')` wählen. */
+  description: string | null;
+  description_de: string | null;
   theme: string | null;
   banner_url: string | null;
   agent_count: number;
