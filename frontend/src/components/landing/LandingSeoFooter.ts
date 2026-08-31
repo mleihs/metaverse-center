@@ -42,12 +42,17 @@ export class VelgLandingSeoFooter extends LitElement {
     }
 
     .columns {
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
       border-top: var(--border-width-thin) solid var(--_rule);
-      padding: var(--space-16) var(--space-12) var(--space-14);
+      padding: var(--space-16) var(--landing-gutter, var(--space-12)) var(--space-14);
       display: grid;
       grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr;
       gap: var(--space-12);
-      max-width: var(--container-max);
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
     }
 
@@ -146,7 +151,17 @@ export class VelgLandingSeoFooter extends LitElement {
       align-items: center;
       gap: var(--space-5);
       flex-wrap: wrap;
-      padding: var(--space-4) var(--space-12);
+      /* Wie die Navigation im Kopf: die Trennlinie spannt ueber den ganzen
+         Sichtbereich, der Inhalt steht buendig unter den Spalten darueber.
+         In der 2560er Referenz traegt auch diese Zeile die 384 px. */
+      padding-block: var(--space-4);
+      padding-inline: max(
+        var(--landing-gutter, var(--space-12)),
+        calc(
+          (100% - var(--landing-measure, var(--container-max))) / 2 +
+            var(--landing-gutter, var(--space-12))
+        )
+      );
       border-top: var(--border-width-thin) solid var(--color-border-light);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
@@ -164,7 +179,10 @@ export class VelgLandingSeoFooter extends LitElement {
        "aria-hidden": eine Vorleseanwendung soll den Namen nicht ein zweites
        Mal buchstabieren. */
     .ghost {
-      height: 140px;
+      /* Der Ausschnitt waechst mit der Schrift: 140 px bei 1440, 248 px bei
+         2560 — dieselbe Steigung, sonst schnitte der Rahmen bei 4K mitten
+         durch die Buchstaben statt sie unten anzuschneiden. */
+      height: clamp(140px, 9.65vw, 248px);
       overflow: hidden;
       border-top: var(--border-width-thin) solid var(--_rule);
       padding-top: var(--space-2);
@@ -181,6 +199,17 @@ export class VelgLandingSeoFooter extends LitElement {
       color: color-mix(in srgb, var(--color-text-primary) 8%, var(--color-surface-sunken));
       white-space: nowrap;
       user-select: none;
+    }
+
+    /* ── BREITBILD (Entwurf v2, ≥1920) ──────────────────────────────────
+       Der Schriftzug ist die einzige randlose Ebene der Fussleiste und wird
+       bei 4K zum Bild: 225 → 400 px. Er haengt an der Huelle, nicht an den
+       Spalten — deshalb spannt er ueber den ganzen Sichtbereich, wie der
+       Hintergrund. */
+    @media (min-width: 1920px) {
+      .ghost span {
+        font-size: clamp(225px, 15.6vw, 400px);
+      }
     }
 
     @media (max-width: 1200px) {

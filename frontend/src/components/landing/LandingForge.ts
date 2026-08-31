@@ -45,12 +45,17 @@ export class VelgLandingForge extends LitElement {
     }
 
     .layout {
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: var(--space-16);
-      padding: var(--space-24) var(--space-12) var(--space-20);
-      max-width: var(--container-max);
+      padding: var(--space-24) var(--landing-gutter, var(--space-12)) var(--space-20);
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
     }
 
@@ -223,6 +228,21 @@ export class VelgLandingForge extends LitElement {
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
       color: var(--color-text-muted);
+    }
+
+    /* ── BREITBILD (Entwurf v2, ≥1920) ──────────────────────────────────
+       Die grosse Aufforderung bekommt eine eigene Spanne (96 → 128 px) statt
+       des Faktors, den Abschnittsueberschriften tragen: sie waechst um ein
+       Drittel, nicht um ein Siebtel. Der Eingabekasten geht 720 → 860 px mit,
+       sonst stuende ein schmaler Kasten neben einer sehr grossen Zeile. */
+    @media (min-width: 1920px) {
+      .title {
+        font-size: clamp(96px, 5vw, 128px);
+      }
+
+      .right {
+        max-width: 860px;
+      }
     }
 
     @media (max-width: 1024px) {

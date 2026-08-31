@@ -46,17 +46,25 @@ export class VelgLandingCitizens extends LitElement {
 
     :host {
       display: block;
-      padding: var(--space-24) var(--space-12);
+      /* Nur senkrecht — die seitliche Polsterung gehoert INNERHALB des
+         Seitenmasses und sitzt deshalb am Behaelter, nicht an der Huelle. */
+      padding-block: var(--space-24);
       background: var(--color-surface);
     }
 
     .layout {
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: var(--space-16);
       align-items: center;
-      max-width: var(--container-max);
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
+      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .kicker {
@@ -82,7 +90,7 @@ export class VelgLandingCitizens extends LitElement {
     .title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(var(--text-xl), 3.4vw, 40px);
+      font-size: calc(clamp(var(--text-xl), 3.4vw, 40px) * var(--landing-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       line-height: var(--leading-tight);

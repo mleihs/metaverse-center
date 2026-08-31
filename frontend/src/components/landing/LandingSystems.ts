@@ -191,16 +191,26 @@ export class VelgLandingSystems extends LitElement {
       --_veil: color-mix(in srgb, var(--color-surface-sunken) 94%, transparent);
 
       display: block;
-      padding: var(--space-24) var(--space-12);
+      /* Nur senkrecht. Die seitliche Polsterung sitzt am Raster, nicht hier:
+         sie gehoert INNERHALB des Seitenmasses. Laege sie an der Huelle, kaeme
+         sie zum zentrierten Behaelter hinzu statt hinein, und der sichtbare
+         Rand bei 2560 px waere 320 statt der vorgeschriebenen 384 px. */
+      padding-block: var(--space-24);
     }
 
     .layout {
+      /* Die Polsterung gehoert INNERHALB des Masses: ohne border-box zaehlt
+         "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
+         breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
+         Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
+      box-sizing: border-box;
       display: grid;
       grid-template-columns: 1fr 640px;
       gap: var(--space-14);
       align-items: stretch;
-      max-width: var(--container-max);
+      max-width: var(--landing-measure, var(--container-max));
       margin: 0 auto;
+      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .kicker {
@@ -272,7 +282,7 @@ export class VelgLandingSystems extends LitElement {
       gap: var(--space-3);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(var(--text-lg), 2.4vw, var(--text-2xl));
+      font-size: calc(clamp(var(--text-lg), 2.4vw, var(--text-2xl)) * var(--landing-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       color: var(--color-text-primary);
@@ -537,6 +547,25 @@ export class VelgLandingSystems extends LitElement {
     .lore__enter:focus-visible {
       outline: var(--border-width-thin) solid var(--color-accent-amber);
       outline-offset: 3px;
+    }
+
+    /* ── BREITBILD (Entwurf v2, ≥1920) ──────────────────────────────────
+       Die Vorschauspalte waechst 640 → 760 px und bleibt 16:9; die Zeilen
+       atmen (24 → 32 px), und der Loretext geht auf 18 px. Die Liste selbst
+       bleibt eine Liste — sie bekommt keine zweite Spalte, weil sechs
+       nummerierte Zeilen in zwei Spalten ihre Reihenfolge verlieren. */
+    @media (min-width: 1920px) {
+      .layout {
+        grid-template-columns: 1fr 760px;
+      }
+
+      .row {
+        padding-block: var(--space-8);
+      }
+
+      .lore__text {
+        font-size: var(--text-md);
+      }
     }
 
     @media (max-width: 1024px) {
