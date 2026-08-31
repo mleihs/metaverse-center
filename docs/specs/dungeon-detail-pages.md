@@ -13,6 +13,12 @@ example_archetype: "The Overthrow"
 
 ## Overview
 
+> ⚠ **Stand 31.08.2026:** `DungeonShowcase.ts` (die Frontseiten-Bühne) ist mit dem
+> Frontseiten-Redesign entfallen — gemessen null Verwender. Die Archetyp-Daten leben
+> weiter unter `frontend/src/components/archetypes/dungeon-showcase-data.ts` und tragen
+> die Detailseiten. Wo dieses Dokument die Bühne als Einstieg beschreibt, ist der
+> Einstieg heute die Detailseite selbst (`/archetypes/:id`).
+
 The dungeon slider on the landing page (`DungeonShowcase.ts`) introduces each archetype with a slide. Each slide links to a **dedicated detail page** that expands on the lore, mechanics, literary DNA, encounters, enemies, loot, and objektanker of that archetype.
 
 This document specifies **5 layout concepts**, of which **Concept 3 (The Descent)** and **Concept 5 (The Exhibition)** are fully elaborated for implementation. All examples use **The Overthrow** (Archetype VIII, `#d4364b`, Authority Fracture) as the reference dungeon.
@@ -2264,5 +2270,5 @@ The only place we *might* use named timelines is `timeline-scope` WITHIN the sam
 2. **Room distribution visualization** — `roomDistribution` data exists but is not rendered anywhere.
 3. **Open questions from spec** — Layout switcher (decided: no), content language (EN only for now), encounter spoiler policy (showing full choices), boss images (text-only for mystery vs. generated).
 4. **Mobile testing** — Responsive breakpoints set at 768px and 640px but not tested on real devices.
-5. **DungeonShowcase slider link** — The showcase slides should link to `/archetypes/:id`. Not wired yet.
+5. ~~**DungeonShowcase slider link**~~ — hinfällig: die Bühne ist am 31.08.2026 entfallen.
 6. **Scroll-snap padding** — `scroll-padding-top` may need adjustment for the platform header (60px).

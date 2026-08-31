@@ -1,5 +1,5 @@
 /**
- * Dungeon Showcase — Archetype data (pure data, no DOM / style dependencies).
+ * Archetyp-Grunddaten — reine Daten, kein DOM, keine Stile.
  *
  * All quotes are from verified sources:
  *   - S-tier banter lines from backend/services/dungeon/dungeon_banter.py
@@ -7,8 +7,21 @@
  *   - Canonical literary works documented in the research
  *
  * Quotes with non-English originals include the source text and language.
- * The component shows the user-language version first, then reveals the
- * original with a transition effect.
+ * The reader sees the user-language version first; the detail page reveals
+ * the original alongside it.
+ *
+ * WARUM DIE DATEI HIER LIEGT UND NICHT MEHR UNTER `landing/`: sie gehörte
+ * ursprünglich zur Frontseiten-Bühne `velg-dungeon-showcase`. Die Bühne ist am
+ * 31.08.2026 mit dem Frontseiten-Redesign entfallen; die 49 belegten Zitate
+ * darin sind es NICHT — sie tragen seither allein die Archetyp-Detailseiten
+ * (`dungeon-detail-data.ts` → `ArchetypeDetailView`). Solange die Datei unter
+ * `landing/` stand, las sich jede Messung so, als sei sie mit der Bühne
+ * verwaist: beim Aufräumen stand sie bereits auf der Löschliste. Sie steht
+ * jetzt bei ihrem einzigen Verwender.
+ *
+ * `showcase` im Namen meint weiterhin etwas Wirkliches: die Bilder liegen
+ * unter `simulation.assets/showcase/`, und `POST /api/v1/admin/dungeon-
+ * showcase/generate-image` erzeugt sie.
  */
 
 export interface ArchetypeQuote {
@@ -29,13 +42,8 @@ export interface ArchetypeSlide {
   readonly accent: string;
   readonly quotes: readonly ArchetypeQuote[];
   readonly tagline: string;
-  /** CSS class applied to the slide for atmosphere + transition targeting. */
-  readonly cssClass: string;
   /** Supabase Storage URL for the AI-generated background image. */
   readonly imageUrl: string;
-  /** Frosted-glass scrim tuning — calibrated per image brightness.
-   *  [blur_px, brightness_0to1, saturate_0to1] */
-  readonly scrim: readonly [number, number, number];
 }
 
 const STORAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/simulation.assets/showcase`;
@@ -74,9 +82,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'Darkness is not absence. It is presence.',
-    cssClass: 'slide--shadow',
     imageUrl: `${STORAGE_BASE}/dungeon-shadow.avif`,
-    scrim: [10, 0.55, 0.55],
   },
   {
     id: 'tower',
@@ -111,9 +117,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'The building is alive. You are its nervous system.',
-    cssClass: 'slide--tower',
     imageUrl: `${STORAGE_BASE}/dungeon-tower.avif`,
-    scrim: [24, 0.22, 0.4],
   },
   {
     id: 'mother',
@@ -148,9 +152,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'That which sustains you consumes you.',
-    cssClass: 'slide--mother',
     imageUrl: `${STORAGE_BASE}/dungeon-mother.avif`,
-    scrim: [16, 0.32, 0.5],
   },
   {
     id: 'entropy',
@@ -187,9 +189,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       { text: '.', author: 'Final Transmission' },
     ],
     tagline: 'Decay is not destruction \u2013 it is equalization.',
-    cssClass: 'slide--entropy',
     imageUrl: `${STORAGE_BASE}/dungeon-entropy.avif`,
-    scrim: [28, 0.18, 0.35],
   },
   {
     id: 'prometheus',
@@ -236,9 +236,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'Innovation demands perpetual suffering. The gift cannot be ungiven.',
-    cssClass: 'slide--prometheus',
     imageUrl: `${STORAGE_BASE}/dungeon-prometheus.avif`,
-    scrim: [20, 0.25, 0.45],
   },
   {
     id: 'deluge',
@@ -275,9 +273,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'The world reminds its inhabitants: guests, not owners.',
-    cssClass: 'slide--deluge',
     imageUrl: `${STORAGE_BASE}/dungeon-deluge.avif`,
-    scrim: [22, 0.22, 0.4],
   },
   {
     id: 'awakening',
@@ -327,9 +323,7 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'The dungeon is not a container for memories\u2009\u2013\u2009it IS memory.',
-    cssClass: 'slide--awakening',
     imageUrl: `${STORAGE_BASE}/dungeon-awakening.avif`,
-    scrim: [10, 0.5, 0.55],
   },
   {
     id: 'overthrow',
@@ -373,8 +367,6 @@ export const ARCHETYPES: readonly ArchetypeSlide[] = [
       },
     ],
     tagline: 'Power changes hands. The old order does not die\u2009\u2013\u2009it metamorphoses.',
-    cssClass: 'slide--overthrow',
     imageUrl: `${STORAGE_BASE}/dungeon-overthrow.avif`,
-    scrim: [22, 0.22, 0.4],
   },
 ];
