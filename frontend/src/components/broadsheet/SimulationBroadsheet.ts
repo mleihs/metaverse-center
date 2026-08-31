@@ -637,13 +637,18 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         ></velg-broadsheet-health-hero>
       </div>
 
+      <!-- The fold comes BEFORE the wire, not after it. "Below the fold" is
+           not a decoration at the end of the page: it is the crease, and what
+           follows it is what a reader does not see until the paper is turned
+           over. The wire belongs there; the state of the colony, above it,
+           does not. -->
+      <div class="broadsheet__fold" data-label=${msg('Below the fold')}></div>
+
       <div class="broadsheet__wire">
         <velg-broadsheet-gazette-wire
           .entries=${featured.gazette_wire ?? []}
         ></velg-broadsheet-gazette-wire>
       </div>
-
-      <div class="broadsheet__fold" data-label=${msg('Below the fold')}></div>
 
       ${this._renderFooter(featured)}
       ${this._archiveEditions.length > 0 ? this._renderArchive() : nothing}
