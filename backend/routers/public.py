@@ -57,7 +57,7 @@ from backend.models.relationship import RelationshipResponse
 from backend.models.resonance import ResonanceImpactResponse, ResonanceResponse
 from backend.models.resonance_dungeon import DungeonRunResponse, PublicDungeonRunSummary
 from backend.models.settings import SettingResponse
-from backend.models.simulation import PlatformStatsResponse, SimulationResponse
+from backend.models.simulation import SimulationResponse
 from backend.models.social import SocialMediaPostResponse, SocialTrendResponse
 from backend.models.taxonomy import TaxonomyResponse
 from backend.services.agent_memory_service import AgentMemoryService
@@ -120,24 +120,6 @@ RATE_LIMIT_PUBLIC = RATE_LIMIT_STANDARD  # 100/minute
 # ── Helpers ─────────────────────────────────────────────────────────────
 
 
-# ── Platform Stats ───────────────────────────────────────────────────────
-
-
-@router.get("/platform-stats")
-@limiter.limit(RATE_LIMIT_PUBLIC)
-async def get_platform_stats(
-    request: Request, anon: Annotated[Client, Depends(get_anon_supabase)]
-) -> SuccessResponse[PlatformStatsResponse]:
-    """Aggregated platform statistics for landing page."""
-    try:
-        data = await SimulationService.get_platform_stats(anon)
-    except Exception:  # noqa: BLE001 — landing page must never show error; degrade to zeros
-        logger.warning("Platform stats unavailable", exc_info=True)
-        sentry_sdk.capture_exception()
-        data = {"simulation_count": 0, "active_epoch_count": 0, "resonance_count": 0}
-    return SuccessResponse(data=data)
-
-
 # ── Landing Snapshot ─────────────────────────────────────────────────────
 
 
@@ -150,7 +132,8 @@ async def get_landing_snapshot(
 ) -> SuccessResponse[LandingSnapshotResponse]:
     """Zahlen, vier Welten und drei Bürger für die Frontseite — in einem Aufruf.
 
-    Getrennt von ``/platform-stats``, das bleibt: dessen drei Zähler haben
+    Getrennt vom früheren ``/platform-stats``, das mit diesem Schnappschuss
+    entfallen ist: dessen drei Zähler hatten
     andere Aufrufer, und einer davon misst weiterhin anders — er zählt Epochen
     allein am Status und kommt damit auf Prod auf 7 statt 0, weil ein Status kein
     Betrieb ist (keine der sieben bewegt sich seit 164 Tagen). Der zweite Teil

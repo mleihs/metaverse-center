@@ -296,3 +296,25 @@ seine Größe als Tier-3-`--_countdown-size` selbst trägt.
 `font-size: NNpx` stehen bereits in Komponenten.** `lint-color-tokens.sh` prüft
 nur Farben; für Größen gibt es **kein Tor**. Eine Anzeigestufe einzuführen und
 kein Tor dafür zu bauen hiesse, die 987. Ausnahme zu schaffen.
+
+---
+
+## T7 · `test_travel_havarie.py` hängt von der Testreihenfolge ab
+
+**Gemessen:** 31.08.2026, beim Abschluss von T5.
+
+    allein aufgerufen            22 grün   (zweimal nachgeprüft)
+    im vollen Rückenlauf          1 rot    test_a_wreck_on_the_home_dock_is_offered_the_rueckruf
+
+Derselbe Test war im vollen Lauf einige Stunden zuvor grün (4 915 / 0). Er ist
+also nicht dauerhaft rot, sondern **abhängig davon, was vor ihm lief** — die
+schlechtere Sorte, weil sie in CI zufällig zuschlägt und lokal nicht
+nachstellbar wirkt.
+
+Das Gedächtnis führt ihn seit J1 als „die bekannte Signalziehung": er zieht ein
+Signal aus einem Zufallsvorrat. Ein Test, der zieht, braucht einen gesetzten
+Startwert oder eine Zusicherung über die Menge statt über das gezogene Stück.
+
+**Nicht gemessen:** welcher vorangehende Test den Zustand hinterlässt. Der erste
+Schritt ist ein Lauf gegen die Integrationsmappe mit fester Reihenfolge, nicht
+das Ändern der Zusicherung.

@@ -410,58 +410,6 @@ class SimulationService:
     # ── Public query methods ─────────────────────────────
 
     @staticmethod
-    async def get_platform_stats(supabase: Client) -> dict:
-        """Aggregierte Plattformzahlen.
-
-        ⚠ **Dieser Zähler sollte verschwinden.** Er hat seit dem Umbau der
-        Frontseite keinen Aufrufer mehr — `getPlatformStats` steht in
-        `SimulationsApiService.ts` ohne Verwender, die Seite liest
-        `/landing` — und `LandingService` misst dieselben drei Grössen
-        sorgfältiger. Zwei Zähler für dieselbe Zahl sind zwei Gelegenheiten,
-        sie unterschiedlich zu ändern; die Löschung steht als T5 in
-        `handoff/TODO-offen.md`.
-
-        Bis dahin ist wenigstens der Bestandsfilter richtig:
-
-        **`status` fehlte.** Gezählt wurde `simulation_type='template' AND
-        deleted_at IS NULL`. Auf Prod war das Ergebnis zufällig richtig, weil
-        alle 16 Vorlagen `active` sind — mit der ersten archivierten Welt wäre
-        es falsch geworden, und an einer Zahl sieht man das nicht.
-        `list_active_public` (die Liste, die der Besucher danach zu sehen
-        bekommt) filtert `status` mit; ein Zähler, der anders schneidet als die
-        Liste, die er beziffert, zählt etwas anderes als er behauptet.
-
-        **Nicht behoben, weil es hier nicht behoben gehört:**
-        `active_epoch_count` filtert `game_epochs` allein am Status und zählt
-        auf Prod **7** Epochen — von denen sich keine seit 164 bis 185 Tagen
-        bewegt hat. Ein Status ist kein Betrieb. `LandingService` unterscheidet
-        das gemessen; diese Unterscheidung hier ein zweites Mal hinzuschreiben
-        wäre genau die Doppelung, die den Zähler löschenswert macht.
-        """
-        sims = await (
-            supabase.table("simulations")
-            .select("id", count="exact")
-            .eq("simulation_type", "template")
-            .eq("status", "active")
-            .is_("deleted_at", "null")
-            .execute()
-        )
-        epochs = await (
-            supabase.table("game_epochs")
-            .select("id", count="exact")
-            .in_("status", ["lobby", "foundation", "competition", "reckoning"])
-            .execute()
-        )
-        resonances = await (
-            supabase.table("substrate_resonances").select("id", count="exact").is_("deleted_at", "null").execute()
-        )
-        return {
-            "simulation_count": sims.count or 0,
-            "active_epoch_count": epochs.count or 0,
-            "resonance_count": resonances.count or 0,
-        }
-
-    @staticmethod
     async def enrich_with_counts(supabase: Client, simulations: list[dict]) -> None:
         """Enrich simulation dicts with counts from the ``simulation_dashboard`` view (migration 011, updated 035)."""
         if not simulations:
