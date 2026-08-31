@@ -8,14 +8,11 @@ import { agentsApi, buildingsApi } from '../../services/api/index.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/index.js';
-import {
-  OCCUPANCY_LABEL,
-  occupancyLevel,
-  occupancyVariant,
-} from '../../utils/building-condition.js';
+import { conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
+import { pluralCount } from '../../utils/text.js';
 import {
   extractThreatLevel,
   fetchRawLoreSections,
@@ -740,7 +737,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     if (!first) return nothing;
 
     const excerpt = first.body.replace(/\s+/g, ' ').trim();
-    const classified = this._classifiedCount;
+    const sealed = this._classifiedCount;
 
     return html`
       <section class="panel dossier">
@@ -752,8 +749,8 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
             ${msg('Open dossier')} <span class="link__arrow" aria-hidden="true">→</span>
           </button>
           <span class="meta">
-            ${sections.length} ${msg('sections')}
-            ${classified ? html` · ${classified} ${msg('classified')}` : nothing}
+            ${pluralCount(sections.length, msg('section'), msg('sections'))}
+            ${sealed ? html` · ${pluralCount(sealed, msg('classified'), msg('classified'))}` : nothing}
           </span>
         </div>
       </section>
@@ -917,20 +914,32 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
         <div class="strip__grid strip__grid--footprint">
           ${shown.map((building, i) => {
             /*
-             * The occupancy threshold is defined once, in
-             * `utils/building-condition.ts`, and read here rather than
-             * recomputed. Two views showing the same ratio with two copies of
-             * ">= 66%" is how the two of them eventually disagree.
+             * CONDITION, not occupancy — and that is a measurement, not a
+             * preference.
              *
-             * A `null` level means the building declares no capacity, and that
-             * is NOT an empty one — the strip then shows no mark at all rather
-             * than inventing "critical" for a building nobody measured.
+             * The handoff draws the state mark from the capacity RATIO. That
+             * ratio has no numerator anywhere on this platform. Measured on
+             * production, 2026-08-31:
+             *
+             *     building_agent_relations WHERE relation_type='lives_at'   0 rows
+             *     buildings with population_capacity > 0                  219
+             *     buildings with a building_condition                     324 of 324
+             *
+             * Nobody lives anywhere, so `agents?.length ?? 0` is not a count of
+             * zero residents — it is the absence of a count, wearing a zero.
+             * Feeding it to `occupancyLevel` would paint "nearly empty" onto
+             * every one of those 219 buildings: not a missing reading but a
+             * false one, which is worse. Adding a `resident_count` to the DTO
+             * would return 0 for all 324 and build an instrument for a quantity
+             * that does not exist.
+             *
+             * `building_condition` exists on every building on the record, and
+             * it is what a reader of a footprint actually wants to know. The
+             * capacity bar is dropped for the same reason: a bar drawn from an
+             * absent numerator always reads empty.
              */
-            const level = occupancyLevel(
-              building.agents?.length ?? 0,
-              building.population_capacity,
-              building.building_condition,
-            );
+            const condition = building.building_condition;
+            const variant = conditionVariant(condition);
             return html`
               <velg-game-card
                 style="--i: ${i}"
@@ -939,19 +948,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
                 .name=${building.name}
                 .imageUrl=${building.image_url ?? ''}
                 .subtitle=${t(building, 'building_type')}
-                .badges=${
-                  level
-                    ? [{ label: OCCUPANCY_LABEL[level](), variant: occupancyVariant(level) }]
-                    : []
-                }
-                .capacityBar=${
-                  building.population_capacity > 0
-                    ? {
-                        current: building.agents?.length ?? 0,
-                        max: building.population_capacity,
-                      }
-                    : null
-                }
+                .badges=${condition ? [{ label: t(building, 'building_condition'), variant }] : []}
                 @click=${() => this._go('buildings')}
               ></velg-game-card>
             `;
