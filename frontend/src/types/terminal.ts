@@ -137,6 +137,19 @@ export interface TerminalPersistedState {
   commandHistory: string[];
   operationsPoints: number;
   intelPoints: number;
+  /**
+   * Der Herzschlag-Tick, zu dem die Punkte zuletzt aufgefuellt wurden.
+   *
+   * Ohne diesen Wert war die Auffuellung nicht ausdrueckbar: `refreshBudgets()`
+   * existierte, hatte aber NULL Aufrufer, und nichts wusste, ob ein neuer Tick
+   * seit dem letzten Besuch vergangen war. Die Punktewirtschaft des Terminals
+   * lief damit in eine Richtung — ausgeben ja, nachfuellen nie.
+   *
+   * `null` heisst „noch nie aufgefuellt": beim ersten Abgleich wird der
+   * aktuelle Tick uebernommen, OHNE aufzufuellen, damit ein Bestandsspieler
+   * nicht durch das blosse Erscheinen dieses Feldes ein Geschenk bekommt.
+   */
+  budgetTick: number | null;
   feedFilter: 'all' | 'intel' | 'alert' | 'weather' | 'off';
   /** Map of agentId -> conversationId for reusing terminal conversations. */
   conversationMap: Record<string, string>;
