@@ -10492,97 +10492,17 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Welcome</source>
   <target>Willkommen</target>
 </trans-unit>
-<trans-unit id="sa7698b3d20a6d1ec">
-  <source>Scroll</source>
-  <target>Scrollen</target>
-</trans-unit>
 <trans-unit id="s6a0bc0ce56a9ae4a">
   <source>Features</source>
   <target>Funktionen</target>
-</trans-unit>
-<trans-unit id="s694017afa8d626ff">
-  <source>Capabilities</source>
-  <target>Fähigkeiten</target>
-</trans-unit>
-<trans-unit id="s9e66c25ab35db24a">
-  <source>AI-powered worldbuilding visualization</source>
-  <target>KI-gestützte Worldbuilding-Visualisierung</target>
 </trans-unit>
 <trans-unit id="sa951a4ab10b8c427">
   <source>Worldbuilding</source>
   <target>Weltenbau</target>
 </trans-unit>
-<trans-unit id="s0b4d6d84574e2fe7">
-  <source>Espionage war room with operative deployment</source>
-  <target>Spionage-Kriegsraum mit Operativeinsatz</target>
-</trans-unit>
-<trans-unit id="s33cb0480084f9fb7">
-  <source>Reality fracturing as real-world events bleed through</source>
-  <target>Realität zerbricht, während reale Ereignisse durchbluten</target>
-</trans-unit>
 <trans-unit id="sa17ad577d33ed7c3">
   <source>The Substrate</source>
   <target>Das Substrat</target>
-</trans-unit>
-<trans-unit id="se74621a2152b95a1">
-  <source>Platform Statistics</source>
-  <target>Plattformstatistiken</target>
-</trans-unit>
-<trans-unit id="s15a179f960202fb8">
-  <source>Live Telemetry</source>
-  <target>Live-Telemetrie</target>
-</trans-unit>
-<trans-unit id="sf51439e460ee8a58">
-  <source>Active Worlds</source>
-  <target>Aktive Welten</target>
-</trans-unit>
-<trans-unit id="sba44e6e0ee45e1d8">
-  <source>Active world count</source>
-  <target>Anzahl aktiver Welten</target>
-</trans-unit>
-<trans-unit id="sa30137655a08a002">
-  <source>simulations online</source>
-  <target>Simulationen online</target>
-</trans-unit>
-<trans-unit id="s1dcd554a5f0faf27">
-  <source>Live Epochs</source>
-  <target>Aktive Epochen</target>
-</trans-unit>
-<trans-unit id="s0fb7bb3b3bfd7161">
-  <source>Active epoch count</source>
-  <target>Anzahl aktiver Epochen</target>
-</trans-unit>
-<trans-unit id="s52f80f73f2b4dd1e">
-  <source>competitive seasons</source>
-  <target>Wettbewerbsstaffeln</target>
-</trans-unit>
-<trans-unit id="sfada26dfbcb1b3ac">
-  <source>Resonance count</source>
-  <target>Resonanzanzahl</target>
-</trans-unit>
-<trans-unit id="s61b60d7c17fc20c1">
-  <source>substrate events</source>
-  <target>Substratereignisse</target>
-</trans-unit>
-<trans-unit id="s86dd5f93c6591510">
-  <source>How It Works</source>
-  <target>So funktioniert es</target>
-</trans-unit>
-<trans-unit id="s12952c7940c53aed">
-  <source>Operations Protocol</source>
-  <target>Operationsprotokoll</target>
-</trans-unit>
-<trans-unit id="scd3a0b78356df9c8">
-  <source>Create Your World</source>
-  <target>Erschaff deine Welt</target>
-</trans-unit>
-<trans-unit id="s51f14bf2c33a3c05">
-  <source>Join an Epoch</source>
-  <target>Einer Epoche beitreten</target>
-</trans-unit>
-<trans-unit id="s15361efa1eef6aee">
-  <source>Get Started</source>
-  <target>Loslegen</target>
 </trans-unit>
 <trans-unit id="s69f800801812a5f0">
   <source>files</source>
@@ -11211,9 +11131,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s57a9fe983a719d41">
   <source>Permanently delete <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/>? This cannot be undone.</source>
 <target>Endgültig löschen <x id="0" equiv-text="${purgeCount} ${meta.label.toLowerCase()}"/> endgültig löschen? Dies kann nicht rückgängig gemacht werden.</target></trans-unit>
-<trans-unit id="s6c976fb749d183c5">
-  <source>Multiverse observation terminal overlooking interconnected simulation worlds</source>
-<target>Multiversum-Beobachtungsterminal mit Blick auf vernetzte Simulationswelten</target></trans-unit>
 <trans-unit id="s971b5056b8e6107d">
   <source>No Own Shards Yet</source>
   <target>Noch keine eigenen Shards</target>
@@ -11339,9 +11256,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sb3d4f79d9d8b71e5">
   <source>Submit</source>
 <target>Einreichen</target></trans-unit>
-<trans-unit id="s86c9f640941e6aa3">
-  <source>Shape the Metaverse</source>
-<target>Das Metaverse formen</target></trans-unit>
 <trans-unit id="s0fce88c963830d70">
   <source>Switch simulation</source>
 <target>Simulation wechseln</target></trans-unit>
@@ -12159,10 +12073,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s1c660db4ec7f8cd9">
   <source>Any language</source>
   <target>Beliebige Sprache</target>
-</trans-unit>
-<trans-unit id="sd814eb5b9e0458c8">
-  <source>Scroll to features</source>
-  <target>Zu den Features scrollen</target>
 </trans-unit>
 <trans-unit id="s02815586ca8e2755">
   <source>Building</source>
@@ -15071,63 +14981,15 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sb6c7e6405d341696">
   <source>These stories write themselves. Build a world and watch it generate its own newspaper.</source>
 <target>Diese Geschichten schreiben sich selbst. Bau eine Welt und schau zu, wie sie ihre eigene Zeitung erzeugt.</target></trans-unit>
-<trans-unit id="sc97f4a84ca61f7c6">
-  <source>Intercepted Dossiers</source>
-<target>Abgefangene Dossiers</target></trans-unit>
-<trans-unit id="sc0e71235f676f915">
-  <source>These are real AI characters. They remember. They hold grudges.</source>
-<target>Das sind echte KI-Charaktere. Sie erinnern sich. Sie tragen Groll.</target></trans-unit>
-<trans-unit id="s413cf112ec593945">
-  <source>Featured Characters</source>
-<target>Vorgestellte Charaktere</target></trans-unit>
-<trans-unit id="sb81810b5673454f0">
-  <source>Personnel files extracted from active simulation feeds</source>
-<target>Personalakten, extrahiert aus aktiven Simulationsfeeds</target></trans-unit>
 <trans-unit id="s83bcd9832e5e6a55">
   <source>Meet more characters</source>
 <target>Weitere Charaktere kennenlernen</target></trans-unit>
-<trans-unit id="sdabb126c867f3268">
-  <source>Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves.</source>
-<target>Erschaffe KI-getriebene Zivilisationen mit Charakteren, die sich erinnern, Städten, die sich entwickeln, und Geschichten, die sich selbst schreiben.</target></trans-unit>
 <trans-unit id="sdf260a2775d36086">
   <source>Build Your World</source>
 <target>Baue deine Welt</target></trans-unit>
 <trans-unit id="s18cfc8da58d12b99">
   <source>Explore Worlds</source>
 <target>Welten erkunden</target></trans-unit>
-<trans-unit id="s7cf18e86c828c238">
-  <source>Enter competitive seasons where civilizations clash. Deploy spies behind enemy lines, forge alliances with rival worldbuilders, betray them at the perfect moment. Real-time strategy with AI agents as your pawns.</source>
-<target>Tritt in Wettkampf-Saisons ein, in denen Zivilisationen aufeinanderprallen. Setz Spione hinter die feindlichen Linien, schmiede Allianzen mit rivalisierenden Weltenbauern, verrate sie im perfekten Moment. Echtzeitstrategie mit KI-Agenten als deinen Spielfiguren.</target></trans-unit>
-<trans-unit id="scba22b698cfa464f">
-  <source>Real-world events ripple through every simulation as Resonances. An earthquake in Tokyo becomes a tremor in your fantasy kingdom. Events in one world bleed into others. The boundary between realities is thinner than you think.</source>
-<target>Realwelt-Ereignisse laufen als Resonanzen durch jede Simulation. Ein Erdbeben in Tokio wird zum Beben in deinem Fantasy-Königreich. Ereignisse in einer Welt bluten in andere. Die Grenze zwischen den Wirklichkeiten ist dünner, als du denkst.</target></trans-unit>
-<trans-unit id="s0e9527311c61b14a">
-  <source>Active Feeds</source>
-<target>Aktive Feeds</target></trans-unit>
-<trans-unit id="s1fd15f74e7496213">
-  <source>worlds online</source>
-<target>Welten online</target></trans-unit>
-<trans-unit id="s2602402465287dd8">
-  <source>Explore All Worlds</source>
-<target>Alle Welten erkunden</target></trans-unit>
-<trans-unit id="s7572df70c101fa5f">
-  <source>Browse every civilization in the multiverse.</source>
-<target>Durchstöber jede Zivilisation im Multiversum.</target></trans-unit>
-<trans-unit id="s0a79881c04ee8c25">
-  <source>Pit your civilization against others in timed competitive seasons. Deploy operatives, sabotage rivals, protect your agents. Strategy meets emergent AI storytelling.</source>
-<target>Schick deine Zivilisation in getakteten Wettkampf-Saisons gegen andere. Setz Operative ein, sabotier Rivalen, schütz deine Agenten. Strategie trifft emergentes KI-Erzählen.</target></trans-unit>
-<trans-unit id="s05bca1585b1602cb">
-  <source>Your actions ripple across every connected world. Build embassies, trigger cross-simulation events, and watch as the stories of separate civilizations entangle.</source>
-<target>Deine Handlungen laufen über jede verbundene Welt. Bau Botschaften, lös simulationsübergreifende Ereignisse aus, und schau zu, wie sich die Geschichten getrennter Zivilisationen verstricken.</target></trans-unit>
-<trans-unit id="sbeab575ea311af03">
-  <source>Transmission Open</source>
-<target>Übertragung offen</target></trans-unit>
-<trans-unit id="s704cd97885d06b5e">
-  <source>Every World Writes Its Own History</source>
-<target>Jede Welt schreibt ihre eigene Geschichte</target></trans-unit>
-<trans-unit id="s46ef3006680d4a26">
-  <source>Explore existing worlds</source>
-<target>Existierende Welten erkunden</target></trans-unit>
 <trans-unit id="s1ff923598e1f165d">
   <source>Bureau Observation Index</source>
 <target>Bureau-Beobachtungsindex</target></trans-unit>
@@ -16987,30 +16849,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s85941db01b641850">
   <source>Every world writes its own newspaper. This is the wire service – AI-generated broadsheets from every active simulation, decoded and delivered in real time.</source>
   <target>Jede Welt schreibt ihre eigene Zeitung. Dies ist der Nachrichtendienst – KI-generierte Nachrichtenblätter aus jeder aktiven Simulation, entschlüsselt und in Echtzeit geliefert.</target>
-</trans-unit>
-<trans-unit id="s8d15f71e9a9382b7">
-  <source>Build Your World – Create your account</source>
-  <target>Baue deine Welt – Erstelle dein Konto</target>
-</trans-unit>
-<trans-unit id="sfae0cfd148f3bb84">
-  <source>Explore Worlds – Browse player-created civilizations</source>
-  <target>Welten erkunden – Von Spielern erschaffene Zivilisationen durchstöbern</target>
-</trans-unit>
-<trans-unit id="s8663ee4a25cdee83">
-  <source>Describe a world in one sentence. The Forge builds it – geography, citizens, architecture, thousands of words of lore. Within minutes, you have a living civilization with characters who form opinions, hold grudges, and write their own newspapers.</source>
-  <target>Beschreibe eine Welt in einem Satz. Die Forge baut sie – Geografie, Bürger, Architektur, tausende Wörter Lore. Innerhalb von Minuten hast du eine lebende Zivilisation mit Charakteren, die Meinungen bilden, Beziehungen knüpfen und auf Ereignisse reagieren.</target>
-</trans-unit>
-<trans-unit id="s1dba2ea9384fe778">
-  <source>Type a premise. The Forge generates a complete civilization – dozens of characters with personalities, cities with architecture, and thousands of words of original lore. Minutes, not months.</source>
-  <target>Gib eine Prämisse ein. Die Forge generiert eine vollständige Zivilisation – Dutzende Charaktere mit Persönlichkeiten, Städte mit Architektur und Tausende Wörter an originalem Lore. Minuten statt Monate.</target>
-</trans-unit>
-<trans-unit id="sf98aa39cff29f5b3">
-  <source>Explore worlds built by others – read their stories, meet their characters, follow the intrigue. Or build your own. Describe a world in one sentence. The Forge does the rest.</source>
-  <target>Erkunde Welten, die andere gebaut haben – lies ihre Geschichten, triff ihre Charaktere, folge den Intrigen. Oder baue deine eigene. Beschreibe eine Welt in einem Satz. Die Forge erledigt den Rest.</target>
-</trans-unit>
-<trans-unit id="s3115a1876cf70207">
-  <source>Create your world – Sign up</source>
-  <target>Erschaffe deine Welt – Registrieren</target>
 </trans-unit>
 <trans-unit id="s6bee77438cdc7590">
   <source>Every world started as a single sentence. Browse civilizations built by other creators – each with its own characters, cities, lore, and evolving stories.</source>
@@ -22282,39 +22120,9 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
         <target>Audioeinstellungen schließen</target>
       
 </trans-unit>
-<trans-unit id="sddaeebd037bba1f3">
-  <source>carousel</source>
-        <target>Karussell</target>
-      
-</trans-unit>
-<trans-unit id="s96ecc91afb48a8cb">
-  <source>Resonance Dungeon Archetypes</source>
-        <target>Resonanz-Dungeon-Archetypen</target>
-      
-</trans-unit>
-<trans-unit id="s0d90397fc41d0b73">
-  <source>Archetype Registry</source>
-        <target>Archetyp-Register</target>
-      
-</trans-unit>
 <trans-unit id="s6de3b4f17bdcdc4c">
   <source>Archetype</source>
         <target>Archetyp</target>
-      
-</trans-unit>
-<trans-unit id="s86f6f395326c26f7">
-  <source>Previous archetype</source>
-        <target>Vorheriger Archetyp</target>
-      
-</trans-unit>
-<trans-unit id="s395ba3dd5ff41ed7">
-  <source>Next archetype</source>
-        <target>Nächster Archetyp</target>
-      
-</trans-unit>
-<trans-unit id="sf7892dc98ba2588e">
-  <source>Archetype slides</source>
-        <target>Archetyp-Folien</target>
       
 </trans-unit>
 <trans-unit id="scf2f4e09405c7edb">
@@ -22976,69 +22784,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sed3f30c31474ca65">
   <source>Descend</source>
   <target>Tiefer</target>
-</trans-unit>
-<trans-unit id="s03962d2c84ae3db3">
-  <source>Face the Trial</source>
-  <target>Tritt vor</target>
-</trans-unit>
-<trans-unit id="s9b2e4d0cf394abe0">
-  <source>Accept the Gift</source>
-  <target>Bleib</target>
-</trans-unit>
-<trans-unit id="sa363a35845026059">
-  <source>Carry On</source>
-  <target>Weiter</target>
-</trans-unit>
-<trans-unit id="s5551307171b33044">
-  <source>Steal the Flame</source>
-  <target>Greif ins Feuer</target>
-</trans-unit>
-<trans-unit id="sa87eee69eb3f2411">
-  <source>Go Under</source>
-  <target>Versinke</target>
-</trans-unit>
-<trans-unit id="s9c33761de33d7ada">
-  <source>Open Your Eyes</source>
-  <target>Erkenne</target>
-</trans-unit>
-<trans-unit id="s7311a9ea48c51528">
-  <source>Seize Power</source>
-  <target>Stürze</target>
-</trans-unit>
-<trans-unit id="s74894e0808c06307">
-  <source>Resonance fracture opening into layered archetype chambers</source>
-        <target>Resonanzbruch, der sich in geschichtete Archetyp-Kammern öffnet</target>
-      
-</trans-unit>
-<trans-unit id="sb6452b46af47b84d">
-  <source>Send your agents where reality fractures. Eight archetypal dungeons – each shaped by its own literary DNA, from existential dread to political vertigo. Your agents face stress, fight what lives in the fracture, and return carrying aptitudes, artifacts, and scars that reshape your civilization.</source>
-        <target>Schick deine Agenten dorthin, wo die Wirklichkeit bricht. Acht archetypische Dungeons – jeder geformt von seiner eigenen literarischen DNA, von existenzieller Angst bis zu politischem Schwindel. Deine Agenten tragen Stress, kämpfen gegen das, was im Bruch lebt, und kehren mit Eignungen, Artefakten und Narben zurück, die deine Zivilisation umformen.</target>
-      
-</trans-unit>
-<trans-unit id="s43bcf624e709bfb6">
-  <source>Depth Signal</source>
-        <target>Tiefensignal</target>
-      
-</trans-unit>
-<trans-unit id="s26bdf4e34a955991">
-  <source>Where Boundaries Thin</source>
-        <target>Wo die Grenzen dünn werden</target>
-      
-</trans-unit>
-<trans-unit id="sde3dfc5405223203">
-  <source>Your agents have memories, opinions, grudges. Now send them where reality fractures. Eight archetypal dungeons, each a different wound in the world – and a different test of what your civilization is made of.</source>
-        <target>Deine Agenten haben Erinnerungen, Meinungen, Groll. Schick sie jetzt dorthin, wo die Wirklichkeit bricht. Acht archetypische Dungeons, jeder eine andere Wunde in der Welt – und eine andere Probe auf das, woraus deine Zivilisation gemacht ist.</target>
-      
-</trans-unit>
-<trans-unit id="s072f40ef578026ba">
-  <source>Enter the Resonance</source>
-        <target>Betritt die Resonanz</target>
-      
-</trans-unit>
-<trans-unit id="s852264f2869523ef">
-  <source>Send agents into the fractures between worlds. Eight archetypal dungeons – procedurally generated, literarily informed – where stress is real and choices reshape who your agents become. What happens in the depths changes your world above.</source>
-        <target>Schick Agenten in die Risse zwischen den Welten. Acht archetypische Dungeons – prozedural erzeugt, literarisch informiert – wo Stress real ist und Entscheidungen verändern, wer deine Agenten werden. Was in der Tiefe geschieht, verändert deine Welt oben.</target>
-      
 </trans-unit>
 <trans-unit id="s60a653d23e0b6086">
   <source>considers the implications…</source>
@@ -23906,11 +23651,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="se0864df4939d8b29">
   <source>Each resonance type spawns a distinct dungeon archetype: The Shadow (darkness and visibility), The Tower (structural stability), The Entropy (dissolution and decay), The Devouring Mother (parasitic attachment), The Prometheus (crafting and stolen knowledge), The Deluge (rising water and salvage), The Awakening (consciousness and memory), The Overthrow (political fracture and factions). Archetype determines enemy types, room layouts, encounter difficulty, and available loot.</source>
         <target>Jeder Resonanztyp lässt einen eigenen Dungeon-Archetyp entstehen: Der Schatten (Dunkelheit und Sicht), Der Turm (strukturelle Stabilität), Die Entropie (Auflösung und Zerfall), Die Verschlingende Mutter (parasitäre Bindung), Der Prometheus (Schmieden und gestohlenes Wissen), Die Flut (steigendes Wasser und Bergen), Das Erwachen (Bewusstsein und Erinnerung), Der Umsturz (politischer Bruch und Fraktionen). Der Archetyp bestimmt Feindtypen, Raumaufteilung, Schwierigkeit der Begegnungen und verfügbare Beute.</target>
-      
-</trans-unit>
-<trans-unit id="sbbd340ef453ff7e4">
-  <source>Go to Dashboard</source>
-        <target>Zum Dashboard</target>
       
 </trans-unit>
 <trans-unit id="sc94cc87b984a957a">
@@ -29709,6 +29449,430 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1add4a75318eb709">
   <source>Feature Gates</source>
   <target>Schalter</target></trans-unit>
+<trans-unit id="s6605cfb33d1872c5">
+  <source>The citizens</source>
+  <target>Die Bürger</target>
+</trans-unit>
+<trans-unit id="s06ce1c19f84e216a">
+  <source>They remember</source>
+  <target>Sie erinnern sich</target>
+</trans-unit>
+<trans-unit id="s5fa78e6ce15416cc">
+  <source>Every world is populated by AI characters with memory, opinion, and intent. They hold grudges, form bonds, and print their own morning broadsheet.</source>
+  <target>Jede Welt ist von KI-Figuren bewohnt, die Gedächtnis, Meinung und Absicht haben. Sie tragen nach, schließen Bindungen und drucken ihr eigenes Morgenblatt.</target>
+</trans-unit>
+<trans-unit id="s5e0b4a4680eb0d79">
+  <source>A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books: one for the living, one for the sea.</source>
+  <target>Eine ertrunkene Republik, in der die Gezeiten gesetzliches Zahlungsmittel sind und jeder Beamte beim Mond in der Kreide steht. Flut ist Zahltag, Ebbe ist Sparzwang, und die Salzkanzlei führt zwei Bücher: eines für die Lebenden, eines für die See.</target>
+</trans-unit>
+<trans-unit id="s019d2c2817d8e6d8">
+  <source>A bureaucracy of chitinous insects governing a city of wax and paper. Promotion is by molting, demotion is by candle, and the archive eats one form per night. Nobody files a complaint, because the complaint form is the first thing it ate.</source>
+  <target>Eine Bürokratie chitinöser Insekten regiert eine Stadt aus Wachs und Papier. Befördert wird durch Häutung, degradiert durch Kerze, und das Archiv frisst pro Nacht ein Formular. Beschwerde legt niemand ein, denn das Beschwerdeformular hat es als Erstes gefressen.</target>
+</trans-unit>
+<trans-unit id="sb0e67556de21d1ab">
+  <source>A mining aristocracy that dug too deep and now pays rent to whatever lives below. The lease is renegotiated every winter solstice, in the dark, by a delegation that returns one member short and never discusses it.</source>
+  <target>Ein Bergbau-Adel, der zu tief gegraben hat und nun Miete zahlt an das, was unten wohnt. Der Pachtvertrag wird zu jeder Wintersonnenwende neu verhandelt, im Dunkeln, von einer Abordnung, die um ein Mitglied kleiner zurückkehrt und nie darüber spricht.</target>
+</trans-unit>
+<trans-unit id="s315eac4decbeb884">
+  <source>A baroque city-state that prints its grudges every morning in a broadsheet of record. Duels are fought over typos, retractions cost more than funerals, and the editor has outlived four governments by misquoting all of them.</source>
+  <target>Ein barocker Stadtstaat, der seinen Groll jeden Morgen in einem Blatt von Rang abdruckt. Um Druckfehler wird duelliert, Gegendarstellungen kosten mehr als Begräbnisse, und der Redakteur hat vier Regierungen überlebt, indem er sie alle falsch zitierte.</target>
+</trans-unit>
+<trans-unit id="s7cb8c350d6e99b49">
+  <source>An alpine empire run entirely by lighthouse keepers, though there is no sea, only fog with opinions. The lights must never align, for on the one recorded night they did, something in the fog aligned back.</source>
+  <target>Ein alpines Reich, geführt ausschließlich von Leuchtturmwärtern, obwohl es kein Meer gibt, nur Nebel mit Meinungen. Die Feuer dürfen nie in einer Linie stehen, denn in der einen verzeichneten Nacht, in der sie es taten, stellte sich etwas im Nebel in dieselbe.</target>
+</trans-unit>
+<trans-unit id="sfaeb30b2296d3e10">
+  <source>A desert caliphate where cartographers are priests and an inaccurate map is heresy. The border moves when nobody is drawing it, so the frontier monasteries sketch in shifts, around the clock, and still lose a village every decade.</source>
+  <target>Ein Wüstenkalifat, in dem Kartographen Priester sind und eine ungenaue Karte Ketzerei. Die Grenze verschiebt sich, sobald niemand sie zeichnet, also skizzieren die Grenzklöster in Schichten, rund um die Uhr, und verlieren dennoch jedes Jahrzehnt ein Dorf.</target>
+</trans-unit>
+<trans-unit id="sfb8872c97955db27">
+  <source>A glacier city that migrates two meters per year, dragging its cathedral by law. Streets are renamed as they drift, marriages are annulled if the couple ends up on opposite moraines, and the founding quarter is now three valleys behind.</source>
+  <target>Eine Gletscherstadt, die zwei Meter im Jahr wandert und ihre Kathedrale von Gesetzes wegen mitschleppt. Straßen werden umbenannt, während sie treiben, Ehen werden annulliert, wenn das Paar auf verschiedenen Moränen endet, und das Gründerviertel liegt inzwischen drei Täler zurück.</target>
+</trans-unit>
+<trans-unit id="se3e013d97c27c54e">
+  <source>A merchant archipelago where every contract must be sung before witnesses. Breach of contract is off-key, insurance fraud is falsetto, and the supreme court is a choir that has not agreed on a verdict, or a key signature, since the drowning of the second fleet.</source>
+  <target>Ein Kaufmannsarchipel, in dem jeder Vertrag vor Zeugen gesungen werden muss. Vertragsbruch ist schief, Versicherungsbetrug ist Falsett, und der Oberste Gerichtshof ist ein Chor, der sich seit dem Untergang der zweiten Flotte weder auf ein Urteil noch auf eine Tonart geeinigt hat.</target>
+</trans-unit>
+<trans-unit id="s37af8acd24846a3f">
+  <source>A velvet dictatorship of retired opera singers who outlawed silence in 1911. Informants hum. The secret police travel as a touring company, and the last man who whispered was given three encores and never seen again.</source>
+  <target>Eine samtene Diktatur pensionierter Opernsänger, die 1911 die Stille verboten haben. Denunzianten summen. Die Geheimpolizei reist als Tournee-Ensemble, und der letzte Mann, der flüsterte, bekam drei Zugaben und wurde nie wieder gesehen.</target>
+</trans-unit>
+<trans-unit id="s13d933871c9db01f">
+  <source>A river delta ruled by three rival post offices that read everything and forgive nothing. Love letters arrive annotated, ransom notes come back corrected, and once a generation the three postmasters exchange a single unstamped envelope no one has ever opened.</source>
+  <target>Ein Flussdelta, beherrscht von drei rivalisierenden Postämtern, die alles lesen und nichts verzeihen. Liebesbriefe kommen kommentiert an, Erpresserschreiben kommen korrigiert zurück, und einmal je Generation tauschen die drei Postmeister einen einzigen ungestempelten Umschlag, den nie jemand geöffnet hat.</target>
+</trans-unit>
+<trans-unit id="s43c5690271dfe2e7">
+  <source>A walled garden-state whose census counts the dead, because they still vote. The graveyard districts lean conservative, the crematorium ward is a swing seat, and every election night the returning officer reads the results aloud twice: once facing the city, once facing the wall.</source>
+  <target>Ein ummauerter Gartenstaat, dessen Volkszählung die Toten mitzählt, weil sie noch wählen. Die Friedhofsbezirke stimmen konservativ, das Krematoriumsviertel ist ein Wechselwahlkreis, und in jeder Wahlnacht verliest der Wahlleiter das Ergebnis zweimal: einmal zur Stadt hin, einmal zur Mauer.</target>
+</trans-unit>
+<trans-unit id="sa32d19d540544545">
+  <source>A smog-choked industrial duchy where the chimney sweeps union secretly owns the sky. Sunlight is leased by the hour, stars are a black-market luxury, and when the duke stopped paying his invoice, his palace stood in private night for eleven years.</source>
+  <target>Ein von Rauch ersticktes Industrieherzogtum, in dem die Schornsteinfegerzunft heimlich den Himmel besitzt. Sonnenlicht wird stundenweise verpachtet, Sterne sind Schwarzmarktluxus, und als der Herzog seine Rechnung nicht mehr beglich, stand sein Palast elf Jahre lang in privater Nacht.</target>
+</trans-unit>
+<trans-unit id="s8123b09c5660bd55">
+  <source>A salt-flat theocracy that worships reflections and executes mirror-breakers at dawn. After the rains, when the whole flat becomes one perfect mirror, the priesthood walks out onto the sky and takes confession from the clouds.</source>
+  <target>Eine Salzwüsten-Theokratie, die Spiegelbilder verehrt und Spiegelbrecher bei Sonnenaufgang hinrichtet. Nach den Regen, wenn die ganze Fläche zu einem einzigen vollkommenen Spiegel wird, tritt die Priesterschaft hinaus auf den Himmel und nimmt den Wolken die Beichte ab.</target>
+</trans-unit>
+<trans-unit id="s7b25bb701cbc2175">
+  <source>A canal republic where the gondoliers are the intelligence service and every song is a report. The melody carries the facts, the harmony carries the doubts, and the state anthem is legally classified.</source>
+  <target>Eine Kanalrepublik, in der die Gondoliere der Nachrichtendienst sind und jedes Lied ein Bericht. Die Melodie trägt die Tatsachen, die Harmonie trägt die Zweifel, und die Staatshymne ist Verschlusssache.</target>
+</trans-unit>
+<trans-unit id="s9dfab3c10a895462">
+  <source>A mountain kingdom that elects its king by avalanche. Candidates stand on the slope at first thaw; the mountain abstains some years, and the throne stays empty, which the constitution counts as its wisest reign.</source>
+  <target>Ein Bergkönigreich, das seinen König durch Lawine wählt. Die Kandidaten stellen sich beim ersten Tauwetter an den Hang; in manchen Jahren enthält sich der Berg, und der Thron bleibt leer – was die Verfassung als seine weiseste Regierung führt.</target>
+</trans-unit>
+<trans-unit id="sfb0d624e497730f1">
+  <source>A paper federation of libraries at war over a single misfiled book since 1834. Ceasefires are signed in pencil. The book itself has been read by no one still living, and both sides privately fear it is a ledger of what the war has cost.</source>
+  <target>Ein Papierbund von Bibliotheken, seit 1834 im Krieg um ein einziges falsch eingestelltes Buch. Waffenstillstände werden mit Bleistift unterzeichnet. Das Buch selbst hat niemand gelesen, der noch lebt, und beide Seiten fürchten insgeheim, es sei ein Hauptbuch dessen, was der Krieg gekostet hat.</target>
+</trans-unit>
+<trans-unit id="s6f023ddc80635fe6">
+  <source>A coastal margravate where storms are put on trial in absentia and always found guilty. Sentences are carved into the cliff face. The great hurricane of 88 was condemned to four hundred years of community service, and the harbor wall it must rebuild is almost finished.</source>
+  <target>Eine Küstenmarkgrafschaft, in der Stürmen in Abwesenheit der Prozess gemacht wird und die stets schuldig gesprochen werden. Die Urteile werden in die Klippe geschlagen. Der große Orkan von 88 wurde zu vierhundert Jahren gemeinnütziger Arbeit verurteilt, und die Hafenmauer, die er wiederaufbauen muss, ist fast fertig.</target>
+</trans-unit>
+<trans-unit id="s7074110ae88606f0">
+  <source>A subterranean stock exchange that trades in memories, dream futures, and grudge derivatives. Childhood summers are blue-chip, first kisses are volatile, and the crash of the nostalgia bubble left an entire generation unable to remember why it was angry.</source>
+  <target>Eine unterirdische Börse, die mit Erinnerungen, Traumterminen und Groll-Derivaten handelt. Kindheitssommer sind Standardwerte, erste Küsse sind volatil, und der Zusammenbruch der Nostalgieblase hat eine ganze Generation zurückgelassen, die sich nicht mehr erinnert, worüber sie wütend war.</target>
+</trans-unit>
+<trans-unit id="s67f75c151a21dc89">
+  <source>A frostbitten port where every departing ship must carry one passenger who never existed. The shipping registry lists them in white ink. Sailors say the invented passengers keep the sea from noticing the real ones.</source>
+  <target>Ein frostbissiger Hafen, in dem jedes auslaufende Schiff einen Passagier mitführen muss, den es nie gegeben hat. Das Schiffsregister führt sie in weißer Tinte. Die Seeleute sagen, die erfundenen Passagiere hielten die See davon ab, die wirklichen zu bemerken.</target>
+</trans-unit>
+<trans-unit id="s98541c6abc03ade1">
+  <source>A vineyard oligarchy whose wars are fought exclusively by sommeliers, to the last drop. Vintages are classified as armaments, decanting is a declaration, and the treaty of the great frost was ratified by everyone spitting at the same time.</source>
+  <target>Eine Weinberg-Oligarchie, deren Kriege ausschließlich von Sommeliers geführt werden, bis zum letzten Tropfen. Jahrgänge gelten als Rüstungsgut, Dekantieren ist eine Kriegserklärung, und der Vertrag des großen Frosts wurde ratifiziert, indem alle zugleich ausspuckten.</target>
+</trans-unit>
+<trans-unit id="se1bada79f45a6b33">
+  <source>Stoic order</source>
+  <target>Stoische Ordnung</target>
+</trans-unit>
+<trans-unit id="sa851b1ec8280ac5d">
+  <source>The absurd</source>
+  <target>Das Absurde</target>
+</trans-unit>
+<trans-unit id="sc27528743b6213a5">
+  <source>Entropy and decay</source>
+  <target>Entropie und Verfall</target>
+</trans-unit>
+<trans-unit id="s344bd04d72143e50">
+  <source>Collective memory</source>
+  <target>Kollektives Gedächtnis</target>
+</trans-unit>
+<trans-unit id="s0b8e492b74325985">
+  <source>Faustian ambition</source>
+  <target>Faustischer Ehrgeiz</target>
+</trans-unit>
+<trans-unit id="s04600f0fc3808aff">
+  <source>Sacred bureaucracy</source>
+  <target>Heilige Bürokratie</target>
+</trans-unit>
+<trans-unit id="se5d2586aa19d46e3">
+  <source>Transmission open</source>
+  <target>Übertragung offen</target>
+</trans-unit>
+<trans-unit id="s8d9ced2965afea3b">
+  <source>yours</source>
+  <target>deine Welt</target>
+</trans-unit>
+<trans-unit id="s59ecbd14e3782b36">
+  <source>Anchor it in a philosophy</source>
+  <target>Veranker sie in einer Philosophie</target>
+</trans-unit>
+<trans-unit id="sfd535d526d5e2ecd">
+  <source>Required · shapes every citizen’s soul</source>
+  <target>Pflicht · prägt die Seele jedes Bürgers</target>
+</trans-unit>
+<trans-unit id="s7055bcb3fb21e0f8">
+  <source>Forge this world</source>
+  <target>Diese Welt schmieden</target>
+</trans-unit>
+<trans-unit id="s55751932cc674bbf">
+  <source>Free · alive in minutes</source>
+  <target>Kostenlos · in Minuten lebendig</target>
+</trans-unit>
+<trans-unit id="s4d37149c55aa0c5d">
+  <source>living worlds</source>
+  <target>lebende Welten</target>
+</trans-unit>
+<trans-unit id="s2c136eae7fc56ad1">
+  <source>transmitting</source>
+  <target>senden</target>
+</trans-unit>
+<trans-unit id="s6af7129b9c89b1a8">
+  <source>citizens</source>
+  <target>Bürger</target>
+</trans-unit>
+<trans-unit id="s4d345dee3131de89">
+  <source>memories held</source>
+  <target>bewahrte Erinnerungen</target>
+</trans-unit>
+<trans-unit id="sbc6171af7819629f">
+  <source>zones mapped</source>
+  <target>kartierte Zonen</target>
+</trans-unit>
+<trans-unit id="s5e27738a2e8eb763">
+  <source>Sign in</source>
+  <target>Anmelden</target>
+</trans-unit>
+<trans-unit id="sedb673484354699f">
+  <source>Forge a World</source>
+  <target>Eine Welt schmieden</target>
+</trans-unit>
+<trans-unit id="se0084060dab97d48">
+  <source>Signal locked // <x id="0" equiv-text="${online}"/> worlds transmitting</source>
+  <target>Signal steht // <x id="0" equiv-text="${online}"/> Welten senden</target>
+</trans-unit>
+<trans-unit id="scd954bb9d7ebb395">
+  <source>Signal locked</source>
+  <target>Signal steht</target>
+</trans-unit>
+<trans-unit id="se1634b47cba84998">
+  <source>Living</source>
+  <target>Lebendige</target>
+</trans-unit>
+<trans-unit id="s21afe3f78faf36b8">
+  <source>Forged from a single sentence. Playing while you sleep. Populated by citizens who remember what you did.</source>
+  <target>Aus einem einzigen Satz geschmiedet. Spielt, während du schläfst. Bewohnt von Bürgern, die sich erinnern, was du getan hast.</target>
+</trans-unit>
+<trans-unit id="s3809323fd37b1406">
+  <source>Build your world</source>
+  <target>Bau deine Welt</target>
+</trans-unit>
+<trans-unit id="s6005f4a35a6cc7cd">
+  <source>Or just watch one</source>
+  <target>Oder sieh einer einfach zu</target>
+</trans-unit>
+<trans-unit id="s7344eb3ac03a4186">
+  <source>The Bureau of Impossible Geography. AI-simulated living worlds, forged from a sentence, populated by citizens who remember, playing while you sleep.</source>
+  <target>Das Büro für Unmögliche Geographie. KI-simulierte lebende Welten, aus einem Satz geschmiedet, bewohnt von Bürgern, die sich erinnern, im Spiel, während du schläfst.</target>
+</trans-unit>
+<trans-unit id="se29a00611761719c">
+  <source>World Forge</source>
+  <target>World Forge</target>
+</trans-unit>
+<trans-unit id="s62d0b26974d9c004">
+  <source>Epochs and seasons</source>
+  <target>Epochen und Spielzeiten</target>
+</trans-unit>
+<trans-unit id="s3a48e868147a68f2">
+  <source>Resonance dungeons</source>
+  <target>Resonanz-Dungeons</target>
+</trans-unit>
+<trans-unit id="s377f407a2b4264ee">
+  <source>All living worlds</source>
+  <target>Alle lebenden Welten</target>
+</trans-unit>
+<trans-unit id="s85af4b888026f2f4">
+  <source>Chronicle archive</source>
+  <target>Chronik-Archiv</target>
+</trans-unit>
+<trans-unit id="s6714d793c7eca375">
+  <source>About the Bureau</source>
+  <target>Über das Bureau</target>
+</trans-unit>
+<trans-unit id="s046d224a8afdf603">
+  <source>Field manual</source>
+  <target>Feldhandbuch</target>
+</trans-unit>
+<trans-unit id="s96ef8ad307b42333">
+  <source>Terms of transmission</source>
+  <target>Übertragungsbedingungen</target>
+</trans-unit>
+<trans-unit id="s9e5a1662ace157de">
+  <source>Delete data</source>
+  <target>Daten löschen</target>
+</trans-unit>
+<trans-unit id="sd06bf4574d9e5ac5">
+  <source>Signal status:</source>
+  <target>Signalstatus:</target>
+</trans-unit>
+<trans-unit id="sf308c4c210cb14ef">
+  <source>System 01 // The Forge</source>
+  <target>System 01 // Die Forge</target>
+</trans-unit>
+<trans-unit id="s15814319d5b58c6b">
+  <source>One sentence becomes a civilization – geography, citizens, lore. Minutes, not months.</source>
+  <target>Ein Satz wird zur Zivilisation – Geographie, Bürger, Lore. Minuten, nicht Monate.</target>
+</trans-unit>
+<trans-unit id="s6639341a73348909">
+  <source>The intake desk of the Bureau. You file a single sentence; the Forge answers with coastlines, a census, a founding grudge and a working economy. It names the rivers, seats the parliament, invents the folk songs, and decides – before you can object – which of your words was the important one.</source>
+  <target>Der Anmeldeschalter des Bureaus. Du reichst einen einzigen Satz ein; die Forge antwortet mit Küstenlinien, einer Volkszählung, einem Gründungsgroll und einer laufenden Wirtschaft. Sie benennt die Flüsse, besetzt das Parlament, erfindet die Volkslieder und entscheidet – ehe du widersprechen kannst –, welches deiner Wörter das wichtige war.</target>
+</trans-unit>
+<trans-unit id="s1a1d72cdbf135aed">
+  <source>I wrote "a city that fears the rain" and by evening it had umbrella cartels, a drought cult, and a poet under house arrest. I have never felt so read.</source>
+  <target>Ich schrieb „eine Stadt, die den Regen fürchtet“, und am Abend hatte sie Schirmkartelle, einen Dürrekult und einen Dichter unter Hausarrest. Nie habe ich mich so gelesen gefühlt.</target>
+</trans-unit>
+<trans-unit id="scccc6ba5849a94b9">
+  <source>Intake form 7-C, marginal note</source>
+  <target>Aufnahmeformular 7-C, Randnotiz</target>
+</trans-unit>
+<trans-unit id="sf55bc906fc860fee">
+  <source>System 02 // Epochs</source>
+  <target>System 02 // Epochen</target>
+</trans-unit>
+<trans-unit id="s15955a3a9dbb9d2f">
+  <source>Compete in Seasons</source>
+  <target>Tritt in Spielzeiten an</target>
+</trans-unit>
+<trans-unit id="s51b919747fe0e45b">
+  <source>Timed epochs where civilizations clash: deploy operatives, forge alliances, betray on time.</source>
+  <target>Befristete Epochen, in denen Zivilisationen aufeinandertreffen: Agenten einsetzen, Bündnisse schmieden, pünktlich verraten.</target>
+</trans-unit>
+<trans-unit id="sb7712dbced171d8f">
+  <source>Epochs are timed seasons in which rival civilizations share one map and one deadline. Operatives are deployed under false names, alliances are notarized in triplicate, betrayals are scheduled weeks in advance and executed to the minute. When the clock runs out, the standings wall prints one civilization’s name slightly larger than the rest.</source>
+  <target>Epochen sind befristete Spielzeiten, in denen rivalisierende Zivilisationen eine Karte und eine Frist teilen. Agenten werden unter falschem Namen eingesetzt, Bündnisse dreifach beurkundet, Verrat wochenlang im Voraus geplant und auf die Minute vollzogen. Läuft die Uhr ab, druckt die Ranglistenwand den Namen einer Zivilisation eine Spur größer als die übrigen.</target>
+</trans-unit>
+<trans-unit id="sc8aacc160b992aaf">
+  <source>We lost the epoch on points but won the peace: their spymaster defected to us for the food. Wars end; kitchens are forever.</source>
+  <target>Nach Punkten haben wir die Epoche verloren, den Frieden aber gewonnen: Ihr Spionagechef ist des Essens wegen zu uns übergelaufen. Kriege enden; Küchen sind für immer.</target>
+</trans-unit>
+<trans-unit id="sccb470ac9503116b">
+  <source>After-action report, Epoch of the Hollow Crown</source>
+  <target>Einsatzbericht, Epoche der Hohlen Krone</target>
+</trans-unit>
+<trans-unit id="s7e3f19be7ac63970">
+  <source>System 03 // Resonance Dungeons</source>
+  <target>System 03 // Resonanz-Dungeons</target>
+</trans-unit>
+<trans-unit id="s8500c8ec1ad94bc2">
+  <source>Send Agents Below</source>
+  <target>Schick Agenten nach unten</target>
+</trans-unit>
+<trans-unit id="s7224d2d046b1dae5">
+  <source>Eight literary descents where stress is real. Agents return changed – or not at all.</source>
+  <target>Acht literarische Abstiege, in denen Stress wirklich ist. Agenten kehren verändert zurück – oder gar nicht.</target>
+</trans-unit>
+<trans-unit id="scea7a67229ec3c31">
+  <source>Below every world lie resonance dungeons – eight literary descents where the water rises one bureaucratic percentage point at a time and the odds are printed honestly on every door. Stress is bookkeeping here, kept in amber ink: agents return changed, decorated, or as a single line in the ledger of the deep.</source>
+  <target>Unter jeder Welt liegen Resonanz-Dungeons – acht literarische Abstiege, in denen das Wasser um je einen bürokratischen Prozentpunkt steigt und die Aussichten ehrlich an jeder Tür stehen. Stress ist hier Buchhaltung, geführt in Bernsteintinte: Agenten kehren verändert zurück, ausgezeichnet, oder als eine einzige Zeile im Hauptbuch der Tiefe.</target>
+</trans-unit>
+<trans-unit id="s18ae31d7b2b2e60a">
+  <source>Storey by storey the Deluge taught us subtraction. Four went down. The ledger shows three signatures and one water stain.</source>
+  <target>Stockwerk um Stockwerk lehrte uns die Sintflut das Subtrahieren. Vier sind hinabgestiegen. Das Buch zeigt drei Unterschriften und einen Wasserfleck.</target>
+</trans-unit>
+<trans-unit id="s526d5c91cc905448">
+  <source>Debrief fragment, descent authorization #88</source>
+  <target>Nachbesprechung, Bruchstück, Abstiegsgenehmigung Nr. 88</target>
+</trans-unit>
+<trans-unit id="sad8614dd84cd0d21">
+  <source>System 04 // Drift</source>
+  <target>System 04 // Drift</target>
+</trans-unit>
+<trans-unit id="s2e00401e025fb858">
+  <source>Travel the In-Between</source>
+  <target>Reise durch das Dazwischen</target>
+</trans-unit>
+<trans-unit id="s71120db9cf1fd1a3">
+  <source>The node-sea between worlds is playable. Dock at a foreign broadcast edge, haul home cargo.</source>
+  <target>Die Knotensee zwischen den Welten ist bespielbar. Leg an einer fremden Sendekante an, hol Fracht nach Hause.</target>
+</trans-unit>
+<trans-unit id="s78f915c3b8f30c1d">
+  <source>Between worlds stretches the node-sea: black, patient, crossed by amber signal-lines that hum like held breath. Charter a barge, follow a line to a foreign broadcast edge, and dock where your passport is a rumor. What you haul home has no field on any customs form, which is precisely why it is valuable.</source>
+  <target>Zwischen den Welten dehnt sich die Knotensee: schwarz, geduldig, durchzogen von bernsteinfarbenen Signallinien, die summen wie angehaltener Atem. Chartere einen Kahn, folge einer Linie zu einer fremden Sendekante und lege dort an, wo dein Pass ein Gerücht ist. Was du heimbringst, hat auf keinem Zollformular ein Feld – und genau darum ist es wertvoll.</target>
+</trans-unit>
+<trans-unit id="s727adb96e586dd48">
+  <source>Halfway between two worlds the radio picks up both of their lullabies at once. That is the whole reason I run this route.</source>
+  <target>Auf halbem Weg zwischen zwei Welten empfängt das Radio beide Wiegenlieder zugleich. Das ist der ganze Grund, weshalb ich diese Route fahre.</target>
+</trans-unit>
+<trans-unit id="s7e1cf7ec87752f86">
+  <source>Logbook of the barge Second Postscript</source>
+  <target>Logbuch des Kahns Zweites Postskriptum</target>
+</trans-unit>
+<trans-unit id="s4637c00511a2ac4b">
+  <source>System 05 // The Substrate</source>
+  <target>System 05 // Das Substrat</target>
+</trans-unit>
+<trans-unit id="sd9cf2edafaf728ab">
+  <source>Reality Bleeds In</source>
+  <target>Die Wirklichkeit sickert ein</target>
+</trans-unit>
+<trans-unit id="sf9c715a73b617896">
+  <source>Real events echo through every simulation as resonances. The boundary is thinner than you think.</source>
+  <target>Wirkliche Ereignisse hallen als Resonanzen durch jede Simulation. Die Grenze ist dünner, als du denkst.</target>
+</trans-unit>
+<trans-unit id="s9695815e16b33224">
+  <source>The Substrate listens to your reality. Headlines, weather fronts, the general mood of a Tuesday – all of it arrives in every simulation as resonances, bent through each world’s own philosophy until your election is their comet and your heatwave is their angry god. The boundary was never sealed; it was only ever filed as sealed.</source>
+  <target>Das Substrat hört deiner Wirklichkeit zu. Schlagzeilen, Wetterfronten, die allgemeine Stimmung eines Dienstags – alles trifft in jeder Simulation als Resonanz ein, gebrochen durch die Philosophie der jeweiligen Welt, bis deine Wahl ihr Komet ist und deine Hitzewelle ihr zorniger Gott. Die Grenze war nie versiegelt; sie wurde immer nur als versiegelt zu den Akten gelegt.</target>
+</trans-unit>
+<trans-unit id="sd95e965510b5cfd1">
+  <source>Your world sneezed and three of mine wrote prophecies about it. Kindly sneeze less, or at least on schedule.</source>
+  <target>Deine Welt hat geniest, und drei von meinen haben Prophezeiungen darüber geschrieben. Nies bitte weniger, oder wenigstens nach Plan.</target>
+</trans-unit>
+<trans-unit id="s659bebbe505ad60d">
+  <source>Complaint lodged by the Chitinous Mandate, unanswered</source>
+  <target>Beschwerde des Chitinösen Mandats, unbeantwortet</target>
+</trans-unit>
+<trans-unit id="s360b181d268f2dda">
+  <source>System 06 // Bureau Terminal</source>
+  <target>System 06 // Bureau-Terminal</target>
+</trans-unit>
+<trans-unit id="s22e64a10620eac0b">
+  <source>Play It as Text</source>
+  <target>Spiel es als Text</target>
+</trans-unit>
+<trans-unit id="s0c83f51773c421d6">
+  <source>A command-line window into your world. Local perspective, narrative prose, no mercy.</source>
+  <target>Ein Kommandozeilenfenster in deine Welt. Örtliche Sicht, erzählende Prosa, keine Gnade.</target>
+</trans-unit>
+<trans-unit id="s68bacba8b7abb325">
+  <source>The Bureau Terminal is a keyhole into your world: one phosphor screen, one cursor, no mercy and no minimap. You see what a citizen at street level sees, told in narrative prose that does not care about your feelings. Type "look" and the world describes itself. Type something braver and it describes you back.</source>
+  <target>Das Bureau-Terminal ist ein Schlüsselloch in deine Welt: ein Phosphorschirm, ein Cursor, keine Gnade und keine Übersichtskarte. Du siehst, was ein Bürger auf Straßenhöhe sieht, erzählt in Prosa, der deine Gefühle gleichgültig sind. Tippe „look“, und die Welt beschreibt sich selbst. Tippe etwas Mutigeres, und sie beschreibt dich.</target>
+</trans-unit>
+<trans-unit id="s2e1c90df7b4e8d03">
+  <source>I asked the terminal where my agent was. It wrote: "Grieving. Third bench from the fountain. Bring bread." I brought bread.</source>
+  <target>Ich fragte das Terminal, wo mein Agent sei. Es schrieb: „Trauert. Dritte Bank vom Brunnen. Bring Brot.“ Ich brachte Brot.</target>
+</trans-unit>
+<trans-unit id="sa338fab2f430a9d8">
+  <source>Operator transcript, 03:41, unfiled</source>
+  <target>Mitschrift des Operators, 03:41, nicht abgelegt</target>
+</trans-unit>
+<trans-unit id="s47f625e5c6718d1a">
+  <source>Building up</source>
+  <target>Im Aufbau</target>
+</trans-unit>
+<trans-unit id="sb1f68b1d50149492">
+  <source>The six systems</source>
+  <target>Die sechs Systeme</target>
+</trans-unit>
+<trans-unit id="s6f91f276997b52f7">
+  <source>Enter the system</source>
+  <target>System betreten</target>
+</trans-unit>
+<trans-unit id="s2a3d634dd016751c">
+  <source>Already running</source>
+  <target>Läuft bereits</target>
+</trans-unit>
+<trans-unit id="sea98a82c9d72bf17">
+  <source>All <x id="0" equiv-text="${total}"/> worlds</source>
+  <target>Alle <x id="0" equiv-text="${total}"/> Welten</target>
+</trans-unit>
+<trans-unit id="s93e04281c4df95b1">
+  <source>Transmitting</source>
+  <target>Sendet</target>
+</trans-unit>
+<trans-unit id="s5e469775ba92b737">
+  <source>Quiet</source>
+  <target>Still</target>
+</trans-unit>
+<trans-unit id="sac05a9da1dc17316">
+  <source><x id="0" equiv-text="${world.agent_count}"/> citizens</source>
+  <target><x id="0" equiv-text="${world.agent_count}"/> Bürger</target>
+</trans-unit>
+<trans-unit id="s862f49b9bee93281">
+  <source>Build stage</source>
+  <target>Ausbaustufe</target>
+</trans-unit>
+<trans-unit id="s4ad7e6ab6432309e">
+  <source>Phase <x id="0" equiv-text="${rung}"/> is open</source>
+  <target>Phase <x id="0" equiv-text="${rung}"/> ist offen</target>
+</trans-unit>
+<trans-unit id="sf594ed532880762d">
+  <source>Phase <x id="0" equiv-text="${rung}"/> is not built yet</source>
+  <target>Phase <x id="0" equiv-text="${rung}"/> ist noch nicht gebaut</target>
+</trans-unit>
+<trans-unit id="s9aab17c3d8d6121a">
+  <source>P0 is the playable phase. The rungs above it are declared, not built.</source>
+  <target>P0 ist die spielbare Phase. Die Stufen darüber sind angekündigt, nicht gebaut.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
