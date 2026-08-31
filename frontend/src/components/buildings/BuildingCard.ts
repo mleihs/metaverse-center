@@ -3,11 +3,30 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import type { Building, Simulation } from '../../types/index.js';
-import { conditionDots, conditionVariant } from '../../utils/building-condition.js';
+import { conditionDots, conditionVariant, occupancyLevel, occupancyVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { humanizeEnum } from '../../utils/text.js';
 import type { CapacityBar, CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
+
+/**
+ * Wording for the occupancy mark.
+ *
+ * Functions, not constants: a module-level `msg()` is evaluated once at import
+ * and freezes whatever locale happened to be active then, so a language switch
+ * never reaches it. Calling at render time is the documented shape for this
+ * (see the i18n notes on module-level msg()).
+ *
+ * The mark itself is DRAWN, not typed: the handoff sketches it as the glyphs
+ * "●◐○", but those denote a state rather than decorate one, and a glyph is not
+ * an icon. The word carries the meaning here; the disc beside it carries the
+ * degree.
+ */
+const OCCUPANCY_LABEL = {
+  full: () => msg('Well used'),
+  partial: () => msg('Half taken'),
+  sparse: () => msg('Nearly empty'),
+} as const;
 
 @localized()
 @customElement('velg-building-card')
@@ -95,6 +114,20 @@ export class VelgBuildingCard extends LitElement {
     if (!b) return badges;
 
     if (b.building_type) badges.push({ label: humanizeEnum(t(b, 'building_type')) });
+
+    // Occupancy, the SECOND reading the handoff also calls "Zustand": how many
+    // of the building's places are taken. Distinct from building_condition
+    // above, which says how intact it is - a pristine hall can stand empty.
+    // Omitted entirely when the building declares no capacity: an unmeasured
+    // capacity is not an empty one (see utils/building-condition.ts).
+    const occupancy = occupancyLevel(
+      b.agents?.length ?? 0,
+      b.population_capacity,
+      b.building_condition,
+    );
+    if (occupancy !== null && occupancy !== 'ruined') {
+      badges.push({ label: OCCUPANCY_LABEL[occupancy](), variant: occupancyVariant(occupancy) });
+    }
     if (b.building_condition)
       badges.push({ label: t(b, 'building_condition'), variant: this._getConditionVariant() });
     if (b.special_type === 'embassy') badges.push({ label: msg('Embassy'), variant: 'info' });
@@ -147,6 +180,7 @@ export class VelgBuildingCard extends LitElement {
         .badges=${this._getBadges()}
         .subtitle=${this._getSubtitle()}
         .description=${t(b, 'description') ?? ''}
+        full-description
         .capacityBar=${this._getCapacityBar()}
         ?generating=${this.generating}
         ?show-actions=${appState.canEdit.value}

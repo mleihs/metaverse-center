@@ -54,6 +54,60 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
         gap: var(--space-3);
       }
     }
+
+    /* ── Occupancy legend ──────────────────────────────
+       The marks on the cards read as a scale only if the scale is written
+       down once. The handoff draws them as the glyphs "●◐○"; they are drawn
+       here instead, because they denote a state rather than decorate one and
+       a glyph is not an icon - and because a drawn disc scales with the text
+       while a glyph is at the mercy of whichever font resolves it. */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-5);
+      margin-top: var(--space-5);
+      padding-top: var(--space-3);
+      border-top: 1px solid var(--color-border-light);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+
+    .legend__item {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .legend__mark {
+      width: 10px;
+      height: 10px;
+      border-radius: var(--border-radius-full);
+      border: 1px solid currentColor;
+      flex-shrink: 0;
+    }
+
+    .legend__mark--full {
+      background: currentColor;
+      color: var(--color-success);
+    }
+
+    /* Half taken: the disc is filled on one side only. A linear-gradient with
+       a hard stop, not a rotated half-element - nothing on this platform is
+       allowed to be rotated. */
+    .legend__mark--partial {
+      background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+      color: var(--color-warning);
+    }
+
+    .legend__mark--sparse {
+      color: var(--color-danger);
+    }
+
+    .legend__mark--ruined {
+      color: var(--color-text-muted);
+    }
   `,
   ];
 
@@ -436,6 +490,38 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     `;
   }
 
+  /**
+   * The scale behind the marks on the cards.
+   *
+   * Rendered once under the grid rather than as a tooltip on each card: a
+   * legend that only appears on hover is unreachable on touch, and this is
+   * the key to a mark that appears on every card in the view.
+   *
+   * The thresholds are NOT restated here - they come from `occupancyLevel()`
+   * in utils/building-condition.ts, and the percentages in these strings are
+   * the same numbers by hand. If they ever disagree, the util is right.
+   */
+  private _renderLegend() {
+    const items: Array<[string, string]> = [
+      ['full', msg('Well used \u2013 two thirds of its places or more')],
+      ['partial', msg('Half taken \u2013 a third of its places or more')],
+      ['sparse', msg('Nearly empty \u2013 below a third')],
+      ['ruined', msg('A ruin \u2013 its places are not counted')],
+    ];
+    return html`
+      <div class="legend" role="note" aria-label=${msg('How to read the occupancy marks')}>
+        ${items.map(
+          ([key, label]) => html`
+            <span class="legend__item">
+              <span class="legend__mark legend__mark--${key}" aria-hidden="true"></span>
+              <span>${label}</span>
+            </span>
+          `,
+        )}
+      </div>
+    `;
+  }
+
   private _renderGrid() {
     return html`
       <span class="view__count">${this._total !== 1 ? msg(str`${this._total} buildings total`) : msg(str`${this._total} building total`)}</span>
@@ -454,6 +540,8 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
           `,
         )}
       </div>
+
+      ${this._renderLegend()}
 
       <velg-pagination
         .total=${this._total}
