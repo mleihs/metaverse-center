@@ -207,9 +207,37 @@ class PersonalityExtractionService:
         # Derive autonomy parameters
         params = _derive_autonomy_params(profile)
 
-        # Call PostgreSQL function to create mood + needs records (idempotent)
+        # Create mood + needs records if they are missing.
         await supabase.rpc(
             "fn_initialize_agent_autonomy",
+            {
+                "p_agent_id": str(agent_id),
+                "p_simulation_id": str(simulation_id),
+                "p_resilience": params["resilience"],
+                "p_volatility": params["volatility"],
+                "p_sociability": params["sociability"],
+                "p_social_decay": params["social_decay"],
+                "p_purpose_decay": params["purpose_decay"],
+                "p_safety_decay": params["safety_decay"],
+                "p_comfort_decay": params["comfort_decay"],
+                "p_stimulation_decay": params["stimulation_decay"],
+            },
+        ).execute()
+
+        # ...and then APPLY the derived parameters, because the call above may
+        # well have done nothing. `fn_initialize_agent_autonomy` carries
+        # `ON CONFLICT (agent_id) DO NOTHING` twice, and since migration 286
+        # (Befund A3) `fn_materialize_shard` already creates those rows in SQL
+        # with the signature defaults. Without this second call the values
+        # derived from the personality could never land on an agent whose rows
+        # already existed — which on production is every single one of the 258
+        # (measured: exactly one distinct value for resilience, volatility and
+        # sociability across all of them).
+        #
+        # Touches configuration only; mood_score, stress_level and the current
+        # need levels are state and stay where they are (migration 296).
+        await supabase.rpc(
+            "fn_apply_agent_autonomy_params",
             {
                 "p_agent_id": str(agent_id),
                 "p_simulation_id": str(simulation_id),

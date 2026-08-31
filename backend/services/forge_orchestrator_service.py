@@ -48,6 +48,7 @@ from backend.services.forge_lore_service import ForgeLoreService
 from backend.services.forge_map_service import ForgeMapService
 from backend.services.forge_taxonomies import derive_taxonomies, normalize_entity_terms
 from backend.services.forge_theme_service import ForgeThemeService
+from backend.services.personality_extraction_service import PersonalityExtractionService
 from backend.services.research_service import ResearchService
 from backend.services.seo_service import notify_search_engines
 from backend.utils.db import maybe_single_data
@@ -927,6 +928,26 @@ class ForgeOrchestratorService:
 
             # Use admin client for service-role writes (lore + theme settings)
             write_client = admin_supabase or supabase
+
+            # Personality first, aptitudes second — the aptitudes are DERIVED
+            # from the personality, and until now the Forge produced neither.
+            # `PersonalityExtractionService` had no caller anywhere in the
+            # backend, so all 258 production agents carry `{}` and, through
+            # `_derive_autonomy_params`, one identical set of autonomy values
+            # (Befund N1). One model call per agent, gated by the existing
+            # `personality_extraction` budget and falling back to a neutral
+            # profile when there is no key — the world is never lost over it.
+            try:
+                await PersonalityExtractionService.initialize_simulation_agents(
+                    write_client, sim_id
+                )
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+                with sentry_sdk.push_scope() as scope:
+                    scope.set_tag("forge_phase", "materialize")
+                    scope.set_tag("step", "agent_personality")
+                    scope.set_context("forge", {"simulation_id": str(sim_id)})
+                    sentry_sdk.capture_exception()
+                logger.exception("Personality extraction failed", extra={"simulation_id": str(sim_id)})
 
             # Aptitudes for the world's new agents (Befund D15). The Forge never
             # wrote `agent_aptitudes`, so every agent it made stood flat on the
