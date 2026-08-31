@@ -67,3 +67,38 @@ export function localizedArray(obj: unknown, key: string): string[] {
   const picked = useDe && Array.isArray(deVal) ? deVal : Array.isArray(enVal) ? enVal : [];
   return picked.filter((v): v is string => typeof v === 'string');
 }
+
+/**
+ * Der Erzähltext eines Herzschlag-Eintrags in der Sprache des Lesenden.
+ *
+ * WARUM ES DAFÜR EINEN EIGENEN NAMEN GIBT und nicht bloß `localized(e,
+ * 'narrative')`: dieselbe Frage wurde an fünf Stellen fünfmal neu beantwortet
+ * — Puls-Ansicht, `weather`-Befehl, Feed-Zeile, `look`-Befehl und
+ * Tageslagebericht. Vier davon fragten nur `narrative_en` und zeigten dem
+ * deutschen Publikum englische Chronik (gemessen 31.08.2026). Die fünfte
+ * baute sich ein Wegwerf-Objekt mit umbenanntem Schlüssel, um den
+ * FALSCHEN der beiden Helfer passend zu machen:
+ *
+ *     t({ narrative: zone.narrative_en, narrative_de: zone.narrative_de },
+ *       'narrative') as string
+ *
+ * Das ist kein Schlamperei-Befund, sondern ein Bauartbefund: es gibt zwei
+ * Helfer mit fast gleichem Namen und VERSCHIEDENER Endungskonvention (`t`
+ * erwartet `feld`/`feld_de`, `localized` erwartet `feld_en`/`feld_de`), und
+ * die Wahl zwischen ihnen fällt an jeder Aufrufstelle neu. Ein benannter
+ * Zugriff nimmt sie einmal ab.
+ *
+ * NICHT hierher gehört das Rendern. Eine Terminalzeile und ein HTML-Span sind
+ * zu Recht verschiedene Dinge, und die Kanal-Logik (`INTEL`/`ALERT`/
+ * `DISTANT`) von `formatFeedEntry` ist echte Terminalsemantik. Vereinheitlicht
+ * wird der ZUGRIFF, nicht die Darstellung.
+ *
+ * UND EINE STELLE BLEIBT ABSICHTLICH ENGLISCH: `BureauTerminal` entdoppelt
+ * Feed-Einträge über `narrative_en`. Das ist richtig so — ein Schlüssel, der
+ * mit der Lesesprache wechselt, entdoppelt für deutsche und englische
+ * Lesende verschieden. Ein pauschales Ersetzen hätte genau das kaputt
+ * gemacht.
+ */
+export function entryNarrative(entry: { narrative_en?: string; narrative_de?: string }): string {
+  return localized(entry, 'narrative');
+}

@@ -69,6 +69,7 @@ import {
 // ── Levenshtein Distance (shared) ─────────────────────────────────────────
 
 import { fuzzyMatch, levenshtein } from './fuzzy-search.js';
+import { entryNarrative } from './locale-fields.js';
 
 // ── Synonym Map ────────────────────────────────────────────────────────────
 
@@ -290,7 +291,7 @@ async function handleLook(_ctx: CommandContext): Promise<TerminalLine[]> {
       : [];
 
   const weatherEntry = weatherResp.success && weatherResp.data?.[0] ? weatherResp.data[0] : null;
-  const weatherNarrative = weatherEntry?.narrative_en ?? undefined;
+  const weatherNarrative = weatherEntry ? entryNarrative(weatherEntry) || undefined : undefined;
 
   const allZones = Array.from(terminalState.zoneCache.value.values());
 
