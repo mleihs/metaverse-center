@@ -768,6 +768,69 @@ Tor:
 erste Schritt unter Null. Die Schwelle zu senken wäre die falsche Reparatur; sie
 ist nicht zu hoch, der Weg dorthin beginnt nicht.
 
+### Nachgerechnet: zwei der drei Wege können das Schloss gar nicht öffnen
+
+Nach dem ersten Aufschreiben durchgerechnet, was jeder Weg RECHNERISCH erreicht.
+`insult` verlangt eine Meinung ≤ −20.
+
+    Weg 2  base_compatibility ∈ [−0,3 ; +0,3] × 20   →  tiefstens  −6
+    Weg 3  profession_rivalry −5, Kappe 1            →  tiefstens  −5
+    beide zusammen                                   →  tiefstens −11
+    gebraucht                                        →           −20
+
+🔑 **Keine Kombination der übrigen Massnahmen erreicht −20.** Die einzigen
+Quellen für eine negative Meinung sind `insult` und `confrontation`, und beide
+verlangen bereits eine negative Meinung. `base_compatibility` und
+`profession_rivalry` verschieben die Verteilung, aber sie kommen nicht bis an
+das Fenster heran. **Das Meinungs-Fenster von `insult` zu öffnen ist deshalb
+nicht einer von drei Wegen, sondern der einzige, der wirkt.** Die anderen beiden
+sind aus eigenem Recht sinnvoll — sie öffnen dieses Schloss nicht.
+
+### Und wie schnell es dann geht — gemessen
+
+    Paare, die sich in 24 h getroffen haben              25
+    Begegnungen insgesamt seit dem 25.03.             4 021  (auf 46 Paaren)
+    meiste Begegnungen eines einzigen Paares            156
+    Agenten mit Laune ≤ −20                               6 von 258
+    Anteil `insult` unter den dann gültigen Wahlen    5 / 55 ≈ 9 %
+                                                     (bei Laune −25 sind nur
+                                                      casual_chat und insult gültig)
+
+Grob gerechnet: rund **eine Beleidigung alle ein bis drei Wochen**, nicht
+täglich. Das ist keine Untergrenze für immer — die Zahl der unglücklichen
+Agenten ist heute von 0 auf 6 gestiegen und wächst weiter, also beschleunigt es
+sich von selbst. Aber wer nach einem Tick nachmisst, wird nichts sehen.
+
+Und einmal geöffnet, trägt es sich: nach der ersten Beleidigung steht die
+Meinung bei −15 und liegt weiterhin im Fenster; die Kappe erlaubt fünf,
+zusammen −75.
+
+### ⚠ Der vierte Fund: jede Beziehung in Velgarien ist einseitig
+
+    Paare mit Meinungs-Modifikatoren                     39
+      davon beidseitig                                    0
+      davon EINSEITIG                                    39
+
+`generate_social_interactions` bildet die Paare mit `combinations(zone_agents, 2)`
+— das liefert jedes Paar genau einmal und in fester Reihenfolge. `_select_interaction`
+prüft ausschliesslich `mood_a` und A's Meinung über B, und `_execute_interaction`
+schreibt ausschliesslich A's Meinung über B. **B bildet sich nie eine Meinung
+über A.**
+
+`agent_opinions` ist gerichtet und trägt beide Zeilen; `add_proximity_modifiers`
+schreibt ausdrücklich in beide Richtungen (`# Bidirectional`) — nur ist die
+Funktion tot. Der einzige lebende Pfad kennt nur eine Richtung.
+
+Für N5 heisst das: **in der Hälfte der Paare ist der Unglückliche gar nicht der
+Handelnde**, und zwar nicht zufällig, sondern fest — dieselbe Reihenfolge bei
+jedem Tick. Diese Paare können nie eine Beleidigung erzeugen, egal wie schlecht
+es dem Betroffenen geht. Das halbiert die Rate oben nicht nur, es sperrt einen
+festen Teil der Bevölkerung dauerhaft aus.
+
+Reparatur wäre klein (beide Richtungen auswerten, oder die Reihenfolge je
+Begegnung würfeln) — aber sie ist eine eigene Entscheidung über das Spiel und
+gehört nicht in dieselbe Runde wie das Fenster.
+
 ### Zu entscheiden (drei Wege, alle inhaltlich)
 
 1. **Das Meinungs-Fenster von `insult` öffnen** — z. B. `(−100, 20)` statt
