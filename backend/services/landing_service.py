@@ -127,17 +127,32 @@ class LandingService:
         Fehler.
         """
         try:
-            response = await anon.table("public_forge_prompts").select("seed_prompt").execute()
+            response = await anon.table("public_forge_prompts").select("seed_prompt, simulation_id").execute()
         except Exception:  # noqa: BLE001 — die Frontseite degradiert, sie scheitert nicht
             logger.warning("Forge-Sätze nicht verfügbar", exc_info=True)
             return []
-        texts = [" ".join((row.get("seed_prompt") or "").split()) for row in extract_list(response)]
-        fitting = [text for text in texts if cls._PROMPT_MIN_CHARS <= len(text) <= cls._PROMPT_MAX_CHARS]
+        saetze = [
+            (" ".join((row.get("seed_prompt") or "").split()), row.get("simulation_id"))
+            for row in extract_list(response)
+        ]
+        fitting = [
+            (text, sim)
+            for text, sim in saetze
+            if cls._PROMPT_MIN_CHARS <= len(text) <= cls._PROMPT_MAX_CHARS
+        ]
         # Zweisprachig ist das Feld nicht: ein Ausgangssatz wurde in einer
         # Sprache geschrieben und bleibt darin. `text_de` bleibt leer, und
         # `t(prompt, 'text')` fällt dann auf `text` zurück — richtig so, denn
         # eine maschinelle Übersetzung eines fremden Satzes wäre eine Fälschung.
-        return [{"text": text} for text in fitting[: cls._PROMPT_COUNT]]
+        # Die Welt reist mit: der Schmiede-Abschnitt der Frontseite steht direkt
+        # unter dem Bürgerfächer, und bis Migration 328 hatten die beiden nichts
+        # miteinander zu tun — ein Satz lief durch, und darüber standen Gesichter
+        # aus einer anderen Welt. Mit der simulation_id kann die Seite zeigen,
+        # WEN dieser Satz hervorgebracht hat.
+        return [
+            {"text": text, "simulation_id": str(sim) if sim else None}
+            for text, sim in fitting[: cls._PROMPT_COUNT]
+        ]
 
     @staticmethod
     async def _agent_counts(anon: Client, world_ids: list[str]) -> dict[str, int]:
@@ -280,6 +295,7 @@ class LandingService:
                     "character_de": row.get("character_de"),
                     "portrait_image_url": row.get("portrait_image_url"),
                     "zone_name": (zone or {}).get("name") if isinstance(zone, dict) else None,
+                    "simulation_id": str(row.get("simulation_id")),
                     "simulation_slug": world["slug"],
                     "simulation_name": world["name"],
                 },

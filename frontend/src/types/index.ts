@@ -1741,6 +1741,8 @@ export interface LandingCitizen {
   character_de: string | null;
   portrait_image_url: string | null;
   zone_name: string | null;
+  /** Die Welt dieses Buergers — der Schluessel zum laufenden Ausgangssatz. */
+  simulation_id: string | null;
   simulation_slug: string;
   simulation_name: string;
 }
@@ -1749,6 +1751,8 @@ export interface LandingCitizen {
 export interface LandingPrompt {
   text: string;
   text_de: string | null;
+  /** Die Welt, die aus diesem Satz wurde — null heisst „unbekannt". Migration 328. */
+  simulation_id: string | null;
 }
 
 export interface LandingSnapshot {

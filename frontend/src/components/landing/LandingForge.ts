@@ -299,8 +299,27 @@ export class VelgLandingForge extends LitElement {
    *  aus abgeschlossenen Läufen. Sie sind noch nicht freigegeben, weil sie von
    *  Menschen geschrieben sind und die Frontseite öffentlich ist — siehe
    *  `LandingPrompt` im Rücken. */
-  private _prompts(): string[] {
-    if (this.prompts.length) return this.prompts.map((p) => t(p, 'text')).filter(Boolean);
+  /**
+   * Ein Eintrag traegt beides: den Satz und die Welt, die aus ihm wurde.
+   *
+   * Vorher lieferte diese Methode nur Zeichenketten, und `_index` zeigte in
+   * die GEFILTERTE Liste. Eine zweite Liste mit den Welt-Kennungen daneben
+   * haette denselben Index gebraucht und waere beim ersten leeren Satz
+   * verrutscht — der Faecher darueber haette dann die Buerger der falschen
+   * Welt gezeigt, und zwar plausibel genug, dass es niemandem auffaellt.
+   * Eine Liste, ein Index, kein Abgleich.
+   */
+  private _entries(): Array<{ text: string; simulationId: string | null }> {
+    if (this.prompts.length) {
+      return this.prompts
+        .map((p) => ({ text: t(p, 'text'), simulationId: p.simulation_id ?? null }))
+        .filter((e) => Boolean(e.text));
+    }
+    // Die Beispielsaetze gehoeren zu keiner Welt — null, nicht geraten.
+    return this._fallbackPrompts().map((text) => ({ text, simulationId: null }));
+  }
+
+  private _fallbackPrompts(): string[] {
     return [
       msg(
         'A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books: one for the living, one for the sea.',
@@ -378,16 +397,16 @@ export class VelgLandingForge extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    const prompts = this._prompts();
+    const entries = this._entries();
 
     // Ein angehaltenes Tippfeld zeigt den vollen Text, nicht eine halbe Zeile.
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      this._typed = prompts[0];
+      this._typed = entries[0]?.text ?? '';
       return;
     }
 
     this._timer = setInterval(() => {
-      const prompt = prompts[this._index];
+      const prompt = entries[this._index]?.text ?? '';
       if (!this._deleting) {
         this._chars += 1;
         if (this._chars >= prompt.length) {
@@ -402,8 +421,19 @@ export class VelgLandingForge extends LitElement {
         if (this._chars <= 0) {
           this._chars = 0;
           this._deleting = false;
-          this._index = (this._index + 1) % prompts.length;
+          this._index = (this._index + 1) % entries.length;
           this._anchor = this._index % this._anchors().length;
+          // Der Faecher eine Ebene hoeher soll dieselbe Welt zeigen wie der
+          // Satz, der gerade anlaeuft. Ein Ereignis statt eines gemeinsamen
+          // Zustands: die Frontseite ist der Ort, an dem die beiden
+          // Abschnitte sich kennen, nicht die Abschnitte selbst.
+          this.dispatchEvent(
+            new CustomEvent('prompt-world', {
+              bubbles: true,
+              composed: true,
+              detail: { simulationId: entries[this._index]?.simulationId ?? null },
+            }),
+          );
         }
       }
       this._typed = prompt.slice(0, Math.max(0, this._chars));
