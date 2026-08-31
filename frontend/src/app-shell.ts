@@ -16,7 +16,7 @@ import type { Simulation } from './types/index.js';
 
 import { lazyRoute } from './utils/lazy-route.js';
 import { navigate, updateUrl } from './utils/navigation.js';
-import { getSimViewImport } from './utils/sim-view-imports.js';
+import { DEFAULT_TAB, getSimViewImport } from './utils/sim-view-imports.js';
 
 // Always-loaded: auth, layout, overlays, SEO-critical landing
 import './components/auth/LoginView.js';
@@ -567,6 +567,11 @@ export class VelgApp extends LitElement {
       },
       // --- Simulation-scoped routes (public read, auth for mutations) ---
       {
+        path: '/simulations/:id/overview',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'overview'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'overview', entitySlug),
+      },
+      {
         path: '/simulations/:id/lore/:entitySlug',
         render: ({ id, entitySlug }) => this._renderSimulationView(id ?? '', 'lore', entitySlug),
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'lore', entitySlug),
@@ -704,14 +709,23 @@ export class VelgApp extends LitElement {
           return false;
         },
       },
-      // Bare simulation URL → redirect to default view (lore)
+      /*
+       * Bare simulation URL → the overview.
+       *
+       * It used to land on the dossier, which made the lore page do two jobs at
+       * once: be the front door AND be the long read. The 2026-08-31 handoff
+       * splits them — the overview answers "what is this world" in one screen,
+       * and lore goes back to being a reading surface with a table of contents.
+       * DEFAULT_TAB names the target once so the register's ◈ and this redirect
+       * cannot drift apart.
+       */
       {
         path: '/simulations/:id',
         render: () => html``,
         enter: async ({ id }) => {
           if (id) {
-            window.history.replaceState(null, '', `/simulations/${id}/lore`);
-            this._router.goto(`/simulations/${id}/lore`);
+            window.history.replaceState(null, '', `/simulations/${id}/${DEFAULT_TAB}`);
+            this._router.goto(`/simulations/${id}/${DEFAULT_TAB}`);
           }
           return false;
         },

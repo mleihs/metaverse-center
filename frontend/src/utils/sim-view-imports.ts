@@ -2,7 +2,18 @@
  * Maps simulation view names to their dynamic import factories.
  * Used by _enterSimulationRoute() in app-shell to lazy-load view components.
  */
+/**
+ * Where a bare `/simulations/:id` lands, and the tab the register marks with ◈.
+ *
+ * Named once because three places must agree: the redirect in app-shell, the
+ * fallback in SimulationNav._detectActiveTab, and the ornament in the bar. It
+ * lives here rather than on the nav component so app-shell can import it
+ * without dragging a Lit element into the entry bundle.
+ */
+export const DEFAULT_TAB = 'overview';
+
 const viewImports: Record<string, () => Promise<unknown>> = {
+  overview: () => import('../components/simulation/SimulationOverview.js'),
   lore: () => import('../components/lore/SimulationLoreView.js'),
   broadsheet: () => import('../components/broadsheet/SimulationBroadsheet.js'),
   chronicle: () => import('../components/chronicle/ChronicleView.js'),

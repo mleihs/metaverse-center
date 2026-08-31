@@ -199,3 +199,57 @@ export const markerQuoteStyles = css`
     text-indent: -1.4em;
   }
 `;
+
+/**
+ * Selection / active: a tinted field inside a hairline, never an edge.
+ *
+ * WHY THIS IS THE FOURTH DEVICE AND NOT A FIFTH JOB OF THE THIRD
+ * The list above gives EMPHASIS ("this one is featured") the brutalist shadow
+ * and a brighter border, and that is right for a card that stands out in a
+ * static arrangement. SELECTION is a different claim: it says "this is the one
+ * you are looking at right now", it moves as the reader moves, and there is
+ * exactly one of it in its group. A shadow cannot say that — a shadow is a
+ * property of the object, and the object did not change when you clicked it.
+ *
+ * The design handoff of 2026-08-31 named this device explicitly and made it
+ * binding across every view: an active tab, the open conversation, the current
+ * table-of-contents entry, the edition being read, the selected filter chip.
+ * All of them get the same two declarations, and none of them gets a bar down
+ * an edge — that was the shape the accent-bar sweep removed from 110 places,
+ * and selection is precisely the job it was doing in the ones that felt hardest
+ * to give up.
+ *
+ * WHY `outline` AND NOT `border`
+ * A border changes an element's box, so switching it on for the selected row
+ * shifts every other row by a pixel unless the unselected state already carries
+ * a transparent border of the same width — a coupling that breaks the moment
+ * someone restyles one of the two states. `outline` is drawn outside the box
+ * model, costs no layout, and with `outline-offset: -1px` sits exactly where a
+ * 1px inset border would. It also survives on an element that already spends
+ * its border on something else, which several of the consumers do.
+ *
+ * The tint is deliberately faint (6%). It has to read as "current" next to a
+ * hover state at a similar strength without competing with the amber TEXT that
+ * usually accompanies it; the outline, not the fill, is what makes it legible.
+ *
+ * USAGE
+ *   static styles = [markerSelectionStyles, css` … `];
+ *   <button class="tab ${active ? 'is-selected' : ''}">…</button>
+ *
+ * Override `--selection-color` on the element for a non-amber context (the
+ * dungeon's green aid/guard targeting, say). It defaults to the platform accent
+ * rather than `--color-primary` because selection is chrome: it must stay amber
+ * when a simulation theme repaints the content around it.
+ */
+export const markerSelectionStyles = css`
+  .is-selected {
+    background: color-mix(
+      in srgb,
+      var(--selection-color, var(--color-accent-amber)) 6%,
+      transparent
+    );
+    outline: 1px solid
+      color-mix(in srgb, var(--selection-color, var(--color-accent-amber)) 45%, transparent);
+    outline-offset: -1px;
+  }
+`;
