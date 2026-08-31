@@ -60,7 +60,43 @@ class ChatService:
             agent_data = row.get("agents")
             if agent_data:
                 agents_by_conv.setdefault(row["conversation_id"], []).append(agent_data)
+        await ChatService._enrich_presence(supabase, [a for lst in agents_by_conv.values() for a in lst])
         return agents_by_conv
+
+    @staticmethod
+    async def _enrich_presence(supabase: Client, agents: list[dict]) -> None:
+        """Trage zu jedem Agenten seinen Aufenthaltszustand ein.
+
+        Gelesen aus der Sicht ``agent_presence`` (Migration 327), nicht hier
+        gerechnet. Die Vorrangregel — Botschafter schlaegt Posten schlaegt Zone —
+        steht dort einmal, damit Chat, Rundschau und Mail nicht drei Fassungen
+        derselben Regel fuehren. Auf Prod gemessen: alle 14 Botschafter haben
+        auch einen Posten, die Reihenfolge entscheidet also darueber, ob
+        ``on_assignment`` ueberhaupt je erscheint.
+
+        Ein Fehlschlag laesst ``presence`` weg statt die Antwort mitzureissen.
+        Das Feld ist dann ``None``, und ``None`` heisst „niemand hat es gesagt" —
+        die Oberflaeche zeigt daraufhin KEINE Statuszeile statt einer erfundenen.
+        """
+        wanted = [a for a in agents if a and a.get("id")]
+        if not wanted:
+            return
+        try:
+            response = await (
+                supabase.table("agent_presence")
+                .select("agent_id, presence")
+                .in_("agent_id", [str(a["id"]) for a in wanted])
+                .execute()
+            )
+        except Exception:
+            logger.warning("Failed to read agent_presence", exc_info=True)
+            return
+
+        by_id = {str(row["agent_id"]): row.get("presence") for row in extract_list(response)}
+        for agent in wanted:
+            presence = by_id.get(str(agent["id"]))
+            if presence:
+                agent["presence"] = presence
 
     @staticmethod
     async def _batch_load_event_refs(
@@ -291,10 +327,7 @@ class ChatService:
         """
         # Guard: conversation must be active
         conv = await maybe_single_data(
-            supabase.table("chat_conversations")
-            .select("status")
-            .eq("id", str(conversation_id))
-            .maybe_single()
+            supabase.table("chat_conversations").select("status").eq("id", str(conversation_id)).maybe_single()
         )
         if not conv:
             yield SSEEvent(event="error", data={"error": "Conversation not found."})
@@ -371,6 +404,7 @@ class ChatService:
             agent_data = msg.pop("agents", None)
             if agent_data:
                 msg["agent"] = agent_data
+        await ChatService._enrich_presence(supabase, [m["agent"] for m in data if m.get("agent")])
 
         # Batch-load reactions (one RPC call for all messages)
         if include_reactions and data:
@@ -749,10 +783,7 @@ class ChatService:
         mood_score: int | None = None
         if agents:
             mood_data = await maybe_single_data(
-                supabase.table("agent_mood")
-                .select("mood_score")
-                .eq("agent_id", str(agents[0]["id"]))
-                .maybe_single()
+                supabase.table("agent_mood").select("mood_score").eq("agent_id", str(agents[0]["id"])).maybe_single()
             )
             if mood_data:
                 mood_score = mood_data["mood_score"]

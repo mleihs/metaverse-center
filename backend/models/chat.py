@@ -14,6 +14,20 @@ class AgentBrief(BaseModel):
     name: str
     portrait_image_url: str | None = None
 
+    # Wo dieser Agent gerade ist — als ZUSTAND, nicht als Wort.
+    #
+    # Das Frontend beschriftet ihn („Im Amt", „Unterwegs", „Im Auftrag",
+    # „Erreichbar"), weil die Übersetzungen dort leben. Die REGEL steht in der
+    # Sicht `agent_presence` (Migration 327) und nirgends sonst: nennt morgen die
+    # Rundschau oder eine Mail denselben Status, liest sie dieselbe Quelle statt
+    # sie aus Rohfeldern nachzurechnen.
+    #
+    # `None` heisst „niemand hat es gesagt" — nicht „erreichbar". Der Unterschied
+    # ist der Grund, warum die Oberfläche im Zweifel KEINE Statuszeile zeigt
+    # statt einer erfundenen: ein Signal, das nie umspringt, ist Dekor mit dem
+    # Aussehen einer Messung.
+    presence: Literal["in_office", "travelling", "on_assignment", "reachable"] | None = None
+
 
 class ConversationCreate(BaseModel):
     """Schema for creating a new chat conversation."""
