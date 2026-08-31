@@ -127,3 +127,82 @@ damit zur Sitzung, die sie hält:
 
 Deshalb nicht einseitig getan: ein öffentlicher Endpunkt wird nicht aus einer
 fremden, gerade laufenden Datei entfernt.
+
+---
+
+## T6 · Dashboard-Redesign (Claude-Design-Paket, „Command Stage" 4a)
+
+**Übergeben:** 31.08.2026 vom Nutzer. **Paket liegt in `handoff/dashboard-redesign/`**
+(6,6 MB, 18 Dateien). **Zuständig: `velgarien-rebuild-45`**, nach ihren
+laufenden vier Punkten.
+
+    Dashboard Redesign.dc.html   Referenzprototyp, 1 623 Zeilen, Stile inline
+    README.md                    Spezifikation, sehr genau (Pixel, Kurven, Zeiten)
+    uploads/…Gemini….jpeg        Bühnenbild „war room" — FINAL, kein Platzhalter
+    assets/e-*.png, b-*.png      PLATZHALTER-Weltkunst (Zuschnitte, Themen passen
+                                 teils nicht — die Insektenwelt zeigt Ozean)
+    assets/portrait-0/1/2.png    PLATZHALTER-Porträts
+    _ds/, support.js            Laufzeit + Merkmale, damit die Datei im Browser aufgeht
+
+**Im Umfang:** Abschnitt `id="4a"` (Hauptbildschirm) und `id="3a"`
+(Weltenregister). `id="5a"` ist die 2560-px-Probe von 4a, kein eigener
+Bildschirm. 1a/2a/2b sind frühere Erkundungen und ausdrücklich außerhalb.
+
+**Ersetzt:** `frontend/src/components/platform/SimulationsDashboard.ts`
+(2 312 Zeilen), Route `/dashboard` in `app-shell.ts:170`.
+
+### Was ich gegen den Code gemessen habe — und was fehlt
+
+`GET /users/me/dashboard` liefert heute **vier Felder**:
+
+    memberships · active_epoch_participations · academy_epochs_played
+    active_resonance_count
+
+Der Entwurf braucht deutlich mehr. Gemessen, was es gibt und was nicht:
+
+| Der Entwurf verlangt | Gibt es? |
+|---|---|
+| Countdown bis Zyklus-Auflösung | ⚠ nicht im DTO; Epochenzyklen kennen die Frist, die Aufbereitung fehlt |
+| „Requires You"-Warteschlange, `Orders placed 1/3` | ⚠ nicht aggregiert; die Einzelteile liegen bei den Epochen |
+| Substrat `anomalous | stable` | ⚠ kein solcher Zustand; `resonanceApi.list` liefert Zeilen, keinen Status |
+| Auszeichnungen `12/48` + letzte Freischaltung | ✅ `achievement_definitions` existiert (Migr. 190–195) |
+| Dossier-Karussell, TCG-Karten | ✅ Spec vorhanden: `docs/explanations/tcg-card-system.md` |
+| Resonanz-Zeilen mit Alter + Balken | ✅ `resonanceApi.list` |
+| 44 Welten mit Kunst, `NN AG · NN BLDG` | ✅ `simulationsApi.listPublic` + `simulation_dashboard` |
+| Lore + Zitat je Welt | ⚠ im Prototyp fest im `MY`-Array; Herkunft im Backend offen |
+| Weltkunst je Welt | ⚠ Platzhalter im Paket; echte Bilder liegen im Backend |
+
+🔑 **Das ist der eigentliche Aufwand, nicht das CSS.** Sechs der neun Zeilen
+sind Daten, die es so noch nicht gibt. Ein Dashboard, das drei erfundene Zahlen
+zeigt, wäre genau der Fehler, den `LandingService` gerade behoben hat
+(`47 worlds`/`3 epochs`/`128 resonances` → gemessen 16/0/1). **Zuerst messen,
+was die Zahlen wirklich sind, dann entscheiden, ob der Abschnitt gebaut wird.**
+
+### Zwei Punkte, die vor dem ersten Handgriff zu klären sind
+
+1. **`--container-max`** (`_layout.css:10`, heute `1600px`). Das Dashboard-Paket
+   verlangt einen **zentrierten Behälter mit `max-width: 1920px`** und
+   randlosen Rändern (Befehlsleiste, Bühnenbild, Fußlaufband). Die fünf
+   Arbeitsflächen, die heute an `--container-max` hängen (`SimulationShell`,
+   `EpochOpsBoard`, `EpochCommandCenter`, `EpochResultsView`), gingen dabei
+   stillschweigend mit. Also entweder ein eigenes Maß fürs Dashboard (so wie
+   `velgarien-rebuild-45` es der Frontseite gegeben hat) oder eine bewusste
+   Anhebung mit Blick auf alle fünf.
+2. **Haltepunkte:** Das Paket nennt `≥1920` und `≥2560`, Typo ×1,15 ab 2560,
+   Behälter bleibt bei 1920 auch ab 3840. **Das sind dieselben Haltepunkte wie
+   im Frontseiten-Paket** — es gibt also keinen Grund für zwei Rasterlogiken.
+
+### Was der Entwurf ausdrücklich NICHT hat
+
+Mobil und Tablet sind **nicht entworfen** (der README nennt es einen offenen
+Punkt und schlägt nur eine Stapelreihenfolge vor). Bevor gebaut wird, gehört
+entschieden, ob das Dashboard eine Schmalansicht bekommt oder ob `/dashboard`
+unter einer Breite auf etwas anderes verweist.
+
+### Was gut passt
+
+Der Entwurf hält sich an die bestehenden Regeln: keine farbigen Kantenbalken
+(das Lint-Tor `lint-no-accent-edge-bar.sh` würde sie ohnehin abweisen), Radius 0
+außer TCG-Karten, nur versetzte Schatten, Courier-Versalien für Überschriften,
+Spectral für Erzähltext, `msg()` für jede Zeichenkette, keine Geviertstriche.
+Das ist dieselbe Sprache wie die neue Frontseite.

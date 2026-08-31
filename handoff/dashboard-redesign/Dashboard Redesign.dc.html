@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+  <link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+  <script src="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/_ds_bundle.js"></script>
+  <style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    :root { --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"); }
+    @keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    @keyframes ping { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.4);opacity:0} }
+    @keyframes deal-in { from { opacity: 0; transform: translateY(34px) rotate(-2.5deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+    @keyframes legendary-pulse { 0%,100% { box-shadow: 9px 9px 0 #000000, 0 0 10px rgba(245,158,11,.25); } 50% { box-shadow: 9px 9px 0 #000000, 0 0 26px rgba(245,158,11,.5); } }
+    @keyframes plate-sheen { 0% { background-position: -160% 0; } 100% { background-position: 260% 0; } }
+    @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .car-track { scrollbar-width: none; -ms-overflow-style: none; }
+    .car-track::-webkit-scrollbar { display: none; }
+    .car-btn { transition: background .2s, border-color .2s, color .2s; }
+    .car-btn:hover { background: rgba(245,158,11,.12); border-color: #f59e0b; }
+    @keyframes car-spin { to { transform: rotate(360deg); } }
+    .car-spin { width:26px; height:26px; border:2px solid #222; border-top-color:#f59e0b; border-radius:50%; animation:car-spin .8s linear infinite; }
+    .hv-lift { transition: transform .35s cubic-bezier(.22,1,.36,1), border-color .3s; }
+    .hv-lift:hover { transform:translateY(-3px); border-color:#3a3a3a !important; }
+    .monitor-img { transition: opacity .4s, filter .4s, transform .6s cubic-bezier(.22,1,.36,1); }
+    .hv-lift:hover .monitor-img { opacity:.95 !important; filter:saturate(1) !important; transform:scale(1.03); }
+    .hv-arrow .arr { display:inline-block; transition: transform .2s; }
+    .hv-arrow:hover .arr { transform:translateX(5px); }
+    @keyframes kb { from{transform:scale(1)} to{transform:scale(1.07)} }
+    @keyframes rise { from{opacity:0; transform:translateY(22px)} to{opacity:1; transform:none} }
+    @keyframes wfade-a { from{opacity:.2; transform:scale(1.04)} to{opacity:1; transform:none} }
+    @keyframes wfade-b { from{opacity:.2; transform:scale(1.04)} to{opacity:1; transform:none} }
+    .wr-row { transition: background .22s; cursor:pointer; }
+    .wr-row:hover { background:#0d0d0d; }
+    .wr-row .wr-t { transition: color .22s, transform .22s; }
+    .wr-row:hover .wr-t { color:#f59e0b !important; transform:translateX(10px); }
+    @keyframes bar-grow { from { width:0; } }
+  </style>
+</helmet>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 5A — 4K-PROBE (2560px) ═══════════════ -->
+  <div id="5a" data-screen-label="5a Command Stage 2560" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#5a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">5A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">4K-Probe — <a href="#4a">4a</a> bei 2560px: Chrome/Stage full-bleed, Inhalt als zentrierter 1920-Container, Community 3-spaltig</span>
+    </div>
+
+    <div style="width:2560px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Command Strip (full-bleed) -->
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Operative Terminal // k.mercer</span>
+          <span style="color:#333;">|</span>
+          <span>Shards: <b style="color:#e5e5e5;">3</b></span>
+          <span style="color:#333;">|</span>
+          <span>Active Ops: <b style="color:#e5e5e5;">2</b></span>
+          <span style="color:#333;">|</span>
+          <span>Substrate: <b style="color:{{ substrateColor }};">{{ substrateLabel }}</b></span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; color:#666;">2026.07.12 // 14:31 UTC</span>
+      </div>
+
+      <sc-if value="{{ anomalous }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 20px; background:rgba(239,68,68,.07); border-bottom:1px solid rgba(239,68,68,.25); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#ef8888;">
+          <span style="display:inline-flex; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>
+          <b style="color:#ef4444;">2</b> overlapping tremor signatures — interference patterns forming
+        </div>
+      </sc-if>
+
+      <!-- Stage: Artwork full-bleed, Inhalt im 1920-Container -->
+      <div style="position:relative; overflow:hidden; border-bottom:1px solid #222;">
+        <div style="position:absolute; inset:0; background-image:url('uploads/Gemini_Generated_Image_v68o98v68o98v68o.jpeg'); background-size:cover; background-position:center 42%; filter:brightness(.75); animation:kb 32s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(94deg, rgba(6,6,6,.96) 22%, rgba(6,6,6,.68) 48%, rgba(6,6,6,.18) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(6,6,6,.6), transparent 30%, transparent 62%, rgba(6,6,6,.8));"></div>
+        <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.12) 3px, rgba(0,0,0,.12) 6px); pointer-events:none;"></div>
+        <div style="position:relative; max-width:1920px; margin:0 auto; padding:64px 64px 56px; box-sizing:border-box;">
+          <div style="display:flex; align-items:center; gap:10px; font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:22px; animation:rise .6s ease both;"><span style="width:22px; height:1px; background:#f59e0b;"></span>Priority // Cycle 7 resolves in</div>
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:69px; line-height:.95; color:#e5e5e5; font-variant-numeric:tabular-nums; text-shadow:0 5px 40px rgba(0,0,0,.75); animation:rise .7s ease .1s both;">{{ countdown }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:48px; margin-top:28px; animation:rise .7s ease .25s both;">
+            <div style="min-width:0; max-width:760px;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:28px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin-bottom:9px;">Epoch of Brittle Crowns</div>
+              <div style="font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#a0a0a0; margin-bottom:16px;">The Chitinous Mandate · <span style="color:#4ade80;">Active</span> · <span style="white-space:nowrap;">RP <b style="color:#e5e5e5;">3/5</b></span> · <span style="white-space:nowrap;">Orders placed <b style="color:#f59e0b;">1/3</b></span></div>
+              <div style="display:flex; gap:3px;">
+                <sc-for list="{{ prioritySegs }}" as="seg" hint-placeholder-count="12"><span style="{{ seg }}"></span></sc-for>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:12px; flex:0 0 auto;">
+              <span style="display:inline-flex; align-items:center; gap:10px; padding:18px 42px; font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" style-hover="background:#fbbf24;">Enter War Room →</span>
+              <a href="#5a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;">Review standing orders <span class="arr">→</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attention Queue -->
+      <div style="max-width:1920px; margin:0 auto; padding:32px 64px 0; box-sizing:border-box;">
+        <div style="display:flex; align-items:center; gap:10px; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:14px;">Requires You<span style="color:#444;">// sorted by deadline</span></div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+          <div style="background:#0a0a0a; border:1px solid #222; padding:18px 22px; cursor:pointer;" style-hover="background:#0d0d0d; border-color:#2e2e2e;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">Place Orders</span>
+              <span style="display:inline-flex; align-items:center; gap:6px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; animation:rec-blink 1.5s ease-in-out infinite;"></span>Window open</span>
+            </div>
+            <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">Epoch of Brittle Crowns</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:11px; letter-spacing:1px; color:#888;">
+              <span><b style="color:#f59e0b;">2 of 3</b> orders unplaced</span>
+              <a href="#5a" class="hv-arrow" style="letter-spacing:2px; text-transform:uppercase;">Order <span class="arr">→</span></a>
+            </div>
+          </div>
+          <sc-for list="{{ ops }}" as="op" hint-placeholder-count="2">
+            <div style="background:#0a0a0a; border:1px solid #222; padding:18px 22px; cursor:pointer;" style-hover="background:#0d0d0d; border-color:#2e2e2e;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ op.name }}</span>
+                <span style="display:inline-flex; align-items:center; gap:6px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:{{ op.accent }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ op.accent }};"></span>{{ op.status }}</span>
+              </div>
+              <div style="font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">{{ op.sim }}</div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:11px; letter-spacing:1px; color:#888;">
+                <span>Cycle <b style="color:#e5e5e5;">{{ op.cycle }}</b> · RP <b style="color:#e5e5e5;">{{ op.rp }}</b></span>
+                <a href="#5a" class="hv-arrow" style="letter-spacing:2px; text-transform:uppercase;">{{ op.cta }} <span class="arr">→</span></a>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Meine Welten -->
+      <div style="border-bottom:1px solid #222;">
+        <div style="max-width:1920px; margin:0 auto; padding:48px 64px; box-sizing:border-box; display:grid; grid-template-columns:1fr 760px; gap:56px; align-items:stretch;">
+          <div style="display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+              <div>
+                <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Simulation Roster</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:27px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Meine Welten <span style="color:#666; font-size:15px;">3</span></h2>
+              </div>
+            </div>
+            <sc-for list="{{ myWorlds }}" as="w" hint-placeholder-count="3">
+              <div class="wr-row" onMouseEnter="{{ w.go }}" style="flex:1; display:grid; grid-template-columns:56px 1fr auto; gap:24px; align-items:center; padding:32px 10px; border-top:1px solid #222;">
+                <span style="font-size:13px; color:#666;">{{ w.idx }}</span>
+                <div style="min-width:0;">
+                  <div class="wr-t" style="display:flex; align-items:baseline; gap:12px; margin-bottom:8px;">
+                    <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:28px; letter-spacing:1.5px; text-transform:uppercase; color:inherit; margin:0; white-space:nowrap;">{{ w.name }}</h3>
+                    <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:{{ w.tint }};">{{ w.theme }}</span>
+                  </div>
+                  <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:15px; color:#888; margin:0;">{{ w.desc }}</p>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; gap:7px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:{{ w.statusColor }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ w.statusColor }};"></span>{{ w.status }}</span>
+                  <span style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">{{ w.role }} · {{ w.stats }}</span>
+                </div>
+              </div>
+            </sc-for>
+            <div class="wr-row" style="flex:1; display:grid; grid-template-columns:56px 1fr; gap:24px; align-items:center; padding:28px 10px; border-top:1px solid #222; border-bottom:1px solid #222;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; color:#f59e0b;">+</span>
+              <div>
+                <div class="wr-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;">Fracture a New Shard</div>
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13.5px; color:#666; margin:5px 0 0;">One sentence in. A civilization out.</p>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; padding-top:56px;">
+            <div style="position:relative; aspect-ratio:16/9; flex:0 0 auto; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; background:#060606;">
+              <div style="{{ wArt }}"></div>
+              <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.13) 3px,rgba(0,0,0,.13) 6px); pointer-events:none;"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 52%, rgba(6,6,6,.95));"></div>
+              <div style="position:absolute; left:24px; right:24px; bottom:20px; display:flex; justify-content:space-between; align-items:flex-end; gap:24px;">
+                <div>
+                  <div style="font-size:10.5px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:7px;">{{ wTag }}</div>
+                  <div style="font-family:'Courier New',monospace; font-weight:700; font-size:28px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5;">{{ wName }}</div>
+                </div>
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:2px; color:#888; flex:0 0 auto;">{{ wIdx }} / 03</div>
+              </div>
+            </div>
+            <div style="margin-top:24px; flex:1; display:flex; flex-direction:column; justify-content:space-between; gap:18px; border:1px solid #222; background:#0a0a0a; padding:28px 32px;">
+              <p style="font-family:'Spectral',Georgia,serif; font-size:17px; line-height:1.75; color:#a0a0a0; margin:0;">{{ wLore }}</p>
+              <div style="border-top:1px solid #222; padding-top:18px;">
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:15.5px; line-height:1.65; color:#e5e5e5; margin:0 0 10px;">“{{ wQuote }}”</p>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:20px; min-height:26px;">
+                  <p style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; line-height:1.6; color:#888; margin:0;">— {{ wWho }}</p>
+                  <a href="#5a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; letter-spacing:3px; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;">Enter world <span class="arr">→</span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community + Right Rail -->
+      <div style="max-width:1920px; margin:0 auto; padding:40px 64px 48px; box-sizing:border-box; display:grid; grid-template-columns:1fr 380px; gap:32px;">
+        <div style="min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+            <div>
+              <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Shard Registry</div>
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:23px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Community <span style="color:#666; font-size:14px;">44</span></h2>
+            </div>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:2.5px; text-transform:uppercase;">Alle 44 Welten <span class="arr">→</span></a>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+            <sc-for list="{{ comm4 }}" as="c" hint-placeholder-count="6">
+              <div class="hv-lift" style="position:relative; border:1px solid #222; background:#0a0a0a; overflow:hidden; cursor:pointer;">
+                <div style="position:relative; height:190px; overflow:hidden;">
+                  <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ c.img }}; background-size:cover; background-position:center 30%; opacity:.72; filter:saturate(.8);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 52%);"></div>
+                  <span style="position:absolute; top:10px; left:12px; display:inline-flex; align-items:center; gap:5px; font-size:8px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:4px; height:4px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC {{ c.coord }}</span>
+                  <span style="position:absolute; top:10px; right:12px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ c.accent }}; background:rgba(6,6,6,.7); padding:3px 7px;">{{ c.theme }}</span>
+                  <div style="position:absolute; left:14px; right:14px; bottom:11px; display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+                    <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</span>
+                    <span style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#888; flex:0 0 auto; white-space:nowrap;">{{ c.agents }} AG · {{ c.buildings }} BLDG</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="wr-row" style="display:flex; justify-content:space-between; align-items:center; border:1px solid #222; background:#0a0a0a; padding:15px 20px; margin-top:16px;">
+            <span style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#888; white-space:nowrap;"><b style="color:#f59e0b; font-family:'Courier New',monospace;">+38</b> weitere Welten im Register</span>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;">Index öffnen <span class="arr">→</span></a>
+          </div>
+        </div>
+
+        <!-- Right Rail -->
+        <div style="display:flex; flex-direction:column; gap:28px;">
+          <div>
+            <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px; white-space:nowrap;">Dossier // Operatives</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:2px; color:#888; white-space:nowrap;">{{ spotIdx }} <span style="color:#555;">/ {{ spotTotal }}</span></span>
+              <div style="display:flex; gap:5px;">
+                <button onClick="{{ spotPrev }}" class="car-btn" aria-label="Vorheriger Agent" style="width:30px; height:30px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:13px; cursor:pointer;">←</button>
+                <button onClick="{{ spotNext }}" class="car-btn" aria-label="Nächster Agent" style="width:30px; height:30px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:13px; cursor:pointer;">→</button>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:center; perspective:1100px;">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ spot4.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ spot4.tint }};">{{ spot4.kicker }}</span>
+                  <span style="font-size:8px; color:#666;">{{ spot4.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ spot4.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ spot4.holo }}"></div>
+                  <div style="{{ spot4.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ spot4.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ spot4.tint }};">{{ spot4.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ spot4.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ spot4.bestColor }};">{{ spot4.bestVal }}</span>
+                  <span style="font-size:6.5px; letter-spacing:.08em; color:{{ spot4.bestColor }}; opacity:.8;">{{ spot4.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ spot4.plate }}">✦ {{ spot4.name }} ✦</div>
+                  <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ spot4.role }} · {{ spot4.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ spot4.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ spot4.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ spot4.tint }};">★ {{ spot4.rarity }}</span>
+                  <span style="font-size:7.5px; color:#666;">View Dossier →</span>
+                </div>
+                <div style="{{ spot4.ring }}"></div>
+                <div style="{{ spot4.glare }}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Substrate Monitor</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ resonances }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:10px 1fr 70px 28px; gap:12px; align-items:center; background:#0a0a0a; padding:12px 14px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ r.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ r.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ r.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b;">Commendations</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#e5e5e5;">12<span style="color:#666;">/48</span></span>
+            </div>
+            <div style="height:6px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="position:absolute; inset:0; width:25%; background:#f59e0b;"></span></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:9px;">Zuletzt: „First Blood" — Cycle 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substrate Ticker (full-bleed) -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker-scroll 40s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 4A — COMMAND STAGE ═══════════════ -->
+  <div id="4a" data-screen-label="4a Command Stage" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#4a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">4A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Command Stage — kinematische Deadline-Bühne, Welten-Umschalter mit Live-Preview + Lore, ohne Markierungsstreifen</span>
+    </div>
+
+    <div style="width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Command Strip -->
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Operative Terminal // k.mercer</span>
+          <span style="color:#333;">|</span>
+          <span>Shards: <b style="color:#e5e5e5;">3</b></span>
+          <span style="color:#333;">|</span>
+          <span>Active Ops: <b style="color:#e5e5e5;">2</b></span>
+          <span style="color:#333;">|</span>
+          <span>Substrate: <b style="color:{{ substrateColor }};">{{ substrateLabel }}</b></span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; color:#666;">2026.07.12 // 14:31 UTC</span>
+      </div>
+
+      <sc-if value="{{ anomalous }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 20px; background:rgba(239,68,68,.07); border-bottom:1px solid rgba(239,68,68,.25); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#ef8888;">
+          <span style="display:inline-flex; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>
+          <b style="color:#ef4444;">2</b> overlapping tremor signatures — interference patterns forming
+        </div>
+      </sc-if>
+
+      <!-- Kinematische Priority-Bühne -->
+      <div style="position:relative; overflow:hidden; border-bottom:1px solid #222;">
+        <div style="position:absolute; inset:0; background-image:url('uploads/Gemini_Generated_Image_v68o98v68o98v68o.jpeg'); background-size:cover; background-position:center 42%; filter:brightness(.75); animation:kb 32s ease-in-out infinite alternate;"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(94deg, rgba(6,6,6,.96) 26%, rgba(6,6,6,.72) 52%, rgba(6,6,6,.2) 100%);"></div>
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(6,6,6,.6), transparent 30%, transparent 62%, rgba(6,6,6,.8));"></div>
+        <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,.12) 3px, rgba(0,0,0,.12) 6px); pointer-events:none;"></div>
+        <div style="position:relative; padding:56px 40px 48px;">
+          <div style="display:flex; align-items:center; gap:10px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:#f59e0b; margin-bottom:20px; animation:rise .6s ease both;"><span style="width:22px; height:1px; background:#f59e0b;"></span>Priority // Cycle 7 resolves in</div>
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:60px; line-height:.95; color:#e5e5e5; font-variant-numeric:tabular-nums; text-shadow:0 5px 40px rgba(0,0,0,.75); animation:rise .7s ease .1s both;">{{ countdown }}</div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:48px; margin-top:26px; animation:rise .7s ease .25s both;">
+            <div style="min-width:0; max-width:640px;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin-bottom:8px;">Epoch of Brittle Crowns</div>
+              <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#a0a0a0; margin-bottom:16px;">The Chitinous Mandate · <span style="color:#4ade80;">Active</span> · <span style="white-space:nowrap;">RP <b style="color:#e5e5e5;">3/5</b></span> · <span style="white-space:nowrap;">Orders placed <b style="color:#f59e0b;">1/3</b></span></div>
+              <div style="display:flex; gap:3px;">
+                <sc-for list="{{ prioritySegs }}" as="seg" hint-placeholder-count="12"><span style="{{ seg }}"></span></sc-for>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:12px; flex:0 0 auto;">
+              <span style="display:inline-flex; align-items:center; gap:10px; padding:17px 38px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" style-hover="background:#fbbf24;">Enter War Room →</span>
+              <a href="#4a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0;">Review standing orders <span class="arr">→</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attention Queue -->
+      <div style="padding:28px 40px 0;">
+        <div style="display:flex; align-items:center; gap:10px; font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:14px;">Requires You<span style="color:#444;">// sorted by deadline</span></div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;">
+          <div style="background:#0a0a0a; border:1px solid #222; padding:16px 18px; cursor:pointer;" style-hover="background:#0d0d0d; border-color:#2e2e2e;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">Place Orders</span>
+              <span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;"><span style="width:5px; height:5px; border-radius:50%; background:#f59e0b; animation:rec-blink 1.5s ease-in-out infinite;"></span>Window open</span>
+            </div>
+            <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">Epoch of Brittle Crowns</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:10px; letter-spacing:1px; color:#888;">
+              <span><b style="color:#f59e0b;">2 of 3</b> orders unplaced</span>
+              <a href="#4a" class="hv-arrow" style="letter-spacing:2px; text-transform:uppercase;">Order <span class="arr">→</span></a>
+            </div>
+          </div>
+          <sc-for list="{{ ops }}" as="op" hint-placeholder-count="2">
+            <div style="background:#0a0a0a; border:1px solid #222; padding:16px 18px; cursor:pointer;" style-hover="background:#0d0d0d; border-color:#2e2e2e;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ op.name }}</span>
+                <span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ op.accent }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ op.accent }};"></span>{{ op.status }}</span>
+              </div>
+              <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">{{ op.sim }}</div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; font-size:10px; letter-spacing:1px; color:#888;">
+                <span>Cycle <b style="color:#e5e5e5;">{{ op.cycle }}</b> · RP <b style="color:#e5e5e5;">{{ op.rp }}</b></span>
+                <a href="#4a" class="hv-arrow" style="letter-spacing:2px; text-transform:uppercase;">{{ op.cta }} <span class="arr">→</span></a>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Meine Welten — Umschalter mit Live-Preview -->
+      <div style="padding:44px 40px; display:grid; grid-template-columns:1fr 620px; gap:48px; align-items:stretch; border-bottom:1px solid #222;">
+        <div style="display:flex; flex-direction:column;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+            <div>
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Simulation Roster</div>
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Meine Welten <span style="color:#666; font-size:14px;">3</span></h2>
+            </div>
+          </div>
+          <sc-for list="{{ myWorlds }}" as="w" hint-placeholder-count="3">
+            <div class="wr-row" onMouseEnter="{{ w.go }}" style="flex:1; display:grid; grid-template-columns:52px 1fr auto; gap:22px; align-items:center; padding:27px 10px; border-top:1px solid #222;">
+              <span style="font-size:12px; color:#666;">{{ w.idx }}</span>
+              <div style="min-width:0;">
+                <div class="wr-t" style="display:flex; align-items:baseline; gap:12px; margin-bottom:7px;">
+                  <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:1.5px; text-transform:uppercase; color:inherit; margin:0; white-space:nowrap;">{{ w.name }}</h3>
+                  <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.tint }};">{{ w.theme }}</span>
+                </div>
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13.5px; color:#888; margin:0;">{{ w.desc }}</p>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+                <span style="display:inline-flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.statusColor }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ w.statusColor }};"></span>{{ w.status }}</span>
+                <span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">{{ w.role }} · {{ w.stats }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <div class="wr-row" style="flex:1; display:grid; grid-template-columns:52px 1fr; gap:22px; align-items:center; padding:24px 10px; border-top:1px solid #222; border-bottom:1px solid #222;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; color:#f59e0b;">+</span>
+            <div>
+              <div class="wr-t" style="font-family:'Courier New',monospace; font-weight:700; font-size:15px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b;">Fracture a New Shard</div>
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; color:#666; margin:5px 0 0;">One sentence in. A civilization out.</p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; padding-top:52px;">
+          <div style="position:relative; aspect-ratio:16/9; flex:0 0 auto; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden; background:#060606;">
+            <div style="{{ wArt }}"></div>
+            <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.13) 3px,rgba(0,0,0,.13) 6px); pointer-events:none;"></div>
+            <div style="position:absolute; inset:0; background:linear-gradient(180deg, transparent 52%, rgba(6,6,6,.95));"></div>
+            <div style="position:absolute; left:22px; right:22px; bottom:18px; display:flex; justify-content:space-between; align-items:flex-end; gap:24px;">
+              <div>
+                <div style="font-size:9.5px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:7px;">{{ wTag }}</div>
+                <div style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; letter-spacing:.08em; text-transform:uppercase; color:#e5e5e5;">{{ wName }}</div>
+              </div>
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:2px; color:#888; flex:0 0 auto;">{{ wIdx }} / 03</div>
+            </div>
+          </div>
+          <div style="margin-top:22px; flex:1; display:flex; flex-direction:column; justify-content:space-between; gap:16px; border:1px solid #222; background:#0a0a0a; padding:24px 28px;">
+            <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.75; color:#a0a0a0; margin:0;">{{ wLore }}</p>
+            <div style="border-top:1px solid #222; padding-top:16px;">
+              <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:14px; line-height:1.65; color:#e5e5e5; margin:0 0 10px;">“{{ wQuote }}”</p>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:20px; min-height:26px;">
+                <p style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; line-height:1.6; color:#888; margin:0;">— {{ wWho }}</p>
+                <a href="#4a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:3px; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;">Enter world <span class="arr">→</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community + Right Rail -->
+      <div style="display:grid; grid-template-columns:1fr 356px; gap:28px; padding:36px 40px 40px;">
+        <div style="min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+            <div>
+              <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px;">Shard Registry</div>
+              <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Community <span style="color:#666; font-size:13px;">44</span></h2>
+            </div>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;">Alle 44 Welten <span class="arr">→</span></a>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:14px;">
+            <sc-for list="{{ comm4 }}" as="c" hint-placeholder-count="6">
+              <div class="hv-lift" style="position:relative; border:1px solid #222; background:#0a0a0a; overflow:hidden; cursor:pointer;">
+                <div style="position:relative; height:172px; overflow:hidden;">
+                  <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ c.img }}; background-size:cover; background-position:center 30%; opacity:.72; filter:saturate(.8);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 52%);"></div>
+                  <span style="position:absolute; top:10px; left:12px; display:inline-flex; align-items:center; gap:5px; font-size:8px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:4px; height:4px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC {{ c.coord }}</span>
+                  <span style="position:absolute; top:10px; right:12px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ c.accent }}; background:rgba(6,6,6,.7); padding:3px 7px;">{{ c.theme }}</span>
+                  <div style="position:absolute; left:14px; right:14px; bottom:11px; display:flex; justify-content:space-between; align-items:baseline; gap:12px;">
+                    <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</span>
+                    <span style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#888; flex:0 0 auto; white-space:nowrap;">{{ c.agents }} AG · {{ c.buildings }} BLDG</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="wr-row" style="display:flex; justify-content:space-between; align-items:center; border:1px solid #222; background:#0a0a0a; padding:14px 18px; margin-top:14px;">
+            <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888; white-space:nowrap;"><b style="color:#f59e0b; font-family:'Courier New',monospace;">+38</b> weitere Welten im Register</span>
+            <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; white-space:nowrap; flex:0 0 auto;">Index öffnen <span class="arr">→</span></a>
+          </div>
+        </div>
+
+        <!-- Right Rail -->
+        <div style="display:flex; flex-direction:column; gap:28px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:6px; white-space:nowrap;">Dossier // Operatives</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:2px; color:#888; white-space:nowrap;">{{ spotIdx }} <span style="color:#555;">/ {{ spotTotal }}</span></span>
+              <div style="display:flex; gap:5px;">
+                <button onClick="{{ spotPrev }}" class="car-btn" aria-label="Vorheriger Agent" style="width:30px; height:30px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:13px; cursor:pointer;">←</button>
+                <button onClick="{{ spotNext }}" class="car-btn" aria-label="Nächster Agent" style="width:30px; height:30px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:13px; cursor:pointer;">→</button>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:center; perspective:1100px;">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ spot4.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ spot4.tint }};">{{ spot4.kicker }}</span>
+                  <span style="font-size:8px; color:#666;">{{ spot4.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ spot4.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ spot4.holo }}"></div>
+                  <div style="{{ spot4.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ spot4.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ spot4.tint }};">{{ spot4.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ spot4.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ spot4.bestColor }};">{{ spot4.bestVal }}</span>
+                  <span style="font-size:6.5px; letter-spacing:.08em; color:{{ spot4.bestColor }}; opacity:.8;">{{ spot4.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ spot4.plate }}">✦ {{ spot4.name }} ✦</div>
+                  <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ spot4.role }} · {{ spot4.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ spot4.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ spot4.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ spot4.tint }};">★ {{ spot4.rarity }}</span>
+                  <span style="font-size:7.5px; color:#666;">View Dossier →</span>
+                </div>
+                <div style="{{ spot4.ring }}"></div>
+                <div style="{{ spot4.glare }}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Substrate Monitor</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ resonances }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:10px 1fr 70px 28px; gap:12px; align-items:center; background:#0a0a0a; padding:12px 14px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ r.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ r.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ r.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b;">Commendations</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#e5e5e5;">12<span style="color:#666;">/48</span></span>
+            </div>
+            <div style="height:6px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="position:absolute; inset:0; width:25%; background:#f59e0b;"></span></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:9px;">Zuletzt: „First Blood" — Cycle 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substrate Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker-scroll 40s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 3a — SIMULATION INDEX ═══════════════ -->
+  <div id="3a" data-screen-label="3a Simulation Index" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#3a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">3A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Index-Screen — alle Simulationen, Suche · Filter · Sort (live)</span>
+    </div>
+
+    <div style="width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <span style="position:absolute; top:4px; left:4px; width:10px; height:10px; border-left:2px solid #333; border-top:2px solid #333;"></span>
+        <span style="position:absolute; top:4px; right:4px; width:10px; height:10px; border-right:2px solid #333; border-top:2px solid #333;"></span>
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Shard Registry // metaverse.center</span>
+          <span style="color:#333;">|</span>
+          <span>On file: <b style="color:#e5e5e5;">{{ indexTotal }}</b></span>
+          <span style="color:#333;">|</span>
+          <span>Shown: <b style="color:#f59e0b;">{{ indexCount }}</b></span>
+        </div>
+        <a href="#2b" style="font-size:10px; letter-spacing:2px; color:#666;">← zurück zum Dashboard</a>
+      </div>
+
+      <div style="padding:44px 40px 26px; border-bottom:1px solid #222;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:32px; margin-bottom:26px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">Shard Registry</div>
+            <h1 style="font-family:'Courier New',monospace; font-weight:700; font-size:34px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Alle Simulationen</h1>
+          </div>
+          <span class="hv-lift" style="display:inline-flex; align-items:center; gap:8px; padding:14px 26px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;">+ Fracture a New Shard</span>
+        </div>
+        <div style="position:relative; margin-bottom:22px;">
+          <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:13px; color:#666;">⌕</span>
+          <input onInput="{{ idxSearch }}" placeholder="Welt suchen — Name eingeben…" style="width:100%; box-sizing:border-box; background:#0a0a0a; border:1px solid #2a2a2a; color:#e5e5e5; font-family:'SF Mono',ui-monospace,monospace; font-size:13px; letter-spacing:1px; padding:15px 16px 15px 42px; outline:none;" style-focus="border-color:#f59e0b;">
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666; margin-right:4px;">Theme:</span>
+            <sc-for list="{{ themeChips }}" as="ch" hint-placeholder-count="6">
+              <span onClick="{{ ch.onClick }}" style="{{ ch.style }}">{{ ch.label }}</span>
+            </sc-for>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#666; margin-right:4px;">Sort:</span>
+            <sc-for list="{{ sortChips }}" as="ch" hint-placeholder-count="3">
+              <span onClick="{{ ch.onClick }}" style="{{ ch.style }}">{{ ch.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:32px 40px 48px; min-height:520px;">
+        <sc-if value="{{ indexCount }}" hint-placeholder-val="{{ 44 }}">
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px;">
+            <sc-for list="{{ allWorlds }}" as="w" hint-placeholder-count="12">
+              <div class="hv-lift" style="position:relative; border:1px solid #222; border-top:3px solid; border-top-color:{{ w.accent }}; background:#0a0a0a; overflow:hidden; cursor:pointer;">
+                <div style="position:relative; height:178px; overflow:hidden;">
+                  <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ w.img }}; background-size:cover; background-position:center 30%; opacity:.72; filter:saturate(.8);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 6%, transparent 52%);"></div>
+                  <span style="position:absolute; top:10px; left:12px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ w.accent }}; background:rgba(6,6,6,.7); border:1px solid #222; padding:3px 7px;">{{ w.theme }}</span>
+                  <span style="position:absolute; top:10px; right:12px; display:inline-flex; align-items:center; gap:5px; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:{{ w.statusColor }}; background:rgba(6,6,6,.7); padding:3px 8px;"><span style="width:4px; height:4px; border-radius:50%; background:{{ w.statusColor }};"></span>{{ w.status }}</span>
+                  <div style="position:absolute; left:14px; right:14px; bottom:11px;">
+                    <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ w.name }}</div>
+                    <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-top:5px;">{{ w.coord }} · {{ w.agents }} agents · {{ w.buildings }} bldgs</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ indexEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:120px 0; text-align:center;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:22px; letter-spacing:2px; text-transform:uppercase; color:#666;">Keine Welt gefunden</span>
+            <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#555;">Filter zurücksetzen oder anderen Namen suchen</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 2A — BANNER-STAPEL ═══════════════ -->
+  <div id="2a" data-screen-label="2a Banner-Stapel" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#2a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">2A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Banner-Stapel — Welten als breite Art-Banner, Community 2×2 großformatig</span>
+    </div>
+
+    <div style="width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Command Strip -->
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <span style="position:absolute; top:4px; left:4px; width:10px; height:10px; border-left:2px solid #333; border-top:2px solid #333;"></span>
+        <span style="position:absolute; top:4px; right:4px; width:10px; height:10px; border-right:2px solid #333; border-top:2px solid #333;"></span>
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Operative Terminal // k.mercer</span>
+          <span style="color:#333;">|</span>
+          <span>Shards: <b style="color:#e5e5e5;">3</b></span>
+          <span style="color:#333;">|</span>
+          <span>Active Ops: <b style="color:#e5e5e5;">2</b></span>
+          <span style="color:#333;">|</span>
+          <span>Substrate: <b style="color:{{ substrateColor }};">{{ substrateLabel }}</b></span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; color:#666;">2026.07.12 // 14:31 UTC</span>
+      </div>
+
+      <sc-if value="{{ anomalous }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 20px; background:rgba(239,68,68,.07); border-bottom:1px solid rgba(239,68,68,.25); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#ef8888;">
+          <span style="display:inline-flex; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>
+          <b style="color:#ef4444;">2</b> overlapping tremor signatures — interference patterns forming
+        </div>
+      </sc-if>
+
+      <!-- Priority Band: nächste Auflösung -->
+      <div style="display:grid; grid-template-columns:auto 1fr auto; gap:48px; align-items:center; padding:30px 40px; background:linear-gradient(180deg,#0d0d0d,#0a0a0a); border-bottom:1px solid #222; position:relative;">
+        <div>
+          <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">Cycle 7 resolves in</div>
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:52px; line-height:1; color:#e5e5e5; font-variant-numeric:tabular-nums;">{{ countdown }}</div>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:17px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin-bottom:6px;">Epoch of Brittle Crowns</div>
+          <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:14px;">The Chitinous Mandate · <span style="color:#4ade80;">Active</span> · RP <b style="color:#e5e5e5;">3/5</b> · Orders placed <b style="color:#f59e0b;">1/3</b></div>
+          <div style="display:flex; gap:3px;">
+            <sc-for list="{{ prioritySegs }}" as="seg" hint-placeholder-count="12"><span style="{{ seg }}"></span></sc-for>
+          </div>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:10px; padding:16px 34px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" style-hover="background:#fbbf24;">Enter War Room →</span>
+      </div>
+
+      <!-- Body -->
+      <div style="display:grid; grid-template-columns:1fr 356px; gap:28px; padding:32px 40px 40px;">
+        <div style="min-width:0; display:flex; flex-direction:column; gap:36px;">
+
+          <!-- Active Operations -->
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Active Operations</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Weitere Einsätze</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <sc-for list="{{ ops }}" as="op" hint-placeholder-count="2">
+                <div style="background:#0a0a0a; border:1px solid #222; border-left:3px solid; border-left-color:{{ op.accent }}; padding:16px 18px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ op.name }}</span>
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ op.accent }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ op.accent }};"></span>{{ op.status }}</span>
+                  </div>
+                  <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">{{ op.sim }}</div>
+                  <div style="display:flex; gap:2px; margin-bottom:12px;">
+                    <sc-for list="{{ op.segs }}" as="seg" hint-placeholder-count="10"><span style="{{ seg }}"></span></sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:10px; letter-spacing:1px; color:#888;">
+                    <span>Cycle <b style="color:#e5e5e5;">{{ op.cycle }}</b> · RP <b style="color:#e5e5e5;">{{ op.rp }}</b></span>
+                    <a href="#2a" style="letter-spacing:2px; text-transform:uppercase;">{{ op.cta }} →</a>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Meine Welten — Banner-Stapel -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px;">
+              <div>
+                <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Simulation Roster</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Meine Welten <span style="color:#666; font-size:13px;">3</span></h2>
+              </div>
+              <span style="display:inline-flex; padding:9px 18px; font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;">+ Fracture a New Shard</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <sc-for list="{{ rosterBig }}" as="w" hint-placeholder-count="3">
+                <div class="hv-lift" style="position:relative; height:176px; overflow:hidden; border:1px solid #222; cursor:pointer;">
+                  <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ w.img }}; background-size:cover; background-position:center 30%; opacity:.78; filter:saturate(.85);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(90deg, rgba(6,6,6,.96) 26%, rgba(6,6,6,.5) 58%, transparent 82%);"></div>
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:{{ w.accent }};"></div>
+                  <div style="position:absolute; left:26px; top:50%; transform:translateY(-50%); right:46%;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                      <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:19px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0; white-space:nowrap;">{{ w.name }}</h3>
+                      <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.accent }}; border:1px solid; border-color:{{ w.accent }}; opacity:.9; padding:3px 8px;">{{ w.theme }}</span>
+                    </div>
+                    <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#a0a0a0; margin:0 0 8px;">{{ w.desc }}</p>
+                    <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">{{ w.role }} // {{ w.stats }}</span>
+                  </div>
+                  <span style="position:absolute; right:18px; bottom:14px; display:inline-flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.statusColor }}; background:rgba(6,6,6,.75); border:1px solid #222; padding:5px 10px;"><span style="width:5px; height:5px; border-radius:50%; background:{{ w.statusColor }};"></span>{{ w.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Community — 2×2 großformatig -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;">
+              <div>
+                <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Shard Registry</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Community <span style="color:#666; font-size:13px;">44</span></h2>
+              </div>
+              <a href="#2a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;">Alle 44 Welten <span class="arr">→</span></a>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <sc-for list="{{ community }}" as="c" hint-placeholder-count="3">
+                <div class="hv-lift" style="position:relative; border:1px solid #222; border-top:3px solid; border-top-color:{{ c.accent }}; background:#0a0a0a; overflow:hidden; cursor:pointer;">
+                  <div style="position:relative; height:184px; overflow:hidden;">
+                    <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ c.img }}; background-size:cover; background-position:center 30%; opacity:.7; filter:saturate(.8);"></div>
+                    <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a, transparent 45%);"></div>
+                    <span style="position:absolute; top:10px; left:12px; display:inline-flex; align-items:center; gap:5px; font-size:8px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:4px; height:4px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC</span>
+                    <span style="position:absolute; top:10px; right:12px; font-size:9px; letter-spacing:1px; color:#888; background:rgba(6,6,6,.7); padding:3px 8px;">{{ c.coord }}</span>
+                    <div style="position:absolute; left:16px; right:16px; bottom:12px; display:flex; justify-content:space-between; align-items:baseline;">
+                      <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ c.name }}</span>
+                      <span style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#888;">{{ c.agents }} agents · {{ c.buildings }} bldgs</span>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+              <div class="hv-lift" style="border:1px solid #222; border-top:3px solid #f59e0b; background:#0a0a0a; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; cursor:pointer; min-height:187px;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:32px; color:#f59e0b; line-height:1;">+41</span>
+                <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">weitere Welten im Register →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Rail -->
+        <div style="display:flex; flex-direction:column; gap:28px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Dossier // Field Operative</div>
+            <div style="display:flex; justify-content:center; perspective:1100px;">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ spot.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ spot.tint }};">{{ spot.kicker }}</span>
+                  <span style="font-size:8px; color:#666;">{{ spot.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ spot.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ spot.holo }}"></div>
+                  <div style="{{ spot.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ spot.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ spot.tint }};">{{ spot.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ spot.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ spot.bestColor }};">{{ spot.bestVal }}</span>
+                  <span style="font-size:6.5px; letter-spacing:.08em; color:{{ spot.bestColor }}; opacity:.8;">{{ spot.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ spot.plate }}">✦ {{ spot.name }} ✦</div>
+                  <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ spot.role }} · {{ spot.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ spot.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ spot.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ spot.tint }};">★ {{ spot.rarity }}</span>
+                  <span style="font-size:7.5px; color:#666;">View Dossier →</span>
+                </div>
+                <div style="{{ spot.ring }}"></div>
+                <div style="{{ spot.glare }}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Substrate Monitor</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ resonances }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:10px 1fr 70px 28px; gap:12px; align-items:center; background:#0a0a0a; padding:12px 14px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ r.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ r.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ r.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b;">Commendations</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#e5e5e5;">12<span style="color:#666;">/48</span></span>
+            </div>
+            <div style="height:6px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="position:absolute; inset:0; width:25%; background:#f59e0b;"></span></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:9px;">Zuletzt: „First Blood" — Cycle 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substrate Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker-scroll 40s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════ OPTION 2B — POSTER-GALERIE ═══════════════ -->
+  <div id="2b" data-screen-label="2b Poster-Galerie" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#2b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">2B</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Poster-Galerie — Welten als hohe Art-Poster, Community als Schaufenster-Reihe</span>
+    </div>
+
+    <div style="width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Command Strip -->
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <span style="position:absolute; top:4px; left:4px; width:10px; height:10px; border-left:2px solid #333; border-top:2px solid #333;"></span>
+        <span style="position:absolute; top:4px; right:4px; width:10px; height:10px; border-right:2px solid #333; border-top:2px solid #333;"></span>
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Operative Terminal // k.mercer</span>
+          <span style="color:#333;">|</span>
+          <span>Shards: <b style="color:#e5e5e5;">3</b></span>
+          <span style="color:#333;">|</span>
+          <span>Active Ops: <b style="color:#e5e5e5;">2</b></span>
+          <span style="color:#333;">|</span>
+          <span>Substrate: <b style="color:{{ substrateColor }};">{{ substrateLabel }}</b></span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; color:#666;">2026.07.12 // 14:31 UTC</span>
+      </div>
+
+      <sc-if value="{{ anomalous }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 20px; background:rgba(239,68,68,.07); border-bottom:1px solid rgba(239,68,68,.25); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#ef8888;">
+          <span style="display:inline-flex; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>
+          <b style="color:#ef4444;">2</b> overlapping tremor signatures — interference patterns forming
+        </div>
+      </sc-if>
+
+      <!-- Priority Band: nächste Auflösung -->
+      <div style="display:grid; grid-template-columns:auto 1fr auto; gap:48px; align-items:center; padding:30px 40px; background:linear-gradient(180deg,#0d0d0d,#0a0a0a); border-bottom:1px solid #222; position:relative;">
+        <div>
+          <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">Cycle 7 resolves in</div>
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:52px; line-height:1; color:#e5e5e5; font-variant-numeric:tabular-nums;">{{ countdown }}</div>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:17px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin-bottom:6px;">Epoch of Brittle Crowns</div>
+          <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:14px;">The Chitinous Mandate · <span style="color:#4ade80;">Active</span> · RP <b style="color:#e5e5e5;">3/5</b> · Orders placed <b style="color:#f59e0b;">1/3</b></div>
+          <div style="display:flex; gap:3px;">
+            <sc-for list="{{ prioritySegs }}" as="seg" hint-placeholder-count="12"><span style="{{ seg }}"></span></sc-for>
+          </div>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:10px; padding:16px 34px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" style-hover="background:#fbbf24;">Enter War Room →</span>
+      </div>
+
+      <!-- Body -->
+      <div style="display:grid; grid-template-columns:1fr 356px; gap:28px; padding:32px 40px 40px;">
+        <div style="min-width:0; display:flex; flex-direction:column; gap:36px;">
+
+          <!-- Active Operations -->
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Active Operations</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Weitere Einsätze</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <sc-for list="{{ ops }}" as="op" hint-placeholder-count="2">
+                <div style="background:#0a0a0a; border:1px solid #222; border-left:3px solid; border-left-color:{{ op.accent }}; padding:16px 18px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ op.name }}</span>
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ op.accent }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ op.accent }};"></span>{{ op.status }}</span>
+                  </div>
+                  <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">{{ op.sim }}</div>
+                  <div style="display:flex; gap:2px; margin-bottom:12px;">
+                    <sc-for list="{{ op.segs }}" as="seg" hint-placeholder-count="10"><span style="{{ seg }}"></span></sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:10px; letter-spacing:1px; color:#888;">
+                    <span>Cycle <b style="color:#e5e5e5;">{{ op.cycle }}</b> · RP <b style="color:#e5e5e5;">{{ op.rp }}</b></span>
+                    <a href="#2b" style="letter-spacing:2px; text-transform:uppercase;">{{ op.cta }} →</a>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Meine Welten — Poster-Galerie -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px;">
+              <div>
+                <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Simulation Roster</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Meine Welten <span style="color:#666; font-size:13px;">3</span></h2>
+              </div>
+              <span style="display:inline-flex; padding:9px 18px; font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;">+ Fracture a New Shard</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;">
+              <sc-for list="{{ rosterBig }}" as="w" hint-placeholder-count="3">
+                <div class="hv-lift" style="position:relative; height:340px; border:1px solid #222; border-top:3px solid; border-top-color:{{ w.accent }}; overflow:hidden; cursor:pointer;">
+                  <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ w.img }}; background-size:cover; background-position:center 22%; opacity:.82; filter:saturate(.85);"></div>
+                  <div style="position:absolute; inset:0; background:linear-gradient(to top, #060606 6%, rgba(6,6,6,.6) 38%, transparent 62%);"></div>
+                  <span style="position:absolute; top:12px; left:12px; display:inline-flex; align-items:center; gap:7px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.statusColor }}; background:rgba(6,6,6,.75); border:1px solid #222; padding:5px 10px;"><span style="width:5px; height:5px; border-radius:50%; background:{{ w.statusColor }};"></span>{{ w.status }}</span>
+                  <div style="position:absolute; left:20px; right:20px; bottom:18px;">
+                    <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ w.accent }}; margin-bottom:7px;">{{ w.theme }} · {{ w.role }}</div>
+                    <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 8px; line-height:1.25;">{{ w.name }}</h3>
+                    <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; line-height:1.5; color:#a0a0a0; margin:0 0 10px;">{{ w.desc }}</p>
+                    <span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">{{ w.stats }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Community — Carousel (scroll-snap) -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px;">
+              <div>
+                <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Shard Registry</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Community <span style="color:#666; font-size:13px;">44</span></h2>
+              </div>
+              <div style="display:flex; align-items:center; gap:14px;">
+                <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:#f59e0b;">Index-Screen <span class="arr">→</span></a>
+                <div style="display:flex; gap:6px;">
+                  <button onClick="{{ carPrev }}" class="car-btn" aria-label="Zurück" style="width:38px; height:38px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:16px; cursor:pointer;">←</button>
+                  <button onClick="{{ carNext }}" class="car-btn" aria-label="Weiter" style="width:38px; height:38px; background:#0a0a0a; border:1px solid #333; color:#f59e0b; font-family:'Courier New',monospace; font-size:16px; cursor:pointer;">→</button>
+                </div>
+              </div>
+            </div>
+            <div ref="{{ carRef }}" class="car-track" style="display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth; padding-bottom:4px;">
+              <sc-for list="{{ community }}" as="c" hint-placeholder-count="4">
+                <div class="hv-lift" style="flex:0 0 300px; scroll-snap-align:start; position:relative; border:1px solid #222; background:#0a0a0a; overflow:hidden; cursor:pointer;">
+                  <div style="position:relative; height:210px; overflow:hidden;">
+                    <div class="monitor-img" style="position:absolute; inset:0; background-image:{{ c.img }}; background-size:cover; background-position:center 30%; opacity:.72; filter:saturate(.8);"></div>
+                    <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a 4%, transparent 52%);"></div>
+                    <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:{{ c.accent }};"></div>
+                    <span style="position:absolute; top:10px; left:14px; display:inline-flex; align-items:center; gap:5px; font-size:8px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:4px; height:4px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC {{ c.coord }}</span>
+                    <span style="position:absolute; top:10px; right:12px; font-size:8px; letter-spacing:2px; text-transform:uppercase; color:{{ c.accent }}; background:rgba(6,6,6,.7); border:1px solid #222; padding:3px 7px;">{{ c.theme }}</span>
+                    <div style="position:absolute; left:16px; right:16px; bottom:12px;">
+                      <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ c.name }}</div>
+                      <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-top:5px;">{{ c.agents }} agents · {{ c.buildings }} bldgs</div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+              <div ref="{{ carSentinel }}" style="flex:0 0 200px; scroll-snap-align:start; border:1px dashed #2a2a2a; background:#080808; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; padding:0 14px;">
+                <sc-if value="{{ carLoading }}" hint-placeholder-val="{{ true }}">
+                  <span class="car-spin"></span>
+                  <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">Empfange Register…</span>
+                </sc-if>
+                <sc-if value="{{ carMore }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:26px; color:#f59e0b; line-height:1;">+{{ carRemaining }}</span>
+                  <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">weiterscrollen lädt nach</span>
+                </sc-if>
+                <sc-if value="{{ carDone }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">Alle {{ carTotal }} geladen</span>
+                  <a href="#3a" class="hv-arrow" style="font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase;">Index öffnen <span class="arr">→</span></a>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Rail -->
+        <div style="display:flex; flex-direction:column; gap:28px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Dossier // Field Operative</div>
+            <div style="display:flex; justify-content:center; perspective:1100px;">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ spot.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ spot.tint }};">{{ spot.kicker }}</span>
+                  <span style="font-size:8px; color:#666;">{{ spot.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ spot.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ spot.holo }}"></div>
+                  <div style="{{ spot.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ spot.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ spot.tint }};">{{ spot.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ spot.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ spot.bestColor }};">{{ spot.bestVal }}</span>
+                  <span style="font-size:6.5px; letter-spacing:.08em; color:{{ spot.bestColor }}; opacity:.8;">{{ spot.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ spot.plate }}">✦ {{ spot.name }} ✦</div>
+                  <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ spot.role }} · {{ spot.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ spot.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ spot.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ spot.tint }};">★ {{ spot.rarity }}</span>
+                  <span style="font-size:7.5px; color:#666;">View Dossier →</span>
+                </div>
+                <div style="{{ spot.ring }}"></div>
+                <div style="{{ spot.glare }}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Substrate Monitor</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ resonances }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:10px 1fr 70px 28px; gap:12px; align-items:center; background:#0a0a0a; padding:12px 14px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ r.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ r.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ r.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b;">Commendations</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#e5e5e5;">12<span style="color:#666;">/48</span></span>
+            </div>
+            <div style="height:6px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="position:absolute; inset:0; width:25%; background:#f59e0b;"></span></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:9px;">Zuletzt: „First Blood" — Cycle 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substrate Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker-scroll 40s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<section style="display:flex; gap:96px; align-items:flex-start; padding:48px; font-family:'SF Mono',ui-monospace,monospace;">
+
+  <!-- ═══════════════ OPTION 1a — OPERATIONS DESK ═══════════════ -->
+  <div id="1a" data-screen-label="1a Operations Desk" style="flex:0 0 auto;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <a href="#1a" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px;">1A</a>
+      <span style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#a0a0a0;">Operations Desk — gestrafft, Deadline zuerst</span>
+    </div>
+
+    <div style="width:1440px; background:#060606; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+
+      <!-- Command Strip -->
+      <div style="position:relative; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; background:rgba(0,0,0,.6); border-bottom:1px solid #222;">
+        <span style="position:absolute; top:4px; left:4px; width:10px; height:10px; border-left:2px solid #333; border-top:2px solid #333;"></span>
+        <span style="position:absolute; top:4px; right:4px; width:10px; height:10px; border-right:2px solid #333; border-top:2px solid #333;"></span>
+        <div style="display:flex; align-items:center; gap:14px; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#888;">
+          <span>// Operative Terminal // k.mercer</span>
+          <span style="color:#333;">|</span>
+          <span>Shards: <b style="color:#e5e5e5;">3</b></span>
+          <span style="color:#333;">|</span>
+          <span>Active Ops: <b style="color:#e5e5e5;">2</b></span>
+          <span style="color:#333;">|</span>
+          <span>Substrate: <b style="color:{{ substrateColor }};">{{ substrateLabel }}</b></span>
+        </div>
+        <span style="font-size:10px; letter-spacing:2px; color:#666;">2026.07.12 // 14:31 UTC</span>
+      </div>
+
+      <sc-if value="{{ anomalous }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 20px; background:rgba(239,68,68,.07); border-bottom:1px solid rgba(239,68,68,.25); font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#ef8888;">
+          <span style="display:inline-flex; width:6px; height:6px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>
+          <b style="color:#ef4444;">2</b> overlapping tremor signatures — interference patterns forming
+        </div>
+      </sc-if>
+
+      <!-- Priority Band: nächste Auflösung -->
+      <div style="display:grid; grid-template-columns:auto 1fr auto; gap:48px; align-items:center; padding:30px 40px; background:linear-gradient(180deg,#0d0d0d,#0a0a0a); border-bottom:1px solid #222; position:relative;">
+        <div>
+          <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:8px;">Cycle 7 resolves in</div>
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:52px; line-height:1; color:#e5e5e5; font-variant-numeric:tabular-nums;">{{ countdown }}</div>
+        </div>
+        <div style="min-width:0;">
+          <div style="font-family:'Courier New',monospace; font-weight:700; font-size:17px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin-bottom:6px;">Epoch of Brittle Crowns</div>
+          <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:14px;">The Chitinous Mandate · <span style="color:#4ade80;">Active</span> · RP <b style="color:#e5e5e5;">3/5</b> · Orders placed <b style="color:#f59e0b;">1/3</b></div>
+          <div style="display:flex; gap:3px;">
+            <sc-for list="{{ prioritySegs }}" as="seg" hint-placeholder-count="12"><span style="{{ seg }}"></span></sc-for>
+          </div>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:10px; padding:16px 34px; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; cursor:pointer;" style-hover="background:#fbbf24;">Enter War Room →</span>
+      </div>
+
+      <!-- Body -->
+      <div style="display:grid; grid-template-columns:1fr 356px; gap:28px; padding:32px 40px 40px;">
+        <div style="min-width:0; display:flex; flex-direction:column; gap:36px;">
+
+          <!-- Active Operations -->
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Active Operations</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Weitere Einsätze</h2>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+              <sc-for list="{{ ops }}" as="op" hint-placeholder-count="2">
+                <div style="background:#0a0a0a; border:1px solid #222; border-left:3px solid; border-left-color:{{ op.accent }}; padding:16px 18px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ op.name }}</span>
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:{{ op.accent }};"><span style="width:5px; height:5px; border-radius:50%; background:{{ op.accent }};"></span>{{ op.status }}</span>
+                  </div>
+                  <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#888; margin-bottom:12px;">{{ op.sim }}</div>
+                  <div style="display:flex; gap:2px; margin-bottom:12px;">
+                    <sc-for list="{{ op.segs }}" as="seg" hint-placeholder-count="10"><span style="{{ seg }}"></span></sc-for>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:10px; letter-spacing:1px; color:#888;">
+                    <span>Cycle <b style="color:#e5e5e5;">{{ op.cycle }}</b> · RP <b style="color:#e5e5e5;">{{ op.rp }}</b></span>
+                    <a href="#1a" style="letter-spacing:2px; text-transform:uppercase;">{{ op.cta }} →</a>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Mein Roster (fusioniert: My Worlds + Your Shards) -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px;">
+              <div>
+                <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Simulation Roster</div>
+                <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">Meine Welten <span style="color:#666; font-size:13px;">3</span></h2>
+              </div>
+              <span style="display:inline-flex; padding:9px 18px; font-family:'Courier New',monospace; font-weight:700; font-size:10.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b; cursor:pointer;" style-hover="background:rgba(245,158,11,.1);">+ Fracture a New Shard</span>
+            </div>
+            <div style="position:relative; height:190px; overflow:hidden; border:1px solid #222; cursor:pointer; margin-bottom:14px;" style-hover="border-color:#333;">
+              <div style="position:absolute; inset:0; background-image:url('assets/e-court.png'); background-size:cover; background-position:center 30%; opacity:.55; filter:saturate(.75);"></div>
+              <div style="position:absolute; inset:0; background:linear-gradient(90deg, rgba(6,6,6,.95) 0%, rgba(6,6,6,.4) 55%, transparent);"></div>
+              <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:#22c55e;"></div>
+              <div style="position:absolute; left:26px; bottom:22px; right:40%;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                  <h3 style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0;">The Chitinous Mandate</h3>
+                  <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#4ade80; border:1px solid #22c55e55; padding:3px 8px;">Insectile</span>
+                </div>
+                <p style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13.5px; color:#a0a0a0; margin:0 0 8px;">A bureaucracy of insects governs a city of wax and paper.</p>
+                <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">Owner // 34 Agents // 21 Buildings // 412 Events</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ roster }}" as="w" hint-placeholder-count="2">
+                <div style="display:grid; grid-template-columns:12px 1fr 110px 90px 90px 30px; gap:16px; align-items:center; background:#0a0a0a; padding:13px 18px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:10px; height:10px; background:{{ w.accent }};"></span>
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">{{ w.name }}</span>
+                  <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#f59e0b;">{{ w.role }}</span>
+                  <span style="font-size:10px; color:#888;">{{ w.agents }} agents</span>
+                  <span style="font-size:10px; color:#888;">{{ w.buildings }} bldgs</span>
+                  <span style="color:#f59e0b;">→</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Community Registry -->
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:4px;">Shard Registry</div>
+            <h2 style="font-family:'Courier New',monospace; font-weight:700; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; margin:0 0 14px;">Community <span style="color:#666; font-size:13px;">44</span></h2>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:3px;">
+              <sc-for list="{{ community }}" as="c" hint-placeholder-count="3">
+                <div style="background:#0a0a0a; border-top:3px solid; border-top-color:{{ c.accent }}; cursor:pointer;" style-hover="transform:translateY(-2px);">
+                  <div style="position:relative; height:96px; overflow:hidden;">
+                    <div style="position:absolute; inset:0; background-image:{{ c.img }}; background-size:cover; background-position:center; opacity:.55; filter:saturate(.7);"></div>
+                    <div style="position:absolute; inset:0; background:linear-gradient(to top, #0a0a0a, transparent 60%);"></div>
+                    <span style="position:absolute; top:7px; left:9px; display:inline-flex; align-items:center; gap:5px; font-size:8px; font-weight:700; letter-spacing:2px; color:#ef4444;"><span style="width:4px; height:4px; border-radius:50%; background:#ef4444; animation:rec-blink 1.5s ease-in-out infinite;"></span>REC</span>
+                  </div>
+                  <div style="padding:11px 13px 13px;">
+                    <div style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ c.name }}</div>
+                    <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:5px;">{{ c.agents }} agents · {{ c.buildings }} bldgs</div>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="background:#0a0a0a; border-top:3px solid #f59e0b; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; min-height:150px;" style-hover="background:#0d0d0d;">
+                <span style="font-family:'Courier New',monospace; font-weight:700; font-size:24px; color:#f59e0b; line-height:1;">44</span>
+                <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#888;">Alle Welten ansehen →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Rail -->
+        <div style="display:flex; flex-direction:column; gap:28px;">
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Dossier // Field Operative</div>
+            <div style="display:flex; justify-content:center; perspective:1100px;">
+              <div onMouseMove="{{ tiltMove }}" onMouseLeave="{{ tiltLeave }}" style="{{ spot.root }}">
+                <div style="position:absolute; top:0; left:0; right:0; height:30px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-bottom:1px solid #1e1e1e; background:rgba(255,255,255,.015); z-index:5; border-radius:6px 6px 0 0; box-sizing:border-box;">
+                  <span style="font-size:8px; letter-spacing:.2em; text-transform:uppercase; color:{{ spot.tint }};">{{ spot.kicker }}</span>
+                  <span style="font-size:8px; color:#666;">{{ spot.id }}</span>
+                </div>
+                <div style="position:absolute; top:30px; left:0; right:0; height:196px; overflow:hidden; background:#080808; z-index:1;">
+                  <div style="{{ spot.art }}"></div>
+                  <div style="position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 4px); pointer-events:none;"></div>
+                  <div style="position:absolute; inset:0; box-shadow:inset 0 -46px 42px -18px rgba(8,8,8,.96), inset 0 0 60px rgba(0,0,0,.35); pointer-events:none;"></div>
+                  <div style="{{ spot.holo }}"></div>
+                  <div style="{{ spot.holoGrain }}"></div>
+                </div>
+                <div style="position:absolute; top:206px; left:20px; width:38px; height:38px; transform:rotate(45deg); background:#0d0d0d; border:1.5px solid {{ spot.tint }}; display:flex; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="transform:rotate(-45deg); font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ spot.tint }};">{{ spot.aptSum }}</span>
+                </div>
+                <div style="position:absolute; top:206px; right:12px; width:40px; height:40px; border-radius:50%; background:#0d0d0d; border:1.5px solid {{ spot.bestColor }}; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:6; box-shadow:3px 3px 0 #000;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; line-height:1; color:{{ spot.bestColor }};">{{ spot.bestVal }}</span>
+                  <span style="font-size:6.5px; letter-spacing:.08em; color:{{ spot.bestColor }}; opacity:.8;">{{ spot.bestType }}</span>
+                </div>
+                <div style="position:absolute; top:252px; left:14px; right:14px; text-align:center; z-index:5;">
+                  <div style="{{ spot.plate }}">✦ {{ spot.name }} ✦</div>
+                  <div style="font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:#888; margin-top:4px;">{{ spot.role }} · {{ spot.zone }}</div>
+                </div>
+                <p style="position:absolute; top:300px; left:16px; right:16px; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11.5px; line-height:1.55; color:#96948e; margin:0; z-index:5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">“{{ spot.quote }}”</p>
+                <div style="position:absolute; bottom:38px; left:16px; right:16px; display:flex; justify-content:space-between; z-index:5;">
+                  <sc-for list="{{ spot.pips }}" as="p" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                      <span style="{{ p.dot }}">{{ p.val }}</span>
+                      <span style="font-size:6.5px; letter-spacing:.06em; color:#555;">{{ p.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:24px; display:flex; justify-content:space-between; align-items:center; padding:0 13px; border-top:1px solid #1e1e1e; z-index:5; box-sizing:border-box;">
+                  <span style="font-size:7.5px; letter-spacing:.14em; text-transform:uppercase; color:{{ spot.tint }};">★ {{ spot.rarity }}</span>
+                  <span style="font-size:7.5px; color:#666;">View Dossier →</span>
+                </div>
+                <div style="{{ spot.ring }}"></div>
+                <div style="{{ spot.glare }}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b; margin-bottom:12px;">Substrate Monitor</div>
+            <div style="display:flex; flex-direction:column; gap:1px; background:#1a1a1a; border:1px solid #222;">
+              <sc-for list="{{ resonances }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:10px 1fr 70px 28px; gap:12px; align-items:center; background:#0a0a0a; padding:12px 14px; cursor:pointer;" style-hover="background:#0d0d0d;">
+                  <span style="width:7px; height:7px; border-radius:50%; background:{{ r.color }};"></span>
+                  <span style="font-size:10.5px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ r.name }}</span>
+                  <span style="height:4px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="{{ r.bar }}"></span></span>
+                  <span style="font-size:9px; color:#666; text-align:right;">{{ r.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="border:1px solid #222; background:#0a0a0a; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:9px; letter-spacing:3px; text-transform:uppercase; color:#f59e0b;">Commendations</span>
+              <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#e5e5e5;">12<span style="color:#666;">/48</span></span>
+            </div>
+            <div style="height:6px; background:#1a1a1a; position:relative; overflow:hidden;"><span style="position:absolute; inset:0; width:25%; background:#f59e0b;"></span></div>
+            <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666; margin-top:9px;">Zuletzt: „First Blood" — Cycle 4</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Substrate Ticker -->
+      <div style="border-top:1px solid #222; background:#0a0a0a; overflow:hidden; padding:10px 0;">
+        <div style="display:flex; width:max-content; animation:ticker-scroll 40s linear infinite; white-space:nowrap;">
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+          <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#666; padding-right:80px;">// The dashboard is not a user interface. It is a cartographic instrument — the same class of tool the First Cartographer used to observe the Fracture as it happened. //</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;substrate&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;anomalous&quot;, &quot;stable&quot;], &quot;default&quot;: &quot;anomalous&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Zustand&quot; }
+}">
+class Component extends DCLogic {
+  state = { countdown: '03:41:12', shown: 8, loading: false, q: '', theme: 'All', sort: 'active', wSel: 0 };
+
+  componentDidMount() {
+    this._target = Date.now() + (3 * 3600 + 41 * 60 + 12) * 1000;
+    this._timer = setInterval(() => {
+      let s = Math.max(0, Math.floor((this._target - Date.now()) / 1000));
+      const h = String(Math.floor(s / 3600)).padStart(2, '0');
+      const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      const sec = String(s % 60).padStart(2, '0');
+      this.setState({ countdown: `${h}:${m}:${sec}` });
+    }, 1000);
+  }
+
+  componentWillUnmount() {
+    if (this._timer) clearInterval(this._timer);
+  }
+
+  _tiltMove = (e) => {
+    const el = e.currentTarget, r = el.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    const py = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    el.style.setProperty('--rx', (-py * 9).toFixed(2) + 'deg');
+    el.style.setProperty('--ry', (px * 11).toFixed(2) + 'deg');
+    el.style.setProperty('--px', px.toFixed(3));
+    el.style.setProperty('--py', py.toFixed(3));
+    el.style.setProperty('--o', '1');
+  };
+
+  _tiltLeave = (e) => {
+    const el = e.currentTarget;
+    el.style.setProperty('--rx', '0deg');
+    el.style.setProperty('--ry', '0deg');
+    el.style.setProperty('--px', '0');
+    el.style.setProperty('--py', '0');
+    el.style.setProperty('--o', '0');
+  };
+
+  _buildPool() {
+    if (this._pool) return this._pool;
+    const TH = [['Insectile','#22c55e'],['Baroque','#f59e0b'],['Maritime','#3b82f6'],['Subterran','#a78bfa'],['Ashen','#ef4444'],['Frost','#60a5fa'],['Sylvan','#22c55e'],['Clockwork','#f59e0b'],['Void','#7c5ce7'],['Tidal','#1ab5c8']];
+    const IMG = ['e-wraith','b-hall','b-archive','e-court','b-apiary','e-warden','e-clerk','deluge-art-1200'];
+    const ST = [['Active','#4ade80'],['Idle','#888888'],['Epoch · Scoring','#3b82f6'],['Anomalous','#ef4444']];
+    const ADJ = ['Gilded','Cinder','Pale','Verdant','Brass','Umbral','Drowned','Salt','Iron','Ashen','Crystal','Fallow','Ember','Grey','Silent','Broken','Amber','Frost','Thorn','Tidal','Sable','Vermillion'];
+    const NOUN = ['Hollow','Parliament','Meridian','Assembly','Concord','Reach','Republic','Dominion','Mandate','Court','Expanse','Bastion','Enclave','Spires','Marches','Hegemony'];
+    const DESC = ['A bureaucracy of insects governs a city of wax and paper.','Espionage, broadsheets, and very long memories.','A drowned republic trading in tides and secrets.','Mining aristocracy above, something older below.','Ashen towers where the fires never fully died.','A frost-locked senate voting by candlelight.'];
+    const pool = [];
+    for (let i = 0; i < 44; i++) {
+      const th = TH[i % TH.length], st = ST[(i * 3) % ST.length];
+      const name = (i % 3 === 0 ? 'The ' : '') + ADJ[i % ADJ.length] + ' ' + NOUN[(i * 7) % NOUN.length];
+      pool.push({
+        name, theme: th[0], accent: th[1], coord: 'FD-' + String(i + 1).padStart(2, '0'),
+        agents: 18 + ((i * 13) % 48), buildings: 9 + ((i * 7) % 34),
+        img: "url('assets/" + IMG[i % IMG.length] + ".png')",
+        status: st[0], statusColor: st[1], desc: DESC[i % DESC.length],
+      });
+    }
+    this._pool = pool;
+    return pool;
+  }
+
+  _wireCarousel = (el) => {
+    this._car = el;
+    if (el && this._sentinel && !this._io) this._observe();
+  };
+
+  _wireSentinel = (el) => {
+    this._sentinel = el;
+    if (el && this._car && !this._io) this._observe();
+  };
+
+  _observe() {
+    this._io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) this._loadMore();
+    }, { root: this._car, threshold: 0.15 });
+    this._io.observe(this._sentinel);
+  }
+
+  _loadMore() {
+    const total = this._buildPool().length;
+    if (this.state.loading || this.state.shown >= total) return;
+    this.setState({ loading: true });
+    clearTimeout(this._loadT);
+    this._loadT = setTimeout(() => {
+      this.setState((s) => ({ shown: Math.min(s.shown + 6, total), loading: false }));
+    }, 700);
+  }
+
+  renderVals() {
+    const anomalous = (this.props.substrate ?? 'anomalous') === 'anomalous';
+    const pool = this._buildPool();
+    const q = (this.state.q || '').toLowerCase();
+    const themeF = this.state.theme || 'All';
+    const sortF = this.state.sort || 'active';
+    const themes = ['All'].concat(Array.from(new Set(pool.map((w) => w.theme))));
+    let indexList = pool.filter((w) => (themeF === 'All' || w.theme === themeF) && (!q || w.name.toLowerCase().includes(q)));
+    if (sortF === 'agents') indexList = indexList.slice().sort((a, b) => b.agents - a.agents);
+    else if (sortF === 'az') indexList = indexList.slice().sort((a, b) => a.name.localeCompare(b.name));
+    const chipStyle = (on) => 'font-family:\'Courier New\',monospace;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;padding:8px 14px;transition:all .18s;border:1px solid ' + (on ? '#f59e0b' : '#2a2a2a') + ';color:' + (on ? '#f59e0b' : '#888') + ';background:' + (on ? 'rgba(245,158,11,.1)' : 'transparent') + ';';
+    const themeChips = themes.map((t) => ({ label: t, onClick: () => this.setState({ theme: t }), style: chipStyle(t === themeF) }));
+    const sortChips = [['active', 'Zuletzt aktiv'], ['agents', 'Meiste Agenten'], ['az', 'A–Z']].map((s) => ({ label: s[1], onClick: () => this.setState({ sort: s[0] }), style: chipStyle(s[0] === sortF) }));
+    const seg = (state) => {
+      const base = 'display:inline-block;width:22px;height:8px;';
+      if (state === 'done') return base + 'background:#f59e0b;';
+      if (state === 'current') return base + 'background:rgba(245,158,11,.35);border:1px solid #f59e0b;box-sizing:border-box;animation:rec-blink 2.4s ease-in-out infinite;';
+      return base + 'background:#1a1a1a;';
+    };
+    const segRow = (total, done) => Array.from({ length: total }, (_, i) => seg(i < done ? 'done' : i === done ? 'current' : 'todo'));
+
+    // ── Spotlight-Karte (TCG-Kanon, legendary) ──
+    const OPC = { SPY: '#64748b', GRD: '#10b981', SAB: '#ef4444', PRP: '#f59e0b', INF: '#a78bfa', ASN: '#dc2626' };
+    const OPL = ['SPY', 'GRD', 'SAB', 'PRP', 'INF', 'ASN'];
+    const I = 0.75;
+    const FOIL = 'linear-gradient(calc(115deg + var(--px,0)*40deg),#f59e0b 0%,#f7e8b8 18%,#7fd0c5 38%,#8b7bd8 58%,#c85a4a 78%,#f59e0b 100%)';
+    const HOLO = 'repeating-linear-gradient(calc(112deg + var(--px,0)*18deg),rgba(245,158,11,.9) 0px,rgba(247,232,184,.9) 14px,rgba(127,208,197,.9) 30px,rgba(139,123,216,.9) 46px,rgba(200,90,74,.9) 62px,rgba(245,158,11,.9) 78px)';
+    const apt = [4, 3, 5, 9, 7, 4];
+    const sum = apt.reduce((x, y) => x + y, 0);
+    const bi = apt.indexOf(Math.max(...apt));
+    const spot = {
+      name: 'Ilsabet Voss', role: 'Propagandist', zone: 'Inkstone Row', kicker: 'Key Figure', rarity: 'Key Figure', id: 'OP-VOS',
+      quote: 'I wrote the story of the flood before it happened. The river merely complied.',
+      tint: '#f59e0b', aptSum: String(sum), bestVal: String(apt[bi]), bestType: OPL[bi], bestColor: OPC[OPL[bi]],
+      root: 'position:relative;width:300px;height:420px;border-radius:6px;background:linear-gradient(180deg,#0d0d0d,#0a0a0a);border:1px solid #f59e0b99;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .16s ease-out;cursor:pointer;animation:deal-in .55s cubic-bezier(.22,1,.36,1) both, legendary-pulse 3.2s ease-in-out infinite;box-shadow:9px 9px 0 #000000',
+      art: "position:absolute;inset:0;background:url('assets/portrait-0.png') center 20%/cover;transform:translate(calc(var(--px,0)*-9px),calc(var(--py,0)*-7px)) scale(1.14);filter:contrast(1.1) saturate(.82) brightness(.96);transition:transform .16s ease-out",
+      holo: `position:absolute;inset:0;background:${HOLO};background-size:200% 200%;mix-blend-mode:color-dodge;opacity:calc(var(--o,0)*${(0.34 * I).toFixed(3)});transition:opacity .3s;pointer-events:none`,
+      holoGrain: `position:absolute;inset:0;background:var(--noise);mix-blend-mode:overlay;opacity:calc(var(--o,0)*${(0.5 * I).toFixed(3)});transition:opacity .3s;pointer-events:none`,
+      ring: `position:absolute;inset:0;border-radius:6px;padding:2.5px;background:${FOIL};background-size:250% 250%;background-position:calc(50% + var(--px,0)*50%) calc(50% + var(--py,0)*50%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;mix-blend-mode:screen;opacity:calc(.25 + var(--o,0)*${(0.75 * I).toFixed(3)});transition:opacity .3s;pointer-events:none;z-index:8;box-sizing:border-box`,
+      glare: 'position:absolute;inset:0;border-radius:6px;background:radial-gradient(circle at calc(50% + var(--px,0)*46%) calc(46% + var(--py,0)*46%),rgba(255,255,255,.26),rgba(255,255,255,.05) 34%,transparent 62%);mix-blend-mode:overlay;opacity:var(--o,0);transition:opacity .3s;pointer-events:none;z-index:9',
+      plate: "display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Courier New',monospace;font-weight:700;font-size:14px;letter-spacing:.05em;text-transform:uppercase;background:linear-gradient(100deg,#8a6420 0%,#f5d67a 22%,#fff3c4 30%,#f5d67a 38%,#8a6420 55%,#f5d67a 80%,#8a6420 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:plate-sheen 4.5s ease-in-out infinite",
+      pips: apt.map((v, j) => ({
+        val: String(v), label: OPL[j],
+        dot: `display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;font-family:'SF Mono',Monaco,monospace;font-weight:700;font-size:9.5px;color:#060606;background:${OPC[OPL[j]]};${v <= 5 ? 'opacity:.38;' : v >= 8 ? `box-shadow:0 0 8px ${OPC[OPL[j]]}90;` : ''}`,
+      })),
+    };
+
+    // ── Weltenkarten (1b) ──
+    const wRoot = (tint, i) => `position:relative;width:230px;height:322px;border-radius:6px;background:linear-gradient(180deg,#0d0d0d,#0a0a0a);border:1px solid ${tint}66;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .16s ease-out;cursor:pointer;animation:deal-in .55s cubic-bezier(.22,1,.36,1) both;animation-delay:${i * 120}ms;box-shadow:7px 7px 0 #000000`;
+    const wGlare = 'position:absolute;inset:0;border-radius:6px;background:radial-gradient(circle at calc(50% + var(--px,0)*46%) calc(46% + var(--py,0)*46%),rgba(255,255,255,.18),transparent 60%);mix-blend-mode:overlay;opacity:var(--o,0);transition:opacity .3s;pointer-events:none;z-index:9';
+    const wArt = (img) => `position:absolute;inset:0;background:url('${img}') center 30%/cover;transform:translate(calc(var(--px,0)*-7px),calc(var(--py,0)*-5px)) scale(1.12);filter:contrast(1.08) saturate(.8) brightness(.95);transition:transform .16s ease-out`;
+    const worldCards = [
+      { name: 'Chitinous Mandate', theme: 'Insectile', id: 'SIM-0448', role: 'Owner · Cycle 7', tint: '#22c55e', agents: '34', buildings: '21', events: '412', desc: 'A bureaucracy of insects governs a city of wax and paper.', img: 'assets/e-court.png', fan: 'perspective:1100px;transform:rotate(-4deg) translateY(14px);margin-right:-20px;position:relative;z-index:1;' },
+      { name: 'Velgarien', theme: 'Baroque', id: 'SIM-0001', role: 'Owner', tint: '#f59e0b', agents: '61', buildings: '40', events: '1.2k', desc: 'The reference world. Espionage, broadsheets, long memories.', img: 'assets/e-warden.png', fan: 'perspective:1100px;transform:translateY(-4px);position:relative;z-index:2;' },
+      { name: 'Saltmeridian', theme: 'Maritime', id: 'SIM-0312', role: 'Member', tint: '#3b82f6', agents: '28', buildings: '17', events: '203', desc: 'A drowned republic trading in tides and secrets.', img: 'assets/e-clerk.png', fan: 'perspective:1100px;transform:rotate(4deg) translateY(14px);margin-left:-20px;position:relative;z-index:1;' },
+    ].map((w, i) => ({ ...w, root: wRoot(w.tint, i), art: wArt(w.img), glare: wGlare }));
+
+    // ── 4a: Agenten-Karussell (wrap-around) ──
+    const AGENTS4 = [
+      { name: 'Ilsabet Voss', role: 'Propagandist', zone: 'Inkstone Row', id: 'OP-VOS', rarity: 'Key Figure', kicker: 'Key Figure', legendary: true, apt: [4, 3, 5, 9, 7, 4], img: 'assets/portrait-0.png',
+        quote: 'I wrote the story of the flood before it happened. The river merely complied.' },
+      { name: 'Corvin Fenn', role: 'Archivist-Spy', zone: 'The Stacks', id: 'OP-FEN', rarity: 'Rare', kicker: 'Field Operative', legendary: false, apt: [8, 4, 3, 5, 6, 3], img: 'assets/portrait-1.png',
+        quote: 'Every archive has two catalogues. I am paid to remember which one you saw.' },
+      { name: 'Marta Wolf', role: 'Warden', zone: 'Gate of Sighs', id: 'OP-WOL', rarity: 'Rare', kicker: 'Field Operative', legendary: false, apt: [3, 8, 4, 4, 5, 6], img: 'assets/portrait-2.png',
+        quote: 'The gate holds because I ask it to. Politely. Every night.' },
+    ];
+    const si4 = ((this.state.spotSel || 0) % AGENTS4.length + AGENTS4.length) % AGENTS4.length;
+    const mkSpot4 = (a) => {
+      const s = a.apt.reduce((x, y) => x + y, 0);
+      const b = a.apt.indexOf(Math.max(...a.apt));
+      const OPC4 = { SPY: '#64748b', GRD: '#10b981', SAB: '#ef4444', PRP: '#f59e0b', INF: '#a78bfa', ASN: '#dc2626' };
+      const OPL4 = ['SPY', 'GRD', 'SAB', 'PRP', 'INF', 'ASN'];
+      const tint = a.legendary ? '#f59e0b' : OPC4[OPL4[b]];
+      return {
+        name: a.name, role: a.role, zone: a.zone, kicker: a.kicker, rarity: a.rarity, id: a.id, quote: a.quote,
+        tint, aptSum: String(s), bestVal: String(a.apt[b]), bestType: OPL4[b], bestColor: OPC4[OPL4[b]],
+        root: 'position:relative;width:300px;height:420px;border-radius:6px;background:linear-gradient(180deg,#0d0d0d,#0a0a0a);border:1px solid ' + tint + '99;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .16s ease-out;cursor:pointer;animation:deal-in .45s cubic-bezier(.22,1,.36,1) both' + (a.legendary ? ', legendary-pulse 3.2s ease-in-out infinite' : '') + ';box-shadow:9px 9px 0 #000000',
+        art: "position:absolute;inset:0;background:url('" + a.img + "') center 20%/cover;transform:translate(calc(var(--px,0)*-9px),calc(var(--py,0)*-7px)) scale(1.14);filter:contrast(1.1) saturate(.82) brightness(.96);transition:transform .16s ease-out",
+        holo: spot.holo, holoGrain: spot.holoGrain,
+        ring: a.legendary ? spot.ring : 'display:none;',
+        glare: spot.glare,
+        plate: spot.plate,
+        pips: a.apt.map((v, j) => ({
+          val: String(v), label: OPL4[j],
+          dot: `display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;font-family:'SF Mono',Monaco,monospace;font-weight:700;font-size:9.5px;color:#060606;background:${OPC4[OPL4[j]]};${v <= 5 ? 'opacity:.38;' : v >= 8 ? `box-shadow:0 0 8px ${OPC4[OPL4[j]]}90;` : ''}`,
+        })),
+      };
+    };
+
+    // ── 4a: Welten-Umschalter ──
+    const MY = [
+      { name: 'The Chitinous Mandate', theme: 'Insectile', tint: '#4ade80', status: 'Active · Cycle 7', statusColor: '#4ade80', role: 'Owner', stats: '34 AG · 21 BLDG', img: 'assets/e-court.png', desc: 'A bureaucracy of insects governs a city of wax and paper.',
+        lore: 'Your youngest shard, and the loudest. The wax parliament is mid-epoch: three orders buy influence this cycle, and the archive-moths have started eating the opposition\u2019s paperwork on their own initiative. The Forge lists that under \u201Cemergent behavior\u201D.',
+        quote: 'The Mandate requires nothing of you except everything, filed in triplicate.', who: 'Broadsheet of the Wax Parliament, Cycle 6' },
+      { name: 'Velgarien', theme: 'Baroque', tint: '#f59e0b', status: 'Idle', statusColor: '#888888', role: 'Owner', stats: '61 AG · 40 BLDG', img: 'assets/e-warden.png', desc: 'The reference world. Espionage, broadsheets, long memories.',
+        lore: 'The reference world — your oldest holding, currently idle but never asleep. Sixty-one agents keep their routines, the broadsheet prints without you, and two bonds you brokered in Cycle 3 are still quietly paying interest.',
+        quote: 'Idle, the Bureau calls it. The city calls it Tuesday.', who: 'Marginal note, Velgarien chronicle, unattributed' },
+      { name: 'Saltmeridian', theme: 'Maritime', tint: '#3b82f6', status: 'Epoch · Scoring', statusColor: '#3b82f6', role: 'Member', stats: '28 AG · 17 BLDG', img: 'assets/e-clerk.png', desc: 'A drowned republic trading in tides and secrets.',
+        lore: 'A drowned republic where you serve as member, not owner — which means you owe the tide, not the other way around. The Long Winter epoch is scoring now; your spy\u2019s last report from the rival archive is already in the ledger.',
+        quote: 'High water is payday. Low water is austerity. We drowned rich.', who: 'Ledger of the Brine Chancellery, entry 214' },
+    ];
+    const wi = this.state.wSel || 0;
+    const myWorlds = MY.map((w, i) => ({
+      ...w, idx: '0' + (i + 1), go: () => this.setState({ wSel: i }),
+    }));
+    const wAct = MY[wi];
+
+    return {
+      spot4: mkSpot4(AGENTS4[si4]),
+      spotIdx: '0' + (si4 + 1),
+      spotTotal: '0' + AGENTS4.length,
+      spotPrev: () => this.setState((st) => ({ spotSel: (st.spotSel || 0) - 1 })),
+      spotNext: () => this.setState((st) => ({ spotSel: (st.spotSel || 0) + 1 })),
+      myWorlds,
+      wArt: 'position:absolute;inset:0;background:url(\'' + wAct.img + '\') center 26%/cover;filter:saturate(.85) brightness(.95);animation:wfade-' + (wi % 2 ? 'a' : 'b') + ' .45s ease both;',
+      wTag: wAct.role + ' // ' + wAct.theme + ' // ' + wAct.status,
+      wName: wAct.name,
+      wIdx: '0' + (wi + 1),
+      wLore: wAct.lore,
+      wQuote: wAct.quote,
+      wWho: wAct.who,
+      comm4: pool.slice(0, 6),
+      countdown: this.state.countdown,
+      anomalous,
+      substrateLabel: anomalous ? 'Anomalous' : 'Stable',
+      substrateColor: anomalous ? '#ef4444' : '#4ade80',
+      prioritySegs: segRow(12, 7),
+      tiltMove: this._tiltMove,
+      tiltLeave: this._tiltLeave,
+      spot,
+      worldCards,
+      ops: [
+        { name: 'The Long Winter', sim: 'Velgarien', status: 'Scoring', accent: '#3b82f6', cycle: '12/12', rp: '0/5', cta: 'Ergebnis', segs: segRow(12, 12) },
+        { name: 'Academy Sprint IV', sim: 'Training vs 3 Bots', status: 'Active', accent: '#4ade80', cycle: '9/18', rp: '2/3', cta: 'Fortsetzen', segs: segRow(18, 9) },
+      ],
+      rosterBig: [
+        { name: 'The Chitinous Mandate', theme: 'Insectile', role: 'Owner', accent: '#22c55e', statusColor: '#4ade80', status: 'Active · Cycle 7', img: "url('assets/e-court.png')", desc: 'A bureaucracy of insects governs a city of wax and paper.', stats: '34 Agents · 21 Buildings · 412 Events' },
+        { name: 'Velgarien', theme: 'Baroque', role: 'Owner', accent: '#f59e0b', statusColor: '#888888', status: 'Idle', img: "url('assets/e-warden.png')", desc: 'The reference world. Espionage, broadsheets, long memories.', stats: '61 Agents · 40 Buildings · 1.2k Events' },
+        { name: 'Saltmeridian', theme: 'Maritime', role: 'Member', accent: '#3b82f6', statusColor: '#3b82f6', status: 'Epoch · Scoring', img: "url('assets/e-clerk.png')", desc: 'A drowned republic trading in tides and secrets.', stats: '28 Agents · 17 Buildings · 203 Events' },
+      ],
+      roster: [
+        { name: 'Velgarien', role: 'Owner', agents: 61, buildings: 40, accent: '#f59e0b' },
+        { name: 'Saltmeridian', role: 'Member', agents: 28, buildings: 17, accent: '#3b82f6' },
+      ],
+      carRef: this._wireCarousel,
+      carSentinel: this._wireSentinel,
+      carPrev: () => { if (this._car) this._car.scrollBy({ left: -314, behavior: 'smooth' }); },
+      carNext: () => { if (this._car) this._car.scrollBy({ left: 314, behavior: 'smooth' }); },
+      carLoading: this.state.loading,
+      carMore: !this.state.loading && this.state.shown < pool.length,
+      carDone: this.state.shown >= pool.length,
+      carRemaining: pool.length - this.state.shown,
+      carTotal: pool.length,
+      community: pool.slice(0, this.state.shown),
+      allWorlds: indexList,
+      indexTotal: pool.length,
+      indexCount: indexList.length,
+      indexEmpty: indexList.length === 0,
+      themeChips,
+      sortChips,
+      idxSearch: (e) => this.setState({ q: e.target.value }),
+      resonances: [
+        { name: 'Aegean Elections — Tremor', color: '#ef4444', time: '2h', bar: 'position:absolute;inset:0;width:62%;background:#ef4444;display:block;animation:bar-grow .9s ease-out both;' },
+        { name: 'Solar Flare Cascade', color: '#f59e0b', time: '7h', bar: 'position:absolute;inset:0;width:41%;background:#f59e0b;display:block;animation:bar-grow .9s ease-out .15s both;' },
+        { name: 'Kyoto Quake — subsiding', color: '#3b82f6', time: '1d', bar: 'position:absolute;inset:0;width:24%;background:#3b82f6;display:block;animation:bar-grow .9s ease-out .3s both;' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
