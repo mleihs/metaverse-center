@@ -207,8 +207,18 @@ export class VelgLoreDossier extends LitElement {
       min-height: 460px;
     }
 
+    /*
+     * The reading measure is centred in the panel, not pinned to its left edge.
+     *
+     * At the prototype's 1440 the panel is barely wider than the measure, so the
+     * difference does not show. Measured at 1728 it does: the column sat hard
+     * left with 603px of dead panel beside it, and at 2560 that gap is over a
+     * thousand. The handoff states the principle itself for the dungeon
+     * chamber, whose prose it centres on 660 for the same reason.
+     */
     .panel__inner {
       max-width: var(--_measure);
+      margin-inline: auto;
       animation: chapter-in var(--duration-slower) var(--ease-out) both;
     }
 
@@ -271,13 +281,30 @@ export class VelgLoreDossier extends LitElement {
       cursor: zoom-in;
     }
 
+    /*
+     * The figure NUMBER is a label and is set like one; the caption TEXT is
+     * prose and is not.
+     *
+     * Both used to share text-transform: uppercase, which is right for
+     * "Fig. 01" and wrong for what follows it: measured on this dossier, the
+     * caption is 465 characters, and 465 characters of uppercase mono is a
+     * block nobody reads. The generator writes descriptions, not labels.
+     */
     .panel__caption {
       margin-block-start: var(--space-2);
       font-family: var(--font-mono);
       font-size: calc(var(--text-xs) * 0.9);
+      line-height: var(--leading-relaxed);
+      color: var(--_dim);
+    }
+
+    .panel__figno {
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--_dim);
+    }
+
+    .panel__captext {
+      letter-spacing: var(--tracking-normal);
     }
 
     /*
@@ -545,9 +572,14 @@ export class VelgLoreDossier extends LitElement {
           <div class="panel__inner" .key=${section.id}>
             <h3 class="panel__title">${section.title}</h3>
             ${
-              section.epigraph
-                ? html`<p class="panel__epigraph">“${section.epigraph}”</p>`
-                : nothing
+              /*
+               * No added quotation marks. The stored epigraph already carries
+               * its own, and its attribution with it — wrapping it produced
+               * ""The state is not a machine but a body." - James C. Scott",
+               * two opening marks and one closing. The field is a finished
+               * quotation, not a phrase waiting to be quoted.
+               */
+              section.epigraph ? html`<p class="panel__epigraph">${section.epigraph}</p>` : nothing
             }
             ${this._renderBody(section)}
             ${this._renderTurn()}
@@ -603,7 +635,8 @@ export class VelgLoreDossier extends LitElement {
                   @click=${() => this._openLightbox(url, caption)}
                 />
                 <figcaption class="panel__caption">
-                  ${msg('Fig.')} ${figNumber}${caption ? ` – ${caption}` : ''}
+                  <span class="panel__figno">${msg('Fig.')} ${figNumber}</span>
+                  ${caption ? html` – <span class="panel__captext">${caption}</span>` : nothing}
                 </figcaption>
               </figure>`
             : nothing

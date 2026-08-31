@@ -317,7 +317,23 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       width: 100%;
       padding: var(--content-padding);
       min-width: 0;
-      max-width: var(--container-2xl, 1400px);
+      /*
+       * The stage measure, not the container ladder.
+       *
+       * A simulation view is a DOCUMENT by the four wide-screen rules
+       * (velg-frontend-design, Layout): centred stage, chrome full-bleed. The
+       * ladder here is for TOOLS, and it was capping every view at 1400px —
+       * which also meant the views that manage their own measure could never
+       * reach it. SimulationOverview and LoreDossier compose
+       * .stage-container, whose 1920px is centred INSIDE this box; an outer
+       * cap of 1400 makes the inner one unreachable, silently, at every width
+       * above 1400.
+       *
+       * Views that want a narrower measure still set it: the dossier caps prose
+       * at 740, the broadsheet keeps its 1220 sheet. A measure is theirs to
+       * choose; the shell's job is not to choose it for them.
+       */
+      max-width: var(--stage-measure, 1920px);
       margin-inline: auto;
     }
 
@@ -426,7 +442,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
        * says what it means.
        */
       .shell__content:not(.shell__content--immersive) {
-        max-width: var(--container-max, 1600px);
+        max-width: var(--stage-measure, 1920px);
       }
     }
   `;
