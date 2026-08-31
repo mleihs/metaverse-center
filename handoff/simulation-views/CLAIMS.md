@@ -155,7 +155,20 @@ zwei Sitzungen dieselben zwei Zeilen zweimal.
 
 ---
 
-## Anspruch nachgetragen: `components/platform/LoreScroll.ts` gehört zu Phase 1
+## ~~Anspruch: `components/platform/LoreScroll.ts`~~ — ZURÜCKGEZOGEN
+
+> **Erledigt ohne die Datei (31.08.2026, Commit `8ce5cb55`).** Der Lore-Reiter
+> ist als neues Bauteil `components/lore/LoreDossier.ts` gebaut statt als Umbau
+> von `LoreScroll`, weil die beiden verschiedene Sachen sind: eine Ziehharmonika
+> zum Durchsehen gegen einen Leser mit Register und Kapitelfolge. `LoreScroll`
+> behält unverändert die Plattform-Lore (`BureauArchives`,
+> `getPlatformLoreSections`). **`components/platform/**` gehört damit wieder
+> vollständig `-45`** — es gab am Ende gar keine Grenzfrage.
+>
+> Die Begründung unten bleibt stehen, weil ihr letzter Absatz weiter gilt: die
+> Datei liegt am falschen Ort, und das erzeugt beim nächsten Mal dieselbe Frage.
+
+### Die ursprüngliche Begründung
 
 **Warum das eine Ausnahme von der Verzeichnisgrenze ist.** Der Schnitt lautet
 `components/platform/**` → `velgarien-rebuild-45`. `LoreScroll.ts` (1 613 Zeilen)
