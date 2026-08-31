@@ -34,8 +34,23 @@ Ob die 23 Bauten mit weltspezifischen Zuständen verfallen sollten. Sie über
 `sort_order` in die Leiter zu hängen wäre naheliegend und falsch: **sechs der
 25 Welten haben eine Leiter, die auf Sprosse 4 und 5 wieder aufwärts geht**
 (`excellent → good → fair → restored → illuminated`). Ein Verfall entlang
-`sort_order` würde dort einen Bau verbessern. Das ist ein Befund an der
-Schmiede und eine Entscheidung des Nutzers.
+`sort_order` würde dort einen Bau verbessern.
+
+NACHTRAG (Migration 308)
+------------------------
+Dieser offene Punkt ist nachgemessen und geschlossen, aber anders, als er hier
+formuliert war — `test_building_condition_closure.py` führt die Messung:
+
+* `sort_order` ist gar keine Leiter, sondern Anzeigereihenfolge; kein Verbraucher
+  liest sie als Schweregrad. Die aufsteigende Sprosse 4/5 ist deshalb keine
+  falsche Reihenfolge, sondern eine, die nie eine war. 308 ordnet nichts um.
+* Die Herkunft ist nicht die Schmiede, sondern die handgeschriebenen
+  Welt-Migrationen 043 und 140; die fünf Klone erbten das Vokabular.
+* Der eigentliche Defekt trifft **sieben** Welten: ihr Vokabular ist unter dem
+  Verfall nicht abgeschlossen (`cite-des-dames` fehlt `poor` und `ruined`,
+  `conventional-memory` fehlt `ruined`). Ein verfallener Bau trägt dort einen
+  Wert, den seine eigene Welt nicht beschriften kann — dieselbe Klasse wie
+  `moderate`, nur eine Ebene tiefer.
 """
 
 from __future__ import annotations
