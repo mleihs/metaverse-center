@@ -4,24 +4,45 @@ import { msg } from '@lit/localize';
  * Building condition — the single mapping from the backend's condition
  * vocabulary to the three-dot gem and the badge variant on `<velg-game-card>`.
  *
- * The backend (`backend/models/forge.py` ForgeBuildingDraft.building_condition)
- * emits five values: pristine, good, fair, poor, ruined. Two independent copies
- * of this mapping existed in `BuildingCard.ts` and both dropped `pristine`
- * through to the `ruined` branch — a flawless building rendered with an empty
- * gem and a neutral badge. Keeping one table here removes the second copy and
- * the class of drift that produced that bug.
+ * ⚠ THERE IS NO CORE LADDER. `fn_building_condition_ladder` takes a
+ * simulation_id: the ladder is PER WORLD, and the top rung differs. Measured
+ * on prod across 290 buildings in 36 living worlds:
+ *
+ *     excellent → good → fair → poor → ruined   26 worlds, 216 buildings
+ *     pristine  → good → fair → poor → ruined    4 worlds,  29
+ *     fair → poor → ruined                       4 worlds,  27
+ *     good → fair → poor → ruined                1 world,   11
+ *     pristine → fair → poor → ruined            1 world,    7
+ *
+ * This table therefore lists the union of the top rungs, not one canon. An
+ * earlier version of this comment claimed the generator emits five values
+ * "pristine, good, fair, poor, ruined" — against the data that was wrong in
+ * the majority case: `excellent` is the top rung in 26 worlds and `pristine`
+ * in 5. The list missed the word that 216 of 290 buildings can carry, so ten
+ * buildings standing at the HIGHEST rank of their world rendered with no gem
+ * at all.
+ *
+ * Two independent copies of this mapping used to live in `BuildingCard.ts`,
+ * and both dropped `pristine` into the `ruined` branch. One table here removes
+ * the second copy and the class of drift that produced that bug — it does not
+ * remove the need to check the table against the data now and then.
+ *
+ * The gem has three dots and the ladders have up to five rungs, so the top two
+ * necessarily share a value. The exact word is on the badge beside it; the gem
+ * is a glance, not a reading.
  */
 
 /** The condition vocabulary the generator is allowed to produce. Internal:
  * both public functions take the backend's raw string and normalise it here, so
  * no caller ever holds this type. */
-type BuildingCondition = 'pristine' | 'good' | 'fair' | 'poor' | 'ruined';
+type BuildingCondition = 'pristine' | 'excellent' | 'good' | 'fair' | 'poor' | 'ruined';
 
 /** Badge colour role, matching `CardBadge.variant` on `<velg-game-card>`. */
 export type ConditionVariant = 'success' | 'warning' | 'danger' | 'default';
 
 const CONDITION_DOTS: Readonly<Record<BuildingCondition, number>> = {
   pristine: 3,
+  excellent: 3,
   good: 3,
   fair: 2,
   poor: 1,
@@ -30,6 +51,7 @@ const CONDITION_DOTS: Readonly<Record<BuildingCondition, number>> = {
 
 const CONDITION_VARIANT: Readonly<Record<BuildingCondition, ConditionVariant>> = {
   pristine: 'success',
+  excellent: 'success',
   good: 'success',
   fair: 'warning',
   poor: 'danger',
