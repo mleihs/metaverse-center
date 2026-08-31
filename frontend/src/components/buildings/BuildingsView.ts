@@ -4,12 +4,12 @@ import { effect } from '@preact/signals-core';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
-import { buildingsApi } from '../../services/api/index.js';
+import { buildingsApi, taxonomiesApi } from '../../services/api/index.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
-import type { ApiResponse, Building } from '../../types/index.js';
+import type { ApiResponse, Building, SimulationTaxonomy } from '../../types/index.js';
 import { OCCUPANCY_LEGEND, type OccupancyLevel } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { updateUrl } from '../../utils/navigation.js';
@@ -128,6 +128,16 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
   @property({ type: String }) simulationId = '';
   @property({ type: String }) entitySlug = '';
 
+  /**
+   * This world's own `building_condition` ladder.
+   *
+   * Loaded once for the view rather than per card: every card needs the same
+   * list, and the NUMBER of rungs is part of the reading — a world with three
+   * rungs has a different best condition than one with five (see
+   * `conditionDotsOnLadder`).
+   */
+  @state() private _conditionTaxonomy: SimulationTaxonomy[] = [];
+
   @state() private _selectedBuilding: Building | null = null;
   @state() private _editBuilding: Building | null = null;
   @state() private _showEditModal = false;
@@ -178,12 +188,35 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
 
   connectedCallback(): void {
     super.connectedCallback(); // mixin auto-loads
+    void this._loadConditionLadder();
     this._disposeImageTracking = effect(() => {
       const version = forgeStateManager.imageUpdateVersion.value;
       if (version > 0 && this._buildings.length > 0) {
         this._load();
       }
     });
+  }
+
+  /**
+   * Fetch the world's condition ladder.
+   *
+   * Deliberately NOT awaited by the view's own load: the cards render without
+   * it and fall back to the fixed table, so a slow or failing taxonomy costs a
+   * more precise gem, never the page. `mode` comes from the simulation's own
+   * routing signal, so an anonymous reader takes the public route and does not
+   * collect a 403 while browsing (Public-First).
+   */
+  private async _loadConditionLadder(): Promise<void> {
+    const sid = this.simulationId || appState.simulationId.value;
+    if (!sid) return;
+    try {
+      const res = await taxonomiesApi.list(sid, appState.currentSimulationMode.value, {
+        taxonomy_type: 'building_condition',
+      });
+      this._conditionTaxonomy = res.data ?? [];
+    } catch (err) {
+      captureError(err, { source: 'VelgBuildingsView._loadConditionLadder' });
+    }
   }
 
   disconnectedCallback(): void {
@@ -522,6 +555,7 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
             <velg-building-card
               style="--i: ${i}"
               .building=${building}
+              .conditionTaxonomy=${this._conditionTaxonomy}
               ?generating=${forgeStateManager.imageTrackingSlug.value === (appState.currentSimulation.value?.slug ?? '') && !building.image_url}
               @building-click=${this._handleBuildingClick}
               @building-edit=${this._handleBuildingEdit}

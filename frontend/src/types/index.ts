@@ -176,6 +176,20 @@ export interface SimulationTaxonomy {
   is_default: boolean;
   is_active: boolean;
   metadata?: Record<string, unknown>;
+  /**
+   * Position on THIS WORLD's condition ladder — smaller is better.
+   *
+   * Only present on `building_condition` rows (migration 323); other taxonomy
+   * types do not carry the field. `null` means the word stands on no rung, and
+   * that is a third state, not a bad rung: it is also what every row returns
+   * when the ladder function itself fails. Never collapse it to 0 or 999 —
+   * "unmeasured" and "worst" look identical once you do, and this codebase has
+   * already shipped that mistake twice today.
+   *
+   * `sort_order` above is NOT the ladder. It is display order, and nothing
+   * reads it as severity.
+   */
+  rung?: number | null;
 }
 
 // --- Agent ---
