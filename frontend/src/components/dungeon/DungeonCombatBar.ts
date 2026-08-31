@@ -40,6 +40,7 @@ import {
   getConditionLabel,
   getEnemyConditionLabel,
 } from '../../utils/dungeon-formatters.js';
+import { icons } from '../../utils/icons.js';
 import { localized as localizedValue } from '../../utils/locale-fields.js';
 import { terminalComponentTokens, terminalTokens } from '../shared/terminal-theme-styles.js';
 import '../shared/VelgAvatar.js';
@@ -1529,7 +1530,7 @@ export class VelgDungeonCombatBar extends SignalWatcher(LitElement) {
                 </span>
                 ${
                   action
-                    ? html`<span class="order__drop" aria-hidden="true">\u2715</span>`
+                    ? html`<span class="order__drop" aria-hidden="true">${icons.close(9)}</span>`
                     : nothing
                 }
               </button>
