@@ -223,9 +223,28 @@ export type DriftFrequency =
 
 export type DriftDistanceBand = 'near' | 'mid' | 'deep';
 
-/** Public phase-gate snapshot from GET /api/v1/public/drift/state (no JWT). */
+/** Public phase-gate snapshot from GET /api/v1/public/drift/state (no JWT).
+ *
+ *  Spiegelt `backend/models/drift.py::DriftPublicState` Feld fuer Feld. Alle Phasen
+ *  kommen KUMULATIV an: `p2` ist nur wahr, wenn auch `p1` und `enabled` (P0) wahr
+ *  sind. Die Regel wendet der Server an (`DriftService.get_public_state`) - der
+ *  Client leitet sie nicht noch einmal her, sonst gaebe es zwei Fassungen davon.
+ *
+ *  `ai` ist keine Phase, sondern ein Querschalter, und haengt nur an P0. Er meldet
+ *  einen Zustand, den heute keine Erzeugungsstelle abfragt: DRIFT ruft ueberhaupt
+ *  keine KI. Die Oberflaeche darf daraus nicht ableiten, dass gerade Geld gespart
+ *  wird.
+ *
+ *  `highest_open_phase` ist `null`, solange schon P0 zu ist; sonst die Nummer der
+ *  hoechsten offenen Phase (0 = P0). */
 export interface DriftPublicState {
   enabled: boolean;
+  ai: boolean;
+  p1: boolean;
+  p2: boolean;
+  p3: boolean;
+  p4: boolean;
+  highest_open_phase: number | null;
 }
 
 /** A travel_runs row as the API returns it (mirrors backend TravelRunResponse).

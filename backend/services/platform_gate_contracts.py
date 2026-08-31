@@ -61,13 +61,20 @@ class PlatformGate(NamedTuple):
     als Suchraum; es ist damit kein Kommentar, sondern eine Zusage.
 
     ``wired`` beantwortet die einzige Frage, die einem Schalter wirklich zusteht:
-    ändert sein Umlegen heute irgendetwas? Fünf DRIFT-Tore stehen als Zeile auf
-    Prod, werden aber von nichts gelesen — nicht von Python, nicht von einer
-    SQL-Funktion (gemessen 31.08.2026 über ``pg_get_functiondef`` auf der
-    laufenden Datenbank: 0 Treffer für ``drift_ai_enabled`` und
-    ``drift_p1..p4_enabled``, 10 für ``drift_fun_core_enabled``). Sie zu
-    verschweigen wäre falsch, sie als Schalter anzubieten auch. Die Oberfläche
-    zeigt sie als das, was sie sind: vorbereitet, nicht angeschlossen.
+    ändert sein Umlegen heute irgendetwas? Wo es ``False`` ist, zeigt die
+    Oberfläche das Tor als das, was es ist: vorbereitet, nicht angeschlossen.
+
+    Am 31.08.2026 standen fünf DRIFT-Tore so da — ``drift_ai_enabled`` und
+    ``drift_p1..p4_enabled`` hatten eine Zeile auf Prod und keine Lesestelle
+    (gemessen über ``pg_get_functiondef`` auf der laufenden Datenbank: 0 Treffer,
+    ``drift_fun_core_enabled`` zum Vergleich: 10; im Python nannte sie nur diese
+    Datei). Sie sind seither angeschlossen und nicht entfernt worden:
+    ``DriftService.get_public_state`` liest alle sechs in einem Abruf, wendet die
+    kumulative Regel an und meldet das Ergebnis über
+    ``GET /api/v1/public/drift/state``. Damit ist heute kein Tor mehr unverdrahtet —
+    ``test_unwired_gates_are_really_dead`` läuft über eine leere Liste, und genau
+    das ist der erwünschte Zustand. Das Feld bleibt: das nächste vorbereitete Tor
+    soll sich wieder als solches erklären müssen.
     """
 
     key: str
@@ -175,51 +182,69 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         key="drift_ai_enabled",
         group="drift",
         label="DRIFT KI-Erzeugung",
-        turns_on="Alle KI-Berührungspunkte in DRIFT (Beschreibungen, Begegnungen).",
-        absence_costs="DRIFT läuft ohne erzeugten Text.",
+        turns_on=(
+            "Meldet über /public/drift/state, dass DRIFT KI-Text erzeugen darf. "
+            "⚠ Heute fragt das keine Erzeugungsstelle ab: DRIFT ruft überhaupt keine KI."
+        ),
+        absence_costs=(
+            "Derzeit nichts — es gibt keinen erzeugten Text, der wegfiele. Sobald die "
+            "erste DRIFT-Texterzeugung kommt, bleibt sie stumm."
+        ),
         default_when_missing=False,
-        reader="supabase/migrations/20260613120000_239_travel_foundation.sql",
-        wired=False,
+        reader="backend/services/drift_service.py",
     ),
     PlatformGate(
         key="drift_p1_enabled",
         group="drift",
         label="DRIFT P1 — Welten & Präsenz",
-        turns_on="Phasentor P1. Kumulativ: setzt P0 voraus.",
-        absence_costs="Die Phase bleibt unerreichbar.",
+        turns_on=(
+            "Meldet P1 als offen — kumulativ, also nur wenn P0 offen ist. Hinter der "
+            "Phase steht noch kein Merkmal; das Tor geht der Sache voraus."
+        ),
+        absence_costs=(
+            "Die Phase gilt als geschlossen, auch wenn P2 bis P4 auf wahr stünden. "
+            "Die Oberfläche meldet P0 als höchste offene Phase."
+        ),
         default_when_missing=False,
-        reader="supabase/migrations/20260613120000_239_travel_foundation.sql",
-        wired=False,
+        reader="backend/services/drift_service.py",
     ),
     PlatformGate(
         key="drift_p2_enabled",
         group="drift",
         label="DRIFT P2 — Gefährten",
-        turns_on="Phasentor P2. Kumulativ: setzt P1 voraus.",
-        absence_costs="Die Phase bleibt unerreichbar.",
+        turns_on=(
+            "Meldet P2 als offen — kumulativ, also nur wenn P1 und P0 offen sind. "
+            "Hinter der Phase steht noch kein Merkmal."
+        ),
+        absence_costs=("Die Phase gilt als geschlossen, ebenso P3 und P4, was immer in deren Zeilen steht."),
         default_when_missing=False,
-        reader="supabase/migrations/20260613120000_239_travel_foundation.sql",
-        wired=False,
+        reader="backend/services/drift_service.py",
     ),
     PlatformGate(
         key="drift_p3_enabled",
         group="drift",
         label="DRIFT P3 — Wetter & Grenzland",
-        turns_on="Phasentor P3. Kumulativ: setzt P2 voraus.",
-        absence_costs="Die Phase bleibt unerreichbar.",
+        turns_on=(
+            "Meldet P3 als offen — kumulativ, also nur wenn P2, P1 und P0 offen sind. "
+            "Hinter der Phase steht noch kein Merkmal."
+        ),
+        absence_costs=("Die Phase gilt als geschlossen, ebenso P4, was immer in dessen Zeile steht."),
         default_when_missing=False,
-        reader="supabase/migrations/20260613120000_239_travel_foundation.sql",
-        wired=False,
+        reader="backend/services/drift_service.py",
     ),
     PlatformGate(
         key="drift_p4_enabled",
         group="drift",
         label="DRIFT P4 — Gesellschaft",
-        turns_on="Phasentor P4. Kumulativ: setzt P3 voraus.",
-        absence_costs="Die Phase bleibt unerreichbar.",
+        turns_on=(
+            "Meldet P4 als offen — die letzte Sprosse, kumulativ über alle vorherigen. "
+            "Hinter der Phase steht noch kein Merkmal."
+        ),
+        absence_costs=(
+            "Die Phase gilt als geschlossen. Auf die anderen wirkt das nicht zurück — P4 ist das Ende der Leiter."
+        ),
         default_when_missing=False,
-        reader="supabase/migrations/20260613120000_239_travel_foundation.sql",
-        wired=False,
+        reader="backend/services/drift_service.py",
     ),
     # ── Soziale Kanäle ──────────────────────────────────────────────────
     PlatformGate(

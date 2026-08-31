@@ -15,6 +15,7 @@ import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
+import { driftStatus } from '../../services/DriftStatusService.js';
 import { captureError } from '../../services/SentryService.js';
 import { themeService } from '../../services/ThemeService.js';
 import { PLATFORM_DARK_CONFIG } from '../../services/theme-presets.js';
@@ -113,6 +114,11 @@ function havarieOf(run: TravelRun | null): DriftHavarie | null {
  *  16px inset on either side. The chart frames the graph into the band that is left over —
  *  otherwise a third of the Driftkarte sits under the HUD on a narrow screen. Kept in sync
  *  with the `.hud` rule below by construction (both derive from the same two numbers). */
+/** Die fuenf Sprossen der Phasenleiter. Der Index IST die Phasennummer und
+ *  entspricht `_PHASE_GATE_KEYS` in `backend/services/drift_service.py` — die
+ *  Reihenfolge ist die Zusage, nicht die Beschriftung. */
+const PHASE_RUNGS = ['P0', 'P1', 'P2', 'P3', 'P4'] as const;
+
 const HUD_GUTTER_PX = 320 + 32;
 
 // Gauge maxima come from the tuning API (drift_tuning is the source of truth); these
@@ -137,6 +143,10 @@ export class VelgDriftView extends LitElement {
         --_kh: var(--color-success);
         --_bb: var(--color-info);
         --_dz: var(--color-danger);
+        /* Ausbaustufe: eine offene Sprosse traegt die Amber-Marke des Hauses, eine
+           unerreichte bleibt Umriss. Kein Rot — eine ungebaute Phase ist kein Fehler. */
+        --_rung-open: var(--color-primary);
+        --_rung-shut: var(--color-border);
       }
       .drift {
         position: relative;
@@ -236,6 +246,71 @@ export class VelgDriftView extends LitElement {
         font-size: var(--text-sm);
         line-height: var(--leading-snug);
         color: var(--color-text-secondary);
+      }
+      /* AUSBAUSTUFE — die Phasenleiter P0..P4.
+         Sie steht nur im Zweig OHNE laufenden Lauf. Waehrend einer Reise ist die
+         Frage „wie weit ist dieses Merkmal?" nicht die, die jemand stellt; zwischen
+         den Laeufen ist sie es (dieselbe Begruendung, aus der das Logbuch hier steht
+         und nicht im Lauf). */
+      .stage {
+        margin: var(--space-4) 0 0;
+        padding-top: var(--space-3);
+        border-top: 1px dashed var(--color-border);
+      }
+      .stage__label {
+        margin: 0 0 var(--space-2);
+        font-family: var(--font-brutalist);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+      .stage__ladder {
+        display: flex;
+        gap: var(--space-1);
+        margin: 0 0 var(--space-2);
+        padding: 0;
+        list-style: none;
+      }
+      .stage__rung {
+        flex: 1 1 0;
+        padding: var(--space-1) 0;
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        letter-spacing: var(--tracking-wide);
+        text-align: center;
+        color: var(--color-text-muted);
+        border: var(--border-width-thin) solid var(--_rung-shut);
+        background: transparent;
+        opacity: 0;
+        animation: rung-in var(--duration-entrance) var(--ease-dramatic) forwards;
+        animation-delay: calc(var(--i, 0) * var(--duration-stagger));
+      }
+      .stage__rung--open {
+        color: var(--color-text-inverse);
+        background: var(--_rung-open);
+        border-color: var(--_rung-open);
+        font-weight: var(--font-bold);
+      }
+      @keyframes rung-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .stage__note {
+        margin: 0;
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-text-muted);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stage__rung {
+          opacity: 1;
+          animation: none;
+        }
       }
       /* Aufbruch is the one primary act of the idle panel, so it takes the panel's full
          width instead of shrinking to its six letters — a 106px button above a 280px
@@ -491,6 +566,14 @@ export class VelgDriftView extends LitElement {
     themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
     this._loadedToken = appState.accessToken.value;
     void this._load();
+    // Die Ausbaustufe liest denselben oeffentlichen Torzustand, den die Navigation
+    // schon geholt hat; nach dem ersten Erfolg ist `ensureLoaded` ein No-op. Das
+    // `requestUpdate` danach, weil diese Ansicht KEIN SignalWatcher ist — sie liest
+    // das Signal beim Rendern, nicht reaktiv, und wuerde die spaet eintreffende
+    // Antwort sonst erst beim naechsten fremden Anlass zeigen. Gleiches Muster wie
+    // in `HowToPlayTopic`. `ensureLoaded` weist nie zurueck (der Fehlerpfad wird im
+    // Dienst beobachtet), also braucht die Kette kein eigenes catch.
+    void driftStatus.ensureLoaded().then(() => this.requestUpdate());
     // Self-heal the auth-token race. On a hard reload the persisted access token can
     // still be stale when this view mounts; /drift/run is strict (get_current_user →
     // 401 on a not-yet-refreshed token) while /drift/chart is not, so the initial load
@@ -1593,6 +1676,50 @@ export class VelgDriftView extends LitElement {
     </div>`;
   }
 
+  /** Die Ausbaustufe: welche der fuenf DRIFT-Phasen offen ist.
+   *
+   *  WARUM DAS HIER STEHT: bis zum 31.08.2026 hatten `drift_p1..p4_enabled` eine
+   *  Zeile auf Prod und keine Lesestelle. Ein Schalter, dessen Umlegen nichts
+   *  aendert, verspricht eine Wirkung, die es nicht gibt — also ist er
+   *  angeschlossen worden, nicht entfernt.
+   *
+   *  UND WAS SIE NICHT BEHAUPTET: dass hinter den oberen Sprossen etwas steht. Es
+   *  steht nichts; die Notiz sagt das ausdruecklich. Der Querschalter
+   *  `drift_ai_enabled` kommt hier gar nicht vor — er riegelt heute nichts ab
+   *  (DRIFT ruft keine KI), und eine Anzeige „KI aus" laese sich als ersparte
+   *  Kosten. Wer den Torzustand als Betriebsgroesse braucht, liest ihn unter
+   *  Admin → Plattform → Merkmalstore, wo alle 23 Tore stehen.
+   *
+   *  Der Kegel kommt vom Server (kumulativ gerechnet); hier wird nichts
+   *  nachgerechnet, sonst gaebe es zwei Fassungen derselben Regel. */
+  private _renderStage() {
+    const ceiling = driftStatus.highestOpenPhase.value;
+    if (ceiling === null) return '';
+    return html`
+      <section class="stage">
+        <p class="stage__label">${msg('Build stage')}</p>
+        <ol class="stage__ladder">
+          ${PHASE_RUNGS.map((rung, i) => {
+            const open = i <= ceiling;
+            const label = open
+              ? msg(str`Phase ${rung} is open`)
+              : msg(str`Phase ${rung} is not built yet`);
+            return html`<li
+              class="stage__rung ${open ? 'stage__rung--open' : ''}"
+              style="--i: ${i}"
+              aria-label=${label}
+            >
+              ${rung}
+            </li>`;
+          })}
+        </ol>
+        <p class="stage__note">
+          ${msg('P0 is the playable phase. The rungs above it are declared, not built.')}
+        </p>
+      </section>
+    `;
+  }
+
   private _renderHud(run: TravelRun | null, sceneOpen = false) {
     if (!run) {
       // Public-first (plan §22.2): a guest reads the shared chart but cannot open a run
@@ -1647,6 +1774,7 @@ export class VelgDriftView extends LitElement {
               ? html`<velg-drift-logbook .entries=${this._logbook}></velg-drift-logbook>`
               : ''
           }
+          ${this._renderStage()}
         </div>
       `;
     }
