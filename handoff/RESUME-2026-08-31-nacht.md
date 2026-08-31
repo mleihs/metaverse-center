@@ -50,6 +50,44 @@ zufällig liegt (bei `.beat__cmd` auf einem Hintergrundbild: 2,14 : 1).
 **Keine Migration nötig** — 4.8 ist reiner Client-Zustand. Die reservierte
 Nummer 320 ist frei geblieben.
 
+### Sichtprüfung gefahren (1440 + 2560, laufende App gegen die Prototypen)
+
+Gemessen statt geschätzt. Vier Dinge, die kein Test und kein Tor melden konnte:
+
+* ✅ **§4.6 abgenommen.** Zwei Agenten auf denselben Gegner → **zwei Porträts**
+  im Visier-Tag („Commander Elena Vasquez, Dr. Kwame Osei"). Rücknahme am Kreuz
+  der Befehlskarte bewegt ALLE drei Anker zugleich: Karte weg, Visier-Tag
+  1→0 Porträts, Häkchen 3→2, Platz „Basic Attack" → „Auto-defence".
+* ✅ **§4.1/§4.9 abgenommen.** `rail.b = side.b = actions.b = 1400` (bündig),
+  `grid-template-columns: 360px 1773px 380px` bei 2560.
+* 🔴 **Gefunden: die Cockpit-Regel war ab 2560 wirkungslos** — `--immersive`
+  wurde GESETZT und von einer späteren `@media (min-width: 2560px)`-Regel
+  gleicher Spezifität überschrieben. Betraf Dungeon UND Chat. Von `L1–L7`
+  repariert (`51071201`). ⚠ Bei 1440 wäre es unsichtbar geblieben.
+* 🔴 **Gefunden: „RAUM 01 · COMBAT"** — ich hatte das Raum-LABEL beim Stempeln
+  aufgelöst statt beim Rendern, damit war es in der Sprache eingefroren.
+  Behoben (`10aa7b4e`), Gegenprobe: „Raum 04 · Kampf".
+* 🔴 **Gefunden: die Anweisungsleiste wich vom Prototyp ab** — zweizeilig mit
+  umrandeten Ziffern statt einzeilig mit Kreisziffern, und der leere Platz sagte
+  „Verteidigt" statt „Auto-Verteidigung". Das „Auto-" ist die ganze Aussage.
+
+### ⚠ OFFEN UND ENTSCHEIDUNGSBEDÜRFTIG: der Dungeon und die Themes
+
+    python3 frontend/scripts/measure-contrast-pairs.py --themes src/components/dungeon
+    → 206 Paare unter AA in mindestens einem von 11 Themes
+      alle 206 bestehen die dunkle Vorgabe
+
+**Eine Ursache, nicht 206:** der Vordergrund ist ein FESTER Plattformakzent
+(`--_phosphor`/`--_phosphor-dim` → `--amber`), der Grund folgt dem Theme
+(`--_screen-bg → --hud-bg → --color-surface`, `terminal-theme-styles.ts:16/:37`).
+119 der 206 hängen an diesen zwei Token, und **auch `brutalist` fällt durch** —
+es ist also nicht Hell gegen Dunkel, sondern die Kopplung.
+
+Empfehlung (nicht umgesetzt, ändert das Aussehen jeder gethemten Welt): das HUD
+sollte seinen Grund PINNEN wie `BureauTerminal.ts:61` es schon tut. CLAUDE.md:
+„Plattform-Chrome bleibt immer dunkel/amber."
+
+
 ---
 
 ## ▶ DIE AUFGABE WAR: PHASE 4 · DUNGEON
