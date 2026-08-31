@@ -44,7 +44,7 @@ export class TypingIndicator extends LitElement {
     .indicator__label {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

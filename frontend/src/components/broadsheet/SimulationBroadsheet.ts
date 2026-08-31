@@ -113,7 +113,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .editorial__input {
@@ -218,7 +218,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
       .press-status__phase {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       .press-status__elapsed {
@@ -226,7 +226,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         align-self: center;
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         min-width: 3ch;
         text-align: right;
       }

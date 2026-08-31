@@ -234,7 +234,7 @@ export class ChatMessage extends LitElement {
     .time {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       margin-top: var(--space-1);
       user-select: none;
     }

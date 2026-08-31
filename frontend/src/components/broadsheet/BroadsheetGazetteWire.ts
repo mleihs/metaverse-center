@@ -46,7 +46,7 @@ export class VelgBroadsheetGazetteWire extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.18em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding-bottom: var(--space-1);
         border-bottom: 1px dashed var(--color-border-light);
         margin: 0;
@@ -107,14 +107,14 @@ export class VelgBroadsheetGazetteWire extends LitElement {
       .wire__timestamp {
         font-family: var(--font-mono);
         font-size: 9px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         letter-spacing: 0.06em;
       }
 
       .wire__empty {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         font-style: italic;
       }
 

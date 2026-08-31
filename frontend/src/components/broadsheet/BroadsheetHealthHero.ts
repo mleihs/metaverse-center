@@ -100,7 +100,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.18em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         padding-bottom: var(--space-1);
         border-bottom: 1px dashed var(--color-border-light);
         margin: 0;
@@ -109,7 +109,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
       .sitrep__snapshot-label {
         font-family: var(--font-mono);
         font-size: 9px;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         letter-spacing: 0.06em;
         font-style: italic;
       }

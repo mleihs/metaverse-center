@@ -90,7 +90,7 @@ export class VelgAgentSelector extends LitElement {
     }
 
     .selector__search::placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       text-transform: uppercase;
@@ -183,7 +183,7 @@ export class VelgAgentSelector extends LitElement {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .selector__confirm {

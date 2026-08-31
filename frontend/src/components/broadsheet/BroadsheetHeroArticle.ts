@@ -51,7 +51,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.14em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
         margin: 0 0 var(--space-2);
       }
 
@@ -115,7 +115,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
         font-size: 9px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--color-text-muted);
+        color: var(--color-text-quiet);
       }
 
       /* ── Responsive ────────────────────────── */

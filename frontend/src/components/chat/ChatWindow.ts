@@ -109,7 +109,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .window__sub-info {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .window__header-actions {
@@ -220,7 +220,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       height: 16px;
       padding: 0;
       background: transparent;
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border: none;
       cursor: pointer;
       font-size: var(--text-sm);
@@ -234,7 +234,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .event-card__meta {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .window__messages {
@@ -268,7 +268,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     .window__empty-text {
       font-family: var(--font-body);
       font-size: var(--text-sm);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       max-width: 360px;
     }
 
@@ -282,14 +282,14 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-size: var(--text-sm);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
     }
 
     .window__sending-indicator {
       padding: var(--space-2) var(--space-4);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      color: var(--color-text-muted);
+      color: var(--color-text-quiet);
       border-top: var(--border-light);
     }
 
