@@ -20,7 +20,7 @@
  * (max 2 disclosure levels).
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -43,7 +43,7 @@ import {
   htpHeroStyles,
   htpReducedMotionBase,
 } from './htp-shared-styles.js';
-import { TOPICS, type TopicDefinition } from './htp-topic-data.js';
+import { type TopicDefinition, visibleTopics } from './htp-topic-data.js';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -261,10 +261,24 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
         box-shadow var(--duration-normal) var(--ease-dramatic),
         border-color var(--duration-normal) var(--ease-default);
 
-      /* Staggered entrance */
+      /*
+       * Gestaffelter Auftritt ueber den vom Elternteil gesetzten Index.
+       *
+       * Hier standen zwoelf nth-child-Zeilen fuer zwoelf Karten — das
+       * Raster hat sechzehn. Die Karten 13 bis 16 (Diplomatie, Terminal,
+       * Dungeons, DRIFT) bekamen also gar keine Verzoegerung: sie erschienen
+       * alle gleichzeitig, und zwar VOR den Karten 10 bis 12. Die Kaskade
+       * brach genau dort ab, wo sie am laengsten gelaufen waere, und der
+       * Bruch sah aus wie Absicht.
+       *
+       * Eine Regel statt einer Zeile je Karte ist die im Gestaltungssystem
+       * vorgesehene Form und die einzige, die beim siebzehnten Thema nicht
+       * erneut bricht.
+       */
       opacity: 0;
       transform: translateY(20px);
       animation: hub-enter var(--duration-entrance) var(--ease-dramatic) forwards;
+      animation-delay: calc(var(--i, 0) * var(--duration-cascade));
     }
 
     @keyframes hub-enter {
@@ -273,20 +287,6 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
         transform: translateY(0);
       }
     }
-
-    /* Stagger delays for 12 cards (60ms each) */
-    .card:nth-child(1)  { animation-delay: 0ms; }
-    .card:nth-child(2)  { animation-delay: 60ms; }
-    .card:nth-child(3)  { animation-delay: 120ms; }
-    .card:nth-child(4)  { animation-delay: 180ms; }
-    .card:nth-child(5)  { animation-delay: 240ms; }
-    .card:nth-child(6)  { animation-delay: 300ms; }
-    .card:nth-child(7)  { animation-delay: 360ms; }
-    .card:nth-child(8)  { animation-delay: 420ms; }
-    .card:nth-child(9)  { animation-delay: 480ms; }
-    .card:nth-child(10) { animation-delay: 540ms; }
-    .card:nth-child(11) { animation-delay: 600ms; }
-    .card:nth-child(12) { animation-delay: 660ms; }
 
     /* Accent stripe at top */
     .card::before {
@@ -548,7 +548,9 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     void driftStatus.ensureLoaded();
     seoService.setTitle([msg('Game Guide'), msg('How to Play')]);
     seoService.setDescription(
-      msg('Browse 12 topics covering every game system in metaverse.center.'),
+      msg(
+        str`Browse ${visibleTopics(driftStatus.enabled.value).length} topics covering every game system in metaverse.center.`,
+      ),
     );
     seoService.setCanonical('/how-to-play/guide');
     seoService.setBreadcrumbs([
@@ -591,9 +593,12 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       this._showDropdown = false;
       return;
     }
-    this._searchResults = searchTopics(q).filter(
-      (r) => r.topic.slug !== 'drift' || driftStatus.enabled.value,
-    );
+    // Suche und Raster teilen sich EINE Sichtbarkeitsregel. Vorher stand die
+    // DRIFT-Bedingung hier und im Raster woertlich zweimal — zwei Kopien einer
+    // Regel laufen auseinander, und eine dritte Ansicht haette eine dritte
+    // bekommen.
+    const visible = new Set(visibleTopics(driftStatus.enabled.value).map((t) => t.slug));
+    this._searchResults = searchTopics(q).filter((r) => visible.has(r.topic.slug));
     this._showDropdown = this._searchResults.length > 0 || q.length >= 2;
     this._activeResultIdx = -1;
   }
@@ -713,7 +718,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
         <span class="hero__eyebrow">${msg('Classified Archive')}</span>
         <h1 class="hero__title">${msg('Game Guide')}</h1>
         <p class="hero__subtitle">
-          ${msg('12 topics covering every system. Pick a dossier.')}
+          ${msg(str`${visibleTopics(driftStatus.enabled.value).length} topics covering every system. Pick a dossier.`)}
         </p>
       </header>
     `;
@@ -788,9 +793,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
   private _renderGrid() {
     return html`
       <div class="grid" role="list" aria-label=${msg('Game guide topics')}>
-        ${TOPICS.filter((t) => t.slug !== 'drift' || driftStatus.enabled.value).map((topic, i) =>
-          this._renderCard(topic, i),
-        )}
+        ${visibleTopics(driftStatus.enabled.value).map((topic, i) => this._renderCard(topic, i))}
       </div>
     `;
   }
@@ -803,7 +806,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
         href=${`/how-to-play/guide/${topic.slug}`}
         role="listitem"
         tabindex="0"
-        style="--_card-accent: var(${topic.accent})"
+        style="--_card-accent: var(${topic.accent}); --i: ${index}"
         aria-label=${topic.title}
         @click=${(e: Event) => this._handleCardClick(e, topic.slug)}
         @keydown=${(e: KeyboardEvent) => this._handleCardKeydown(e, topic.slug)}

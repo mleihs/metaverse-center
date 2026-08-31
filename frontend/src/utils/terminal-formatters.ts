@@ -510,7 +510,7 @@ export function formatHelp(commands: TerminalCommand[], clearanceLevel: number):
   lines.push(responseLine(''));
   lines.push(
     responseLine(
-      `OPS = ${msg('Operations Points (fortify, quarantine)')} | INT = ${msg('Intel Points (future: debrief, scan)')}`,
+      `OPS = ${msg('Operations Points (fortify, quarantine)')} | INT = ${msg('Intel Points (debrief, scan)')}`,
     ),
   );
 

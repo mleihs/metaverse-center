@@ -1015,7 +1015,7 @@ export function getEpochCommsGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('Presence & Ready Signals'),
       narration: msg(
-        'The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you\u2019ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves \u2013 no waiting for the timer.',
+        'The presence indicator shows which players are currently online with a green dot. The ready signal system lets you indicate when you\u2019ve completed your actions for the current cycle. When all human participants signal ready, the cycle auto-resolves early \u2013 unless the epoch sets a minimum cycle length, which acts as a floor even when everyone is ready.',
       ),
       tip: msg(
         'Use the COMMS to coordinate alliance strategy, negotiate truces, or bluff about your next move. Everything said in ALL CHANNELS is visible to all players \u2013 use TEAM FREQ for sensitive coordination.',
@@ -1052,7 +1052,7 @@ export function getBureauTerminalGuideSteps(): DemoStep[] {
       ),
       readout: [
         { label: msg('Access'), value: msg('Simulation \u2192 Terminal tab') },
-        { label: msg('Commands'), value: msg('30 across 4 tiers') },
+        { label: msg('Commands'), value: msg('32 across 4 tiers') },
         { label: msg('Perspective'), value: msg('Local (current zone only)') },
         { label: msg('Aesthetic'), value: msg('CRT amber-on-black') },
       ],
@@ -1113,13 +1113,13 @@ export function getBureauTerminalGuideSteps(): DemoStep[] {
       phase: 'reckoning',
       title: msg('Tier 4: Epoch Operations'),
       narration: msg(
-        'Unlocks at 50 total commands during an active epoch. The terminal becomes a tactical command center connected to the epoch war effort. Eight commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), intercept (counter-intelligence sweep), deploy (operative deployment), ally (alliance proposals), broadcast (public messaging), and encrypt (private messaging).',
+        'Granted for the duration of an active epoch \u2013 there is no command count to reach. The terminal becomes a tactical command center connected to the epoch war effort. Four commands bridge the terminal with the epoch interface: sitrep (AI tactical briefing), dossier (intelligence file on opponent), threats (incoming operative detection), and intercept (counter-intelligence sweep). Deployment, alliances, broadcasts and encrypted messages are not terminal commands \u2013 they live in the epoch interface tabs.',
       ),
       detail: msg(
-        'Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Deploy, ally, broadcast, and encrypt redirect to their respective epoch interface tabs for execution.',
+        'Sitrep produces an AI-generated battlefield assessment covering zone stability trends, operative activity, and recommended priorities. Dossier compiles intelligence on a specific opponent including their operative history, scoring trajectory, and alliance status. Intercept costs 4 RP and functions like a counter-intelligence sweep from the terminal. Tier 4 lasts as long as the epoch does; when it ends, the terminal falls back to the tier you earned by using it.',
       ),
       readout: [
-        { label: msg('Unlock'), value: msg('After 50 commands + active epoch') },
+        { label: msg('Unlock'), value: msg('Active epoch \u2013 no command count') },
         { label: msg('sitrep'), value: msg('AI tactical situation briefing') },
         { label: msg('dossier'), value: msg('Intelligence file on opponent') },
         { label: msg('threats'), value: msg('Incoming operative detection') },

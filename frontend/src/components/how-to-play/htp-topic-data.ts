@@ -971,7 +971,7 @@ export const TOPICS: TopicDefinition[] = [
     slug: 'terminal',
     title: msg('Bureau Terminal'),
     icon: 'terminal',
-    description: msg('Text-based command interface: 30 commands across 4 tiers, CRT aesthetic.'),
+    description: msg('Text-based command interface: 32 commands across 4 tiers, CRT aesthetic.'),
     accent: '--color-primary',
     readTime: msg('7 min'),
     tldr: () => [
@@ -980,9 +980,14 @@ export const TOPICS: TopicDefinition[] = [
       ),
       msg('Tier 1 (Observation): look, go, examine, talk, status, map, where, weather, help'),
       msg(
-        'Tier 2 (Field Ops, 10 cmds): fortify, quarantine, assign \u2013 costs Operations Points',
+        'Tier 2 (Field Ops, unlocks after 10 commands): fortify, quarantine, assign \u2013 costs Operations Points',
       ),
-      msg('Tier 3 (Intel, 25 cmds): scan, investigate, debrief, ask \u2013 costs Intel Points'),
+      msg(
+        'Tier 3 (Intel, unlocks after 25 commands): scan, investigate, debrief, ask \u2013 costs Intel Points',
+      ),
+      msg(
+        'Tier 4 (Epoch Ops): sitrep, dossier, threats, intercept \u2013 granted during an active epoch',
+      ),
     ],
     sections: () => [
       { kind: 'steps', title: msg('The Bureau Terminal'), steps: getBureauTerminalGuideSteps },
@@ -1009,7 +1014,7 @@ export const TOPICS: TopicDefinition[] = [
         '8 dungeon archetypes \u2013 each tied to a resonance type with unique enemies and encounters',
       ),
       msg('Loot grants permanent aptitude boosts (+2 cap per agent), memories, and moodlets'),
-      msg('Party of up to 4 agents \u2013 condition tracks from Operational to Afflicted'),
+      msg('Party of 2 to 4 agents \u2013 condition tracks from Operational to Afflicted'),
       msg('Two ways to play the same run: the terminal war room, or the rendered 2D view'),
     ],
     sections: () => [
@@ -1026,7 +1031,7 @@ export const TOPICS: TopicDefinition[] = [
             type: 'info',
             label: msg('How to Enter'),
             text: msg(
-              'Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (up to 4 agents). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.',
+              'Navigate to the Terminal tab and type "dungeon" to see available dungeons. Select an archetype and choose your party (2 to 4 agents \u2013 a single agent is refused). The dungeon launches in the terminal with a submarine war room HUD showing the map, party status, and combat interface.',
             ),
           },
           {
@@ -1051,7 +1056,7 @@ export const TOPICS: TopicDefinition[] = [
             type: 'warn',
             label: msg('Combat System'),
             text: msg(
-              'Combat is phase-based. During the 60-second planning phase, assign abilities from 6 schools (one per operative type) to your agents. Then the round resolves simultaneously \u2013 your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.',
+              'Combat is phase-based. During the 60-second planning phase, assign abilities from 7 schools \u2013 one per operative type, plus a universal school every agent always has \u2013 to your agents. Then the round resolves simultaneously \u2013 your agents and the enemies act at the same time. Agents have condition tracks (Operational, Stressed, Wounded, Afflicted) and accumulate stress. If the entire party is defeated, the run is wiped and agents suffer trauma outcomes.',
             ),
           },
           {
@@ -1252,4 +1257,31 @@ export function getAdjacentTopics(slug: string): {
 /** Get all topic slugs (for search index building). */
 export function getAllTopicSlugs(): string[] {
   return TOPICS.map((t) => t.slug);
+}
+
+/**
+ * Die Themen, die eine bestimmte Besucherin tatsächlich sieht.
+ *
+ * WARUM DAS EINE FUNKTION IST: das DRIFT-Thema hängt am selben Tor wie sein
+ * Navigationsreiter (`drift_p0_enabled`). Die Zahl der Themen ist also nicht
+ * `TOPICS.length`, sondern je nach Plattformzustand 15 oder 16 — und genau
+ * diese Unterscheidung ging bisher verloren:
+ *
+ *   * Die Filterbedingung stand ZWEIMAL wörtlich in `HowToPlayGuideHub`
+ *     (Suche `:595`, Raster `:791`). Zwei Kopien einer Regel laufen
+ *     auseinander; eine dritte Ansicht hätte eine dritte bekommen.
+ *   * Und an vier Stellen stand die Zahl als fester Text: „12 Themen",
+ *     gemessen am 31.08.2026 gegen 16 tatsächliche. Vier daneben — die Hilfe
+ *     verschwieg vier ganze Systeme, darunter Terminal und Dungeons.
+ *
+ * Eine Oberfläche, die „12" druckt, während 16 dastehen, ist schlechter als
+ * eine, die gar nichts druckt: sie ist eine Zusage, die die Seite selbst
+ * widerlegt, sobald man die Karten zählt.
+ *
+ * Bewusst OHNE Import des `DriftStatusService`: dieses Modul ist Daten, kein
+ * Dienst. Der Zustand kommt als Argument herein, damit die Funktion ohne
+ * Signale prüfbar bleibt und die Datenschicht keine Dienstschicht zieht.
+ */
+export function visibleTopics(driftEnabled: boolean): TopicDefinition[] {
+  return TOPICS.filter((t) => t.slug !== 'drift' || driftEnabled);
 }

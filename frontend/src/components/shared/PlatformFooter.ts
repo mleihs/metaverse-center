@@ -111,9 +111,13 @@ export class VelgPlatformFooter extends LitElement {
         <div class="footer__row">
           <span>\u00A9 ${new Date().getFullYear()} metaverse.center</span>
           <nav aria-label=${msg('Legal')}>
+            <a href="/how-to-play">${msg('Help')}</a>
+            <span aria-hidden="true">\u00B7</span>
             <a href="/privacy">${msg('Privacy')}</a>
             <span aria-hidden="true">\u00B7</span>
             <a href="/terms">${msg('Terms')}</a>
+            <span aria-hidden="true">\u00B7</span>
+            <a href="/data-deletion">${msg('Delete Data')}</a>
             <span aria-hidden="true">\u00B7</span>
             <a href="https://www.instagram.com/bureau.of.impossible.geography/" target="_blank" rel="noopener noreferrer">${msg('Instagram')}</a>
             <span aria-hidden="true">\u00B7</span>
