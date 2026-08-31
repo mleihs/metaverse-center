@@ -268,7 +268,7 @@ export class VelgBureauDispatch extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--_amber-dim);
+      color: var(--color-accent-amber-readable);
     }
 
     .decoder__input-wrap {
@@ -484,7 +484,7 @@ export class VelgBureauDispatch extends LitElement {
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
-      color: var(--_amber-dim);
+      color: var(--color-accent-amber-readable);
       margin: 0 0 var(--space-1);
     }
 
