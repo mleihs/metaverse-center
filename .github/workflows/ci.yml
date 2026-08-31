@@ -37,6 +37,18 @@ jobs:
       - name: Lit template check
         run: npm run lint:lit
 
+      # CI hat den Produktions-Build nie gefahren — nur typecheck, lint und
+      # Tests. Am 31.08.2026 brach ein Deploy an einem CSS-Kommentar, den
+      # weder tsc noch biome noch eines der 25 Tore lesen konnte; der erste
+      # Leser war `vite build` auf dem Deploy-Server, nach dem Start.
+      # Ein Build, der nirgends probiert wird, ist eine Zusicherung.
+      #
+      # Läuft ohne Deploy-Geheimnisse: `assertDeployEnv` prüft nur, wenn
+      # VELG_REQUIRE_BUILD_ENV=true gesetzt ist, und das setzt nur der
+      # Deployment-Ziel-Container.
+      - name: Production build (the reader that used to be the deploy server)
+        run: npm run build
+
       - name: Color token lint
         run: bash frontend/scripts/lint-color-tokens.sh
         working-directory: .
