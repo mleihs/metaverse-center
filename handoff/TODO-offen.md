@@ -216,7 +216,21 @@ lassen.
 
 ---
 
-## T5 · `/platform-stats` sollte verschwinden
+## T5 · `/platform-stats` sollte verschwinden - ERLEDIGT (nachgemessen 31.08. abends)
+
+> Alle vier Loeschstellen sind weg. Gemessen: kein `@router.get("/platform-stats")`,
+> kein `SimulationService.get_platform_stats`, kein `PlatformStatsResponse`, und
+> `getPlatformStats` hat **0 Aufrufer**, weil es die Methode nicht mehr gibt.
+> Uebrig sind vier Kommentare, die auf den Endpunkt als abgeloeste Vorgeschichte
+> verweisen (`landing_service.py`, `models/landing.py`, `public.py`,
+> `SimulationsApiService.ts`) - die bleiben mit Absicht: sie erklaeren, warum
+> `/public/landing` die drei Groessen heute in EINEM Aufruf liefert.
+>
+> WARNUNG: `AIUsageService.get_platform_stats` (admin.py:731) traegt denselben
+> Namen und ist etwas anderes - KI-Kostenzahlen fuers Admin-Panel. Nicht anfassen.
+
+### Der urspruengliche Befund
+
 
 **Gemessen:** 31.08.2026.
 
@@ -248,7 +262,18 @@ fremden, gerade laufenden Datei entfernt.
 
 ---
 
-## T6 · Dashboard-Redesign (Claude-Design-Paket, „Command Stage" 4a)
+## T6 · Dashboard-Redesign (Claude-Design-Paket, „Command Stage" 4a) - GEBAUT UND AUF PROD
+
+> Liegt in `frontend/src/components/dashboard/` (7 Dateien: Page, Stage, Rail,
+> Queue, Registry, Worlds, CommandStrip), gebaut von `-45`, ausgeliefert.
+>
+> **Ein Punkt aus der Verdrahtungspruefung, damit ihn niemand fuer offen haelt:**
+> die Buehne zeigt NICHT das Paketbild (`uploads/Gemini_...jpeg`, im README als
+> „final“ bezeichnet), sondern `simulation_banner_url` - das Banner der Welt,
+> in der man gerade steht. Das ist die bessere Entscheidung, und sie traegt:
+> 36 von 36 lebenden Welten haben ein Banner, die Buehne bleibt also nie leer.
+> Das Paketbild ist damit unbenutzt und kein Befund.
+
 
 **Übergeben:** 31.08.2026 vom Nutzer. **Paket liegt in `handoff/dashboard-redesign/`**
 (6,6 MB, 18 Dateien). **Zuständig: `velgarien-rebuild-45`**, nach ihren
