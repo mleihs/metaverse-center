@@ -1284,11 +1284,24 @@ export class VelgApp extends LitElement {
     const isGuest = !appState.isAuthenticated.value;
     const isLanding = window.location.pathname === '/' || window.location.pathname === '/welcome';
 
+    // Die Frontseite traegt seit dem Umbau vom 31.08.2026 ihre eigene
+    // Navigation (Wortmarke, Welten/Systeme/Chronik, "Welt schmieden",
+    // Anmelden). Zusammen mit der Plattform-Kopfleiste standen dort ZWEI
+    // Navigationsleisten uebereinander, und die obere bot einem
+    // Erstbesucher Bedienelemente an, die ihn nichts angehen
+    // ("OPS", "Splitter waehlen").
+    //
+    // Die Regel ist bewusst eng: nur auf "/" und nur fuer Gaeste. Wer
+    // angemeldet ist, behaelt seine Kopfleiste samt Splitterwahl auch dort,
+    // und "/welcome" (eine Inhaltsseite ohne eigene Navigation) bleibt
+    // unberuehrt — ohne diese Einschraenkung stuende sie ganz ohne Navigation da.
+    const hideHeaderForLanding = isGuest && window.location.pathname === '/';
+
     return html`
       <a class="skip-nav" href="#main-content">${msg('Skip to main content')}</a>
       ${isGuest && !isLanding ? html`<velg-guest-banner></velg-guest-banner>` : nothing}
       ${this._routeLoading ? html`<div class="route-progress"></div>` : nothing}
-      <velg-platform-header></velg-platform-header>
+      ${hideHeaderForLanding ? nothing : html`<velg-platform-header></velg-platform-header>`}
       <main class="app-main" id="main-content">
         ${this._router.outlet()}
       </main>
