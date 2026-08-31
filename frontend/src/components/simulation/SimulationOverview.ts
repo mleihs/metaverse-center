@@ -8,6 +8,8 @@ import { agentsApi, buildingsApi } from '../../services/api/index.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/index.js';
+import type { OccupancyLevel } from '../../utils/building-condition.js';
+import { occupancyLevel, occupancyVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
@@ -38,6 +40,20 @@ const FETCH_LIMIT = 60;
 const ROSTER_LIMIT = 8;
 /** How many buildings the footprint strip shows before it sends the reader on. */
 const FOOTPRINT_LIMIT = 8;
+/**
+ * What each occupancy level is called on the card.
+ *
+ * Held as thunks rather than strings because `msg()` resolves against the
+ * locale that is active when it RUNS — a module-level constant of resolved
+ * strings would freeze the first language the module was loaded in.
+ */
+const OCCUPANCY_LABEL: Record<OccupancyLevel, () => string> = {
+  full: () => msg('Full'),
+  partial: () => msg('Partly held'),
+  sparse: () => msg('Thin'),
+  ruined: () => msg('Ruined'),
+};
+
 /** The rail's duty list — three is a shift, not a ranking table. */
 const ON_DUTY_LIMIT = 3;
 
@@ -910,8 +926,23 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
           </button>
         </div>
         <div class="strip__grid strip__grid--footprint">
-          ${shown.map(
-            (building, i) => html`
+          ${shown.map((building, i) => {
+            /*
+             * The occupancy threshold is defined once, in
+             * `utils/building-condition.ts`, and read here rather than
+             * recomputed. Two views showing the same ratio with two copies of
+             * ">= 66%" is how the two of them eventually disagree.
+             *
+             * A `null` level means the building declares no capacity, and that
+             * is NOT an empty one — the strip then shows no mark at all rather
+             * than inventing "critical" for a building nobody measured.
+             */
+            const level = occupancyLevel(
+              building.agents?.length ?? 0,
+              building.population_capacity,
+              building.building_condition,
+            );
+            return html`
               <velg-game-card
                 style="--i: ${i}"
                 type="building"
@@ -919,14 +950,23 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
                 .name=${building.name}
                 .imageUrl=${building.image_url ?? ''}
                 .subtitle=${t(building, 'building_type')}
-                .capacityBar=${{
-                  current: building.agents?.length ?? 0,
-                  max: building.population_capacity,
-                }}
+                .badges=${
+                  level
+                    ? [{ label: OCCUPANCY_LABEL[level](), variant: occupancyVariant(level) }]
+                    : []
+                }
+                .capacityBar=${
+                  building.population_capacity > 0
+                    ? {
+                        current: building.agents?.length ?? 0,
+                        max: building.population_capacity,
+                      }
+                    : null
+                }
                 @click=${() => this._go('buildings')}
               ></velg-game-card>
-            `,
-          )}
+            `;
+          })}
         </div>
       </section>
     `;
