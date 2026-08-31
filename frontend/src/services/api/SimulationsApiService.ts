@@ -1,4 +1,4 @@
-import type { ApiResponse, Simulation } from '../../types/index.js';
+import type { ApiResponse, LandingSnapshot, Simulation } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 import type { QueryParams } from './query-params';
 
@@ -49,6 +49,18 @@ export class SimulationsApiService extends BaseApiService {
 
   getPlatformStats<T = Record<string, number>>(): Promise<ApiResponse<T>> {
     return this.getPublic<T>('/platform-stats');
+  }
+
+  /**
+   * Alles, was die Frontseite braucht, in einem Aufruf.
+   *
+   * Nicht `getPlatformStats`: dessen drei Zaehler messen anders (er filtert
+   * `status` nicht mit und zaehlt Epochen allein am Status, auf Prod also 7
+   * statt 0). Die Frontseite darf nicht an einem Zaehler haengen, der fuer
+   * einen anderen Zweck geschnitten wurde.
+   */
+  getLandingSnapshot(): Promise<ApiResponse<LandingSnapshot>> {
+    return this.getPublic<LandingSnapshot>('/landing');
   }
 }
 

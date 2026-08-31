@@ -1594,6 +1594,59 @@ export interface PlatformSetting {
  * und nicht aus dem Client: die Namen werden im Ruecken gelesen, also gehoert
  * die Erklaerung dorthin, wo ein AST-Test sie an ihre Lesestelle binden kann.
  */
+/**
+ * Der Schnappschuss der Frontseite, wie `GET /api/v1/public/landing` ihn liefert.
+ *
+ * Jede Zahl ist gemessen. Der Entwurf trug `47 worlds`, `3 epochs in play` und
+ * `128 resonances absorbed` als Attrappen; gemessen am 31.08.2026 sind es 16, 0
+ * und 1. Eine Kennzahl aus einer Konstante ist irgendwann falsch.
+ */
+export interface LandingCounts {
+  /** Lebende Welten: template + active, ohne Epochen-Klone (16). */
+  worlds_live: number;
+  /** Davon die mit frischem Herzschlag (16). Betrieb, nicht Bestand. */
+  worlds_transmitting: number;
+  /** Epochen in spielendem Status, die sich auch bewegt haben (0). */
+  epochs_in_play: number;
+  resonances: number;
+  citizens: number;
+  buildings: number;
+  memories: number;
+  events: number;
+}
+
+export interface LandingWorld {
+  slug: string;
+  name: string;
+  name_de: string | null;
+  description: string | null;
+  description_de: string | null;
+  banner_url: string | null;
+  theme: string | null;
+  agent_count: number;
+  transmitting: boolean;
+}
+
+export interface LandingCitizen {
+  slug: string;
+  name: string;
+  profession: string | null;
+  profession_de: string | null;
+  character: string | null;
+  character_de: string | null;
+  portrait_image_url: string | null;
+  zone_name: string | null;
+  simulation_slug: string;
+  simulation_name: string;
+}
+
+export interface LandingSnapshot {
+  counts: LandingCounts;
+  worlds: LandingWorld[];
+  citizens: LandingCitizen[];
+  measured_at: string;
+}
+
 export interface FeatureGate {
   key: string;
   group: string;
