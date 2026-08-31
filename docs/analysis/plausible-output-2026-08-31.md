@@ -50,6 +50,51 @@ an einem Tag gemeinsam aufzufallen.
 - `UNION` verdeckte eine doppelte Sprosse, **weil die Werte zufällig gleich waren**
 - `--color-accent-amber` konstant, `--color-text-inverse` themebar → 6 von 10 Themes unlesbar
 
+### E — Niemand ist zuständig
+> die **grüne Gesamtmeldung** suggeriert eine Abdeckung, die niemand versprochen hat
+
+Ein Kommentar in `_colors.css` verlor sein schliessendes Zeichen; der Text stand
+als nacktes CSS in der Datei und brach den Produktions-Build. **Alle 24 Tore
+waren grün, und jedes einzelne hatte recht:**
+
+    tsc                  sieht .css-Dateien nicht an
+    biome                lintet TypeScript, nicht CSS
+    lint-color-tokens    grept nach rohen Hex, parst nicht
+    lint-backtick-in-css prüft css`…` IN TypeScript, keine .css-Datei
+
+Der Unterschied zu Familie C ist wichtig: dort ist ein Wächter da und
+wirkungslos, hier ist **gar keiner da**. Und der Absatz, der den Build brach,
+erklärte, dass eine Zahl in drei Paarungen dieselbe ist — **ein Kommentar,
+geschrieben um Code klarer zu machen, hat ihn unbaubar gemacht**, genauso wie
+die 66 `:host`-Blöcke, die ein Kommentar unsichtbar machte.
+
+#### Die Frage danach war nicht „ist die Lücke zu"
+
+sondern **„wo gibt es sie noch"**. Nach Dateiart gemessen:
+
+    py    730   ruff                          md    195   niemand (harmlos)
+    ts    624   tsc, biome                    html   14   niemand (vite fängt es)
+    sql   359   zwei Migrationstore           yml     3   NIEMAND  ⚠
+    yaml   77   validate_content_packs        toml    3   niemand (bricht laut)
+    css    19   lint-css-parses  (neu)
+
+Die drei `.yml` sind `.github/workflows/` — **die Dateien, die jedes andere Tor
+starten, prüfte niemand.** Und ihr Versagen ist das leiseste im ganzen Repo:
+eine kaputte Workflow-Datei wird nicht rot, sie **läuft nicht**. Nichts würde
+rot. Es würde nur aufhören, geprüft zu werden.
+
+`scripts/lint-workflows-parse.sh` schliesst das. Gegenprobe gefahren, nicht nur
+bestanden: mit einem echten YAML-Bruch meldet es Zeile und Spalte, mit einer
+Datei ohne `jobs` meldet es „GitHub would ignore it in silence" — und danach
+wieder PASS.
+
+**Und das Tor über die Tore hat das neue Tor sofort erwischt** (`MISSING
+ANCHOR`) — nicht wegen einer Formalie, sondern weil die Datei am falschen Ort
+lag: sie stand in `frontend/scripts/`, weil ich dort arbeitete, obwohl ihr
+Gegenstand das Wurzelverzeichnis ist. Ein Tor, das aus seinem Verzeichnis
+herauslaufen muss, ist genau die Form, die aus einer Richtung besteht und aus
+der anderen nicht.
+
 ---
 
 ## Was sie tatsächlich gefunden hat
