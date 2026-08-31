@@ -28,6 +28,7 @@ import { t } from '../../utils/locale-fields.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
+import { markerSelectionStyles } from '../shared/marker-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { VelgToast } from '../shared/Toast.js';
 import { broadsheetStyles } from './broadsheet-styles.js';
@@ -59,6 +60,7 @@ const COMPLETE_MARKS: Record<ThemePresetName, string> = {
 @customElement('velg-simulation-broadsheet')
 export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
   static styles = [
+    markerSelectionStyles,
     dispatchStyles,
     broadsheetStyles,
     css`
@@ -343,10 +345,21 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
     return this._broadsheets[0];
   }
 
+  /**
+   * Every edition, INCLUDING the one on screen.
+   *
+   * This used to filter the featured edition out, and the result was a list
+   * that never showed where you were: select #11 and it vanishes from the
+   * archive while #12 reappears, so the only way to know which edition you
+   * are reading is the masthead you already scrolled past. A navigation list
+   * that hides the current position is not a navigation list.
+   *
+   * The handoff asks for the same thing from the other direction: the active
+   * edition is tinted and outlined in place (README "Screen 3", Ausgaben-
+   * Archiv). Both want the row present.
+   */
   private get _archiveEditions(): Broadsheet[] {
-    const featured = this._featured;
-    if (!featured) return [];
-    return this._broadsheets.filter((b) => b.id !== featured.id);
+    return this._broadsheets;
   }
 
   /** The active theme PRESET.
@@ -688,7 +701,10 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
               <li class="broadsheet__archive-item" style="--i: ${i}">
                 <button
                   type="button"
-                  class="broadsheet__archive-btn"
+                  class="broadsheet__archive-btn ${
+                    b.id === this._featured?.id ? 'is-selected' : ''
+                  }"
+                  aria-current=${b.id === this._featured?.id ? 'true' : 'false'}
                   aria-label="${msg('Edition')} ${b.edition_number}: ${b.title}"
                   @click=${() => this._selectEdition(b.id)}
                 >
