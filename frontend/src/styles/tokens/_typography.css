@@ -18,6 +18,36 @@
   --text-3xl: 2.441rem;  /* 39px */
   --text-4xl: 3.052rem;  /* 48.8px */
 
+  /* === BUEHNENSCHRIFT — die Groessen oberhalb der Arbeitsskala ==========
+     Die Stufen bis --text-4xl sind fuer Arbeitsflaechen gebaut: Tabellen,
+     Panels, Formulare. Die beiden ganzseitigen Flaechen (Frontseite und
+     Dashboard) brauchen darueber hinaus Groessen, die es dort nicht gibt —
+     ein Countdown mit 60 px, eine Aufforderung mit 96 px, eine Titelzeile
+     mit 158 px.
+
+     Bis zum 31.08.2026 standen die als feste Zahlen in den Komponenten, und
+     die Breitbild-Stufe lag DREIMAL in drei verschiedenen Medienabfragen
+     (LandingHero, LandingForge, LandingSeoFooter). Drei Orte fuer eine Regel
+     heisst: der naechste Bildschirm wird an zweien nachgezogen.
+
+     Anders als die Arbeitsskala sind das keine festen Werte, sondern
+     Spannen. Eine Buehnengroesse, die nicht mitwaechst, ist auf einem
+     Telefon unlesbar und auf 4K verloren; deshalb traegt jede Stufe ihr
+     clamp() selbst, und die Breitbild-Fassung steht am Ende dieser Datei
+     statt in sechs Komponenten.
+
+     NICHT hierher gehoert, was nur EINMAL vorkommt und kein Lesetext ist —
+     der angeschnittene Geisterschriftzug der Fussleiste ist ein Zierelement,
+     keine Schriftstufe, und bleibt Tier 3 in seiner Komponente.
+
+     ⚠ Gemessen am 31.08.2026: 986 feste font-size-Angaben in Pixeln stehen
+     im Werk, und es gibt kein Lint-Tor fuer Groessen (nur fuer Farben).
+     Diese Stufen nehmen den Buehnen-Anteil heraus; der Rest bleibt ein
+     offener Punkt und ist als solcher notiert, nicht als erledigt. */
+  --text-display-sm: clamp(2.25rem, 4.2vw, 60px);
+  --text-display-md: clamp(var(--text-3xl), 7vw, 96px);
+  --text-display-lg: clamp(3rem, 11vw, 158px);
+
   /* === FONT WEIGHTS === */
   --font-normal: 400;
   --font-medium: 500;
@@ -68,5 +98,16 @@
     --text-4xl: 2.441rem;   /* 39px, was 49px */
     --h1-size: var(--text-2xl);
     --h2-size: var(--text-xl);
+  }
+}
+
+/* === Buehnenschrift ab 1920px ==========================================
+   Dieselben Haltepunkte wie --stage-gutter in _layout.css. Wer eine der drei
+   Stufen benutzt, bekommt die Breitbild-Fassung ohne eigene Medienabfrage. */
+@media (min-width: 1920px) {
+  :root {
+    --text-display-sm: clamp(60px, 2.7vw, 69px);
+    --text-display-md: clamp(96px, 5vw, 128px);
+    --text-display-lg: clamp(158px, 8.3vw, 212px);
   }
 }
