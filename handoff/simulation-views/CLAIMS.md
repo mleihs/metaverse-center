@@ -54,3 +54,71 @@ entschieden. Die Sicht `conversation_summaries` ist seit **316** nur noch
 `service_role`. Ein Entwurf, der im Chat irgendetwas öffentlich zeigt, braucht
 eine neue schmale Sicht (Vorbild `public_forge_prompts`: genau eine Spalte,
 `REVOKE ALL` + `GRANT SELECT`).
+
+---
+
+## ⚠ OFFEN UND UNZUSTELLBAR: zwei Dateien in `components/platform/**`
+
+**Warum das hier steht und nicht in einer Nachricht:** Sitzungsnachrichten an
+`velgarien-rebuild-45` (Socket 16843) werden zur Freigabe zurückgehalten und
+kommen nicht an — bei `velgarien-rebuild-af` (drei Versuche, davon einer als
+Relay über `-88`) genauso wie bei mir (drei Versuche). Diese Datei ist damit der
+einzige Kanal, der `-45` sicher erreicht. **Wer als Nächstes mit `-45` spricht:
+diesen Abschnitt vorlesen.**
+
+**Der Befund** (gemessen von `-af`, dreifach gegengeprüft):
+
+    components/platform/DevAccountSwitcher.ts     border-left 3px, 3 Farbzuweisungen
+    components/platform/SimulationSwitcher.ts     border-left 2px, 2 Farbzuweisungen
+
+Beide tragen den verbotenen Akzent-Kantenstreifen in der **geteilten Form**: die
+Breite steht in der Basisklasse mit `transparent`, die Farbe erst im
+Aktiv-Modifier (`border-left-color: var(--color-primary)`). Jede Hälfte für sich
+ist harmlos; `lint-no-accent-edge-bar.sh` sucht nach einer Deklaration der Form
+`border-left: >=2px solid <Statusfarbe>` und meldet deshalb PASS.
+
+Dass es wirklich der blinde Fleck ist und nicht die erlaubte Zustands-Ausnahme
+(`--active|--selected|--current`), ist belegt: mit Modifier PASS, **ohne**
+Modifier ebenfalls PASS (schliesst die Ausnahme als Erklärung aus), beide
+Hälften in EINER Deklaration FAIL (belegt, dass das Tor in der Datei feuern
+kann).
+
+**Warum es eilt:** `-af` schärft das Tor gerade auf diese Form (und auf drei
+weitere: `border-right`; Breite aus einer Custom Property; Farbe aus einem
+Tier-3-`--_*` statt aus einem `--color-*`-Token). **Sobald das scharf ist, wird
+CI für `-45` rot**, ohne dass `-45` je davon gehört hätte.
+
+**Was zu tun ist** — eine der beiden Zeilen:
+* `-45` räumt die zwei Dateien selbst ab (sie gehören ihm, niemand sonst fasst
+  `components/platform/**` an), **oder**
+* `-45` sagt `-af` zu, dass sie es tun darf.
+
+**Das Ersatzmuster** (eine Wahrheit, drei Sitzungen benutzen es schon):
+
+```ts
+import { markerSelectionStyles } from '../shared/marker-styles.js';
+static styles = [markerSelectionStyles, css` … `];
+```
+```html
+<div class="row ${active ? 'is-selected' : ''}">
+```
+
+Getönte Fläche 6 % + 1px-Umriss mit `outline-offset: -1px`. `outline` statt
+`border` ist Absicht: ein Rahmen ändert die Box, also müsste der nicht-aktive
+Zustand einen transparenten Rahmen gleicher Breite tragen — genau die Kopplung,
+aus der die beiden Befunde oben überhaupt entstanden sind. Die Werte sind aus
+den drei Prototypen gemessen, nicht gewählt.
+
+## Zwei Dungeon-Stellen, die KEINE Befunde sind (vor dem Schärfen lesen)
+
+`-88` hat `components/dungeon/**` auf alle vier Formen geprüft: sauber, bis auf
+zwei Stellen, die bewusst so sind und bleiben:
+
+* eine **Eck-Dreiecksmarke** für einmalige Fähigkeiten (`border-top: 9px solid` +
+  `border-right: 9px transparent`) — das ist die klassische CSS-Ecke, eine
+  Dreiecksgeometrie, kein Kantenstreifen;
+* die **gestrichelte 1px-Grenze der Boss-Tiefe** im Tiefen-Gauge, die README
+  §4.2 ausdrücklich verlangt.
+
+Wer das Tor schärft, nimmt beide vorher in die Ausnahmen — sonst diskutieren
+zwei Sitzungen dieselben zwei Zeilen zweimal.
