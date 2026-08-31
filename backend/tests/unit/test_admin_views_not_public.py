@@ -47,6 +47,15 @@ _PROTECTED = ("token_economy_stats", "v_instagram_queue", "v_bluesky_queue")
 #: (gemessen 31.08.2026). Geschlossen von Migration 313; gebunden von
 #: `test_active_views_scope_to_living_worlds.py`. Diese Liste bleibt richtig:
 #: die acht Sichten sind weiterhin öffentlich, 294 fasst sie weiterhin nicht an.
+#:
+#: ⚠ Und ein zweites Mal, in derselben Liste: `conversation_summaries` gab
+#: `authenticated` ALLE fremden Gespräche samt `user_id` heraus, obwohl
+#: `chat_conversations_select` ihm nur die eigenen erlaubt (gemessen: 3 über die
+#: Sicht, 0 über die Basistabelle). Für `anon` trug der Satz auch hier — die
+#: anon-Richtlinie öffnet Gespräche aktiver Welten absichtlich. Geschlossen von
+#: Migration 316; gebunden von `test_conversation_summaries_is_not_public.py`.
+#: Der Name `_PUBLIC` meint weiterhin genau das Richtige: Sichten, die MIGRATION
+#: 294 nicht anfasst. Er sagt nichts darüber, ob sie öffentlich BLEIBEN sollen.
 _PUBLIC = (
     "active_agents", "active_buildings", "active_events", "active_resonances",
     "available_dungeons", "conversation_summaries", "map_simulations",
