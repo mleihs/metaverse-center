@@ -490,11 +490,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
     const canEdit = appState.canEdit.value;
     const hasPulse = canEdit && forgeStateManager.hasAnyUnpurchasedFeature(this.simulationId);
-    const bureauClass = this.introHexagon
-      ? 'bureau--intro'
-      : hasPulse
-        ? 'bureau--pulse'
-        : '';
+    const bureauClass = this.introHexagon ? 'bureau--intro' : hasPulse ? 'bureau--pulse' : '';
 
     const name = t(sim, 'name');
     const tagline = t(sim, 'description');
