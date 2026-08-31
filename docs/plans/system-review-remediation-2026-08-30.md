@@ -274,6 +274,8 @@ Alle Stellen in `backend/services/cycle_notification_service.py` (CNS), `cycle_r
 | H1/H2/H4 | Auszeichnungs-Thema · Deutsch-Politik · Hilfe in der Schale | ja · nachziehen · ja (`?`) |
 | I1 | Draft + Aptitudes im Klon wiederherstellen? | ja |
 
+| N5 | **Vier von fünf Auslösern autonomer Ereignisse sind unerreichbar — nicht knapp verfehlt, unerreichbar.** Nachgemessen auf Prod am 31.08.2026, NACH dem Deploy von C1: die Phase läuft nachweislich (`autonomous_events_llm_budget` steht in jeder Zusammenfassung), erzeugt aber auf jeder Welt 0 Ereignisse. Grund: `stress_breakdown` verlangt `stress_level >= 800`, und alle 258 Agenten stehen auf **exakt 0** — `fn_update_stress_levels` erhöht Stress ausschließlich bei `mood_score < -20`, während die schlechteste je gemessene Laune **−1** ist (`mood_score` = Summe der Moodlets, deren Stärken von **−1 bis +5** reichen). `relationship_threshold` verlangt ±60, erreicht werden 45. `zone_crisis_reaction` verlangt `safety < 20`, das Minimum ist 22,0. Die Schwellen liegen etwa eine Größenordnung über dem Wertebereich, den das System selbst erzeugt. | **Balance-Entscheidung des Nutzers.** Vollständige Messung in `docs/analysis/warum-keine-events-2026-08-31.md`. Zwei Wege: Schwellen an die erreichbaren Maxima anpassen (billig) oder die Moodlet-Stärken vergrößern (ehrlicher, teurer). Nach dem Vorbild E11 gehört ein MESSSKRIPT vor die Entscheidung, sonst wird die neue Zahl wieder eine Momentaufnahme, die wie eine Spezifikation aussieht (J7). Gehört zu **D12** und erklärt zugleich, warum **D6** (Zusammenbruch) nie auslösen konnte. |
+
 ## Messrezepte (für die Abnahme)
 
 ```bash
