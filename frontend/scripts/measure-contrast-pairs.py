@@ -305,6 +305,57 @@ def styled_element(sel: str) -> str:
     return parts[-1] if parts else first
 
 
+def ground_chain(sel: str, rules, tokens, self_idx: int) -> list[tuple[str, str]]:
+    """Every ground under this rule, nearest first.
+
+    One layer is not enough. The nav bar stacks three: `:host` paints
+    `--color-surface-sunken`, the active tab paints `--color-surface` on top,
+    and the selection tint is a `color-mix(… 6%, transparent)` over THAT. A
+    tool that finds only the nearest and composites it straight onto the page
+    lands on a ground that is too light and reports a value that is too GOOD —
+    the friendlier error, and still an error.
+
+    So: walk outwards, collecting each background, and let the caller
+    composite down the stack until it reaches something opaque."""
+    chain: list[tuple[str, str]] = []
+    own = rule_background(rules[self_idx][1])
+    if own:
+        chain.append((own, "own background"))
+
+    target = styled_element(sel)
+    ancestors: list[tuple[int, str, str]] = []
+    for i, (osel, odecls, _) in enumerate(rules):
+        if i == self_idx:
+            continue
+        bg = rule_background(odecls)
+        if not bg:
+            continue
+        base = styled_element(osel)
+        if not base or base.startswith(":host") or base == target:
+            continue
+        if target != base and target.startswith(base):
+            rest = target[len(base):]
+            if not (rest.startswith("__") or rest.startswith("--")
+                    or rest.startswith(":") or rest.startswith(".")):
+                continue
+            ancestors.append((len(base), bg, f"from `{base}`"))
+    # Longest prefix is the nearest ancestor; shortest is the outermost.
+    for _, bg, via in sorted(ancestors, key=lambda x: -x[0]):
+        chain.append((bg, via))
+
+    for osel, odecls, _ in rules:
+        if not osel.startswith(":host") or "::" in osel:
+            continue
+        if styled_element(osel).startswith(":host"):
+            bg = rule_background(odecls)
+            if bg:
+                chain.append((bg, "from :host"))
+                break
+
+    chain.append(("var(--color-surface)", "page default"))
+    return chain
+
+
 def enclosing_ground(sel: str, rules, tokens, self_idx: int) -> tuple[str, str]:
     """Find the ground a rule sits on. Order matters and is reported.
 
@@ -428,20 +479,40 @@ def scan_file(path: Path, tokens: dict[str, str]):
             if fg_raw.strip() in ("transparent", "inherit", "currentColor"):
                 skips.append((path, sel, f"foreground: {fg_raw.strip()} (deliberate)"))
                 continue
-            bg_raw, ground_via = enclosing_ground(sel, rules, tokens_here, idx)
+            chain = ground_chain(sel, rules, tokens_here, idx)
             try:
                 fg = resolve(fg_raw, tokens_here)
             except Unresolved as e:
                 skips.append((path, sel, f"foreground: {e}"))
                 continue
-            try:
-                bg = resolve(bg_raw, tokens_here)
-            except Unresolved as e:
-                skips.append((path, sel, f"ground: {e}"))
+
+            # Composite DOWN the stack: each translucent layer is painted on
+            # the one below it, until something opaque carries the result.
+            bg = None
+            bg_raw, ground_via = chain[0][0], chain[0][1]
+            layers = []
+            for raw, via in chain:
+                try:
+                    layers.append((resolve(raw, tokens_here), raw, via))
+                except Unresolved:
+                    continue
+            if not layers:
+                skips.append((path, sel, f"ground: none of {len(chain)} layers resolvable"))
                 continue
-            # A translucent ground is painted on the page itself.
+            bg_raw, ground_via = layers[0][1], layers[0][2]
+            depth = 0
+            for colour, raw, via in layers:
+                depth += 1
+                if bg is None:
+                    bg = colour
+                else:
+                    bg = composite(bg, colour)
+                if bg[3] >= 1.0:
+                    break
             if bg[3] < 1.0:
-                bg = composite(bg, resolve("var(--color-surface)", tokens_here))
+                bg = composite(bg, (10.0, 10.0, 10.0, 1.0))
+            if depth > 1:
+                ground_via += f" +{depth - 1} layer(s) below"
             if fg[3] < 1.0:
                 fg = composite(fg, bg)
             need, size_note = threshold_for(decls, tokens_here)
