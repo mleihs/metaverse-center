@@ -156,6 +156,13 @@ Zwei unabhängige Gegenproben stimmen überein:
   vier Minuten nach `7f706ef5` (13:14:44 +0200). `5da147f8` kam 13:17:55 — der Build
   hatte seinen HEAD zu dem Zeitpunkt schon gezogen.
 
+⚠ **Die Frage lautet „ab `7f706ef5`", nicht „nach `7f706ef5`".** Der Deploy liegt
+GENAU AUF diesem Commit, und „nicht danach" liest sich dann wie „nicht enthalten" —
+eine Nachbarsitzung hat daraus prompt geschlossen, Weg 1 laufe noch nicht und die
+Woche habe nicht begonnen. `7f706ef5` IST der Weg-1-Commit; ausgeliefert ist seine
+Spitze, die Änderung ist drin. Nicht ausgeliefert ist, was DANACH kam
+(`5da147f8`, `e2edbb51`, die Handoff-Commits und alles von heute).
+
 **Damit zählt die N5-Woche ab 31.08.2026, ~13:19 CEST.** Frühestens **07.09.**
 nachsehen — und auch dann zurückhaltend lesen: die Erwartung ist eine Beleidigung
 alle ein bis drei Wochen, ein leeres Ergebnis am 07.09. ist **kein** Beleg für
