@@ -1514,6 +1514,10 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "IF THE CYCLE RESOLVES WITHOUT YOU",
         "de": "WENN DER ZYKLUS OHNE DICH AUFGELÖST WIRD",
     },
+    "deadline_consequence_none": {
+        "en": "The cycle is scored without your orders.",
+        "de": "Der Zyklus wird ohne deine Befehle gewertet.",
+    },
     "deadline_consequence_rp": {
         "en": "You forfeit {rp} RP.",
         "de": "Du verlierst {rp} RP.",
@@ -1521,6 +1525,10 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
     "deadline_consequence_ai": {
         "en": "A second missed cycle hands your seat to an AI until you return.",
         "de": "Ein zweiter versäumter Zyklus übergibt deinen Platz an eine KI, bis du zurückkehrst.",
+    },
+    "deadline_item_orders": {
+        "en": "Orders for cycle {cycle}",
+        "de": "Befehle für Zyklus {cycle}",
     },
     "deadline_cta": {
         "en": "FILE ORDERS",
@@ -2675,7 +2683,7 @@ def render_deadline_reminder(
     hours_remaining: int,
     open_items: list[str],
     done_items: list[str] | None = None,
-    penalty_rp: int = 1,
+    penalty_rp: int | None = None,
     ai_takeover_next: bool = False,
     cta_url: str,
 ) -> str:
@@ -2753,7 +2761,17 @@ def render_deadline_reminder(
         blocks.append(_section_header(_nt("deadline_done_label", lang)))
         blocks.append(_item_rows(done_items, _GREEN, "&#10003;"))
 
-    consequences = [_nt("deadline_consequence_rp", lang, rp=penalty_rp)]
+    # Only what actually happens in THIS epoch. Measured on production before
+    # writing this: none of the seven epochs has `afk_penalty_enabled` set, so a
+    # mail that threatens an RP loss would be threatening something that does
+    # not occur — the same defect as the wipe text that announced losses the
+    # mechanic never inflicted (Befund D12). The caller passes `penalty_rp=None`
+    # when the epoch has no penalty configured, and the loss that remains is
+    # real and worth stating: the cycle is scored without you.
+    if penalty_rp:
+        consequences = [_nt("deadline_consequence_rp", lang, rp=penalty_rp)]
+    else:
+        consequences = [_nt("deadline_consequence_none", lang)]
     if ai_takeover_next:
         consequences.append(_nt("deadline_consequence_ai", lang))
 

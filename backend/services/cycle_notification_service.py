@@ -15,6 +15,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.config import settings
 from backend.models.epoch import SCORING_DIMENSIONS
+from backend.models.notification import NOTIFICATION_PREFERENCE_COLUMNS
 from backend.services.email_service import EmailService, MailRecord
 from backend.services.email_templates import (
     cycle_briefing_subject,
@@ -41,6 +42,25 @@ class CycleNotificationService:
     """Sends email notifications for epoch lifecycle events."""
 
     # ── Recipient Resolution ───────────────────────────────
+
+    @classmethod
+    async def recipients_for(
+        cls,
+        admin_supabase: Client,
+        epoch_id: str,
+        *,
+        notification_type: str,
+    ) -> list[dict]:
+        """Public entry to the recipient chain, for senders outside this service.
+
+        `_resolve_recipients` is the internal name and stays private; the epoch
+        scheduler needs the same chain for the deadline reminder, and a
+        scheduler reaching into another service's underscore is the kind of
+        coupling that breaks quietly on the next rename.
+        """
+        return await cls._resolve_recipients(
+            admin_supabase, epoch_id, notification_type=notification_type
+        )
 
     @classmethod
     async def _resolve_recipients(
@@ -92,7 +112,11 @@ class CycleNotificationService:
 
         prefs_resp = await (
             admin_supabase.table("notification_preferences")
-            .select("user_id, cycle_resolved, phase_changed, epoch_completed, email_locale")
+            # Derived, not typed out: this list had drifted from the model and
+            # was missing `deadline_reminder`, which the gate below would then
+            # have read as its default `True` — a preference silently ignored
+            # exactly where it decides whether a mail goes out.
+            .select("user_id, " + ", ".join(NOTIFICATION_PREFERENCE_COLUMNS))
             .in_("user_id", user_ids)
             .execute()
         )

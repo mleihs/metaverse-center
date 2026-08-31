@@ -29,3 +29,28 @@ class NotificationPreferencesResponse(BaseModel):
     epoch_completed: bool
     deadline_reminder: bool
     email_locale: str
+
+
+#: Every column of `notification_preferences` a reader has to select, derived
+#: from the model above rather than typed out again.
+#:
+#: Two call sites used to spell the list by hand, and they had drifted:
+#: `cycle_notification_service._resolve_recipients` gates each recipient with
+#: `prefs.get(notification_type, True)` — which LOOKS generic, but a column
+#: missing from its `.select(...)` reads as the default `True`. A preference
+#: added anywhere else would therefore be silently ignored exactly where it
+#: matters, and nothing would say so. `deadline_reminder` was in that state the
+#: hour it was created.
+#:
+#: `backend/tests/unit/test_notification_preference_columns.py` holds both call
+#: sites to this constant.
+NOTIFICATION_PREFERENCE_COLUMNS: tuple[str, ...] = tuple(
+    NotificationPreferencesUpdate.model_fields
+)
+
+#: The boolean switches alone — the ones `notification_type` may name.
+NOTIFICATION_TOGGLE_COLUMNS: tuple[str, ...] = tuple(
+    name
+    for name, field in NotificationPreferencesUpdate.model_fields.items()
+    if field.annotation is bool
+)

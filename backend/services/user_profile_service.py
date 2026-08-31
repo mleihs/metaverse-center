@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+from backend.models.notification import NOTIFICATION_PREFERENCE_COLUMNS
 from backend.utils.db import maybe_single_data
 from supabase import AsyncClient as Client
 
@@ -52,7 +53,7 @@ class UserProfileService:
         """
         data = await maybe_single_data(
             supabase.table("notification_preferences")
-            .select("cycle_resolved, phase_changed, epoch_completed, deadline_reminder, email_locale")
+            .select(", ".join(NOTIFICATION_PREFERENCE_COLUMNS))
             .eq("user_id", str(user_id))
             .maybe_single()
         )

@@ -74,6 +74,35 @@ class TestItSaysWhatIsAtStake:
         assert "BEREITS EINGEREICHT" not in html
 
 
+class TestItThreatensOnlyWhatHappens:
+    """Measured on production before this was written: NONE of the seven epochs
+    has `afk_penalty_enabled` set. A mail threatening an RP loss would threaten
+    something that does not occur — the same defect as the wipe text that
+    announced losses the mechanic never inflicted (Befund D12).
+    """
+
+    def test_without_a_configured_penalty_it_states_the_real_loss(self):
+        html = _render(penalty_rp=None, ai_takeover_next=False)
+        assert "ohne deine Befehle gewertet" in html
+        assert "Du verlierst" not in html
+
+    def test_with_a_penalty_it_names_the_number(self):
+        html = _render(penalty_rp=2)
+        assert "Du verlierst 2 RP" in html
+        assert "ohne deine Befehle gewertet" not in html
+
+    def test_the_consequence_block_is_never_empty(self):
+        """A red box with nothing in it would be pure alarm."""
+        for rp in (None, 1, 5):
+            html = _render(penalty_rp=rp)
+            block = html[html.index("WENN DER ZYKLUS") : html.index("</table>", html.index("WENN DER ZYKLUS"))]
+            assert len(block) > 200, f"leerer Konsequenzblock bei penalty_rp={rp}"
+
+    def test_zero_is_treated_as_no_penalty(self):
+        """`afk_rp_penalty: 0` is a configured non-punishment, not a loss of 0 RP."""
+        assert "ohne deine Befehle gewertet" in _render(penalty_rp=0)
+
+
 class TestRedMeansLoss:
     """Handoff P1.14: red only where something is actually forfeited."""
 

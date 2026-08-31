@@ -14,16 +14,20 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
 import sentry_sdk
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.epoch import DEFAULT_EPOCH_CONFIG
 from backend.services.battle_log_service import BattleLogService
+from backend.services.cycle_notification_service import CycleNotificationService
+from backend.services.email_service import EmailService, MailRecord
+from backend.services.email_templates import _nt, render_deadline_reminder
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -34,6 +38,13 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONFIG = DEFAULT_EPOCH_CONFIG
 
 _SWEEP_INTERVAL = 30  # seconds
+
+#: How far ahead of a cycle deadline the reminder goes out (Handoff P2.17).
+#: Two hours is the handoff's figure; it is a lead time, not a window — the
+#: sweep runs every 30 s and `email_log` is what keeps it to one mail per
+#: player and cycle. A window would have needed to be wider than the tick and
+#: would still have relied on the same guard.
+_REMINDER_LEAD_HOURS = 2
 
 
 class EpochCycleScheduler(BaseSchedulerMixin):
@@ -66,8 +77,141 @@ class EpochCycleScheduler(BaseSchedulerMixin):
 
     @classmethod
     async def _process_tick(cls, admin: Client, config: dict) -> None:
-        """One sweep tick: resolve any epochs whose deadline has passed."""
+        """One sweep tick: warn before a deadline, resolve after it."""
+        await cls._sweep_deadline_reminders(admin)
         await cls._sweep_expired_cycles(admin)
+
+    # ── Deadline Reminder (Handoff P2.17) ────────────────────
+
+    @classmethod
+    async def _sweep_deadline_reminders(cls, admin: Client) -> None:
+        """Warn players whose orders are still open shortly before resolution.
+
+        The system used to deduct RP and hand a seat to an AI with no notice at
+        all; the player learned of it from the next briefing, after the fact.
+
+        Failures are swallowed per epoch on purpose: a reminder that cannot be
+        sent must never stop `_sweep_expired_cycles` from running in the same
+        tick. Missing a warning is bad; missing the resolution is worse.
+        """
+        now = datetime.now(UTC)
+        horizon = now + timedelta(hours=_REMINDER_LEAD_HOURS)
+        resp = await (
+            admin.table("game_epochs")
+            .select("id, name, current_cycle, config, cycle_deadline_at")
+            .in_("status", ["foundation", "competition", "reckoning"])
+            .not_.is_("cycle_deadline_at", "null")
+            .gt("cycle_deadline_at", now.isoformat())
+            .lte("cycle_deadline_at", horizon.isoformat())
+            .execute()
+        )
+        for epoch in extract_list(resp):
+            try:
+                await cls._remind_open_orders(admin, epoch, now=now)
+            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+                logger.exception(
+                    "Deadline reminder failed for epoch %s",
+                    epoch.get("id"),
+                    extra={"epoch_id": epoch.get("id")},
+                )
+                sentry_sdk.capture_exception(exc)
+
+    @classmethod
+    async def _remind_open_orders(cls, admin: Client, epoch: dict, *, now: datetime) -> int:
+        """Send the reminder to every player of one epoch who has not filed."""
+        epoch_id = str(epoch["id"])
+        cycle = int(epoch.get("current_cycle") or 0)
+        config = {**DEFAULT_EPOCH_CONFIG, **(epoch.get("config") or {})}
+
+        # Who still owes orders. Bots are skipped: they do not read mail, and a
+        # participant replaced by an AI has already lost the seat this warns about.
+        pending_resp = await (
+            admin.table("epoch_participants")
+            .select("user_id, consecutive_afk_cycles")
+            .eq("epoch_id", epoch_id)
+            .eq("has_acted_this_cycle", False)
+            .eq("is_bot", False)
+            .not_.is_("user_id", "null")
+            .execute()
+        )
+        pending = {row["user_id"]: row for row in extract_list(pending_resp)}
+        if not pending:
+            return 0
+
+        # `notification_type` gates each recipient on the preference of the same
+        # name, so `deadline_reminder` is honoured without a second lookup.
+        recipients = await CycleNotificationService.recipients_for(
+            admin, epoch_id, notification_type="deadline_reminder"
+        )
+
+        # Idempotency, not a counter: one successful send per player and cycle.
+        # A failed attempt stays eligible — `email_log` records failures too, and
+        # a warning nobody received is not a warning that was given.
+        sent_resp = await (
+            admin.table("email_log")
+            .select("recipient_user_id")
+            .eq("template", "deadline_reminder")
+            .eq("epoch_id", epoch_id)
+            .eq("cycle_number", cycle)
+            .eq("ok", True)
+            .execute()
+        )
+        already = {row["recipient_user_id"] for row in extract_list(sent_resp)}
+
+        # Only what actually happens in THIS epoch. Measured on production:
+        # not one of the seven epochs has `afk_penalty_enabled` set, so a mail
+        # threatening an RP loss would threaten something that does not occur.
+        penalty_enabled = bool(config.get("afk_penalty_enabled", False))
+        penalty_rp = int(config.get("afk_rp_penalty", 2)) if penalty_enabled else None
+        escalation = int(config.get("afk_escalation_threshold", 3))
+
+        deadline = datetime.fromisoformat(str(epoch["cycle_deadline_at"]))
+        hours_left = max(1, round((deadline - now).total_seconds() / 3600))
+        site = settings.site_url.rstrip("/")
+
+        sent = 0
+        for recipient in recipients:
+            user_id = recipient["user_id"]
+            if user_id not in pending or user_id in already:
+                continue
+            lang = recipient.get("email_locale") or "en"
+            consecutive = int(pending[user_id].get("consecutive_afk_cycles") or 0)
+
+            html = render_deadline_reminder(
+                email_locale=lang,
+                epoch_name=str(epoch.get("name") or "Epoch"),
+                cycle_number=cycle,
+                hours_remaining=hours_left,
+                open_items=[_nt("deadline_item_orders", lang, cycle=cycle)],
+                penalty_rp=penalty_rp,
+                # Only when the NEXT miss actually crosses the threshold.
+                ai_takeover_next=penalty_enabled and (consecutive + 1) >= escalation,
+                cta_url=f"{site}/epoch/{epoch_id}",
+            )
+            ok = await EmailService.send(
+                recipient["email"],
+                _nt(
+                    "deadline_subject", lang,
+                    hours=hours_left, epoch=str(epoch.get("name") or "Epoch"), cycle=cycle,
+                ),
+                html,
+                unsubscribe_url=f"{site}/unsubscribe?category=deadline_reminder",
+                record=MailRecord(
+                    template="deadline_reminder",
+                    user_id=user_id,
+                    epoch_id=epoch_id,
+                    simulation_id=recipient.get("simulation_id"),
+                    cycle_number=cycle,
+                ),
+            )
+            sent += int(bool(ok))
+
+        if sent:
+            logger.info(
+                "Deadline reminders sent",
+                extra={"epoch_id": epoch_id, "cycle": cycle, "sent": sent, "pending": len(pending)},
+            )
+        return sent
 
     # ── Sweep (Safety Net) ───────────────────────────────────
 
