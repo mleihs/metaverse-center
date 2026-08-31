@@ -19,6 +19,16 @@ cd "$SCRIPT_DIR/.."
 
 TOKENS_FILE="src/styles/tokens/_colors.css"
 
+# Before anything else: does the component-level instrument still reproduce
+# values that are known by hand? A measuring tool that has drifted reports a
+# number, not a fault — that is the whole reason this check exists. It is
+# cheap (one fixture file) and it fails the build, because every other number
+# in this pipeline is worth less if this one is wrong.
+if [ -f "scripts/measure-contrast-pairs.py" ]; then
+  python3 scripts/measure-contrast-pairs.py --self-check || exit 1
+  echo
+fi
+
 # The same 13 pairs, once per simulation theme. Report only — see the header of
 # the companion. Runs FIRST so its number is visible even when the default
 # palette passes, which is exactly the case that used to look like "all clear".

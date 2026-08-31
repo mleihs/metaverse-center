@@ -220,11 +220,34 @@ def css_blocks(source: str) -> list[str]:
         i = k + 1
 
 
+COMMENT = re.compile(r"/\*.*?\*/", re.S)
+
+
+def strip_comments(block: str) -> str:
+    """Blank out comments BEFORE parsing, keeping the line count intact.
+
+    Stripping them from the selector afterwards is not enough, and the
+    self-check found both reasons within minutes of existing:
+
+      * the rule regex stops at `;`, and a comment containing one — „Hand-
+        computed; independently measured…" — cuts the rule in half. What
+        reaches the selector is the TAIL of a comment with no `/*` in it, so
+        no amount of stripping there can recognise it.
+      * `lint-color-ok: a control value` inside a comment parses as a
+        declaration, because it has the shape of one.
+
+    Newlines are preserved so reported line numbers still point at the rule."""
+    return COMMENT.sub(lambda m: "\n" * m.group(0).count("\n"), block)
+
+
 def parse_rules(block: str) -> list[tuple[str, dict[str, str], int]]:
     """-> [(selector, {prop: value}, offset_in_block)]"""
+    block = strip_comments(block)
     rules = []
     for m in RULE.finditer(block):
         sel = " ".join(m.group(1).split())
+        if not sel:
+            continue
         if not sel or sel.startswith("@") or sel.startswith("from") or sel.startswith("to"):
             continue
         decls = {}
@@ -750,6 +773,85 @@ def scan_file(path: Path, tokens: dict[str, str]):
     return findings, skips
 
 
+# ---------------------------------------------------------------------------
+# Self-check — the values this tool must reproduce
+# ---------------------------------------------------------------------------
+#
+# On 2026-08-31 four sessions found twenty defects of one shape between them,
+# and every one produced a PLAUSIBLE OUTPUT instead of an error. What caught
+# them was almost never a compiler, a lint gate or a review: it was a second,
+# independently known value the result had to agree with.
+#
+# That knowledge lived in people. Here it lives in the file, and it is checked
+# on demand rather than remembered.
+#
+# NEVER adjust a number here to make the check pass. If the tool and the
+# fixture disagree, exactly one of them is wrong and it is not automatically
+# the fixture.
+
+CONTROL_FILE = "scripts/fixtures/contrast-controls.ts"
+
+# (selector, expected ratio, tolerance)
+CONTROL_EXPECT = [
+    (".control-hex-on-sunken", 2.72, 0.02),
+    (".control-translucent-fg", 1.61, 0.02),
+    (".tab__tint__label", 2.09, 0.02),
+]
+
+# Selectors that must stay SILENT. A tool that reports everything is as
+# useless as one that reports nothing.
+CONTROL_SILENT = [".control-passes", ".control-large-text"]
+
+
+def self_check(tokens) -> int:
+    path = ROOT / CONTROL_FILE
+    if not path.exists():
+        print(f"FAIL: control fixture missing at {CONTROL_FILE}")
+        return 1
+
+    findings, skips = scan_file(path, tokens)
+    by_sel = {f["sel"]: f for f in findings}
+    bad = 0
+
+    for sel, want, tol in CONTROL_EXPECT:
+        f = by_sel.get(sel)
+        if f is None:
+            print(f"FAIL  {sel}: expected {want}:1, the tool reported nothing at all")
+            bad += 1
+            continue
+        got = f["ratio"]
+        if abs(got - want) > tol:
+            print(f"FAIL  {sel}: expected {want}:1, measured {got:.2f}:1")
+            bad += 1
+        else:
+            print(f"ok    {sel}  {got:.2f}:1")
+
+    for sel in CONTROL_SILENT:
+        if sel in by_sel:
+            print(f"FAIL  {sel}: must pass, but was reported at {by_sel[sel]['ratio']:.2f}:1")
+            bad += 1
+        else:
+            print(f"ok    {sel}  silent, as it must be")
+
+    # The layered control must also say HOW DEEP it had to go. A tool that
+    # gets the right number by the wrong route is right by accident.
+    layered = by_sel.get(".tab__tint__label")
+    if layered and "layer(s) below" not in layered["ground_via"]:
+        print("FAIL  .tab__tint__label: right number, wrong route — the ground "
+              "chain did not report a layer below")
+        bad += 1
+    elif layered:
+        print(f"ok    .tab__tint__label ground: {layered['ground_via']}")
+
+    print()
+    if bad:
+        print(f"{bad} control(s) failed. The instrument has drifted; do not trust "
+              "its other numbers until this passes.")
+        return 1
+    print(f"All {len(CONTROL_EXPECT) + len(CONTROL_SILENT) + 1} controls hold.")
+    return 0
+
+
 def run(targets, tokens):
     findings, skips = [], []
     for t in targets:
@@ -994,6 +1096,9 @@ def main(argv: list[str]) -> int:
     roots = [ROOT / a for a in args] if args else [ROOT / "src" / "components"]
     for r in roots:
         targets.extend(sorted(r.rglob("*.ts")) if r.is_dir() else [r])
+
+    if "--self-check" in flags:
+        return self_check(tokens)
 
     if "--themes" in flags:
         return report_themes(targets, tokens)
