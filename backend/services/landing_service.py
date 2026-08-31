@@ -97,6 +97,48 @@ class LandingService:
         )
         return extract_list(response)
 
+    #: Wie viele Sätze der Schreibmaschinen-Effekt bekommt. Mehr wäre Ladung
+    #: ohne Wirkung — niemand sieht dem Effekt zwanzig Sätze lang zu.
+    _PROMPT_COUNT: Final = 12
+
+    #: Die Längenspanne, in der ein Satz getippt lesbar bleibt. Gemessen reicht
+    #: der Bestand von 127 bis 1 122 Zeichen; ein Satz von 1 122 Zeichen tippt
+    #: sich über eine Minute und hat die Seite längst verloren. Das ist eine
+    #: Darstellungsfrage und steht deshalb HIER und nicht in der Sicht: die
+    #: Sicht gibt den Bestand heraus, dieser Dienst wählt fürs Schaufenster.
+    _PROMPT_MIN_CHARS: Final = 80
+    _PROMPT_MAX_CHARS: Final = 420
+
+    @classmethod
+    async def _forge_prompts(cls, anon: Client) -> list[dict]:
+        """Die echten Sätze, aus denen Welten wurden.
+
+        Bis zum 31.08.2026 tippte der Abschnitt zwanzig erfundene Beispiele.
+        Auf Prod liegen 26 echte Ausgangssätze, 16 davon aus abgeschlossenen
+        Läufen — der Nutzer hat entschieden, dass sie gezeigt werden dürfen.
+
+        Gelesen wird über die Sicht ``public_forge_prompts`` (Migration 314),
+        die GENAU EINE Spalte herausgibt. ``forge_drafts`` selbst trägt
+        ``user_id``, alle Zwischenstände und das Fehlerprotokoll; wer eine
+        Zeile davon hat, hat jede Spalte darin.
+
+        Fällt die Abfrage aus, kommt eine leere Liste zurück und der Abschnitt
+        tippt seine Beispiele. Public-First: die Frontseite zeigt nie einen
+        Fehler.
+        """
+        try:
+            response = await anon.table("public_forge_prompts").select("seed_prompt").execute()
+        except Exception:  # noqa: BLE001 — die Frontseite degradiert, sie scheitert nicht
+            logger.warning("Forge-Sätze nicht verfügbar", exc_info=True)
+            return []
+        texts = [" ".join((row.get("seed_prompt") or "").split()) for row in extract_list(response)]
+        fitting = [text for text in texts if cls._PROMPT_MIN_CHARS <= len(text) <= cls._PROMPT_MAX_CHARS]
+        # Zweisprachig ist das Feld nicht: ein Ausgangssatz wurde in einer
+        # Sprache geschrieben und bleibt darin. `text_de` bleibt leer, und
+        # `t(prompt, 'text')` fällt dann auf `text` zurück — richtig so, denn
+        # eine maschinelle Übersetzung eines fremden Satzes wäre eine Fälschung.
+        return [{"text": text} for text in fitting[: cls._PROMPT_COUNT]]
+
     @staticmethod
     async def _agent_counts(anon: Client, world_ids: list[str]) -> dict[str, int]:
         """Bürgerzahl je Welt aus der Übersichtssicht.
@@ -299,31 +341,11 @@ class LandingService:
             "zones": await cls._zone_count(anon, world_ids),
         }
 
+        forge_prompts = await cls._forge_prompts(anon)
+
         return {
             "counts": counts,
-            # ⚠ NOCH LEER, UND ZWAR ABSICHTLICH. Auf Prod liegen 26 echte
-            # Ausgangssätze in `forge_drafts.seed_prompt` (16 aus
-            # abgeschlossenen Läufen). Sie hier auszugeben hieße, fremden,
-            # von Hand geschriebenen Text auf einer öffentlichen Seite zu
-            # veröffentlichen — das ist eine Entscheidung des Nutzers.
-            #
-            # Zum Anschalten genügt diese Abfrage; die Leitung bis in den
-            # Schreibmaschinen-Effekt ist gebaut und getestet:
-            #
-            #     rows = extract_list(await (
-            #         anon.table("forge_drafts")
-            #         .select("seed_prompt")
-            #         .eq("status", "completed")
-            #         .not_.is_("seed_prompt", "null")
-            #         .limit(20)
-            #         .execute()))
-            #     prompts = [{"text": r["seed_prompt"]} for r in rows]
-            #
-            # ⚠ `forge_drafts` ist RLS-geschützt; der anon-Client käme nicht
-            # heran. Es bräuchte zusätzlich eine Sicht oder eine Policy, die
-            # NUR `seed_prompt` abgeschlossener Läufe öffentlich macht — nicht
-            # `user_id`, nicht die Zwischenstände.
-            "forge_prompts": [],
+            "forge_prompts": forge_prompts,
             "worlds": [
                 {
                     "slug": world["slug"],
