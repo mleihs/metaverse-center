@@ -13,7 +13,7 @@
   --color-primary-glow: color-mix(in srgb, var(--color-primary) 15%, transparent);
   --color-primary-border: color-mix(in srgb, var(--color-primary) 30%, transparent);
 
-  /* === TEXT AUF EINER TÖNUNG DERSELBEN FARBE ==========================
+  /* === EINE FARBE, DIE AUF DEM AKTUELLEN GRUND LESBAR IST ==========================
      Ein verbreitetes Muster: Text in einer Statusfarbe auf einer 8–12-%-Tönung
      GENAU DIESER Farbe. Gemessen von `velgarien-rebuild-af`: 168 Regeln in 74
      Dateien (danger 46 · primary 32 · success 32 · info 28 · warning 23).
@@ -41,11 +41,38 @@
      es DEKLARIERT ist — hier auf `:root`, also gegen die Plattform-Vorgaben.
      Ohne die Neuableitung erbt ein getheamter Teilbaum eine Farbe aus den
      falschen zwei Eingaben. Dieselbe Falle wie bei `--color-text-quiet`. */
-  --color-primary-on-tint: color-mix(in srgb, var(--color-primary) 45%, var(--color-text-primary));
-  --color-danger-on-tint: color-mix(in srgb, var(--color-danger) 45%, var(--color-text-primary));
-  --color-success-on-tint: color-mix(in srgb, var(--color-success) 45%, var(--color-text-primary));
-  --color-warning-on-tint: color-mix(in srgb, var(--color-warning) 45%, var(--color-text-primary));
-  --color-info-on-tint: color-mix(in srgb, var(--color-info) 45%, var(--color-text-primary));
+     ⚠ NACHTRAG: DASSELBE TOKEN LOEST EIN ZWEITES, GROESSERES PROBLEM
+     Diese Token entstanden fuer Text auf einer Toenung DERSELBEN Farbe. Beim
+     Nachmessen der ZWEITEN Paarung — eine Statusfarbe als Text auf der blossen
+     `--color-surface` des Themes — kommt derselbe Anteil heraus. Gerechnet ueber
+     ALLE 15 Theme-Tripel, die auf Prod tatsaechlich existieren:
+
+         --color-primary pur auf der eigenen Flaeche   8 von 15 unter 4,5
+                                                       (schlechtester 1,60)
+         45 % zu text-primary                          schlechtester 5,12
+
+     Gegen die 12-%-Toenung war der schlechteste Wert 5,26, gegen die Flaeche
+     5,12. **Eine Zahl, zwei Paarungen** — es sind nicht zwei Regeln, sondern
+     eine: eine Farbe, die gelesen werden soll, wird zu `--color-text-primary`
+     hin gemischt, bis sie AA erreicht, und 45 % ist der kleinste Anteil, der
+     beide Faelle in jedem Theme traegt.
+
+     Der Name `-on-tint` verkauft das unter Wert und wird deshalb NICHT dort
+     eingesetzt, wo er genauso richtig waere. Kanonisch heisst die Familie darum
+     `-readable`, wie das bereits ausgelieferte `--color-accent-amber-readable`;
+     `-on-tint` bleibt Aliasname, bis die neun Fundstellen umgestellt sind. */
+  --color-primary-readable: color-mix(in srgb, var(--color-primary) 45%, var(--color-text-primary));
+  --color-danger-readable: color-mix(in srgb, var(--color-danger) 45%, var(--color-text-primary));
+  --color-success-readable: color-mix(in srgb, var(--color-success) 45%, var(--color-text-primary));
+  --color-warning-readable: color-mix(in srgb, var(--color-warning) 45%, var(--color-text-primary));
+  --color-info-readable: color-mix(in srgb, var(--color-info) 45%, var(--color-text-primary));
+
+  /* Aliasnamen, bis die neun Fundstellen umgestellt sind. */
+  --color-primary-on-tint: var(--color-primary-readable);
+  --color-danger-on-tint: var(--color-danger-readable);
+  --color-success-on-tint: var(--color-success-readable);
+  --color-warning-on-tint: var(--color-warning-readable);
+  --color-info-on-tint: var(--color-info-readable);
 
   --color-danger: #ef4444;
   --color-danger-hover: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary));

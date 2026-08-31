@@ -358,9 +358,11 @@ class ThemeService {
          * dem es deklariert ist.
          */
         [
-          `--color-${status}-on-tint`,
+          `--color-${status}-readable`,
           `color-mix(in srgb, var(--color-${status}) 45%, var(--color-text-primary))`,
         ],
+        // Aliasname, bis die neun `-on-tint`-Fundstellen umgestellt sind.
+        [`--color-${status}-on-tint`, `var(--color-${status}-readable)`],
       ];
       for (const [token, value] of pairs) {
         hostElement.style.setProperty(token, value);
