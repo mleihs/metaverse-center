@@ -19,6 +19,7 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.aptitude import OPERATIVE_TYPES
 from backend.models.forge import (
+    BUILDING_CONDITION_CORE,
     ForgeAgentDraft,
     ForgeBuildingDraft,
     ForgeDraftUpdate,
@@ -240,8 +241,15 @@ def _build_chunk_prompt(
             "",
             "Requirements:",
             *_BUILDING_PROSE_REQUIREMENTS,
-            "- Vary 'building_condition' across the set: use pristine, good, fair, poor, or ruined. "
-            "At least one should be 'poor' or 'ruined', and at least one 'pristine' or 'good'.",
+            # Das Vokabular kommt aus BUILDING_CONDITION_CORE, nicht aus einem
+            # zweiten Literal: hier stand `pristine`, im Schema des Modells stand
+            # `excellent`, und beide gingen in DIESELBE Anfrage. Daher die sechs
+            # `pristine`-Bauten, die keine Welt beschriften konnte.
+            f"- Vary 'building_condition' across the set: use "
+            f"{', '.join(BUILDING_CONDITION_CORE[:-1])}, or {BUILDING_CONDITION_CORE[-1]}. "
+            f"At least one should be '{BUILDING_CONDITION_CORE[-2]}' or "
+            f"'{BUILDING_CONDITION_CORE[-1]}', and at least one "
+            f"'{BUILDING_CONDITION_CORE[0]}' or '{BUILDING_CONDITION_CORE[1]}'.",
             "- Vary building types (tavern, archive, factory, residence, market, observatory, etc.).",
             "- Building names should be evocative and world-specific.",
         ]

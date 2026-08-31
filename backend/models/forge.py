@@ -50,6 +50,24 @@ _MIN_LONG_PROSE = 250  #      agent character + background,      515 · 452 (115
 #                             building description               464 · 470 (117)
 
 _IN_ENGLISH = "Written in English."
+
+# The platform's core condition rungs, best to worst — named to the model in
+# exactly one place.
+#
+# WHY A CONSTANT AND NOT TWO STRING LITERALS
+# There were two, and they disagreed. This model's field said `excellent`; the
+# builder in `forge_orchestrator_service` said `pristine` — in the SAME request,
+# so the model was handed two vocabularies and picked from both. That is where
+# the six `pristine` buildings came from that no world's taxonomy defined
+# (`forge_taxonomies` docstring, finding 30). `excellent` is the platform's
+# word: the prompt template in migration 027 has said so since March, the
+# database core ladder carries it at rung 10, and 26 of 36 worlds hold it as
+# their top rung against 5 that hold `pristine`.
+#
+# `pristine` stays a legal value on the DB ladder (rung 5, above `excellent`) —
+# five worlds use it and it is theirs. It is simply not what a generator should
+# be told to reach for.
+BUILDING_CONDITION_CORE: tuple[str, ...] = ("excellent", "good", "fair", "poor", "ruined")
 _WORLD_TONGUE = (
     "A proper name in the world's own language. It is never translated -- the same "
     "string is shown in every locale -- so do not write an English rendering of it."
@@ -641,7 +659,8 @@ class ForgeBuildingDraft(BaseModel):
         min_length=1,
         max_length=40,
         description=(
-            "Physical condition: excellent, good, fair, poor, or ruined. "
+            f"Physical condition: {', '.join(BUILDING_CONDITION_CORE[:-1])}, "
+            f"or {BUILDING_CONDITION_CORE[-1]}. "
             "Vary across buildings in the set. "
             f"A 'ruined' building shows structural damage; 'poor' shows neglect and decay. {_IN_ENGLISH}"
         ),
