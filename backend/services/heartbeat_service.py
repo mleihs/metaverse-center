@@ -49,6 +49,7 @@ from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
+from backend.utils.settings import parse_setting_bool, scheduled_ai_spend_allowed
 from backend.utils.timestamps import parse_timestamp
 from supabase import AsyncClient as Client
 
@@ -187,7 +188,7 @@ class HeartbeatService(BaseSchedulerMixin):
                 key = row["setting_key"]
                 val = row["setting_value"]
                 if key == "heartbeat_enabled":
-                    enabled = str(val).strip('"').lower() not in ("false", "0", "no")
+                    enabled = parse_setting_bool(val)
                 elif key == "heartbeat_interval_seconds":
                     try:
                         interval = max(7200, int(val))
@@ -763,9 +764,9 @@ class HeartbeatService(BaseSchedulerMixin):
             #   1. Global: platform_settings.autonomy_feature_enabled
             #   2. Per-sim: simulation_settings.agent_autonomy_enabled
             #   3. Key: admin override (platform key) OR owner BYOK key
-            autonomy_sim_enabled = str(overrides.get("agent_autonomy_enabled", "true")).lower() in ("true", "1")
-            autonomy_global = str(config.get("autonomy_feature_enabled", "true")).lower() in ("true", "1")
-            autonomy_admin_override = str(overrides.get("autonomy_admin_override", "false")).lower() in ("true", "1")
+            autonomy_sim_enabled = parse_setting_bool(overrides.get("agent_autonomy_enabled", "true"))
+            autonomy_global = parse_setting_bool(config.get("autonomy_feature_enabled", "true"))
+            autonomy_admin_override = parse_setting_bool(overrides.get("autonomy_admin_override", "false"))
             autonomy_stats: dict = {}
 
             if autonomy_sim_enabled and autonomy_global:
@@ -790,7 +791,7 @@ class HeartbeatService(BaseSchedulerMixin):
             tick_stats["autonomy"] = autonomy_stats
 
             # Phase 9.5: Ambient weather events (real-world weather → zone narratives + moodlets)
-            weather_enabled = str(overrides.get("weather_enabled", "false")).lower() in ("true", "1")
+            weather_enabled = parse_setting_bool(overrides.get("weather_enabled", "false"))
             if weather_enabled:
                 weather_result = await _run_phase(
                     "weather",
@@ -1043,10 +1044,22 @@ class HeartbeatService(BaseSchedulerMixin):
         """Resolve the API key for autonomy LLM calls.
 
         Returns (api_key, has_key):
+        - Scheduled AI spend disabled → (None, False) — der Riegel, zuerst
         - Admin override active → (None, True) — platform key handles cost
         - Owner has BYOK key → (decrypted_key, True)
         - No key available → (None, False) — LLM phases skipped
+
+        Der Herzschlag ist ein Zeitgeber, kein Mensch. Beide Modellpfade der
+        Phase 9 (autonome Ereignisse, Bindungsflüstern) holen ihren Schlüssel
+        hier — deshalb steht der Riegel hier und nicht zweimal daneben. Ohne
+        ``scheduled_ai_spend_enabled`` gibt es keinen Schlüssel, und ohne
+        Schlüssel läuft beides über seinen Vorlagenpfad weiter: die Welt tickt,
+        sie kostet nur nichts. Das ist der Unterschied zwischen „aus" und
+        „still" — die Folgen (Zonendruck, Katharsis, Beziehungen) bleiben.
         """
+        if not await scheduled_ai_spend_allowed(admin):
+            return None, False
+
         if admin_override:
             return None, True
 
