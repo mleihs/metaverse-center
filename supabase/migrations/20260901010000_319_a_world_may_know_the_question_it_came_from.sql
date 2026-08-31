@@ -53,14 +53,11 @@
 -- derselben Erzeugung wie ihr Name. Kein `user_id`, kein Zeitstempel, kein
 -- Zwischenstand — die Spalte trägt genau das gewählte Ankerobjekt.
 --
--- ⚠ ENTSCHEIDUNG DES NUTZERS ERFORDERLICH, WIE BEI MIGRATION 314
--- Diese Migration ist gebaut und geprobt, aber NICHT auf Prod angewandt. Der
--- Rückfüll-Abschnitt (5) macht die Frage von 16 bestehenden Welten sichtbar.
--- Migration 314 hat für die Ausgangssätze denselben Schritt getan und trägt
--- dazu einen ausdrücklichen Satz: „Der Nutzer hat am 31.08.2026 entschieden,
--- dass sie gezeigt werden dürfen." Für die Kernfragen fehlt dieser Satz noch.
--- Ohne ihn: Abschnitt 5 auskommentieren, dann gilt die Spalte nur für Welten,
--- die ab jetzt entstehen.
+-- FREIGABE DES NUTZERS: ERTEILT
+-- Wie bei Migration 314 wurde die Sichtbarmachung ausdrücklich vorgelegt und
+-- ausdrücklich erlaubt: **der Nutzer hat am 31.08.2026 entschieden, dass die
+-- Kernfragen bestehender Welten gezeigt werden dürfen.** Abschnitt 5 läuft
+-- daher mit.
 --
 -- WIE ZURÜCKGEFÜLLT WIRD, OHNE FREMDSCHLÜSSEL
 -- --------------------------------------------
@@ -75,7 +72,26 @@
 --     bleibt die Welt leer. Eine leere Karte ist richtig; eine falsch
 --     zugeordnete Frage wäre eine Lüge über die Welt.
 --
--- ANGEWANDT AUF PROD: nein (Stand 31.08.2026)
+-- WAS DIE RÜCKFÜLLUNG AUF PROD TRIFFT — VORHER GEMESSEN, NICHT GESCHÄTZT
+--
+--     36  Welten (nicht gelöscht)
+--     16  abgeschlossene Entwürfe, alle 16 mit `core_question`
+--     16  eindeutige Titel (kein einziger doppelt → keiner wird verworfen)
+--      8  davon treffen eine lebende Welt
+--
+-- Die acht, die NICHT treffen, sind vollständig erklärt — die Lücke schwächt die
+-- Zuordnung also nicht, sie bestätigt sie:
+--
+--     5  Die Welt existiert unter genau diesem Namen, ist aber gelöscht
+--        (`deleted_at IS NOT NULL`). Eine gelöschte Welt braucht keinen Anker.
+--     3  Der Name existiert nirgends. Alle drei stammen vom 16./17.03.2026,
+--        aus der Zeit vor der heutigen Namensgebung.
+--
+-- Die übrigen 28 lebenden Welten stammen nicht aus der Schmiede (Vorlagen,
+-- Saaten, Epochen-Instanzen) und haben deshalb zu Recht keinen Anker. Die Karte
+-- wird dort nicht gezeichnet.
+--
+-- ANGEWANDT AUF PROD: ja (31.08.2026)
 -- ============================================================================
 
 
@@ -467,8 +483,7 @@ $$;
 -- 5. Rueckfuellung bestehender Welten
 -- ============================================================
 --
--- ⚠ NUR ANWENDEN, WENN DER NUTZER DIE FREIGABE ERTEILT HAT (siehe Kopf).
--- Ohne Freigabe: diesen Abschnitt auskommentiert lassen.
+-- Freigabe erteilt (siehe Kopf, 31.08.2026). Dieser Abschnitt läuft mit.
 --
 -- Zuordnung ueber die Gleichheit, die Abschnitt 3 selbst herstellt
 -- (`simulations.name = anchor->>'title'`), abgesichert gegen Mehrdeutigkeit.

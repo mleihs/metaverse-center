@@ -126,9 +126,14 @@ export interface Simulation {
    */
   philosophical_anchor?: {
     title: string;
-    question: string;
     title_de?: string;
-    question_de?: string;
+    core_question: string;
+    core_question_de?: string;
+    literary_influence?: string;
+    literary_influence_de?: string;
+    description?: string;
+    description_de?: string;
+    bleed_signature_suggestion?: string;
   };
   agent_count?: number;
   building_count?: number;
