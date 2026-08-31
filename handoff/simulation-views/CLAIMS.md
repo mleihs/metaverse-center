@@ -239,3 +239,67 @@ erzeugt eine Grenzfrage, die es nicht geben müsste. `LoreScroll.ts` gehört nac
 `components/lore/`. Das ist eine Verschiebung mit Importpfad-Folgen in mehreren
 Dateien und deshalb nichts, was man mitten in einer Vier-Sitzungen-Welle macht —
 aber es gehört auf die Liste.
+
+---
+
+## Phase 1 abgenommen — und drei Stellen des Entwurfs, die auf leere Daten zeigen
+
+**Stand `c70f1c1f`.** Nav, Masthead, Übersicht, Lore und Agenten sind gebaut und
+am laufenden Bildschirm gegen Prod-Daten geprüft (zweiter Vite auf 5180 mit
+`VITE_DEV_API_PROXY=https://metaverse.center`). Gebäude gehört `-af`.
+
+### Die Breitbild-Abnahme, bewiesen statt geschätzt
+Der Bildschirm hier reicht nur bis 1728 px, also **Beweis durch Substitution**:
+dieselbe CSS-Formel mit kleinerem Mass hat dieselbe Geometrie. Bei
+`--stage-measure: 900px` und 1425 px nutzbarer Breite:
+
+    Inhalt                 links 263, Breite 900     erwartet 262,5 ✓
+    Masthead-Text          links 263                 fluchtet ✓
+    erste Reiter-Beschriftung  links 263             fluchtet ✓
+    Chrome (Masthead, Nav) links 0, Breite 1425      randlos ✓
+
+Die Formel ist breiteninvariant; bei 2560 mit Mass 1920 werden aus den 263 genau
+320. **Container-Regel erfüllt.**
+
+### ⚠ Drei Stellen, an denen der Entwurf über Daten spricht, die es nicht gibt
+
+Alle drei sind auf Prod gemessen, nicht vermutet. Wer sie umsetzt, baut eine Tür,
+die sich nur für die öffnet, die schon drin sind.
+
+**1. Die Belegungsskala hat keinen Zähler.**
+
+    building_agent_relations WHERE relation_type='lives_at'      0 Zeilen
+    Bauten mit population_capacity > 0                         219
+    Bauten mit building_condition                              324 von 324
+
+Niemand wohnt irgendwo. `agents?.length ?? 0` ist das Fehlen einer Zählung, das
+eine Null trägt — durchgereicht malt es 219 Bauten „fast leer" auf. Mein
+Footprint-Streifen trägt deshalb `building_condition`. **Das Feature ist nicht
+kaputt, es hat nur noch keine Welt, in der es etwas zu messen gäbe.**
+
+**2. Zwei der vier Agenten-Filterchips filtern nichts.**
+Der Entwurf verlangt *Alle · Keystone · Botschafter · KI-geboren*. Gemessen:
+
+    „Keystone"     kommt im ganzen Repo NICHT vor — weder Frontend noch Backend
+    „KI-geboren"   254 von 258 Agenten haben data_source = NULL, kein einziger
+                   ist als KI-erzeugt markiert (4 × 'curated')
+    „Botschafter"  echt (40 Botschaften), aber `is_ambassador` ist KEINE Spalte:
+                   der Dienst rechnet sie nach der Abfrage in Python aus
+
+Der Ambassador-Filter ist deshalb **nicht billig**: die Identitätsauflösung
+(id ODER Name, siehe Docstring `_enrich_ambassador_flag`) müsste an eine DRITTE
+Stelle, und derselbe Docstring warnt ausdrücklich davor, dass die beiden
+bestehenden übereinstimmen müssen. Die vorhandenen Filter (System, Geschlecht)
+sind taxonomiegestützt und haben Daten — sie bleiben, bis jemand entscheidet.
+
+**3. Die Schwärzung im Lore-Dossier ist unerreichbar** (bewusst gebaut, siehe
+Kommentar an der Aufrufstelle): die API ist public-first, ein klassifizierter
+Abschnitt kommt an und ist lesbar, oder er wurde nie erzeugt. Es gibt keinen
+Live-Zustand, in dem ein Leser einen Abschnitt hält, den er nicht lesen darf. Die
+Balken bleiben, weil das Public-First-Versprechen lautet, dass Blättern nie 403
+erzeugt.
+
+### Die Regel, die aus allen dreien folgt
+**Bevor eine Skala gebaut wird: nachsehen, ob ihr Zähler existiert.** Die
+Prüffrage ist nicht „gibt es eine Oberfläche dafür?", sondern „kann der Zustand,
+den sie anzeigt, je eintreten?"
