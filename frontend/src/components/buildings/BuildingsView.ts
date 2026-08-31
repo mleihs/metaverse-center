@@ -10,10 +10,7 @@ import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import { applyBuildingDetailSeo, applySimulationViewSeo } from '../../services/seo-patterns.js';
 import type { ApiResponse, Building } from '../../types/index.js';
-import {
-  OCCUPANCY_LEGEND,
-  type OccupancyLevel,
-} from '../../utils/building-condition.js';
+import { OCCUPANCY_LEGEND, type OccupancyLevel } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { updateUrl } from '../../utils/navigation.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
