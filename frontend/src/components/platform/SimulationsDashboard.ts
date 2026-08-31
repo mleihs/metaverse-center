@@ -1729,6 +1729,19 @@ export class VelgSimulationsDashboard extends LitElement {
     `;
   }
 
+  /** Die Statuszeile.
+   *
+   *  ⚠ SUBSTRAT: die Zeile las bis zum 31.08.2026 `_activeResonances.length > 0`
+   *  und meldete damit ANOMAL, sobald IRGENDEIN Beben im Bestand war — auch ein
+   *  abklingendes. Auf Prod steht genau eines, Status `subsiding`, und die Zeile
+   *  behauptete eine Störung, während der Bannertext direkt darunter korrekt
+   *  „residual substrate displacement – monitoring decay curve" sagte. Zwei
+   *  Herleitungen derselben Frage, die einander widersprachen.
+   *
+   *  Jetzt kommt die Antwort aus `substrate_status` — serverseitig aus
+   *  `detected|impacting` gerechnet, an EINER Stelle
+   *  (`UserDashboardService`). `active_resonance_count` bleibt die andere,
+   *  weiter gefasste Frage: wie viele Beben überhaupt im Spiel sind. */
   private _renderCommandStrip(userState: DashboardState, boot: boolean) {
     const isGuest = userState === 'guest';
     const dd = this._dashboardData;
@@ -1758,7 +1771,7 @@ export class VelgSimulationsDashboard extends LitElement {
                 <span class="command-strip__sep">|</span>
                 <span class="command-strip__stat">
                   <span class="command-strip__stat-label">${msg('SUBSTRATE:')}</span>
-                  <span class="command-strip__stat-value">${this._activeResonances.length > 0 ? msg('ANOMALOUS') : msg('STABLE')}</span>
+                  <span class="command-strip__stat-value">${dd?.substrate_status === 'anomalous' ? msg('ANOMALOUS') : msg('STABLE')}</span>
                 </span>
               </span>
             `
