@@ -24,8 +24,25 @@ import { navigate } from '../../utils/navigation.js';
 import { humanizeEnum } from '../../utils/text.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
-/** Wie viele Karten das Raster trägt (Entwurf: sechs). */
-const CARD_COUNT = 6;
+/**
+ * Wie viele Karten das Raster trägt.
+ *
+ * Der Entwurf sagt sechs — und sechs füllte sein ZWEISPALTIGES Raster exakt
+ * (3 × 2, keine angebrochene Reihe). Seit das Raster mit auto-fill arbeitet,
+ * sind je nach Platz zwei, drei oder vier Spalten im Spiel:
+ *
+ *     ~1585 px (Schiene eingeklappt)   4 Spalten
+ *     ~1105 px (Schiene da)            3 Spalten
+ *      unter 960 px                    2 Spalten
+ *
+ * Sechs ließe bei vier Spalten zwei Plätze in der letzten Reihe leer. Zwölf
+ * geht in 2, 3 und 4 glatt auf — dieselbe Eigenschaft, die die Sechs im
+ * Entwurf hatte, übertragen auf die Spaltenzahlen, die es jetzt gibt. Die
+ * Ziffer ändert sich, die Absicht bleibt.
+ *
+ * Von 16 Welten stehen damit 12 da und 4 im Register dahinter, statt 6 und 10.
+ */
+const CARD_COUNT = 12;
 
 @localized()
 @customElement('velg-dashboard-registry')
@@ -105,9 +122,24 @@ export class VelgDashboardRegistry extends LitElement {
         color: var(--color-accent-amber);
       }
 
+      /*
+       * Das Raster nimmt die Breite, die es bekommt, statt zwei feste Spalten.
+       *
+       * Vorher: repeat(2, 1fr) plus zwei Medienabfragen (3 Spalten ab 1920,
+       * 1 Spalte unter 640). Drei Orte fuer eine Regel — und dazwischen, auf
+       * 1600 gemessen, Karten von 497 px Breite fuer einen Titel und
+       * „6 AG · 7 GEB". Das ist ein Plakat an der Stelle eines
+       * Registereintrags.
+       *
+       * Mit auto-fill bestimmt der Platz die Spaltenzahl: 320 px ist die
+       * Breite, unter der der laengste Weltname („Flatulenz als Logos: Die
+       * pneumatische Sprache der Entrechteten") in mehr als zwei Zeilen faellt.
+       * Ein Wert, drei Bildschirmgroessen, und die Mobil-Abfrage darunter wird
+       * ueberfluessig, weil 1fr bei einer Spalte dasselbe ist.
+       */
       .grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: var(--space-3-5);
       }
 
@@ -213,19 +245,11 @@ export class VelgDashboardRegistry extends LitElement {
         color: var(--color-accent-amber);
       }
 
+      /* Die Spaltenzahl regelt auto-fill; hier bleibt nur, was es NICHT
+         regelt: auf sehr breiten Schirmen darf die Karte hoeher werden. */
       @media (min-width: 1920px) {
-        .grid {
-          grid-template-columns: repeat(3, 1fr);
-        }
-
         .card {
           height: 190px;
-        }
-      }
-
-      @media (max-width: 640px) {
-        .grid {
-          grid-template-columns: 1fr;
         }
       }
 
