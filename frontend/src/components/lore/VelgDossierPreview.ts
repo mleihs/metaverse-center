@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { agentsApi, buildingsApi } from '../../services/api/index.js';
@@ -211,36 +211,73 @@ export class VelgDossierPreview extends LitElement {
     const building2 = this._buildingNames[1] ?? '████████';
     const zone = this._zoneNames[0] ?? '████████';
 
+    /*
+     * EINE Uebersetzungseinheit je Satz, nicht sechs.
+     *
+     * Die vorige Fassung klebte jeden Teaser aus msg()-Bruchstuecken zusammen:
+     * `${msg('… recovered near')} ${zone} ${msg('suggests')} ████`. Jedes
+     * Bruchstueck wurde einzeln uebersetzt, und was auf der Seite stand, war
+     *
+     *     „Geborgene archaeologische Beweise DEUTEN AUF Bleichgrund DEUTEN AUF ████“
+     *
+     * weil „recovered near" und „suggests" beide auf „deuten auf" fielen. Das
+     * ist kein Uebersetzungsfehler: aus englischen Bruchkanten laesst sich
+     * deutsche Wortstellung nicht erzeugen, und der Uebersetzer sieht nie den
+     * Satz, den er baut. Zwei Faelle waren noch schaerfer — `msg('the')` und
+     * `msg('shall')` standen als einzelne Woerter da, ohne Genus und ohne
+     * Verbstellung.
+     *
+     * `msg(str`…`)` haelt den Satz zusammen und legt die eingesetzten Werte als
+     * Platzhalter ins XLIFF, die ein Uebersetzer UMSTELLEN kann. Die Woerter,
+     * die selbst uebersetzt gehoeren, werden vorher aufgeloest und als Wert
+     * eingesetzt — dadurch bleiben sie Uebersetzungseinheiten, ohne den Satz zu
+     * zerschneiden.
+     */
+    const geschwaerzt = msg('REDACTED');
+    const geheim = msg('CLASSIFIED');
+
     return [
       {
         arcanum: 'ALPHA',
         label: msg('Pre-Arrival History (~2,000 words)'),
-        teaser: `${msg('What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near')} ${zone} ${msg('suggests')} ████████. ${msg('Temporal anomalies, contested origin myths, and the')} [${msg('REDACTED')}] ${msg('incident of')} ████████.`,
+        teaser: msg(
+          str`What existed before this shard materialized? Competing theories from Bureau historians. Archaeological evidence recovered near ${zone} suggests ████████. Temporal anomalies, contested origin myths, and the [${geschwaerzt}] incident of ████████.`,
+        ),
       },
       {
         arcanum: 'BETA',
         label: msg('Agent Classified Addenda (~2,500 words)'),
-        teaser: `${msg('Per-agent intelligence supplement.')} ${agent}: ${msg('RISK ASSESSMENT')} ████████, ${msg('HIDDEN MOTIVATION')}: [${msg('CLASSIFIED')}], ${msg('SURVEILLANCE NOTES')}... // ${agent2}: [${msg('REDACTED')}] // ${msg('Full dossier for every agent. Cross-references mapped.')}`,
+        teaser: msg(
+          str`Per-agent intelligence supplement. ${agent}: RISK ASSESSMENT ████████, HIDDEN MOTIVATION: [${geheim}], SURVEILLANCE NOTES... // ${agent2}: [${geschwaerzt}] // Full dossier for every agent. Cross-references mapped.`,
+        ),
       },
       {
         arcanum: 'GAMMA',
         label: msg('Geographic Anomalies (~1,500 words)'),
-        teaser: `${msg('Cartographic breach detected near')} ${building}. ${msg('Spatial geometry contradicts')} ████ ${msg('Bureau field surveys.')} ${building2} ${msg('exhibits properties consistent with')} ███████. ${msg('Annotated zone analysis for')} ${zone}.`,
+        teaser: msg(
+          str`Cartographic breach detected near ${building}. Spatial geometry contradicts ████ Bureau field surveys. ${building2} exhibits properties consistent with ███████. Annotated zone analysis for ${zone}.`,
+        ),
       },
       {
         arcanum: 'DELTA',
         label: msg('Bleed Signature Analysis (~1,500 words)'),
-        teaser: `${msg('Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why.')} ${msg('CONTAINMENT STATUS')}: ████████ | ${msg('DOCUMENTED INCURSIONS')}: [${msg('REDACTED')}]`,
+        teaser: msg(
+          str`Cross-shard contamination vectors. Which adjacent realities bleed into this shard and why. CONTAINMENT STATUS: ████████ | DOCUMENTED INCURSIONS: [${geschwaerzt}]`,
+        ),
       },
       {
         arcanum: 'EPSILON',
         label: msg('Prophetic Fragments (~1,000 words)'),
-        teaser: `${msg('Recovered documents, dream transcriptions, inscriptions.')} "${msg('the')} ${building} ${msg('shall')} ████... [${msg('ILLEGIBLE')}]" – ${msg('Source')}: ████████. ${msg('Reliability')}: [${msg('CONSUMED')}]. ${msg('Unreliable narration with degradation markers.')}`,
+        teaser: msg(
+          str`Recovered documents, dream transcriptions, inscriptions. "the ${building} shall ████... [ILLEGIBLE]" – Source: ████████. Reliability: [CONSUMED]. Unreliable narration with degradation markers.`,
+        ),
       },
       {
         arcanum: 'ZETA',
         label: msg('Bureau Recommendation (~500 words)'),
-        teaser: `${msg('Official Bureau assessment. Threat designation, research value, recommended actions.')} ${msg('THREAT LEVEL')}: ████████ | [${msg('CLASSIFIED')}] | ${msg('Institutional authority. Dry humor. Final word.')}`,
+        teaser: msg(
+          str`Official Bureau assessment. Threat designation, research value, recommended actions. THREAT LEVEL: ████████ | [${geheim}] | Institutional authority. Dry humor. Final word.`,
+        ),
       },
     ];
   }

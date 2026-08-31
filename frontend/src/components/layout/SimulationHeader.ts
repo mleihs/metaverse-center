@@ -52,7 +52,22 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       inset: 0;
       background-size: cover;
       background-position: center 35%;
-      filter: brightness(0.62) saturate(0.85);
+      /*
+       * Die Behandlung des Banners haengt davon ab, worauf der Titel steht.
+       *
+       * Vorher stand hier fest brightness(0.62) saturate(0.85) — eine
+       * Dunkel-Thema-Annahme: das Bild abdunkeln, damit HELLE Schrift darauf
+       * traegt. Auf einer hellen Welt ist die Schrift dunkel, also schob
+       * derselbe Filter Bild und Text aufeinander zu. Auf Prod gemessen war
+       * das der graue Schleier hinter dem Weltnamen.
+       *
+       * --theme-polarity ist 0 auf dunklem und 1 auf hellem Grund (gesetzt in
+       * ThemeService, wo die Farben ohnehin geparst werden). Interpoliert
+       * statt verzweigt: EINE Deklaration deckt beide Welten, und der
+       * Vorgabewert 0 laesst die Plattform-Flaechen unveraendert.
+       */
+      filter: brightness(calc(0.62 + var(--theme-polarity, 0) * 0.46))
+        saturate(calc(0.85 + var(--theme-polarity, 0) * 0.25));
       animation: ken-burns 34s var(--ease-in-out, ease-in-out) infinite alternate;
     }
 
@@ -70,15 +85,30 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
      * one seats the masthead against the register below it. Together they are
      * what makes a 74px word legible over an arbitrary generated image.
      */
+    /*
+     * Die drei Stufen des Wasch-Scrims sind auf hellem Grund schwaecher.
+     *
+     * Auf Dunkel deckt die Textseite mit 97 % — dort ist der Grund fast
+     * schwarz, das Bild verschwindet und die Schrift traegt. Auf Hell ist
+     * derselbe Wert eine fast undurchsichtige helle Flaeche: das Banner war
+     * praktisch weg, und uebrig blieb genau die graue Leere aus dem Befund.
+     * Der Entwurf verlangt dort mindestens 35 % Bild — deshalb 65 statt 97.
+     */
+    :host {
+      --_scrim-near: calc(97% - var(--theme-polarity, 0) * 32%);
+      --_scrim-mid: calc(72% - var(--theme-polarity, 0) * 24%);
+      --_scrim-far: calc(22% - var(--theme-polarity, 0) * 7%);
+    }
+
     .masthead__scrim {
       position: absolute;
       inset: 0;
       background:
         linear-gradient(
           94deg,
-          color-mix(in srgb, var(--_ground) 97%, transparent) 28%,
-          color-mix(in srgb, var(--_ground) 72%, transparent) 56%,
-          color-mix(in srgb, var(--_ground) 22%, transparent) 100%
+          color-mix(in srgb, var(--_ground) var(--_scrim-near), transparent) 28%,
+          color-mix(in srgb, var(--_ground) var(--_scrim-mid), transparent) 56%,
+          color-mix(in srgb, var(--_ground) var(--_scrim-far), transparent) 100%
         ),
         linear-gradient(
           180deg,
@@ -140,7 +170,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       align-items: center;
       gap: var(--space-1-5);
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.95);
+      font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
       color: var(--_chip, var(--color-text-quiet));
@@ -287,7 +317,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
     .masthead__stats {
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
       color: var(--_dim);

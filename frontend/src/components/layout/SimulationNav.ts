@@ -320,7 +320,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       flex: 0 0 auto;
       padding-inline: var(--space-4);
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: var(--_register-tracking);
       text-transform: uppercase;
       color: var(--_context-text);
