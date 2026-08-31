@@ -126,7 +126,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
     .kicker {
       font-family: var(--font-brutalist);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
       text-transform: uppercase;
@@ -206,7 +206,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     .anchor__influence {
       margin-block: var(--space-2) 0;
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.95);
+      font-size: var(--text-2xs);
       line-height: var(--leading-relaxed);
       letter-spacing: var(--tracking-wide);
       color: var(--_dim);
@@ -265,7 +265,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
     .meta {
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
       color: var(--_dim);
@@ -370,7 +370,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
     .signal__age {
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       color: var(--_dim);
       text-align: right;
     }
@@ -427,7 +427,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     }
 
     .duty__role {
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
       /* Gemessen 2,98 : 1 auf heller Welt-Flaeche. --color-text-muted faellt in

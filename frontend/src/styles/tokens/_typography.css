@@ -8,6 +8,31 @@
   --font-bureau: 'Spectral', 'Georgia', 'Times New Roman', serif;
 
   /* === FONT SIZES (Modular Scale: 1.25 ratio) === */
+  /* === BESCHRIFTUNGSSCHRIFT — die eine Stufe unterhalb der Arbeitsskala ===
+     Der Entwurf setzt Beschriftungen in ~9 px: der Prototyp „Simulation View
+     v4" tut es 48-mal, der Broadsheet-Prototyp 18-mal. Die Arbeitsskala hoert
+     bei --text-xs (10,24 px) auf, also rechneten 13 Deklarationen in vier
+     Komponenten sich ihren eigenen Wert aus — calc(var(--text-xs) * 0.9),
+     * 0.95 und * 0.85, drei Faktoren fuer eine Absicht.
+
+     Das ist dieselbe Form wie die Buehnenstufen unten: eine Groesse, die das
+     Werk WIRKLICH braucht, steht nicht in der Skala, also erfindet jede
+     Komponente sie neu — und beim naechsten Bildschirm wird an zwoelf Stellen
+     nachgezogen und an einer nicht.
+
+     0.576rem ist nicht die naechste Stufe des 1,25-Verhaeltnisses (das waere
+     0,512rem / 8,19 px und damit kleiner als der Entwurf will). Es ist der
+     Wert, den die 13 Stellen ohnehin erzeugt haben, einmal benannt.
+
+     ⚠ WOFUER SIE NICHT IST: Fliesstext. Diese Stufe traegt Beschriftungen —
+     Versalien, gesperrt, wenige Woerter. Am 31.08.2026 stand die
+     Bildunterschrift des Lore-Dossiers hier: 548 Zeichen Beschreibung in
+     Beschriftungsgroesse. Der Kontrast war mit 6,86 : 1 tadellos und der
+     Absatz trotzdem nicht lesbar — WCAG kennt keine Mindestgroesse, und das
+     Kontrast-Tor kann diesen Fehler nicht sehen. Wer hier landet, soll sich
+     fragen, ob der Text eine BESCHRIFTUNG ist oder ein SATZ. */
+  --text-2xs: 0.576rem;  /* 9.22px — nur Beschriftungen, nie Fliesstext */
+
   --text-xs: 0.64rem;    /* 10.24px */
   --text-sm: 0.8rem;     /* 12.8px */
   --text-base: 1rem;     /* 16px */

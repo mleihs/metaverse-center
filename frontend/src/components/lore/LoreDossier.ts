@@ -40,6 +40,13 @@ export class VelgLoreDossier extends LitElement {
       --_dim: var(--color-text-quiet);
       /* The reading measure. Everything else may grow; a line of prose may not. */
       --_measure: 740px;
+      /*
+       * Die Registerbreite. Tier 3, weil die Spacing-Skala keine Layoutmasse
+       * kennt — --space-* endet bei 96 px und beschreibt Abstaende, nicht
+       * Spalten. Hier steht der Wert einmal, statt in der Rasterangabe und
+       * ihrer Medienabfrage zweimal.
+       */
+      --_toc-width: 300px;
     }
 
     /* ── Head ────────────────────────────────────────────────────────── */
@@ -55,7 +62,7 @@ export class VelgLoreDossier extends LitElement {
 
     .kicker {
       font-family: var(--font-brutalist);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
       text-transform: uppercase;
@@ -101,9 +108,24 @@ export class VelgLoreDossier extends LitElement {
 
     /* ── Frame ───────────────────────────────────────────────────────── */
 
+    /*
+     * Register und Lesespalte sind EIN Paar, nicht zwei Dinge.
+     *
+     * Vorher stand hier "280px minmax(0, 1fr)": die zweite Spalte nahm alles,
+     * was uebrig war, und der Text darin begrenzte sich selbst auf sein
+     * Lesemass. Auf 1920 gemessen ergab das rund 400 px totes Gutter zwischen
+     * Register und Satz — beide Kanten waren fuer sich richtig und standen
+     * trotzdem falsch zueinander.
+     *
+     * Jetzt ist die zweite Spalte selbst auf das Lesemass begrenzt und das
+     * Paar zentriert sich als Ganzes. Der Abstand ist --space-16 (64 px), die
+     * Zahl aus dem Entwurf, hier als Skalenschritt statt als Pixelwert.
+     */
     .dossier {
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-columns: var(--_toc-width) minmax(0, var(--_measure));
+      gap: var(--space-16);
+      justify-content: center;
       border: var(--border-width-thin) solid var(--color-border-light);
       background: var(--color-surface);
     }
@@ -182,7 +204,7 @@ export class VelgLoreDossier extends LitElement {
       display: block;
       margin-block-start: var(--space-1);
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.85);
+      font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
       color: var(--color-danger);
@@ -193,7 +215,7 @@ export class VelgLoreDossier extends LitElement {
       border-block-start: var(--border-width-thin) solid var(--_rule);
       padding: var(--space-4);
       font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
       color: var(--_dim);
@@ -262,7 +284,7 @@ export class VelgLoreDossier extends LitElement {
     .panel__source {
       font-family: var(--font-mono);
       font-style: normal;
-      font-size: calc(var(--text-xs) * 0.9);
+      font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
       color: var(--_dim);
@@ -270,6 +292,22 @@ export class VelgLoreDossier extends LitElement {
 
     .panel__figure {
       margin: 0 0 var(--space-6);
+    }
+
+    .panel__figbtn {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: zoom-in;
+      font: inherit;
+      color: inherit;
+    }
+
+    .panel__figbtn:focus-visible {
+      outline: var(--border-width-default) solid var(--color-border-focus);
+      outline-offset: var(--space-1);
     }
 
     .panel__image {
@@ -289,16 +327,43 @@ export class VelgLoreDossier extends LitElement {
      * "Fig. 01" and wrong for what follows it: measured on this dossier, the
      * caption is 465 characters, and 465 characters of uppercase mono is a
      * block nobody reads. The generator writes descriptions, not labels.
+     *
+     * ⚠ NACHTRAG — die Haelfte, die ich beim ersten Mal stehen liess.
+     *   Ich hatte die Versalien entfernt und die GROESSE gelassen: 9,2 px
+     *   (var(--text-2xs)), auf Prod gemessen an 548 Zeichen. Der
+     *   eigene Satz eine Zeile hoeher sagt, warum das falsch ist — wer
+     *   feststellt, dass hier Prosa steht und keine Beschriftung, darf nicht
+     *   die Beschriftungs-GROESSE behalten.
+     *
+     *   Und der Wert brach zusaetzlich den Boden der Skala: --text-xs ist
+     *   mit 10,24 px die kleinste Groesse, die das System kennt; ein
+     *   calc(… * 0.9) rechnet darunter und laesst die Typoskala hinter sich.
+     *
+     *   Die 9 px des Entwurfs sind nicht falsch — der Prototyp setzt 48
+     *   Stellen in 9 px. Aber alle davon sind BESCHRIFTUNGEN. Der Entwurf
+     *   kennt fuer diesen Absatz gar kein Vorbild, weil er ihn nicht hat.
+     *   Also: --text-sm, wie das Epigraph, das ebenfalls Nebentext ist.
+     */
+    /*
+     * Der Behaelter traegt die BESCHREIBUNG, nicht die Beschriftung: Serif,
+     * Lesegroesse, normale Gross-/Kleinschreibung. Das Praefix darunter holt
+     * sich Mono und Beschriftungsgroesse ausdruecklich zurueck.
+     *
+     * Das Lesemass ist die BILDBREITE (max-width: 100% der figure), damit die
+     * Zeile nicht laenger wird als das, was sie beschreibt.
      */
     .panel__caption {
       margin-block-start: var(--space-2);
-      font-family: var(--font-mono);
-      font-size: calc(var(--text-xs) * 0.9);
+      max-width: 100%;
+      font-family: var(--font-bureau, var(--font-prose));
+      font-size: var(--text-sm);
       line-height: var(--leading-relaxed);
       color: var(--_dim);
     }
 
     .panel__figno {
+      font-family: var(--font-mono);
+      font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
     }
@@ -627,13 +692,31 @@ export class VelgLoreDossier extends LitElement {
             </figure>`
           : url
             ? html`<figure class="panel__figure">
-                <img
-                  class="panel__image"
-                  src=${url}
-                  alt=${section.title}
-                  loading="lazy"
+                <!--
+                  Die Schaltflaeche traegt den Klick, nicht das Bild.
+
+                  Vorher hing @click am <img>. Ein Bild ist nicht fokussierbar
+                  und nimmt keine Tastatur an — die Lightbox liess sich
+                  ausschliesslich mit der Maus oeffnen (WCAG 2.1.1). Kein Tor
+                  im Haus prueft das: Lint sieht TypeScript, das Kontrast-Tor
+                  sieht Farben, und ein Klickhandler an einem toten Element
+                  ist syntaktisch tadellos.
+
+                  alt="" ist Absicht und kein Vergessen: die <figcaption>
+                  direkt darunter beschreibt das Bild bereits mit 548 Zeichen.
+                  Vorher stand dort section.title — also der Kapiteltitel, den
+                  die Ueberschrift eine Zeile hoeher schon vorliest. Ein
+                  Screenreader sagte ihn damit zweimal und die eigentliche
+                  Beschreibung gar nicht.
+                -->
+                <button
+                  type="button"
+                  class="panel__figbtn"
+                  aria-label=${msg('Enlarge figure')}
                   @click=${() => this._openLightbox(url, caption)}
-                />
+                >
+                  <img class="panel__image" src=${url} alt="" loading="lazy" />
+                </button>
                 <figcaption class="panel__caption">
                   <span class="panel__figno">${msg('Fig.')} ${figNumber}</span>
                   ${caption ? html` – <span class="panel__captext">${caption}</span>` : nothing}

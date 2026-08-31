@@ -12,7 +12,7 @@
  * how DesignSettingsPanel saves them.
  */
 
-import { formatRgb, liftForContrast, parseColor } from '../utils/contrast-lift.js';
+import { formatRgb, liftForContrast, luminance, parseColor } from '../utils/contrast-lift.js';
 import { settingsApi } from './api/index.js';
 import { activeCardFrame, cardFrameFromConfig } from './card-frame.js';
 import { captureError } from './SentryService.js';
@@ -289,6 +289,9 @@ class ThemeService {
     //     separates the two cases that look identical from the outside: a
     //     world with one role lifted has a colour that drifted, a world with
     //     both lifted has a palette that was never checked against itself.
+    // 1c. Publish the theme's POLARITY. See `publishPolarity`.
+    this.publishPolarity(hostElement, tokensApplied);
+
     const lifted = this.enforceTextContrast(hostElement, tokensApplied);
     if (lifted > 0) {
       hostElement.dataset.contrastLifted = String(lifted);
@@ -493,6 +496,52 @@ class ThemeService {
 
   /** Remove only the tokens we applied to THIS host (avoids clearing unrelated inline
    *  styles, and avoids one host's reset touching another host's tokens). */
+  /**
+   * Say once whether this world's ground is light or dark.
+   *
+   * WHY A TOKEN AND NOT A CLASS
+   *   Components keep making an assumption CSS cannot check. The masthead is
+   *   the clearest case: it darkened its banner with
+   *   `filter: brightness(0.62)` so that light text would read over an
+   *   arbitrary generated image. On a light world the text is DARK, so the
+   *   same filter pushes image and text toward each other — measured on prod
+   *   on 2026-08-31 that is the grey void behind the world name.
+   *
+   *   CSS cannot compare two colours' luminance, so it cannot ask the
+   *   question. JS can, and this is already the one place where every theme
+   *   passes through with its colours parsed.
+   *
+   * WHY A NUMBER AND NOT A FLAG
+   *   `--theme-polarity` is 0 (dark ground) or 1 (light ground), so a
+   *   component can INTERPOLATE rather than branch:
+   *
+   *       filter: brightness(calc(0.62 + var(--theme-polarity, 0) * 0.46));
+   *
+   *   One declaration covers both worlds. A data attribute would force every
+   *   consumer into a second rule set, and a consumer inside shadow DOM
+   *   cannot select an ancestor's attribute at all — the token crosses that
+   *   boundary by inheritance, which is how the rest of the theme travels.
+   *
+   *   The default in `var(--theme-polarity, 0)` is deliberate: the platform
+   *   ground is dark, so an unthemed surface behaves exactly as before.
+   *
+   * WHAT "LIGHT" MEANS HERE
+   *   The surface is lighter than the text that sits on it. Not an absolute
+   *   luminance threshold — a world with a mid-grey ground and near-black
+   *   text is light in every sense that matters to a component, and one with
+   *   the same ground and white text is dark.
+   */
+  private publishPolarity(hostElement: HTMLElement, tokensApplied: string[]): void {
+    const resolved = getComputedStyle(hostElement);
+    const surface = parseColor(resolved.getPropertyValue('--color-surface').trim());
+    const text = parseColor(resolved.getPropertyValue('--color-text-primary').trim());
+    if (surface === null || text === null) return;
+
+    const polarity = luminance(surface) > luminance(text) ? '1' : '0';
+    hostElement.style.setProperty('--theme-polarity', polarity);
+    tokensApplied.push('--theme-polarity');
+  }
+
   /**
    * Lift the text roles until they are legible on this world's own surfaces.
    *
