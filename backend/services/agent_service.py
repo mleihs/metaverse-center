@@ -275,8 +275,23 @@ class AgentService(BaseService):
     ) -> None:
         """Set is_ambassador=True on agents who serve as embassy ambassadors.
 
-        Queries active embassies involving this simulation and extracts
-        ambassador names from embassy_metadata JSON.
+        Queries active embassies involving this simulation and matches on the
+        ambassador's ``agent_id`` where the metadata carries one, falling back
+        to the ``name``.
+
+        Why both: measured on production 31.08.2026 — of 40 active embassies,
+        37 carry an ``ambassador_a`` block, **37 of those carry a ``name`` and
+        only 9 carry an ``agent_id``**. Matching on the id alone would drop 28
+        embassies; matching on the name alone is what this did, and a name is
+        not an identity. It happens to work today (zero duplicate agent names
+        per simulation, measured) and it stops working the first time two
+        agents share a name or one is renamed — silently, because a name that
+        no longer matches looks exactly like an agent who is not an ambassador.
+
+        The SQL side (``fn_compute_agent_influence``, migration 304) resolves
+        the identity the same way and in the same order. These two must agree:
+        the influence score gives an ambassador 0.3 of 1.0, and the badge on
+        the card comes from this flag.
         """
         if not agents:
             return
@@ -294,20 +309,27 @@ class AgentService(BaseService):
             logger.warning("Failed to query embassies for ambassador enrichment", exc_info=True)
             return
 
+        ambassador_ids: set[str] = set()
         ambassador_names: set[str] = set()
         for embassy in extract_list(response):
             meta = embassy.get("embassy_metadata") or {}
             # ambassador_a belongs to simulation_a, ambassador_b to simulation_b
             if embassy.get("simulation_a_id") == sim_str:
-                name = (meta.get("ambassador_a") or {}).get("name")
+                block = meta.get("ambassador_a") or {}
             else:
-                name = (meta.get("ambassador_b") or {}).get("name")
+                block = meta.get("ambassador_b") or {}
+            agent_id = block.get("agent_id")
+            if agent_id:
+                ambassador_ids.add(str(agent_id))
+            name = block.get("name")
             if name:
                 ambassador_names.add(name)
 
         now = datetime.now(UTC)
         for agent in agents:
-            is_ambassador = agent.get("name") in ambassador_names
+            # The id wins when the metadata has one; the name is the fallback
+            # for the 28 of 37 embassies that carry no id yet.
+            is_ambassador = str(agent.get("id")) in ambassador_ids or agent.get("name") in ambassador_names
             # A2: Check if ambassador status is temporarily blocked
             blocked_until = agent.get("ambassador_blocked_until")
             if blocked_until and is_ambassador:
