@@ -160,3 +160,36 @@ async def upsert_platform_setting(
     if updated_by_id is not None:
         row["updated_by_id"] = str(updated_by_id)
     await admin.table("platform_settings").upsert(row, on_conflict="setting_key").execute()
+
+
+# ── Der Riegel vor planmäßigen Modellkosten ──────────────────────────────
+#
+# Ein Modellaufruf, den ein Mensch auslöst (Schmiede, Chat, „Chronik
+# erzeugen"), ist eine Entscheidung. Ein Modellaufruf, den ein Zeitgeber
+# auslöst, ist eine Dauerlast: er wiederholt sich, solange die Anwendung
+# läuft, und niemand sieht ihn im Moment des Entstehens.
+#
+# Diese Trennung war bisher nirgends ausgesprochen. Dass der Herzschlag heute
+# nichts kostet, liegt daran, dass ZUFÄLLIG kein Weltbesitzer einen eigenen
+# Schlüssel hinterlegt hat — und der eine Schalter, der die Plattformkasse
+# öffnet (`autonomy_admin_override`), hätte niemanden gefragt. Eine Zusage,
+# die von einer Abwesenheit lebt, ist keine Zusage.
+#
+# `scheduled_ai_spend_enabled` ist die ausgesprochene Fassung: standardmäßig
+# AUS, fail-closed (fehlende Zeile, jsonb-null, Tippfehler → aus), und jeder
+# Pfad, der aus einem Zeitgeber heraus ein Modell erreichen könnte, fragt sie
+# zuerst. Vom Menschen ausgelöste Pfade fragen sie NICHT — sie abzuschalten
+# wäre keine Kostenbremse, sondern ein kaputtes Produkt.
+SCHEDULED_AI_SPEND_SETTING = "scheduled_ai_spend_enabled"
+
+
+async def scheduled_ai_spend_allowed(admin: Client) -> bool:
+    """Darf ein Zeitgeber-Pfad gerade einen bezahlten Modellaufruf machen?
+
+    Fail-closed: fehlt die Zeile oder ist sie unlesbar, lautet die Antwort
+    Nein. ``load_platform_settings`` schluckt Fehler und liefert ein leeres
+    Mapping — zusammen mit ``parse_setting_bool``'s Positivabgleich ergibt
+    das genau den gewünschten Ausfallweg.
+    """
+    settings = await load_platform_settings(admin, [SCHEDULED_AI_SPEND_SETTING])
+    return parse_setting_bool(settings.get(SCHEDULED_AI_SPEND_SETTING))
