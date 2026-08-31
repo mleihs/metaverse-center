@@ -418,9 +418,40 @@ class DriftPublicState(BaseModel):
     landing/spectator can tell whether DRIFT is live without a JWT (alpha-state DTO
     pattern). P0 surfaces only the master gate; further phase flags are an additive
     extension on this model, never a new endpoint.
+
+    Die additive Erweiterung ist am 31.08.2026 eingelöst worden. Bis dahin standen
+    ``drift_ai_enabled`` und ``drift_p1..p4_enabled`` als Zeilen auf Prod, ohne dass
+    irgendetwas sie las — gemessen über ``pg_get_functiondef`` auf der laufenden
+    Datenbank: null Funktionen, und im Python nur die Vertragsdatei selbst. Ein
+    Schalter, dessen Umlegen nichts ändert, verspricht eine Wirkung, die es nicht
+    gibt; deshalb sind sie hier angeschlossen und nicht entfernt worden.
+
+    ALLE FELDER SIND KUMULATIV GELESEN. ``p2`` ist nur dann wahr, wenn auch ``p1``
+    und ``enabled`` (P0) wahr sind — eine Phase, deren Vorgängerin zu ist, ist
+    unerreichbar, ganz gleich was ihre eigene Zeile sagt. Die Regel steht an genau
+    einer Stelle (``DriftService.get_public_state``), damit die nächste Lesestelle
+    sie nicht neu herleitet und dabei anders herleitet.
+
+    ``ai`` ist keine Phase, sondern ein Querschalter, und hängt darum nur an P0. ⚠ Er
+    meldet einen Zustand, den heute keine Erzeugungsstelle abfragt: DRIFT ruft
+    überhaupt keine KI (kein ``run_ai``, kein ``GenerationService`` in
+    ``drift_service.py`` oder ``routers/drift.py``). Er ist eine eingelöste
+    Reservierung — die erste DRIFT-Texterzeugung fragt das vorhandene Tor, statt ein
+    zweites zu erfinden. Er spart derzeit kein Geld, und die Oberfläche darf das
+    nicht behaupten.
+
+    ``highest_open_phase`` ist ``None``, solange schon P0 zu ist; sonst die Nummer der
+    höchsten offenen Phase (0 = P0). ``None`` statt ``-1``, damit „keine offen" nicht
+    als Zahl gelesen werden kann.
     """
 
     enabled: bool
+    ai: bool = False
+    p1: bool = False
+    p2: bool = False
+    p3: bool = False
+    p4: bool = False
+    highest_open_phase: int | None = None
 
 
 class DriftTuningResponse(BaseModel):

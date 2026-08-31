@@ -59,6 +59,28 @@ logger = logging.getLogger(__name__)
 
 _P0_GATE_KEY = "drift_p0_enabled"
 
+#: Die Phasenleiter in der Reihenfolge, in der sie sich öffnet — der Index IST die
+#: Phasennummer (0 = P0). Die Liste ist die einzige Stelle, an der eine neue Phase
+#: eingehängt wird; ``DriftPublicState`` und die kumulative Regel unten lesen sie.
+_PHASE_GATE_KEYS = (
+    _P0_GATE_KEY,
+    "drift_p1_enabled",
+    "drift_p2_enabled",
+    "drift_p3_enabled",
+    "drift_p4_enabled",
+)
+
+#: Querschalter, keine Phase: er hängt an P0, nicht an P4. ⚠ Heute fragt ihn keine
+#: Erzeugungsstelle — DRIFT ruft überhaupt keine KI. Er wird gelesen und gemeldet,
+#: damit die erste DRIFT-Texterzeugung das vorhandene Tor benutzt statt ein zweites
+#: zu erfinden (siehe ``DriftPublicState``).
+_AI_GATE_KEY = "drift_ai_enabled"
+
+#: Ein Abruf für alle sechs. Getrennte Abrufe hätten getrennte Zeitpunkte, und zwei
+#: Tore, die zu verschiedenen Zeitpunkten gelesen werden, können einander
+#: widersprechen.
+_DRIFT_GATE_KEYS = [*_PHASE_GATE_KEYS, _AI_GATE_KEY]
+
 # The rank ladder in order. W1 opens the first rung only (drift_tuning.clearance_thresholds
 # carries exactly one key); the list is what tells the HUD which rung comes NEXT, and it is
 # the one place a new rank has to be inserted when its exam ships.
@@ -98,9 +120,13 @@ class DriftService:
         Fail-closed via parse_setting_bool: a missing/null row reads as OFF. 404 (not
         403) because while the gate is down the whole feature is "not available" — a
         404 keeps it invisible rather than signalling a permission wall.
+
+        Liest den Zustand NICHT selbst, sondern über ``get_public_state``. Vorher
+        standen hier zwei Abfragen desselben Schlüssels an zwei Stellen; die
+        Zusicherung „der öffentliche Schnappschuss und das Tor können nie
+        auseinanderlaufen" war damit eine Absicht, keine Bauart. Jetzt ist sie eine.
         """
-        settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
-        if not parse_setting_bool(settings_map.get(_P0_GATE_KEY)):
+        if not (await DriftService.get_public_state(admin_supabase)).enabled:
             raise not_found("DRIFT is not available.")
 
     # No `assert_fun_core_enabled` twin of the above (removed in W2.6/A). The Fun-Kern gate
@@ -113,16 +139,46 @@ class DriftService:
 
     @staticmethod
     async def get_public_state(admin_supabase: Client) -> DriftPublicState:
-        """The public phase-gate snapshot (drift_p0_enabled), always 200.
+        """Der öffentliche Torzustand aller sechs DRIFT-Schalter, immer 200.
 
         Unlike assert_p0_enabled, this never raises: the frontend polls it to decide
         whether to surface the DRIFT nav-tab + view at all, so a closed gate must
-        report enabled=False rather than 404. Reuses the same fail-closed read so the
-        public snapshot and the gate can never disagree. platform_settings is
-        service_role-only → admin client.
+        report enabled=False rather than 404. platform_settings is service_role-only
+        → admin client.
+
+        DIE KUMULATIVE REGEL STEHT HIER UND NUR HIER. Eine Phase gilt als offen, wenn
+        ihre eigene Zeile wahr ist UND alle vorherigen offen sind. Ohne diese Regel
+        könnte ``drift_p3_enabled=true`` bei geschlossenem P0 eine Phase melden, die
+        niemand erreichen kann — der Schalter sähe wirksam aus und wäre es nicht.
+        Die Schleife bricht nicht ab, sondern trägt ``still_open`` weiter: so ist im
+        Ergebnis ablesbar, dass P3 zu ist, ohne dass die Lesestelle raten muss, ob das
+        an P3 selbst oder an einer Vorgängerin liegt.
+
+        Fail-closed in beide Richtungen: ``parse_setting_bool`` liest eine fehlende
+        oder unlesbare Zeile als AUS, und ``load_platform_settings`` gibt bei einem
+        Fehlschlag ein leeres Verzeichnis zurück — dann ist jede Phase zu. Für einen
+        Schalter, der ein ganzes Merkmal verbirgt, ist das die richtige Richtung.
         """
-        settings_map = await load_platform_settings(admin_supabase, [_P0_GATE_KEY])
-        return DriftPublicState(enabled=parse_setting_bool(settings_map.get(_P0_GATE_KEY)))
+        settings_map = await load_platform_settings(admin_supabase, _DRIFT_GATE_KEYS)
+
+        open_phases: list[bool] = []
+        still_open = True
+        for key in _PHASE_GATE_KEYS:
+            still_open = still_open and parse_setting_bool(settings_map.get(key))
+            open_phases.append(still_open)
+
+        p0, p1, p2, p3, p4 = open_phases
+        return DriftPublicState(
+            enabled=p0,
+            # Querschalter: an P0 gebunden, nicht an die Leiter. Ist DRIFT aus, ist
+            # auch seine Texterzeugung aus — alles andere wäre eine Zusage ohne Welt.
+            ai=p0 and parse_setting_bool(settings_map.get(_AI_GATE_KEY)),
+            p1=p1,
+            p2=p2,
+            p3=p3,
+            p4=p4,
+            highest_open_phase=max((i for i, is_open in enumerate(open_phases) if is_open), default=None),
+        )
 
     # ── reads ─────────────────────────────────────────────────────────────────
 
@@ -130,11 +186,7 @@ class DriftService:
     async def get_active_chart(supabase: Client) -> DriftChartResponse | None:
         """The active chart version's public topology (max(version) nodes + edges)."""
         cv_resp = await (
-            supabase.table("chart_versions")
-            .select("version")
-            .order("version", desc=True)
-            .limit(1)
-            .execute()
+            supabase.table("chart_versions").select("version").order("version", desc=True).limit(1).execute()
         )
         versions = cv_resp.data or []
         if not versions:
@@ -388,14 +440,10 @@ class DriftService:
         return None
 
     @staticmethod
-    async def sit_clearance_exam(
-        supabase: Client, user_id: UUID, rank: str
-    ) -> ClearanceExamResponse:
+    async def sit_clearance_exam(supabase: Client, user_id: UUID, rank: str) -> ClearanceExamResponse:
         """Sit the Bureau exam for a rank (player-class RPC: VP threshold + Siegel fee)."""
         try:
-            resp = await supabase.rpc(
-                "fn_clearance_exam", {"p_user": str(user_id), "p_rank": rank}
-            ).execute()
+            resp = await supabase.rpc("fn_clearance_exam", {"p_user": str(user_id), "p_rank": rank}).execute()
         except PostgrestAPIError as exc:
             raise DriftService._rpc_error("fn_clearance_exam", exc) from exc
         if not resp.data:
@@ -423,9 +471,7 @@ class DriftService:
         Filtered effects become cards too, carrying the gate's own reason. A world that
         refuses is a world that answered.
         """
-        entries = [(e, "applied") for e in effects.applied] + [
-            (e, "filtered") for e in effects.skipped
-        ]
+        entries = [(e, "applied") for e in effects.applied] + [(e, "filtered") for e in effects.skipped]
         if not entries:
             return []
 
@@ -439,9 +485,7 @@ class DriftService:
         fallback_agent = slots.get("target_agent")
 
         def target_sim_of(entry: dict) -> str | None:
-            return entry.get("target_sim") or (
-                fallback_sim if entry.get("kind") != "emit_fragment" else None
-            )
+            return entry.get("target_sim") or (fallback_sim if entry.get("kind") != "emit_fragment" else None)
 
         def target_agent_of(entry: dict) -> str | None:
             if entry.get("target_agent"):
@@ -454,10 +498,7 @@ class DriftService:
         sims: dict[str, dict] = {}
         if sim_ids:
             sims_resp = await (
-                supabase.table("simulations")
-                .select("id, name, slug")
-                .in_("id", sorted(sim_ids))
-                .execute()
+                supabase.table("simulations").select("id, name, slug").in_("id", sorted(sim_ids)).execute()
             )
             sims = {r["id"]: r for r in (sims_resp.data or [])}
 
@@ -466,10 +507,7 @@ class DriftService:
             # active_agents: the public-read view — a foreign world's Träger resolves even
             # when the traveller is not a member of it (public-first).
             agents_resp = await (
-                supabase.table("active_agents")
-                .select("id, name, slug")
-                .in_("id", sorted(agent_ids))
-                .execute()
+                supabase.table("active_agents").select("id, name, slug").in_("id", sorted(agent_ids)).execute()
             )
             agents = {r["id"]: r for r in (agents_resp.data or [])}
 
@@ -582,9 +620,7 @@ class DriftService:
                 supabase.table("simulations").select("name").eq("id", target_sim).maybe_single()
             )
             target_name = sim.get("name") if sim else None
-        return QuestInstanceResponse(
-            **row, title=prose.get("title_de"), target_simulation_name=target_name
-        )
+        return QuestInstanceResponse(**row, title=prose.get("title_de"), target_simulation_name=target_name)
 
     @staticmethod
     async def _compute_offers(
@@ -598,12 +634,7 @@ class DriftService:
         actually issues (the storylet/selector layer, §9) is later content work."""
         # Only an ACTIVE run can accept a Depesche (fn_quest_accept rejects frozen/distress
         # with QUEST_ACTIVE/22023 → 400); don't offer what the click would reject.
-        if (
-            run is None
-            or run.status != "active"
-            or active is not None
-            or run.position_node_id is None
-        ):
+        if run is None or run.status != "active" or active is not None or run.position_node_id is None:
             return []
         node = await maybe_single_data(
             supabase.table("drift_chart_nodes")
@@ -687,9 +718,7 @@ class DriftService:
         )
 
     @staticmethod
-    async def complete_run(
-        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
-    ) -> TravelRunResponse:
+    async def complete_run(supabase: Client, user_id: UUID, run_id: UUID, run_version: int) -> TravelRunResponse:
         """Close the run at the home broadcast edge (Entladung)."""
         return await DriftService._call_run_rpc(
             supabase,
@@ -698,9 +727,7 @@ class DriftService:
         )
 
     @staticmethod
-    async def abandon_run(
-        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
-    ) -> TravelRunResponse:
+    async def abandon_run(supabase: Client, user_id: UUID, run_id: UUID, run_version: int) -> TravelRunResponse:
         """Rückzug — abandon the run (unanchored cargo forfeited)."""
         return await DriftService._call_run_rpc(
             supabase,
@@ -732,9 +759,7 @@ class DriftService:
                 "p_run": str(run_id),
                 "p_run_version": run_version,
                 "p_choice": choice,
-                "p_jettison_cargo_ids": [str(c) for c in jettison_cargo_ids]
-                if jettison_cargo_ids
-                else None,
+                "p_jettison_cargo_ids": [str(c) for c in jettison_cargo_ids] if jettison_cargo_ids else None,
             },
         )
 
@@ -766,9 +791,7 @@ class DriftService:
         )
 
     @staticmethod
-    async def sondieren(
-        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
-    ) -> TravelRunResponse:
+    async def sondieren(supabase: Client, user_id: UUID, run_id: UUID, run_version: int) -> TravelRunResponse:
         """Dig the node the run is standing on (M2, migration 268).
 
         Costs a Takt, pays a rising yield, and lays an open marker on the node. The third
@@ -783,9 +806,7 @@ class DriftService:
         )
 
     @staticmethod
-    async def bank_haul(
-        supabase: Client, user_id: UUID, run_id: UUID, run_version: int
-    ) -> TravelRunResponse:
+    async def bank_haul(supabase: Client, user_id: UUID, run_id: UUID, run_version: int) -> TravelRunResponse:
         """Transmit the loose haul from a dock (Funkboje, migration 268).
 
         70 % of it becomes safe from everything that follows — a Havarie, a Resonanzriss,
@@ -798,9 +819,7 @@ class DriftService:
         )
 
     @staticmethod
-    async def get_logbook(
-        supabase: Client, user_id: UUID, *, limit: int = 50
-    ) -> list[TravelLogEntryResponse]:
+    async def get_logbook(supabase: Client, user_id: UUID, *, limit: int = 50) -> list[TravelLogEntryResponse]:
         """The traveller's logbook (R12) — newest first, ACROSS runs.
 
         Deliberately not run-scoped: the logbook is the career, not the journey. It is

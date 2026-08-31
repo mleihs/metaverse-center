@@ -175,10 +175,15 @@ def test_groups_are_all_used():
 # ── Verdrahtung ────────────────────────────────────────────────────────────
 #
 # Ein Schalter, dessen Umlegen nichts ändert, ist schlimmer als kein Schalter:
-# er verspricht eine Wirkung, die es nicht gibt. Auf Prod stehen fünf solche
-# Zeilen (``drift_ai_enabled``, ``drift_p1..p4_enabled``) — am 31.08.2026 über
+# er verspricht eine Wirkung, die es nicht gibt. Am 31.08.2026 standen fünf solche
+# Zeilen auf Prod (``drift_ai_enabled``, ``drift_p1..p4_enabled``) — über
 # ``pg_get_functiondef`` auf der laufenden Datenbank gemessen: null Funktionen
-# nennen sie, und im Python nennt sie nichts außer der Erklärung selbst.
+# nannten sie, und im Python nannte sie nichts außer der Erklärung selbst. Sie sind
+# noch am selben Tag angeschlossen worden (``DriftService.get_public_state``), nicht
+# entfernt. Seither ist die Liste der unverdrahteten Tore leer — und
+# ``test_unwired_gates_are_really_dead`` läuft über null Fälle. Das ist kein
+# Leerlauf, sondern der erwünschte Zustand: der Test wartet auf das nächste Tor,
+# das jemand als „vorbereitet" erklärt.
 #
 # Der Test unten reicht nicht an die Datenbank; er misst dieselbe Frage an den
 # beiden Quellen, die im Werk liegen: Python-Lesestellen und der SQL-Aufruf

@@ -151,10 +151,12 @@ async def get_landing_snapshot(
     """Zahlen, vier Welten und drei Bürger für die Frontseite — in einem Aufruf.
 
     Getrennt von ``/platform-stats``, das bleibt: dessen drei Zähler haben
-    andere Aufrufer, und einer davon misst anders (er filtert `status` nicht
-    mit und zählt Epochen allein am Status, also auf Prod 7 statt 0). Die
-    Frontseite darf nicht an einem Zähler hängen, der für einen anderen Zweck
-    geschnitten wurde.
+    andere Aufrufer, und einer davon misst weiterhin anders — er zählt Epochen
+    allein am Status und kommt damit auf Prod auf 7 statt 0, weil ein Status kein
+    Betrieb ist (keine der sieben bewegt sich seit 164 Tagen). Der zweite Teil
+    dieses Befundes ist erledigt: `status` filtert der Zähler seit dem 31.08.2026
+    mit. Die Frontseite darf nicht an einem Zähler hängen, der für einen anderen
+    Zweck geschnitten wurde.
 
     Zweisprachig wie ``SimulationResponse``: die Antwort trägt `name` UND
     `name_de`, der Client wählt. Deshalb kein `locale`-Parameter.
@@ -1244,8 +1246,14 @@ async def get_drift_state(
 
     Always 200: the frontend polls this to decide whether to surface the DRIFT
     nav-tab + view at all, so a closed gate reports enabled=False (never 404).
-    Uses admin_supabase because platform_settings has no anon RLS policy; the DTO
-    exposes only the boolean gate.
+    Uses admin_supabase because platform_settings has no anon RLS policy.
+
+    Trägt seit dem 31.08.2026 alle sechs DRIFT-Tore statt nur P0: ``enabled`` (P0),
+    ``p1`` bis ``p4``, den Querschalter ``ai`` und ``highest_open_phase``. Additiv
+    auf demselben Modell, kein zweiter Endpunkt — so steht es im Docstring von
+    ``DriftPublicState``, und so war es gemeint. Die kumulative Regel wendet
+    ``DriftService.get_public_state`` an, nicht dieser Router: eine Phase, deren
+    Vorgängerin zu ist, kommt hier bereits als geschlossen an.
     """
     state = await DriftService.get_public_state(admin_supabase)
     return SuccessResponse(data=state)
