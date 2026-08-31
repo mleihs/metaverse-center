@@ -31,11 +31,11 @@
 
           <!-- English Section -->
           <tr>
-            <td style="padding:32px 32px 24px;">
+            <td lang="en" style="padding:32px 32px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="font-family:'Courier New',Courier,monospace;font-size:14px;line-height:1.7;color:#cccccc;">
-                    Your access request has been flagged for clearance. The Bureau has detected your signal across the fracture &mdash; five worlds, each a sealed dossier, each awaiting your observation.
+                    Your access request has been flagged for clearance. The Bureau has detected your signal across the fracture &ndash; five worlds, each a sealed dossier, each awaiting your observation.
                   </td>
                 </tr>
                 <tr>
@@ -82,16 +82,16 @@
 
           <!-- German Section -->
           <tr>
-            <td style="padding:24px 32px 24px;">
+            <td lang="de" style="padding:24px 32px 24px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="font-family:'Courier New',Courier,monospace;font-size:14px;line-height:1.7;color:#cccccc;">
-                    Ihr Zugangsantrag wurde zur Freigabe markiert. Das B&uuml;ro hat Ihr Signal jenseits der Fraktur erfasst &mdash; f&uuml;nf Welten, jede ein versiegeltes Dossier, jede auf Ihre Beobachtung wartend.
+                    Dein Zugangsantrag wurde zur Freigabe markiert. Das B&uuml;ro hat dein Signal jenseits der Fraktur erfasst &ndash; f&uuml;nf Welten, jede ein versiegeltes Dossier, jede auf deine Beobachtung wartend.
                   </td>
                 </tr>
                 <tr>
                   <td style="padding-top:16px;font-family:'Courier New',Courier,monospace;font-size:14px;line-height:1.7;color:#cccccc;">
-                    Bevor wir Terminalzugang gew&auml;hren k&ouml;nnen, muss Ihre Identit&auml;t verifiziert werden. Dies ist Standardprotokoll. Best&auml;tigen Sie unten, um Ihre Aufnahme abzuschlie&szlig;en.
+                    Bevor wir Terminalzugang gew&auml;hren k&ouml;nnen, muss deine Identit&auml;t verifiziert werden. Dies ist Standardprotokoll. Best&auml;tige unten, um deine Aufnahme abzuschlie&szlig;en.
                   </td>
                 </tr>
                 <!-- CTA Button DE -->
@@ -110,7 +110,7 @@
                 </tr>
                 <tr>
                   <td style="font-family:'Courier New',Courier,monospace;font-size:11px;color:#888888;line-height:1.6;">
-                    Falls die Schaltfl&auml;che nicht funktioniert, kopieren Sie diese URL in Ihren Browser:<br />
+                    Falls die Schaltfl&auml;che nicht funktioniert, kopiere diese URL in deinen Browser:<br />
                     <a href="{{ .ConfirmationURL }}" style="color:#f59e0b;word-break:break-all;">{{ .ConfirmationURL }}</a>
                   </td>
                 </tr>
@@ -134,10 +134,30 @@
                 </tr>
                 <tr>
                   <td align="center" style="padding-top:4px;font-family:'Courier New',Courier,monospace;font-size:10px;color:#555555;">
-                    Wenn Sie diese Verifizierung nicht angefordert haben, k&ouml;nnen Sie diese Nachricht ignorieren.
+                    Wenn du diese Verifizierung nicht angefordert hast, kannst du diese Nachricht ignorieren.
                   </td>
                 </tr>
               </table>
+            </td>
+          </tr>
+
+          <!-- Gueltigkeitsdauer und Sicherheitshinweis (Handoff P2.22).
+               Beides fehlte: der Leser erfuhr weder, wie lange der Link gilt,
+               noch dass diese Sorte Post nicht abbestellbar ist. -->
+          <tr>
+            <td style="padding:20px 32px 28px;border-top:1px dashed #333333;">
+              <p style="margin:0 0 6px;font-size:12px;line-height:1.6;color:#cccccc;">
+                The link is valid for one hour and can be used once.
+              </p>
+              <p style="margin:0 0 14px;font-size:12px;line-height:1.6;color:#cccccc;">
+                Der Link gilt eine Stunde und l&auml;sst sich einmal verwenden.
+              </p>
+              <p style="margin:0 0 6px;font-size:11px;line-height:1.6;color:#888888;">
+                This is a security message about your account. It cannot be unsubscribed from.
+              </p>
+              <p style="margin:0;font-size:11px;line-height:1.6;color:#888888;">
+                Dies ist eine Sicherheitsnachricht zu deinem Konto. Sie kann nicht abbestellt werden.
+              </p>
             </td>
           </tr>
 
