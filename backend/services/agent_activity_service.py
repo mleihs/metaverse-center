@@ -126,7 +126,34 @@ SOCIAL_INTERACTIONS: dict[str, dict] = {
     "insult": {
         "weight": 5,
         "mood_range": (-100, -20),
-        "opinion_range": (-100, -20),
+        # Der EINSTIEG unter Null. Bis zum 31.08.2026 stand hier (-100, -20) —
+        # und `insult` ist zusammen mit `confrontation` die einzige Quelle, aus
+        # der eine Meinung überhaupt sinken kann. Die Bedingung der Ursache war
+        # damit ihre eigene Wirkung: um beleidigt zu werden, musste man schon
+        # verachtet sein.
+        #
+        # Gemessen auf Prod nach elf Monaten Laufzeit: 1 177 Meinungen, Spanne
+        # 0 … 45, **null negative**. Und nachgerechnet, dass keine andere
+        # Stellschraube das öffnet: `base_compatibility` reicht bis −6
+        # (∈ [−0,3; 0,3] × 20), `profession_rivalry` bis −5 (Kappe 1) — zusammen
+        # −11 gegen ein gefordertes −20. Diese Zeile ist der einzige Weg.
+        #
+        # Die Obergrenze ist mit Bedacht 20 und nicht 100: eine schlecht
+        # gelaunte Figur kann jemanden anfahren, den sie neutral oder lau sieht,
+        # aber nicht jemanden, den sie mag. Schlechte Laune sucht sich ein Ziel,
+        # keinen Feind. (Von 72 `good_conversation`-Modifikatoren stapeln sich
+        # manche Paare über +20 — die sind geschützt.)
+        #
+        # `confrontation` bleibt bei (−100, −50) und braucht keine Änderung: ist
+        # der Einstieg einmal offen, stapelt `insult` bis −75 (Kappe 5) und
+        # erreicht dessen Fenster von selbst. Ein Schloss öffnen, nicht zwei.
+        #
+        # Erwartete Rate, gemessen statt geschätzt: 25 Paare trafen sich in
+        # 24 h, 6 von 258 Agenten liegen unter −20, und bei Laune −25 sind nur
+        # `casual_chat` (50) und `insult` (5) gültig — also rund eine
+        # Beleidigung alle ein bis drei Wochen, mit steigender Tendenz. Wer nach
+        # einem Tick nachmisst, sieht nichts.
+        "opinion_range": (-100, 20),
         "opinion_effect": -12,
         "mood_effect": -3,
         "aggressor_mood_effect": 2,

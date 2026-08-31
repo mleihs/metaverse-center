@@ -679,7 +679,59 @@ lesen erfordert die Absicht daneben, nicht nur die Messung.
 
 ---
 
-## T10 · N5, eine Schicht tiefer: die Meinung kann nicht sinken
+## T10 · N5, eine Schicht tiefer: die Meinung kann nicht sinken — ✅ WEG 1 IST GEBAUT
+
+> **Entscheidung des Nutzers, 31.08.2026 nachts:** Weg 1 allein, eine Zeile,
+> eine Woche messen. Die Einseitigkeit getrennt, damit man hinterher weiss,
+> welche Änderung gewirkt hat.
+>
+> `SOCIAL_INTERACTIONS["insult"]["opinion_range"]` steht jetzt auf
+> **`(-100, 20)`** statt `(-100, -20)`.
+>
+> **Die Obergrenze 20 ist eine Aussage, kein Rest:** eine schlecht gelaunte
+> Figur kann jemanden anfahren, den sie neutral oder lau sieht, aber nicht
+> jemanden, den sie mag. Von 72 `good_conversation`-Modifikatoren stapeln sich
+> manche Paare über +20 — die sind geschützt.
+>
+> **`confrontation` bleibt bei `(-100, -50)`** und braucht keine Änderung: ist
+> der Einstieg offen, stapelt `insult` bis −75 (Kappe 5) und erreicht dessen
+> Fenster von selbst. Ein Schloss öffnen, nicht zwei.
+>
+> Gebunden von `backend/tests/unit/test_an_opinion_can_reach_below_zero.py`
+> (14 Fälle). Der Test prüft **nicht die Zahl 20**, sondern die EIGENSCHAFT:
+> von einer neutralen Meinung aus muss ein Weg nach unten existieren, eine warme
+> Beziehung muss geschützt bleiben, der Einstieg muss sich selbst tragen (nach
+> dem ersten Schlag noch im Fenster liegen), und gestapelt muss das Tor bei −60
+> erreichbar sein. Wer die Zahl später ändert, darf das — er darf nur die
+> Schleife nicht wieder schliessen.
+>
+> **Falsifiziert:** mit dem alten Wert `(-100, -20)` werden 7 der 14 Fälle rot.
+>
+> ### Was in einer Woche zu messen ist
+>
+> ```sql
+> select min(opinion_score), max(opinion_score),
+>        count(*) filter (where opinion_score < 0) as negative,
+>        count(*) filter (where opinion_score <= -60) as am_tor
+>   from agent_opinions;
+> select count(*) from agent_opinion_modifiers where opinion_change < 0;
+> select count(*) from events where created_at > now() - interval '7 days';
+> ```
+>
+> Erwartung, gemessen hergeleitet: **eine Beleidigung alle ein bis drei Wochen**,
+> mit steigender Tendenz (die Zahl der Agenten unter −20 wuchs heute von 0 auf 6).
+> ⚠ **Wer nach einem Tick nachmisst, sieht nichts** — und wird die Änderung
+> fälschlich für wirkungslos halten.
+>
+> ⏳ **Die Änderung ist Code und wirkt erst nach einem Deploy.**
+>
+> ### Getrennt geblieben, wie entschieden
+>
+> Die Einseitigkeit (39 von 39 Beziehungen unerwidert) ist NICHT mitgegangen.
+> Sie halbiert die Rate und sperrt einen festen Teil der Bevölkerung aus — aber
+> zwei Änderungen zugleich hätten die Messung unlesbar gemacht.
+
+### Der ursprüngliche Befund
 
 **Gemessen:** 31.08.2026 nachts auf Prod und am Quelltext, nachdem N5 lief.
 
