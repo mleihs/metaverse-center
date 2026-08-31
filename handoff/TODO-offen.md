@@ -498,3 +498,83 @@ nicht über `simulations` joint, zählt sie mit.
 der Kinder noch irgendwo angezeigt wird. Vor jeder Reparatur gehört das
 nachgesehen — eine Kaskade auf eine Welt, die jemand zurückholen will, ist
 schlimmer als der Fehler.
+
+---
+
+## T9 · Gesprächstitel und `user_id` sind öffentlich lesbar — absichtlich?
+
+**Gemessen:** 31.08.2026 auf Prod, beim Abschluss von T8.
+
+Beim Nachmessen der acht öffentlichen Sichten fiel `conversation_summaries` auf.
+Zwei Dinge steckten darin, und nur eines davon ist entschieden.
+
+**Das Unentschiedene ist behoben (Migration 316).** Die Sicht läuft ohne
+`security_invoker` als ihr Eigentümer, die RLS greift also nicht:
+
+    Weg                                      anon   authenticated
+    chat_conversations  (Basistabelle, RLS)     3         0
+    conversation_summaries (Sicht)              3         3
+
+`chat_conversations_select` lautet `user_id = (SELECT auth.uid())` — ein
+angemeldeter Nutzer sieht nur seine eigenen Gespräche. Über die Sicht sah er
+alle. Die Sicht hat **null Verwender** (weder `backend/`, noch `frontend/src/`,
+noch eine RPC), also war das kein Bedarf, sondern ein Rest. Migration 316
+entzieht anon und authenticated den Grant und setzt `security_invoker` — genau
+das, was Migration 294 für ihre drei getan hat. Nicht gelöscht: Entzug ist
+rücknehmbar.
+
+**Das Entschiedene ist eine Frage an den Nutzer, und sie ist älter.** Die Drei
+in der `anon`-Spalte kommt nicht von der Sicht, sondern von der Richtlinie
+`conversations_anon_select` auf der Basistabelle:
+
+```sql
+EXISTS (SELECT 1 FROM simulations
+         WHERE id = chat_conversations.simulation_id
+           AND status = 'active' AND deleted_at IS NULL)
+```
+
+Damit kann **jeder anonyme Leser jedes Gespräch jeder aktiven Welt sehen** —
+`user_id`, `title`, `message_count`, `last_message_at`.
+
+Und `chat_messages` trägt dieselbe Richtlinie, gespiegelt
+(`messages_anon_select`, join über `chat_conversations` auf `simulations`).
+Gemessen mit `SET LOCAL ROLE anon`:
+
+    chat_conversations   anon sieht 3 von 3
+    chat_messages        anon sieht 22 von 22
+
+**Es sind also nicht die Titel, es sind die Texte.** Jede Zeile, die ein Mensch
+je einem Agenten geschrieben hat, ist öffentlich lesbar — und die
+Gegenrichtlinie für angemeldete Nutzer (`chat_messages_select`, gebunden an
+`auth.uid()`) lässt genau vermuten, dass das nicht die Absicht war: **ein
+angemeldeter Nutzer sieht weniger als ein anonymer.** Zwei Richtlinien auf
+derselben Tabelle, die einander widersprechen; die anonyme gewinnt, weil
+Richtlinien mit ODER verknüpft werden.
+
+Auf Prod stehen heute **3 Gespräche von 1 Nutzer** — dem Eigentümer. Es liegt
+also nichts Fremdes offen. Die Zahl wächst aber mit der Benutzung, und sie
+wächst still.
+
+**Zu entscheiden — und das ist eine Produktentscheidung, keine technische:**
+Public-First heisst, dass die WELT öffentlich lesbar ist. Ein Gespräch zwischen
+einem Menschen und einem Agenten ist eine Handlung des Menschen, keine Tatsache
+der Welt. Drei Wege:
+
+* **So lassen** — dann gehört es an die Oberfläche geschrieben, damit niemand
+  privat glaubt, was öffentlich ist.
+* **Auf die eigenen Gespräche einschränken** — die Richtlinie fällt weg, und
+  `chat_conversations_select` trägt allein. Zu prüfen wäre, ob eine öffentliche
+  Ansicht davon lebt (gemessen: die Sicht nicht, sie liest niemand).
+* **Aufteilen** — die Tatsache „mit diesem Agenten wurde N-mal gesprochen"
+  öffentlich, `user_id` und `title` nicht. Braucht eine neue, schmale Sicht;
+  Vorbild ist `public_forge_prompts` (genau eine Spalte).
+
+🔑 **Der Widerspruch ist der eigentliche Befund, nicht die Reichweite.** Eine
+Tabelle, auf der die anonyme Richtlinie MEHR erlaubt als die angemeldete, ist
+entweder absichtlich öffentlich (dann ist die angemeldete überflüssig und
+irreführend) oder versehentlich offen (dann ist die anonyme zu weit). Beides
+kann stimmen — aber nicht beides gleichzeitig, und heute steht beides da.
+
+**Nicht gemessen:** ob eine öffentliche Oberfläche Gesprächsinhalte anzeigt und
+damit von der anon-Richtlinie lebt. Das entscheidet, ob der zweite Weg oben
+folgenlos ist. `conversation_summaries` tut es nicht — sie liest niemand.

@@ -38,7 +38,7 @@ import pytest
 
 _MIGRATION = (
     Path(__file__).resolve().parents[3]
-    / "supabase/migrations/20260831220000_313_a_view_must_remember_whose_world_it_is.sql"
+    / "supabase/migrations/20260831215000_313_a_view_must_remember_whose_world_it_is.sql"
 )
 
 _VIEWS = ("active_agents", "active_buildings", "active_events")
