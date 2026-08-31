@@ -8,8 +8,11 @@ import { agentsApi, buildingsApi } from '../../services/api/index.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/index.js';
-import type { OccupancyLevel } from '../../utils/building-condition.js';
-import { occupancyLevel, occupancyVariant } from '../../utils/building-condition.js';
+import {
+  OCCUPANCY_LABEL,
+  occupancyLevel,
+  occupancyVariant,
+} from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { OPERATIVE_COLORS, OPERATIVE_TYPES } from '../../utils/operative-constants.js';
@@ -40,20 +43,6 @@ const FETCH_LIMIT = 60;
 const ROSTER_LIMIT = 8;
 /** How many buildings the footprint strip shows before it sends the reader on. */
 const FOOTPRINT_LIMIT = 8;
-/**
- * What each occupancy level is called on the card.
- *
- * Held as thunks rather than strings because `msg()` resolves against the
- * locale that is active when it RUNS — a module-level constant of resolved
- * strings would freeze the first language the module was loaded in.
- */
-const OCCUPANCY_LABEL: Record<OccupancyLevel, () => string> = {
-  full: () => msg('Full'),
-  partial: () => msg('Partly held'),
-  sparse: () => msg('Thin'),
-  ruined: () => msg('Ruined'),
-};
-
 /** The rail's duty list — three is a shift, not a ranking table. */
 const ON_DUTY_LIMIT = 3;
 
@@ -99,7 +88,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
        * neutral is unchanged, only the level. See
        * handoff/simulation-views/DESIGN-AUTORITAET.md, point 4.
        */
-      --_dim: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
+      --_dim: var(--color-text-quiet);
     }
 
     @media (min-width: 1920px) {

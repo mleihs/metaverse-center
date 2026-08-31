@@ -369,6 +369,24 @@ class ThemeService {
       ],
       ['--color-icon', 'var(--color-text-muted)'],
       ['--color-separator', 'color-mix(in srgb, var(--color-border) 50%, transparent)'],
+      /*
+       * The quiet tone, re-derived here for the same reason as the rest of this
+       * block: a `color-mix()` inside a custom property resolves against the
+       * element it was DECLARED on. `--color-text-quiet` is declared on :root,
+       * where the tokens are the platform-dark defaults, so a themed subtree
+       * would inherit a colour mixed from the wrong two inputs — measured on the
+       * light "State Pathography" theme: it arrived as the dark theme's #a4a4a4
+       * on a cream ground, 2.10:1.
+       *
+       * Re-setting it on the themed host makes it resolve against the theme's
+       * own muted and primary, and because it mixes toward text-primary the
+       * direction takes care of itself: brighter on a dark ground, darker on a
+       * light one.
+       */
+      [
+        '--color-text-quiet',
+        'color-mix(in srgb, var(--color-text-muted) 70%, var(--color-text-primary))',
+      ],
     ];
     for (const [token, value] of granularityPairs) {
       hostElement.style.setProperty(token, value);

@@ -52,6 +52,39 @@
   --color-text-secondary: #a0a0a0;
   --color-text-tertiary: color-mix(in srgb, var(--color-text-secondary) 60%, var(--color-text-muted));
   --color-text-muted: #888888;
+
+  /*
+   * Der leise Ton, der in JEDEM Theme lesbar bleibt.
+   *
+   * GEMESSEN AM BILDSCHIRM, NICHT AM PROTOTYP (31.08.2026, Welt „State
+   * Pathography", ein HELLES Simulations-Theme):
+   *
+   *     --color-text-muted (#8a8a9e) auf dessen --color-surface-sunken
+   *     (#f0ebe0)  →  2,84 : 1.   AA verlangt 4,5 : 1.
+   *
+   * `--color-text-muted` faellt in den hellen Themes also von sich aus durch.
+   * Schlimmer: die naheliegende Reparatur macht es dort noch schlechter. Wer
+   * gegen den GRUND mischt (`color-mix(… muted 90%, surface-sunken)`), hebt den
+   * Kontrast auf dunklem Grund und SENKT ihn auf hellem — dieselbe Zeile stand
+   * an sechs Stellen und ergab im hellen Theme 2,51 : 1, weniger als das
+   * ungemischte Muted.
+   *
+   * Deshalb gegen `--color-text-primary` mischen: das ist per Definition in
+   * jedem Theme das kontraststarke Ende. Auf dunklem Grund wird der Ton damit
+   * heller, auf hellem dunkler — die Richtung stimmt von selbst, ohne dass die
+   * Regel wissen muss, in welchem Theme sie laeuft.
+   *
+   * 70 % ist der kleinste Anteil, der beide Seiten traegt:
+   *
+   *     hell   #6b6b7f auf #f0ebe0  →  4,6 : 1
+   *     dunkel #a4a4a4 auf #060606  →  7,9 : 1
+   *
+   * ⚠ OFFEN: dass `--color-text-muted` selbst durchfaellt, ist ein Fehler der
+   * hellen Themes und nicht dieses Tokens. Hier steht die Umgehung, nicht die
+   * Ursache — die Ursache liegt in `ThemeService`, betrifft jede Komponente,
+   * und gehoert entschieden statt nebenbei repariert.
+   */
+  --color-text-quiet: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-text-primary));
   --color-text-inverse: #0a0a0a;
   --color-text-link: var(--color-info);
   --color-text-danger: var(--color-danger);

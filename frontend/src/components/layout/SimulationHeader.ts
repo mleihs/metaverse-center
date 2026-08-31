@@ -37,7 +37,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
        * unrelated bars.
        */
       --_gutter: max(var(--space-10), calc((100% - var(--_measure)) / 2));
-      --_dim: color-mix(in srgb, var(--color-text-muted) 90%, var(--_ground));
+      --_dim: var(--color-text-quiet);
     }
 
     /* ── Backdrop ────────────────────────────────────────────────────── */
@@ -145,7 +145,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-size: calc(var(--text-xs) * 0.95);
       letter-spacing: calc(var(--tracking-widest) * 2);
       text-transform: uppercase;
-      color: var(--_chip, var(--color-text-muted));
+      color: var(--_chip, var(--color-text-quiet));
       white-space: nowrap;
     }
 
@@ -207,6 +207,20 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       gap: var(--space-14);
     }
 
+    /*
+     * Three lines, and the reason is a measurement rather than a taste.
+     *
+     * The handoff calls this a tagline and bounds it at 620px, which bounds the
+     * WIDTH. What feeds it is simulations.description, and on a real world
+     * that is not a tagline: measured at 1440 on "State Pathography", 922
+     * characters over 13 lines, which made the masthead 684px tall — 75% of the
+     * viewport, on EVERY tab, pushing the roster, the dossier and the register
+     * below the fold.
+     *
+     * A masthead introduces the page; it does not replace it. Three lines is
+     * the most that still reads as an opening line, and the full text is one
+     * click away in the dossier, where it belongs.
+     */
     .masthead__tagline {
       font-family: var(--font-bureau, var(--font-prose));
       font-style: italic;
@@ -216,6 +230,11 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       margin: 0;
       max-width: 620px;
       text-wrap: pretty;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .masthead__actions {

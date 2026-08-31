@@ -36,7 +36,7 @@ export class VelgLoreDossier extends LitElement {
       /* ── Tier 3 ─────────────────────────────────────────────────────── */
       --_kicker-tracking: calc(var(--tracking-widest) * 3);
       --_rule: color-mix(in srgb, var(--color-border-light) 70%, var(--color-surface));
-      --_dim: color-mix(in srgb, var(--color-text-muted) 90%, var(--color-surface-sunken));
+      --_dim: var(--color-text-quiet);
       /* The reading measure. Everything else may grow; a line of prose may not. */
       --_measure: 740px;
     }
