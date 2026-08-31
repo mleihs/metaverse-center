@@ -195,7 +195,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     }
 
     .masthead__dot {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
     }
 
     /* ── Foot: tagline and call to action ────────────────────────────── */
@@ -255,7 +255,13 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 3);
       text-transform: uppercase;
-      color: var(--color-text-inverse);
+      /*
+       * Nicht --color-text-inverse: das ist die Umkehrung der THEME-Textfarbe
+       * und wird in einem hellen Theme hell — helle Schrift auf der
+       * Amber-Fuellung ergibt gemessen 1,89 : 1. Die Fuellung ist nie gethemt,
+       * also ist ihre Beschriftung es auch nicht.
+       */
+      color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: var(--border-width-thin) solid var(--color-accent-amber-dim);
       box-shadow: var(--shadow-md);
@@ -303,7 +309,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       width: 38px;
       height: 38px;
       padding: 0;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       background: color-mix(in srgb, var(--_ground) 70%, transparent);
       border: var(--border-width-thin) solid var(--color-accent-amber-dim);
       cursor: pointer;
@@ -553,7 +559,10 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
       <div class="masthead__body">
         <div class="chips rise" style="--_delay: 0ms">
-          <span class="chip" style="--_chip: var(--color-accent-green)">
+          <span
+            class="chip"
+            style="--_chip: color-mix(in srgb, var(--color-accent-green) 45%, var(--color-text-primary))"
+          >
             <span class="chip__pulse" aria-hidden="true"></span>
             ${this._getStatusLabel(sim.status)}
           </span>
@@ -574,7 +583,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
         </div>
 
         <h1 class="masthead__name rise" style="--_delay: 100ms">
-          ${name}<span class="masthead__dot">.</span>
+          ${name}<span class="masthead__dot" aria-hidden="true">.</span>
         </h1>
 
         <div class="masthead__foot rise" style="--_delay: 250ms">

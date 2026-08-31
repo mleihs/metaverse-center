@@ -126,7 +126,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
       text-transform: uppercase;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
     }
 
     .head {
@@ -161,7 +161,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       letter-spacing: calc(var(--tracking-widest) * 2.5);
       text-transform: uppercase;
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       background: none;
       border: none;
       padding: 0;
@@ -169,7 +169,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     }
 
     .link:hover {
-      color: var(--color-accent-amber-hover);
+      color: var(--color-accent-amber);
     }
 
     .link__arrow {
@@ -386,7 +386,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     }
 
     .duty:hover .duty__name {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
     }
 
     .duty__thumb {
@@ -424,7 +424,9 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-size: calc(var(--text-xs) * 0.9);
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
-      color: var(--color-text-muted);
+      /* Gemessen 2,98 : 1 auf heller Welt-Flaeche. --color-text-muted faellt in
+         hellen Themes von sich aus durch; -quiet mischt zu text-primary. */
+      color: var(--color-text-quiet);
       margin-block-start: var(--space-0-5);
       white-space: nowrap;
       overflow: hidden;

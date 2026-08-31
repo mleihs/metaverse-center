@@ -250,7 +250,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
      */
     .nav__tab--active,
     .nav__tab--active:hover {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       background: var(--color-surface);
       box-shadow: inset 0 -2px 0 var(--color-accent-amber);
     }
@@ -272,13 +272,13 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
     }
 
     .nav__tab--active .nav__mark {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
     }
 
     /* ── The "More" register ─────────────────────────────────────────── */
 
     .nav__more[aria-expanded='true'] {
-      color: var(--color-accent-amber);
+      color: var(--color-accent-amber-readable);
       background: var(--color-surface);
     }
 
@@ -447,7 +447,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         font-size: var(--text-sm);
         text-transform: uppercase;
         letter-spacing: var(--tracking-wide);
-        color: var(--color-accent-amber);
+        color: var(--color-accent-amber-readable);
       }
 
       .mobile-menu {
@@ -494,7 +494,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
        * vocabulary, like every other current-item in the app.
        */
       .mobile-menu__item--active {
-        color: var(--color-accent-amber);
+        color: var(--color-accent-amber-readable);
       }
 
       .mobile-menu__icon {
