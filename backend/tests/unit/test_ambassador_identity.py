@@ -43,9 +43,27 @@ import pytest
 BACKEND = Path(__file__).resolve().parents[2]
 REPO = BACKEND.parent
 MIGRATION = REPO / "supabase/migrations/20260831127000_304_ambassador_is_identified_by_id.sql"
-#: Seit Migration 322 steht die Regel in der Sicht `active_ambassadors`; 304
+#: Seit Migration 326 steht die Regel in der Sicht `active_ambassadors`; 304
 #: bleibt die Datei, die die Kennung VOR den Namen gestellt hat.
-SINGLE_SOURCE = REPO / "supabase/migrations/20260901040000_322_an_ambassador_is_decided_in_one_place.sql"
+#:
+#: ⚠ Über den INHALT gesucht, nicht über Nummer oder Dateinamen. Diese Zeile
+#: stand als wörtlicher Pfad auf `..._322_...` und brach, als die Datei am
+#: 31.08.2026 nach 326 umnummeriert werden musste: ihr Zeitstempel kollidierte
+#: mit einer zweiten Migration derselben Nummer aus einer anderen Sitzung, und
+#: `version` ist der Primärschlüssel. Ein Test, der an einer Nummer hängt,
+#: meldet nach so einer Umbenennung „nicht gefunden" statt „stimmt nicht" —
+#: und eine Nummer ist genau die Sache, die sich ändern kann, ohne dass sich
+#: der Inhalt ändert. Seit `scripts/lint-migration-order.sh` kollidiert nichts
+#: mehr, aber umnummeriert wird trotzdem wieder werden.
+_VIEW_DEFINITION = "CREATE OR REPLACE VIEW public.active_ambassadors"
+SINGLE_SOURCE = next(
+    (
+        path
+        for path in sorted((REPO / "supabase/migrations").glob("*.sql"), reverse=True)
+        if _VIEW_DEFINITION in path.read_text(encoding="utf-8")
+    ),
+    REPO / "supabase/migrations/__active_ambassadors_nicht_gefunden__.sql",
+)
 
 
 @pytest.fixture(scope="module")
@@ -78,9 +96,7 @@ class TestTheSqlResolvesIdFirst:
     def test_both_paths_exist(self, sql: str) -> None:
         body = _body(sql)
         assert "->>'agent_id'" in body, "die Kennung wird nicht gelesen"
-        assert "->>'name'" in body, (
-            "der Namens-Rückfall fehlt — 28 von 37 Botschaften tragen keine Kennung"
-        )
+        assert "->>'name'" in body, "der Namens-Rückfall fehlt — 28 von 37 Botschaften tragen keine Kennung"
 
     def test_the_name_only_applies_when_there_is_no_id(self, sql: str) -> None:
         """Sonst wäre der Rückfall kein Rückfall, sondern ein zweiter Weg hinein."""
@@ -142,9 +158,7 @@ class TestThePythonDoesNotResolveAtAll:
         # Tests fand deshalb ihren eigenen Docstring. Ein Vergleich, der zu viel
         # findet, ist so unbrauchbar wie einer, der zu wenig findet.
         for leaked in ('"ambassador_a"', '"ambassador_b"', '"embassy_metadata"'):
-            assert leaked not in code, (
-                f"{leaked} steht wieder im Python-Code — die Regel ist zurückgekehrt"
-            )
+            assert leaked not in code, f"{leaked} steht wieder im Python-Code — die Regel ist zurückgekehrt"
 
     def test_the_blocked_rule_moved_and_did_not_vanish(self, sql: str) -> None:
         """Die Sperre gilt weiter — sie steht jetzt in der Sicht, nicht in Python.
@@ -156,9 +170,7 @@ class TestThePythonDoesNotResolveAtAll:
         from backend.services.agent_service import AgentService
 
         python = inspect.getsource(AgentService._enrich_ambassador_flag)
-        assert "ambassador_blocked_until" not in python.split('"""')[-1], (
-            "die Sperrprüfung steht wieder in Python"
-        )
+        assert "ambassador_blocked_until" not in python.split('"""')[-1], "die Sperrprüfung steht wieder in Python"
         assert "ambassador_blocked_until" in sql, "die Sperrprüfung fehlt in der Sicht"
 
 
@@ -174,6 +186,4 @@ class TestTheSingleSourceIsTheView:
         # abschliessenden Dollar-Tag; nur dort darf die Regel nicht stehen.
         fn = view_sql.split("CREATE OR REPLACE FUNCTION")[-1]
         body = fn.split("AS $function$")[-1].split("$function$")[0]
-        assert "embassy_metadata" not in body, (
-            "der Funktionsrumpf schreibt die Regel wieder aus"
-        )
+        assert "embassy_metadata" not in body, "der Funktionsrumpf schreibt die Regel wieder aus"
