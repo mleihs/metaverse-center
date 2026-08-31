@@ -276,6 +276,28 @@ export const dungeonGraphicalStyles = css`
         writing-mode: horizontal-tb;
       }
 
+      /* ── WIDE SCREEN — the cockpit rule (README §4.9) ──────────────────
+         NOT the container rule. The dungeon HUD is a full-height playing
+         surface, so there is no centred measure and no max-width: the rails
+         stay fixed at the edges and the STAGE takes every additional pixel.
+         More world, not wider margins.
+
+         Capping this at --container-max the way a document view does would
+         park a 2560px cockpit in a 1600px box with roughly 480px of dead
+         margin on each side — a measurable bug, not a matter of taste. The
+         only thing that stays bounded is the prose inside the chamber panel,
+         which keeps its own reading measure (§4.5).
+
+         The rails grow once, and only a little: 320 -> 360 on the left, 340 ->
+         380 on the right. The map and the chronicle are the two panels that
+         genuinely read better with more room, and 40px is about one more word
+         per line in the chronicle. Everything beyond that goes to the stage. */
+      @media (min-width: 1920px) {
+        .dungeon-hud {
+          grid-template-columns: 360px 1fr 380px;
+        }
+      }
+
       @media (max-width: 1199px) {
         .dungeon-hud,
         .dungeon-hud--rail-collapsed {

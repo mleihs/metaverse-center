@@ -21,6 +21,7 @@ import type {
   TerminalLine,
   TerminalPersistedState,
 } from '../types/terminal.js';
+import type { DungeonNarrationLine, DungeonRoomStamp } from '../types/dungeon.js';
 import { captureError } from './SentryService.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ class TerminalStateManager {
    * `feed` lines are excluded – realtime heartbeat chatter belongs to the
    * terminal's world feed, not to the account of this descent.
    */
-  readonly dungeonNarration = signal<TerminalLine[]>([]);
+  readonly dungeonNarration = signal<DungeonNarrationLine[]>([]);
 
   /**
    * Armed while a descent is being recorded.
@@ -129,6 +130,16 @@ class TerminalStateManager {
    * bounded buffer and no confusion.
    */
   private _narrationArmed = false;
+
+  /** The room the party is standing in, as the dungeon last reported it.
+   *
+   *  Pushed IN by DungeonStateManager rather than read out of it: the
+   *  dependency runs dungeon -> terminal and must keep running that way, and a
+   *  terminal that reached back into the dungeon store would close the loop.
+   *  Null outside a run, and null for any line absorbed before the first room
+   *  is known — which the chronicle renders as an unlabelled group rather than
+   *  guessing. */
+  private _narrationRoom: DungeonRoomStamp | null = null;
 
   // --- Computed ---
   readonly isDungeonMode = computed(() => this.dungeonRunId.value !== null);
@@ -344,6 +355,7 @@ class TerminalStateManager {
   /** Exit dungeon mode. Called after completion, wipe, or retreat.
    *  Leaves the chronicle standing – see `_narrationArmed`. */
   clearDungeon(): void {
+    this._narrationRoom = null;
     this.dungeonRunId.value = null;
     this.dungeonLabel.value = null;
   }
@@ -362,7 +374,12 @@ class TerminalStateManager {
         : combined;
 
     if (this._narrationArmed) {
-      const narrated = lines.filter((line) => line.type !== 'feed');
+      // Stamp the room HERE, at the moment of absorption. Working it out at
+      // render time would be cheaper and wrong: the party moves on, and the
+      // whole history would relabel itself to wherever they stand now.
+      const narrated: DungeonNarrationLine[] = lines
+        .filter((line) => line.type !== 'feed')
+        .map((line) => ({ ...line, room: this._narrationRoom }));
       if (narrated.length > 0) {
         const merged = [...this.dungeonNarration.value, ...narrated];
         this.dungeonNarration.value =
@@ -376,6 +393,15 @@ class TerminalStateManager {
   /** Append a single line. Convenience wrapper. */
   appendLine(line: TerminalLine): void {
     this.appendOutput([line]);
+  }
+
+  /** Tell the chronicle which room the next lines belong to.
+   *
+   *  Called by DungeonStateManager whenever the party's room changes. Lines
+   *  already absorbed keep the stamp they were given — this only affects what
+   *  comes next, which is the whole point. */
+  setNarrationRoom(room: DungeonRoomStamp | null): void {
+    this._narrationRoom = room;
   }
 
   /** Clear the output buffer. */

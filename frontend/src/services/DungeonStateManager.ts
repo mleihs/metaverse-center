@@ -33,8 +33,7 @@ import {
   formatCombatResolution,
   formatDungeonComplete,
   formatLootDrop,
-  formatPartyWipe,
-} from '../utils/dungeon-formatters.js';
+  formatPartyWipe, getRoomTypeLabel } from '../utils/dungeon-formatters.js';
 import {
   describeRoom,
   mergeRoomDescription,
@@ -357,6 +356,16 @@ class DungeonStateManager {
     // _startTimer detects a fresh (non-expired) timer, preventing the
     // recursive auto-submit loop.
     this._persistRunId(String(state.run_id));
+
+    // Hand the chronicle the room it is about to write in. Before the lines of
+    // this update are absorbed, not after: appendOutput stamps from this value,
+    // so a stamp set afterwards would label the arrival text with the room the
+    // party just LEFT — off by exactly one room, and only ever visible as a
+    // divider in the wrong place.
+    const room = this.currentRoom.value;
+    terminalState.setNarrationRoom(
+      room ? { index: room.index, label: getRoomTypeLabel(room.room_type) } : null,
+    );
 
     // Reset combat selections when leaving planning phase
     if (state.phase !== 'combat_planning') {
