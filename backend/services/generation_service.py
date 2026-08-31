@@ -965,11 +965,25 @@ class GenerationService:
         content: str,
         model_id: str,
         pydantic_model: type | None = None,
+        budget: BudgetContext | None = None,
     ) -> dict | None:
         """Parse JSON from LLM response, with LLM repair as last resort.
 
         Tries _parse_json_content() first. If that fails and a pydantic_model
         is provided, asks the LLM to fix the malformed output.
+
+        ⚠ **This method has no caller** (measured 31.08.2026). All eleven JSON
+        parse sites in this service call ``_parse_json_content`` directly and
+        give up when it returns None. The repair path has therefore never run
+        in production — and until D10-7 it could not have, because the two
+        services that DID call ``repair_json_output`` passed one argument to a
+        four-argument coroutine and the resulting TypeError was swallowed.
+
+        Wiring the eleven sites is not a mechanical change: every repair is a
+        second paid model call on an answer that already failed, so whether it
+        should run at all is a cost decision. Left in place deliberately as the
+        one correct call site to copy from — deleting it would mean rebuilding
+        it before the decision could be acted on.
         """
         parsed = self._parse_json_content(content)
         if parsed is not None:
@@ -984,6 +998,7 @@ class GenerationService:
             model=model_id,
             malformed_output=content,
             pydantic_model=pydantic_model,
+            budget=budget,
         )
 
     @staticmethod

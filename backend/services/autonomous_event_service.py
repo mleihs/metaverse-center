@@ -33,6 +33,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.dependencies import get_admin_supabase
+from backend.models.generation import AutonomousEventNarrative
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
@@ -581,8 +582,24 @@ class AutonomousEventService:
                 max_tokens=512,
                 budget=budget,
             )
-            repaired = repair_json_output(content)
-            narrative = json.loads(repaired)
+            # `repair_json_output` takes four arguments and is a coroutine.
+            # This used to read `repair_json_output(content)` — one positional
+            # argument, no await. Python binds arguments at CALL time even for
+            # `async def`, so that raised TypeError immediately, and TypeError
+            # is in the except clause twelve lines below. Every LLM-narrated
+            # event therefore paid for a model call, threw the answer away and
+            # logged "LLM narrative failed, using template" — a message naming
+            # a cause that had not occurred.
+            narrative_model = await repair_json_output(
+                openrouter=openrouter,
+                model=resolved.model_id,
+                malformed_output=content,
+                pydantic_model=AutonomousEventNarrative,
+                budget=budget,
+            )
+            if narrative_model is None:
+                raise ValueError("Event narrative could not be parsed or repaired")
+            narrative = dict(narrative_model)
 
         except BudgetExceededError:
             # Budget block is a deliberate, audited admin action — fall

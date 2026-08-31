@@ -10,7 +10,6 @@ idle game offline progress summaries.
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -24,6 +23,7 @@ from backend.models.agent_autonomy import (
     MorningBriefingData,
     SimulationMoodSummary,
 )
+from backend.models.generation import MorningBriefingNarrative
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.external.output_repair import repair_json_output
 from backend.services.model_resolver import ModelResolver
@@ -373,9 +373,20 @@ class MorningBriefingService:
                 max_tokens=800,
                 budget=budget,
             )
-            repaired = repair_json_output(content)
-            data = json.loads(repaired)
-            return data.get("narrative_en"), data.get("narrative_de")
+            # Same defect as in autonomous_event_service: one positional
+            # argument to a four-argument coroutine, un-awaited. TypeError at
+            # call time, swallowed by the except clause below, and the caller
+            # got (None, None) after the model call had already been billed.
+            narrative = await repair_json_output(
+                openrouter=openrouter,
+                model=resolved.model_id,
+                malformed_output=content,
+                pydantic_model=MorningBriefingNarrative,
+                budget=budget,
+            )
+            if narrative is None:
+                raise ValueError("Briefing narrative could not be parsed or repaired")
+            return narrative.get("narrative_en"), narrative.get("narrative_de")
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.warning("Briefing narrative generation failed", exc_info=True)

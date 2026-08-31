@@ -15,6 +15,7 @@ from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
+from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
@@ -229,16 +230,7 @@ class ChatAIService:
             extra_context=extra_context,
         )
 
-        # Bureau Ops Deferral A.2 — attach simulation context to the budget
-        # pre-check. user_id is not threaded through _generate_single_response
-        # today; global + purpose + simulation budgets still apply. When the
-        # chat router passes user_id down in a future refactor, extend here.
-        admin_supabase = await get_admin_supabase()
-        budget = BudgetContext(
-            admin_supabase=admin_supabase,
-            purpose="chat",
-            simulation_id=self._simulation_id,
-        )
+        budget = await self._chat_budget()
 
         # Generate via OpenRouter
         t0 = time.monotonic()
@@ -259,6 +251,28 @@ class ChatAIService:
             generation_ms=generation_ms,
             locale=locale,
             extra_metadata=extra_metadata,
+        )
+
+    async def _chat_budget(self) -> BudgetContext:
+        """The budget context both chat paths must use.
+
+        Bureau Ops Deferral A.2 — attaches simulation context to the pre-check.
+        `user_id` is not threaded through the chat services today; the global,
+        per-purpose and per-simulation budgets still apply. When the chat router
+        passes `user_id` down in a future refactor, extend here — in ONE place,
+        which is why this is a method and no longer two inline constructions.
+
+        It became one place because the two were not equal: the non-streaming
+        path built a context and the STREAMING path passed none at all, and
+        `_pre_check_budget(None)` returns immediately. The interactive path —
+        the one a person actually uses, repeatedly — was the one spending
+        outside every budget.
+        """
+        admin_supabase = await get_admin_supabase()
+        return BudgetContext(
+            admin_supabase=admin_supabase,
+            purpose="chat",
+            simulation_id=self._simulation_id,
         )
 
     # ── Core streaming helper ──────────────────────────────
@@ -334,6 +348,17 @@ class ChatAIService:
             },
         )
 
+        # The same budget context the non-streaming path builds. Passing none
+        # made `_pre_check_budget` return immediately, so every streamed chat
+        # reply — the interactive path, the one used repeatedly — spent outside
+        # the global, per-purpose and per-simulation budgets.
+        #
+        # The pre-check runs on the first iteration of `stream_completion`, so a
+        # hard block surfaces there. It is caught below rather than left to the
+        # router's blanket `except Exception`, which would report a deliberate,
+        # audited admin decision as "An internal error occurred".
+        budget = await self._chat_budget()
+
         # Stream tokens from OpenRouter — retry up to MAX_STREAM_RETRIES times
         # on empty responses (CoT-only, sanitization-stripped, or zero tokens).
         max_retries = 3
@@ -345,32 +370,54 @@ class ChatAIService:
             full_text = ""
             stream_error = False
 
-            async for chunk in self._openrouter.stream_completion(
-                model=model.model_id,
-                messages=messages,
-                temperature=model.temperature,
-                max_tokens=model.max_tokens,
-            ):
-                if chunk.error:
-                    stream_error = True
-                    logger.warning(
-                        "Stream error on attempt %d/%d for %s: %s",
-                        attempt,
-                        max_retries,
-                        agent_name,
-                        chunk.error,
-                    )
-                    break
+            try:
+                async for chunk in self._openrouter.stream_completion(
+                    model=model.model_id,
+                    messages=messages,
+                    temperature=model.temperature,
+                    max_tokens=model.max_tokens,
+                    budget=budget,
+                ):
+                    if chunk.error:
+                        stream_error = True
+                        logger.warning(
+                            "Stream error on attempt %d/%d for %s: %s",
+                            attempt,
+                            max_retries,
+                            agent_name,
+                            chunk.error,
+                        )
+                        break
 
-                if chunk.content:
-                    full_text += chunk.content
-                    yield SSEEvent(
-                        event="token",
-                        data={
-                            "agent_id": agent_id,
-                            "content": chunk.content,
-                        },
-                    )
+                    if chunk.content:
+                        full_text += chunk.content
+                        yield SSEEvent(
+                            event="token",
+                            data={
+                                "agent_id": agent_id,
+                                "content": chunk.content,
+                            },
+                        )
+            except BudgetExceededError as exc:
+                # A deliberate, audited admin decision — not a failure to
+                # retry and not an internal error. Reported as its own
+                # error_type so the client can say so, and returned
+                # immediately: retrying would only re-run the same refusal.
+                logger.info(
+                    "Chat stream blocked by budget for %s in conversation %s: %s",
+                    agent_name,
+                    conversation_id,
+                    exc,
+                )
+                yield SSEEvent(
+                    event="error",
+                    data={
+                        "agent_id": agent_id,
+                        "error": f"{agent_name} stays silent — the AI budget for this world is exhausted.",
+                        "error_type": "budget_exceeded",
+                    },
+                )
+                return
 
             generation_ms = int((time.monotonic() - t0) * 1000)
 
