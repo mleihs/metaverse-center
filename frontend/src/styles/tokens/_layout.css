@@ -21,7 +21,51 @@
      lg: 1024px
      xl: 1280px
      2xl: 1536px
+     Breitbild: 1920px    (--stage-gutter waechst)
+     4K:        2560px    (--stage-type-scale waechst)
   */
+
+  /* === DIE BUEHNE — Breitbild und 4K ==================================
+     Die zwei ganzseitigen Flaechen des Werks (Frontseite und Dashboard)
+     teilen sich EIN Mass. Vorher hatte jede ihr eigenes; das waeren zwei
+     Rasterlogiken fuer dasselbe Produkt gewesen, und die zweite haette
+     spaetestens beim dritten Bildschirm von der ersten abgewichen.
+
+     `--container-max` (1600) bleibt unberuehrt: daran haengen die
+     ARBEITSFLAECHEN (SimulationShell, EpochOpsBoard, EpochCommandCenter,
+     EpochResultsView), und dort ist 1600 px eine Absicht. Eine Buehne zeigt
+     Bilder, ein Werkzeug zeigt Daten — sie duerfen verschieden breit sein.
+
+     `--stage-gutter` liegt INNERHALB von `--stage-measure`, nicht daneben.
+     Bei 2560 px ergibt das (2560 - 1920) / 2 + 64 = 384 px sichtbaren Rand.
+     Wer das nachbaut, braucht `box-sizing: border-box` — im Schatten-DOM
+     gilt `content-box`, und dann misst `max-width` nur den Inhalt. Genau
+     dafuer gibt es `stage-styles.ts`; von Hand nachbauen muss das niemand.
+
+     `--stage-type-scale` gilt fuer ABSCHNITTSUEBERSCHRIFTEN und Fliesstext.
+     Titel, die staerker wachsen (Frontseiten-H1 158 -> 212), tragen ihre
+     eigene `clamp()`-Spanne: ein Faktor kann nur eine Steigung.
+     Wer damit eine Schrift skaliert, skaliert die zugehoerige Maximalbreite
+     mit — sonst wird die Zeile bei 4K laenger statt gleich lang.
+
+     Eine Flaeche DARF `--stage-gutter` auf ihrem eigenen `:host`
+     ueberschreiben, muss dann aber die 1920er Abfrage mitnehmen. Ohne sie
+     bliebe ihr Rand bei jeder Breite gleich, waehrend das Mass waechst. */
+  --stage-measure: 1920px;
+  --stage-gutter: var(--space-12); /* 48px */
+  --stage-type-scale: 1;
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --stage-gutter: var(--space-16); /* 64px */
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --stage-type-scale: 1.15;
+  }
 }
 
 /* === Mobile Layout Overrides === */

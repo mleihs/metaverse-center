@@ -25,6 +25,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { navigate } from '../../utils/navigation.js';
+import { stageStyles } from '../shared/stage-styles.js';
 
 /** Ein Zeichen je Schritt. Der Entwurf nennt 34 ms. */
 const TICK_MS = 34;
@@ -36,7 +37,9 @@ const DELETE_CHARS = 5;
 @localized()
 @customElement('velg-landing-forge')
 export class VelgLandingForge extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     :host {
       --_rule: var(--color-border-light);
       display: block;
@@ -49,14 +52,11 @@ export class VelgLandingForge extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: var(--space-16);
-      padding: var(--space-24) var(--landing-gutter, var(--space-12)) var(--space-20);
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
+      padding-block: var(--space-24) var(--space-20);
     }
 
     .kicker {
@@ -72,7 +72,7 @@ export class VelgLandingForge extends LitElement {
     .title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(var(--text-3xl), 7vw, 96px);
+      font-size: var(--text-display-md);
       line-height: 0.96;
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
@@ -236,10 +236,6 @@ export class VelgLandingForge extends LitElement {
        Drittel, nicht um ein Siebtel. Der Eingabekasten geht 720 → 860 px mit,
        sonst stuende ein schmaler Kasten neben einer sehr grossen Zeile. */
     @media (min-width: 1920px) {
-      .title {
-        font-size: clamp(96px, 5vw, 128px);
-      }
-
       .right {
         max-width: 860px;
       }
@@ -266,7 +262,8 @@ export class VelgLandingForge extends LitElement {
         transition: none;
       }
     }
-  `;
+  `,
+  ];
 
   @state() private _typed = '';
   @state() private _anchor = 0;
@@ -403,7 +400,7 @@ export class VelgLandingForge extends LitElement {
     const anchors = this._anchors();
 
     return html`
-      <div class="layout">
+      <div class="layout stage-container">
         <div>
           <p class="kicker">${msg('Transmission open')}</p>
           <h2 class="title">${msg('Forge')}<br />${msg('yours')}<em>.</em></h2>

@@ -30,11 +30,14 @@ import { captureError } from '../../services/SentryService.js';
 import type { LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
+import { stageStyles } from '../shared/stage-styles.js';
 
 @localized()
 @customElement('velg-landing-seo-footer')
 export class VelgLandingSeoFooter extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     :host {
       --_rule: var(--color-border-light);
       display: block;
@@ -46,14 +49,11 @@ export class VelgLandingSeoFooter extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
       border-top: var(--border-width-thin) solid var(--_rule);
-      padding: var(--space-16) var(--landing-gutter, var(--space-12)) var(--space-14);
+      padding-block: var(--space-16) var(--space-14);
       display: grid;
       grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr;
       gap: var(--space-12);
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
     }
 
     .brand__mark {
@@ -155,13 +155,6 @@ export class VelgLandingSeoFooter extends LitElement {
          Sichtbereich, der Inhalt steht buendig unter den Spalten darueber.
          In der 2560er Referenz traegt auch diese Zeile die 384 px. */
       padding-block: var(--space-4);
-      padding-inline: max(
-        var(--landing-gutter, var(--space-12)),
-        calc(
-          (100% - var(--landing-measure, var(--container-max))) / 2 +
-            var(--landing-gutter, var(--space-12))
-        )
-      );
       border-top: var(--border-width-thin) solid var(--color-border-light);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
@@ -205,7 +198,15 @@ export class VelgLandingSeoFooter extends LitElement {
        Der Schriftzug ist die einzige randlose Ebene der Fussleiste und wird
        bei 4K zum Bild: 225 → 400 px. Er haengt an der Huelle, nicht an den
        Spalten — deshalb spannt er ueber den ganzen Sichtbereich, wie der
-       Hintergrund. */
+       Hintergrund.
+
+       ⚠ WARUM DAS HIER STEHT UND NICHT ALS --text-display-*: der Schriftzug
+       ist kein Lesetext, sondern ein angeschnittenes Zierelement. Er kommt
+       genau einmal im Werk vor, seine Groesse haengt an der Hoehe seines
+       Ausschnitts, und niemand sonst wuerde die Stufe je benutzen. Eine
+       Merkmalsstufe fuer einen einzigen Verwender waere eine Zahl mit einem
+       Namen davor, kein System. Die drei echten Buehnenstufen stehen in
+       styles/tokens/_typography.css. */
     @media (min-width: 1920px) {
       .ghost span {
         font-size: clamp(225px, 15.6vw, 400px);
@@ -229,7 +230,8 @@ export class VelgLandingSeoFooter extends LitElement {
         padding: var(--space-4) var(--space-5);
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Array, attribute: false }) worlds: LandingWorld[] = [];
 
@@ -256,7 +258,7 @@ export class VelgLandingSeoFooter extends LitElement {
 
     return html`
       <footer role="contentinfo">
-        <div class="columns">
+        <div class="columns stage-container">
           <div>
             <div class="brand__mark">Metaverse<em>.Center</em></div>
             <p class="brand__blurb">
@@ -327,7 +329,7 @@ export class VelgLandingSeoFooter extends LitElement {
           </nav>
         </div>
 
-        <div class="legal">
+        <div class="legal stage-bleed-row">
           <span>&copy; ${new Date().getFullYear()} metaverse.center</span>
           <span>${msg('Bureau of Multiverse Observation')}</span>
           <span>${msg('Signal status:')} <b>${msg('transmitting')}</b></span>

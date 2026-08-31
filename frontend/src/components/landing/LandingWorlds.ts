@@ -23,11 +23,14 @@ import { customElement, property } from 'lit/decorators.js';
 import type { LandingCounts, LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
+import { stageStyles } from '../shared/stage-styles.js';
 
 @localized()
 @customElement('velg-landing-worlds')
 export class VelgLandingWorlds extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     /* Ein Abschnitt ohne Inhalt darf keinen Platz nehmen: mit den beiden
        --space-24 stand hier sonst ein 192 Pixel hohes Nichts. */
     :host([hidden]) {
@@ -50,10 +53,6 @@ export class VelgLandingWorlds extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
-      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .head {
@@ -68,7 +67,7 @@ export class VelgLandingWorlds extends LitElement {
     .head__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: calc(clamp(var(--text-2xl), 4vw, 44px) * var(--landing-type-scale, 1));
+      font-size: calc(clamp(var(--text-2xl), 4vw, 44px) * var(--stage-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       color: var(--color-text-primary);
@@ -265,7 +264,8 @@ export class VelgLandingWorlds extends LitElement {
         transform: none;
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Array, attribute: false }) worlds: LandingWorld[] = [];
   @property({ type: Object, attribute: false }) counts: LandingCounts | null = null;
@@ -279,7 +279,7 @@ export class VelgLandingWorlds extends LitElement {
     const total = this.counts?.worlds_live ?? this.worlds.length;
 
     return html`
-      <div class="inner">
+      <div class="inner stage-container">
         <div class="head">
           <h2 class="head__title">${msg('Already running')}<em>.</em></h2>
           <button class="head__all" @click=${() => navigate('/worlds')}>

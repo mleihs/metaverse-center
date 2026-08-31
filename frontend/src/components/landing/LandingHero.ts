@@ -28,6 +28,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { LandingCounts, LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
+import { stageStyles } from '../shared/stage-styles.js';
 import {
   LANDING_HERO_STEM,
   LANDING_IMAGE_SIZES,
@@ -38,7 +39,9 @@ import {
 @localized()
 @customElement('velg-landing-hero')
 export class VelgLandingHero extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     :host {
       /* Tier 3 - die drei Grautoene des Entwurfs abgeleitet, nicht erfunden. */
       --_ground: var(--color-surface);
@@ -70,13 +73,6 @@ export class VelgLandingHero extends LitElement {
       align-items: center;
       gap: var(--space-6);
       padding-block: var(--space-4);
-      padding-inline: max(
-        var(--landing-gutter, var(--space-12)),
-        calc(
-          (100% - var(--landing-measure, var(--container-max))) / 2 +
-            var(--landing-gutter, var(--space-12))
-        )
-      );
       border-bottom: var(--border-width-thin) solid var(--_rule);
     }
 
@@ -239,12 +235,8 @@ export class VelgLandingHero extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
       position: relative;
-      padding: clamp(var(--space-16), 12vw, 130px) var(--landing-gutter, var(--space-12))
-        var(--space-20);
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
+      padding-block: clamp(var(--space-16), 12vw, 130px) var(--space-20);
     }
 
     .kicker {
@@ -300,7 +292,7 @@ export class VelgLandingHero extends LitElement {
     .headline {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(3rem, 11vw, 158px);
+      font-size: var(--text-display-lg);
       line-height: 0.94;
       letter-spacing: var(--tracking-wide);
       text-transform: uppercase;
@@ -340,13 +332,13 @@ export class VelgLandingHero extends LitElement {
       font-family: var(--font-prose);
       font-style: italic;
       font-weight: var(--font-medium);
-      font-size: calc(clamp(var(--text-base), 2vw, 27px) * var(--landing-type-scale, 1));
+      font-size: calc(clamp(var(--text-base), 2vw, 27px) * var(--stage-type-scale, 1));
       line-height: var(--leading-normal);
       color: var(--color-text-secondary);
       margin: 0;
       /* Die Breite waechst mit der Schrift, sonst wuerde die Zeile bei 2560 px
          laenger statt gleich lang. Gemessen bleibt sie so bei rund 60 Zeichen. */
-      max-width: calc(600px * var(--landing-type-scale, 1));
+      max-width: calc(600px * var(--stage-type-scale, 1));
       text-wrap: pretty;
     }
 
@@ -438,12 +430,6 @@ export class VelgLandingHero extends LitElement {
        Schreibtischfassung, keine Obergrenze. Bild, Laufband und die beiden
        Schleier bleiben randlos — sie haengen an ":host" und wurden nie
        eingefasst, hier ist also nichts zu tun. */
-    @media (min-width: 1920px) {
-      .headline {
-        font-size: clamp(158px, 8.3vw, 212px);
-      }
-    }
-
     @media (max-width: 900px) {
       .nav {
         padding: var(--space-3) var(--space-5);
@@ -502,7 +488,8 @@ export class VelgLandingHero extends LitElement {
         overflow-x: auto;
       }
     }
-  `;
+  `,
+  ];
 
   /**
    * Oeffnet die Anmeldung.
@@ -564,7 +551,7 @@ export class VelgLandingHero extends LitElement {
     const online = this.counts?.worlds_transmitting ?? 0;
 
     return html`
-      <div class="nav">
+      <div class="nav stage-bleed-row">
         <button class="wordmark" @click=${() => navigate('/')}>
           Metaverse<span>.Center</span>
         </button>
@@ -611,7 +598,7 @@ export class VelgLandingHero extends LitElement {
         <div class="hero__veil-v"></div>
         <div class="hero__scan"></div>
 
-        <div class="hero__body">
+        <div class="hero__body stage-container">
           <p class="kicker">
             <span class="kicker__dot" aria-hidden="true"></span>
             ${

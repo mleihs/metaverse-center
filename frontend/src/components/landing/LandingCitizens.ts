@@ -29,6 +29,7 @@ import type { LandingCitizen } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import '../shared/VelgGameCard.js';
+import { stageStyles } from '../shared/stage-styles.js';
 
 /** Die Faecherung des Entwurfs: drei Karten, leicht ueberlappend. */
 const FAN_ANGLES = [-7, 0, 7];
@@ -36,7 +37,9 @@ const FAN_ANGLES = [-7, 0, 7];
 @localized()
 @customElement('velg-landing-citizens')
 export class VelgLandingCitizens extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     /* Ein Abschnitt ohne Inhalt darf keinen Platz nehmen: mit den beiden
        --space-24 stand hier sonst ein 192 Pixel hohes Nichts. Lokal gibt es
        keine Agenten mit Portraet, und genau dort ist es aufgefallen. */
@@ -57,14 +60,10 @@ export class VelgLandingCitizens extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: var(--space-16);
       align-items: center;
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
-      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .kicker {
@@ -90,7 +89,7 @@ export class VelgLandingCitizens extends LitElement {
     .title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: calc(clamp(var(--text-xl), 3.4vw, 40px) * var(--landing-type-scale, 1));
+      font-size: calc(clamp(var(--text-xl), 3.4vw, 40px) * var(--stage-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       line-height: var(--leading-tight);
@@ -192,7 +191,8 @@ export class VelgLandingCitizens extends LitElement {
         transition: none;
       }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Array, attribute: false }) citizens: LandingCitizen[] = [];
 
@@ -204,7 +204,7 @@ export class VelgLandingCitizens extends LitElement {
     if (!this.citizens.length) return null;
 
     return html`
-      <div class="layout">
+      <div class="layout stage-container">
         <div>
           <div class="kicker">${msg('The citizens')}</div>
           <h2 class="title">${msg('They remember')}<em>.</em></h2>

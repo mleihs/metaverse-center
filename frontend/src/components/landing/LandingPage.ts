@@ -49,51 +49,15 @@ import './LandingWorlds.js';
 @customElement('velg-landing-page')
 export class VelgLandingPage extends LitElement {
   static styles = css`
-    /* ── DAS MASS DER SEITE ────────────────────────────────────────────
-       Drei Groessen, hier einmal gesetzt und von allen sechs Abschnitten
-       gelesen. Eigene Merkmale kommen durch die Schattengrenze hindurch,
-       also braucht keiner der Abschnitte die Zahl noch einmal zu kennen.
-
-       WARUM NICHT "--container-max": das ist 1600 px und gilt global. Ausser
-       den sechs Frontseiten-Dateien haengen "SimulationShell", "EpochOpsBoard",
-       "EpochCommandCenter" und "EpochResultsView" daran — Arbeitsflaechen, fuer
-       die 1600 px eine Absicht sind und keine Beschraenkung. Die Frontseite
-       darf breiter werden, weil sie etwas anderes tut: sie zeigt Bilder. Ein
-       gemeinsames Merkmal auf 1920 zu heben haette fuenf Ansichten
-       stillschweigend mitverbreitert.
-
-       "--landing-gutter" liegt INNERHALB von "--landing-measure", nicht
-       daneben. Bei 2560 px ergibt das (2560 − 1920) / 2 + 64 = 384 px
-       sichtbaren Rand — genau die Zahl, die in der 2560er Referenz an jeder
-       Inhaltsreihe steht, von der Navigation bis zur Rechtszeile.
-
-       "--landing-type-scale" ist 1 und wird erst ab 2560 px zu 1,15. Er gilt
-       fuer Abschnittsueberschriften und Serifentext, NICHT fuer H1, die grosse
-       Handlungsaufforderung und den Geisterschriftzug: die drei haben eigene
-       Spannen, weil sie staerker wachsen (158 → 212, 96 → 128, 225 → 400).
-       Wo er eine Schriftgroesse skaliert, skaliert er auch die zugehoerige
-       Maximalbreite mit — sonst waechst die Zeilenlaenge ueber die rund
-       75 Zeichen hinaus, ab denen niemand mehr gern liest. */
+    /* Die Buehnenmasse ("--stage-measure", "--stage-gutter",
+       "--stage-type-scale") stehen in "styles/tokens/_layout.css" und gelten
+       fuer Frontseite UND Dashboard. Die Bauformen dazu liegen in
+       "components/shared/stage-styles.ts". Hier steht nichts davon: die
+       Frontseite ist ein Verwender des Rasters, nicht sein Besitzer. */
     :host {
-      --landing-measure: 1920px;
-      --landing-gutter: var(--space-12);
-      --landing-type-scale: 1;
-
       display: block;
       background: var(--color-surface);
       color: var(--color-text-primary);
-    }
-
-    @media (min-width: 1920px) {
-      :host {
-        --landing-gutter: var(--space-16);
-      }
-    }
-
-    @media (min-width: 2560px) {
-      :host {
-        --landing-type-scale: 1.15;
-      }
     }
   `;
 

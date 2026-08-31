@@ -345,6 +345,91 @@ is touched.
 
 ---
 
+## Die Bühne: Frontseite und Dashboard
+
+Zwei Ansichten des Werks gehen über die volle Breite und sollen bei 4K
+weiterwachsen: die **Frontseite** (`components/landing/**`) und das
+**Dashboard** (`components/platform/SimulationsDashboard.ts`). Alle anderen
+sind Arbeitsflächen und hängen weiter an `--container-max` (1600 px) — dort ist
+das eine Absicht, keine Beschränkung. Eine Bühne zeigt Bilder, ein Werkzeug
+zeigt Daten; sie dürfen verschieden breit sein.
+
+### Die drei Maße (`tokens/_layout.css`)
+
+| Token | Wert | ab 1920 | ab 2560 |
+|---|---|---|---|
+| `--stage-measure` | `1920px` | — | — |
+| `--stage-gutter` | `var(--space-12)` (48px) | `var(--space-16)` (64px) | — |
+| `--stage-type-scale` | `1` | — | `1.15` |
+
+`--stage-gutter` liegt **innerhalb** von `--stage-measure`, nicht daneben. Bei
+2560 px ergibt das `(2560 − 1920) / 2 + 64 = 384px` sichtbaren Rand — die Zahl,
+die im Entwurf an jeder Inhaltsreihe steht.
+
+`--stage-type-scale` gilt für **Abschnittsüberschriften und Fließtext**. Wer
+damit eine Schrift skaliert, skaliert die zugehörige Maximalbreite mit
+(`max-width: calc(600px * var(--stage-type-scale))`) — sonst wird die Zeile bei
+4K länger statt gleich lang.
+
+### Die drei Bühnen-Schriftstufen (`tokens/_typography.css`)
+
+Die Arbeitsskala endet bei `--text-4xl` (48,8 px). Darüber gibt es drei Stufen,
+und anders als die Arbeitsskala sind es **Spannen**, keine festen Werte:
+
+| Token | bis 1919 | ab 1920 | Verwendung |
+|---|---|---|---|
+| `--text-display-sm` | `clamp(2.25rem, 4.2vw, 60px)` | `clamp(60px, 2.7vw, 69px)` | Countdown |
+| `--text-display-md` | `clamp(--text-3xl, 7vw, 96px)` | `clamp(96px, 5vw, 128px)` | Abschnitts-Aufforderung |
+| `--text-display-lg` | `clamp(3rem, 11vw, 158px)` | `clamp(158px, 8.3vw, 212px)` | Seitentitel |
+
+Die Breitbild-Fassung steht **einmal** am Ende von `_typography.css`. Vorher lag
+sie dreimal in drei Komponenten-Medienabfragen; drei Orte für eine Regel heißen,
+dass der nächste Bildschirm an zweien nachgezogen wird.
+
+Titel, die stärker wachsen als ein Faktor es kann, gehören hierher und nicht an
+`--stage-type-scale`: eine einzelne `clamp()` hat genau eine Steigung, der
+Frontseiten-H1 hat drei Abschnitte (11vw bis 1436 px, flach, dann 8,3vw).
+
+### Die zwei Bauformen (`shared/stage-styles.ts`)
+
+```ts
+static styles = [stageStyles, css`…`];
+```
+
+| Klasse | wofür |
+|---|---|
+| `.stage-container` | normale Inhaltsreihe — zentriert im Maß, Polsterung innen |
+| `.stage-bleed-row` | Reihe, deren Linie/Hintergrund randlos läuft, deren Inhalt aber bündig steht (Kopfnavigation, Rechtszeile, Befehlsleiste) |
+
+`.stage-bleed-row` bekommt **keine** Maximalbreite — die würde die Trennlinie
+mit abschneiden — und rechnet den Behälter stattdessen nach:
+`padding-inline: max(gutter, calc((100% - measure) / 2 + gutter))`. `100%` und
+nicht `100vw`: `100vw` schließt die Rollbalkenbreite ein.
+
+> ⚠ **`box-sizing: border-box` ist der Kern, nicht Beiwerk.** Im Schatten-DOM
+> gilt `content-box`; ohne die Zeile misst `max-width: 1920px` nur den Inhalt,
+> der Kasten wird 1920 + 2 × Polsterung breit, und der sichtbare Rand ist bei
+> 2560 px um 64 px je Seite falsch. Weder `tsc` noch eines der 23 Lint-Tore
+> sieht das — am 31.08.2026 genau so passiert und erst beim Messen im Browser
+> aufgefallen. Wer `stage-styles.ts` benutzt, kann den Fehler nicht machen.
+
+### Ausnahme mit Begründung
+
+`LandingSeoFooter.ts` setzt den angeschnittenen Geisterschriftzug
+(`clamp(80px, 15vw, 225px)` → `clamp(225px, 15.6vw, 400px)`) als Tier 3. Er ist
+kein Lesetext, sondern ein Zierelement, kommt genau einmal im Werk vor, und
+seine Größe hängt an der Höhe seines Ausschnitts. Eine Merkmalsstufe für einen
+einzigen Verwender wäre eine Zahl mit einem Namen davor, kein System.
+
+### Offener Punkt
+
+Gemessen am 31.08.2026: **986 feste `font-size`-Angaben in Pixeln** stehen in
+Komponenten, und `lint-color-tokens.sh` prüft nur Farben — für Größen gibt es
+kein Tor. Die Bühnenstufen nehmen den Bühnen-Anteil heraus; der Rest ist offen
+und hier als offen notiert, nicht als erledigt.
+
+---
+
 ## Adding a New Semantic Token
 
 1. Add the `:root` default in `_colors.css`

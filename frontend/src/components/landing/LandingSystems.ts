@@ -30,6 +30,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { LandingCounts } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
+import { stageStyles } from '../shared/stage-styles.js';
 import {
   LANDING_IMAGE_SIZES,
   LANDING_SYSTEM_STEMS,
@@ -182,7 +183,9 @@ const SYSTEMS: readonly SystemEntry[] = [
 @localized()
 @customElement('velg-landing-systems')
 export class VelgLandingSystems extends LitElement {
-  static styles = css`
+  static styles = [
+    stageStyles,
+    css`
     :host {
       /* Tier 3 - alles abgeleitet, kein eigener Farbwert. */
       --_rule: var(--color-border-light);
@@ -203,14 +206,10 @@ export class VelgLandingSystems extends LitElement {
          "max-width" nur den Inhalt, der Kasten waere 1920 + 2 x 64 = 2048 px
          breit und der sichtbare Rand bei 2560 px 320 statt 384. Gemessen im
          Browser, nicht geschlossen — tsc und alle 23 Tore waren gruen. */
-      box-sizing: border-box;
       display: grid;
       grid-template-columns: 1fr 640px;
       gap: var(--space-14);
       align-items: stretch;
-      max-width: var(--landing-measure, var(--container-max));
-      margin: 0 auto;
-      padding-inline: var(--landing-gutter, var(--space-12));
     }
 
     .kicker {
@@ -282,7 +281,7 @@ export class VelgLandingSystems extends LitElement {
       gap: var(--space-3);
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: calc(clamp(var(--text-lg), 2.4vw, var(--text-2xl)) * var(--landing-type-scale, 1));
+      font-size: calc(clamp(var(--text-lg), 2.4vw, var(--text-2xl)) * var(--stage-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
       text-transform: uppercase;
       color: var(--color-text-primary);
@@ -605,7 +604,8 @@ export class VelgLandingSystems extends LitElement {
         transition: none;
       }
     }
-  `;
+  `,
+  ];
 
   /** Die Zahlen aus dem Schnappschuss - sie entscheiden ueber die Marken. */
   @property({ type: Object, attribute: false }) counts: LandingCounts | null = null;
@@ -716,7 +716,7 @@ export class VelgLandingSystems extends LitElement {
   protected render() {
     const entry = SYSTEMS[this._active];
     return html`
-      <div class="layout">
+      <div class="layout stage-container">
         <div class="index">
           <div class="kicker">${msg('The six systems')}</div>
           <div role="tablist" aria-label=${msg('The six systems')} @keydown=${this._onKey}>
