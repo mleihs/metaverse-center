@@ -837,13 +837,55 @@ export interface ActiveEpochParticipation {
   simulation_name: string;
   rank: number;
   participant_count: number;
+  /** Ende des laufenden Zyklus. `null` heisst nicht „kein Zyklus", sondern
+   *  „fuer diese Epoche laeuft keine Uhr" — auf Prod bei allen sieben der
+   *  Fall. Die Oberflaeche muss den leeren Countdown ehrlich zeigen. */
+  cycle_deadline_at: string | null;
+  /** Was von „Orders placed 1/3" messbar ist: ein Ja/Nein, kein Zaehler. */
+  has_acted_this_cycle: boolean;
+}
+
+/** Eine Welt des Spielenden, so wie das Dashboard sie zeigt.
+ *
+ *  Spiegelt `backend/models/user.py::DashboardWorld`. Getrennt von
+ *  `MembershipInfo`, weil die auch `GET /users/me` bedient und dort nur id,
+ *  Name, Slug und Rolle braucht — zwei Fragen, zwei Typen.
+ *
+ *  Alles hier ist auf Prod gemessen vorhanden (31.08.2026): `banner_url` bei
+ *  16 von 16 Vorlagen, Lore und Sinnspruch aus `simulation_lore` (109 Zeilen
+ *  über alle 16 Welten), die beiden Zählungen aus der Sicht
+ *  `simulation_dashboard`. Der Entwurf trug sie als Platzhalter.
+ *
+ *  Zweisprachig: über `t(entity, feld)` aus `utils/locale-fields.ts` wählen,
+ *  nicht selbst verzweigen. */
+export interface DashboardWorld {
+  simulation_id: UUID;
+  name: string;
+  name_de: string | null;
+  slug: string;
+  member_role: string;
+  theme: string | null;
+  banner_url: string | null;
+  agent_count: number;
+  building_count: number;
+  lore_body: string | null;
+  lore_body_de: string | null;
+  lore_epigraph: string | null;
+  lore_epigraph_de: string | null;
 }
 
 export interface DashboardData {
-  memberships: MembershipInfo[];
+  /** Ersetzt das frühere `memberships` — zwei Darstellungen derselben Welten
+   *  im selben DTO wären eine Doppelung gewesen. */
+  worlds: DashboardWorld[];
   active_epoch_participations: ActiveEpochParticipation[];
   academy_epochs_played: number;
+  /** Wie viele Beben im Spiel sind, einschliesslich der abklingenden. */
   active_resonance_count: number;
+  /** Ob das Substrat GERADE gestört wird (`detected`/`impacting`). Bewusst
+   *  nicht dasselbe wie `active_resonance_count`: ein abklingendes Beben zählt
+   *  im Bestand mit, macht das Substrat aber nicht anomal. */
+  substrate_status: 'anomalous' | 'stable';
 }
 
 // --- Agent Relationships ---

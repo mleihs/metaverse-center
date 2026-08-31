@@ -12,7 +12,7 @@ import type {
   ActiveEpochParticipation,
   Agent,
   DashboardData,
-  MembershipInfo,
+  DashboardWorld,
   Resonance,
   Simulation,
 } from '../../types/index.js';
@@ -1598,7 +1598,7 @@ export class VelgSimulationsDashboard extends LitElement {
   private _getUserState(): DashboardState {
     if (!appState.isAuthenticated.value) return 'guest';
     const dd = this._dashboardData;
-    if (dd && !dd.memberships.length && !dd.active_epoch_participations.length) return 'new_member';
+    if (dd && !dd.worlds.length && !dd.active_epoch_participations.length) return 'new_member';
     if (appState.isPlatformAdmin.value || appState.canForge.value) return 'power_user';
     return 'active_player';
   }
@@ -1941,7 +1941,7 @@ export class VelgSimulationsDashboard extends LitElement {
   }
 
   private _renderMyWorlds() {
-    const memberships = this._dashboardData?.memberships ?? [];
+    const memberships = this._dashboardData?.worlds ?? [];
     if (!memberships.length) return nothing;
 
     return html`
@@ -1955,17 +1955,17 @@ export class VelgSimulationsDashboard extends LitElement {
     `;
   }
 
-  private _renderMyWorldItem(m: MembershipInfo) {
+  private _renderMyWorldItem(m: DashboardWorld) {
     return html`
-      <div class="my-world-item" role="button" tabindex="0" @click=${() => navigate(`/simulations/${m.simulation_slug}/lore`)} @keydown=${(
+      <div class="my-world-item" role="button" tabindex="0" @click=${() => navigate(`/simulations/${m.slug}/lore`)} @keydown=${(
         e: KeyboardEvent,
       ) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          navigate(`/simulations/${m.simulation_slug}/lore`);
+          navigate(`/simulations/${m.slug}/lore`);
         }
       }}>
-        <span class="my-world-item__name">${m.simulation_name}</span>
+        <span class="my-world-item__name">${t(m, 'name')}</span>
         <span class="my-world-item__role">${humanizeEnum(m.member_role)}</span>
       </div>
     `;
