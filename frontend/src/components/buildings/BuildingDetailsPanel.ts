@@ -14,6 +14,7 @@ import { icons } from '../../utils/icons.js';
 import { getFullResUrl } from '../../utils/image.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
+import { taxonomyLabel } from '../../utils/taxonomy-label.js';
 import { buildingAltText, humanizeEnum } from '../../utils/text.js';
 import '../shared/Lightbox.js';
 import { panelButtonStyles } from '../shared/panel-button-styles.js';
@@ -719,7 +720,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
           <div class="panel__section">
             <velg-section-header>${msg('Identity')}</velg-section-header>
             <div class="panel__badges">
-              ${b.building_type ? html`<velg-badge>${t(b, 'building_type')}</velg-badge>` : nothing}
+              ${b.building_type ? html`<velg-badge>${taxonomyLabel('building_type', b.building_type)}</velg-badge>` : nothing}
               ${
                 b.building_condition
                   ? html`<velg-badge variant=${this._getConditionVariant(b.building_condition)}>

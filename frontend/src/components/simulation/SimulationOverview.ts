@@ -16,6 +16,7 @@ import {
   OPERATIVE_TYPES,
   operativeName,
 } from '../../utils/operative-constants.js';
+import { taxonomyLabel } from '../../utils/taxonomy-label.js';
 import { pluralCount } from '../../utils/text.js';
 import {
   extractThreatLevel,
@@ -490,17 +491,31 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-size: var(--text-sm);
     }
 
+    /*
+     * Ein STREIFEN, kein Raster.
+     *
+     * Hier stand repeat(auto-fill, minmax(148px, 1fr)) bzw. minmax(260px).
+     * Die Zahlen 148 und 260 stehen fuer nichts: <velg-game-card> hat eine
+     * feste Groessenleiter (xs 80 · sm 120 · md 200 · lg 280), und die Karten
+     * in diesen Streifen sind xs und sm. Auf 1900 px legte auto-fill also
+     * zwoelf Spuren an, sechs Karten besetzten die ersten sechs, jede Spur
+     * wurde auf 1fr gedehnt — und die Karte blieb linksbuendig bei ihren 80 px
+     * stehen. Gemessen: Karte 80 px in einer Zelle von 207 px, Karte 120 px in
+     * einer Zelle von 372 px.
+     *
+     * Eine Karte mit fester Groesse gehoert nicht in eine Spur, die sich
+     * dehnt. Der Prototyp macht es richtig und tut genau das hier:
+     * display:flex mit gap:8px — eine Reihe von Karten, die ihre Groesse
+     * behalten und umbrechen, wenn der Platz endet.
+     *
+     * align-items: flex-start, damit eine Karte mit laengerem Namen die
+     * anderen nicht in die Hoehe zieht.
+     */
     .strip__grid {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
       gap: var(--space-3-5);
-    }
-
-    .strip__grid--roster {
-      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-    }
-
-    .strip__grid--footprint {
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     }
 
     /*
@@ -902,13 +917,28 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
             ${msg('Open agents')} <span class="link__arrow" aria-hidden="true">→</span>
           </button>
         </div>
-        <div class="strip__grid strip__grid--roster">
+        <div class="strip__grid">
           ${shown.map(
             (entry, i) => html`
+              <!--
+                size="sm" und nicht "xs".
+
+                Bei xs blendet <velg-game-card> SELBST aus: .card__subtitle,
+                .card__pips, .card__badges und .card__capacity stehen dort auf
+                display:none, und .card__name auf 7px. Diesem Streifen wurden
+                also ein Beruf und zwei Werte uebergeben, von denen die Karte
+                drei wegwirft — Angaben, die kein Leser je sieht und die der
+                naechste Entwickler fuer wirksam haelt.
+
+                Dazu die Frage des Nutzers, warum Agenten anders aussehen als
+                Gebaeude: weil ICH zwei Groessen fuer zwei Streifen derselben
+                Ansicht gewaehlt hatte. Der Spec verlangt „Mini-TCG-Karten" —
+                120px ist mini, und dort erscheint, was uebergeben wird.
+              -->
               <velg-game-card
                 style="--i: ${i}"
                 type="agent"
-                size="xs"
+                size="sm"
                 rarity=${entry.legendary ? 'legendary' : entry.best.value >= 7 ? 'rare' : 'common'}
                 .name=${entry.agent.name}
                 .imageUrl=${entry.agent.portrait_image_url ?? ''}
@@ -941,7 +971,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
             ${msg('Open buildings')} <span class="link__arrow" aria-hidden="true">→</span>
           </button>
         </div>
-        <div class="strip__grid strip__grid--footprint">
+        <div class="strip__grid">
           ${shown.map((building, i) => {
             /*
              * CONDITION, not occupancy — and that is a measurement, not a
@@ -977,7 +1007,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
                 size="sm"
                 .name=${building.name}
                 .imageUrl=${building.image_url ?? ''}
-                .subtitle=${t(building, 'building_type')}
+                .subtitle=${taxonomyLabel('building_type', building.building_type)}
                 .badges=${condition ? [{ label: t(building, 'building_condition'), variant }] : []}
                 @click=${() => this._go('buildings')}
               ></velg-game-card>

@@ -13,6 +13,7 @@ import type { ApiResponse, Building, SimulationTaxonomy } from '../../types/inde
 import { OCCUPANCY_LEGEND, type OccupancyLevel } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { updateUrl } from '../../utils/navigation.js';
+import { taxonomyLabel } from '../../utils/taxonomy-label.js';
 import { gridLayoutStyles } from '../shared/grid-layout-styles.js';
 import { PaginatedLoaderMixin } from '../shared/PaginatedLoaderMixin.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
@@ -233,9 +234,13 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
     const buildingTypes = appState
       .getTaxonomiesByType('building_type')
       .filter((t) => t.is_active)
+      // Ueber den gemeinsamen Helfer, nicht mit einer eigenen Abbildung: hier
+      // stand die dritte Fassung derselben Frage, und sie war die einzige, die
+      // ueberhaupt ein Label suchte — die beiden Anzeigestellen zeigten den
+      // Rohwert. Die Sprache ist jetzt die des LESERS statt die der Welt.
       .map((t) => ({
         value: t.value,
-        label: t.label[appState.currentSimulation.value?.content_locale ?? 'en'] ?? t.value,
+        label: taxonomyLabel('building_type', t.value),
       }));
 
     return [
