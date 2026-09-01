@@ -52,8 +52,30 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
      * own widths. A measure belongs to the thing being read, not to the box it
      * happens to sit in — the same correction the shell needed one level up.
      */
+    /*
+     * EINMAL zentrieren, nicht dreimal.
+     *
+     * Auf Produktion gemessen (2560 px): die Buehne war 1872 px breit, die
+     * Ueberschrift begann bei 337 (linke Buehnenkante), der Dossier-Block bei
+     * 720 (er zentriert sich selbst) -- 383 px Versatz, und der
+     * Bearbeiten-Knopf stand ganz rechts bei 2079, noch einmal 383 px vom
+     * Dossier entfernt. Drei Elemente derselben Seite, drei Ausrichtungen.
+     *
+     * Die Ursache war nicht das Dossier: dessen Selbstzentrierung ist begruendet
+     * (siehe den Kommentar bei .dossier in LoreDossier -- ein frueherer Versuch
+     * liess den RAHMEN in voller Breite stehen und verschob die tote Flaeche nur).
+     * Die Ursache war, dass die HUELLE die volle Buehne nahm und ihre Kinder
+     * dann jedes fuer sich entscheiden liess.
+     *
+     * Also nimmt die Huelle die Breite ihres breitesten Kindes -- das ist das
+     * Dossier -- und zentriert sich als Ganzes. Damit teilen Werkzeugleiste,
+     * Ueberschrift und Dossier eine Kante, und das Mass steht weiterhin an
+     * genau EINER Stelle (den Tier-3-Tokens in LoreDossier), statt hier als
+     * abgeschriebene Zahl.
+     */
     .lore-view {
-      max-width: var(--stage-measure, 1920px);
+      width: fit-content;
+      max-width: min(100%, var(--stage-measure, 1920px));
       margin: 0 auto;
     }
 

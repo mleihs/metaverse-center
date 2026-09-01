@@ -551,6 +551,76 @@ export class VelgGameCard extends LitElement {
       overflow: visible;
     }
 
+    /*
+     * full-description ist die BREITE Fassung der Karte, nicht nur eine
+     * längere Bildunterschrift.
+     *
+     * Ohne diesen Block gab die Regel darüber den Text frei und liess die BOX
+     * bei ihren festen 200 × 320 px stehen. Auf Produktion gemessen
+     * (2560 px, Gebäude-Reiter): die Rasterzelle war 611 px breit, die Karte
+     * 200 — **411 px jeder Zelle blieben leer**, und die entfesselte Prosa
+     * quetschte sich in ein Fünftel der Breite. Der Nutzer las das als
+     * „warum all der Abstand zwischen den Gebäuden".
+     *
+     * Der Entwurf verlangt für diesen Reiter „Bild-Karten 3× mit vollem
+     * Beschreibungstext" — also eine Karte, die ihre Spalte ausfüllt. Die
+     * Grössenleiter xs/sm/md/lg endet bei 280 px; für 611 gibt es dort keine
+     * Sprosse, und es soll auch keine geben: die Breite gehört hier dem
+     * Raster, nicht der Karte.
+     *
+     * Drei Kopplungen mussten dafür gelöst werden, und die zweite ist die,
+     * die man übersieht:
+     *   1. --card-w/--card-h — Breite an die Zelle, Höhe an den Inhalt.
+     *   2. .card__art steht auf flex: 0 0 60% — ein Prozentsatz der
+     *      KARTENHÖHE. Sobald die Höhe auto ist, hat er keinen Bezug mehr
+     *      und fällt auf null. Deshalb hier eine feste Bildhöhe.
+     *   3. .card__body hat overflow: hidden, was den freigegebenen Text
+     *      wieder abgeschnitten hätte.
+     */
+    :host([full-description]) {
+      --card-w: 100%;
+      --card-h: auto;
+    }
+
+    :host([full-description]) .card-perspective,
+    :host([full-description]) .card {
+      height: auto;
+    }
+
+    :host([full-description]) .card__art {
+      flex: 0 0 auto;
+      height: clamp(160px, 14vw, 220px);
+    }
+
+    :host([full-description]) .card__body {
+      overflow: visible;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-4) var(--space-4-5, var(--space-4));
+    }
+
+    /*
+     * Der Satz muss mitwachsen, sonst ist die breite Karte nur ein breiter
+     * Fehler. Gemessen bei 2560 px, nachdem die Box ihre Zelle ausfuellte:
+     * Name 12 px, Beschreibung 8 px -- auf einer Zeile von 591 px. Das sind
+     * die Groessen einer 200-px-Sammelkarte, und auf einer Zeile dieser Laenge
+     * ist 8 px kein kleiner Text, sondern keiner.
+     *
+     * Die Zeilenlaenge ist der Grund, nicht der Geschmack: eine Beschreibung
+     * ueber 591 px braucht ein Lesemass, sonst wandert das Auge beim
+     * Zeilenwechsel ins Leere. Deshalb zusaetzlich max-width auf dem Absatz --
+     * die KARTE fuellt die Spalte, der SATZ nicht.
+     */
+    :host([full-description]) .card__name {
+      font-size: var(--text-md);
+      line-height: var(--leading-snug);
+    }
+
+    :host([full-description]) .card__description {
+      font-size: var(--text-sm);
+      line-height: var(--leading-relaxed);
+      max-width: 62ch;
+    }
+
     .card__badges {
       display: flex;
       flex-wrap: wrap;
