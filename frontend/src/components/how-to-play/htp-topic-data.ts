@@ -1117,7 +1117,7 @@ export const TOPICS: TopicDefinition[] = [
       {
         kind: 'text',
         content: msg(
-          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. Loot includes aptitude boosts (capped at +2 per agent to prevent runaway power), memories that shape agent personality, moodlets that affect behavior, and event modifiers that influence future resonances.',
+          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair \u2013 the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is at /how-to-play/loot.',
         ),
       },
       {

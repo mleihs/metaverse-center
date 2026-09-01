@@ -55,7 +55,13 @@ from backend.models.lore import LoreSectionResponse
 from backend.models.memory import MemoryResponse
 from backend.models.relationship import RelationshipResponse
 from backend.models.resonance import ResonanceImpactResponse, ResonanceResponse
-from backend.models.resonance_dungeon import DungeonRunResponse, PublicDungeonRunSummary
+from backend.models.resonance_dungeon import (
+    DungeonRunResponse,
+    LootCatalogue,
+    LootCatalogueEntry,
+    LootEffectMeaning,
+    PublicDungeonRunSummary,
+)
 from backend.models.settings import SettingResponse
 from backend.models.simulation import SimulationResponse
 from backend.models.social import SocialMediaPostResponse, SocialTrendResponse
@@ -83,6 +89,8 @@ from backend.services.constants import (
     OPERATIVE_TYPE_COLORS,
 )
 from backend.services.drift_service import DriftService
+from backend.services.dungeon_content_service import get_loot_registry
+from backend.services.dungeon_loot_contracts import LOOT_EFFECT_CONTRACTS
 from backend.services.dungeon_query_service import DungeonQueryService
 from backend.services.echo_service import EchoService
 from backend.services.embassy_service import EmbassyService
@@ -1153,6 +1161,74 @@ async def public_dungeon_run(
     """Public: get a completed dungeon run detail."""
     data = await DungeonQueryService.get_run_public(supabase, run_id)
     return SuccessResponse(data=data)
+
+
+@router.get("/dungeons/loot")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def public_dungeon_loot(request: Request) -> SuccessResponse[LootCatalogue]:
+    """Public: der vollständige Beutekatalog, nach Archetyp gruppiert.
+
+    WARUM ES DIESEN ENDPUNKT GIBT
+      Auf Prod liegen 105 Beutestücke in 8 Archetypen mit 12 Wirkungsarten,
+      alle zweisprachig beschrieben. Das Hilfesystem nannte die KATEGORIEN
+      („aptitude boosts, memories, moodlets") und kein einziges Stück; unter
+      ``/docs`` stand nichts. Wer wissen wollte, wo das Restaurierungsfragment
+      fällt — das eine von zwei Stücken, die einen verfallenen Bau je wieder
+      heben —, fand es nirgends ausser im Code.
+
+    WARUM AUS DER REGISTRIERUNG UND NICHT ABGESCHRIEBEN
+      Der Katalog liest denselben Bestand, den der Lauf benutzt
+      (``get_loot_registry()``, aus ``dungeon_loot_items`` geladen). Ein
+      abgeschriebener Katalog wäre am Tag der nächsten Inhaltsmigration falsch,
+      und niemand würde es merken — genau das ist der Hilfe mit der
+      Zustandsleiter passiert.
+
+      Kein DB-Zugriff: der Bestand liegt seit ``load_all_content()`` im
+      Speicher.
+
+    ÖFFENTLICH, WEIL
+      Die Frage „was bekomme ich in welchem Dungeon" wird VOR dem Lauf
+      gestellt. Verraten wird nichts, was ein Spieler nicht ohnehin erfährt;
+      Fallgewichte und Wirkungsparameter stehen bereits in jeder Beuteanzeige
+      des Debriefings.
+    """
+    registry = get_loot_registry()
+    eintraege: list[LootCatalogueEntry] = []
+    for archetype, nach_stufe in registry.items():
+        for tier, stuecke in nach_stufe.items():
+            for stueck in stuecke:
+                eintraege.append(
+                    LootCatalogueEntry(
+                        id=stueck.id,
+                        archetype=archetype,
+                        tier=tier,
+                        name_en=stueck.name_en,
+                        name_de=stueck.name_de,
+                        description_en=stueck.description_en,
+                        description_de=stueck.description_de,
+                        effect_type=stueck.effect_type,
+                        effect_params=stueck.effect_params,
+                        drop_weight=stueck.drop_weight,
+                    ),
+                )
+    eintraege.sort(key=lambda e: (e.archetype, e.tier, e.name_en))
+
+    bedeutungen = [
+        LootEffectMeaning(
+            effect_type=name,
+            summary_en=vertrag.summary_en,
+            summary_de=vertrag.summary_de,
+        )
+        for name, vertrag in sorted(LOOT_EFFECT_CONTRACTS.items())
+    ]
+
+    return SuccessResponse(
+        data=LootCatalogue(
+            items=eintraege,
+            meanings=bedeutungen,
+            archetypes=sorted(registry.keys()),
+        ),
+    )
 
 
 @router.get("/dungeons/clearance-config")

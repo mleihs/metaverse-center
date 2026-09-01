@@ -118,8 +118,14 @@ export function getOperativeCards(): OperativeCard[] {
       deployCycles: 1,
       missionCycles: 1,
       scoreValue: 5,
+      // Die Leiter steht NICHT hier. Sie ist pro Welt verschieden — auf Prod
+      // gemessen: 26 Welten beginnen bei „excellent", 5 bei „pristine", und
+      // eine Welt kennt nur „fair → poor → ruined". Die Kette
+      // „good → moderate → poor → ruined", die hier stand, war die des Codes
+      // VOR Migration 303; sie wurde dort entfernt und blieb in der Hilfe
+      // stehen. „moderate" ist auf keiner Leiter eine Sprosse.
       description: msg(
-        "Degrades a target building's condition by one level (good \u2192 moderate \u2192 poor \u2192 ruined).",
+        'Degrades a target building by one rung on its own world\u2019s condition ladder \u2013 each world names its own rungs, and the lowest is always a ruin.',
       ),
       effect: msg(
         'Downgrades a random zone\u2019s security level by one tier. Damages infrastructure and stability.',

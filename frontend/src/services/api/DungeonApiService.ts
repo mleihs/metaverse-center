@@ -187,6 +187,45 @@ export class DungeonApiService extends BaseApiService {
   getClearanceConfig(): Promise<ApiResponse<DungeonClearanceConfig>> {
     return this.getPublic('/dungeons/clearance-config');
   }
+
+  /**
+   * Public: der vollstaendige Beutekatalog, nach Archetyp gruppiert.
+   *
+   * Kommt aus derselben Registrierung, die der Lauf benutzt — nicht aus einer
+   * Abschrift. Ein abgeschriebener Katalog waere am Tag der naechsten
+   * Inhaltsmigration falsch, und niemand wuerde es merken; genau das ist dem
+   * Hilfesystem mit der Zustandsleiter passiert.
+   */
+  getLootCatalogue(): Promise<ApiResponse<LootCatalogue>> {
+    return this.getPublic('/dungeons/loot');
+  }
+}
+
+/** Ein Beutestueck, wie der Katalog es zeigt. */
+export interface LootCatalogueEntry {
+  id: string;
+  archetype: string;
+  tier: number;
+  name_en: string;
+  name_de: string;
+  description_en: string;
+  description_de: string;
+  effect_type: string;
+  effect_params: Record<string, unknown>;
+  drop_weight: number;
+}
+
+/** Was eine Wirkungsart bewirkt — aus dem Vertrag im Backend, nicht von hier. */
+export interface LootEffectMeaning {
+  effect_type: string;
+  summary_en: string;
+  summary_de: string;
+}
+
+export interface LootCatalogue {
+  items: LootCatalogueEntry[];
+  meanings: LootEffectMeaning[];
+  archetypes: string[];
 }
 
 export interface DungeonClearanceConfig {
