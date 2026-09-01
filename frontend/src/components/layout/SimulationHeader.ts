@@ -136,7 +136,20 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
 
     .masthead__body {
       position: relative;
-      padding: var(--space-14) var(--_gutter) var(--space-12);
+      /*
+       * Der Abstand haengt an der FENSTERHOEHE, nicht an einer festen Zahl.
+       *
+       * Gemessen: von 320 px Masthead waren 179 px Inhalt (Chips 20, Name 71,
+       * Fuss 88) und 104 px Innenabstand — 44 % der Hoehe trugen nichts. Auf
+       * einem hohen Schirm darf ein Banner grosszuegig sein, auf einem 927 px
+       * hohen ist dasselbe Mass ein Drittel des Sichtbaren.
+       *
+       * clamp gegen vh statt fester --space-Stufen: die Skala beschreibt
+       * Abstaende zwischen Dingen, nicht den Anteil eines Banners am Schirm.
+       * Die Enden sind trotzdem Skalenwerte, damit es nicht beliebig wird.
+       */
+      padding: clamp(var(--space-6), 4.5vh, var(--space-14)) var(--_gutter)
+        clamp(var(--space-5), 3.8vh, var(--space-12));
     }
 
     .rise {
@@ -212,7 +225,15 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     .masthead__name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      font-size: clamp(2.25rem, 5.2vw, 4.625rem);
+      /*
+       * 20 % kleiner als der Entwurf, auf Ansage des Nutzers.
+       *
+       * Der Handoff nennt (Wortlaut nicht wiedergegeben); das war clamp(2.25rem, 5.2vw,
+       * 4.625rem). Alle drei Werte mal 0,8. Gemessen war der Masthead 320 px
+       * hoch bei 927 px Fensterhoehe — ein Drittel des Schirms fuer einen
+       * Namen und eine Zeile.
+       */
+      font-size: clamp(1.8rem, 4.16vw, 3.7rem);
       line-height: 0.96;
       letter-spacing: 0.01em;
       text-transform: uppercase;
