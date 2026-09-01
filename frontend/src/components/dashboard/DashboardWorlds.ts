@@ -232,9 +232,34 @@ export class VelgDashboardWorlds extends LitElement {
       }
 
       /* ── Die Vorschau ───────────────────────────────────────────────── */
+      /*
+       * Die Vorschau steht OBEN und wird nicht auf die Liste gedehnt.
+       *
+       * .layout ist ein Raster mit der Vorgabe align-items: stretch. Die
+       * linke Spalte traegt 15 Welten und ist damit 2 467 px hoch; die rechte
+       * wurde auf dieselbe Hoehe gezogen, und die Dossiertafel darin fuellte
+       * den Rest. Auf Prod gemessen:
+       *
+       *     .dossier         2 049 px hoch
+       *     Inhalt darin       329 px  (Lore 205 + Zitat 124)
+       *
+       * Also 1 720 px umrandeter Leerraum, und der Knopf „Welt betreten" ganz
+       * unten daran. Ich hatte zuerst die Lore geklemmt (793 → 205 px) und
+       * haette das fast als Reparatur gemeldet — die Tafel blieb 2 049 px hoch,
+       * weil ihre Hoehe nie vom Inhalt kam. Die Klemmung bleibt trotzdem
+       * richtig: 2 780 Zeichen sind in einer Vorschau auch dann zu viel, wenn
+       * Platz da waere.
+       *
+       * align-self: start loest die Dehnung an der Stelle, an der sie
+       * entsteht. Eine position: sticky waere hier naheliegend — die Vorschau
+       * bliebe beim Blaettern durch das Register stehen — aber das ist eine
+       * Verhaltensaenderung und keine Reparatur; sie gehoert entschieden und
+       * nicht nebenbei mitgenommen.
+       */
       .preview {
         display: flex;
         flex-direction: column;
+        align-self: start;
         min-width: 0;
         padding-top: var(--space-12);
       }
