@@ -7,6 +7,7 @@ import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
+import { navigate } from '../../utils/navigation.js';
 import type { ThreatLevel } from '../lore/lore-content.js';
 import {
   extractThreatLevel,
@@ -492,13 +493,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
   }
 
   private _handleThreatClick(): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate-to-tab', {
-        bubbles: true,
-        composed: true,
-        detail: { tab: 'lore' },
-      }),
-    );
+    this._goTab('lore');
   }
 
   private _getStatusLabel(status: string): string {
@@ -545,14 +540,29 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     return msg('Critical');
   }
 
+  /**
+   * Ein Ereignis ohne Zuhoerer ist kein Weg.
+   *
+   * Beide Knoepfe dieses Bauteils — „Bureau Terminal" und die Bedrohungsmarke
+   * — schickten ein `navigate-to-tab` los. Gesucht: **null** Zuhoerer im
+   * ganzen Werk. Der Nutzer hat es auf Prod bemerkt („beim Klick tut sich
+   * nichts"), und er hatte recht: geklickt wurde, gefeuert wurde, gehoert hat
+   * es niemand.
+   *
+   * Dieselbe Form wie ein POST ohne Aufrufer: es gibt eine Oberflaeche, und
+   * der Zustand, den sie verspricht, kann nicht eintreten. Ein Ereignis, das
+   * eine Absicht nur ANMELDET, braucht eine Gegenstelle; die Reiterleiste
+   * einen Ordner weiter navigiert direkt, und das ist hier der richtige Weg —
+   * eine Kopfzeile weiss, in welcher Welt sie steht.
+   */
+  private _goTab(tab: string): void {
+    const slug = appState.currentSimulation.value?.slug;
+    if (!slug) return;
+    navigate(`/simulations/${slug}/${tab}`);
+  }
+
   private _goTerminal(): void {
-    this.dispatchEvent(
-      new CustomEvent('navigate-to-tab', {
-        bubbles: true,
-        composed: true,
-        detail: { tab: 'terminal' },
-      }),
-    );
+    this._goTab('terminal');
   }
 
   protected render() {
