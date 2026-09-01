@@ -176,3 +176,78 @@ Drei Wege, alle inhaltlich:
 
 ⚠ **Kein Weg darf automatisiert werden.** Ein Modell, das entscheidet, welche
 Zitate echt sind, ist genau das Werkzeug, das den Fehler erzeugt hat.
+
+---
+
+## 9 · Maschinelle Prüfung gegen Volltexte (`scripts/verify_public_domain_quotes.py`)
+
+Auf Wunsch gebaut, nachdem die Frage aufkam, ob ein billigeres Modell das
+Faktenprüfen übernehmen kann. **Kann es nicht** — die Begründung steht im
+Kopf des Skripts: ein Sprachmodell kann ein Zitat nicht prüfen, nur plausiblen
+Text darüber erzeugen, und ein falsches „geprüft ✓" ist schlimmer als gar keine
+Prüfung.
+
+Was stattdessen geht: den **Volltext des angeblichen Werks laden und die
+Zeichenkette suchen**. Das Ergebnis ist eine Fundstelle oder ihr belegtes
+Fehlen — beides nachschlagbar. 🔑 **Belege, keine Verdikte.**
+
+    GEFUNDEN                2      wortgleich im Volltext, mit Fundstelle
+    NICHT GEFUNDEN          3
+    SPRACHE                 2      Zitat englisch, Quelle im Original
+    QUELLE PASST NICHT      1      Zuschreibung nennt kein Werk
+    QUELLE NICHT ERREICHBAR 1
+    KEINE QUELLE            9
+    NICHT PRUEFBAR         36      nicht gemeinfrei — KEIN Urteil
+    KEINE ZUSCHREIBUNG     45
+
+### Belegt echt (Fundstelle im Volltext)
+
+* „I am large, I contain multitudes." — Whitman, *Leaves of Grass*
+  (Gutenberg 1322): *…very well then i contradict myself i am large i contain
+  multitudes…*
+* „The truth is rarely pure and never simple." — Wilde, *The Importance of Being
+  Earnest* (Gutenberg 844): *…algernon the truth is rarely pure and never
+  simple…*
+
+### VIERTER FEHLER — vom Werkzeug gefunden, nicht von Hand
+
+„In the beginning was the Word … He was in the beginning with God."
+— *Gospel of John 1:1-2 (King James Version)*
+
+Die King-James-Fassung lautet an dieser Stelle:
+
+    1:1 In the beginning was the Word, and the Word was with God, and the Word was God.
+    1:2 The same was in the beginning with God.
+
+„**He** was in the beginning with God" ist NKJV/ESV, nicht KJV. Das Epigraph
+nennt die Ausgabe ausdrücklich und zitiert eine andere. Dieselbe Klasse wie das
+Wittgenstein-§19: eine präzise Angabe, die nicht stimmt.
+
+### Unentschieden, und das ist die richtige Antwort
+
+* **Blake** („The tree which moves some to tears of joy…") — alle Ankerwörter
+  stehen im Gutenberg-Band, der Satz nicht wortgleich. Der Band enthält die
+  **Briefe nicht**; das Zitat stammt aus einem Brief an Trusler. Nicht
+  entscheidbar aus dieser Quelle.
+* **Lao Tzu** — alle Ankerwörter da, nicht wortgleich: andere Übersetzung
+  (Legge). Tao Te King 81 sagt sinngemäß dasselbe.
+* **Kafka, Jarry** — Zitat englisch, Quelle deutsch bzw. französisch. Eine
+  Zeichenkettensuche kann das nicht entscheiden; das Urteil bleibt beim
+  Menschen. (Für Kafka steht es in Abschnitt 2 unabhängig fest.)
+* **Wilde/Bürokratie** — die Zuschreibung nennt kein Werk, geprüft wurde
+  *Earnest*. Ein Fehlen beweist dort nichts; der Beleg steht in Abschnitt 2.
+
+### Drei Schwächen, die das Werkzeug an sich selbst offenlegte
+
+Der erste Lauf meldete Zahlen, die drei Fehler enthielten — alle drei von der
+Familie, die dieses Projekt den ganzen Tag verfolgt hat:
+
+1. **Verszahlen.** „1:1 In the beginning…" liess den exakten Vergleich
+   scheitern, obwohl der Satz dasteht. Ein Messgerät, das an der Zählung des
+   Setzers scheitert, misst den Setzer.
+2. **Ankerwörter über Sprachgrenzen.** Es suchte die englischen Wörter
+   „skeleton" und „cupboard" im französischen *Ubu Roi* und meldete „nein". Das
+   sah nach einem Befund aus und war eine Tautologie.
+3. **Falsches Werk als Beleg.** Bei „Oscar Wilde" ohne Werksangabe fiel es auf
+   *Earnest* zurück und meldete „nicht gefunden" — das beantwortet eine andere
+   Frage als die gestellte. Jetzt heisst dieser Fall QUELLE PASST NICHT.
