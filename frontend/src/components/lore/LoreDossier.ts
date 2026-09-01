@@ -1,4 +1,4 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { pluralCount } from '../../utils/text.js';
@@ -25,6 +25,26 @@ import '../shared/Lightbox.js';
  * something is being kept from them — a chapter silently absent from the list
  * would hide the withholding as well as the text.
  */
+/**
+ * Der Titel eines Abschnitts — oder ein ehrlicher Ersatz.
+ *
+ * Auf Prod hat GENAU EINE von 109 Lore-Zeilen keinen Titel in beiden Sprachen
+ * (Der Gaslicht-Sund, slug `entity`, Rang 3). Sie hat einen vollstaendigen
+ * Text; nur die Ueberschrift fehlt. Das Register machte daraus eine Zeile mit
+ * 0 Zeichen und 0 px Hoehe: unsichtbar, aber anklickbar, und der Leser sieht
+ * eine Luecke zwischen 03 und 05, in die er hineinklicken kann, ohne zu wissen,
+ * dass da etwas ist.
+ *
+ * Eine fehlende Ueberschrift ist ein Datenfehler und wird auch als solcher
+ * angezeigt — nicht als Nichts. Die Nummer steht ohnehin daneben, also nennt
+ * der Ersatz sie noch einmal: „Abschnitt 4" ist waehr, kurz und klickbar.
+ */
+function sectionTitle(title: string | null | undefined, position: number): string {
+  const t = title?.trim();
+  if (t) return t;
+  return msg(str`Section ${position}`);
+}
+
 @localized()
 @customElement('velg-lore-dossier')
 export class VelgLoreDossier extends LitElement {
@@ -630,7 +650,7 @@ export class VelgLoreDossier extends LitElement {
               >
                 <span class="toc__index">${String(i + 1).padStart(2, '0')}</span>
                 <span style="min-width: 0">
-                  <span class="toc__title">${s.title}</span>
+                  <span class="toc__title">${sectionTitle(s.title, i + 1)}</span>
                   ${
                     this.classifiedSectionIds.has(s.id)
                       ? html`<span class="toc__tag">${msg('Classified')}</span>`
@@ -649,7 +669,7 @@ export class VelgLoreDossier extends LitElement {
 
         <article class="panel">
           <div class="panel__inner" .key=${section.id}>
-            <h3 class="panel__title">${section.title}</h3>
+            <h3 class="panel__title">${sectionTitle(section.title, this._index + 1)}</h3>
             ${
               /*
                * No added quotation marks. The stored epigraph already carries

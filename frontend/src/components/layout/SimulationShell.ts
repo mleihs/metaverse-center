@@ -1094,7 +1094,35 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       <velg-svg-filters></velg-svg-filters>
       <div class="shell">
         ${this._bleedStatus?.fracture_warning ? this._renderFractureBanner() : nothing}
-        <velg-simulation-header .simulationId=${this.simulationId} ?introHexagon=${this._bureauNoticeVisible}></velg-simulation-header>
+        ${
+          /*
+           * Der Masthead haelt sich aus den Cockpit-Ansichten heraus.
+           *
+           * Gemessen auf Prod (Der Gaslicht-Sund, /dungeon, Fenster 927 px):
+           *
+           *     Masthead      320 px
+           *     Navigation     40 px
+           *     Brotkrume      36 px
+           *                  ──────
+           *     vor dem Cockpit 396 px  =  43 % der Bildschirmhoehe
+           *
+           * Das Cockpit begann bei 456 px und hatte von seinen 819 px noch 471
+           * sichtbar. Karte, Buehne und Chronik teilen sich also weniger als
+           * die Haelfte des Schirms, waehrend darueber der Weltname in 74 px
+           * steht — den die Plattformleiste ganz oben ohnehin schon nennt.
+           *
+           * FULL_HEIGHT_VIEWS gab es hier laengst: die Fusszeile und der
+           * Container richten sich danach, nur der Masthead nicht. Derselbe
+           * halb uebernommene Satz, den der Kommentar weiter unten schon
+           * einmal beschreibt — diesmal an seinem groessten Posten.
+           */
+          FULL_HEIGHT_VIEWS.has(this.view)
+            ? nothing
+            : html`<velg-simulation-header
+                .simulationId=${this.simulationId}
+                ?introHexagon=${this._bureauNoticeVisible}
+              ></velg-simulation-header>`
+        }
         ${
           this._bureauNoticeVisible
             ? html`

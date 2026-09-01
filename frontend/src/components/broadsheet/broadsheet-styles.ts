@@ -18,7 +18,30 @@ export const broadsheetStyles = css`
        280px rail; the handoff runs both across the full measure, in the
        reading order of a paper: columns, then the state of the colony, then
        the fold, then the wire. A newspaper has no sidebar. */
-    grid-template-columns: 1fr;
+    /*
+     * minmax(0, 1fr) und nicht 1fr.
+     *
+     * 1fr heisst ausgeschrieben minmax(auto, 1fr) — das MINDESTMASS ist
+     * der Mindestinhalt der Spur, und das ueberstimmt jedes max-width darunter.
+     * Der Laufband-Ticker traegt seine Meldungen doppelt (damit die Schleife
+     * nahtlos ist) und ist damit breiter als die Seite; gemessen auf Prod, Der
+     * Gaslicht-Sund, Fenster 1600:
+     *
+     *     .broadsheet         Kasten 1 268 px, aber grid-template-columns
+     *                         aufgeloest zu 3 087,61px — EINE Spur
+     *     jedes Kind          3 088 px breit, min-width: auto
+     *     Dokument            scrollWidth 3 270 statt 1 600
+     *
+     * Die ganze Seite lief waagrecht ueber, und die Ueberschriften standen
+     * abgeschnitten am rechten Rand. Nicht der Ticker war schuld — er darf
+     * breit sein — sondern die Spur, die sich von ihm aufziehen liess. Mit
+     * minmax(0, …) darf die Spur schmaler werden als ihr Inhalt, und der
+     * Ueberlauf bleibt dort, wo er hingehoert: im Laufband.
+     *
+     * Dieselbe Falle wie min-height: auto bei Flex-Kindern, die in CLAUDE.md
+     * fuer MapLibre notiert ist — hier in ihrer Raster-Form.
+     */
+    grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: auto;
     gap: var(--space-6);
     /* The PAPER rule, not the container ladder. --container-xl is a token for
@@ -44,6 +67,10 @@ export const broadsheetStyles = css`
 
   .broadsheet__ticker {
     grid-column: 1 / -1;
+    /* Der Ueberlauf gehoert ins Laufband, nicht auf die Seite. Ohne das haelt
+       zwar die Spur, aber der doppelte Meldungssatz ragte weiter hinaus. */
+    min-width: 0;
+    overflow: hidden;
   }
 
   /* ── Hero Section (full-width) ───────────────────── */
