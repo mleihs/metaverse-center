@@ -239,3 +239,44 @@ class TestApplyRunBuff:
         inst = _instance()
         assert apply_run_buff(inst, {"aptitude": "spy", "bonus_pct": 5}) == []
         assert inst.archetype_state == {}
+
+
+# ── Jede Wirkungsart erklärt sich ───────────────────────────────────────────
+
+
+def test_every_contract_says_what_it_does_in_both_languages() -> None:
+    """Ein Vertrag ohne Erklärung ist ein Katalogeintrag ohne Bedeutung.
+
+    Der Beutekatalog der Hilfe liest ``summary_en``/``summary_de`` aus DIESER
+    Datei — nicht aus einer eigenen Tabelle im Frontend. Der Grund ist derselbe,
+    aus dem das Modul überhaupt existiert: eine zweite Wahrheit über dieselbe
+    Mechanik driftet, und zwar unsichtbar. Am 01.09.2026 stand im Hilfesystem
+    die Zustandsleiter ``good → moderate → poor → ruined``, die der Code seit
+    Migration 303 nicht mehr kennt; ``moderate`` ist auf keiner Leiter eine
+    Sprosse.
+
+    Ohne diesen Test wäre eine neue Wirkungsart einfach ohne Satz im Katalog
+    gelandet — sichtbar als leere Stelle, aber ohne dass irgendetwas rot wird.
+    """
+    ohne = [
+        name
+        for name, vertrag in LOOT_EFFECT_CONTRACTS.items()
+        if not vertrag.summary_en.strip() or not vertrag.summary_de.strip()
+    ]
+    assert not ohne, f"Wirkungsarten ohne Erklärung: {', '.join(sorted(ohne))}"
+
+
+def test_summaries_are_sentences_not_labels() -> None:
+    """Eine Erklärung, die kürzer ist als ihr eigener Schlüssel, erklärt nichts.
+
+    Die Untergrenze ist absichtlich niedrig (40 Zeichen) und trotzdem eine
+    Grenze: sie fängt den Fall ab, in dem jemand ``summary_de="Stressheilung"``
+    schreibt, um den Test darüber grün zu bekommen. Das wäre der Schlüssel noch
+    einmal, nicht seine Bedeutung.
+    """
+    zu_kurz = {
+        name: min(len(v.summary_en), len(v.summary_de))
+        for name, v in LOOT_EFFECT_CONTRACTS.items()
+        if min(len(v.summary_en), len(v.summary_de)) < 40
+    }
+    assert not zu_kurz, f"Erklärungen zu kurz, um eine zu sein: {zu_kurz}"

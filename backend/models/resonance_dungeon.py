@@ -914,6 +914,49 @@ class LootItem(BaseModel):
     drop_weight: int = 10
 
 
+class LootEffectMeaning(BaseModel):
+    """Was eine Wirkungsart bewirkt — in Worten des Spielers.
+
+    Kommt aus ``dungeon_loot_contracts.LOOT_EFFECT_CONTRACTS``, nicht aus einer
+    eigenen Tabelle: der Vertrag sagt, WO eine Wirkung greift, und der Satz
+    daneben, WAS sie bewirkt. Zwei Wahrheiten über dieselbe Mechanik driften,
+    und zwar unsichtbar — am 01.09.2026 stand im Hilfesystem eine
+    Zustandsleiter, die der Code seit Migration 303 nicht mehr kennt.
+    """
+
+    effect_type: str
+    summary_en: str
+    summary_de: str
+
+
+class LootCatalogueEntry(BaseModel):
+    """Ein Beutestück, wie der Katalog es zeigt."""
+
+    id: str
+    archetype: str
+    tier: int
+    name_en: str
+    name_de: str
+    description_en: str = ""
+    description_de: str = ""
+    effect_type: str
+    effect_params: dict = Field(default_factory=dict)
+    drop_weight: int = 10
+
+
+class LootCatalogue(BaseModel):
+    """Der vollständige Bestand, gruppiert nach Archetyp.
+
+    Öffentlich, weil er nichts verrät, was ein Spieler nicht ohnehin im Lauf
+    erfährt — und weil die Frage „was bekomme ich in welchem Dungeon" vor dem
+    Lauf gestellt wird, nicht danach.
+    """
+
+    items: list[LootCatalogueEntry]
+    meanings: list[LootEffectMeaning]
+    archetypes: list[str]
+
+
 class PublicDungeonRunSummary(BaseModel):
     """Public run-history projection (``_PUBLIC_RUN_FIELDS`` in
     DungeonQueryService.list_history_public) — narrower than

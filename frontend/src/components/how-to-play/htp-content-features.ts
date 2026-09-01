@@ -678,7 +678,17 @@ export function getSimulationHealthGuideSteps(): DemoStep[] {
       phase: 'competition',
       title: msg('How Metrics Change'),
       narration: msg(
-        'Building Readiness drops when saboteurs damage your buildings (good \u2192 moderate \u2192 poor \u2192 ruined). Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links. All metrics recover over time but can be boosted by deploying guardians and fortifying zones.',
+        // ⚠ Hier stand: „All metrics recover over time." Fuer den Bauzustand
+        // ist das falsch. Gesucht wurde jede Stelle, die
+        // `building_condition` schreibt: es sind ZWEI — `fn_degrade_building`
+        // (abwaerts) und die Dungeon-Beute (aufwaerts). Keine Zeit, kein Tick,
+        // kein Bau-Menue stellt einen Bau wieder her. Ein Hilfetext, der eine
+        // Erholung verspricht, die es nicht gibt, laesst den Spieler warten.
+        //
+        // Die Leiter stand hier ausserdem als „good → moderate → poor →
+        // ruined" — die Kette des Codes vor Migration 303, mit einer Sprosse,
+        // die keine Welt kennt.
+        'Building Readiness drops when saboteurs damage your buildings \u2013 one rung down your world\u2019s own condition ladder, and nothing puts it back on its own. The only repair is loot: the Restoration Fragment (The Entropy) and the Restoration Organ (The Devouring Mother), both tier 3, each lifting your most damaged building by one rung. Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links \u2013 and building condition feeds it directly, at 40 % of the score.',
       ),
       detail: msg(
         'These metrics are computed from materialized database views that aggregate across all your buildings, zones, and embassies. They update automatically after each cycle resolution. The dashboard uses info bubbles to explain each metric\u2019s formula.',

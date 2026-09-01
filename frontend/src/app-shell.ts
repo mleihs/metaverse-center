@@ -331,6 +331,22 @@ export class VelgApp extends LitElement {
         },
       },
       {
+        // Der Beutekatalog. Eigene Route und nicht ein Thema unter
+        // /guide/:topic, weil er seinen Inhalt LAEDT statt ihn zu tragen — die
+        // Themen sind Texte in `htp-topic-data.ts`, dieser hier ist eine
+        // Anzeige auf den Bestand, den der Dungeon benutzt.
+        path: '/how-to-play/loot',
+        render: () => html`<velg-htp-loot-catalogue></velg-htp-loot-catalogue>`,
+        enter: async () => {
+          await this._authReady;
+          if (
+            !(await this._lazy(() => import('./components/how-to-play/HowToPlayLootCatalogue.js')))
+          )
+            return false;
+          return true;
+        },
+      },
+      {
         path: '/how-to-play/competitive',
         render: () => html`<velg-how-to-play-war-room></velg-how-to-play-war-room>`,
         enter: async () => {
