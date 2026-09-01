@@ -326,12 +326,34 @@ export class VelgDashboardWorlds extends LitElement {
         padding: var(--space-7) var(--space-8);
       }
 
+      /*
+       * Die VORSCHAU einer Welt, nicht ihr Anfang.
+       *
+       * Auf Prod gemessen: 2 780 Zeichen, 793 px hoch, ohne Begrenzung. Die
+       * Tafel endet mit einem Zitat und dem Knopf „Welt betreten" — beide
+       * standen damit weit unter dem sichtbaren Bereich. Eine Vorschau, deren
+       * Ausgang man nicht sieht, ist keine.
+       *
+       * Acht Zeilen, nicht drei wie in der Registerzeile daneben: hier ist die
+       * Spalte 554 px breit und die Tafel hat Platz, waehrend eine Zeile im
+       * Register vor allem gleich hoch sein muss wie ihre Nachbarn. Zwei
+       * verschiedene Aufgaben, zwei verschiedene Masse — beide begrenzt.
+       *
+       * ⚠ Ich hatte in DERSELBEN Datei eine Stunde zuvor .row__desc geklemmt
+       * und dieses Feld stehen lassen. Gefunden hat es nicht die Messung,
+       * sondern der Blick auf den Bildschirm nach dem Deploy.
+       */
       .dossier__lore {
         margin: 0;
         font-family: var(--font-prose);
         font-size: calc(var(--text-sm) * var(--stage-type-scale, 1));
         line-height: var(--leading-loose);
         color: var(--color-text-secondary);
+        display: -webkit-box;
+        -webkit-line-clamp: 8;
+        line-clamp: 8;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       /* Trennlinie oben, kein Balken an der Seite. */
