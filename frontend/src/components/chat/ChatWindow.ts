@@ -674,6 +674,46 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
   }
 
+  /**
+   * "Bearbeiten und erneut senden" holt die eigene Nachricht in den Verfasser
+   * zurueck.
+   *
+   * WARUM ES DEN GRIFF VORHER NICHT GAB
+   * `MessageActions` warf `action-edit`, und NIEMAND hoerte zu -- gemessen am
+   * 01.09.2026: 0 Zuhoerer im ganzen Baum, auch kein `addEventListener`. Der
+   * Stift stand neben "Kopieren", versprach im aria-label "Edit and resend" und
+   * tat nichts. Ein Knopf ohne Wirkung ist teurer als ein fehlender: er sagt
+   * dem Leser, dass ER etwas falsch macht.
+   *
+   * WARUM NICHT MEHR
+   * Es gibt keinen Endpunkt, der eine gesendete Nachricht aendert, und das soll
+   * so bleiben: eine Nachricht nachtraeglich umzuschreiben wuerde die Antwort
+   * des Agenten daneben zu einer Antwort auf etwas machen, das nie gesagt wurde.
+   * "Resend" ist woertlich gemeint -- der Text kommt in den Verfasser, das
+   * Original bleibt stehen, und was daraus wird, ist eine neue Nachricht.
+   *
+   * Der Weg dorthin war schon da (`initialContent` plus `willUpdate` im
+   * Verfasser, gebaut fuer das Wiederherstellen von Entwuerfen beim
+   * Gespraechswechsel). Es fehlte nur der Zuhoerer.
+   */
+  private _handleEditMessage(e: Event): void {
+    const messageId = (e as CustomEvent<{ messageId?: string }>).detail?.messageId;
+    if (!messageId || !this.conversation) return;
+    const session = chatStore.getOrCreate(this.conversation.id);
+    const message = session.messages.value.find((m) => m.id === messageId);
+    if (!message?.content) return;
+
+    // Gleicher Text = kein Property-Wechsel = der Verfasser sieht nichts. Der
+    // Zwischenschritt ueber '' erzwingt ihn, damit der Knopf auch beim zweiten
+    // Mal wirkt.
+    if (this._restoredDraft === message.content) this._restoredDraft = '';
+    this._restoredDraft = message.content;
+
+    void this.updateComplete.then(() => {
+      this.renderRoot.querySelector('velg-chat-composer')?.focus();
+    });
+  }
+
   private async _handleRegenerate(): Promise<void> {
     if (!this.conversation || !this.simulationId || this._sending) return;
 
@@ -1193,6 +1233,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               <div class="window__messages"
                 @reaction-toggle=${this._handleReactionToggle}
                 @action-regenerate=${this._handleRegenerate}
+                @action-edit=${this._handleEditMessage}
                 @send-starter=${this._handleSendMessage}
               >
                 <velg-chat-feed
