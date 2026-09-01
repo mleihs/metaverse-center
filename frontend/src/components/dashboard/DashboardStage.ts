@@ -211,6 +211,22 @@ export class VelgDashboardStage extends LitElement {
         margin-top: var(--space-10);
       }
 
+      /*
+       * Im Leerzustand steht links nichts, also gibt es nichts auszugleichen.
+       *
+       * space-between verteilt zwei Dinge auf die Bandbreite. Im laufenden
+       * Einsatz sind das zwei: „RP 18 / 36" links, „Befehle erteilen" rechts.
+       * Ohne Einsatz stand links ein leeres <div>, das nur da war, um den Knopf
+       * an die rechte Kante zu schieben — auf 1585 px allein am anderen Ende
+       * eines Bandes, dessen Text bei 480 px endet.
+       *
+       * Ein Ausgleichsgewicht fuer nichts ist keine Ausrichtung. Der Knopf
+       * gehoert unter den Satz, auf den er antwortet.
+       */
+      .bottom--idle {
+        justify-content: flex-start;
+      }
+
       .epoch__name {
         margin: 0;
         font-family: var(--font-brutalist);
@@ -481,8 +497,7 @@ export class VelgDashboardStage extends LitElement {
         <p class="clock__note">
           ${msg('You are not taking part in any running epoch. Join one, or keep building your worlds.')}
         </p>
-        <div class="bottom">
-          <div></div>
+        <div class="bottom bottom--idle">
           <div class="actions">
             <button class="btn btn--primary" @click=${() => navigate('/epoch')}>
               ${msg('Browse epochs')}

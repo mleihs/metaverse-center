@@ -182,6 +182,25 @@ export class VelgDashboardWorlds extends LitElement {
         color: var(--color-text-quiet);
       }
 
+      /*
+       * Die Zeile eines REGISTERS, nicht der Anfang eines Textes.
+       *
+       * Hier stand ein Lesemass (62ch) und keine Zeilenbegrenzung. Eine Welt
+       * mit einer Zweizeiler-Beschreibung bekam zwei Zeilen, eine mit 700
+       * Zeichen bekam siebzehn — auf Prod gemessen an „Meine Welten" mit 15
+       * Welten stand Eintrag 02 als Textblock zwischen zwei Zweizeilern, und
+       * die Nummern 01, 02, 03 verloren dabei jeden Zusammenhang.
+       *
+       * In einem Register haben die Zeilen dieselbe Gestalt; ungleiche Hoehen
+       * sind kein Rhythmus, sondern die Abwesenheit von einem. Drei Zeilen
+       * sind das Mass, das der Handoff fuer Teaser selbst nennt („erste
+       * Lore-Section, 3-Zeilen-Clamp"), also dieselbe Zahl wie in der
+       * Uebersicht — nicht eine neue, die jemand hier erfunden hat.
+       *
+       * Das Lesemass bleibt: es begrenzt die Zeile, die Klammer die Zahl der
+       * Zeilen. Ohne beides waeren drei Zeilen ueber die volle Spaltenbreite
+       * wieder zu lang zum Lesen.
+       */
       .row__desc {
         margin: var(--space-2) 0 0;
         font-family: var(--font-prose);
@@ -189,6 +208,11 @@ export class VelgDashboardWorlds extends LitElement {
         line-height: var(--leading-relaxed);
         color: var(--color-text-quiet);
         max-width: 62ch;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
       .row__meta {
