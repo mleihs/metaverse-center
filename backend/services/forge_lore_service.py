@@ -44,7 +44,35 @@ BUREAU_ARCHIVIST_PROMPT = (
     "- Generate 5-7 sections across 2-3 chapters.\n"
     "- Each chapter should have a thematic roman numeral arcanum (e.g. 'I', 'II', 'III').\n"
     "- Sections within a chapter share the same chapter name but have distinct titles.\n"
-    "- Each section may optionally have an epigraph — a brief literary quote or motto.\n"
+    # ── Warum hier kein "echtes literarisches Zitat" mehr verlangt wird ──
+    #
+    # Diese Zeile bat frueher um "a brief literary quote or motto", und weiter
+    # unten stand woertlich "optional epigraph (real literary quotes)". Ein
+    # Sprachmodell kann ein echtes Zitat nicht von einem erfundenen
+    # unterscheiden -- es erzeugt zitatFOERMIGEN Text und haengt einen
+    # beruehmten Namen darunter, weil das die haeufigste Form im Training ist.
+    #
+    # Auf Produktion gemessen (01.09.2026): 46 Epigraphe schreiben sich einer
+    # ECHTEN Person zu. An Quellen geprueft sind darunter nachweislich falsche
+    # -- Kafkas Zuerauer Aphorismus 16 lautet "Ein Kaefig ging einen Vogel
+    # suchen", im Spiel stand "I am a cage, in search of a bird"; das
+    # Wilde-Zitat ueber die Buerokratie hat keine Werkstelle; und
+    # "Every language is a world" ist nicht von Wittgenstein, stand aber mit
+    # Paragraphennummer da. Eine Faelschung mit korrekt aussehender Fundstelle
+    # ist glaubwuerdiger als das Echte.
+    #
+    # Die Regel: die WELT darf sich selbst zitieren, sie darf keinem echten
+    # Menschen Worte in den Mund legen. Ein echter Denker bleibt als EINFLUSS
+    # nennbar (PhilosophicalAnchor.literary_influence) -- das ist ein Verweis,
+    # keine Zuschreibung.
+    "- Each section may optionally carry an epigraph. It must be a line THIS WORLD "
+    "produced: a Bureau document, a recovered log, an inscription, a field report, "
+    "or a named figure of this world with the document they said it in.\n"
+    "- NEVER attribute an epigraph to a real author, thinker, artist or historical "
+    "person. You cannot verify that such a person wrote such a line, and an "
+    "unverifiable quotation under a real name is a fabricated citation -- it does "
+    "not become true by sounding plausible. A real thinker may be named as an "
+    "INFLUENCE elsewhere; that is a reference, not words put in their mouth.\n"
     "- The body should be 2-4 paragraphs of rich, atmospheric prose.\n"
     "- 2-3 sections should include an image_slug (snake_case identifier like 'city_gates', "
     "'council_chamber', 'harbor_mist') and an image_caption describing the scene visually.\n"
@@ -118,8 +146,14 @@ LORE_TRANSLATOR_PROMPT = (
     "- Translate chapter titles, section titles, epigraphs, body text, and image captions.\n"
     "- Maintain the same paragraph structure.\n"
     "- Use formal German (Sie-form is not needed — this is narrative prose, not addressing the reader).\n"
-    "- Literary quotes in epigraphs: use the established German translation if it's a real quote, "
-    "otherwise translate idiomatically.\n"
+    # Frueher: "use the established German translation if it's a real quote".
+    # Das schickte den Uebersetzer los, die etablierte Fassung eines Zitats zu
+    # suchen, das es womoeglich gar nicht gibt -- und ein Modell findet dann
+    # eine. Epigraphe sind seit dem 01.09.2026 weltinterne Belege; sie werden
+    # uebersetzt wie die Prosa daneben.
+    "- Epigraphs are IN-WORLD citations, not quotations from real books. Translate "
+    "them like the surrounding prose. Do not search for an established translation, "
+    "and never add an attribution the source does not already carry.\n"
     "- The translation should read as if it was originally written in German."
 )
 
@@ -524,7 +558,9 @@ ZONES ({len(zones)} mapped):
 {zone_block}
 
 Generate a CLASSIFIED DOSSIER with exactly 6 sections. Each section has chapter="CLASSIFIED",
-a unique arcanum, title, optional epigraph (real literary quotes), and body text.
+a unique arcanum, title, optional epigraph, and body text. An epigraph is an IN-WORLD
+citation only -- a Bureau document, a recovered log, an inscription. Never attribute one
+to a real author, thinker or historical person.
 
 Required sections (in order):
 1. ARCANUM "ALPHA" — Pre-Arrival History (~2,000 words)

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, conlist
+from pydantic import BaseModel, ConfigDict, Field, conlist, field_validator
 
 # ── The contract the model is held to ─────────────────────────────────
 #
@@ -252,10 +253,59 @@ class ForgeLoreSection(BaseModel):
     chapter: str
     arcanum: str
     title: str
-    epigraph: str = ""
+
+    # Das Feld hatte KEINE Beschreibung -- das Modell erfuhr nie, was ein
+    # Epigraph sein soll, und tat dann das Haeufigste aus seinem Training: es
+    # haengte einen beruehmten Namen unter eine zitatfoermige Zeile.
+    epigraph: str = Field(
+        default="",
+        description=(
+            "Optional. A line THIS WORLD produced: a Bureau document, a recovered log, "
+            "an inscription, a field report, or a named figure of this world together "
+            "with the document they said it in. NEVER a quotation attributed to a real "
+            "author, thinker or historical person -- you cannot verify that they wrote "
+            "it, and an unverifiable quotation under a real name is a fabricated "
+            "citation. A real thinker may be named as an INFLUENCE elsewhere; that is a "
+            "reference, not words put in their mouth."
+        ),
+    )
     body: str
     image_slug: str | None = None
     image_caption: str | None = None
+
+    @field_validator("epigraph")
+    @classmethod
+    def _no_scholarly_citation(cls, value: str) -> str:
+        """Weist die eine Form ab, die nachweislich Falsches erzeugt hat.
+
+        Ein Epigraph kann nicht mechanisch auf Echtheit geprueft werden -- aber
+        die GEFAEHRLICHSTE Form schon: eine Zuschreibung mit Jahreszahl in
+        Klammern oder Paragraphenzeichen. Das ist die Behauptung einer realen
+        Fundstelle, und genau sie macht eine Erfindung glaubwuerdiger als das
+        Echte. Auf Produktion gemessen (01.09.2026) trug ein erfundenes
+        Wittgenstein-Zitat die Angabe "Philosophical Investigations, Paragraph 19"
+        -- die Stelle existiert und sagt etwas anderes.
+
+        Bewusst ENG: geprueft wird nur der Schwanz nach dem letzten Gedankenstrich,
+        und nur auf Jahreszahl (1400-2099) oder Paragraphenzeichen. Eine
+        weltinterne Angabe wie "Tape 7" oder "Fragment 42" faellt nicht darunter.
+        Ein zu breiter Pruefer haette hier einen hohen Preis: er laesst die ganze
+        Lore-Erzeugung scheitern, statt eine Zeile zu verbessern -- dieselbe
+        Abwaegung wie bei `counted_list`, wo eine exakte Laengenforderung die
+        Lieferquote nicht hob, sondern nur einen Weg schuf, die Antwort ganz zu
+        verlieren.
+        """
+        if not value:
+            return value
+        tail = re.split(r"[-\u2013\u2014]", value)[-1]
+        if re.search(r"\((1[4-9]\d{2}|20\d{2})\)", tail) or "\u00a7" in tail:
+            raise ValueError(
+                "epigraph carries a scholarly citation (a year in parentheses or a "
+                "section mark). That claims a real, checkable source. Epigraphs are "
+                "in-world citations: name a Bureau document, a recovered log or an "
+                "inscription instead, and never attribute a line to a real person."
+            )
+        return value
 
 
 class ForgeLoreOutput(BaseModel):
