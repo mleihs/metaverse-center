@@ -128,9 +128,35 @@ export class ChatMessage extends LitElement {
     /* Default hidden state lives in MessageActions :host — parent only handles
        positioning and reveal conditions. :host has lower specificity than
        these selectors, so reveal overrides correctly. */
+    /*
+     * NACHGERECHNET AM 02.09.2026 — die Leiste pickte in den Text.
+     *
+     *   Leiste          28 px Knopf + 2 x 1 px Rahmen   = 30 px
+     *   Verankerung     top: -12px, bezogen auf .row
+     *   ergibt          -12 px … +18 px
+     *
+     * Achtzehn Pixel lagen damit IM Inhalt der Zeile — bei gruppierten
+     * Nachrichten direkt auf den Glyphen der Blase. Der Wert -12 war an
+     * nichts ausgerichtet; er war geraten.
+     *
+     * Jetzt gerechnet gegen die 12 px Polsterung von .bubble
+     * ("padding: var(--space-3) var(--space-4)"):
+     *
+     *   Leiste          24 px Knopf + 2 px Rahmen       = 26 px
+     *   Verankerung     top: -18px
+     *   ergibt          -18 px … +8 px
+     *
+     * Die acht Pixel nach unten landen INNERHALB der Polsterung und beruehren
+     * keine Schrift. Nach oben ragt sie 18 px in einen 16-px-Abstand — die
+     * zwei Pixel Ueberlappung treffen den unteren Rand der vorigen Zeile,
+     * ebenfalls Polsterung.
+     *
+     * ⚠ Wer die Knopfgroesse in MessageActions aendert, aendert diese
+     * Rechnung. Die beiden Zahlen gehoeren zusammen.
+     */
     velg-message-actions {
       position: absolute;
-      top: -12px;
+      top: -18px;
       transition:
         opacity var(--transition-fast),
         visibility var(--transition-fast);
