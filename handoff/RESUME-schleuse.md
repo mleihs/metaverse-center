@@ -1,38 +1,105 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
-**Stand 02.09.2026, nach Schritt 4 + Deploy.**
+**Stand 02.09.2026 abends.** Schritte 1–4 gebaut, ausgerollt und auf Prod im
+Betrieb. Der Scanner läuft, der Bluesky-Adapter liefert, die Klassifikation
+funktioniert. Vier von acht Schritten fehlen.
 
-▶ **AUF PROD LIVE seit 12:18: `790d56a2`.** Schritte 1–4 der Schleuse sind
-draussen, die Verdrahtung auch, Migration 334 ist angewendet (mit Ledger-Zeile,
-nachgemessen), und `news_scanner_adapters` enthält `bluesky`.
+    live auf Prod        90c4397d   (Code: fbd6f2ce)
+    Migrationen          334 + 337 drauf · nächste freie 338
+    news_scanner_enabled true · Takt 6 h · auto_create false
+    Adapter              11 registriert, 6 aktiv (inkl. bluesky), 5/11 online
+    Kandidaten           83  (NOAA 44 · NASA 24 · GDACS 8 · USGS 7)
 
-⚠ **DER LETZTE RIEGEL STEHT NOCH:** `news_scanner_enabled = false`. Solange er
-steht, läuft kein Zyklus und die Kammern bleiben leer. Ein Umlegen startet
-einen wiederkehrenden Auftrag (6 h) mit Modellaufrufen; `auto_create` bleibt
-`false`, es entsteht also nichts ohne einen Menschen. Rücknehmbar durch
-Zurückstellen.
+▶ **ALS NÄCHSTES: Schritt 5 — die Sichtung** (`IntakeTriageModal`). Sie ist die
+Kammer, in der die 83 Kandidaten bearbeitbar werden; ohne sie ist das Brett
+eine Anzeige ohne Griff.
 
-    UPDATE platform_settings SET setting_value = 'true'::jsonb
-     WHERE setting_key = 'news_scanner_enabled';
+## ⚠ Drei Dinge, die vor Schritt 5 mehr bringen als Schritt 5
 
-▶ **ALS NÄCHSTES: Schritt 5** — Sichtung (`IntakeTriageModal`).
+1. **`guardian_api_key` in `platform_settings` eintragen.** Dort stehen NULL
+   `*_api_key`-Zeilen; der Schlüssel liegt pro Welt in `simulation_settings`.
+   Der Scanner liest nur die Plattform-Ebene, also melden Guardian und NewsAPI
+   „kein Schlüssel". Eine Zeile, und die zwei stärksten Nachrichtenquellen
+   liefern.
+2. **Depeschen-Budget.** `scanner_service.py:503` hat `max_tokens=512` fest;
+   gemessen enden **37 von 50** Depeschen ohne Satzzeichen, eine wörtlich auf
+   „…Propagation vector: southeast; velocity". Dieselbe Familie wie der
+   Klassifikator, an einer Stelle, die niemandem auffällt, weil ein halber Satz
+   wie ein Stil aussieht.
+3. **CI ist rot** und war es den ganzen Tag (Migration 299 besteht auf einer
+   FRISCHEN Datenbank ihre eigene Selbstprüfung nicht — die Saat läuft nach den
+   Migrationen). Erreicht die Laufzeit nicht, aber wir haben heute zweimal auf
+   rot ausgerollt. Ein rotes Tor sagt beim nächsten echten Fehler nichts.
 
-🔑 **Zwei Merksätze aus dem Deploy:**
-- **Ein einzelner Aufruf gegen eine Anwendung im Wechsel misst, welchen
-  Behälter er erwischt hat, nicht welcher Stand ausgerollt ist.** Gemessen:
-  `504 422 422 422 422` für dieselbe URL. Der belastbare Beleg ist
-  `/openapi.json` der laufenden Instanz.
-- **Coolify baut den Branch-Stand zum Zeitpunkt des Auslösens.** Ein Push
-  danach geht still nicht mit (dem Peer ist genau das passiert).
+## Der Guardian-502 (unverändert offen)
 
-⚠ **CI ist auf `main` ROT und war es schon vor diesem Deploy.** Zwei Ursachen,
-beide ohne Wirkung auf die Laufzeit: (1) Migration 299 besteht auf einer
-FRISCHEN Datenbank ihre eigene Selbstprüfung nicht, weil die Saat nach den
-Migrationen läuft — vorbestehend seit 31.08.; (2) eine Formatierung in
-`utils/key-providers.ts`, vom Peer inzwischen behoben (`64a67bbc`, nicht im
-Deploy). **Ein rotes CI ist als Tor wertlos** — beim nächsten echten Fehler
-sieht es genauso aus. Punkt (1) gehört aufgeräumt, vermutlich indem die Prüfung
-an die Saat-Reihenfolge gebunden wird statt entschärft.
+`POST …/social-trends/browse` mit `source: guardian` → Cloudflare-502,
+`text/html` statt JSON. Mit `newsapi` → sauberes 400. Die Route ist gesund, nur
+der Guardian-Zweig bringt den Ursprung zum Schweigen. **Backend-Log noch nicht
+angesehen.** Blockiert den Weg, über den ein Architekt selbst Artikel holt.
+
+## Offene Backend-Lücken aus dem Bauplan
+
+Lücke 1 (Melden) ist zu — Migration 334, `POST …/intake/flag`. Offen:
+
+    2  Story-Bündelung: sources[] + social_volume je Kandidat
+       (Voraussetzung dafür, dass es überhaupt eine SOZIALQUELLE geben kann)
+    3  Passungs-Score (fit) je Kandidat × Welt
+    4  transform-article nimmt eine `lens` entgegen
+       (deshalb die °-Fussnote im Schmelztiegel)
+    5  daily_event_quota serverseitig, 429 bei Überschreitung
+    6  intake_subscriptions
+    7  Scan-Log um die Schleusen-Stufe erweitern
+
+## Entschieden, aber nicht gebaut
+
+**Das Kachel-Raster für die Sichtung.** Kein Masonry, keine Bibliothek: CSS
+Grid mit Zeilen-Spannweite, aus einem ResizeObserver.
+
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-auto-rows: 8px;
+    /* je Karte: grid-row-end: span ceil(höhe / 8) */
+
+Rund vierzig Zeilen, keine Abhängigkeit, läuft überall — und die DOM-Reihenfolge
+bleibt die Anzeigereihenfolge, womit der WCAG-2.4.3-Fehler von CSS Grid Lanes
+entfällt. Begründung samt Browserstand und Bibliotheksvergleich:
+`handoff/schleuse-sensorleiste-kaputt-2026-09-02.md`.
+
+Bilder sind vorhanden: guardian (`fields.thumbnail`), newsapi (`image_url`),
+gdelt (`socialimage`), bluesky (`external.thumb`), who (aus dem Overview-HTML
+gezogen). Nur die drei Messdienste haben nie eines.
+
+## 🔑 Was dieser Tag gelehrt hat (gilt weiter)
+
+**Ein plausibles Ergebnis ist kein Beleg.** Ein Fehler brauchte VIER Anläufe;
+jeder behob eine echte Sache und war als Diagnose falsch. „Keine Kandidaten"
+las sich wie „nichts war relevant", „Empty content" wie „das Modell ist
+kaputt". Bei leeren Ergebnissen eine Ebene tiefer messen: nicht die Tabelle,
+sondern das Log; nicht das Log, sondern den echten Aufruf gegen den Dienst.
+
+**Vor dem Ausrollen CI zum FESTGESCHRIEBENEN Commit befragen**, nicht lokal
+über einer Arbeitskopie prüfen, in der fremde unfertige Dateien liegen.
+
+**Ein einzelner Aufruf gegen eine Anwendung im Wechsel** misst, welchen
+Behälter er erwischt hat. Belastbar sind: genau EIN Behälter in `docker ps`,
+plus der Pfadbestand in `/openapi.json`.
+
+**Coolify baut den Branch-Stand zum Zeitpunkt des Auslösens** — ein Push
+danach geht still nicht mit.
+
+**Vier Backticks in css-Kommentaren an einem Tag.** `node
+frontend/scripts/lint-backtick-in-css.mjs` ZUERST, vor allem anderen.
+
+**Eine wiederverwendete `msg()`-Zeichenkette erbt eine fremde Übersetzung.**
+Vor `i18n:build` jede neue Quelle gegen `de.xlf` halten.
+
+## Ausserdem offen, ausserhalb der Schleuse
+
+- **Denkmodell als Standard**, projektweit zu prüfen — beauftragt, notiert in
+  `handoff/denkmodell-als-standard-2026-09-02.md`, nicht angefasst. Aufteilung
+  mit `velgarien-rebuild-6e` steht: er nimmt den `OpenRouterService`-Pfad
+  (dort ist `reasoning` unverdrahtet), die Schleuse bleibt hier.
+- Die **16 Dungeon-Befunde** in `handoff/dungeon-durchspielen-2026-08-31.md`.
 
 ## Wo alles liegt
 
