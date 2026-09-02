@@ -1,5 +1,6 @@
 """Source adapters — import all to trigger self-registration."""
 
+from backend.services.scanning.adapters.bluesky_social import BlueskyScannerAdapter
 from backend.services.scanning.adapters.disease_sh import DiseaseSHAdapter
 from backend.services.scanning.adapters.gdacs import GDACSAdapter
 from backend.services.scanning.adapters.gdelt import GDELTAdapter
@@ -18,6 +19,7 @@ __all__ = [
     "GDACSAdapter",
     "DiseaseSHAdapter",
     "WHOOutbreaksAdapter",
+    "BlueskyScannerAdapter",
     "GuardianScannerAdapter",
     "NewsAPIScannerAdapter",
     "GDELTAdapter",

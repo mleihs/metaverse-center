@@ -69,19 +69,29 @@ describe('sourceKindOf', () => {
     expect(sourceKindOf('usgs_earthquakes', info)).toBe('nokey');
   });
 
-  it('erkennt strukturierte, soziale, interne und halbstrukturierte Quellen', () => {
-    // ⚠ `reddit` und `bluesky` sind am 02.09.2026 gemessen NICHT verdrahtet —
-    // der Scanner führt zehn Adapter, keiner davon sozial. Dieser Test prüft
-    // also eine Zuordnung, die heute nichts trifft. Er bleibt, weil die Regel
-    // („eine Sozialquelle erzeugt nie einen eigenen Kandidaten") den Tag
-    // überleben soll, an dem jemand den Adapter baut — aber wer ihn grün
-    // sieht, darf daraus NICHT schliessen, dass der Zufluss steht.
-    // Messung: docs/analysis/schleuse-zufluss-2026-09-02.md
+  it('erkennt strukturierte, interne und halbstrukturierte Quellen', () => {
     expect(sourceKindOf('usgs_earthquakes', adapter())).toBe('structured');
-    expect(sourceKindOf('reddit')).toBe('social');
-    expect(sourceKindOf('bluesky')).toBe('social');
     expect(sourceKindOf('echoes')).toBe('internal');
     expect(sourceKindOf('hackernews')).toBe('semi');
+  });
+
+  it('stuft bluesky als halbstrukturiert ein, nicht als sozial', () => {
+    // Der Bauplan zählt Bluesky zu den Sozialquellen („nur Tempo und
+    // Reichweite"). Der gebaute Adapter ist etwas anderes: er lässt einen
+    // Beitrag nur durch, wenn er einen Artikel VERLINKT, und meldet dann die
+    // Überschrift des Artikels. Was er liefert, ist eine Nachricht mit einem
+    // Beleg, keine Reichweitenzahl — und die Sensor-Leiste soll das sagen.
+    // Adapter: backend/services/scanning/adapters/bluesky_social.py
+    expect(sourceKindOf('bluesky')).toBe('semi');
+  });
+
+  it('hat heute keine Sozialquelle — und das ist gemessen, nicht vergessen', () => {
+    // Die Klasse `social` existiert für eine Quelle, die nur Tempo zu einer
+    // BESTEHENDEN Geschichte liefert. Solche gibt es nicht, weil es keinen Ort
+    // gibt, an dem dieses Tempo stünde (Lücke 2, Story-Bündelung). „reddit"
+    // kommt im ganzen Backend null Mal vor.
+    // Messung: docs/analysis/schleuse-zufluss-2026-09-02.md
+    expect(sourceKindOf('reddit')).not.toBe('social');
   });
 
   it('fällt ohne Adapter-Angaben auf die vorsichtige Annahme zurück', () => {
@@ -91,7 +101,11 @@ describe('sourceKindOf', () => {
   });
 
   it('ist unabhängig von der Schreibweise', () => {
-    expect(sourceKindOf('Reddit')).toBe('social');
+    // Das Dashboard liefert Anzeigenamen („Bluesky"), die Zuordnungen führen
+    // Adapterkennungen („bluesky"). Ohne die Kleinschreibung fiele jede
+    // benannte Quelle auf `llm` zurück — die teuerste Annahme, und die falsche.
+    expect(sourceKindOf('Bluesky')).toBe('semi');
+    expect(sourceKindOf('HackerNews')).toBe('semi');
   });
 });
 

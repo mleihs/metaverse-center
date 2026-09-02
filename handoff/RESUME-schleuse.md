@@ -138,10 +138,18 @@ Das Wichtigste in vier Zeilen:
 - **Reddit gibt es nicht.** Null Treffer im Backend. Der einzige Treffer im
   Repo ist meine eigene `SOCIAL_ADAPTERS`-Menge in `types/intake.ts` — der
   Zweig ist unerreichbar, die Klasse `social` kann nicht eintreten.
-- **Bluesky gibt es, aber nur in der Gegenrichtung.** `BlueskyService` kann
-  veröffentlichen, hochladen, löschen und die Kennzahlen EIGENER Beiträge
-  lesen. Kein `searchPosts`, kein Feed. Auf Prod läuft die
-  Instagram→Bluesky-Kreuzveröffentlichung aktiv.
+- **Bluesky ist seit dem 02.09. nachmittags eine QUELLE** (`bluesky`, 11.
+  Adapter). Vorher konnte `BlueskyService` nur veröffentlichen; jetzt gibt es
+  `search_posts()`. Der Adapter lässt einen Beitrag nur durch, wenn er einen
+  **Artikel verlinkt**, und meldet die Überschrift des Artikels — damit greift
+  die bestehende Entduplizierung, und Bluesky ist der zusätzliche Beleg an
+  einer Geschichte statt einer eigenen Zeile. Trockenlauf gegen das echte
+  Bluesky: 22 verankerte Signale (Reuters, AP, BBC), 85 ohne Link verworfen,
+  87 zu leise. **Er ist deshalb `semi`, nicht `social`** — die Klasse `social`
+  hat jetzt null Mitglieder.
+  ⚠ **Auf Prod ändert das bis zum Deploy nichts.** Danach zwei Einstellungen:
+  `bluesky` in `news_scanner_adapters` aufnehmen, dann
+  `news_scanner_enabled = true`.
 - **Der Scanner hat auf Prod NIE gelaufen.** `news_scan_candidates` und
   `news_scan_log` sind leer — null Zeilen. `news_scanner_enabled = false` seit
   09.03.2026.
@@ -152,8 +160,9 @@ Das Wichtigste in vier Zeilen:
   deshalb genügt `news_scanner_enabled = true` allein nicht.
 
 ⚠ **Folge für Schritt 5:** die Abnahmebedingung „Sozialquellen erscheinen nur
-als Chips oder im Rauschen, nie als eigene Zeile" ist weder erfüllbar noch
-verletzbar. Als **nicht anwendbar** führen, nicht als erledigt abhaken.
+als Chips oder im Rauschen, nie als eigene Zeile" ist weiterhin weder erfüllbar
+noch verletzbar — Bluesky erfüllt sie NICHT dadurch, dass es sie umgeht,
+sondern indem es gar keine Sozialquelle ist. Als **nicht anwendbar** führen.
 
 ### Die alten Messwerte (unverändert)
 

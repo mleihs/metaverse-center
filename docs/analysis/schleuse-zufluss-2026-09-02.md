@@ -12,10 +12,16 @@ tags: [schleuse, event-intake, news-scanner, social-trends, bluesky, reddit, pro
 **Anlass:** die Frage, ob Reddit und Bluesky für den Nachrichten-/Themenimport
 verdrahtet sind.
 
-**Kurze Antwort:** nein. Reddit existiert im gesamten Backend nicht — null
-Zeilen. Bluesky existiert, aber ausschliesslich in der Gegenrichtung: es
+**Kurze Antwort (Vormittag):** nein. Reddit existiert im gesamten Backend nicht
+— null Zeilen. Bluesky existiert, aber ausschliesslich in der Gegenrichtung: es
 veröffentlicht, es liest nicht. Beide tauchen in Plan und Prototyp der Schleuse
 als „Sozialquellen" auf; im Code gibt es sie nicht.
+
+> ### ▶ NACHTRAG VOM SELBEN NACHMITTAG: Bluesky IST jetzt eine Quelle
+> Zwischen dem Befund oben und dieser Zeile liegt der Bau. Was in Abschnitt 2
+> steht, beschreibt weiterhin richtig, wie es VORHER war — der Abschnitt bleibt
+> stehen, weil die Begründung des Adapters daraus folgt. **Was seither gilt,
+> steht in Abschnitt 8 am Ende.** Für Reddit ändert sich nichts.
 
 **Der grössere Befund daneben:** der Substrate-Scanner hat auf Produktion noch
 **nie gelaufen**. `news_scan_candidates` und `news_scan_log` sind leer — nicht
@@ -247,3 +253,97 @@ select setting_key, setting_value from platform_settings
   where setting_key like 'news_scanner%';
 select setting_key from platform_settings where setting_key like '%api_key%';
 ```
+
+
+---
+
+## 8. Nachtrag: Bluesky als Quelle, gebaut am 02.09.2026 nachmittags
+
+Der Befund oben — „es fehlt eine Methode und ein Adapter" — war die
+Bauanleitung. Beides steht jetzt.
+
+### Was dazukam
+
+| Datei | Was |
+|---|---|
+| `services/external/bluesky.py` | `search_posts()` — `app.bsky.feed.searchPosts`, die eine Methode, die nach aussen liest |
+| `services/scanning/adapters/bluesky_social.py` | der Adapter (11. im Register) |
+| `services/scanning/base_adapter.py` | `extra_settings` — ein Adapter darf mehr als EIN Geheimnis brauchen |
+| `services/scanning/scanner_service.py` | die Liste der zu ladenden Einstellungen wird jetzt aus dem Register ABGELEITET statt von Hand geführt |
+
+### Das Tor, und warum es die Regel des Bauplans erfüllt
+
+Der Plan verlangt: eine Sozialquelle liefert nur Tempo zu einer bestehenden
+Geschichte, nie ein eigenes Signal. Umgesetzt ist das nicht als Kommentar,
+sondern als **Bedingung für die Entstehung**: ein Beitrag wird nur dann ein
+Signal, wenn er einen **Artikel verlinkt**, und die Überschrift ist dann die
+des Artikels — nicht der Beitragstext. Damit greift die bestehende
+Entduplizierung (`deduplicator.py`, Titelähnlichkeit > 0.70) von selbst:
+derselbe Artikel, den auch Guardian oder GDELT gemeldet hat, wird EINE
+Geschichte, und Bluesky ist der zusätzliche Beleg daran.
+
+Ein Beitrag ohne Link fällt heraus — er wird nicht gezählt und nirgends
+angezeigt. Das ist der Preis dafür, die Regel baulich statt schriftlich zu
+haben: das Tempo („1.2k in 2 h") braucht eine Spalte, die es noch nicht gibt
+(Lücke 2). Sobald sie existiert, gehören die verworfenen Beiträge dorthin.
+
+**Folge:** Bluesky ist damit KEINE Sozialquelle im Sinne des Plans, sondern
+eine halbstrukturierte. Im Frontend ist die Einstufung entsprechend korrigiert
+(`SEMI_ADAPTERS` statt `SOCIAL_ADAPTERS`), und die Klasse `social` hat jetzt
+**null Mitglieder** — was ein Befund ist, kein Versehen.
+
+### Die Schwelle wurde gemessen, nicht gewählt
+
+Erster Entwurf: mindestens 5 Reaktionen, abgeleitet vom HackerNews-Adapter
+(Punktzahl 200). Dann die echte Verteilung, 198 Beiträge über acht Suchzeilen,
+12-Stunden-Fenster:
+
+    verlinkte Beiträge   114
+      >= 0 Reaktionen    114        >= 3    8
+      >= 1                26        >= 5    4
+      >= 2                13        >= 15   1
+
+**88 der 114 verlinkten Beiträge haben null Reaktionen.** Die Klippe liegt
+zwischen 0 und 1, und sie trennt nicht „viel gelesen" von „wenig gelesen",
+sondern **„ein Mensch hat es gesehen" von „eine Maschine hat es
+weitergereicht"**. Bei ≥ 5 blieben vier Meldungen und Reuters fiel heraus; bei
+≥ 1 bleiben Reuters, BBC, AP, Washington Post, LA Times.
+
+Das Sparargument für die höhere Schwelle trägt nicht: `classify_batch` macht
+**einen** gebündelten Modellaufruf je Zyklus, nicht einen je Signal. 26
+Überschriften statt 4 kosten denselben Aufruf mit längerem Prompt.
+
+### Trockenlauf gegen das echte Bluesky
+
+Mit den auf Prod hinterlegten Zugangsdaten, nur lesend, nichts veröffentlicht,
+nichts gespeichert:
+
+    Bluesky scan: 22 anchored signals from 8 queries
+                  (85 dropped without a link, 87 below engagement floor)
+
+    [ 2♥ 1↻] Congo's Ebola outbreak shows no signs of slowing as deaths top 3,000
+    [ 1♥ 0↻] USS Abraham Lincoln docks at Thailand's Pattaya resort  (bbc.com)
+    [ 1♥ 0↻] Deaths in Congo's fast-moving Ebola outbreak top 3,000  (apnews.com)
+    [ 1♥ 0↻] US tech firms may crowd out others in euro bond market  (reuters.com)
+    …
+
+Die Zugangsdaten tragen also (`createSession` OK, DID
+`did:plc:nbxlpwglkow2s3baxj3yypwr`) — **ein Login war nie das Hindernis.**
+
+### Was noch fehlt, damit es auf Prod ankommt
+
+In dieser Reihenfolge, keine Abkürzung:
+
+1. **Deploy.** Prod läuft `dba881d0`; der Adapter existiert dort nicht. Solange
+   das so ist, ändert keine Einstellung etwas an Bluesky.
+2. **`news_scanner_adapters` um `bluesky` erweitern.** Steht heute auf fünf
+   Namen ohne ihn. Ohne diesen Schritt ist der Adapter registriert und wird nie
+   aufgerufen.
+3. **`news_scanner_enabled = true`.** Der eigentliche Riegel. Danach läuft der
+   Zyklus alle 6 h; `auto_create` bleibt `false`, es entsteht also nichts ohne
+   einen Menschen. Rücknehmbar durch Zurückstellen.
+4. Optional: **`bluesky_scanner_queries`** als Einstellung setzen (Array oder
+   Komma-Liste). Ohne sie gelten die acht Vorgaben im Code.
+
+Punkt 1 ist keine Formalität: **auf Prod ist bis zum Deploy nichts anders als
+vorher.**
