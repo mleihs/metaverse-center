@@ -158,10 +158,18 @@ def get_platform_model(purpose: str) -> str:
        2026-08-30, ``chunk``, ``entity``, ``lore``, ``dossier`` and the rest got
        their model from the string ``"forge"`` and everything else about the call
        from their own name (finding 11).
-    2. The literal setting-key names ``forge`` / ``research`` / ``fallback`` keep
-       resolving to themselves. Callers that want a *tier* rather than a purpose
-       pass these — ``run_ai``'s 429 fallback asks for ``"fallback"``, and the
-       GenerationService path asks for ``"forge"``.
+    2. The literal setting-key names ``forge`` / ``research`` / ``fallback`` /
+       ``classify`` keep resolving to themselves. Callers that want a *tier*
+       rather than a purpose pass these — ``run_ai``'s 429 fallback asks for
+       ``"fallback"``, the GenerationService path asks for ``"forge"``, and the
+       scanner asks for ``"classify"``.
+
+       ⚠ A tier NOT in this tuple silently becomes ``model_default``. On
+       2026-09-02 the scanner asked for ``"classify"`` before it was listed
+       here, got the default — a thinking model — and classified nothing, while
+       the code, the migration and ``HARDCODED_DEFAULTS`` all said otherwise.
+       Three places agreed and the fourth quietly disagreed; rule 3 below is
+       exactly that trapdoor, and it does not raise.
     3. Everything else — every ``GenerationService`` purpose, and any string that
        reaches here by accident — resolves to ``model_default``, as it always has.
        ``services/constants.py`` documents what that collapse already cost once.
@@ -172,7 +180,7 @@ def get_platform_model(purpose: str) -> str:
     declared = AI_PURPOSES.get(purpose)
     if declared is not None:
         base_key = f"model_{declared.model_key}"
-    elif purpose in ("forge", "research", "fallback"):
+    elif purpose in ("forge", "research", "fallback", "classify"):
         base_key = f"model_{purpose}"
     else:
         base_key = "model_default"
