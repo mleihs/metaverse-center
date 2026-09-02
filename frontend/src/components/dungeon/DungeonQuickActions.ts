@@ -34,6 +34,9 @@ import {
 } from '../../types/dungeon.js';
 import { type ChoiceDescriptor, describeChoices } from '../../utils/dungeon-encounter-choices.js';
 import { AUTO_APPLY_EFFECTS, getRoomTypeLabel } from '../../utils/dungeon-formatters.js';
+// `localized` heisst hier schon der Lit-Dekorator — das Feld-Werkzeug bekommt
+// einen eigenen Namen, statt ihn stumm zu verdecken.
+import { localized as localizedField } from '../../utils/locale-fields.js';
 import {
   terminalActionStyles,
   terminalComponentTokens,
@@ -579,7 +582,7 @@ export class VelgDungeonQuickActions extends SignalWatcher(LitElement) {
       // Show agent buttons for the next unassigned item
       const suggestedId = suggestions[nextItem.id];
       return html`
-        <span class="phase-label">${nextItem.name_en}:</span>
+        <span class="phase-label">${localizedField(nextItem, 'name')}:</span>
         ${party.map(
           (agent) => html`
             <button
