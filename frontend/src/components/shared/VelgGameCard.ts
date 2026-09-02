@@ -35,7 +35,9 @@ const OP_SHORT: Record<OperativeType, string> = {
   assassin: 'ASN',
 };
 
-export type CardType = 'agent' | 'building';
+export type CardType = 'agent' | 'building' | 'loot';
+/** Was die RUECKSEITE ueber die Stufe verraet, bevor sie sich dreht. */
+export type CardRarityTell = 'none' | 'rare' | 'legendary';
 export type CardSize = 'xs' | 'sm' | 'md' | 'lg';
 export type CardRarity = 'common' | 'rare' | 'legendary';
 
@@ -83,6 +85,124 @@ export class VelgGameCard extends LitElement {
       width: var(--card-w);
       height: var(--card-h);
       perspective: 800px;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FLIPPER — nur type="loot"
+       Zwei Flaechen auf einer Achse. agent/building rendern diesen Block
+       nie, deshalb aendert er an keiner bestehenden Karte etwas.
+       ═══════════════════════════════════════════════════ */
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 850ms cubic-bezier(0.3, 0.1, 0.25, 1);
+      transform: rotateY(0deg);
+    }
+    .card-flipper--down {
+      transform: rotateY(180deg);
+    }
+    .card-flipper__face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .card-flipper__face--back {
+      transform: rotateY(180deg);
+    }
+
+    /* ── Die Rueckseite ────────────────────────────────── */
+    .card-back {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      border: var(--border-width-thin) solid var(--color-border);
+      border-radius: calc(var(--card-radius) + 6px);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      background-color: var(--color-surface-sunken);
+      background-image: repeating-linear-gradient(
+        45deg,
+        color-mix(in srgb, var(--color-accent-amber) 4%, transparent) 0 2px,
+        transparent 2px 10px
+      );
+    }
+    .card-back__corners {
+      position: absolute;
+      inset: var(--space-2);
+      border: var(--border-width-thin) dashed
+        color-mix(in srgb, var(--color-accent-amber) 22%, transparent);
+      pointer-events: none;
+    }
+    .card-back__lozenge {
+      width: 46%;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      transform: rotate(45deg);
+      border: var(--border-width-thin) solid
+        color-mix(in srgb, var(--color-accent-amber) 45%, transparent);
+      background: color-mix(in srgb, var(--color-accent-amber) 5%, transparent);
+    }
+    .card-back__lozenge span {
+      transform: rotate(-45deg);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      font-size: var(--text-lg);
+      color: color-mix(in srgb, var(--color-accent-amber) 78%, var(--color-text-primary));
+    }
+    .card-back__label {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest);
+      color: var(--color-text-muted);
+    }
+
+    /*
+     * Der Verrat. Eine EIGENE Schicht pulst, nicht der Flipper selbst:
+     * ein box-shadow-Keyframe auf einem preserve-3d-Element flackert in
+     * Chrome. Ein Takt, nicht mehr — sonst strobt es.
+     */
+    .card-back__aura {
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      animation: card-back-tell 1.6s var(--ease-dramatic, ease-in-out) infinite;
+    }
+    .card-back--tell-rare .card-back__aura {
+      box-shadow: 0 0 0 1px var(--color-info),
+        0 0 18px color-mix(in srgb, var(--color-info) 55%, transparent);
+    }
+    .card-back--tell-legendary .card-back__aura {
+      box-shadow: 0 0 0 1px var(--color-accent-amber),
+        0 0 26px color-mix(in srgb, var(--color-accent-amber) 65%, transparent);
+      animation-duration: 1.8s;
+    }
+    .card-back--tell-rare {
+      border-color: color-mix(in srgb, var(--color-info) 60%, var(--color-border));
+    }
+    .card-back--tell-legendary {
+      border-color: color-mix(in srgb, var(--color-accent-amber) 70%, var(--color-border));
+    }
+    @keyframes card-back-tell {
+      0%, 100% { opacity: 0.15; }
+      50%      { opacity: 0.85; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card-flipper { transition-duration: 0.01ms; }
+      .card-back__aura { animation: none; opacity: 0.5; }
     }
 
     /* ═══════════════════════════════════════════════════
@@ -1370,6 +1490,22 @@ export class VelgGameCard extends LitElement {
   @property({ type: Boolean, attribute: 'full-description', reflect: true })
   fullDescription = false;
   @property({ type: Boolean, attribute: 'show-actions' }) showActions = false;
+
+  /**
+   * Verdeckt — rendert die Rueckseite statt der Vorderseite.
+   *
+   * Nur fuer `type="loot"`: agent- und building-Karten behalten ihren DOM
+   * unveraendert, damit keine bestehende Aufrufstelle einen Flipper bekommt,
+   * den sie nie bestellt hat.
+   */
+  @property({ type: Boolean, reflect: true, attribute: 'face-down' }) faceDown = false;
+
+  /**
+   * Der Verrat: die Rueckseite kuendigt die Stufe an, BEVOR sie sich dreht.
+   * Das ist der Kern der Zeremonie — ein Aufleuchten, das etwas verspricht,
+   * traegt mehr als das Aufdecken selbst.
+   */
+  @property({ attribute: 'rarity-tell' }) rarityTell: CardRarityTell = 'none';
   @property({ type: Boolean }) editable = false;
   @property({ type: Boolean }) generating = false;
   @property() description = '';
@@ -1489,6 +1625,50 @@ export class VelgGameCard extends LitElement {
 
   // ── Render ──
 
+  /**
+   * Deckt die Karte auf. Idempotent — ein zweiter Aufruf tut nichts.
+   *
+   * Meldet `velg-card-revealed`, damit die Zeremonie den naechsten Schlag
+   * ansetzen kann, ohne die Flip-Dauer doppelt zu kennen.
+   */
+  reveal(): void {
+    if (!this.faceDown) return;
+    this.faceDown = false;
+    this.dispatchEvent(
+      new CustomEvent('velg-card-revealed', {
+        detail: { name: this.name, rarity: this.rarity },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
+   * Die Rueckseite. Bureau-Raute auf 45-Grad-Streifen, Eckklammern, und der
+   * Verrat als eigene Schicht: ein Opacity-Puls, KEIN `box-shadow`-Keyframe.
+   * Ein animierter Schatten auf einem `preserve-3d`-Element flackert in
+   * Chrome — die Aussenschicht hat das Problem nicht.
+   */
+  private _renderBack() {
+    const verrat = this.rarityTell;
+    return html`
+      <div class="card-back card-back--tell-${verrat}" aria-hidden="true">
+        ${verrat === 'none' ? nothing : html`<div class="card-back__aura"></div>`}
+        <div class="card-back__corners"></div>
+        <div class="card-back__lozenge"><span>BIG</span></div>
+        <span class="card-back__label">
+          ${
+            verrat === 'legendary'
+              ? msg('legendary')
+              : verrat === 'rare'
+                ? msg('rare')
+                : msg('reveal')
+          }
+        </span>
+      </div>
+    `;
+  }
+
   protected render() {
     const best = this._getBestAptitude();
     const isLegendary = this.rarity === 'legendary';
@@ -1520,8 +1700,7 @@ export class VelgGameCard extends LitElement {
       '--my': String(this._my),
     });
 
-    return html`
-      <div class="card-perspective">
+    const vorderseite = html`
         <div
           class=${classMap(cardClasses)}
           style=${tiltVars}
@@ -1579,7 +1758,7 @@ export class VelgGameCard extends LitElement {
 
           <!-- Body -->
           <div class="card__body">
-            ${this.type === 'agent' ? this._renderAgentBody() : this._renderBuildingBody()}
+            ${this.type === 'building' ? this._renderBuildingBody() : this._renderAgentBody()}
           </div>
 
           <!-- Action buttons (edit/delete) -->
@@ -1600,6 +1779,23 @@ export class VelgGameCard extends LitElement {
 
           <!-- DRAFTED stamp -->
           ${this.dimmed ? html`<span class="card__stamp">${msg('Deployed')}</span>` : nothing}
+        </div>
+    `;
+
+    // agent/building behalten ihren DOM auf den Zeichen genau — kein Flipper,
+    // keine zusaetzliche Schicht, kein geaenderter Stapelkontext.
+    if (this.type !== 'loot') {
+      return html`<div class="card-perspective">${vorderseite}</div>`;
+    }
+
+    return html`
+      <div class="card-perspective">
+        <div
+          class="card-flipper ${this.faceDown ? 'card-flipper--down' : ''}"
+          style=${tiltVars}
+        >
+          <div class="card-flipper__face card-flipper__face--front">${vorderseite}</div>
+          <div class="card-flipper__face card-flipper__face--back">${this._renderBack()}</div>
         </div>
       </div>
     `;
