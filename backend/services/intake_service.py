@@ -130,3 +130,25 @@ class IntakeService:
             signature=signature,
             magnitude=magnitude,
         )
+
+    @staticmethod
+    async def signature_fit(
+        supabase: Client,
+        simulation_id: UUID,
+    ) -> list[dict]:
+        """Die Passung dieser Welt fuer jede der acht Signaturen.
+
+        Gefragt wird `ResonanceService.susceptibility_of` — dieselbe Funktion,
+        die der Resonanzlauf benutzt und die dem Admin vor dem Ausloesen die
+        Suszeptibilitaetstafel fuellt. Zwei Umsetzungen derselben Formel wuerden
+        auseinanderlaufen, und die auseinandergelaufene ist die, die niemand
+        ausfuehrt.
+
+        Acht Aufrufe, unabhaengig von der Zahl der Kandidaten: die Passung
+        haengt an (Welt, Signatur), nicht am einzelnen Signal.
+        """
+        out: list[dict] = []
+        for signature in sorted({s for s, _ in CATEGORY_ARCHETYPE_MAP.values()}):
+            value = await ResonanceService.susceptibility_of(supabase, simulation_id, signature)
+            out.append({"signature": signature, "fit": min(100, max(0, round(value * 100)))})
+        return out

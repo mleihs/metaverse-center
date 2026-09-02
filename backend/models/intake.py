@@ -65,3 +65,41 @@ class SusceptibilityRow(BaseModel):
     susceptibility: float
     effective_magnitude: float
     will_skip: bool
+
+
+class SignatureFitResponse(BaseModel):
+    """Wie gut eine Signatur zu DIESER Welt passt.
+
+    ── WAS „PASSUNG" HIER HEISST, UND WAS SIE NICHT HEISST ─────────────────────
+
+    Der Bauplan schlaegt vor, sie aus „Kategorie↔Zone-Match, Agenten-Rollen-
+    Match, Vektor-Verfuegbarkeit" zu rechnen. Diese drei Groessen sind
+    VORSCHLAEGE, keine gemessenen Werte — jede von ihnen waere eine Erfindung
+    mit einer Gewichtung, die niemand belegen kann, und das Ergebnis saehe
+    hinterher wie ein Messwert aus.
+
+    Stattdessen wird die Zahl genommen, die das Spiel SCHON HAT: die
+    Suszeptibilitaet dieser Welt fuer diese Signatur
+    (`fn_get_adaptive_susceptibility`, Migration 216 — sie bezieht ein, was die
+    Welt bereits ueberstanden hat). Es ist derselbe Wert, mit dem der
+    Resonanzlauf entscheidet, wie hart etwas einschlaegt, und derselbe, den die
+    Suszeptibilitaetstafel dem Admin vor dem Ausloesen zeigt.
+
+    🔑 Wo eine Zahl erfunden werden muesste, lohnt zuerst die Frage, ob das
+    Spiel sie nicht schon fuehrt.
+
+    ── WARUM JE SIGNATUR UND NICHT JE KANDIDAT ─────────────────────────────────
+
+    Die Suszeptibilitaet haengt an (Welt, Signatur) — nicht am einzelnen Signal.
+    Zwei Unwetterwarnungen haben dieselbe Passung, und das ist richtig so:
+    Passung sagt „wie sehr geht diese ART von Sache diese Welt an", waehrend die
+    Magnitude sagt „wie gross ist DIESE hier". Zwei Achsen, und die Sichtung
+    sortiert nach beiden getrennt.
+
+    Praktisch heisst das: acht Kategorien, also hoechstens acht RPCs — unabhaengig
+    davon, ob 30 oder 3000 Kandidaten warten.
+    """
+
+    signature: str
+    #: 0–100. `susceptibility * 100`, gedeckelt.
+    fit: int

@@ -771,6 +771,15 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
   override connectedCallback(): void {
     super.connectedCallback();
     void intakeState.loadScanner();
+    // Die Passung gehoert der WELT, nicht dem Scanner: sie laedt auch fuer
+    // einen Architekten, der die Kandidatenliste gar nicht sehen darf.
+    void intakeState.loadFit(this.simulationId);
+  }
+
+  protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
+    if (changed.has('simulationId') && this.simulationId) {
+      void intakeState.loadFit(this.simulationId);
+    }
   }
 
   override disconnectedCallback(): void {

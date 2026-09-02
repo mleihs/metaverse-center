@@ -36,6 +36,22 @@ export interface FlagSignalRequest {
  */
 export class IntakeApiService extends BaseApiService {
   /**
+   * Die Passung dieser Welt je Signatur (Lücke 3).
+   *
+   * ACHT Zeilen, nicht eine je Kandidat: die Passung hängt an (Welt, Signatur).
+   * Zwei Unwetterwarnungen haben dieselbe — Passung sagt „wie sehr geht diese
+   * ART von Sache diese Welt an", die Magnitude sagt „wie gross ist DIESE".
+   *
+   * Die Zahl ist NICHT erfunden: es ist die Suszeptibilität, mit der der
+   * Resonanzlauf rechnet (`fn_get_adaptive_susceptibility`).
+   */
+  signatureFit(
+    simulationId: string,
+  ): Promise<ApiResponse<Array<{ signature: string; fit: number }>>> {
+    return this.get(`/simulations/${simulationId}/intake/fit`);
+  }
+
+  /**
    * Ein Signal dem Bureau vorlegen.
    *
    * Der Koerper traegt das Signal selbst mit, nicht nur eine Kennung: der

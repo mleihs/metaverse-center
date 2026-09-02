@@ -20,13 +20,14 @@
 import { computed, signal } from '@preact/signals-core';
 import type { Zone } from '../types/index.js';
 import {
+  CATEGORY_RESONANCE,
   fromBrowseArticle,
   fromScanCandidate,
   type IntakeSignal,
   type IntakeStage,
 } from '../types/intake.js';
 import { appState } from './AppStateManager.js';
-import { locationsApi, scannerApi, socialTrendsApi } from './api/index.js';
+import { intakeApi, locationsApi, scannerApi, socialTrendsApi } from './api/index.js';
 import type { AdapterInfo, ScanCandidate, ScannerDashboard } from './api/ScannerApiService.js';
 import { captureError } from './SentryService.js';
 
@@ -103,6 +104,15 @@ class IntakeStateManager {
    * einträgt, empfiehlt an einem Tag mit 44 Unwetterwarnungen die halbe Liste.
    */
   readonly recommendedThreshold = signal<number>(DEFAULT_RECOMMENDED_THRESHOLD);
+
+  /**
+   * Die Passung dieser Welt je SIGNATUR, 0–100.
+   *
+   * Nicht je Kandidat: die Empfänglichkeit hängt an (Welt, Signatur), und zwei
+   * Unwetterwarnungen haben dieselbe. Leer heisst „noch nicht geladen" — die
+   * Oberfläche zeigt dann keine Passung, statt 0 zu behaupten.
+   */
+  readonly fitBySignature = signal<Map<string, number>>(new Map());
 
   /**
    * Wie viele Kandidaten der Server insgesamt hat — nicht, wie viele geladen
@@ -252,6 +262,38 @@ class IntakeStateManager {
     }
   }
 
+  /**
+   * Die Passung dieser Welt holen.
+   *
+   * Ein Fehlschlag deckelt nicht das Board: ohne Passung sortiert die Sichtung
+   * nach Magnitude weiter, und die Spalte bleibt leer statt eine 0 zu
+   * behaupten.
+   */
+  async loadFit(simulationId: string): Promise<void> {
+    if (!simulationId) return;
+    try {
+      const resp = await intakeApi.signatureFit(simulationId);
+      if (!resp.success || !resp.data) return;
+      this.fitBySignature.value = new Map(resp.data.map((r) => [r.signature, r.fit]));
+    } catch (err) {
+      captureError(err, { source: 'IntakeStateManager.loadFit' });
+    }
+  }
+
+  /**
+   * Die Passung EINES Signals, oder `undefined`.
+   *
+   * `undefined` heisst „unbekannt" und ist von 0 zu unterscheiden: ein Signal
+   * ohne Kategorie hat keine Signatur, und eine Welt, deren Passung nicht
+   * geladen ist, hat keine Zahl — beides ist nicht „passt nicht".
+   */
+  fitOf(signal: IntakeSignal): number | undefined {
+    if (!signal.category) return undefined;
+    const signature = CATEGORY_RESONANCE[signal.category]?.signature;
+    if (!signature) return undefined;
+    return this.fitBySignature.value.get(signature);
+  }
+
   /** Der Name einer Zone, oder Leerstring, wenn die Liste sie nicht kennt. */
   zoneName(zoneId: string): string {
     return this.zones.value.find((z) => z.id === zoneId)?.name ?? '';
@@ -353,6 +395,7 @@ class IntakeStateManager {
     this.eventsToday.value = 0;
     this.recommendedThreshold.value = DEFAULT_RECOMMENDED_THRESHOLD;
     this.totalCandidates.value = 0;
+    this.fitBySignature.value = new Map();
   }
 }
 
