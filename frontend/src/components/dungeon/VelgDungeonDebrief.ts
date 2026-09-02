@@ -79,6 +79,33 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
   /** Der Zeitgeber hat die 60er- bzw. 15er-Marke schon angesagt. */
   @state() private _angesagt = new Set<number>();
 
+  /**
+   * Die Zeremonie in vier Zuständen.
+   *
+   *   sealed ──halten──▶ breaking ──650ms──▶ dealt ──Reigen──▶ ready
+   *
+   * `ready` ist der Zustand, in dem verteilt wird; alles davor ist Auftritt.
+   * Bei `prefers-reduced-motion` und beim Überspringen wird direkt dorthin
+   * gesprungen — nicht schneller abgespielt, sondern ausgelassen.
+   */
+  @state() private _zeremonie: 'sealed' | 'breaking' | 'dealt' | 'ready' = 'sealed';
+
+  /** Welche Stücke schon offen liegen. */
+  @state() private _aufgedeckt = new Set<string>();
+
+  /** Das Stück im Scheinwerfer (nur Stufe III), oder null. */
+  @state() private _imLicht: string | null = null;
+
+  /**
+   * Alle laufenden Zeitgeber der Zeremonie.
+   *
+   * ⚠ Sie MÜSSEN beim Abmelden und beim Überspringen geräumt werden. Ein
+   * Rückruf, der nach dem Entfernen der Komponente feuert, schreibt in einen
+   * Zustand, den niemand mehr rendert — und beim Wiedereintritt in die Phase
+   * spielt er gegen die neue Zeremonie an.
+   */
+  private _uhren: ReturnType<typeof setTimeout>[] = [];
+
   // ── Ableitungen aus dem Zustand ────────────────────────────────────────
 
   private get _busy(): boolean {
@@ -187,6 +214,125 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
     return '';
   }
 
+  // ── Die Zeremonie ──────────────────────────────────────────────────────
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Wer Bewegung reduziert haben will, bekommt keine kürzere Zeremonie,
+    // sondern gar keine: alles liegt sofort offen.
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      this._allesAufdecken();
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._raeumeUhren();
+  }
+
+  private _raeumeUhren(): void {
+    for (const u of this._uhren) clearTimeout(u);
+    this._uhren = [];
+  }
+
+  private _spaeter(ms: number, was: () => void): void {
+    this._uhren.push(setTimeout(was, ms));
+  }
+
+  /** Das Siegel ist gebrochen: Karten fliegen verdeckt heraus, dann der Reigen. */
+  private _siegelBrechen(): void {
+    if (this._zeremonie !== 'sealed') return;
+    this._zeremonie = 'breaking';
+    this._spaeter(650, () => {
+      this._zeremonie = 'dealt';
+      // Auswurf: 750 ms Flug plus 90 ms Versatz je Karte (Spezifikation §6.3).
+      const auswurf = 750 + 90 * Math.max(0, this._verteilbar.length - 1);
+      this._spaeter(auswurf, () => this._reigen());
+    });
+  }
+
+  /**
+   * Der Reigen: aufsteigend nach Stufe, damit die legendäre zuletzt kommt.
+   *
+   * Die Reihenfolge trägt die Dramatik — nicht die Effektdichte. Zwischen zwei
+   * Karten liegen 560 ms; eine Stufe III bekommt davor ihren Scheinwerfer.
+   */
+  private _reigen(): void {
+    const reihe = [...this._verteilbar].sort((a, b) => a.tier - b.tier);
+    let versatz = 0;
+    for (const item of reihe) {
+      const legendaer = item.tier >= 3;
+      if (legendaer) {
+        this._spaeter(versatz, () => {
+          this._imLicht = item.id;
+        });
+        versatz += 1700; // aufladen
+      }
+      this._spaeter(versatz, () => this._deckeAuf(item.id));
+      versatz += legendaer ? 1500 : 560;
+      if (legendaer) {
+        this._spaeter(versatz, () => {
+          this._imLicht = null;
+        });
+        versatz += 300;
+      }
+    }
+    this._spaeter(versatz, () => {
+      this._zeremonie = 'ready';
+    });
+  }
+
+  private _deckeAuf(id: string): void {
+    if (this._aufgedeckt.has(id)) return;
+    this._aufgedeckt = new Set(this._aufgedeckt).add(id);
+  }
+
+  /**
+   * Überspringen. Räumt JEDE Uhr — sonst schaltet ein noch laufender Rückruf
+   * den Scheinwerfer wieder an, nachdem der Spieler ihn weggeklickt hat.
+   */
+  private _allesAufdecken(): void {
+    this._raeumeUhren();
+    this._imLicht = null;
+    this._aufgedeckt = new Set(this._stuecke.map((i) => i.id));
+    this._zeremonie = 'ready';
+  }
+
+  /** Was die Rückseite verrät, bevor sie sich dreht. */
+  private _verrat(tier: number): 'none' | 'rare' | 'legendary' {
+    if (tier >= 3) return 'legendary';
+    if (tier === 2) return 'rare';
+    return 'none';
+  }
+
+  private _renderSiegel() {
+    const n = this._verteilbar.length;
+    const brechend = this._zeremonie === 'breaking';
+    return html`
+      <div class="siegel ${brechend ? 'siegel--bricht' : ''}">
+        ${brechend ? html`<div class="siegel__blitz"></div><div class="siegel__ring"></div>` : nothing}
+        <div class="siegel__raute">
+          <div class="siegel__innen">
+            <span class="siegel__marke">BIG</span>
+            <span class="siegel__zeile">${msg(str`${n} pieces`)}</span>
+          </div>
+        </div>
+        <p class="siegel__satz">
+          ${msg('The Bureau sealed what the run gave up. The clock is already running – the seal does not wait either.')}
+        </p>
+        <velg-hold-button
+          .duration=${950}
+          .label=${msg('Break the seal (hold)')}
+          .holdingLabel=${msg('Holding…')}
+          @hold-confirmed=${this._siegelBrechen}
+        ></velg-hold-button>
+        <button class="siegel__ueberspringen" @click=${this._allesAufdecken}>
+          ${msg('Skip – lay everything open')}
+        </button>
+      </div>
+    `;
+  }
+
   private _renderZeitgeber() {
     const restMs = dungeonState.timerRemaining.value;
     if (restMs === null) return nothing;
@@ -248,8 +394,19 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
     const aktiv = this._aktivesStueck === item.id;
     const gedimmt = this._aktivesStueck !== null && !aktiv;
 
+    const verdeckt = !this._aufgedeckt.has(item.id);
+    const imLicht = this._imLicht === item.id;
+    const fliegt = this._zeremonie === 'dealt' || this._zeremonie === 'breaking';
+
     return html`
-      <div class="fach" style="--i: ${index}">
+      <div
+        class="fach ${fliegt ? 'fach--fliegt' : ''} ${imLicht ? 'fach--licht' : ''} ${
+          this._imLicht !== null && !imLicht ? 'fach--zurueck' : ''
+        }"
+        style="--i: ${index}; --fx: ${(index - (this._verteilbar.length - 1) / 2) * -160}px; --fr: ${
+          (index - 2) * -9
+        }deg"
+      >
         <velg-game-card
           type="loot"
           size="md"
@@ -259,9 +416,14 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
           .description=${localizedField(item, 'description')}
           .subtitle=${formatParams(item.effect_params)}
           .primaryStat=${item.tier}
+          .faceDown=${verdeckt}
+          .rarityTell=${verdeckt ? this._verrat(item.tier) : 'none'}
           ?highlighted=${aktiv}
           ?dimmed=${gedimmt}
-          @click=${() => this._waehleStueck(item)}
+          @click=${() =>
+            // Eine verdeckte Karte wartet nicht auf ihren Auftritt, wenn der
+            // Spieler sie schon sehen will.
+            verdeckt ? this._deckeAuf(item.id) : this._waehleStueck(item)}
         ></velg-game-card>
         <div class="fach__fuss ${zielName ? 'fach__fuss--vergeben' : ''}">
           ${
@@ -359,13 +521,32 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
   protected render() {
     if (dungeonState.clientState.value?.phase !== 'distributing') return nothing;
 
+    const auftritt = this._zeremonie === 'sealed' || this._zeremonie === 'breaking';
+
     return html`
       <section class="buehne" aria-label=${msg('Debrief Terminal')}>
-        ${this._renderZeitgeber()} ${this._renderAutomatisch()}
-        <div class="faecher">
-          ${this._verteilbar.map((item, i) => this._renderStueck(item, i))}
-        </div>
-        ${this._renderZiele()} ${this._renderAbschluss()}
+        <!-- Die Frist steht IMMER, auch hinter dem Siegel: sie laeuft ab dem
+             Moment, in dem die Phase beginnt, nicht ab dem Aufdecken. -->
+        ${this._renderZeitgeber()}
+        ${
+          auftritt
+            ? this._renderSiegel()
+            : html`
+              ${this._renderAutomatisch()}
+              <div class="faecher ${this._imLicht !== null ? 'faecher--scheinwerfer' : ''}">
+                ${this._verteilbar.map((item, i) => this._renderStueck(item, i))}
+              </div>
+              ${this._zeremonie === 'ready' ? this._renderZiele() : nothing}
+              ${this._zeremonie === 'ready' ? this._renderAbschluss() : nothing}
+              ${
+                this._zeremonie !== 'ready'
+                  ? html`<button class="siegel__ueberspringen" @click=${this._allesAufdecken}>
+                      ${msg('Reveal all')}
+                    </button>`
+                  : nothing
+              }
+            `
+        }
       </section>
     `;
   }
@@ -506,6 +687,114 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
       color: var(--color-text-muted);
     }
 
+    /* ── Das Siegel ────────────────────────────────────── */
+    .siegel {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-4);
+      padding: var(--space-10) var(--space-4) var(--space-6);
+      position: relative;
+      text-align: center;
+    }
+    .siegel__raute {
+      /*
+       * Die Spitzen ragen ueber die Box hinaus, sobald die Raute gedreht ist —
+       * ohne diesen Abstand schneidet der Nachbar sie ab.
+       */
+      width: 150px;
+      aspect-ratio: 1;
+      margin: var(--space-6) 0 var(--space-8);
+      display: grid;
+      place-items: center;
+      transform: rotate(45deg);
+      border: var(--border-width-thin) solid
+        color-mix(in srgb, var(--color-accent-amber) 55%, transparent);
+      box-shadow: 0 0 0 14px transparent,
+        0 0 0 15px color-mix(in srgb, var(--color-accent-amber) 18%, transparent);
+    }
+    .siegel__innen {
+      display: grid;
+      gap: var(--space-1);
+      transform: rotate(-45deg);
+    }
+    .siegel__marke {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xl);
+      letter-spacing: var(--tracking-brutalist);
+      color: color-mix(in srgb, var(--color-accent-amber) 80%, var(--color-text-primary));
+    }
+    .siegel__zeile {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+    .siegel__satz {
+      max-width: 42ch;
+      margin: 0;
+      font-family: var(--font-prose);
+      font-style: italic;
+      color: var(--color-text-secondary);
+    }
+    .siegel__ueberspringen {
+      justify-self: center;
+      padding: var(--space-2) var(--space-3);
+      min-height: 44px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-text-muted);
+      text-decoration: underline;
+    }
+    .siegel__ueberspringen:hover {
+      color: var(--color-text-primary);
+    }
+
+    /* Der Bruch: ein Blitz und ein Ring, beide auf eigenen Blattelementen. */
+    .siegel--bricht .siegel__raute {
+      animation: siegel-bricht 650ms var(--ease-dramatic, ease-in) forwards;
+    }
+    @keyframes siegel-bricht {
+      to {
+        transform: rotate(45deg) scale(1.9);
+        filter: brightness(3);
+        opacity: 0;
+      }
+    }
+    .siegel__blitz {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: color-mix(in srgb, var(--color-accent-amber) 30%, var(--color-surface-inverse));
+      mix-blend-mode: screen;
+      opacity: 0;
+      animation: siegel-blitz 1100ms var(--ease-out, ease-out) forwards;
+    }
+    @keyframes siegel-blitz {
+      15% { opacity: 0.55; }
+      100% { opacity: 0; }
+    }
+    .siegel__ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300px;
+      aspect-ratio: 1;
+      margin: -150px 0 0 -150px;
+      border: var(--border-width-thick) solid var(--color-accent-amber);
+      border-radius: var(--border-radius-full);
+      pointer-events: none;
+      animation: siegel-ring 900ms var(--ease-out, ease-out) forwards;
+    }
+    @keyframes siegel-ring {
+      from { transform: scale(0.6); opacity: 0.9; }
+      to   { transform: scale(2.6); opacity: 0; }
+    }
+
     /* ── Die Fächer ────────────────────────────────────── */
     .faecher {
       display: flex;
@@ -530,6 +819,49 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
         opacity: 1;
         transform: none;
       }
+    }
+
+    /*
+     * Der Auswurf. Die Karten fliegen VERDECKT aus der Mitte heraus; --fx und
+     * --fr setzt das Rendern je Karte, damit der Faecher symmetrisch aufgeht.
+     */
+    .fach--fliegt {
+      animation: fach-auswurf 750ms var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both;
+      animation-delay: calc(var(--i, 0) * 90ms);
+    }
+    @keyframes fach-auswurf {
+      from {
+        opacity: 0;
+        transform: translate(var(--fx, 0), -190px) scale(0.45) rotateZ(var(--fr, 0deg));
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(-14px) scale(1.04);
+      }
+      80% {
+        transform: translateY(4px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /*
+     * Der Scheinwerfer. Waehrend er brennt, nimmt der Faecher keine Klicks an —
+     * sonst schlaegt ein :hover den Hub und die Karte springt zurueck.
+     */
+    .faecher--scheinwerfer {
+      pointer-events: none;
+    }
+    .fach--zurueck {
+      opacity: 0.25;
+      transition: opacity 700ms var(--ease-out, ease-out);
+    }
+    .fach--licht {
+      z-index: var(--z-raised);
+      transform: scale(1.3) translateY(26px);
+      transition: transform 700ms var(--ease-dramatic, ease-out);
     }
     .fach__fuss {
       font-family: var(--font-mono);
@@ -651,8 +983,16 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .fach {
+      .fach,
+      .fach--fliegt,
+      .siegel--bricht .siegel__raute,
+      .siegel__blitz,
+      .siegel__ring {
         animation: none;
+      }
+      .fach--licht,
+      .fach--zurueck {
+        transition: none;
       }
       .frist__fuellung {
         transition: none;

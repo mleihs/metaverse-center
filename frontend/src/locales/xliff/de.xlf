@@ -29652,7 +29652,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <target>Fundgewicht <x id="0" equiv-text="${item.drop_weight}"/></target>
 </trans-unit>
 <trans-unit id="s3116757bdf2c28c0">
-  <source><x id="0" equiv-text="${items.length}"/> pieces</source>
+  <source><x id="0" equiv-text="${n}"/> pieces</source>
 <target><x id="0" equiv-text="${items.length}"/> Stücke</target>
 </trans-unit>
 <trans-unit id="s9474e9a8029ed7c6">
@@ -31202,6 +31202,26 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s5f927adfbdc85aef">
   <source>Open triage</source>
   <target>Sichtung öffnen</target>
+</trans-unit>
+<trans-unit id="s8e33aed2bcbc661d">
+  <source>The Bureau sealed what the run gave up. The clock is already running – the seal does not wait either.</source>
+<target>Das Bureau hat versiegelt, was der Lauf hergab. Die Uhr läuft bereits – auch das Siegel wartet nicht.</target>
+</trans-unit>
+<trans-unit id="s1b112af1035cc248">
+  <source>Break the seal (hold)</source>
+<target>Siegel brechen (halten)</target>
+</trans-unit>
+<trans-unit id="s5574be2e58cf5322">
+  <source>Holding…</source>
+<target>Halten …</target>
+</trans-unit>
+<trans-unit id="s7f167e5f49ca0dee">
+  <source>Skip – lay everything open</source>
+<target>Überspringen – alles offen legen</target>
+</trans-unit>
+<trans-unit id="s378e8f3897894583">
+  <source>Reveal all</source>
+<target>Alle aufdecken</target>
 </trans-unit>
 </body>
 </file>
