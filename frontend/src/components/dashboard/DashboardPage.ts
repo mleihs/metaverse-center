@@ -74,6 +74,40 @@ export class VelgOperativeDashboard extends LitElement {
         background: var(--color-surface-sunken);
         color: var(--color-text-primary);
         min-height: 60vh;
+
+        /*
+         * Die Nebenspalte des Dashboards — EIN Mass fuer beide Abschnitte.
+         *
+         * Das Dashboard stapelt zwei Zweispalter: „Meine Welten" mit der
+         * Dossiertafel und das Scherbenregister mit der Schiene. Beide waren
+         * unabhaengig gebaut und hatten eigene Breiten. Auf Prod gemessen
+         * (1728 px):
+         *
+         *     Meine Welten      949 px | 620 px    Naht bei  997
+         *     Scherbenregister 1233 px | 356 px    Naht bei 1281
+         *
+         * Aussen bündig (48 links, 1665 rechts), innen 284 px auseinander —
+         * die senkrechte Naht springt beim Scrollen zur Seite. Genau das hat
+         * der Nutzer als (Wortlaut nicht wiedergegeben) gemeldet, und die Frage nach dem
+         * Plan dahinter hatte keine Antwort: es gab keinen.
+         *
+         * Die Umbruchpunkte waren bereits identisch (1920 / 1024), nur die
+         * Breiten nicht. Es gewinnt die Leiter der Dossiertafel (620/760),
+         * weil ihr Inhalt sie braucht — eine 16:9-Kachel plus Textpanel — und
+         * die Schiene mit der Breite umgehen kann: sie wird ohnehin gar nicht
+         * gerendert, wenn sie nichts zu sagen hat (siehe .lower--solo).
+         *
+         * Kein --_-Name: das Token ueberquert eine Komponentengrenze
+         * (velg-dashboard-worlds ist ein Kind dieser Seite), und die Tier-3-
+         * Konvention gilt fuer Werte, die im eigenen Bauteil bleiben.
+         */
+        --dashboard-aside: 620px;
+      }
+
+      @media (min-width: 1920px) {
+        :host {
+          --dashboard-aside: 760px;
+        }
       }
 
       /* Register und Schiene teilen sich eine Zeile — das Raster ist fest, weil
@@ -81,7 +115,7 @@ export class VelgOperativeDashboard extends LitElement {
          der Nachbarin den Schrumpfschutz nähmen. */
       .lower {
         display: grid;
-        grid-template-columns: 1fr 356px;
+        grid-template-columns: minmax(0, 1fr) var(--dashboard-aside);
         gap: var(--space-7);
         align-items: start;
         padding-block: var(--space-12);
@@ -145,12 +179,6 @@ export class VelgOperativeDashboard extends LitElement {
 
       .clearance {
         padding-block: var(--space-6);
-      }
-
-      @media (min-width: 1920px) {
-        .lower {
-          grid-template-columns: 1fr 380px;
-        }
       }
 
       @media (max-width: 1024px) {

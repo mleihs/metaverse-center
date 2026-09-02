@@ -11,9 +11,10 @@
 
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
+import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
 import type { Simulation } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
@@ -353,37 +354,30 @@ export class VelgWorldsGallery extends LitElement {
       50%      { opacity: 1; }
     }
 
-    /* ── Pagination ─────────────────────────── */
+    /* ── Listenende ─────────────────────────── */
 
-    .gallery-pagination {
+    /*
+     * Kein Blaettern mehr, sondern ein Ende, das sich meldet.
+     *
+     * Die Hoehe ist Absicht und nicht Zierrat: das Element muss gross genug
+     * sein, dass der Beobachter es sicher trifft, auch wenn der Leser schnell
+     * scrollt. Ein 1-px-Anker wird bei schnellem Scrollen uebersprungen, und
+     * dann laedt nichts nach, ohne dass irgendetwas kaputt aussieht.
+     */
+    .tail {
       display: flex;
+      align-items: center;
       justify-content: center;
-      gap: var(--space-3, 12px);
+      min-height: 72px;
       padding: 0 var(--space-6, 24px) var(--space-12, 48px);
     }
 
-    .gallery-pagination__btn {
-      padding: 10px 20px;
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: 900;
-      font-size: 11px;
-      letter-spacing: 2px;
+    .tail__note {
+      font-family: var(--font-mono);
+      font-size: var(--text-2xs);
+      letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
-      color: var(--color-text-secondary);
-      background: transparent;
-      border: 1px solid var(--color-border);
-      cursor: pointer;
-      transition: all 200ms;
-    }
-
-    .gallery-pagination__btn:hover:not(:disabled) {
-      border-color: var(--color-accent-amber);
-      color: var(--color-accent-amber);
-    }
-
-    .gallery-pagination__btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
+      color: var(--color-text-quiet);
     }
 
     /* ── CTA Banner ─────────────────────────── */
@@ -468,8 +462,23 @@ export class VelgWorldsGallery extends LitElement {
   @state() private _offset = 0;
   @state() private _search = '';
 
+  @state() private _loadingMore = false;
+
   private _limit = 12;
   private _observer?: IntersectionObserver;
+
+  /**
+   * Der zweite Beobachter — der fuer das Nachladen.
+   *
+   * Bewusst NICHT derselbe wie `_observer`: der wird in `updated()` bei jedem
+   * Rendern neu aufgesetzt (Scroll-Reveal), und ein Nachlade-Beobachter, der
+   * sich waehrend des Nachladens selbst abbaut, feuert entweder doppelt oder
+   * gar nicht mehr. Zwei Aufgaben, zwei Beobachter.
+   */
+  private _tailObserver?: IntersectionObserver;
+
+  /** Das Element am Listenende, dessen Sichtbarkeit die naechste Seite holt. */
+  @query('.tail') private _tail?: HTMLElement;
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -482,26 +491,81 @@ export class VelgWorldsGallery extends LitElement {
 
   protected updated(): void {
     this._setupScrollReveal();
+    this._setupTailObserver();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._observer?.disconnect();
+    this._tailObserver?.disconnect();
     seoService.removeStructuredData();
   }
 
-  private async _fetchSimulations(): Promise<void> {
-    this._loading = true;
-    const resp = await simulationsApi.listPublic({
-      limit: String(this._limit),
-      offset: String(this._offset),
-    });
-    if (resp.success && Array.isArray(resp.data)) {
-      this._simulations = resp.data as Simulation[];
-      this._total = resp.meta?.total ?? resp.data.length;
-      this._injectStructuredData();
+  /**
+   * Eine Seite holen — und ANHAENGEN, nicht ersetzen.
+   *
+   * Vorher ersetzte jede Seite die vorige, und zwei Knoepfe schoben den
+   * Versatz hin und her. Fuer ein Register ist das die falsche Geste: wer
+   * durch Welten blaettert, sucht nicht Seite 3, er sucht weiter. Jetzt
+   * verlaengert sich die Liste, sobald ihr Ende in den Blick kommt.
+   *
+   * `anhaengen` unterscheidet die beiden Faelle sauber: der erste Abruf setzt
+   * die Liste (und `_loading` zeichnet den Skelettzustand), jeder weitere
+   * haengt an (und `_loadingMore` zeichnet nur die Fusszeile). Ohne diese
+   * Trennung wuerde beim Nachladen die ganze Galerie kurz verschwinden.
+   */
+  private async _fetchSimulations(anhaengen = false): Promise<void> {
+    if (anhaengen) this._loadingMore = true;
+    else this._loading = true;
+    try {
+      const resp = await simulationsApi.listPublic({
+        limit: String(this._limit),
+        offset: String(this._offset),
+      });
+      if (resp.success && Array.isArray(resp.data)) {
+        const seite = resp.data as Simulation[];
+        this._simulations = anhaengen ? [...this._simulations, ...seite] : seite;
+        this._total = resp.meta?.total ?? this._simulations.length;
+        this._injectStructuredData();
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgWorldsGallery._fetchSimulations' });
+    } finally {
+      this._loading = false;
+      this._loadingMore = false;
     }
-    this._loading = false;
+  }
+
+  private get _hatMehr(): boolean {
+    return this._simulations.length < this._total;
+  }
+
+  /**
+   * Die naechste Seite, wenn das Listenende sichtbar wird.
+   *
+   * Drei Riegel, und jeder hat einen Grund: `_loadingMore` verhindert, dass
+   * ein zweites Sichtbarwerden waehrend des Ladens eine dritte Seite holt;
+   * `_hatMehr` verhindert einen Abruf, der nichts mehr bringt; `_loading`
+   * verhindert, dass der erste Abruf und das Nachladen sich ueberholen.
+   */
+  private _ladeMehr(): void {
+    if (this._loading || this._loadingMore || !this._hatMehr) return;
+    this._offset += this._limit;
+    void this._fetchSimulations(true);
+  }
+
+  private _setupTailObserver(): void {
+    this._tailObserver?.disconnect();
+    if (!this._tail || !this._hatMehr) return;
+    this._tailObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) this._ladeMehr();
+      },
+      // Vorlauf: die naechste Seite steht bereit, bevor der Leser das Ende
+      // erreicht. Ohne ihn sieht man bei jedem Nachladen eine Luecke.
+      { rootMargin: '600px' },
+    );
+    this._tailObserver.observe(this._tail);
   }
 
   private _handleSearch(e: Event): void {
@@ -541,16 +605,6 @@ export class VelgWorldsGallery extends LitElement {
         })),
       },
     });
-  }
-
-  private _prevPage(): void {
-    this._offset = Math.max(0, this._offset - this._limit);
-    this._fetchSimulations();
-  }
-
-  private _nextPage(): void {
-    this._offset += this._limit;
-    this._fetchSimulations();
   }
 
   private _setupScrollReveal(): void {
@@ -672,28 +726,26 @@ export class VelgWorldsGallery extends LitElement {
                 )}
               </div>
 
-              ${
-                this._total > this._limit
-                  ? html`
-                    <div class="gallery-pagination">
-                      <button
-                        class="gallery-pagination__btn"
-                        ?disabled=${this._offset === 0}
-                        @click=${this._prevPage}
-                      >
-                        ${msg('Previous')}
-                      </button>
-                      <button
-                        class="gallery-pagination__btn"
-                        ?disabled=${this._offset + this._limit >= this._total}
-                        @click=${this._nextPage}
-                      >
-                        ${msg('Next')}
-                      </button>
-                    </div>
-                  `
-                  : nothing
-              }
+              <!--
+                Das Listenende statt zweier Blaetter-Knoepfe. Der Beobachter
+                haengt an .tail und holt die naechste Seite, bevor der Leser
+                unten ankommt (600 px Vorlauf).
+
+                Die Zeile bleibt auch dann stehen, wenn alles geladen ist —
+                dann nennt sie die Zahl. Ein Register, das schweigend aufhoert,
+                laesst offen, ob es zu Ende ist oder haengt.
+              -->
+              <div class="tail">
+                ${
+                  this._loadingMore
+                    ? html`<span class="tail__note">${msg('Loading more worlds...')}</span>`
+                    : this._hatMehr
+                      ? nothing
+                      : html`<span class="tail__note">
+                          ${msg(str`All ${this._total} worlds on record.`)}
+                        </span>`
+                }
+              </div>
             `
       }
 
