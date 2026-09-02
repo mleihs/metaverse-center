@@ -30,6 +30,9 @@ import { intakeState } from '../../services/IntakeStateManager.js';
 import type { IntakeSignal } from '../../types/intake.js';
 import { icons } from '../../utils/icons.js';
 import './IntakeCrucibleModal.js';
+import './IntakeFlagModal.js';
+import './IntakeQuarantineCard.js';
+import './IntakeResonanceModal.js';
 import './IntakeSensorTile.js';
 
 /** Wie viele Minuten seit einem ISO-Zeitstempel vergangen sind. */
@@ -558,6 +561,15 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
    */
   @state() private _crucibleSignalId = '';
 
+  /** Ob der Schmelztiegel eine Linse ÄNDERT statt eine zu setzen. */
+  @state() private _crucibleEditLens = false;
+
+  /** Das Signal im Resonanz-Modal. Leer heisst: zu. */
+  @state() private _resonanceSignalId = '';
+
+  /** Das Signal im Melden-Modal. Leer heisst: zu. */
+  @state() private _flagSignalId = '';
+
   override connectedCallback(): void {
     super.connectedCallback();
     void intakeState.loadScanner();
@@ -778,6 +790,53 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     `;
   }
 
+  /**
+   * Kammer ② — die einzige mit echten Karten.
+   *
+   * Die drei anderen tragen bis zu den Schritten 5 und 6 Platzhalter. Diese
+   * hier ist zuerst dran, weil sie die einzige ist, auf der etwas
+   * Unumkehrbares passieren kann.
+   */
+  private _renderQuarantine() {
+    const items = intakeState.inQuarantine.value;
+    const title = msg('2 Quarantine · decide its fate');
+
+    return html`
+      <section class="chamber chamber--q" aria-label=${title}>
+        <header class="chamber__head">
+          <h2 class="chamber__title">${title}</h2>
+          <span class="chamber__count">${items.length}</span>
+        </header>
+        <div class="chamber__body">
+          ${
+            items.length === 0
+              ? html`<p class="empty">
+                  ${msg('Quarantine is empty. The next scan cycle will bring more.')}
+                </p>`
+              : items.map(
+                  (s) => html`
+                    <velg-intake-quarantine-card
+                      .signal=${s}
+                      .simulationId=${this.simulationId}
+                      @intake-raise-resonance=${(e: CustomEvent<{ signalId: string }>) => {
+                        this._resonanceSignalId = e.detail.signalId;
+                      }}
+                      @intake-flag=${(e: CustomEvent<{ signalId: string }>) => {
+                        this._flagSignalId = e.detail.signalId;
+                      }}
+                      @intake-edit-lens=${(e: CustomEvent<{ signalId: string }>) => {
+                        this._crucibleEditLens = true;
+                        this._crucibleSignalId = e.detail.signalId;
+                      }}
+                    ></velg-intake-quarantine-card>
+                  `,
+                )
+          }
+        </div>
+      </section>
+    `;
+  }
+
   protected render() {
     const err = intakeState.error.value;
 
@@ -792,12 +851,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           msg('Nothing admitted yet. Pick from triage, or let a subscription fill it.'),
           (s) => this._renderTransformAction(s),
         )}
-        ${this._renderChamber(
-          'q',
-          msg('2 Quarantine · decide its fate'),
-          intakeState.inQuarantine.value,
-          msg('Quarantine is empty. The next scan cycle will bring more.'),
-        )}
+        ${this._renderQuarantine()}
         ${this._renderChamber(
           'released',
           msg('3 Released · resonances and events'),
@@ -815,10 +869,27 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
         ?open=${this._crucibleSignalId !== ''}
         .simulationId=${this.simulationId}
         signal-id=${this._crucibleSignalId}
+        ?edit-lens=${this._crucibleEditLens}
         @modal-close=${() => {
           this._crucibleSignalId = '';
+          this._crucibleEditLens = false;
         }}
       ></velg-intake-crucible-modal>
+      <velg-intake-resonance-modal
+        ?open=${this._resonanceSignalId !== ''}
+        signal-id=${this._resonanceSignalId}
+        @modal-close=${() => {
+          this._resonanceSignalId = '';
+        }}
+      ></velg-intake-resonance-modal>
+      <velg-intake-flag-modal
+        ?open=${this._flagSignalId !== ''}
+        .simulationId=${this.simulationId}
+        signal-id=${this._flagSignalId}
+        @modal-close=${() => {
+          this._flagSignalId = '';
+        }}
+      ></velg-intake-flag-modal>
     `;
   }
 }

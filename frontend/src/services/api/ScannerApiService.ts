@@ -52,6 +52,28 @@ export interface ScanCandidate {
   created_at: string;
   reviewed_at: string | null;
   reviewed_by_id: string | null;
+  /** Nur bei `status: 'flagged'` gesetzt (Migration 334). */
+  flag_reason: string | null;
+  flagged_by_simulation_id: string | null;
+}
+
+/**
+ * Was eine Resonanz in EINER Welt anrichten wuerde — vor dem Ausloesen.
+ *
+ * `effective_magnitude` ist eine OBERGRENZE: Attunement-Tiefe und
+ * Anker-Schutz werden erst im Lauf je Welt gelesen und koennen den Wert nur
+ * senken. `will_skip` ist entsprechend die vorsichtige Antwort — eine Welt,
+ * die hier als getroffen steht, kann im Lauf noch uebersprungen werden, nie
+ * umgekehrt. Die Zahl kommt aus derselben Funktion, die der Lauf benutzt
+ * (`ResonanceService.susceptibility_of`).
+ */
+export interface SusceptibilityRow {
+  simulation_id: string;
+  simulation_name: string;
+  simulation_slug: string | null;
+  susceptibility: number;
+  effective_magnitude: number;
+  will_skip: boolean;
 }
 
 export interface ScanLogEntry {
@@ -111,6 +133,17 @@ export class ScannerApiService extends BaseApiService {
 
   async listCandidates(params?: QueryParams): Promise<ApiResponse<ScanCandidateList>> {
     return this.get('/admin/news-scanner/candidates', params);
+  }
+
+  /**
+   * Vorschau: was das Ausloesen dieses Kandidaten in den Welten anrichten wuerde.
+   *
+   * Wird VOR dem Halte-Knopf geladen. Ohne sie stuende auf einem
+   * unumkehrbaren Knopf eine geratene Folge, und das ist schlimmer als gar
+   * keine — es traegt die Gestalt von Wissen.
+   */
+  async candidateSusceptibility(id: string): Promise<ApiResponse<SusceptibilityRow[]>> {
+    return this.get(`/admin/news-scanner/candidates/${id}/susceptibility`);
   }
 
   async approveCandidate(id: string, delayHours = 4): Promise<ApiResponse<unknown>> {

@@ -30733,6 +30733,162 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Building repair is here too: the only effect in play that lifts a ruined building</source>
 <target>Auch die Gebäudereparatur steht hier: die einzige Wirkung im Spiel, die ein zerstörtes Gebäude wieder aufrichtet</target>
 </trans-unit>
+<trans-unit id="s246cdfca035906f6">
+  <source>The report did not reach the Bureau.</source>
+  <target>Die Meldung hat das Bureau nicht erreicht.</target>
+</trans-unit>
+<trans-unit id="s33739f70de356a27">
+  <source>"<x id="0" equiv-text="${request.article_name}"/>" is with the Bureau. It decides what it becomes.</source>
+  <target>„<x id="0" equiv-text="${request.article_name}"/>" liegt beim Bureau. Was daraus wird, entscheidet es.</target>
+</trans-unit>
+<trans-unit id="s183ee7b125476756">
+  <source>Magnitude from 0.1 to 1.0</source>
+  <target>Magnitude von 0,1 bis 1,0</target>
+</trans-unit>
+<trans-unit id="s80de3d4ff2231583">
+  <source>Magnitude <x id="0" equiv-text="${value.toFixed(1)}"/></source>
+  <target>Magnitude <x id="0" equiv-text="${value.toFixed(1)}"/></target>
+</trans-unit>
+<trans-unit id="s5f147e9fe8a11ab9">
+  <source>how large this is in the world outside</source>
+  <target>wie gross das draussen ist</target>
+</trans-unit>
+<trans-unit id="s8a2a2304d73388ab">
+  <source>Report to the Bureau</source>
+  <target>Dem Bureau melden</target>
+</trans-unit>
+<trans-unit id="s104bb8def73b265d">
+  <source>As what</source>
+  <target>Als was</target>
+</trans-unit>
+<trans-unit id="scb5acb69bd4a3a21">
+  <source>What made you pull this one out of the stream?</source>
+  <target>Was hat dich dieses eine aus dem Strom greifen lassen?</target>
+</trans-unit>
+<trans-unit id="sfc3a858eea79ca62">
+  <source>You are not deciding that every world feels this. You are putting it in front of the Bureau, which weighs it against each world on its own. Your own world can still take it as an event either way.</source>
+  <target>Du entscheidest damit nicht, dass alle Welten es spüren. Du legst es dem Bureau vor, und das wiegt es gegen jede Welt einzeln. Deine eigene Welt kann es so oder so als Ereignis aufnehmen.</target>
+</trans-unit>
+<trans-unit id="s3501dd9544ae8f7e">
+  <source>The event was not created.</source>
+  <target>Das Ereignis wurde nicht angelegt.</target>
+</trans-unit>
+<trans-unit id="s665d677ea7c06c87">
+  <source>"<x id="0" equiv-text="${proposal.title}"/>" is in the world · <x id="1" equiv-text="${count}"/> agents answered</source>
+  <target>„<x id="0" equiv-text="${proposal.title}"/>" steht in der Welt · <x id="1" equiv-text="${count}"/> Agenten haben geantwortet</target>
+</trans-unit>
+<trans-unit id="s238bbf5993fb6309">
+  <source>"<x id="0" equiv-text="${proposal.title}"/>" is in the world</source>
+  <target>„<x id="0" equiv-text="${proposal.title}"/>" steht in der Welt</target>
+</trans-unit>
+<trans-unit id="sbadd866b83276ae1">
+  <source>Resonance · every world</source>
+  <target>Resonanz · alle Welten</target>
+</trans-unit>
+<trans-unit id="sa8e8ce38e97bdffd">
+  <source>A resonance leaves this world and weighs itself against each of the others. The table of what it would do to them is in the dispatch, behind the button.</source>
+  <target>Eine Resonanz verlässt diese Welt und wiegt sich gegen jede andere einzeln. Was sie dort anrichten würde, steht in der Depesche hinter dem Knopf.</target>
+</trans-unit>
+<trans-unit id="s68978b92c8c00990">
+  <source>Report · the Bureau decides</source>
+  <target>Melden · das Bureau entscheidet</target>
+</trans-unit>
+<trans-unit id="s9eb632951f92fbf3">
+  <source>Whether every world feels this is not yours to decide. You can put it in front of the Bureau, and take it as an event of your own world either way.</source>
+  <target>Ob alle Welten das spüren, ist nicht deine Entscheidung. Du kannst es dem Bureau vorlegen – und es so oder so als Ereignis deiner eigenen Welt aufnehmen.</target>
+</trans-unit>
+<trans-unit id="scbd2af423239d0c1">
+  <source>As an event · only here</source>
+  <target>Als Ereignis · nur hier</target>
+</trans-unit>
+<trans-unit id="s476587cc123ef0e1">
+  <source>No lens has been set. Open the crucible to give it one.</source>
+  <target>Es ist keine Linse gesetzt. Öffne den Schmelztiegel und gib ihm eine.</target>
+</trans-unit>
+<trans-unit id="s7e51dfc03187be71">
+  <source>impact <x id="0" equiv-text="${lens.impact}"/></source>
+  <target>Wucht <x id="0" equiv-text="${lens.impact}"/></target>
+</trans-unit>
+<trans-unit id="sd7cb952169a1e6eb">
+  <source>Take it as an event of this world</source>
+  <target>Als Ereignis dieser Welt aufnehmen</target>
+</trans-unit>
+<trans-unit id="se40b6c60005c6034">
+  <source>Daily quota reached</source>
+  <target>Tagesquote erreicht</target>
+</trans-unit>
+<trans-unit id="sd43810ab6b2f94a9">
+  <source>Needs a lens first</source>
+  <target>Braucht zuerst eine Linse</target>
+</trans-unit>
+<trans-unit id="s06f6c6f99db6b552">
+  <source>Original</source>
+  <target>Original</target>
+</trans-unit>
+<trans-unit id="sba027a7de3df78db">
+  <source>Only here</source>
+  <target>Nur hier</target>
+</trans-unit>
+<trans-unit id="sa5a888b4bb5f44ed">
+  <source>Lens</source>
+  <target>Linse</target>
+</trans-unit>
+<trans-unit id="s4767ef35370cdfab">
+  <source>The susceptibility table did not load.</source>
+  <target>Die Suszeptibilitätstafel wurde nicht geladen.</target>
+</trans-unit>
+<trans-unit id="s0ac049b1ecd0537a">
+  <source>The resonance was not raised.</source>
+  <target>Die Resonanz wurde nicht ausgelöst.</target>
+</trans-unit>
+<trans-unit id="s8fad3b70282db311">
+  <source>Resonance raised · reaches <x id="0" equiv-text="${hit}"/> worlds · impacts in <x id="1" equiv-text="${IMPACT_DELAY_HOURS}"/> h</source>
+  <target>Resonanz ausgelöst · trifft <x id="0" equiv-text="${hit}"/> Welten · schlägt in <x id="1" equiv-text="${IMPACT_DELAY_HOURS}"/> h zu</target>
+</trans-unit>
+<trans-unit id="sc91128da5e735c14">
+  <source>Bureau of Substrate Monitoring · dispatch</source>
+  <target>Bureau für Substrat-Überwachung · Depesche</target>
+</trans-unit>
+<trans-unit id="s3f69648aa02cdb5d">
+  <source>The scanner wrote no dispatch for this one.</source>
+  <target>Der Scanner hat zu diesem keine Depesche geschrieben.</target>
+</trans-unit>
+<trans-unit id="sf49bae97b349c229">
+  <source>Weighing the worlds …</source>
+  <target>Die Welten werden gewogen …</target>
+</trans-unit>
+<trans-unit id="s2667bb762e826f9b">
+  <source>No active world answered.</source>
+  <target>Keine aktive Welt hat geantwortet.</target>
+</trans-unit>
+<trans-unit id="s122c29252726fac3">
+  <source>Reaches <x id="0" equiv-text="${hit}"/> of <x id="1" equiv-text="${this._rows.length}"/> worlds · impacts in <x id="2" equiv-text="${IMPACT_DELAY_HOURS}"/> h · cannot be undone</source>
+  <target>Trifft <x id="0" equiv-text="${hit}"/> von <x id="1" equiv-text="${this._rows.length}"/> Welten · schlägt in <x id="2" equiv-text="${IMPACT_DELAY_HOURS}"/> h zu · nicht rücknehmbar</target>
+</trans-unit>
+<trans-unit id="s7d3e40a8c5c4c60f">
+  <source>These are upper bounds. Attunement depth and anchor protection are read per world when the resonance lands, and both only lower the number – a world listed here as hit can still be skipped, never the reverse.</source>
+  <target>Das sind Obergrenzen. Attunement-Tiefe und Ankerschutz werden erst beim Zuschlagen je Welt gelesen, und beide senken den Wert nur – eine Welt, die hier als getroffen steht, kann noch übersprungen werden, nie umgekehrt.</target>
+</trans-unit>
+<trans-unit id="s389636cf31223328">
+  <source>Raise a resonance</source>
+  <target>Resonanz auslösen</target>
+</trans-unit>
+<trans-unit id="s17123a6f24819995">
+  <source>This signal has no row with the scanner, and a resonance is raised from one. Report it to the Bureau instead, or take it as an event of this world.</source>
+  <target>Dieses Signal hat keine Zeile beim Scanner, und eine Resonanz entsteht aus einer. Melde es dem Bureau, oder nimm es als Ereignis dieser Welt auf.</target>
+</trans-unit>
+<trans-unit id="sc438b7ae0e6eaead">
+  <source>Hold to raise</source>
+  <target>Zum Auslösen halten</target>
+</trans-unit>
+<trans-unit id="s97bdccc08b9d43a2">
+  <source>Holding …</source>
+  <target>wird gehalten …</target>
+</trans-unit>
+<trans-unit id="s5da1f14cbb7b92cd">
+  <source>Report signal</source>
+  <target>Melden</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

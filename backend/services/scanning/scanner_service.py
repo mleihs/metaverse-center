@@ -623,12 +623,12 @@ class ScannerService(BaseSchedulerMixin):
             admin.table("news_scan_candidates")
             .select("*")
             .eq("id", str(candidate_id))
-            .eq("status", "pending")
+            .in_("status", ["pending", "flagged"])
             .limit(1)
             .execute()
         )
         if not resp.data:
-            raise not_found(detail="Candidate not found or not pending.")
+            raise not_found(detail="Candidate not found, or already decided.")
 
         candidate = resp.data[0]
         impacts_at = datetime.now(UTC) + timedelta(hours=delay_hours)

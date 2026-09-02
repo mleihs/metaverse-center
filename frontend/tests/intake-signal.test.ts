@@ -55,6 +55,8 @@ function candidate(over: Partial<ScanCandidate> = {}): ScanCandidate {
     created_at: '2026-09-02T06:00:00Z',
     reviewed_at: null,
     reviewed_by_id: null,
+    flag_reason: null,
+    flagged_by_simulation_id: null,
     ...over,
   };
 }
@@ -178,8 +180,17 @@ describe('effectiveMagnitude', () => {
   });
 
   it('markiert eine übersprungene Welt unter der Schwelle', () => {
-    expect(effectiveMagnitude(0.3, 0.5)).toBeLessThan(EFFECT_SKIP_THRESHOLD);
+    expect(effectiveMagnitude(0.08, 0.5)).toBeLessThan(EFFECT_SKIP_THRESHOLD);
     expect(effectiveMagnitude(0.8, 0.9)).toBeGreaterThan(EFFECT_SKIP_THRESHOLD);
+  });
+
+  it('hält die Schwelle auf dem Wert, den der Lauf wirklich benutzt', () => {
+    // Der Bauplan nennt 0.2. Der Lauf springt bei 0.05
+    // (`ResonanceService.SKIP_THRESHOLD`, §5 von `_process_simulation_impact`).
+    // Mit 0.2 meldete die Suszeptibilitätstafel „übersprungen" für Welten, die
+    // getroffen werden — auf dem Schirm, auf dem ein Admin einen
+    // unumkehrbaren Knopf hält. Diese Zeile ist der Riegel dagegen.
+    expect(EFFECT_SKIP_THRESHOLD).toBe(0.05);
   });
 });
 

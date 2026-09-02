@@ -25,6 +25,7 @@ export { ForgeApiService, forgeApi } from './ForgeApiService.js';
 export { GenerationApiService, generationApi } from './GenerationApiService.js';
 export { HealthApiService, healthApi } from './HealthApiService.js';
 export { HeartbeatApiService, heartbeatApi } from './HeartbeatApiService.js';
+export { IntakeApiService, intakeApi } from './IntakeApiService.js';
 export { InvitationsApiService, invitationsApi } from './InvitationsApiService.js';
 export { JournalApiService, journalApi } from './JournalApiService.js';
 export { LocationsApiService, locationsApi } from './LocationsApiService.js';

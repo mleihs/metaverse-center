@@ -92,6 +92,7 @@ import {
   impactWord,
   toneLabel,
 } from './intake-labels.js';
+import { intakeControlStyles } from './intake-styles.js';
 
 /**
  * Erreicht die Linse das Modell?
@@ -129,7 +130,9 @@ type CruciblePhase = 'idle' | 'reading' | 'typing' | 'done' | 'error';
 @localized()
 @customElement('velg-intake-crucible-modal')
 export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
-  static styles = css`
+  static styles = [
+    intakeControlStyles,
+    css`
     :host {
       display: block;
 
@@ -167,22 +170,6 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
 
     .row:last-child {
       border-block-end: none;
-    }
-
-    .label {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-    }
-
-    .note {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      color: var(--color-text-tertiary);
     }
 
     /* ── Schrittleiste ───────────────────────────────────────────────────── */
@@ -526,47 +513,6 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       margin: 0;
     }
 
-    .chip {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      padding: var(--space-1-5) var(--space-2-5);
-      background: transparent;
-      border: var(--border-width-thin) solid var(--color-border);
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: border-color var(--transition-fast), color var(--transition-fast);
-    }
-
-    .chip:hover,
-    .chip:focus-visible {
-      border-color: var(--color-accent-amber);
-      color: var(--color-text-primary);
-    }
-
-    .chip:focus-visible {
-      outline: none;
-      box-shadow: var(--ring-focus);
-    }
-
-    .chip--on {
-      background: var(--color-accent-amber);
-      border-color: var(--color-accent-amber);
-      color: var(--color-on-accent-amber);
-    }
-
-    .chip--on:hover,
-    .chip--on:focus-visible {
-      color: var(--color-on-accent-amber);
-    }
-
-    .chip--green.chip--on {
-      background: transparent;
-      border-color: var(--color-accent-green);
-      color: var(--color-accent-green);
-    }
-
     .impact {
       display: flex;
       align-items: flex-end;
@@ -681,59 +627,15 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
 
     /* ── Fusszeile ───────────────────────────────────────────────────────── */
 
+    .act--last {
+      margin-inline-start: auto;
+    }
+
     .foot {
       display: flex;
       align-items: center;
       gap: var(--space-3);
       flex-wrap: wrap;
-    }
-
-    .act {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
-      padding: var(--space-2-5) var(--space-4);
-      background: transparent;
-      border: var(--border-width-thin) solid var(--color-border);
-      color: var(--color-text-secondary);
-      cursor: pointer;
-      transition: border-color var(--transition-fast), color var(--transition-fast);
-    }
-
-    .act:hover:not(:disabled),
-    .act:focus-visible:not(:disabled) {
-      border-color: var(--color-accent-amber);
-      color: var(--color-text-primary);
-    }
-
-    .act:focus-visible {
-      outline: none;
-      box-shadow: var(--ring-focus);
-    }
-
-    .act--primary {
-      background: var(--color-accent-amber);
-      border-color: var(--color-accent-amber-dim);
-      color: var(--color-on-accent-amber);
-      box-shadow: var(--shadow-md);
-      margin-inline-start: 0;
-    }
-
-    .act--primary:hover:not(:disabled),
-    .act--primary:focus-visible:not(:disabled) {
-      background: var(--color-accent-amber-hover);
-      color: var(--color-on-accent-amber);
-    }
-
-    .act--last {
-      margin-inline-start: auto;
-    }
-
-    .act:disabled {
-      opacity: 0.35;
-      cursor: default;
     }
 
     /* ── Unter 860: gestapelt ────────────────────────────────────────────── */
@@ -813,12 +715,9 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       .out__cursor {
         animation: none;
       }
-      .chip,
-      .act {
-        transition-duration: 0.01ms;
-      }
     }
-  `;
+  `,
+  ];
 
   @property({ type: Boolean, reflect: true }) open = false;
 
