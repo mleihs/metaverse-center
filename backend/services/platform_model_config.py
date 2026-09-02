@@ -49,12 +49,35 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     # Same model, now a settings row like every other. Verified in the catalogue
     # 2026-08-30 together with the four above.
     "model_forecast": "anthropic/claude-haiku-4.5",
+    # `classify` — Einordnen, nicht Erfinden.
+    #
+    # GEMESSEN 02.09.2026, weil der Standard hier nicht taugt: der
+    # Substrate-Scanner lief mit `model_default`
+    # (`deepseek-v4-flash-0731`, ein DENKMODELL) und lieferte null Kandidaten
+    # aus allen Nachrichtenquellen. Für EINE Überschrift verbrauchte das
+    # Modell 747 Ausgabe-Token, davon 709 fürs Nachdenken — das Budget war vor
+    # dem ersten Zeichen Antwort aufgebraucht, und OpenRouter lieferte eine
+    # 200er-Antwort mit leerem `content`.
+    #
+    #     deepseek-v4-flash-0731   ~25 s   747 Token (1 Überschrift)   leer
+    #     deepseek-chat            5,8 s   329 Token (10 Überschriften)  10/10
+    #
+    # Von sechzehn DeepSeek-Modellen im Katalog denken vierzehn. `deepseek-chat`
+    # ist eines der zwei, die es nicht tun. Für eine Aufgabe, die eine
+    # Überschrift in eine von acht Schubladen legt, ist Nachdenken bezahlte
+    # Zeit ohne Gegenwert.
+    #
+    # Die grössere Frage — ob der STANDARD ein Denkmodell sein sollte — steht
+    # in `handoff/denkmodell-als-standard-2026-09-02.md` und ist hier bewusst
+    # NICHT beantwortet.
+    "model_classify": "deepseek/deepseek-chat",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
     "model_default_dev": "deepseek/deepseek-v4-flash-0731",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
     "model_research_dev": "deepseek/deepseek-v4-flash-0731",
     "model_forge_dev": "deepseek/deepseek-v4-flash-0731",
     "model_forecast_dev": "anthropic/claude-haiku-4.5",
+    "model_classify_dev": "deepseek/deepseek-chat",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
