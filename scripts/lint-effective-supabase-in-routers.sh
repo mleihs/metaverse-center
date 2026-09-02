@@ -21,7 +21,7 @@
 # 45 von 59 Routern folgen der Regel; der Rest sind öffentliche oder reine
 # Service-Flächen ohne Simulationsdaten.
 #
-# ── DIE EINE AUSNAHME ───────────────────────────────────────────────────────
+# ── DIE AUSNAHMEN ───────────────────────────────────────────────────────────
 #
 #   backend/routers/drift.py
 #
@@ -31,15 +31,33 @@
 # zerstören, nicht bewahren (Migration 246 §4). Ihre Lesezugriffe und die
 # Torprüfung folgen dem normalen Muster.
 #
+#   backend/routers/forge.py   (seit 02.09.2026, BYOK)
+#
+# Dieselbe Bauart, anderer Anlass. Die drei Schlüssel-Funktionen aus Migration
+# 333 — `fn_set_user_api_key`, `fn_clear_user_api_key`,
+# `fn_mark_user_api_key_verified` — nehmen KEINEN Nutzerparameter. Sie benutzen
+# `auth.uid()` als Identität und sind genau deshalb `authenticated`-aufrufbar
+# (ADR-006, Ausnahme a: eine Funktion, die sich selbst prüft).
+#
+# `get_effective_supabase` hebt einen Plattform-Admin auf `service_role`, und
+# dort ist `auth.uid()` NULL. Der Schlüssel eines Admins landete damit auf
+# keiner Zeile — still, denn ein UPDATE über null Zeilen ist ein Erfolg.
+#
+# ⚠ Der Router nimmt BEIDE Clients: `supabase=Depends(get_effective_supabase)`
+# für alles Übrige und `user_supabase=Depends(get_supabase)` NUR für diese drei
+# RPC-Aufrufe. Die Ausnahme gilt also der einen Zeile, nicht der Datei — wer
+# hier eine weitere `get_supabase`-Abhängigkeit einführt, muss dieselbe Frage
+# noch einmal beantworten.
+#
 # ⚠ Eine Ausnahme, die nur in Prosa steht, ist keine Ausnahme, sondern eine
-# Erinnerung. Deshalb steht sie hier — und wenn eine zweite dazukommt, muss
+# Erinnerung. Deshalb steht sie hier — und wenn eine dritte dazukommt, muss
 # jemand sie hier eintragen und dabei begründen.
 
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/.."
 
-ALLOWED="backend/routers/drift.py"
+ALLOWED="backend/routers/drift.py backend/routers/forge.py"
 
 fail=0
 found=0
