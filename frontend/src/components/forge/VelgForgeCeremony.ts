@@ -551,23 +551,48 @@ export class VelgForgeCeremony extends LitElement {
       to   { width: 80%; }
     }
 
+    /*
+      The seed is a sentence somebody wrote, not a machine readout — it was
+      set in the same monospace as the lock labels and the progress counter,
+      which made the one human line on the screen look like telemetry. Bureau
+      prose is Spectral, and a quoted sentence takes guillemets.
+    */
     .ceremony__tagline {
       position: relative;
       z-index: 6;
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-sm, 0.875rem);
+      font-family: var(--font-prose, var(--font-bureau, Spectral, Georgia, serif));
+      font-style: italic;
+      font-size: var(--text-md, 1.125rem);
       color: var(--_p-85);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.01em;
       line-height: 1.6;
       min-height: 1.5em;
       text-align: center;
-      max-width: 600px;
+      max-width: 620px;
       padding: 0 var(--space-6, 1.5rem);
       margin-top: var(--space-4, 1rem);
     }
 
+    /* A real token, not an amber mixed onto transparent: mixing text with
+       transparent does not dim it, it makes it depend on whatever is behind
+       it — the finding cc4f8b99 went through this file for. */
+    .ceremony__tagline-mark {
+      color: var(--color-text-muted);
+      font-style: normal;
+      padding: 0 0.25em;
+    }
+
     /* ── Stage 4: Asset Reveal — Card Dealer Spread ── */
 
+    /*
+      A margin-top of auto pinned the fans to the bottom edge. The ceremony is a
+      centred column, so the first auto margin in it swallowed all the free
+      space and opened a hole between the seed sentence and the cards —
+      measured at roughly 150 px on a 840 px viewport, with the composition
+      split into a header at the top and a row of cards at the floor. The
+      block belongs directly under the name; the door below keeps its own
+      auto margin and still sits at the foot.
+    */
     .ceremony__card-area {
       position: relative;
       z-index: 6;
@@ -578,7 +603,7 @@ export class VelgForgeCeremony extends LitElement {
       width: 100%;
       max-width: 95vw;
       flex: 0 0 auto;
-      margin-top: auto;
+      margin-top: var(--space-6, 1.5rem);
       margin-bottom: var(--space-4, 1rem);
       opacity: 0;
       overflow: visible;
@@ -598,6 +623,10 @@ export class VelgForgeCeremony extends LitElement {
     }
 
     .ceremony__fan-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1, 0.25rem);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       text-transform: uppercase;
@@ -740,9 +769,85 @@ export class VelgForgeCeremony extends LitElement {
       50%      { transform: translateY(calc(var(--card-dip, 0px) - 2px)) rotate(var(--card-rot, 0deg)); }
     }
 
-    /* Amber underglow on cards with images */
+    /*
+      Faction colour.
+
+      The two fans used to be the same neutral grey, so the only thing telling
+      an operative from a structure was reading the nameplate. The colour is
+      the one the counts underneath already use — success for the people,
+      amber for the buildings — and it is carried as a local variable so the
+      underglow, the hairline and the file number all say the same thing.
+
+      Deliberately NOT pushed into the card frame: --card-frame-primary
+      belongs to the simulation's own theme, and a world that picked a cold
+      palette must not have it overwritten by a fan decoration.
+    */
+    .ceremony__card {
+      position: relative;
+      --_faction: var(--color-text-muted);
+    }
+
+    .ceremony__card--agent    { --_faction: var(--color-success); }
+    .ceremony__card--building { --_faction: var(--color-accent-amber); }
+
+    /* The crest inside the card picks up the faction too, so a fan reads as
+       two groups before a single nameplate has been read. */
+    .ceremony__card velg-game-card {
+      --card-crest-color: var(--_faction);
+    }
+
+    .ceremony__card::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      border: 1px solid color-mix(in srgb, var(--_faction) 22%, transparent);
+      opacity: 0;
+      transition: opacity var(--transition-slow, 300ms);
+    }
+
+    .ceremony--stage-4 .ceremony__card::after,
+    .ceremony--stage-5 .ceremony__card::after {
+      opacity: 1;
+    }
+
+    /* Faction underglow on cards whose portrait has arrived */
     .ceremony__card--has-image {
-      filter: drop-shadow(0 4px 8px var(--_p-15));
+      filter:
+        drop-shadow(0 4px 8px var(--_p-15))
+        drop-shadow(0 2px 10px color-mix(in srgb, var(--_faction) 22%, transparent));
+    }
+
+    /*
+      File number.
+
+      The Bureau numbers everything it files; the deploy slots and the Forge
+      table backs already carry a padded index. A fan of twelve cards without
+      one is the only place in the Forge where a card has no handle you can
+      say out loud.
+    */
+    .ceremony__card-file {
+      position: absolute;
+      top: -7px;
+      left: 2px;
+      z-index: 3;
+      padding: 1px 4px;
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      line-height: 1.3;
+      letter-spacing: var(--tracking-widest, 0.1em);
+      color: color-mix(in srgb, var(--_faction) 80%, var(--color-text-primary));
+      background: var(--color-surface-sunken);
+      border: 1px solid color-mix(in srgb, var(--_faction) 35%, transparent);
+      opacity: 0;
+      transition: opacity var(--transition-slow, 300ms);
+      pointer-events: none;
+    }
+
+    .ceremony--stage-4 .ceremony__card-file,
+    .ceremony--stage-5 .ceremony__card-file {
+      opacity: 1;
+      transition-delay: var(--card-deal-delay, 0ms);
     }
 
     /* Card image materialisation pop — dimensional breach */
@@ -1017,7 +1122,7 @@ export class VelgForgeCeremony extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-2, 0.5rem);
+      gap: var(--space-1-5, 0.375rem);
       opacity: 0;
     }
 
@@ -1076,9 +1181,17 @@ export class VelgForgeCeremony extends LitElement {
       color: var(--color-accent-amber-readable);
     }
 
+    /*
+      Proportions from the design prototype: a long, thin rule rather than a
+      short thick one. The numbers in it are not the prototype's — that bar was
+      a function of elapsed time. This one is completed over total out of
+      get_forge_progress, which counts rows whose portrait_image_url /
+      image_url is actually filled (migration 123), so every step it takes is
+      one image that came back from Replicate.
+    */
     .ceremony__progress-bar {
-      width: min(300px, 60vw);
-      height: 6px;
+      width: min(420px, 62vw);
+      height: 3px;
       background: var(--_p-10);
       border: 1px solid var(--_p-15);
       overflow: hidden;
@@ -1226,11 +1339,26 @@ export class VelgForgeCeremony extends LitElement {
       z-index: 6;
       opacity: 0;
       transform: translateY(12px);
-      margin-top: auto;
+      margin-top: var(--space-8, 2rem);
       margin-bottom: var(--space-4, 1rem);
     }
 
-    .ceremony__enter--ready {
+    /*
+      The door.
+
+      The comment on the markup below says the Shard exists the moment it
+      ignites and the button therefore opens it. It did not: the only rule
+      that lifted this block out of an opacity of 0 was --ready, and --ready
+      is set in exactly one place - _pollProgress, on
+      progress.done AND stage 5 or later. So the button was invisible (though
+      still clickable, which is worse than either) for the three to five
+      minutes the portraits take, and permanently invisible whenever polling
+      never returned a done payload at all.
+
+      Stage 5 opens the door. The --ready class keeps what it was always for: the
+      celebration once the last portrait has landed.
+    */
+    .ceremony--stage-5 .ceremony__enter {
       animation: btn-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
@@ -1471,7 +1599,7 @@ export class VelgForgeCeremony extends LitElement {
         animation: none;
         display: none;
       }
-      .ceremony__enter--ready {
+      .ceremony--stage-5 .ceremony__enter {
         animation: none;
         opacity: 1;
         transform: none;
@@ -2139,11 +2267,15 @@ export class VelgForgeCeremony extends LitElement {
       const hasImage = !!c.imageUrl;
       const isFresh = this._freshImages.has(c.name);
       const dealDelay = (dealOffset + i) * 120;
+      // OP-01 / BLD-01: the number the Bureau would put on the folder. The
+      // running index is per fan, so it matches the count printed under it.
+      const fileNo = `${c.kind === 'agent' ? 'OP' : 'BLD'}-${String(i + 1).padStart(2, '0')}`;
       return html`
         <div
-          class="ceremony__card ${hasImage ? 'ceremony__card--has-image' : ''} ${hasImage && isFresh ? 'ceremony__card--flash' : ''}"
+          class="ceremony__card ceremony__card--${c.kind} ${hasImage ? 'ceremony__card--has-image' : ''} ${hasImage && isFresh ? 'ceremony__card--flash' : ''}"
           style="--card-rot: ${rotDeg}deg; --card-dip: ${arcDip}px; --card-deal-delay: ${dealDelay}ms; margin-left: ${overlap}px; animation-delay: ${dealDelay}ms"
         >
+          <span class="ceremony__card-file" aria-hidden="true">${fileNo}</span>
           <velg-game-card
             style=${cardTheme}
             .frame=${cardFrame}
@@ -2151,6 +2283,7 @@ export class VelgForgeCeremony extends LitElement {
             .name=${c.name}
             .subtitle=${c.subtitle}
             .rarity=${'common'}
+            sigil=${c.name.trim().charAt(0).toUpperCase()}
             size=${layout.size}
             image-url=${c.imageUrl}
           ></velg-game-card>
@@ -2171,13 +2304,16 @@ export class VelgForgeCeremony extends LitElement {
         </div>
       `;
 
+      // The count reads as a caption under the fan, not as a heading over it:
+      // it counts what is standing there, and a label above a fan that has not
+      // been dealt yet announces a number for an empty space.
       if (!layout.tiered) {
         return html`
           <div class="ceremony__fan">
-            ${labelHtml}
             <div class="ceremony__fan-cards">
               ${cards.map((c, i) => renderFanCard(c, i, cards.length, dealOffset, layout))}
             </div>
+            ${labelHtml}
           </div>
         `;
       }
@@ -2191,7 +2327,6 @@ export class VelgForgeCeremony extends LitElement {
 
       return html`
         <div class="ceremony__fan">
-          ${labelHtml}
           <div class="ceremony__fan-stack">
             <div class="ceremony__fan-cards ceremony__fan-cards--back">
               ${backCards.map((c, i) => renderFanCard(c, i, backCards.length, dealOffset, layout, 3))}
@@ -2200,6 +2335,7 @@ export class VelgForgeCeremony extends LitElement {
               ${frontCards.map((c, i) => renderFanCard(c, i, frontCards.length, dealOffset + backCards.length, layout, 5))}
             </div>
           </div>
+          ${labelHtml}
         </div>
       `;
     };
@@ -2283,7 +2419,13 @@ export class VelgForgeCeremony extends LitElement {
         <!-- Stage 3+: Tagline typewriter -->
         ${
           this._tagline
-            ? html`<div class="ceremony__tagline">${this._typedText}<span class="ceremony__cursor"></span></div>`
+            ? html`<div class="ceremony__tagline">
+                <span class="ceremony__tagline-mark" aria-hidden="true">»</span>${this._typedText}${
+                  this._typedText === this._tagline
+                    ? html`<span class="ceremony__tagline-mark" aria-hidden="true">«</span>`
+                    : html`<span class="ceremony__cursor"></span>`
+                }
+              </div>`
             : nothing
         }
 

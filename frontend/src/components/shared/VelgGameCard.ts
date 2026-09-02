@@ -385,6 +385,56 @@ export class VelgGameCard extends LitElement {
       opacity: 0.55;
     }
 
+    /*
+      Crest placeholder.
+
+      A card whose portrait has not arrived yet used to show the same person
+      or house glyph as every other card of its kind — twelve identical
+      pictograms in a fan, telling the reader nothing about which card is
+      which. The crest carries the initial inside the 45-degree lozenge the
+      rest of the deck already uses (card back, anchor dossier, deploy slot),
+      so a face-down fan stays readable as a list of names.
+    */
+    .card__art-placeholder--crest {
+      opacity: 1;
+    }
+
+    .card__crest {
+      /* Defaults to the simulation frame; a call site that groups cards by
+         faction (the Forge ignition fan) points it at its own colour without
+         touching the frame the world chose for everything else. */
+      --_crest: var(--card-crest-color, var(--card-frame-primary));
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 46%;
+      aspect-ratio: 1;
+      transform: rotate(45deg);
+      border: 1px solid color-mix(in srgb, var(--_crest) 55%, transparent);
+      background: color-mix(in srgb, var(--card-bg-deep) 82%, var(--_crest));
+      box-shadow:
+        inset 0 0 12px color-mix(in srgb, var(--_crest) 22%, transparent),
+        0 0 10px color-mix(in srgb, var(--_crest) 14%, transparent);
+    }
+
+    .card__crest::before {
+      content: '';
+      position: absolute;
+      inset: 14%;
+      border: 1px solid color-mix(in srgb, var(--_crest) 28%, transparent);
+    }
+
+    .card__crest-letter {
+      transform: rotate(-45deg);
+      font-family: var(--card-font-heading, var(--font-brutalist, 'Courier New', monospace));
+      font-weight: 900;
+      font-size: calc(var(--card-w) * 0.16);
+      letter-spacing: 0;
+      line-height: 1;
+      color: color-mix(in srgb, var(--_crest) 78%, var(--card-text, #e5e5e5));
+    }
+
     /* Inner glow on art frame */
     .card__art::after {
       content: '';
@@ -1296,6 +1346,13 @@ export class VelgGameCard extends LitElement {
   @property({ type: Object }) aptitudes: AptitudeSet | null = null;
   @property({ type: Array }) badges: CardBadge[] = [];
   @property() subtitle = '';
+  /**
+   * Single character shown inside the crest while no portrait exists.
+   *
+   * Empty keeps the generic type glyph — every existing call site keeps the
+   * look it had. The Forge ignition fan sets it to the entity's initial.
+   */
+  @property() sigil = '';
   @property({ type: Object }) capacityBar: CapacityBar | null = null;
   @property({ type: Number, attribute: 'connection-count' }) connectionCount = 0;
   @property({ type: Boolean }) interactive = true;
@@ -1505,7 +1562,13 @@ export class VelgGameCard extends LitElement {
             ${
               this.imageUrl
                 ? html`<img src=${this.imageUrl} alt=${this.name} loading="lazy" />`
-                : html`<div class="card__art-placeholder">${this._renderPlaceholderIcon()}</div>`
+                : this.sigil
+                  ? html`<div class="card__art-placeholder card__art-placeholder--crest">
+                      <div class="card__crest" aria-hidden="true">
+                        <span class="card__crest-letter">${this.sigil}</span>
+                      </div>
+                    </div>`
+                  : html`<div class="card__art-placeholder">${this._renderPlaceholderIcon()}</div>`
             }
           </div>
 

@@ -30979,6 +30979,10 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sf833dbcfda3afc4e">
   <source>Drives the Darkroom: agent portraits, building imagery and the visuals of a world’s lore.</source>
 <target>Treibt die Dunkelkammer an: Agentenporträts, Gebäudebilder und die Bilder zur Überlieferung einer Welt.</target></trans-unit>
+<trans-unit id="s77f6c83cc5b8d744">
+  <source>Reading not turned over yet</source>
+  <target>Lesung noch nicht aufgedeckt</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
