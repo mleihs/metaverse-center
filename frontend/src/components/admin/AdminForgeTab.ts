@@ -20,7 +20,7 @@ import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles
 import { settingsStyles } from '../shared/settings-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../forge/ClearanceQueue.js';
-import '../forge/VelgByokPanel.js';
+import '../forge/VelgKeyring.js';
 import '../shared/VelgMetricCard.js';
 import '../shared/VelgToggle.js';
 
@@ -832,7 +832,7 @@ export class VelgAdminForgeTab extends LitElement {
             ${renderInfoBubble(msg('Personal API key override. Your account uses these keys instead of consuming forge tokens.'), 'tip-byok')}
           </div>
           <div class="forge-section__divider"></div>
-          <velg-byok-panel></velg-byok-panel>
+          <velg-keyring></velg-keyring>
         </div>
 
         <!-- SEC-09: Maintenance -->
