@@ -48,6 +48,19 @@ export interface ScanCandidate {
   source_adapter: string;
   /** Mit `source_adapter` der Schlüssel zum Scan-Protokoll (Migration 343). */
   source_id: string | null;
+  /**
+   * Die Quellen, die dieselbe Geschichte gemeldet haben (Migration 345).
+   * Enthält immer auch den Träger selbst.
+   */
+  sources: Array<{ name: string; count: number }>;
+  /**
+   * Likes + Reposts der beitragenden Sozialquellen.
+   *
+   * ⚠ `0` heisst „keine gemessen", NICHT „niemand hat reagiert". Heute liefert
+   * nur Bluesky solche Zahlen, und es trägt nur zu Geschichten bei, die eine
+   * Nachrichtenquelle schon gemeldet hat.
+   */
+  social_volume: number;
   is_structured: boolean;
   status: string;
   resonance_id: string | null;

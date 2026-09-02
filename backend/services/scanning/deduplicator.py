@@ -101,34 +101,125 @@ def _title_similarity(a: str, b: str) -> float:
     return len(intersection) / len(union)
 
 
-def deduplicate_within_batch(results: list[ScanResult]) -> list[ScanResult]:
-    """Remove near-duplicate titles within a single batch.
+def _social_volume_of(result: ScanResult) -> int:
+    """Zustimmung im Netz aus einem Rohdatensatz, oder 0.
 
-    Keeps the highest-magnitude result when titles are >70% similar.
-    This prevents e.g. 10 "High Wind Warning NWS Billings MT" entries.
+    Nur Bluesky fuehrt heute solche Zahlen (`likes`, `reposts`). Die Namen
+    stehen in `adapters/bluesky_social.py`; wer eine zweite Sozialquelle
+    anschliesst, ergaenzt sie HIER und nirgends sonst.
+    """
+    raw = result.raw_data or {}
+    try:
+        return int(raw.get("likes") or 0) + int(raw.get("reposts") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _carries_better(candidate: ScanResult, current: ScanResult) -> bool:
+    """Darf `candidate` den bisherigen Traeger `current` abloesen?
+
+    Die Reihenfolge ist bedeutungstragend und beantwortet drei Fragen in
+    absteigender Wichtigkeit:
+
+    1. **Ist es ueberhaupt eine eigene Zeile wert?** Eine belegende Quelle
+       (Bluesky) loest NIE eine nicht-belegende ab. Das ist die Regel des
+       Bauplans, hier durchgesetzt statt beschrieben.
+    2. **Ist es gemessen oder erzaehlt?** Ein strukturiertes Signal (USGS, NOAA)
+       traegt Zahlen und braucht kein Modell; es schlaegt eine Meldung.
+    3. **Wie stark?** Erst danach entscheidet die Magnitude — und zum Zeitpunkt
+       der Buendelung ist sie bei allem Unstrukturierten noch `None`, weil die
+       Klassifikation SPAETER laeuft. Sie entscheidet also fast nur zwischen
+       zwei Messdiensten.
+    """
+    if candidate.is_supporting != current.is_supporting:
+        return current.is_supporting
+    if candidate.is_structured != current.is_structured:
+        return candidate.is_structured
+    return (candidate.magnitude or 0) > (current.magnitude or 0)
+
+
+def bundle_within_batch(results: list[ScanResult]) -> list[ScanResult]:
+    """Aehnliche Titel zu EINER Geschichte buendeln, statt sie wegzuwerfen.
+
+    ── WAS SICH GEAENDERT HAT UND WARUM ────────────────────────────────────────
+
+    Diese Funktion hiess `deduplicate_within_batch` und tat zweierlei anders:
+
+    1. Sie verglich **nur innerhalb derselben Quelle**
+       (`if existing.source_name != result.source_name: continue`). Ein
+       Guardian-Artikel und ein Bluesky-Beitrag ueber dasselbe Beben wurden
+       deshalb NIE zusammengefuehrt — beide wurden eigene Kandidaten. Genau das
+       verbietet der Bauplan: „eine Sozialquelle wird nie eine eigene Zeile".
+    2. Sie WARF die Duplikate weg. Damit ging die Auskunft verloren, die den
+       Wert einer Geschichte ausmacht: dass drei Quellen sie melden und
+       zweihundert Menschen darauf reagiert haben.
+
+    Jetzt wird ueber Quellgrenzen hinweg gebuendelt, der Traeger nach
+    `_carries_better` bestimmt, und die uebrigen bleiben als `sources[]` und als
+    aufsummiertes `social_volume` am Traeger haengen.
+
+    🔑 Eine Entduplizierung, die wegwirft, verliert eine Aussage. Eine, die
+    buendelt, gewinnt eine.
     """
     if not results:
         return []
 
     kept: list[ScanResult] = []
     for result in results:
-        is_dup = False
+        merged_into: ScanResult | None = None
         for i, existing in enumerate(kept):
-            if existing.source_name != result.source_name:
+            if _title_similarity(result.title, existing.title) <= _SIMILARITY_THRESHOLD:
                 continue
-            if _title_similarity(result.title, existing.title) > _SIMILARITY_THRESHOLD:
-                # Keep the one with higher magnitude
-                if (result.magnitude or 0) > (existing.magnitude or 0):
-                    kept[i] = result
-                is_dup = True
-                break
-        if not is_dup:
+            if _carries_better(result, existing):
+                # Der neue traegt besser: er uebernimmt die Buendelung des alten.
+                result.sources = existing.sources
+                result.social_volume = existing.social_volume
+                kept[i] = result
+                # Der ALTE Traeger steht bereits in der geerbten Buendelung —
+                # eingetragen wurde er, als er selbst angelegt wurde. Was fehlt,
+                # ist der NEUE: er hat sich noch nie als Quelle registriert.
+                #
+                # ⚠ Hier stand zuerst `_add_source(result, existing)`, und das
+                # war doppelt falsch: der alte wurde ein zweites Mal gezaehlt
+                # und der neue gar nicht. Ein Test mit drei Quellen hat es
+                # gefangen — mit zweien haette es plausibel ausgesehen.
+                _add_source(result, result)
+                merged_into = result
+            else:
+                _add_source(existing, result)
+                merged_into = existing
+            break
+
+        if merged_into is None:
+            _add_source(result, result)
             kept.append(result)
 
-    removed = len(results) - len(kept)
-    if removed:
-        logger.info("Intra-batch dedup: removed %d/%d near-duplicate titles", removed, len(results))
+    bundled = len(results) - len(kept)
+    if bundled:
+        logger.info("Story bundling: %d of %d results folded into others", bundled, len(results))
     return kept
+
+
+def _add_source(story: ScanResult, contributor: ScanResult) -> None:
+    """Eine Quelle an eine Geschichte haengen — oder ihren Zaehler erhoehen.
+
+    `count` ist die Zahl der BEITRAEGE dieser Quelle, nicht der Quellen: dass
+    NOAA dieselbe Warnung dreimal absetzt, ist eine andere Auskunft als dass
+    drei verschiedene Dienste sie melden.
+    """
+    for entry in story.sources:
+        if entry.get("name") == contributor.source_name:
+            entry["count"] = int(entry.get("count", 1)) + 1
+            break
+    else:
+        story.sources.append({"name": contributor.source_name, "count": 1})
+    story.social_volume += _social_volume_of(contributor)
+
+
+#: Alter Name, damit ein Aufrufer ausserhalb dieses Moduls nicht bricht.
+#: Er beschreibt aber nicht mehr, was passiert — deshalb ruft der Scanner den
+#: neuen.
+deduplicate_within_batch = bundle_within_batch
 
 
 async def deduplicate(

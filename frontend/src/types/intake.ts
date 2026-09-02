@@ -287,8 +287,14 @@ export function fromScanCandidate(c: ScanCandidate, adapters?: AdapterInfo[]): I
     category: (c.source_category as SourceCategory) || null,
     magnitude: c.magnitude,
     classificationNote: c.classification_reason ?? undefined,
-    sources: [{ name: c.source_adapter, count: 1 }],
-    socialVolume: 0,
+    /*
+     * Seit Migration 345 buendelt der Scanner: dieselbe Geschichte aus drei
+     * Quellen ist EINE Zeile mit drei Chips. Der Rueckfall auf den eigenen
+     * Adapter deckt die Zeilen von vor der Buendelung — ein leeres Array waere
+     * die Unwahrheit, denn eine Quelle gibt es ja.
+     */
+    sources: c.sources?.length ? c.sources : [{ name: c.source_adapter, count: 1 }],
+    socialVolume: c.social_volume ?? 0,
     imageUrl: imageOf(c.article_raw_data),
     raw: c,
   };
