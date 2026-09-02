@@ -487,6 +487,123 @@ export class VelgForgeAstrolabe extends LitElement {
         }
       }
 
+      /* ── The turn ────────────────────────────
+         The three readings arrive face down and are turned over one after
+         the other, the way a reading is dealt. Two consequences that are not
+         decoration: the fan is unreadable until it has been turned, so the
+         card refuses selection while it is face down (a click on a back is
+         not a choice, and a keyboard user must not be able to pick a title
+         they cannot see); and preserve-3d has to sit on the card as well as
+         on the flipper, because the card already carries the fan's own
+         transform and a transformed element flattens its children.
+         the anchor fan supplies the perspective and has done so all along. */
+
+      .anchor-fan__card {
+        transform-style: preserve-3d;
+      }
+
+      .anchor-fan__flipper {
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.3, 0.1, 0.25, 1);
+        transform: rotateY(180deg);
+      }
+
+      .anchor-fan__card--revealed .anchor-fan__flipper {
+        transform: rotateY(0deg);
+      }
+
+      .anchor-fan__flipper > .dossier {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+      }
+
+      .anchor-back {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: rotateY(180deg);
+        /* Raised, not sunken: a back at surface-sunken measured rgb(6,6,6)
+           against a rgb(10,10,10) page — a card you cannot see is not a card
+           lying face down, it is a hole. The back has to read as an object. */
+        background: var(--color-surface-raised);
+        border: 1px solid var(--color-border);
+        box-shadow:
+          0 4px 24px rgb(0 0 0 / 0.6),
+          inset 0 0 40px rgb(0 0 0 / 0.5);
+      }
+
+      /* Same 45-degree weave and lozenge the deploy slots and the Forge table
+         backs already use — one deck, one back. */
+      .anchor-back__weave {
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent 0 5px,
+          var(--color-border) 5px 6px
+        );
+        opacity: 0.8;
+      }
+
+      /* The same lozenge the front carries, so the turn reads as one card
+         and not as two different objects swapping places. */
+      .anchor-back__sigil {
+        position: relative;
+        width: var(--space-12);
+        height: var(--space-12);
+        transform: rotate(45deg);
+        border: 1px solid color-mix(in srgb, var(--color-success) 60%, transparent);
+        background: color-mix(in srgb, var(--color-surface-sunken) 70%, var(--color-success));
+        box-shadow: 0 0 18px color-mix(in srgb, var(--color-success) 16%, transparent);
+      }
+
+      .anchor-back__sigil::before {
+        content: '';
+        position: absolute;
+        inset: 22%;
+        border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+      }
+
+      /* Bottom LEFT, like the index on the front: the fan overlaps each card
+         from the right, so a number in the right corner is covered on two of
+         three cards. */
+      .anchor-back__index {
+        position: absolute;
+        bottom: var(--space-3);
+        left: var(--space-3);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--text-xs, 10px);
+        letter-spacing: var(--tracking-widest, 0.1em);
+        color: var(--color-text-tertiary);
+      }
+
+      /* A back does not react to the pointer at all: the existing hover rule
+         carries an !important (it has to beat the inline fan rotation), so
+         there is no way to opt one card out of the lift from CSS alone.
+         Taking the card out of hit-testing is the honest form of "this is not
+         a choice yet" — and it removes the click as a side effect. The
+         matching keyboard half is a tabindex of -1 while face down. */
+      .anchor-fan__card--facedown {
+        pointer-events: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .anchor-fan__flipper,
+        .anchor-fan__card--revealed .anchor-fan__flipper {
+          transition: none;
+          transform: none;
+        }
+        .anchor-back {
+          display: none;
+        }
+      }
+
       /* ── Anchor Detail (below fan) ──────── */
 
       .anchor-detail {
@@ -684,6 +801,14 @@ export class VelgForgeAstrolabe extends LitElement {
   @state() private _error: string | null = null;
   @state() private _options: PhilosophicalAnchor[] = [];
   @state() private _isDealing = true;
+  /**
+   * How many anchor cards have been turned face up.
+   *
+   * The fan is dealt face down and turned one card at a time. Selection is
+   * gated on this, so nothing can be chosen that has not been read.
+   */
+  @state() private _revealedCount = 0;
+  private _revealTimers: ReturnType<typeof setTimeout>[] = [];
   @state() private _genConfig = forgeStateManager.generationConfig.value;
   /**
    * Whether the seed editor is folded away.
@@ -753,6 +878,7 @@ export class VelgForgeAstrolabe extends LitElement {
             this._isDealing = false;
           }, 800);
           this._seedCollapsed = true;
+          this._scheduleReveal(this._options.length);
         }
       }),
       effect(() => {
@@ -773,7 +899,43 @@ export class VelgForgeAstrolabe extends LitElement {
   disconnectedCallback() {
     for (const dispose of this._disposeEffects) dispose();
     this._disposeEffects = [];
+    this._clearRevealTimers();
     super.disconnectedCallback();
+  }
+
+  private _clearRevealTimers() {
+    for (const timer of this._revealTimers) clearTimeout(timer);
+    this._revealTimers = [];
+  }
+
+  /**
+   * Turn the fan face up, one card at a time, once it has finished falling.
+   *
+   * `card-deal` runs 600 ms with 0/200/400 ms delays, so the last card has
+   * landed at 1000 ms; the first turn starts after that and the rest follow
+   * every 400 ms. Reduced motion gets the whole fan face up at once — the
+   * cards still have to become selectable, and a turn nobody sees is a delay,
+   * not an animation.
+   */
+  private _scheduleReveal(count: number) {
+    this._clearRevealTimers();
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this._revealedCount = count;
+      return;
+    }
+
+    this._revealedCount = 0;
+    for (let i = 0; i < count; i++) {
+      this._revealTimers.push(
+        setTimeout(
+          () => {
+            this._revealedCount = i + 1;
+          },
+          1000 + i * 400,
+        ),
+      );
+    }
   }
 
   private get _scanPhases(): string[] {
@@ -1139,44 +1301,55 @@ export class VelgForgeAstrolabe extends LitElement {
           this._options.length > 0 && !this._isGenerating
             ? html`
           <div class="anchor-fan" role="radiogroup" aria-label=${msg('Philosophical Anchors')}>
-            ${this._options.map(
-              (opt, i) => html`
+            ${this._options.map((opt, i) => {
+              const faceUp = i < this._revealedCount;
+              return html`
               <div
-                class="anchor-fan__card ${this._isDealing ? 'anchor-fan__card--dealing' : ''} ${this._selectedIdx === i ? 'anchor-fan__card--selected' : ''} ${this._selectedIdx !== null && this._selectedIdx !== i ? 'anchor-fan__card--dimmed' : ''}"
+                class="anchor-fan__card ${this._isDealing ? 'anchor-fan__card--dealing' : ''} ${faceUp ? 'anchor-fan__card--revealed' : 'anchor-fan__card--facedown'} ${this._selectedIdx === i ? 'anchor-fan__card--selected' : ''} ${this._selectedIdx !== null && this._selectedIdx !== i ? 'anchor-fan__card--dimmed' : ''}"
                 style="transform: ${this._selectedIdx === i ? 'translateY(-30px) scale(1.1)' : this._fanRotation(i, this._options.length)}"
                 role="radio"
-                tabindex="0"
+                tabindex=${faceUp ? '0' : '-1'}
                 aria-checked=${this._selectedIdx === i ? 'true' : 'false'}
-                aria-label=${opt.title}
-                @click=${() => this._selectAnchor(i)}
+                aria-label=${faceUp ? opt.title : msg('Reading not turned over yet')}
+                @click=${() => {
+                  if (faceUp) this._selectAnchor(i);
+                }}
                 @keydown=${(e: KeyboardEvent) => {
+                  if (!faceUp) return;
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     this._selectAnchor(i);
                   }
                 }}
               >
-                <div class="dossier">
-                  <div class="dossier__classification">
-                    <span class="dossier__class-label">${msg('Anchor')}</span>
-                    <span class="dossier__class-id">ANC-${String(i + 1).padStart(3, '0')}</span>
+                <div class="anchor-fan__flipper">
+                  <div class="anchor-back" aria-hidden="true">
+                    <div class="anchor-back__weave"></div>
+                    <div class="anchor-back__sigil"></div>
+                    <span class="anchor-back__index">ANC-${String(i + 1).padStart(3, '0')}</span>
                   </div>
-                  <div class="dossier__sigil">
-                    <div class="dossier__sigil-shape"></div>
-                  </div>
-                  <div class="dossier__body">
-                    <h3 class="dossier__title">${t(opt, 'title')}</h3>
-                    <p class="dossier__question">${t(opt, 'core_question')}</p>
-                    <div class="dossier__source">${t(opt, 'literary_influence')}</div>
-                  </div>
-                  <div class="dossier__footer">
-                    <span class="dossier__index">${String(i + 1).padStart(2, '0')}</span>
-                    <span class="dossier__status">${this._selectedIdx === i ? msg('Selected') : msg('Classified')}</span>
+                  <div class="dossier">
+                    <div class="dossier__classification">
+                      <span class="dossier__class-label">${msg('Anchor')}</span>
+                      <span class="dossier__class-id">ANC-${String(i + 1).padStart(3, '0')}</span>
+                    </div>
+                    <div class="dossier__sigil">
+                      <div class="dossier__sigil-shape"></div>
+                    </div>
+                    <div class="dossier__body">
+                      <h3 class="dossier__title">${t(opt, 'title')}</h3>
+                      <p class="dossier__question">${t(opt, 'core_question')}</p>
+                      <div class="dossier__source">${t(opt, 'literary_influence')}</div>
+                    </div>
+                    <div class="dossier__footer">
+                      <span class="dossier__index">${String(i + 1).padStart(2, '0')}</span>
+                      <span class="dossier__status">${this._selectedIdx === i ? msg('Selected') : msg('Classified')}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            `,
-            )}
+            `;
+            })}
           </div>
 
           ${this._renderRescan()}

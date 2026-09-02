@@ -4249,6 +4249,7 @@ CARTOGRAPHIC NOTE: No Cartographer has been assigned to Conventional Memory. The
 's77e293b0e1525024': `HTTP Cache-Control max-age für Epoch-Kampffeed und Live-Kampfdaten. Während aktiver Epochs mit Echtzeit-Spielerengagement sehr niedrig setzen (5–10s) für ein reaktionsschnelles Live-Action-Gefühl. Zwischen Epochs oder bei inaktiver Plattform höher setzen.`,
 's77e9789a30397866': `Operativ`,
 's77f18dcfeda29d56': `Sitrep erfordert EINSATZMODUS (Epoch-Kontext).`,
+'s77f6c83cc5b8d744': `Lesung noch nicht aufgedeckt`,
 's78099d388d7d4cae': `Spion: angrenzende Dungeon-Räume enthüllen`,
 's780d47c5d94eaca5': str`Gespräch starten (${0} Agenten)`,
 's78177eba4bd9de50': `Persistenz`,
