@@ -58,8 +58,12 @@ export class MessageActions extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      /* 24 statt 28: die Leiste soll in den 12-px-Polsterrand der Blase
+         passen, ohne die Schrift zu beruehren. Die Rechnung steht in
+         ChatMessage.ts ueber velg-message-actions. Beruehrungsziel auf
+         Mobil bleibt 36 px (siehe unten) — dort liegt die Leiste anders. */
+      width: 24px;
+      height: 24px;
       padding: 0;
       background: transparent;
       border: none;
