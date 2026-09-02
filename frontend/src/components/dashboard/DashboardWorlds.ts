@@ -251,15 +251,39 @@ export class VelgDashboardWorlds extends LitElement {
        * Platz da waere.
        *
        * align-self: start loest die Dehnung an der Stelle, an der sie
-       * entsteht. Eine position: sticky waere hier naheliegend — die Vorschau
-       * bliebe beim Blaettern durch das Register stehen — aber das ist eine
-       * Verhaltensaenderung und keine Reparatur; sie gehoert entschieden und
-       * nicht nebenbei mitgenommen.
+       * entsteht.
+       *
+       * ⚠ NACHTRAG — und das war die Folge, die ich nicht zu Ende gedacht habe.
+       *   Ich hatte position: sticky damals ausdruecklich NICHT mitgenommen,
+       *   weil es eine Verhaltensaenderung sei. Das stimmte fuer sich, uebersah
+       *   aber, was die Dehnung nebenbei geleistet hatte: eine 2 049 px hohe
+       *   Tafel war beim Blaettern noch da. Eine 407 px hohe, die oben klebt,
+       *   ist nach vier Registerzeilen weg.
+       *
+       *   Der Nutzer hat es gemeldet: „bei der Moebius-Akademie sehe ich rechts
+       *   kein Vorschaubild mehr, weil der Bereich oben rausgescrollt ist."
+       *   Er fragte nach dem Sinn dahinter — es gab keinen. Ich hatte einen
+       *   Fehler behoben und dabei eine Eigenschaft entfernt, die niemand als
+       *   solche benannt hatte, weil sie ein Nebenprodukt war.
+       *
+       *   Eine Vorschau NEBEN einer Liste ist nur dann eine Vorschau, wenn sie
+       *   beim Durchgehen der Liste sichtbar bleibt. Also sticky, und zwar
+       *   jetzt als Entscheidung statt als Nebenwirkung.
+       *
+       *   Die Hoehengrenze ist kein Zierrat: die Tafel misst auf Prod 825 px,
+       *   und auf einem 768 px hohen Schirm waere ihr unteres Ende ohne sie
+       *   unerreichbar — ein klebendes Element, das hoeher ist als das Fenster,
+       *   zeigt seinen Rest nie. Der innere Bildlauf erscheint nur, wenn er
+       *   gebraucht wird.
        */
       .preview {
         display: flex;
         flex-direction: column;
         align-self: start;
+        position: sticky;
+        top: var(--space-6);
+        max-height: calc(100vh - var(--space-12));
+        overflow-y: auto;
         min-width: 0;
         padding-top: var(--space-12);
       }
