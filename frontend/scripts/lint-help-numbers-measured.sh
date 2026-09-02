@@ -163,6 +163,78 @@ if [[ -f "$REG" ]] && (( n_cmds >= 10 )); then
   fi
 fi
 
+# ── 5. Der Beutebestand: Stücke, Archetypen, Wirkungsarten ─────────────────
+#
+# Am 01.09.2026 habe ich SELBST drei solche Zahlen in die Hilfe geschrieben —
+# „105 pieces across the eight archetypes, in twelve effect types" — also genau
+# die Sorte, wegen der dieses Tor existiert. Der Kopf zählt fünf davon auf,
+# jede einmal richtig und danach still gewachsen.
+#
+# Die Quellen liegen in den Inhaltspaketen und im Wirkungsvertrag, nicht in der
+# Datenbank: die Pakete sind laut A1.5 die kanonische Autorenquelle, die DB
+# bekommt sie über eine erzeugte Migration. Ein Tor, das die DB fragt, würde
+# eine Änderung erst NACH dem Deploy bemerken — hier soll sie vorher auffallen.
+LOOT_DIR="../content/dungeon/archetypes"
+if [[ -d "$LOOT_DIR" ]]; then
+  n_arch=$(find "$LOOT_DIR" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+  n_loot=$(grep -rh "^- id:" "$LOOT_DIR"/*/loot.yaml 2>/dev/null | wc -l | tr -d ' ')
+  n_eff=$(grep -cE '^    "[a-z_]+": LootEffectContract' \
+    ../backend/services/dungeon_loot_contracts.py 2>/dev/null || echo 0)
+
+  if (( n_arch < 3 || n_loot < 20 || n_eff < 3 )); then
+    bad "Beutequellen unlesbar (Archetypen=$n_arch Stücke=$n_loot Wirkungen=$n_eff) — die Ausdrücke zeigen ins Leere, nicht die Pakete sind leer"
+  else
+    checked=$((checked + 1))
+    note "Beute: $n_loot Stücke · $n_arch Archetypen · $n_eff Wirkungsarten"
+
+    # Zahlwörter mitprüfen: der Satz in der Hilfe schreibt „eight" und
+    # „twelve" aus, weil er sich mit Ziffern schlechter liest. Ein Tor, das nur
+    # Ziffern kennt, hätte genau diesen Satz nicht gesehen.
+    wort_fuer() {
+      case "$1" in
+        6) echo six;; 7) echo seven;; 8) echo eight;; 9) echo nine;; 10) echo ten;;
+        11) echo eleven;; 12) echo twelve;; 13) echo thirteen;; 14) echo fourteen;;
+        *) echo "__keins__";;
+      esac
+    }
+    w_arch=$(wort_fuer "$n_arch")
+    w_eff=$(wort_fuer "$n_eff")
+
+    for f in src/components/how-to-play/*.ts; do
+      [[ -f "$f" ]] || continue
+      rein=$(strip_comments "$f")
+
+      if hit=$(grep -nE "[0-9]+ pieces exist" <<< "$rein" | grep -vE "\b$n_loot pieces\b"); then
+        bad "$f nennt eine andere Stückzahl als die gemessenen $n_loot:"
+        echo "$hit" >&2
+      fi
+      # ⚠ Das Fenster ist ABSICHTLICH eng: „across the N archetypes", nicht
+      # jedes „X archetypes". Der erste Entwurf nahm alles und meldete drei
+      # Fehlalarme, jeder eine andere Zahl ueber eine andere Sache:
+      #
+      #   „conflict archetypes"                        kein Zaehlwort
+      #   „Three archetypes playable in the terminal"  eine echte Teilmenge (3)
+      #   „5 personality archetypes"                   Bot-Persoenlichkeiten
+      #
+      # Ein Tor, das bei jedem Lauf drei Zeilen meldet, die in Ordnung sind,
+      # wird weggeklickt — und dann uebersieht man die vierte, die es nicht
+      # ist. Lieber eine Satzform binden, die man kennt, als eine Wortart
+      # raten.
+      if hit=$(grep -nE "across the [a-z0-9]+ archetypes" <<< "$rein" \
+                | grep -viE "across the ($n_arch|$w_arch) archetypes"); then
+        bad "$f nennt eine andere Archetypenzahl als die gemessenen $n_arch ($w_arch):"
+        echo "$hit" >&2
+      fi
+      if hit=$(grep -nE "in [a-z]+ effect types" <<< "$rein" | grep -viE "\b($n_eff|$w_eff)\b"); then
+        bad "$f nennt eine andere Zahl von Wirkungsarten als die gemessenen $n_eff ($w_eff):"
+        echo "$hit" >&2
+      fi
+    done
+  fi
+else
+  bad "$LOOT_DIR nicht gefunden — sind die Inhaltspakete umgezogen?"
+fi
+
 if (( checked == 0 )); then
   echo "FAIL: dieses Tor hat NICHTS geprüft — jede Quelle war unlesbar." >&2
   exit 1
