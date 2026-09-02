@@ -90,10 +90,52 @@ for f in files:
               "GitHub would ignore it in silence.")
         bad += 1
 
+# ── Ein Schritt, der ein Wurzel-Skript aus einem Job mit eigener
+#    Arbeitsverzeichnis-Vorgabe aufruft, MUSS sie aufheben ──────────────────
+#
+# `lint-frontend` laeuft per Vorgabe in `frontend/`. Ein Schritt, der dort
+# `bash scripts/…` aufruft, findet die Datei nicht und bricht mit 127 ab. Das
+# ist nicht still — aber es sieht aus wie ein Lint-Verstoss und nicht wie eine
+# fehlende Datei, und in einem ohnehin roten Lauf liest es niemand.
+#
+# Am 02.09.2026 genau so passiert, und zwar durch MICH: beim Einfuegen eines
+# neuen Schrittes endete mein Suchmuster hinter der `run:`-Zeile, sodass das
+# darunterstehende `working-directory: .` an den neuen Schritt fiel und dem
+# alten fehlte. Getroffen hat es `lint-migration-order.sh` — das Tor, dessen
+# Wert ich denselben Tag lang belegt hatte.
+schritt_fehler = 0
+for f in files:
+    doc = yaml.safe_load(pathlib.Path(f).read_text(encoding="utf-8"))
+    if not isinstance(doc, dict):
+        continue
+    for jid, job in (doc.get("jobs") or {}).items():
+        vorgabe = ((job.get("defaults") or {}).get("run") or {}).get("working-directory")
+        if not vorgabe or vorgabe == ".":
+            continue
+        for schritt in job.get("steps") or []:
+            run = (schritt.get("run") or "").strip()
+            if not run or "scripts/" not in run:
+                continue
+            # Ein `cd` im Befehl selbst regelt es auch.
+            if run.startswith("cd ") or "&& cd " in run:
+                continue
+            if schritt.get("working-directory") == ".":
+                continue
+            print(f"ERROR: {f}, Job '{jid}' laeuft in '{vorgabe}', aber der Schritt")
+            print(f"       '{schritt.get('name', '(ohne Namen)')}' ruft ein Wurzel-Skript auf,")
+            print("       ohne `working-directory: .` — das gibt Exit 127, und das sieht")
+            print("       aus wie ein Lint-Verstoss statt wie eine fehlende Datei.")
+            schritt_fehler += 1
+
 if bad:
     print()
     print(f"{bad} workflow file(s) would not run. Nothing else would go red:")
     print("a workflow that does not parse is not a failing gate, it is an absent one.")
+    sys.exit(1)
+
+if schritt_fehler:
+    print()
+    print(f"{schritt_fehler} Schritt(e) wuerden ihr Skript nicht finden.")
     sys.exit(1)
 
 print(f"PASS: all {len(files)} CI workflow(s) parse and declare on + jobs.")
