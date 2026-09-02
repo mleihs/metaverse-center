@@ -68,6 +68,11 @@
 - [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md)
 - [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md)
 - [The Simulation Forge — Full Production Run, 2026-08-29/30](analysis/forge-prod-run-2026-08-30.md)
+- [Der Ledger weicht ab, das Schema nicht — 55 Migrationen nachgemessen](analysis/ledger-gegen-schema-2026-08-31.md)
+- [Der Zufluss der Schleuse — Reddit, Bluesky und was stattdessen da ist](analysis/schleuse-zufluss-2026-09-02.md)
+- [Systemprüfung — Dungeons, Epochen, DRIFT, Simulationskern, Hilfe, Oberfläche](analysis/system-review-2026-08-30.md)
+- [Warum keine Events entstehen — die Schwellen und die Zahlen, die sie nie erreichen](analysis/warum-keine-events-2026-08-31.md)
+- [Zitatprüfung: 46 Epigraphe schreiben sich einer echten Person zu](analysis/zitatpruefung-2026-09-01.md)
 
 ## Audits
 - [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md)

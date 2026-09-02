@@ -130,7 +130,32 @@ Laufs scheiterte es noch an `lint-lint-scripts-anchored` (fehlender
 Anker-Vorspann); vor dem nächsten Commit also `npm run lint:full` neu messen,
 nicht diese Zeile glauben.
 
-## ⚠ Der Zufluss ist trocken (am 02.09. gemessen, unverändert)
+## ⚠ Der Zufluss ist trocken — vollständig vermessen am 02.09.
+
+**Der ganze Befund steht in `docs/analysis/schleuse-zufluss-2026-09-02.md`.**
+Das Wichtigste in vier Zeilen:
+
+- **Reddit gibt es nicht.** Null Treffer im Backend. Der einzige Treffer im
+  Repo ist meine eigene `SOCIAL_ADAPTERS`-Menge in `types/intake.ts` — der
+  Zweig ist unerreichbar, die Klasse `social` kann nicht eintreten.
+- **Bluesky gibt es, aber nur in der Gegenrichtung.** `BlueskyService` kann
+  veröffentlichen, hochladen, löschen und die Kennzahlen EIGENER Beiträge
+  lesen. Kein `searchPosts`, kein Feed. Auf Prod läuft die
+  Instagram→Bluesky-Kreuzveröffentlichung aktiv.
+- **Der Scanner hat auf Prod NIE gelaufen.** `news_scan_candidates` und
+  `news_scan_log` sind leer — null Zeilen. `news_scanner_enabled = false` seit
+  09.03.2026.
+- **Zwei Orte für einen Schlüssel.** Der Scanner liest `guardian_api_key` aus
+  `platform_settings` (dort steht KEINE einzige `*_api_key`-Zeile), der
+  Browse-Weg aus `simulation_settings` pro Welt (dort stehen vier, alle
+  Velgarien + Epochen). Deshalb liegen alle 12 Trends in einer Welt, und
+  deshalb genügt `news_scanner_enabled = true` allein nicht.
+
+⚠ **Folge für Schritt 5:** die Abnahmebedingung „Sozialquellen erscheinen nur
+als Chips oder im Rauschen, nie als eigene Zeile" ist weder erfüllbar noch
+verletzbar. Als **nicht anwendbar** führen, nicht als erledigt abhaken.
+
+### Die alten Messwerte (unverändert)
 
 - `POST …/social-trends/browse` mit `source: guardian` → **Cloudflare-502 in
   580 ms**, `text/html` statt JSON. Mit `source: newsapi` → sauberes JSON 400

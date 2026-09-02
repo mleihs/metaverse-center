@@ -171,7 +171,24 @@ export const CATEGORY_ARCHETYPE: Record<SourceCategory, string> = Object.fromEnt
 
 // ── Quellenklasse ───────────────────────────────────────────────────────────
 
-/** Adapter, die nur Tempo und Reichweite liefern, nie ein eigenes Signal. */
+/**
+ * Adapter, die nur Tempo und Reichweite liefern, nie ein eigenes Signal.
+ *
+ * ⚠ AM 02.09.2026 GEMESSEN: BEIDE GIBT ES NICHT. Der Scanner führt zehn
+ * Adapter, keiner davon sozial; „reddit" kommt im gesamten Backend null Mal
+ * vor, und „bluesky" ausschliesslich in der Gegenrichtung (`BlueskyService`
+ * veröffentlicht, es liest nur die Kennzahlen eigener Beiträge). Die Klasse
+ * `social` kann damit heute NICHT eintreten.
+ *
+ * Die Menge bleibt trotzdem stehen, und zwar mit dieser Beschriftung: die
+ * Regel, dass eine Sozialquelle nie einen eigenen Kandidaten erzeugt, ist eine
+ * Entscheidung des Bauplans und soll den Tag überleben, an dem jemand einen
+ * solchen Adapter baut. Wer sie liest, muss aber wissen, dass sie gerade nichts
+ * trifft — sonst prüft er in Schritt 5 eine Abnahmebedingung, die weder
+ * erfüllbar noch verletzbar ist.
+ *
+ * Vollständige Messung mit Prod-Zahlen: `docs/analysis/schleuse-zufluss-2026-09-02.md`.
+ */
 const SOCIAL_ADAPTERS = new Set(['reddit', 'bluesky']);
 /** Adapter, deren Ausgabe halbstrukturiert ist. */
 const SEMI_ADAPTERS = new Set(['who', 'who_outbreaks', 'hackernews']);
