@@ -133,6 +133,12 @@ class GameInstanceService:
             .eq("epoch_id", str(epoch_id))
             .eq("source_template_id", str(template_id))
             .in_("simulation_type", ["game_instance", "archived"])
+            # (epoch_id, source_template_id) ist nicht eindeutig: eine Epoche
+            # kann aus derselben Vorlage mehrfach geklont haben, und ein
+            # archivierter Lauf steht neben dem laufenden. Die aelteste ist der
+            # urspruengliche Klon.
+            .order("created_at")
+            .limit(1)
             .maybe_single()
         )
 

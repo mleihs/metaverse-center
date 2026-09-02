@@ -688,6 +688,12 @@ REQUIREMENTS:
                             .select("id")
                             .eq("simulation_id", str(simulation_id))
                             .eq("title", section["title"])
+                            # Titel sind nicht eindeutig (der Zwang laeuft ueber
+                            # den slug). Zwei gleichnamige Abschnitte sind
+                            # erlaubt — gesucht ist hier einer, um ein Bild
+                            # daran zu haengen.
+                            .order("created_at")
+                            .limit(1)
                             .maybe_single()
                         )
                         if lore_data:
