@@ -128,13 +128,19 @@ class ForgeStateManager {
   readonly byokStatus = signal<BYOKStatus>({
     has_openrouter_key: false,
     has_replicate_key: false,
+    openrouter_last4: null,
+    replicate_last4: null,
     openrouter_verified_at: null,
     replicate_verified_at: null,
+    openrouter_last_used_at: null,
+    replicate_last_used_at: null,
     byok_allowed: false,
     byok_bypass: false,
     system_bypass_enabled: false,
     effective_bypass: false,
     access_policy: 'per_user',
+    stale_after_days: 90,
+    request_status: null,
   });
 
   // --- Threat Level (extracted from dossier ZETA) ---

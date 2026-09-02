@@ -209,11 +209,24 @@ export interface BYOKStatus {
    */
   openrouter_verified_at: string | null;
   replicate_verified_at: string | null;
+  /**
+   * Last characters of the stored key, so a card can show an identity
+   * (`sk-or-v1-•••••7f3a`) rather than only "configured".
+   */
+  openrouter_last4: string | null;
+  replicate_last4: string | null;
+  /** When the key was last handed out for a real call (stamped hourly). */
+  openrouter_last_used_at: string | null;
+  replicate_last_used_at: string | null;
   byok_allowed: boolean;
   byok_bypass: boolean;
   system_bypass_enabled: boolean;
   effective_bypass: boolean;
   access_policy: 'none' | 'all' | 'per_user';
+  /** After this many days without a confirmation the card carries a notice. */
+  stale_after_days: number;
+  /** Status of this account's latest access request, if it ever made one. */
+  request_status: 'pending' | 'approved' | 'rejected' | null;
 }
 
 export interface WalletResponse {
@@ -221,6 +234,23 @@ export interface WalletResponse {
   is_architect: boolean;
   account_tier: string;
   byok_status: BYOKStatus;
+}
+
+export interface BYOKRecheckResult {
+  valid: boolean;
+  detail: string;
+  response_ms: number;
+  /** False when there was no stored key to check in the first place. */
+  had_key: boolean;
+}
+
+export interface BYOKRequest {
+  id: string;
+  user_id: string;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  reviewed_at: string | null;
 }
 
 export interface TestBYOKResult {
@@ -360,6 +390,23 @@ export class ForgeApiService extends BaseApiService {
     key: string,
   ): Promise<ApiResponse<TestBYOKResult>> {
     return this.post('/forge/wallet/keys/test', { provider, key });
+  }
+
+  /**
+   * Ask the provider about the key already ON FILE.
+   *
+   * Not the same question as `testBYOK`, which checks a key someone just
+   * typed. "Configured" says nothing about whether a key still carries — one
+   * withdrawn at the provider three weeks ago looks identical here — and the
+   * caller no longer has the secret to re-enter. The server does.
+   */
+  recheckBYOK(provider: 'openrouter' | 'replicate'): Promise<ApiResponse<BYOKRecheckResult>> {
+    return this.post(`/forge/byok/recheck/${provider}`, {});
+  }
+
+  /** Ask to be allowed a personal key. Open to accounts that are NOT allowed. */
+  requestBYOKAccess(reason?: string): Promise<ApiResponse<BYOKRequest>> {
+    return this.post('/forge/byok/request', { reason: reason ?? null });
   }
 
   // --- Feature Purchases ---
