@@ -34,6 +34,7 @@ import './IntakeFlagModal.js';
 import './IntakeQuarantineCard.js';
 import './IntakeResonanceModal.js';
 import './IntakeSensorTile.js';
+import './IntakeTriageModal.js';
 
 /** Wie viele Minuten seit einem ISO-Zeitstempel vergangen sind. */
 function minutesSince(iso: string | null): number | null {
@@ -428,6 +429,81 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       flex: none;
     }
 
+    /* ── Die Zeile zur Sichtung ──────────────────────────────────────── */
+
+    .triage-line {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      inline-size: 100%;
+      padding: var(--space-2) var(--space-3);
+      background: transparent;
+      border: none;
+      border-block-end: var(--border-width-thin) dashed var(--color-border-light);
+      color: var(--color-text-tertiary);
+      font-family: var(--font-mono);
+      font-size: var(--_label);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      text-align: start;
+      cursor: pointer;
+      transition: color var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .triage-line:hover,
+    .triage-line:focus-visible {
+      color: var(--color-text-primary);
+      border-block-end-color: var(--color-accent-amber);
+    }
+
+    .triage-line:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .triage-line__dot {
+      inline-size: 6px;
+      block-size: 6px;
+      flex: none;
+      background: var(--color-border);
+    }
+
+    /*
+     * Der Punkt blinkt NUR, wenn etwas wartet. Ein Signalgeber, der immer
+     * leuchtet, ist eine Verzierung — und diese Zeile ist der einzige Weg zu
+     * einem Bestand, den sonst keine Kammer zeigt.
+     */
+    .triage-line--live .triage-line__dot {
+      background: var(--color-accent-amber);
+      animation: triage-pulse 2s var(--ease-in-out) infinite;
+    }
+
+    .triage-line--live {
+      color: var(--color-text-secondary);
+    }
+
+    @keyframes triage-pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    .triage-line__text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .triage-line__go {
+      flex: none;
+      color: var(--color-accent-amber-readable);
+    }
+
     .chamber__body {
       flex: 1;
       min-block-size: 0;
@@ -557,8 +633,13 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .act {
+      .act,
+      .triage-line {
         transition-duration: 0.01ms;
+      }
+
+      .triage-line--live .triage-line__dot {
+        animation: none;
       }
     }
   `;
@@ -586,6 +667,9 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
 
   /** Das Signal im Melden-Modal. Leer heisst: zu. */
   @state() private _flagSignalId = '';
+
+  /** Ob die Sichtung offen ist. */
+  @state() private _triageOpen = false;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -819,6 +903,62 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
   }
 
   /**
+   * Kammer ① — und die Zeile, die zur Sichtung führt.
+   *
+   * Die Sichtung ist kein eigener Ort auf dem Brett: sie ist der Vorraum, aus
+   * dem der Eingang gefüllt wird. Ohne diese Zeile wären die wartenden Signale
+   * NIRGENDS sichtbar — Stufe `raw` hat keine Kammer, und vier Schritte lang
+   * hat das niemand gemerkt, weil die View selbst keinen Navigationseintrag
+   * hatte. Ein Bestand, den keine Oberfläche zeigt, ist kein Bestand.
+   *
+   * Der Punkt blinkt nur, wenn wirklich etwas wartet. Ein Signalgeber, der
+   * immer leuchtet, ist eine Verzierung.
+   */
+  private _renderEntrance() {
+    const items = intakeState.inEntrance.value;
+    const waiting = intakeState.inTriage.value.length;
+    const title = msg('1 Entrance · admitted');
+
+    return html`
+      <section class="chamber chamber--entrance" aria-label=${title}>
+        <header class="chamber__head">
+          <h2 class="chamber__title">${title}</h2>
+          <span class="chamber__count">${items.length}</span>
+        </header>
+
+        <button
+          type="button"
+          class="triage-line ${waiting > 0 ? 'triage-line--live' : ''}"
+          @click=${() => {
+            this._triageOpen = true;
+          }}
+        >
+          <span class="triage-line__dot" aria-hidden="true"></span>
+          <span class="triage-line__text">
+            ${waiting > 0 ? msg(str`Triage · ${waiting} waiting`) : msg('Triage · nothing waiting')}
+          </span>
+          <span class="triage-line__go">${msg('Open triage')}</span>
+        </button>
+
+        <div class="chamber__body">
+          ${
+            items.length === 0
+              ? html`<p class="empty">
+                  ${msg('Nothing admitted yet. Pick from triage, or let a subscription fill it.')}
+                </p>`
+              : items.map(
+                  (s) => html`<div class="placeholder">
+                    <span>${s.headline}</span>
+                    ${this._renderTransformAction(s)}
+                  </div>`,
+                )
+          }
+        </div>
+      </section>
+    `;
+  }
+
+  /**
    * Kammer ② — die einzige mit echten Karten.
    *
    * Die drei anderen tragen bis zu den Schritten 5 und 6 Platzhalter. Diese
@@ -872,13 +1012,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       ${this._renderTop()} ${this._renderSensors()} ${this._renderQuota()}
       ${err ? html`<p class="error" role="alert">${err}</p>` : nothing}
       <div class="board">
-        ${this._renderChamber(
-          'entrance',
-          msg('1 Entrance · admitted'),
-          intakeState.inEntrance.value,
-          msg('Nothing admitted yet. Pick from triage, or let a subscription fill it.'),
-          (s) => this._renderTransformAction(s),
-        )}
+        ${this._renderEntrance()}
         ${this._renderQuarantine()}
         ${this._renderChamber(
           'released',
@@ -893,6 +1027,12 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           msg('No aftermath recorded. Echoes and impacts appear here.'),
         )}
       </div>
+      <velg-intake-triage-modal
+        ?open=${this._triageOpen}
+        @modal-close=${() => {
+          this._triageOpen = false;
+        }}
+      ></velg-intake-triage-modal>
       <velg-intake-crucible-modal
         ?open=${this._crucibleSignalId !== ''}
         .simulationId=${this.simulationId}

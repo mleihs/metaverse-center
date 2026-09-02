@@ -20,6 +20,7 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { IntakeSourceKind } from '../../types/intake.js';
+import { intakeKindColorStyles } from './intake-styles.js';
 
 /** Wie viele Segmente der Trefferbalken hat. */
 const HIT_SEGMENTS = 4;
@@ -27,33 +28,17 @@ const HIT_SEGMENTS = 4;
 @localized()
 @customElement('velg-intake-sensor-tile')
 export class VelgIntakeSensorTile extends LitElement {
-  static styles = css`
+  static styles = [
+    intakeKindColorStyles,
+    css`
     :host {
       display: block;
-      /* Tier 3: die Klassenfarbe kommt als Attribut herein und wird hier
-         einmal aufgelöst, damit Punkt, Wort und Balken garantiert dieselbe
-         Farbe tragen. */
-      --_class-color: var(--color-text-secondary);
+      /* Tier 3: die Klassenfarbe kommt als Attribut herein und wird in
+         intakeKindColorStyles einmal aufgeloest, damit Punkt, Wort und Balken
+         garantiert dieselbe Farbe tragen - und zwar dieselbe wie in der
+         Sichtung, die aus demselben Modul liest. */
+      --_class-color: var(--_kind);
       --_dim: color-mix(in srgb, var(--_class-color) 45%, transparent);
-    }
-
-    :host([kind='structured']) {
-      --_class-color: var(--color-accent-green);
-    }
-    :host([kind='semi']) {
-      --_class-color: var(--color-epoch-influence);
-    }
-    :host([kind='llm']) {
-      --_class-color: var(--color-accent-amber);
-    }
-    :host([kind='internal']) {
-      --_class-color: var(--color-info);
-    }
-    :host([kind='social']) {
-      --_class-color: var(--color-text-secondary);
-    }
-    :host([kind='nokey']) {
-      --_class-color: var(--color-danger);
     }
 
     /*
@@ -187,7 +172,8 @@ export class VelgIntakeSensorTile extends LitElement {
         transition-duration: 0.01ms;
       }
     }
-  `;
+  `,
+  ];
 
   /** Anzeigename der Quelle. */
   @property({ type: String }) name = '';

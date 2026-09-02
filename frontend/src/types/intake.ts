@@ -127,6 +127,17 @@ export interface IntakeSignal {
   /** Passung 0–100. Backend-Lücke; bis dahin nicht gesetzt. */
   fit?: number;
 
+  /**
+   * Vorschaubild, wenn die Quelle eines mitgeschickt hat.
+   *
+   * VIER Quellen tragen eines, unter VIER verschiedenen Namen — siehe
+   * `imageOf`. Die drei Messdienste (USGS, NOAA, NASA, GDACS) tragen nie
+   * eines, und das ist der Grund, warum die Sichtung ein GLEICHFÖRMIGES
+   * Kartenraster hat und kein Masonry: die Karte ohne Bild ist der Normalfall,
+   * nicht die Ausnahme.
+   */
+  imageUrl?: string;
+
   lens?: IntakeLens;
   proposal?: IntakeProposal;
 
@@ -217,6 +228,29 @@ export function sourceKindOf(name: string, info?: AdapterInfo): IntakeSourceKind
 
 // ── Adapter ─────────────────────────────────────────────────────────────────
 
+/**
+ * Vier Quellen, vier Namen für dasselbe Bild.
+ *
+ * `thumbnail` Guardian (`fields.thumbnail`) · `image_url` NewsAPI
+ * (`urlToImage`) und WHO (erstes `<img>` aus dem Overview) · `socialimage`
+ * GDELT · `thumb` Bluesky (`external.thumb`). Gespeichert ist jeweils die URL,
+ * kein Blob — sie lebt so lange wie der Kandidat.
+ *
+ * ⚠ Diese Liste ist am 02.09.2026 einmal falsch gewesen, und zwar durch ein zu
+ * enges Messgerät: ein Grep nach `"(thumbnail|image_url|thumb|image)"` suchte
+ * den Schlüssel als GANZES Wort und übersah `socialimage`, das `image`
+ * ENTHÄLT, aber nicht so heisst. GDELT galt deshalb als bildlos. Wer hier einen
+ * Namen ergänzt, sucht ihn im Adapter, nicht im Muster.
+ */
+export function imageOf(raw: Record<string, unknown> | null | undefined): string | undefined {
+  if (!raw) return undefined;
+  for (const key of ['thumbnail', 'image_url', 'socialimage', 'thumb']) {
+    const value = raw[key];
+    if (typeof value === 'string' && value.startsWith('http')) return value;
+  }
+  return undefined;
+}
+
 /** Status des Scanners auf die Stufe der Schleuse. */
 function stageOfCandidate(status: string): IntakeStage {
   switch (status) {
@@ -255,6 +289,7 @@ export function fromScanCandidate(c: ScanCandidate, adapters?: AdapterInfo[]): I
     classificationNote: c.classification_reason ?? undefined,
     sources: [{ name: c.source_adapter, count: 1 }],
     socialVolume: 0,
+    imageUrl: imageOf(c.article_raw_data),
     raw: c,
   };
 }
@@ -289,6 +324,7 @@ export function fromBrowseArticle(a: BrowseArticle): IntakeSignal {
     magnitude: 0,
     sources: [{ name: a.platform, count: 1 }],
     socialVolume: 0,
+    imageUrl: imageOf(raw),
     raw: a,
   };
 }
@@ -301,6 +337,25 @@ export interface IntakeTransformRequest {
   article_platform: string;
   article_url?: string;
   article_raw_data?: Record<string, unknown>;
+}
+
+/**
+ * Stammt dieses Signal aus dem Scanner (und nicht aus dem Browse-Weg)?
+ *
+ * Der Unterschied ist nicht kosmetisch: ein Scanner-Kandidat hat eine ZEILE in
+ * `news_scan_candidates`, ein gebrowster Artikel gar nichts. „Verwerfen" heisst
+ * deshalb beim einen ein `POST …/reject` und beim anderen nur eine Stufe im
+ * Zustand — wer das gleich behandelt, verliert entweder eine Entscheidung beim
+ * nächsten Laden oder ruft ins Leere.
+ *
+ * Das Prädikat sitzt auf `raw` und nicht auf dem Signal, damit BEIDE Zweige
+ * verengt sind: im Ja-Zweig `ScanCandidate`, im Nein-Zweig `BrowseArticle`.
+ * Ein Prädikat über das ganze Signal hätte den Nein-Zweig offen gelassen und
+ * dort einen Cast erzwungen — für eine Unterscheidung, die der Compiler
+ * treffen kann.
+ */
+export function isScanCandidate(raw: ScanCandidate | BrowseArticle): raw is ScanCandidate {
+  return 'source_adapter' in raw;
 }
 
 /**
@@ -317,7 +372,7 @@ export interface IntakeTransformRequest {
  */
 export function transformRequestOf(signal: IntakeSignal): IntakeTransformRequest {
   const raw = signal.raw;
-  if ('source_adapter' in raw) {
+  if (isScanCandidate(raw)) {
     return {
       article_name: raw.title,
       article_platform: raw.article_platform || raw.source_adapter,
