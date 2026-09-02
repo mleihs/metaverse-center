@@ -48,7 +48,9 @@ export const KEY_PROVIDERS: readonly KeyProvider[] = [
     prefix: 'sk-or-',
     placeholder: 'sk-or-v1-...',
     purpose: () =>
-      msg('Drives the text side of the Forge: research, anchors, agents and buildings, lore and its translations.'),
+      msg(
+        'Drives the text side of the Forge: research, anchors, agents and buildings, lore and its translations.',
+      ),
     signupUrl: 'https://openrouter.ai/keys',
     supportsLimit: true,
   },
@@ -59,7 +61,9 @@ export const KEY_PROVIDERS: readonly KeyProvider[] = [
     prefix: 'r8_',
     placeholder: 'r8_...',
     purpose: () =>
-      msg('Drives the Darkroom: agent portraits, building imagery and the visuals of a world’s lore.'),
+      msg(
+        'Drives the Darkroom: agent portraits, building imagery and the visuals of a world’s lore.',
+      ),
     signupUrl: 'https://replicate.com/account/api-tokens',
     supportsLimit: false,
   },
