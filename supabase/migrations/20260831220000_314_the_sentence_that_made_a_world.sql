@@ -69,6 +69,7 @@ DECLARE
   spalten     INT;
   saetze      INT;
   unfertige   INT;
+  quelle      INT;
   darf_lesen  BOOLEAN;
   darf_mehr   BOOLEAN;
 BEGIN
@@ -77,6 +78,12 @@ BEGIN
    WHERE table_schema = 'public' AND table_name = 'public_forge_prompts';
 
   SELECT count(*) INTO saetze FROM public.public_forge_prompts;
+
+  -- Wieviel QUELLE es ueberhaupt gibt. Ohne diese Zahl ist "null Saetze" nicht
+  -- von "null fertige Entwuerfe" zu unterscheiden.
+  SELECT count(*) INTO quelle
+    FROM public.forge_drafts d
+   WHERE d.status = 'completed' AND d.seed_prompt IS NOT NULL AND btrim(d.seed_prompt) <> '';
 
   -- Kein unfertiger Entwurf darf durchkommen.
   SELECT count(*) INTO unfertige
@@ -94,8 +101,23 @@ BEGIN
   IF spalten <> 1 THEN
     RAISE EXCEPTION 'Migration 314: die Sicht hat % Spalten, erlaubt ist genau eine', spalten;
   END IF;
-  IF saetze = 0 THEN
-    RAISE EXCEPTION 'Migration 314: die Sicht liefert null Sätze — gemessen waren es 16';
+  -- NACHTRAG 02.09.2026: die Bedingung war "null Saetze", und das ist eine
+  -- Aussage ueber den BESTAND, nicht ueber die Wirkung dieser Migration.
+  --
+  -- Auf einer frischen Datenbank gibt es keine fertigen Entwuerfe — die Saat
+  -- laeuft nach den Migrationen. Die Abnahme brach dort ab und riss den ganzen
+  -- CI-Lauf mit. Vierter Fall derselben Bauart nach 299, 305 und 311.
+  --
+  -- Was die Migration wirklich zusichern will: die Sicht reicht durch, was
+  -- durchgereicht werden soll. Das ist jetzt genau die Bedingung — gibt es
+  -- Quelle, muss die Sicht sie zeigen; gibt es keine, sagt die Migration das
+  -- und laeuft weiter. Die vier uebrigen Zusicherungen (eine Spalte, kein
+  -- unfertiger Entwurf, anon liest, anon darf sonst nichts) sind strukturell
+  -- und gelten auf jeder Datenbank unveraendert.
+  IF quelle = 0 THEN
+    RAISE NOTICE 'Migration 314: kein fertiger Entwurf vorhanden — Mengenprobe ausgesetzt (frische Datenbank?)';
+  ELSIF saetze = 0 THEN
+    RAISE EXCEPTION 'Migration 314: % fertige Entwuerfe, aber die Sicht liefert null Saetze', quelle;
   END IF;
   IF unfertige > 0 THEN
     RAISE EXCEPTION 'Migration 314: % unfertige Entwürfe kommen durch', unfertige;
