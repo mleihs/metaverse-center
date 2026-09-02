@@ -1084,6 +1084,31 @@ export const icons = {
     </svg>
   `,
 
+  /** Microphone — dictation into a text field. The capsule reads as a mic only
+   *  with the stand under it; drawn without the stem it turns into a pill. */
+  mic: (size = 16) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z" />
+      <path d="M5 10a7 7 0 0 0 14 0" />
+      <path d="M12 17l0 4" />
+      <path d="M8 21l8 0" />
+    </svg>
+  `,
+
+  /** Send — paper dart. Carries stroke-width 2.5 rather than the Tier 1
+   *  standard 2.0 on purpose: it sits alone on a filled amber button, where
+   *  the standard weight reads as thin against the inverse ground. The value
+   *  is the one it had while this markup lived inline in ChatComposer, so
+   *  moving it into the library changed nothing on screen. */
+  send: (size = 18) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M10 14l11 -11" />
+      <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
+    </svg>
+  `,
+
   /** Copy to clipboard — Platform Chrome Tier 1. */
   copy: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"

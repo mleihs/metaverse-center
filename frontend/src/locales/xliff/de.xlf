@@ -31264,6 +31264,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>The subscription could not be changed.</source>
   <target>Das Abonnement liess sich nicht ändern.</target>
 </trans-unit>
+<trans-unit id="sfc2bfaefe9f3a5ac">
+  <source>Dictation could not be started.</source>
+  <target>Das Diktat liess sich nicht starten.</target>
+</trans-unit>
+<trans-unit id="s4fe563c74b617865">
+  <source>Microphone access was refused. Allow it for this site to dictate.</source>
+  <target>Der Zugriff auf das Mikrofon wurde abgelehnt. Erlaube ihn für diese Seite, um zu diktieren.</target>
+</trans-unit>
+<trans-unit id="sf6098d8bd5717253">
+  <source>No microphone was found.</source>
+  <target>Es wurde kein Mikrofon gefunden.</target>
+</trans-unit>
+<trans-unit id="s691d90c57fbcaf5a">
+  <source>The speech service could not be reached.</source>
+  <target>Der Spracherkennungsdienst war nicht erreichbar.</target>
+</trans-unit>
+<trans-unit id="s56e2fa9e68dc4501">
+  <source>Speech recognition does not support this language.</source>
+  <target>Die Spracherkennung unterstützt diese Sprache nicht.</target>
+</trans-unit>
+<trans-unit id="s63fb4f44a18c3eb5">
+  <source>Dictation stopped unexpectedly.</source>
+  <target>Das Diktat wurde unerwartet beendet.</target>
+</trans-unit>
+<trans-unit id="s54df5e313a2bcd74">
+  <source>Stop dictation</source>
+  <target>Diktat beenden</target>
+</trans-unit>
+<trans-unit id="se0a0aa3576c63530">
+  <source>Dictate message</source>
+  <target>Nachricht diktieren</target>
+</trans-unit>
+<trans-unit id="sdcede3fb3f24874a">
+  <source>Listening</source>
+  <target>Hört zu</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
