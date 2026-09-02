@@ -52,11 +52,42 @@
 -- wieder angelegt.
 --
 -- Der Abnahmeblock am Ende prüft: beide Sichten da, alle fünf Indizes da, kein
--- `length(` mehr im Rumpf, und die Zeilenzahlen stimmen (40 Botschaften, 36
--- Welten). Die WERTGLEICHHEIT wird außerhalb der Migration geprüft, gegen die
--- vorher gesicherten 40 + 36 Zeilen — innerhalb wäre sie nicht möglich, weil
+-- `length(` mehr im Rumpf, und die Zeilenzahlen stimmen. Die WERTGLEICHHEIT
+-- wird außerhalb der Migration geprüft — innerhalb wäre sie nicht möglich, weil
 -- die alten Werte nach dem DROP nicht mehr existieren.
+--
+-- ── NACHTRAG 02.09.2026: die Zeilenzahlen waren LITERALE ────────────────────
+--
+-- Bis heute stand dort `IF v_botschaften <> 40` und `IF v_welten <> 36` — die
+-- Zeilenzahlen der Produktionsdatenbank zum Zeitpunkt des Schreibens, als
+-- Bestehensbedingung einbetoniert. Das ist kein Selbsttest, sondern ein
+-- Schnappschuss in der Schemageschichte, und er scheitert zwangsläufig:
+--
+--   * auf JEDER frischen Datenbank (CI: „10 statt 40 Botschaften")
+--   * auf Prod selbst, sobald eine 41. Botschaft entsteht
+--
+-- Gemeint war: der Neubau der Sicht verliert keine Zeile. Genau das wird jetzt
+-- gemessen — die Zahlen werden VOR dem DROP in eine temporäre Tabelle gelegt
+-- und danach gegen sich selbst geprüft. Auf Prod ist das 40 gegen 40, auf einer
+-- frischen Datenbank 0 gegen 0, und eine echte Regression (der Neubau verliert
+-- Zeilen) faellt in beiden Faellen auf.
 -- ============================================================================
+
+-- Vorher-Stand, bevor die Sichten fallen. `to_regclass` liefert NULL, wenn es
+-- die Sicht noch gar nicht gibt — dann ist der Vergleich 0 gegen 0, und die
+-- Zusicherung bleibt trotzdem eine.
+-- Kein `ON COMMIT DROP`: diese Migration hat KEINE explizite Transaktion, psql
+-- fuehrt also jede Anweisung in ihrer eigenen implizten aus — die Tabelle waere
+-- am Ende der CREATE-Anweisung schon wieder weg. Temporaere Tabellen leben fuer
+-- die SITZUNG, und `psql -f` ist eine Sitzung je Datei. Am Ende wird sie
+-- ausdruecklich abgeraeumt.
+DROP TABLE IF EXISTS _mv305_vorher;
+CREATE TEMP TABLE _mv305_vorher AS
+SELECT
+  CASE WHEN to_regclass('public.mv_embassy_effectiveness') IS NULL THEN 0
+       ELSE (SELECT count(*) FROM mv_embassy_effectiveness) END AS botschaften,
+  CASE WHEN to_regclass('public.mv_simulation_health') IS NULL THEN 0
+       ELSE (SELECT count(*) FROM mv_simulation_health) END     AS welten;
 
 DROP MATERIALIZED VIEW IF EXISTS mv_embassy_effectiveness CASCADE;
 
@@ -248,6 +279,8 @@ DECLARE
   v_indizes integer;
   v_botschaften integer;
   v_welten integer;
+  v_botschaften_vorher integer;
+  v_welten_vorher integer;
 BEGIN
   IF to_regclass('public.mv_embassy_effectiveness') IS NULL THEN
     RAISE EXCEPTION 'Migration 305: mv_embassy_effectiveness fehlt';
@@ -271,11 +304,17 @@ BEGIN
 
   SELECT count(*) INTO v_botschaften FROM mv_embassy_effectiveness;
   SELECT count(*) INTO v_welten FROM mv_simulation_health;
-  IF v_botschaften <> 40 THEN
-    RAISE EXCEPTION 'Migration 305: % statt 40 Botschaften nach dem Neubau', v_botschaften;
+  SELECT botschaften, welten INTO v_botschaften_vorher, v_welten_vorher FROM _mv305_vorher;
+
+  IF v_botschaften <> v_botschaften_vorher THEN
+    RAISE EXCEPTION 'Migration 305: % statt % Botschaften nach dem Neubau — der Neubau hat Zeilen verloren',
+      v_botschaften, v_botschaften_vorher;
   END IF;
-  IF v_welten <> 36 THEN
-    RAISE EXCEPTION 'Migration 305: % statt 36 Welten nach dem Neubau', v_welten;
+  IF v_welten <> v_welten_vorher THEN
+    RAISE EXCEPTION 'Migration 305: % statt % Welten nach dem Neubau — der Neubau hat Zeilen verloren',
+      v_welten, v_welten_vorher;
   END IF;
 END;
 $$;
+
+DROP TABLE IF EXISTS _mv305_vorher;
