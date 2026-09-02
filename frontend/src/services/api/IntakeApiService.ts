@@ -34,7 +34,55 @@ export interface FlagSignalRequest {
  * Kein `mode`-Parameter: Melden ist eine Schreiboperation und setzt
  * Mitgliedschaft voraus. Ein oeffentlicher Weg dafuer waere ein Loch.
  */
+/**
+ * Ein Abonnement der Schleuse: was ohne Nachfrage in den Eingang gehört.
+ *
+ * ⚠ Es verwandelt NICHTS. `zone_id` und `vector` sind die Linse, die ein Mensch
+ * EINMAL entschieden hat — sie füllen später den Schmelztiegel vor, statt
+ * heimlich ein Ereignis zu erzeugen. Ein Zeitgeber, der von selbst
+ * Modellaufrufe auslöst, kostet Geld ohne Klick.
+ */
+export interface IntakeSubscription {
+  id: string;
+  simulation_id: string;
+  label: string;
+  source_category: string | null;
+  min_magnitude: number;
+  zone_id: string | null;
+  vector: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export type IntakeSubscriptionInput = Omit<
+  IntakeSubscription,
+  'id' | 'simulation_id' | 'created_at'
+>;
+
 export class IntakeApiService extends BaseApiService {
+  listSubscriptions(simulationId: string): Promise<ApiResponse<IntakeSubscription[]>> {
+    return this.get(`/simulations/${simulationId}/intake/subscriptions`);
+  }
+
+  createSubscription(
+    simulationId: string,
+    data: IntakeSubscriptionInput,
+  ): Promise<ApiResponse<IntakeSubscription>> {
+    return this.post(`/simulations/${simulationId}/intake/subscriptions`, data);
+  }
+
+  updateSubscription(
+    simulationId: string,
+    id: string,
+    data: IntakeSubscriptionInput,
+  ): Promise<ApiResponse<IntakeSubscription>> {
+    return this.patch(`/simulations/${simulationId}/intake/subscriptions/${id}`, data);
+  }
+
+  deleteSubscription(simulationId: string, id: string): Promise<ApiResponse<unknown>> {
+    return this.delete(`/simulations/${simulationId}/intake/subscriptions/${id}`);
+  }
+
   /**
    * Die Passung dieser Welt je Signatur (Lücke 3).
    *

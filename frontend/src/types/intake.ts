@@ -138,6 +138,16 @@ export interface IntakeSignal {
    */
   imageUrl?: string;
 
+  /**
+   * Das Abonnement, das dieses Signal hereingeholt hat.
+   *
+   * Es traegt die Linse, die ein Mensch EINMAL entschieden hat, und füllt damit
+   * später den Schmelztiegel vor. Es setzt KEINE `lens` am Signal: ein
+   * vorbelegtes Formular ist etwas anderes als eine getroffene Entscheidung,
+   * und der Unterschied gehört auf den Schirm.
+   */
+  viaSubscription?: { label: string; zone?: string; vector?: string };
+
   lens?: IntakeLens;
   proposal?: IntakeProposal;
 

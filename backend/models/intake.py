@@ -103,3 +103,34 @@ class SignatureFitResponse(BaseModel):
     signature: str
     #: 0–100. `susceptibility * 100`, gedeckelt.
     fit: int
+
+
+class IntakeSubscriptionRequest(BaseModel):
+    """Ein Abonnement anlegen oder aendern.
+
+    Alle Filterfelder duerfen fehlen. Ein Abo ohne Kategorie und ohne
+    Untergrenze abonniert ALLES — das ist erlaubt und sichtbar, und dafuer gibt
+    es die Beschriftung.
+    """
+
+    label: str = Field(..., min_length=1, max_length=120)
+    source_category: str | None = None
+    min_magnitude: float = Field(default=0.0, ge=0.0, le=1.0)
+    #: Der Ort der Abo-Linse. `None` heisst: das Abo sagt nur, WAS hereinkommt.
+    zone_id: UUID | None = None
+    vector: str | None = Field(default=None, max_length=50)
+    is_active: bool = True
+
+
+class IntakeSubscriptionResponse(BaseModel):
+    """Ein Abonnement, wie es zurueckkommt."""
+
+    id: UUID
+    simulation_id: UUID
+    label: str
+    source_category: str | None = None
+    min_magnitude: float
+    zone_id: UUID | None = None
+    vector: str | None = None
+    is_active: bool
+    created_at: datetime
