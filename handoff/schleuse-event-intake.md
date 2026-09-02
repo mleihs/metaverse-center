@@ -554,3 +554,63 @@ neuesten zuerst", sobald mehr da sind.
 - **Zwei geerbte Übersetzungen abgefangen:** `msg('Fit')` hätte „Eignung"
   geerbt (die Dungeon-Tauglichkeit), `msg('Open')` „Offen" (der Zustand, wo ein
   Verb gemeint ist). Eigene Quellsätze: `Fit for this world`, `Open triage`.
+
+---
+
+## Nachtrag (Claude Code, 02.09.2026) — Schritt 6 und 7
+
+### Schritt 6: Lesesaal · Scan-Log · Nachhall
+
+**Lesesaal** (`IntakeReadingRoomModal`, 1500 px, `⤢` im Kopf von Kammer ①).
+Zwei Abweichungen:
+
+- **Kein Masonry, neuer Grund.** Bei der Sichtung war es der Rang; hier ist es
+  der VERGLEICH — die mittlere Spalte urteilt über die linke, die rechte folgt
+  aus beiden. Ein Vergleich braucht eine gemeinsame Grundlinie. Damit ist das
+  Zeilen-Spannweiten-Raster derzeit für NICHTS in dieser View richtig.
+- **Zwei Gliederungen statt drei.** „Ort" fehlt nicht, es gibt ihn an dieser
+  Stelle nicht: ein Signal im Eingang bekommt seinen Ort erst in der Linse.
+  🔑 Ein fehlender Wert und ein Wert, den es hier noch nicht geben KANN, sehen
+  im Code gleich aus (`undefined`) und verlangen verschiedene Antworten.
+- Die dritte Spalte („Vorschlag für die Welt") kann nur den WEG anbieten:
+  `lens`/`proposal` entstehen im Schmelztiegel, und wer sie hat, steht in der
+  Quarantäne und nicht mehr in dieser Liste.
+
+**Scan-Log** (`IntakeScanLogModal`, 1200 px) — und **hier ist die Rausch-Zeile**,
+die in der Sichtung nicht baubar war. Auf Prod: Bluesky 93 gescannt / 21
+eingeordnet, die vier Messdienste 100 %. Trichter je Quelle im Kopf, klickbar,
+Anteil unter der Hälfte in Warnfarbe. Die Spalte „Ergebnis" zeigt NICHT die
+Schleusen-Stufe (Lücke 7): `news_scan_log` und `news_scan_candidates` teilen
+keinen Schlüssel, und ein Abgleich über den Titel liefert 149 Treffer bei 222
+und 83 Zeilen — ein Kreuzprodukt, keine Identität.
+
+**Kammer ④** (`IntakeAftermathChamber`). `resonance_impacts` 14 Zeilen (gebaut),
+`event_echoes` 0 Zeilen (als Satz genannt, nicht als leerer Abschnitt gebaut).
+Die 14 vorhandenen Impacts holt sie NICHT ab — sie gehören zu einer Resonanz,
+die nicht durch die Schleuse kam.
+
+### Schritt 7: der Zufluss, den es nicht gab
+
+⚠ **`loadBrowse` hatte NULL Aufrufer.** Seit Schritt 1 vorhanden, im Bauplan
+genannt, nie ausgelöst. Ein Architekt konnte seine erste Kammer nie füllen.
+`IntakeBrowseModal` schliesst das.
+
+Dabei hat sich der Bauplan selbst widerlegt: `fromBrowseArticle` setzte
+`stage: 'in'`, aber die Zustandstabelle führt „browse" als Auslöser für
+`raw → in`. Fünfzehn auf einmal geholte Artikel hat niemand ausgewählt — sie
+beginnen jetzt in der Sichtung.
+
+Die Quote (Lücke 5) bindet bereits: `IntakeQuarantineCard` sperrt „Nur hier"
+bei `quotaReached`. **Abonnements (Lücke 6) bleiben ungebaut** — es gibt weder
+Tabelle noch Endpunkt; der ehrliche Platzhalter steht seit Schritt 2 in der View.
+
+### ⚠ Schritt 8 ist kein Löschen, sondern ein Teilen
+
+`social/SocialTrendsView.ts` (1989 Zeilen) trägt zwei Hälften:
+
+    Artikel-Browse / Staging / Batch / Transformieren  → von der Schleuse ersetzt
+    Botschaften + Weltgesundheit (4 Renderer)          → NIE abgedeckt
+
+Wer die Datei löscht, löscht die Botschaften mit. Der `social`-Eintrag in der
+Navigation bleibt deshalb stehen, bis die Botschaften ein eigenes Zuhause haben.
+Das ist eine eigene Aufgabe.
