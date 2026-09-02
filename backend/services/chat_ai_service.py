@@ -27,6 +27,7 @@ from backend.services.i18n_utils import (
     localize_label,
 )
 from backend.services.model_resolver import ModelResolver, ResolvedModel
+from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -43,7 +44,17 @@ _MEMORY_EXTRACT_TASKS: set[asyncio.Task[None]] = set()
 # context window.  No tokenizer dependency — uses a 4-chars-per-token
 # heuristic which is conservative for English prose.
 
+# ⚠ REIHENFOLGE IST BEDEUTUNG: die Suche nimmt den ERSTEN passenden Praefix.
+# Der spezifischere Eintrag muss deshalb VOR dem allgemeineren stehen —
+# `deepseek-v4` vor `deepseek`, sonst bekaeme v4-flash die 128k des Vorgaengers
+# und der Chat benutzte ein Achtel seines Fensters.
+#
+# Gemessen am OpenRouter-Katalog (02.09.2026):
+#     deepseek/deepseek-v4-flash        1 048 576
+#     deepseek/deepseek-v4-pro          1 048 576
+#     deepseek/deepseek-chat              163 840
 _CONTEXT_WINDOWS: dict[str, int] = {
+    "deepseek-v4": 1_000_000,
     "claude": 200_000,
     "gemini": 1_000_000,
     "gpt-4o": 128_000,
@@ -100,6 +111,46 @@ _CHARS_PER_TOKEN: dict[str, float] = {
     "en": 4.4,
 }
 _CHARS_PER_TOKEN_DEFAULT = 3.4  # unbekannte Sprache: die teurere Annahme
+
+# ── Die Regler des Gespraechszugs ─────────────────────────────────────────
+#
+# Bis 02.09.2026 gingen NUR `temperature` und `max_tokens` an den Anbieter; die
+# uebrigen Regler gab es im Aufruf gar nicht. Der Chat umgeht `run_ai` und damit
+# die ganze Zweck-Maschinerie — auch das `reasoning`, das dort laengst
+# geschickt wird. Beides ist jetzt angeschlossen.
+#
+# ⚠ `temperature` UND `top_p` zugleich ist gaengige Rollenspiel-Praxis, aber
+# nicht sauber: sie wirken multiplikativ, man weitet erst (1,15) und verengt
+# dann (0,95). Wer beide setzt, kann die Wirkung nicht mehr einzeln nachrechnen.
+# Bewusst so gewaehlt, nicht uebersehen.
+# DeepSeeks eigene Empfehlung liegt fuer kreatives Schreiben bei ~1,3, fuer
+# Allgemeines bei 1,0. 1,15 ist der massvolle Schritt dazwischen: spontaner als
+# die Vorgabe, ohne dass die Figur aus der Rolle kippt.
+_CHAT_TEMPERATURE = 1.15
+
+_CHAT_TOP_P = 0.95
+
+# Modelle schleifen sich im Rollenspiel in Formulierungen ein. 0,15 ist niedrig
+# genug, dass die Strafe nach HAEUFIGKEIT nicht die Eigennamen trifft — bei
+# hoeheren Werten hoert ein Agent auf, seinen eigenen Namen zu sagen.
+_CHAT_FREQUENCY_PENALTY = 0.15
+
+# `presence_penalty` bleibt ABSICHTLICH ungesetzt. Es wirkt binaer (kam das
+# Token ueberhaupt vor), und der urspruenglich erwogene Wert 0,05 liegt unter
+# der Wahrnehmungsschwelle: ein Regler, der nichts tut, ist schlechter als
+# keiner, weil ihn der Naechste fuer wirksam haelt.
+
+
+def _chat_max_tokens() -> int:
+    """Das Antwortbudget aus der Zweck-Deklaration, nicht aus dem Modell.
+
+    `AI_PURPOSES["chat_response"]` sagt 1 400 und begruendet es dort. Waere die
+    Zahl hier noch einmal geschrieben, gaebe es zwei Orte fuer eine Entscheidung
+    — und eine Deklaration, die niemand liest, ist Zierrat.
+
+    Ein Admin kann sie ohne Deploy ueber `max_tokens_chat_response` heben.
+    """
+    return get_platform_max_tokens("chat_response")
 
 
 def _max_history_messages(model_id: str) -> int:
@@ -355,8 +406,11 @@ class ChatAIService:
         response_text = await self._openrouter.generate(
             model=model.model_id,
             messages=messages,
-            temperature=model.temperature,
-            max_tokens=model.max_tokens,
+            temperature=_CHAT_TEMPERATURE,
+            max_tokens=_chat_max_tokens(),
+            top_p=_CHAT_TOP_P,
+            frequency_penalty=_CHAT_FREQUENCY_PENALTY,
+            reasoning=get_platform_reasoning("chat_response"),
             budget=budget,
         )
         generation_ms = int((time.monotonic() - t0) * 1000)
@@ -492,8 +546,11 @@ class ChatAIService:
                 async for chunk in self._openrouter.stream_completion(
                     model=model.model_id,
                     messages=messages,
-                    temperature=model.temperature,
-                    max_tokens=model.max_tokens,
+                    temperature=_CHAT_TEMPERATURE,
+                    max_tokens=_chat_max_tokens(),
+                    top_p=_CHAT_TOP_P,
+                    frequency_penalty=_CHAT_FREQUENCY_PENALTY,
+                    reasoning=get_platform_reasoning("chat_response"),
                     budget=budget,
                 ):
                     if chunk.error:

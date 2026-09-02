@@ -58,7 +58,12 @@ class AgentMemoryService:
             "importance": max(1, min(10, importance)),
             "source_type": source_type,
             "source_id": str(source_id) if source_id else None,
-            "embedding": str(embedding),
+            # Kein Vektor heißt LEER, nicht Null. Ein Nullvektor ergibt in
+            # pgvector den Abstand NaN, und NaN sortiert in DESC vor jeder
+            # Zahl — die Erinnerung stünde in jedem Abruf auf Platz 1, ohne
+            # zur Frage zu passen. Eine leere Spalte behandelt die
+            # Bewertungsfunktion dagegen sauber (Wichtigkeit + Frische).
+            "embedding": str(embedding) if embedding else None,
         }
         resp = await supabase.table("agent_memories").insert(record).execute()
         saved = resp.data[0]
@@ -163,6 +168,9 @@ class AgentMemoryService:
 
         Uses Postgres ``retrieve_agent_memories`` RPC (migration 067).
         """
+        # `embed` liefert None, wenn kein Vektor zu holen war. Der Abruf faellt
+        # dann auf Wichtigkeit + Frische zurueck — schlechter als semantisch,
+        # aber richtig, und ohne den Aufruf scheitern zu lassen.
         embedding = None
         if query_text:
             embedding = await EmbeddingService.embed(query_text, api_key=api_key)
@@ -185,6 +193,128 @@ class AgentMemoryService:
         return memories
 
     # ── Reflect ──────────────────────────────────────────────────────
+
+    # ── Verdichtung im Herzschlag ────────────────────────────────────
+
+    #: Ab so vielen NEUEN Beobachtungen lohnt eine Verdichtung.
+    #:
+    #: `reflect()` liest die 20 jüngsten Beobachtungen und braucht mindestens
+    #: fünf. Bei 50 ist genug Neues da, dass die Verdichtung etwas anderes
+    #: sagt als beim letzten Mal, und selten genug, dass sie nicht in jedem
+    #: Tick Modellkosten erzeugt.
+    REFLECTION_TRIGGER = 50
+
+    @classmethod
+    async def reflect_due_agents(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        *,
+        budget: int = 2,
+        locale: str | None = None,
+        api_key: str | None = None,
+    ) -> list[dict]:
+        """Verdichtet für die Agenten, bei denen sich genug angesammelt hat.
+
+        WARUM ES DAS GIBT
+        ``reflect()`` synthetisiert aus vielen Einzelbeobachtungen höherstufige
+        Einsichten („misstraut Autorität, wo Verlust im Spiel war"). Sie hing
+        bis heute NUR an einem Endpunkt, den jemand von Hand aufruft — kein
+        Tick, kein Zeitgeber. Auf Produktion gemessen (02.09.2026): **fünf
+        Verdichtungen gegen 300 Beobachtungen.**
+
+        Für ein langes Gespräch ist genau das der Engpass. Der Abruf holt acht
+        Erinnerungen; sind das acht flache Einzelbeobachtungen statt einer
+        Einsicht, die fünfzig zusammenfasst, verliert der Agent bei Nachricht
+        300 den Überblick, obwohl alles gespeichert ist.
+
+        WIE AUSGEWÄHLT WIRD
+        Je Agent: Beobachtungen, die JÜNGER sind als seine letzte Verdichtung
+        (oder alle, wenn er noch keine hat). Ab ``REFLECTION_TRIGGER`` ist er
+        fällig. Die Fälligsten zuerst, höchstens ``budget`` je Tick — ein
+        Modellaufruf je Agent, und ein Tick darf nicht unbegrenzt kosten.
+
+        Gibt die angelegten Verdichtungen zurück, für die Chronik.
+        """
+        faellige = await cls._agents_due_for_reflection(supabase, simulation_id, budget)
+        if not faellige:
+            return []
+
+        # Erst hier holen, nicht beim Aufrufer: der Herzschlag kennt die
+        # Inhaltssprache einer Welt nicht, und eine Abfrage je Tick fuer einen
+        # Fall, der selten eintritt, waere verschenkt.
+        if locale is None:
+            locale = await cls._content_locale(supabase, simulation_id)
+
+        angelegt: list[dict] = []
+        for agent_id, offen in faellige:
+            try:
+                neue = await cls.reflect(supabase, simulation_id, agent_id, locale=locale, api_key=api_key)
+            except Exception:
+                # Ein Agent, dessen Verdichtung scheitert, darf die übrigen
+                # nicht mitnehmen — und den Tick schon gar nicht.
+                logger.exception("Reflection failed for agent %s", agent_id)
+                continue
+            for eintrag in neue:
+                angelegt.append({**eintrag, "agent_id": str(agent_id), "pending": offen})
+        return angelegt
+
+    @staticmethod
+    async def _content_locale(supabase: Client, simulation_id: UUID) -> str:
+        """Die Inhaltssprache der Welt, wie der Chat sie auch liest."""
+        resp = await (
+            supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("setting_key", "general.content_locale")
+            .limit(1)
+            .execute()
+        )
+        rows = extract_list(resp)
+        return str(rows[0].get("setting_value", "de")) if rows else "de"
+
+    @classmethod
+    async def _agents_due_for_reflection(
+        cls,
+        supabase: Client,
+        simulation_id: UUID,
+        budget: int,
+    ) -> list[tuple[UUID, int]]:
+        """Wer hat genug Neues gesammelt? Fälligste zuerst.
+
+        Bewusst zwei schmale Abfragen statt einer RPC: die Zahlen sind klein
+        (Beobachtungen je Simulation liegen im dreistelligen Bereich), und die
+        Auswahlregel gehört in die Spiellogik, nicht in SQL.
+        """
+        letzte_resp = await (
+            supabase.table("agent_memories")
+            .select("agent_id, created_at")
+            .eq("simulation_id", str(simulation_id))
+            .eq("memory_type", "reflection")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        letzte: dict[str, str] = {}
+        for zeile in extract_list(letzte_resp):
+            letzte.setdefault(str(zeile["agent_id"]), zeile["created_at"])
+
+        beob_resp = await (
+            supabase.table("agent_memories")
+            .select("agent_id, created_at")
+            .eq("simulation_id", str(simulation_id))
+            .eq("memory_type", "observation")
+            .execute()
+        )
+        offen: dict[str, int] = {}
+        for zeile in extract_list(beob_resp):
+            aid = str(zeile["agent_id"])
+            grenze = letzte.get(aid)
+            if grenze is None or str(zeile["created_at"]) > grenze:
+                offen[aid] = offen.get(aid, 0) + 1
+
+        faellig = [(k, v) for k, v in offen.items() if v >= cls.REFLECTION_TRIGGER]
+        faellig.sort(key=lambda kv: kv[1], reverse=True)
+        return [(UUID(k), v) for k, v in faellig[: max(0, budget)]]
 
     @classmethod
     async def reflect(

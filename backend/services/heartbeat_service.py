@@ -27,6 +27,7 @@ import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.services.agent_activity_service import AgentActivityService
+from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.agent_mood_service import AgentMoodService
 from backend.services.agent_needs_service import AgentNeedsService
 from backend.services.agent_opinion_service import AgentOpinionService
@@ -855,6 +856,52 @@ class HeartbeatService(BaseSchedulerMixin):
                         )
                     )
             tick_stats["bond_whispers"] = bond_whispers_generated
+
+            # Phase 9.7: Erinnerungen verdichten
+            #
+            # `AgentMemoryService.reflect` synthetisiert aus vielen
+            # Einzelbeobachtungen höherstufige Einsichten. Sie hing bis zum
+            # 02.09.2026 NUR an einem Endpunkt, den jemand von Hand aufruft —
+            # auf Produktion gemessen: fünf Verdichtungen gegen 300
+            # Beobachtungen.
+            #
+            # Für lange Gespräche ist genau das der Engpass: der Abruf holt
+            # acht Erinnerungen, und acht flache Beobachtungen tragen weniger
+            # als eine Einsicht, die fünfzig zusammenfasst.
+            #
+            # Läuft NACH der Autonomie und den Flüstern, damit die
+            # Beobachtungen dieses Ticks schon mitzählen. Budget wie dort: ein
+            # Modellaufruf je Agent, höchstens zwei je Tick.
+            reflect_result = await _run_phase(
+                "memory_reflection",
+                AgentMemoryService.reflect_due_agents(
+                    admin,
+                    sim_id,
+                    budget=int(overrides.get("reflection_budget", 2)),
+                    api_key=bw_key if bw_has_key else None,
+                ),
+                **_ctx,
+            )
+            reflections_written = 0
+            if reflect_result:
+                reflections_written = len(reflect_result)
+                for ref in reflect_result:
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "memory_reflection",
+                            "An agent drew a conclusion from what it has seen",
+                            "Ein Agent hat aus dem Gesehenen einen Schluss gezogen",
+                            severity="info",
+                            metadata={
+                                "agent_id": ref.get("agent_id"),
+                                "pending_observations": ref.get("pending"),
+                            },
+                        )
+                    )
+            tick_stats["memory_reflections"] = reflections_written
 
             # Phase 10: Refresh materialized views
             await _run_phase(

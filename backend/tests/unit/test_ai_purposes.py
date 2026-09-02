@@ -30,6 +30,7 @@ catch the defect that actually occurred, where the two sets were disjoint.
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import Path
 
 import pytest
@@ -149,15 +150,41 @@ def test_every_run_ai_purpose_is_declared() -> None:
     )
 
 
+def _direct_purpose_sites() -> set[str]:
+    """Zwecke, die OHNE ``run_ai`` benutzt werden.
+
+    ⚠ Diese Prüfung kannte lange nur `run_ai`. Das ist nicht der einzige Weg:
+    der Agenten-Chat ruft `OpenRouterService` direkt und holt sich Modell,
+    Budget und Reasoning über `resolve_text_model` /
+    `get_platform_max_tokens` / `get_platform_reasoning`. Ein so verdrahteter
+    Zweck IST benutzt — er sah für das Tor nur unbenutzt aus.
+
+    Am 02.09.2026 fiel das auf, als `chat_response` deklariert wurde: das Tor
+    verlangte, die Deklaration zu löschen oder eine Aufrufstelle zu bauen, die
+    es längst gab. Ein Tor, das zum Rückbau einer richtigen Änderung drängt,
+    misst am falschen Ort.
+    """
+    muster = re.compile(
+        r'(?:resolve_text_model|get_platform_max_tokens|get_platform_reasoning|get_platform_model)'
+        r'\(\s*"([a-z_]+)"'
+    )
+    gefunden: set[str] = set()
+    for datei in _source_files():
+        gefunden.update(muster.findall(datei.read_text(encoding="utf-8")))
+    return gefunden
+
+
 def test_every_declared_purpose_is_used() -> None:
     """A declaration nobody reads is configuration-shaped decoration.
 
     ``ascii_art`` carried a 1024-token budget and a 60s timeout for a code path
     that is pyfiglet and a Pillow conversion — no model, no call, no cost.
     """
-    unused = [name for name in purpose_names() if name not in RUN_AI_SITES]
+    benutzt = set(RUN_AI_SITES) | _direct_purpose_sites()
+    unused = [name for name in purpose_names() if name not in benutzt]
     assert not unused, (
-        "ai_purposes.AI_PURPOSES declares purposes that no run_ai call site uses: "
+        "ai_purposes.AI_PURPOSES declares purposes that NO call site uses — weder "
+        "ueber run_ai noch direkt ueber resolve_text_model/get_platform_*: "
         f"{', '.join(unused)}. Remove the declaration, or wire the call site."
     )
 

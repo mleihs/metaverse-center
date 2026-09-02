@@ -25,9 +25,15 @@ from pathlib import Path
 from backend.services.ai_purposes import AI_PURPOSES, purpose_names
 from backend.services.platform_model_config import HARDCODED_DEFAULTS
 
-_MIGRATION = (
-    Path(__file__).resolve().parents[3] / "supabase" / "migrations" / "20260830180000_283_per_purpose_budgets.sql"
-)
+# ⚠ NICHT eine feste Migration. Ein neuer Zweck bringt seine Zeilen in einer
+# NEUEN Migration mit — 283 nachtraeglich zu aendern waere falsch, sie ist
+# ueberall angewandt. Das Tor sammelt deshalb ueber ALLE Migrationen.
+#
+# Das ist heute der zweite Fall desselben Musters: `test_heartbeat_entry_types`
+# klebte genauso an Migration 285 und wurde rot, sobald 343 den CHECK korrekt
+# erweiterte. Ein Tor, das an einen ZEITPUNKT bindet statt an einen ZUSTAND,
+# wird bei jeder richtigen Erweiterung rot — und irgendwann abgeschaltet.
+_MIGRATIONS_DIR = Path(__file__).resolve().parents[3] / "supabase" / "migrations"
 
 # ('key', 'value'::jsonb, 'description')  — value is a jsonb literal, so a
 # string setting arrives double-quoted and a number bare.
@@ -35,8 +41,10 @@ _ROW_RE = re.compile(r"^\s*\('([a-z0-9_]+)',\s*'(.*?)'::jsonb,", re.MULTILINE)
 
 
 def _seeded() -> dict[str, str]:
-    assert _MIGRATION.is_file(), f"migration 283 not found at {_MIGRATION}"
-    rows = dict(_ROW_RE.findall(_MIGRATION.read_text(encoding="utf-8")))
+    assert _MIGRATIONS_DIR.is_dir(), f"migrations not found at {_MIGRATIONS_DIR}"
+    rows: dict[str, str] = {}
+    for datei in sorted(_MIGRATIONS_DIR.glob("*.sql")):
+        rows.update(_ROW_RE.findall(datei.read_text(encoding="utf-8")))
     assert rows, "no INSERT rows parsed from migration 283 — the regex and the file disagree"
     return rows
 
@@ -55,12 +63,12 @@ def test_every_purpose_has_a_budget_row_matching_the_declaration() -> None:
         ):
             actual = SEEDED.get(key)
             if actual is None:
-                mismatches.append(f"{key}: missing from migration 283 (declaration says {expected})")
+                mismatches.append(f"{key}: in keiner Migration gesetzt (declaration says {expected})")
             elif actual != expected:
                 mismatches.append(f"{key}: migration says {actual}, declaration says {expected}")
 
     assert not mismatches, (
-        "migration 283 and ai_purposes.AI_PURPOSES disagree. The row wins at runtime, so a "
+        "die Migrationen und ai_purposes.AI_PURPOSES stimmen nicht ueberein. The row wins at runtime, so a "
         "default changed in code alone would never take effect on any database that has the "
         "row — which is every database:\n" + "\n".join(f"  {m}" for m in mismatches)
     )

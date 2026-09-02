@@ -126,6 +126,12 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     # Modell ohne Denken und nicht ein grösseres Budget. Der Text ist dabei
     # nicht schlechter: 171 Wörter im richtigen Ton, in 250 statt 914 Token.
     "model_dispatch": "deepseek/deepseek-chat",
+    # Der Agenten-Chat. Eigener Schluessel seit 02.09.2026: `chat_response` fiel
+    # vorher unter Regel 3 in `model_default` — der Chat folgte also jeder
+    # Modellentscheidung, die fuer Schmiede oder Einordnung getroffen wurde.
+    # v4-flash traegt 1 048 576 Token Kontext (gemessen am OpenRouter-Katalog),
+    # das Achtfache dessen, was die alte Fenstertabelle fuer "deepseek" annahm.
+    "model_chat": "deepseek/deepseek-v4-flash",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
     "model_default_dev": "deepseek/deepseek-chat",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
@@ -134,6 +140,7 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     "model_forecast_dev": "anthropic/claude-haiku-4.5",
     "model_classify_dev": "deepseek/deepseek-chat",
     "model_dispatch_dev": "deepseek/deepseek-chat",
+    "model_chat_dev": "deepseek/deepseek-v4-flash",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
