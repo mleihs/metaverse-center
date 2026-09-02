@@ -38,6 +38,30 @@ class ChatService:
         if not result:
             raise not_found(detail="Conversation not found")
 
+    @staticmethod
+    async def set_locked(
+        supabase: Client,
+        conversation_id: UUID,
+        user_id: UUID,
+        locked: bool,
+    ) -> None:
+        """Den Verschluss eines Gespraechs setzen.
+
+        Der Besitzerfilter steht ZUSAETZLICH in der Bedingung, obwohl der
+        Aufrufer schon `verify_ownership` durchlaufen hat. Doppelt, und mit
+        Absicht: der Router benutzt `get_effective_supabase`, und fuer einen
+        Plattform-Admin ist RLS dort ausgeschaltet. Faellt der Aufrufer je weg
+        oder wird umgestellt, schreibt diese Zeile trotzdem nicht an einem
+        fremden Gespraech.
+        """
+        await (
+            supabase.table("chat_conversations")
+            .update({"locked": locked})
+            .eq("id", str(conversation_id))
+            .eq("user_id", str(user_id))
+            .execute()
+        )
+
     # ── Batch-load helpers (shared by list + single-load) ──
 
     @staticmethod

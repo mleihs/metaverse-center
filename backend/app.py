@@ -75,6 +75,7 @@ from backend.routers import (
     agent_professions,
     agents,
     aptitudes,
+    auth,
     bluesky,
     bonds,
     bot_players,
@@ -196,8 +197,7 @@ async def lifespan(app: FastAPI):
     missing_github_app_env = check_env_config()
     if missing_github_app_env:
         logging.getLogger(__name__).error(
-            "GitHub App env vars incomplete: %s. "
-            "Content-draft publishing will fail at runtime until resolved.",
+            "GitHub App env vars incomplete: %s. Content-draft publishing will fail at runtime until resolved.",
             ", ".join(missing_github_app_env),
         )
 
@@ -303,7 +303,8 @@ _CONNECTIVITY_ERRORS = frozenset({"ConnectError", "ConnectTimeout", "PoolTimeout
 # catch the exception individually.
 @app.exception_handler(BudgetExceededError)
 async def budget_exceeded_handler(
-    request: Request, exc: BudgetExceededError,
+    request: Request,
+    exc: BudgetExceededError,
 ) -> JSONResponse:
     logger.warning(
         "AI budget exceeded: %s:%s %s $%.4f/$%.4f",
@@ -369,6 +370,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # --- Routers ---
 app.include_router(health.router)
 app.include_router(achievements.router)
+app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(admin_drafts.router)
 app.include_router(admin_content_packs.router)

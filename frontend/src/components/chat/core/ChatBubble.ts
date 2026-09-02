@@ -64,11 +64,32 @@ export class ChatBubble extends LitElement {
       white-space: pre-wrap;
     }
 
-    /* --- Assistant bubble --- */
+    /* --- Assistant bubble ---
+     *
+     * Der Akzent der Agentin liegt im GANZEN Rahmen und in einem Hauch Tint,
+     * nicht in einem Streifen an einer Kante. Das ist keine Geschmacksfrage:
+     * der Balken ist im Projekt tabu (lint-no-accent-edge-bar), weil er vier
+     * Aufgaben zugleich trug und fast immer redundant war.
+     *
+     * 40 % Akzent gegen die neutrale Rahmenfarbe statt gegen transparent: die
+     * Blase steht auf --color-surface-raised, und ein durchscheinender Rahmen
+     * verliert dort seine Kante, statt die Farbe zu daempfen. Der Tint bleibt
+     * bei 6 % — genug, dass zwei Agenten nebeneinander unterscheidbar sind,
+     * zu wenig, um die Lesefarbe des Textes zu kippen (WCAG AA auf dem
+     * getoenten Grund bleibt gewahrt, weil 6 % die Leuchtdichte kaum bewegt).
+     *
+     * Ohne gesetzten --_accent faellt beides auf die alten neutralen Werte
+     * zurueck: Epochen-Nachrichten und Spielertexte haben keine Agentenfarbe.
+     */
     .bubble--assistant {
-      background: var(--_bubble-agent-bg);
+      background: color-mix(
+        in srgb,
+        var(--_accent, transparent) 6%,
+        var(--_bubble-agent-bg)
+      );
       color: var(--_bubble-agent-text);
-      border: var(--border-width-thin) solid var(--color-border-light);
+      border: var(--border-width-thin) solid
+        color-mix(in srgb, var(--_accent, var(--color-border-light)) 40%, var(--color-border));
       box-shadow: var(--shadow-xs);
     }
 

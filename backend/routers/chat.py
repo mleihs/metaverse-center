@@ -5,11 +5,21 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import EventSourceResponse
 
-from backend.dependencies import get_current_user, get_effective_supabase, require_role
-from backend.middleware.rate_limit import RATE_LIMIT_AI_CHAT, limiter
+from backend.dependencies import (
+    get_anon_supabase,
+    get_current_user,
+    get_effective_supabase,
+    require_role,
+)
+from backend.middleware.rate_limit import (
+    RATE_LIMIT_AI_CHAT,
+    RATE_LIMIT_EXTERNAL_API,
+    limiter,
+)
+from backend.models.auth import ConversationLockRequest
 from backend.models.chat import (
     AddAgentRequest,
     ChatMessageResponse,
@@ -24,6 +34,7 @@ from backend.models.chat import (
     ReactionToggleResponse,
 )
 from backend.models.common import CurrentUser, SuccessResponse
+from backend.routers.auth import verify_account_password
 from backend.services.audit_service import AuditService
 from backend.services.chat_service import ChatService
 from supabase import AsyncClient as Client
@@ -507,6 +518,53 @@ async def rename_conversation(
         details={"title": body.title},
     )
     return SuccessResponse(data=conversation)
+
+
+@router.patch("/conversations/{conversation_id}/lock")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def set_conversation_lock(
+    request: Request,
+    simulation_id: UUID,
+    conversation_id: UUID,
+    body: ConversationLockRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+    anon: Annotated[Client, Depends(get_anon_supabase)],
+) -> SuccessResponse[dict]:
+    """Ein Gespraech unter Verschluss legen oder wieder oeffnen.
+
+    Das Passwort steht im SELBEN Aufruf wie die Aenderung. Die Spezifikation
+    sah einen `reauth_at < 2 min`-Merker vor; der haette einen Zustand
+    gebraucht, den der Server sonst nirgends fuehrt, und ein Fenster zwischen
+    Nachweis und Wirkung geoeffnet. So gibt es kein Fenster.
+
+    ⚠ `require_role("viewer")` genuegt hier bewusst NICHT allein: der
+    Verschluss gehoert dem BESITZER des Gespraechs, nicht einer Weltrolle.
+    `verify_ownership` wirft 404 fuer jeden anderen — auch fuer einen
+    Plattform-Admin, dessen RLS-Umgehung an dieser Stelle sonst greifen wuerde.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+
+    if not await verify_account_password(anon, user.email, body.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Password not recognised.",
+        )
+
+    await _service.set_locked(supabase, conversation_id, user.id, body.locked)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation_id,
+        "lock" if body.locked else "unlock",
+        # Kein Passwort, kein Titel: das Protokoll haelt fest, DASS der
+        # Verschluss umgelegt wurde, nicht woran.
+        details={"locked": body.locked},
+    )
+    return SuccessResponse(data={"id": str(conversation_id), "locked": body.locked})
 
 
 @router.patch("/conversations/{conversation_id}")

@@ -582,10 +582,6 @@
   <source>Conversations</source>
   <target>Konversationen</target>
 </trans-unit>
-<trans-unit id="s704055139e0a3008">
-  <source>+ New</source>
-  <target>+ Neu</target>
-</trans-unit>
 <trans-unit id="s017d6d83f53e4281">
   <source>Failed to load messages.</source>
   <target>Fehler beim Laden der Nachrichten.</target>
@@ -27730,7 +27726,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source><x id="0" equiv-text="${run.rooms_cleared}"/>/<x id="1" equiv-text="${run.rooms_total}"/> rooms</source>
 <target><x id="0" equiv-text="${run.rooms_cleared}"/>/<x id="1" equiv-text="${run.rooms_total}"/> Räume</target></trans-unit>
 <trans-unit id="sd94ea3e8b2990dc9">
-  <source><x id="0" equiv-text="${run.party_agent_ids.length}"/> agents</source>
+  <source><x id="0" equiv-text="${agentCount}"/> agents</source>
 <target><x id="0" equiv-text="${run.party_agent_ids.length}"/> Agenten</target></trans-unit>
 <trans-unit id="s2a9c46fc09cb9faa">
   <source>Fetching the log...</source>
@@ -31299,6 +31295,58 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sdcede3fb3f24874a">
   <source>Listening</source>
   <target>Hört zu</target>
+</trans-unit>
+<trans-unit id="s1770c9f28ce7caf0">
+  <source>Remove lock</source>
+  <target>Sperre aufheben</target>
+</trans-unit>
+<trans-unit id="sa9bc6f98769abd2d">
+  <source>Lock conversation</source>
+  <target>Gespräch sperren</target>
+</trans-unit>
+<trans-unit id="s10b7acd25ef53f44">
+  <source>The conversation returns to the normal list and stays visible without a password.</source>
+  <target>Das Gespräch kehrt in die normale Liste zurück und bleibt ohne Passwort sichtbar.</target>
+</trans-unit>
+<trans-unit id="sc79090450a524620">
+  <source>Locked conversations stay visible until you close this tab or lock them again.</source>
+  <target>Gesperrte Gespräche bleiben sichtbar, bis du diesen Reiter schliesst oder wieder abschliesst.</target>
+</trans-unit>
+<trans-unit id="s3a641e734cca7521">
+  <source>The conversation disappears from the list. It stays readable to you after entering your password – this hides it from people looking at your screen, it does not encrypt it.</source>
+  <target>Das Gespräch verschwindet aus der Liste. Für dich bleibt es nach Eingabe des Passworts lesbar – es verbirgt sich vor Blicken auf deinen Bildschirm, verschlüsselt ist es nicht.</target>
+</trans-unit>
+<trans-unit id="s99ab81932a85a375">
+  <source>Account password</source>
+  <target>Kontopasswort</target>
+</trans-unit>
+<trans-unit id="s084b392988aafce4">
+  <source>Password not recognised. The lock stays.</source>
+  <target>Passwort nicht erkannt. Die Sperre bleibt.</target>
+</trans-unit>
+<trans-unit id="sb600b17f5dc8ff53">
+  <source>This conversation is locked. Enter your password to open it for this session.</source>
+  <target>Dieses Gespräch ist gesperrt. Gib dein Passwort ein, um es für diese Sitzung zu öffnen.</target>
+</trans-unit>
+<trans-unit id="sdca5397beb6dad1e">
+  <source>Lock again</source>
+  <target>Wieder sperren</target>
+</trans-unit>
+<trans-unit id="s267044171a893416">
+  <source>Under seal</source>
+  <target>Unter Verschluss</target>
+</trans-unit>
+<trans-unit id="s41b1a3474cbc3bde">
+  <source>Enter password</source>
+  <target>Passwort eingeben</target>
+</trans-unit>
+<trans-unit id="s0058d65423075c1c">
+  <source>New conversation</source>
+  <target>Neues Gespräch</target>
+</trans-unit>
+<trans-unit id="s3741f519c32ac391">
+  <source>New</source>
+  <target>Neu</target>
 </trans-unit>
 </body>
 </file>

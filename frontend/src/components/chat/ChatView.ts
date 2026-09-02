@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { chatApi } from '../../services/api/index.js';
+import { chatLock } from '../../services/chat/ChatLockService.js';
 import { captureError } from '../../services/SentryService.js';
 import type {
   Agent,
@@ -13,6 +14,7 @@ import type {
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import './ChatLockModal.js';
 import './ConversationList.js';
 import './ChatWindow.js';
 import './AgentSelector.js';
@@ -23,6 +25,17 @@ import './EventPicker.js';
 export class VelgChatView extends LitElement {
   static styles = css`
     :host {
+      /* Das EINE Kopfmass beider Spalten.
+       *
+       * Links die Gespraechsliste, rechts der Kopf der Unterhaltung — sie
+       * standen auf verschiedenen Hoehen, weil jede ihre eigene aus ihrem
+       * Inhalt bezog. Hier steht sie einmal, und beide Schattenwurzeln erben
+       * sie: Custom Properties gehen durch die Schattengrenze.
+       *
+       * Zusammengesetzt statt geraten: Innenabstand oben und unten
+       * (--space-3), das Portraet dazwischen (32 px) und die trennende Kante.
+       * Wer eines davon aendert, bekommt die neue Hoehe geschenkt. */
+      --chat-header-h: calc(var(--space-3) * 2 + 32px + var(--border-width-default));
       display: block;
       overflow: hidden;
       max-width: 100vw;
@@ -55,57 +68,10 @@ export class VelgChatView extends LitElement {
       overflow: hidden;
     }
 
-    .sidebar__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-3) var(--space-4);
-      background: var(--color-surface-header);
-      border-bottom: var(--border-medium);
-      flex-shrink: 0;
-    }
 
-    .sidebar__title {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-secondary);
-    }
 
-    .sidebar__new-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-1-5) var(--space-3);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-black);
-      font-size: var(--text-xs);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist);
-      background: var(--color-primary);
-      color: var(--color-text-inverse);
-      border: var(--border-medium);
-      box-shadow: var(--shadow-xs);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
 
-    .sidebar__new-btn:hover {
-      transform: translate(-1px, -1px);
-      box-shadow: var(--shadow-sm);
-    }
 
-    .sidebar__new-btn:active {
-      transform: translate(0);
-      box-shadow: var(--shadow-pressed);
-    }
-
-    .sidebar__new-btn:focus-visible {
-      outline: none;
-      box-shadow: var(--ring-focus);
-    }
 
     .sidebar__list {
       flex: 1;
@@ -202,6 +168,12 @@ export class VelgChatView extends LitElement {
   `;
 
   @property({ type: String }) simulationId = '';
+
+  @state() private _lockModalOpen = false;
+  @state() private _lockPurpose: 'lock' | 'unlock' | 'reveal' = 'lock';
+  @state() private _lockTarget: ChatConversation | null = null;
+  @state() private _lockRejected = false;
+  @state() private _lockBusy = false;
 
   @state() private _conversations: ChatConversation[] = [];
   @state() private _selectedConversation: ChatConversation | null = null;
@@ -497,6 +469,77 @@ export class VelgChatView extends LitElement {
     this._showEventPicker = false;
   }
 
+  // ── Verschluss ───────────────────────────────────────────────────────
+
+  private _handleLockRequest(
+    e: CustomEvent<{
+      conversation: ChatConversation | null;
+      purpose: 'lock' | 'unlock' | 'reveal';
+    }>,
+  ): void {
+    this._lockPurpose = e.detail.purpose;
+    this._lockTarget = e.detail.conversation;
+    this._lockRejected = false;
+    this._lockModalOpen = true;
+  }
+
+  private _closeLockModal(): void {
+    this._lockModalOpen = false;
+    this._lockRejected = false;
+    this._lockTarget = null;
+  }
+
+  private async _handleLockSubmit(
+    e: CustomEvent<{ purpose: 'lock' | 'unlock' | 'reveal'; password: string }>,
+  ): Promise<void> {
+    const { purpose, password } = e.detail;
+    this._lockBusy = true;
+    this._lockRejected = false;
+    try {
+      if (purpose === 'reveal') {
+        const resp = await chatApi.reauth(password);
+        if (!resp.success || !resp.data) {
+          this._lockRejected = true;
+          return;
+        }
+        chatLock.grant(resp.data.valid_for_seconds);
+        this._closeLockModal();
+        return;
+      }
+
+      const target = this._lockTarget;
+      if (!target) {
+        this._closeLockModal();
+        return;
+      }
+      const resp = await chatApi.setConversationLock(
+        this.simulationId,
+        target.id,
+        purpose === 'lock',
+        password,
+      );
+      if (!resp.success) {
+        this._lockRejected = true;
+        return;
+      }
+      // Den Bestand vor Ort nachziehen statt neu zu laden: die Liste soll in
+      // derselben Bewegung verschwinden, in der das Modal schliesst.
+      this._conversations = this._conversations.map((c) =>
+        c.id === target.id ? { ...c, locked: purpose === 'lock' } : c,
+      );
+      if (purpose === 'lock' && this._selectedConversation?.id === target.id) {
+        // Ein verschlossenes Gespraech darf nicht offen stehen bleiben.
+        this._selectedConversation = this._conversations.find((c) => !c.locked) ?? null;
+      }
+      this._closeLockModal();
+    } catch (err) {
+      captureError(err, { source: 'ChatView._handleLockSubmit' });
+      this._lockRejected = true;
+    } finally {
+      this._lockBusy = false;
+    }
+  }
+
   protected render() {
     if (this._loading) {
       return html`
@@ -517,18 +560,6 @@ export class VelgChatView extends LitElement {
     return html`
       <div class="chat-layout ${this._selectedConversation ? 'chat-layout--has-conversation' : ''}">
         <div class="sidebar" role="complementary" aria-label=${msg('Conversation list')}>
-          <div class="sidebar__header">
-            <div class="sidebar__title">${msg('Conversations')}</div>
-            ${
-              appState.isAuthenticated.value
-                ? html`
-              <button class="sidebar__new-btn" @click=${this._handleNewConversation}>
-                ${msg('+ New')}
-              </button>
-            `
-                : null
-            }
-          </div>
           ${
             !appState.isAuthenticated.value
               ? html`
@@ -547,12 +578,15 @@ export class VelgChatView extends LitElement {
               @conversation-archive=${this._handleConversationArchive}
               @conversation-delete=${this._handleConversationDelete}
               @conversation-rename=${this._handleConversationRename}
+              @conversation-new=${this._handleNewConversation}
+              @conversation-lock-request=${this._handleLockRequest}
             ></velg-conversation-list>
           </div>
         </div>
 
         <div class="main-area" role="main" aria-label=${msg('Chat')}
           @open-agent-selector=${this._handleOpenAgentSelector}
+          @conversation-lock-request=${this._handleLockRequest}
           @open-event-picker=${this._handleOpenEventPicker}
           @remove-event-ref=${this._handleRemoveEventRef}
         >
@@ -586,6 +620,16 @@ export class VelgChatView extends LitElement {
         @event-selected=${this._handleEventSelected}
         @modal-close=${this._handleModalClose}
       ></velg-event-picker>
+
+      <velg-chat-lock-modal
+        ?open=${this._lockModalOpen}
+        .purpose=${this._lockPurpose}
+        .conversationTitle=${this._lockTarget?.title ?? ''}
+        ?rejected=${this._lockRejected}
+        ?busy=${this._lockBusy}
+        @lock-submit=${this._handleLockSubmit}
+        @lock-cancel=${this._closeLockModal}
+      ></velg-chat-lock-modal>
     `;
   }
 }

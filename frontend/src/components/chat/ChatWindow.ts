@@ -10,6 +10,7 @@ import {
   exportJSON as exportChatJSON,
   exportMarkdown as exportChatMarkdown,
 } from '../../services/chat/ChatExporter.js';
+import { chatLock } from '../../services/chat/ChatLockService.js';
 import { chatStore } from '../../services/chat/ChatSessionStore.js';
 import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatStreamConsumer.js';
 import type { Participant } from '../../services/chat/chat-types.js';
@@ -44,6 +45,60 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       height: 100%;
     }
 
+    /* Die verschlossene Ansicht — dieselbe Flaeche wie ein leeres Fenster,
+       damit der Wechsel nicht springt. */
+    .window--sealed {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sealed {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      max-width: 380px;
+      padding: var(--space-6);
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    .sealed__icon {
+      color: var(--color-text-quiet);
+    }
+
+    .sealed__title {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-secondary);
+    }
+
+    .sealed__text {
+      margin: 0;
+      font-family: var(--font-bureau, var(--font-prose));
+      font-size: var(--text-sm);
+      line-height: var(--leading-relaxed);
+    }
+
+    .sealed__btn {
+      min-height: 44px;
+      padding: var(--space-2) var(--space-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-inverse);
+      background: var(--color-primary);
+      border: var(--border-width-default) solid var(--color-border);
+      box-shadow: var(--shadow-xs);
+      cursor: pointer;
+    }
+
     .window__header {
       display: flex;
       flex-direction: column;
@@ -59,6 +114,11 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       align-items: center;
       justify-content: space-between;
       padding: var(--space-3) var(--space-4);
+      /* Auf das gemeinsame Mass aus ChatView festgenagelt, damit die Liste
+         links auf derselben Linie enden kann. Die Ereignis-Leiste haengt
+         DARUNTER als eigener Streifen und darf nicht in diese Hoehe hinein. */
+      min-height: calc(var(--chat-header-h, 58px) - var(--border-width-default));
+      box-sizing: border-box;
     }
 
     .window__header-left {
@@ -401,6 +461,22 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
   @property({ type: Object }) conversation: ChatConversation | null = null;
   @property({ type: String }) simulationId = '';
 
+  /**
+   * Ob die Ansicht auf Telefonbreite steht.
+   *
+   * Der Portrait-Stapel liesse sich per CSS kuerzen — aber dann stimmte die
+   * Zahl im „+n" nicht mehr, denn sie zaehlt ab dem vierten. Eine Anzeige, die
+   * „+2" sagt, waehrend drei verborgen sind, ist schlechter als keine.
+   */
+  @state() private _isNarrow = false;
+
+  private readonly _narrowQuery =
+    typeof matchMedia === 'function' ? matchMedia('(max-width: 640px)') : null;
+
+  private readonly _onNarrowChange = (e: MediaQueryListEvent): void => {
+    this._isNarrow = e.matches;
+  };
+
   @state() private _loading = false;
   @state() private _sending = false;
   @state() private _showEventsBar = false;
@@ -586,11 +662,16 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   override connectedCallback(): void {
     super.connectedCallback();
+    if (this._narrowQuery) {
+      this._isNarrow = this._narrowQuery.matches;
+      this._narrowQuery.addEventListener('change', this._onNarrowChange);
+    }
     document.addEventListener('click', this._closeExportMenuBound);
     document.addEventListener('keydown', this._closeExportMenuOnEscapeBound);
   }
 
   override disconnectedCallback(): void {
+    this._narrowQuery?.removeEventListener('change', this._onNarrowChange);
     document.removeEventListener('click', this._closeExportMenuBound);
     document.removeEventListener('keydown', this._closeExportMenuOnEscapeBound);
     super.disconnectedCallback();
@@ -946,6 +1027,17 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     this._showEventsBar = !this._showEventsBar;
   }
 
+  private _handleLockConversation(): void {
+    if (!this.conversation) return;
+    this.dispatchEvent(
+      new CustomEvent('conversation-lock-request', {
+        detail: { conversation: this.conversation, purpose: 'lock' },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   private _handleExportMarkdown(): void {
     if (!this.conversation) return;
     const session = chatStore.getOrCreate(this.conversation.id);
@@ -1054,7 +1146,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   private _renderPortraitStack(): TemplateResult {
     const agents = this._getAgents();
-    const maxVisible = 4;
+    // Auf Telefonbreite bleibt EIN Portrait stehen, der Rest wandert in die
+    // Ueberlaufmarke — vier Portraits und ein Titel passen dort nicht in eine
+    // Zeile, ohne dass der Name abgeschnitten wird.
+    const maxVisible = this._isNarrow ? 1 : 4;
     const visible = agents.slice(0, maxVisible);
     const overflow = agents.length - maxVisible;
 
@@ -1145,9 +1240,54 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     `;
   }
 
+  /**
+   * Was anstelle eines verschlossenen Gespraechs steht.
+   *
+   * Bewusst OHNE Titel und ohne Agentennamen: der Titel ist bei diesen
+   * Gespraechen oft schon die Auskunft, die verborgen bleiben soll. Es bleibt
+   * bei der Tatsache, dass hier etwas liegt.
+   */
+  private _renderSealed(): TemplateResult {
+    return html`
+      <div class="window window--sealed">
+        <div class="sealed">
+          <div class="sealed__icon">${icons.lock(28)}</div>
+          <div class="sealed__title">${msg('Under seal')}</div>
+          <p class="sealed__text">
+            ${msg('This conversation is locked. Enter your password to open it for this session.')}
+          </p>
+          <button
+            class="sealed__btn"
+            @click=${() =>
+              this.dispatchEvent(
+                new CustomEvent('conversation-lock-request', {
+                  detail: { conversation: null, purpose: 'reveal' },
+                  bubbles: true,
+                  composed: true,
+                }),
+              )}
+          >
+            ${msg('Unlock')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   protected render() {
     if (!this.conversation) {
       return this._renderNoConversation();
+    }
+
+    /*
+     * Der Riegel steht HIER, vor allem anderen — nicht nur in der Liste.
+     * Eine Sperre, die bloss den Eintrag ausblendet, ist keine: das Fenster
+     * behaelt seine Auswahl ueber einen Neuaufbau hinweg, und ein tiefer Link
+     * traegt die Kennung ohnehin in der Adresse. Verlauf, Ereignis-Leiste und
+     * Verfasser liegen alle hinter dieser Zeile.
+     */
+    if (chatLock.isHidden(this.conversation)) {
+      return this._renderSealed();
     }
 
     const agentCount = this._getAgents().length;
@@ -1167,8 +1307,14 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     // wieder angefasst. `session.messageCount` ist aus dem echten Array
     // abgeleitet und kann deshalb nicht driften.
     const messageTotal = session.messageCount.value;
-    const subInfo =
-      agentCount > 1
+    // Auf Telefonbreite traegt die Unterzeile nur, was der Titel NICHT schon
+    // sagt: bei einer Agentin steht ihr Name darueber, dann bleibt die Zeile
+    // leer. Die Nachrichtenzahl ist dort die erste, die weichen darf.
+    const subInfo = this._isNarrow
+      ? agentCount > 1
+        ? msg(str`${agentCount} agents`)
+        : ''
+      : agentCount > 1
         ? msg(str`${agentCount} agents \u00B7 ${messageTotal} messages`)
         : msg(str`${messageTotal} messages`);
     const participants = this._buildParticipants();
@@ -1201,6 +1347,14 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 aria-label=${msg('Add Agent')}
               >
                 ${this._renderAddAgentIcon()}
+              </button>
+              <button
+                class="window__action-btn"
+                @click=${this._handleLockConversation}
+                aria-label=${msg('Lock conversation')}
+                title=${msg('Lock conversation')}
+              >
+                ${icons.lock(16)}
               </button>
               <div class="export-wrapper">
                 <button
