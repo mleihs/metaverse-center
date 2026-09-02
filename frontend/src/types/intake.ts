@@ -174,24 +174,26 @@ export const CATEGORY_ARCHETYPE: Record<SourceCategory, string> = Object.fromEnt
 /**
  * Adapter, die nur Tempo und Reichweite liefern, nie ein eigenes Signal.
  *
- * ⚠ AM 02.09.2026 GEMESSEN: BEIDE GIBT ES NICHT. Der Scanner führt zehn
- * Adapter, keiner davon sozial; „reddit" kommt im gesamten Backend null Mal
- * vor, und „bluesky" ausschliesslich in der Gegenrichtung (`BlueskyService`
- * veröffentlicht, es liest nur die Kennzahlen eigener Beiträge). Die Klasse
- * `social` kann damit heute NICHT eintreten.
+ * ⚠ DIE MENGE IST LEER, UND DAS IST EIN BEFUND, KEIN VERSEHEN.
  *
- * Die Menge bleibt trotzdem stehen, und zwar mit dieser Beschriftung: die
- * Regel, dass eine Sozialquelle nie einen eigenen Kandidaten erzeugt, ist eine
- * Entscheidung des Bauplans und soll den Tag überleben, an dem jemand einen
- * solchen Adapter baut. Wer sie liest, muss aber wissen, dass sie gerade nichts
- * trifft — sonst prüft er in Schritt 5 eine Abnahmebedingung, die weder
- * erfüllbar noch verletzbar ist.
+ * Am 02.09.2026 gemessen: „reddit" kommt im gesamten Backend null Mal vor.
+ * „bluesky" gab es an dem Tag ebenfalls nicht als Quelle — und existiert seit
+ * demselben Tag als eine, aber NICHT als Sozialquelle: der Adapter lässt einen
+ * Beitrag nur durch, wenn er einen Artikel verlinkt, und meldet dann die
+ * Überschrift des ARTIKELS. Damit ist er halbstrukturiert (siehe
+ * `SEMI_ADAPTERS`), nicht sozial.
  *
- * Vollständige Messung mit Prod-Zahlen: `docs/analysis/schleuse-zufluss-2026-09-02.md`.
+ * Die Klasse `social` bleibt im Typ, weil die Regel dahinter gilt: eine Quelle,
+ * die nur Tempo zu einer bestehenden Geschichte liefert, darf keine eigene
+ * Zeile erzeugen. Sie hat heute nur kein Mitglied — und bekommt eines erst,
+ * wenn es einen Ort gibt, an dem dieses Tempo gespeichert wird (Lücke 2,
+ * Story-Bündelung).
+ *
+ * Messung: `docs/analysis/schleuse-zufluss-2026-09-02.md`.
  */
-const SOCIAL_ADAPTERS = new Set(['reddit', 'bluesky']);
+const SOCIAL_ADAPTERS = new Set<string>();
 /** Adapter, deren Ausgabe halbstrukturiert ist. */
-const SEMI_ADAPTERS = new Set(['who', 'who_outbreaks', 'hackernews']);
+const SEMI_ADAPTERS = new Set(['who', 'who_outbreaks', 'hackernews', 'bluesky']);
 /** Die Welt selbst. */
 const INTERNAL_ADAPTERS = new Set(['echoes']);
 

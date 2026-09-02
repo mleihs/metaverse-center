@@ -39,6 +39,15 @@ class SourceAdapter(ABC):
     api_key_setting: str | None = None
     default_interval: int  # seconds between polls
 
+    #: Further `platform_settings` keys this adapter needs, beyond its API key.
+    #:
+    #: WHY THIS EXISTS: `api_key_setting` assumes one secret per source, which
+    #: held while every source was a URL plus a token. Bluesky is not — it
+    #: authenticates with a HANDLE and an app password, and a handle is not an
+    #: API key. Rather than bend one field to carry two meanings, an adapter
+    #: names whatever else it needs and the scanner hands it over.
+    extra_settings: tuple[str, ...] = ()
+
     @abstractmethod
     async def fetch(self, since: datetime | None = None) -> list[ScanResult]:
         """Fetch and normalize events.
@@ -54,9 +63,23 @@ class SourceAdapter(ABC):
 
     @property
     def _api_key(self) -> str | None:
-        """Resolved API key (set by registry before fetch)."""
+        """Resolved API key (set by the scanner before fetch)."""
         return getattr(self, "_resolved_api_key", None)
 
     @_api_key.setter
     def _api_key(self, value: str | None) -> None:
         self._resolved_api_key = value
+
+    @property
+    def _settings(self) -> dict[str, Any]:
+        """Resolved `extra_settings` (set by the scanner before fetch).
+
+        Empty when the scanner has not injected anything — an adapter that
+        reads from here must therefore treat a missing key as "not configured"
+        and say so through `is_available()`, not fail inside `fetch()`.
+        """
+        return getattr(self, "_resolved_settings", {})
+
+    @_settings.setter
+    def _settings(self, value: dict[str, Any]) -> None:
+        self._resolved_settings = value

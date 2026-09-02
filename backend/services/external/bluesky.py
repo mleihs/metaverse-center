@@ -347,6 +347,40 @@ class BlueskyService:
             "quotes": post.get("quoteCount", 0),
         }
 
+    async def search_posts(
+        self,
+        query: str,
+        *,
+        limit: int = 25,
+        lang: str | None = None,
+        since: datetime | None = None,
+    ) -> list[dict]:
+        """Search the public firehose via app.bsky.feed.searchPosts.
+
+        THE ONE READING METHOD THAT LOOKS OUTWARD. Everything else on this
+        service points the other way: it publishes, uploads, deletes, and reads
+        engagement counts for posts the platform itself wrote. This one reads
+        what other people wrote, and it is what makes Bluesky usable as a
+        SOURCE rather than only as a destination.
+
+        Returns the raw `posts` array. Shaping it into a signal is the
+        adapter's job (`services/scanning/adapters/bluesky_social.py`) — this
+        service knows the protocol, not what the platform wants from it.
+
+        `since` is passed as the AT-Protocol `since` parameter, which takes a
+        datetime string; the endpoint compares it against `indexedAt`.
+        """
+        await self.ensure_session()
+
+        params: dict[str, str | int] = {"q": query, "limit": min(limit, 100)}
+        if lang:
+            params["lang"] = lang
+        if since:
+            params["since"] = since.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        data = await self._xrpc_get("app.bsky.feed.searchPosts", params=params)
+        return data.get("posts", [])
+
     async def validate_credentials(self) -> bool:
         """Attempt session creation, return True/False. For admin status check."""
         try:

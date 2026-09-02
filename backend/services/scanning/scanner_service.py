@@ -21,7 +21,12 @@ from backend.services.platform_model_config import get_platform_model
 from backend.services.resonance_service import ResonanceService
 from backend.services.scanning import classifier, deduplicator, pre_filter
 from backend.services.scanning.base_adapter import ScanResult
-from backend.services.scanning.registry import get_adapter, get_adapter_info, get_adapter_names
+from backend.services.scanning.registry import (
+    get_adapter,
+    get_adapter_info,
+    get_adapter_names,
+    get_all_adapters,
+)
 from backend.services.social.scheduler_base import BaseSchedulerMixin
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
@@ -128,21 +133,30 @@ class ScannerService(BaseSchedulerMixin):
                     except (ValueError, TypeError):
                         pass
 
-            # Also load API keys needed by adapters
-            _resp = await (
-                admin.table("platform_settings")
-                .select("setting_key, setting_value")
-                .in_(
-                    "setting_key",
-                    [
-                        "guardian_api_key",
-                        "newsapi_api_key",
-                    ],
-                )
-                .execute()
+            # Also load the settings adapters need.
+            #
+            # The list is DERIVED from the registry, not maintained by hand: an
+            # adapter that names a setting it needs (`api_key_setting` or
+            # `extra_settings`) gets it, and one that names nothing costs
+            # nothing. Maintaining the list here by hand is how an adapter ends
+            # up permanently `unavailable` while its key sits in the table.
+            wanted = sorted(
+                {
+                    key
+                    for adapter in get_all_adapters().values()
+                    for key in (adapter.api_key_setting, *adapter.extra_settings)
+                    if key
+                }
             )
-            api_key_rows = extract_list(_resp)
-            config["api_keys"] = {r["setting_key"]: r["setting_value"] for r in api_key_rows}
+            if wanted:
+                _resp = await (
+                    admin.table("platform_settings")
+                    .select("setting_key, setting_value")
+                    .in_("setting_key", wanted)
+                    .execute()
+                )
+                api_key_rows = extract_list(_resp)
+                config["api_keys"] = {r["setting_key"]: r["setting_value"] for r in api_key_rows}
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning("Failed to load scanner config, using defaults")
@@ -217,6 +231,8 @@ class ScannerService(BaseSchedulerMixin):
                 # Inject API key if needed
                 if adapter.requires_api_key and adapter.api_key_setting:
                     adapter._api_key = api_keys.get(adapter.api_key_setting)
+                if adapter.extra_settings:
+                    adapter._settings = {k: api_keys.get(k) for k in adapter.extra_settings}
 
                 if not await adapter.is_available():
                     metrics["adapters"][name] = {"status": "unavailable", "fetched": 0}
@@ -711,6 +727,8 @@ class ScannerService(BaseSchedulerMixin):
                 adapter = get_adapter(info["name"])
                 if adapter.requires_api_key and adapter.api_key_setting:
                     adapter._api_key = api_keys.get(adapter.api_key_setting)
+                if adapter.extra_settings:
+                    adapter._settings = {k: api_keys.get(k) for k in adapter.extra_settings}
                 info["available"] = await adapter.is_available()
             except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 info["available"] = False

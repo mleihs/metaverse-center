@@ -274,6 +274,10 @@ class TestRegistry:
             "usgs_earthquakes", "noaa_alerts", "nasa_eonet", "gdacs",
             "disease_sh", "who_outbreaks", "guardian", "newsapi",
             "gdelt", "hackernews",
+            # Bluesky (02.09.2026): der Gegenweg zur Kreuzveroeffentlichung.
+            # Nur verlinkte Artikel werden zu Signalen, siehe
+            # `adapters/bluesky_social.py`.
+            "bluesky",
         }
         assert set(names) == expected
 
@@ -297,7 +301,13 @@ class TestRegistry:
         from backend.services.scanning.registry import get_adapter_info
 
         info = get_adapter_info()
-        assert len(info) == 10
+        # Die ZAHL steht schon in `test_all_adapters_registered` und gehoert
+        # nicht zweimal ins Repository: eine zweite Stelle bricht bei jedem
+        # neuen Adapter, ohne etwas zu pruefen, was die erste nicht schon
+        # prueft. Hier zaehlt nur, dass die Metadaten zu den Namen passen.
+        from backend.services.scanning.registry import get_adapter_names
+
+        assert len(info) == len(get_adapter_names())
 
         for entry in info:
             assert "name" in entry
