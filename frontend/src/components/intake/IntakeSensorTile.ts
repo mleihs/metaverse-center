@@ -56,6 +56,14 @@ export class VelgIntakeSensorTile extends LitElement {
       --_class-color: var(--color-danger);
     }
 
+    /*
+     * Gleiche Höhe für alle Kacheln einer Reihe.
+     *
+     * min-height allein reicht nicht: eine Kachel, deren Klassenwort auf
+     * zwei Zeilen umbrach, wurde höher als ihre Nachbarn, und die Reihe hatte
+     * keine gemeinsame Grundlinie mehr. height: 100% nimmt die Höhe aus dem
+     * Raster (align-items: stretch), statt sie aus dem Inhalt zu ziehen.
+     */
     .tile {
       display: flex;
       flex-direction: column;
@@ -64,6 +72,8 @@ export class VelgIntakeSensorTile extends LitElement {
       border: var(--border-width-thin) solid var(--color-border-light);
       background: var(--color-surface-raised);
       min-height: 64px;
+      height: 100%;
+      box-sizing: border-box;
       transition: border-color var(--transition-fast);
     }
 
@@ -119,12 +129,23 @@ export class VelgIntakeSensorTile extends LitElement {
       white-space: nowrap;
     }
 
+    /*
+     * Das Klassenwort wird BEGRENZT wie der Name.
+     *
+     * Es hatte weder overflow noch text-overflow — „STRUKTURIERT" und
+     * „KEIN SCHLÜSSEL" standen deshalb über die Kachelgrenze hinaus im
+     * Nachbarn. Das war kein Breitenproblem, sondern eine fehlende Regel:
+     * der Name hatte sie, das Wort darunter nicht.
+     */
     .class {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
       text-transform: uppercase;
       color: var(--_class-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .bar {
@@ -264,15 +285,26 @@ export class VelgIntakeSensorTile extends LitElement {
           <span class="name">${this.name}</span>
         </div>
         <span class="class">${this._classLabel()}</span>
-        <div class="bar">
-          <span class="segs" aria-hidden="true">
-            ${Array.from(
-              { length: HIT_SEGMENTS },
-              (_, i) => html`<span class="seg ${i < filled ? 'seg--on' : ''}"></span>`,
-            )}
-          </span>
-          <span class="count">${this.hits}</span>
-        </div>
+        ${
+          /*
+           * Ein Balken aus vier leeren Segmenten und einer Null sagt nichts
+           * und sieht nach Schmutz aus. Er erscheint erst, wenn es etwas zu
+           * zeigen gibt. Die Trefferzahlen je Adapter liegen im Backend
+           * (ScanCycleMetrics.adapters), erreichen die Kachel aber noch
+           * nicht — bis dahin ist hits immer 0 und der Balken immer leer.
+           */
+          this.hits > 0
+            ? html`<div class="bar">
+                <span class="segs" aria-hidden="true">
+                  ${Array.from(
+                    { length: HIT_SEGMENTS },
+                    (_, i) => html`<span class="seg ${i < filled ? 'seg--on' : ''}"></span>`,
+                  )}
+                </span>
+                <span class="count">${this.hits}</span>
+              </div>`
+            : nothing
+        }
         <span class="when">${this._whenLabel()}</span>
       </div>
     `;

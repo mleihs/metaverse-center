@@ -27,7 +27,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { intakeState } from '../../services/IntakeStateManager.js';
-import type { IntakeSignal } from '../../types/intake.js';
+import { type IntakeSignal, sourceKindOf } from '../../types/intake.js';
 import { icons } from '../../utils/icons.js';
 import './IntakeCrucibleModal.js';
 import './IntakeFlagModal.js';
@@ -214,10 +214,27 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
      * Bis 1599 bricht die Leiste um (schmale Kacheln, zwei Reihen), ab 1600
      * steht sie einreihig — --_n kommt aus der Adapterliste.
      */
+    /*
+     * Die Leiste UMBRICHT, sie quetscht nicht.
+     *
+     * Sie stand auf repeat(var(--_n), 1fr) — so viele Spalten wie Adapter.
+     * Das hielt bei zehn Kacheln auf 1600 px. Im Admin-Panel ist die
+     * Mittelspalte ~810 px breit, und seit dem elften Adapter (Bluesky) blieben
+     * 73 px je Kachel: JEDER Name war abgeschnitten (BLUE… DISE… GDAC…), das
+     * Klassenwort lief in den Nachbarn.
+     *
+     * auto-fill mit einer Mindestbreite dreht die Abhängigkeit um: die Zahl
+     * der Spalten folgt dem Platz, nicht der Zahl der Adapter. Ein zwölfter
+     * Adapter rutscht in die zweite Zeile, statt allen anderen die Namen zu
+     * nehmen. 132 px ist gemessen, nicht geraten — der längste Klassenname
+     * („strukturiert", 13 Zeichen Mono bei --text-xs) braucht 108 px plus
+     * Polsterung.
+     */
     .sensors__grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
       gap: var(--space-2);
+      align-items: stretch;
     }
 
     .sensors__right {
@@ -497,7 +514,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
         flex-direction: column;
       }
       .sensors__grid {
-        grid-template-columns: repeat(var(--_n, 10), minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
       .quota-row {
         grid-template-columns: 360px 1fr;
@@ -639,7 +656,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     /*
      * Die Sensorlage gehört dem Bureau, nicht der Welt.
      *
-     * `/admin/news-scanner/dashboard` hängt am Plattform-Admin — ein Architekt
+     * /admin/news-scanner/dashboard hängt am Plattform-Admin — ein Architekt
      * bekommt sie nicht, und „0/0 online" wäre die falsche Auskunft: es sind
      * nicht null Quellen, er sieht sie nur nicht. Der Unterschied zwischen
      * „nichts da" und „nicht für dich" gehört auf den Schirm.
@@ -667,12 +684,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           </p>
         </div>
 
-        <div
-          class="sensors__grid"
-          role="list"
-          aria-label=${msg('Sources')}
-          style="--_n:${Math.max(1, adapters.length)}"
-        >
+        <div class="sensors__grid" role="list" aria-label=${msg('Sources')}>
           ${
             adapters.length === 0
               ? html`<p class="sensors__note">${msg('No sources reported.')}</p>`
@@ -680,13 +692,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
                   (a) => html`
                     <velg-intake-sensor-tile
                       .name=${a.display_name || a.name}
-                      .kind=${
-                        a.requires_api_key && !a.available
-                          ? 'nokey'
-                          : a.is_structured
-                            ? 'structured'
-                            : 'llm'
-                      }
+                      .kind=${sourceKindOf(a.name, a)}
                       ?off=${!a.enabled}
                       ?interactive=${admin}
                       .hits=${0}
