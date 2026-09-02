@@ -23,6 +23,7 @@ const viewImports: Record<string, () => Promise<unknown>> = {
   bonds: () => import('../components/bonds/BondsView.js'),
   buildings: () => import('../components/buildings/BuildingsView.js'),
   events: () => import('../components/events/EventsView.js'),
+  intake: () => import('../components/intake/IntakeView.js'),
   chat: () => import('../components/chat/ChatView.js'),
   settings: () => import('../components/settings/SettingsView.js'),
   social: () => import('../components/social/SocialTrendsView.js'),

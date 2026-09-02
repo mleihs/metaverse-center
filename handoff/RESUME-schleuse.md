@@ -1,7 +1,11 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
 **Stand 02.09.2026, nach Schritt 4.** Sieben Commits auf main, nichts gepusht.
-Prod läuft `dba881d0` — älter als alle sieben.
+⚠ **Prod läuft `33b6e4d5`** (gemessen `curl -s https://metaverse.center/ | head -c 200`),
+NICHT mehr `dba881d0` — die Notiz war an dieser Stelle veraltet und ich habe
+den alten Wert mehrfach weitergetragen, bevor ich nachgesehen habe. Prod hat
+damit Schritt 1+2 der Schleuse, aber nicht 3/4 und nicht die Verdrahtung.
+🔑 Welcher Commit läuft, sagt der Server selbst — nie die eigene Notiz.
 
     273e8d6a  Design-Paket, Prototyp-Extrakt, Nachträge
     5ca4ef00  Schritt 1 — types/intake.ts, IntakeStateManager.ts, 15 Tests

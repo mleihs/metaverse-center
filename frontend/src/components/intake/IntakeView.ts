@@ -636,6 +636,28 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     const online = adapters.filter((a) => a.enabled && a.available).length;
     const lastScan = minutesSince(metrics?.last_scan ?? null);
 
+    /*
+     * Die Sensorlage gehört dem Bureau, nicht der Welt.
+     *
+     * `/admin/news-scanner/dashboard` hängt am Plattform-Admin — ein Architekt
+     * bekommt sie nicht, und „0/0 online" wäre die falsche Auskunft: es sind
+     * nicht null Quellen, er sieht sie nur nicht. Der Unterschied zwischen
+     * „nichts da" und „nicht für dich" gehört auf den Schirm.
+     */
+    if (!admin) {
+      return html`
+        <section class="sensors rule" aria-label=${msg('Sensors')}>
+          <div>
+            <h2 class="sensors__title">${msg('Sensors')}</h2>
+          </div>
+          <p class="sensors__note">
+            ${msg('The sensor picture belongs to the Bureau. What comes through reaches you at the entrance.')}
+          </p>
+          <div></div>
+        </section>
+      `;
+    }
+
     return html`
       <section class="sensors rule" aria-label=${msg('Sensors')}>
         <div>

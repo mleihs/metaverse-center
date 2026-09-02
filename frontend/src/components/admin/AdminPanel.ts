@@ -10,6 +10,7 @@ import './AdminCleanupTab.js';
 import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
+import '../intake/IntakeView.js';
 import './AdminSimulationsTab.js';
 import './AdminHeartbeatTab.js';
 import './AdminHealthTab.js';
@@ -31,6 +32,7 @@ type AdminTab =
   | 'heartbeat'
   | 'resonances'
   | 'scanner'
+  | 'intake'
   | 'forge'
   | 'ai_usage'
   | 'ops'
@@ -179,6 +181,15 @@ export class VelgAdminPanel extends LitElement {
       },
       { key: 'ai_usage', label: msg('AI Usage'), group: msg('AI & Gen') },
       { key: 'scanner', label: msg('Scanner'), group: msg('AI & Gen') },
+      /*
+       * Die Schleuse steht NEBEN dem Scanner, nicht an seiner Stelle.
+       *
+       * Der Bauplan sieht vor, dass sie ihn ersetzt — aber erst nach der
+       * Abnahme (Schritt 8). Bis dahin fehlt ihr das Scan-Protokoll (Schritt
+       * 6), und ein Tab gegen einen anderen zu tauschen, der etwas kann, das
+       * der neue noch nicht kann, ist keine Ablösung, sondern ein Verlust.
+       */
+      { key: 'intake', label: msg('Airlock'), group: msg('AI & Gen') },
       // Configuration
       { key: 'platform', label: msg('Platform Config'), group: msg('Config') },
       { key: 'social', label: msg('Social Media'), group: msg('Config') },
@@ -235,6 +246,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-admin-content-drafts-tab></velg-admin-content-drafts-tab>`;
       case 'scanner':
         return html`<velg-admin-scanner-tab></velg-admin-scanner-tab>`;
+      case 'intake':
+        return html`<velg-intake-view></velg-intake-view>`;
       case 'forge':
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
       case 'ai_usage':

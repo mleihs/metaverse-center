@@ -759,9 +759,23 @@ class ScannerService(BaseSchedulerMixin):
         )
         resonances_today = resonances_resp.count or 0
 
-        # Pending candidates count
+        # Candidates awaiting a decision.
+        #
+        # `pending` UND `flagged`: eine Meldung eines Architekten (Migration
+        # 334) wartet genauso auf den Admin wie ein Scanner-Treffer, und die
+        # Kennzahl heisst „wartend", nicht „vom Scanner gefunden". Ein neuer
+        # Statuswert zwingt jeden `.eq("status", …)` im Haus zur Nachfrage —
+        # sonst zaehlt eine Zahl weiter richtig fuer die halbe Bedingung.
+        #
+        # `compute_recommended_threshold` bleibt bewusst bei `pending` allein:
+        # sie leitet aus MAGNITUDEN eine Empfehlung ab, und eine Meldung wurde
+        # von einem Menschen ausgewaehlt, nicht von ihrer Magnitude. Sie gehoert
+        # dort nicht in die Stichprobe.
         pending_resp = await (
-            admin.table("news_scan_candidates").select("id", count="exact").eq("status", "pending").execute()
+            admin.table("news_scan_candidates")
+            .select("id", count="exact")
+            .in_("status", ["pending", "flagged"])
+            .execute()
         )
         pending_count = pending_resp.count or 0
 
