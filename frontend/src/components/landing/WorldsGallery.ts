@@ -712,7 +712,7 @@ export class VelgWorldsGallery extends LitElement {
                   navigate('/register');
                 }}
               >
-                ${msg('Build Your World')}
+                ${msg('Forge Your World')}
               </a>
             </div>
           `
