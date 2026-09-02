@@ -1,4 +1,4 @@
--- 343 — Die Verdichtung braucht einen Namen, den die Chronik kennt
+-- 346 — Die Verdichtung braucht einen Namen, den die Chronik kennt
 --
 -- Phase 9.7 (`AgentMemoryService.reflect_due_agents`) schreibt seit heute
 -- Chronikzeilen vom Typ `memory_reflection`. Der CHECK auf
