@@ -39,11 +39,39 @@ _CACHE_TTL = 300  # 5 minutes
 # Verify with:
 #   curl -s https://openrouter.ai/api/v1/models -H "Authorization: Bearer $KEY" \
 #     | python3 -c "import json,sys; print('<id>' in {m['id'] for m in json.load(sys.stdin)['data']})"
+#
+# ── 02.09.2026: KEIN DENKMODELL MEHR IN DIESEM VERZEICHNIS ──────────────────
+#
+# Entscheidung des Nutzers, auf Grundlage seiner OpenRouter-Rechnung (Wortlaut nicht wiedergegeben) Sein Beleg schlägt meinen — die Aktivitätsseite von
+# OpenRouter braucht einen Management-Key, und `ai_usage_log` kann die Frage
+# nicht beantworten (er deckt 10,53 von 65 verbrauchten Einheiten ab und endet
+# am 01.09.).
+#
+# Was ICH dazu messen konnte, und es stützt die Entscheidung:
+#
+#     Modell                     $/M ein   $/M aus   denkt
+#     deepseek-v4-flash-0731       0,065     0,180    ja
+#     deepseek-v4-pro              1,039     2,079    ja
+#     deepseek-chat                0,257     1,029    NEIN
+#
+# Der Stückpreis der Denkmodelle ist NIEDRIGER — der Preis der Aufgabe nicht.
+# Denk-Token werden als AUSGABE abgerechnet, also zum teuersten Satz, und am
+# selben Depeschen-Prompt gemessen waren 219 bis 620 von 527 bis 914
+# Ausgabe-Token reines Denken (47-68 %). Man zahlt das Zwei- bis Dreifache für
+# dieselbe Antwort — und bei `model_forge` landete dieser Faktor auf 2,079 $/M,
+# dem elffachen Satz des Flash.
+#
+# Dazu kommt, was schon vorher gemessen war: bei knappem Budget liefert ein
+# Denkmodell eine 200er-Antwort mit LEEREM Inhalt. Teurer UND unzuverlässiger.
+#
+# ⚠ `model_forge` war `deepseek-v4-pro`. Der Wechsel auf `deepseek-chat` ist
+# eine Kostenentscheidung mit einem Fähigkeits-Abstrich beim Weltenbau. Er ist
+# eine platform_settings-Zeile und in Admin > Modelle ohne Deploy umkehrbar.
 HARDCODED_DEFAULTS: dict[str, str] = {
-    "model_default": "deepseek/deepseek-v4-flash-0731",
+    "model_default": "deepseek/deepseek-chat",
     "model_fallback": "google/gemini-2.5-flash-lite",
-    "model_research": "deepseek/deepseek-v4-flash-0731",
-    "model_forge": "deepseek/deepseek-v4-pro",
+    "model_research": "deepseek/deepseek-chat",
+    "model_forge": "deepseek/deepseek-chat",
     # `ops_forecast` only. Until 2026-08-30 this id sat in `ops_forecast_service`
     # as a `Final` constant, which is the one place an operator cannot reach it.
     # Same model, now a settings row like every other. Verified in the catalogue
@@ -99,10 +127,10 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     # nicht schlechter: 171 Wörter im richtigen Ton, in 250 statt 914 Token.
     "model_dispatch": "deepseek/deepseek-chat",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
-    "model_default_dev": "deepseek/deepseek-v4-flash-0731",
+    "model_default_dev": "deepseek/deepseek-chat",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
-    "model_research_dev": "deepseek/deepseek-v4-flash-0731",
-    "model_forge_dev": "deepseek/deepseek-v4-flash-0731",
+    "model_research_dev": "deepseek/deepseek-chat",
+    "model_forge_dev": "deepseek/deepseek-chat",
     "model_forecast_dev": "anthropic/claude-haiku-4.5",
     "model_classify_dev": "deepseek/deepseek-chat",
     "model_dispatch_dev": "deepseek/deepseek-chat",
