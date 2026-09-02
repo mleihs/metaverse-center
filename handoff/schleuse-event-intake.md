@@ -396,3 +396,85 @@ gemeint ist. Die neuen Quellen heissen deshalb `Protocol`, `Tone`, `Shock`,
 `Measured`. Nebenbei: `'Reality'` hatte „Realität"; das Wort der Schleuse ist
 „Wirklichkeit", und der einzige andere Leser war `TransformationModal` — also
 dieselbe Fläche, dieselbe Sache. Ziel geändert.
+
+---
+
+## Nachtrag (Claude Code, 02.09.2026) — Schritt 4, und eine Zahl, die falsch war
+
+Schritt 4 steht: `IntakeQuarantineCard`, `IntakeResonanceModal`,
+`IntakeFlagModal`, dazu zwei Backend-Endpunkte und Migration 334.
+
+### ⚠ Die Überspring-Schwelle im Plan ist falsch
+
+Der Plan nennt **0.2** als Grenze, unter der eine Resonanz eine Welt
+überspringt — zweimal sogar, als Schwelle UND als Farbgrenze („<0.2 grau
+übersprungen"). Nachgemessen springt der Lauf bei **0.05**
+(`ResonanceService._process_simulation_impact`, §5). Mit 0.2 hätte die
+Suszeptibilitätstafel einem Admin „diese Welt wird übersprungen" für Welten
+gemeldet, die getroffen werden — auf genau dem Schirm, auf dem er einen
+unumkehrbaren Halte-Knopf drückt.
+
+`EFFECT_SKIP_THRESHOLD` in `types/intake.ts` stand seit Schritt 1 auf 0.2 (aus
+dem Plan übernommen). Korrigiert; ein Test nagelt die Zahl jetzt fest, und die
+Wahrheit kommt ohnehin je Zeile als `will_skip` vom Server.
+
+### ⚠ Auch `sus` steht im Plan falsch
+
+Der Plan sagt, `sus` komme „aus `SubstrateAttunement` der Welt je Signatur".
+Tut es nicht. Die Kette ist:
+
+    1. sus  = fn_get_adaptive_susceptibility(sim, signature)     (Migr. 216)
+             = Grundwert aus simulation_settings.resonance_profile
+             − 0.05 je abgewehrtem Treffer (max −0.25)
+             + 0.10 je ungemildertem     (max +0.30), geklemmt auf [0.20, 2.00]
+             Rückfall: fn_get_resonance_susceptibility (Migr. 076), sonst 1.0
+    2. eff  = LEAST(ROUND(magnitude × sus, 2), 1.00)   ← DB-Trigger, Migr. 074
+    3. eff -= attunement_depth × 0.3                    ← je Welt, im Lauf
+    4. eff ×= (1 − anchor_protection)                   ← je Welt, im Lauf
+    5. eff < 0.05 → übersprungen
+
+Attunement ist also NICHT die Suszeptibilität, sondern ein Abzug DANACH.
+Die Vorschau liefert Schritt 1+2 und sagt in Worten, dass 3 und 4 fehlen und
+nur senken können — die Zahlen sind Obergrenzen.
+
+### Zwei neue Endpunkte, weil die Alternative Erfindung gewesen wäre
+
+| Endpunkt | Rolle | Warum |
+|---|---|---|
+| `GET /admin/news-scanner/candidates/{id}/susceptibility` | Admin | Ein Halte-Knopf, dessen genannte Folge geraten ist, ist schlimmer als keiner: er trägt die Gestalt von Wissen. |
+| `POST /simulations/{id}/intake/flag` | Architekt (editor) | Lücke 1. Ohne ihn wäre „Melden" eine Tür, hinter der nichts liegt. |
+
+`ResonanceService.susceptibility_of()` ist aus `_process_simulation_impact`
+herausgezogen: Vorschau und Lauf lesen dieselbe Funktion. Zwei Fassungen einer
+Formel driften, und die driftende ist die, die niemand ausführt.
+
+**Migration 334** öffnet `news_scan_candidates.status` für `flagged` und legt
+`flag_reason` + `flagged_by_simulation_id` an. Sie sucht ihre CHECK-Bedingung,
+statt den von PostgreSQL vergebenen Namen zu raten, und prüft am Ende ihre
+eigene Wirkung — ein DROP, das danebengreift, wäre sonst still, und `flagged`
+bliebe verboten, während die Migration Erfolg meldet.
+
+`ScannerService.approve_candidate` nimmt jetzt auch `flagged` an. Ohne diese
+eine Zeile endete der Melden-Weg beim Admin in einer Sackgasse: die Meldung
+läge in seiner Quarantäne und liesse sich nicht auslösen.
+
+### Zwei weitere Abweichungen vom Bauplan
+
+**Die Suszeptibilitätstafel steht NICHT auf der Karte, sondern im Modal.** Der
+Plan setzt sie in die linke Hälfte der Admin-Karte. Nachgemessen kostet sie
+einen RPC pro Welt und pro Karte — bei sechs Welten und fünf Karten dreissig
+Datenbankaufrufe, nur damit ein Board zeichnet. Sie steht dort, wo die Zahl
+eine Entscheidung trägt. Die linke Hälfte sagt stattdessen, was der Rolle
+offensteht; das unterscheidet die beiden Sichten genauso deutlich und kostet
+nichts.
+
+**Das Melden-Modal fragt nach Kategorie und Wucht.** Der Plan sieht nur eine
+Begründung vor. Ein gebrowster Artikel trägt aber keine Kategorie und keine
+Magnitude (`fromBrowseArticle`: `category: null, magnitude: 0`), und beide sind
+im Aufruf Pflicht — die Kategorie, weil daraus die Signatur folgt, die
+Magnitude wegen der CHECK-Bedingung aus Migration 084. Wer etwas vorlegt, sagt
+auch, als was.
+
+**Nicht gebaut:** die Zeile „Für deine Welt: X effektiv" im Melden-Modal. Die
+Zahl kommt aus einem Endpunkt, den nur Plattform-Admins erreichen. Statt einer
+geratenen steht der wahre Satz da.

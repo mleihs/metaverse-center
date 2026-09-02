@@ -1,16 +1,25 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
-**Stand 02.09.2026, nach Schritt 3.** Fünf Commits auf main, nichts gepusht.
-Prod läuft `dba881d0` — älter als alle fünf.
+**Stand 02.09.2026, nach Schritt 4.** Sieben Commits auf main, nichts gepusht.
+Prod läuft `dba881d0` — älter als alle sieben.
 
     273e8d6a  Design-Paket, Prototyp-Extrakt, Nachträge
     5ca4ef00  Schritt 1 — types/intake.ts, IntakeStateManager.ts, 15 Tests
     cf0619c2  Schritt 2 — IntakeView, IntakeSensorTile, Responsive, 37 Übersetzungen
     e8a86344  Resume-Notiz + Vorarbeit Schritt 3
     e36a4bc7  Schritt 3 — IntakeCrucibleModal, intake-labels, 77 Übersetzungen
+    4de50a56  Berichtigung: der Endstand war ein anderer als der eigene Diff
+    (neu)     Schritt 4 — Quarantäne, Resonanz, Melden + Migr. 334 + 2 Endpunkte
 
-▶ **ALS NÄCHSTES: Schritt 4** — Quarantäne-Karte rollenabhängig,
-Resonanz-Modal (Hold) und Flag-Modal.
+▶ **ALS NÄCHSTES: Schritt 5** — Sichtung (`IntakeTriageModal`) mit
+Story-Bündelung, Filtern, Mehrfachauswahl, Tastatur und Rauschen.
+
+⚠ **MIGRATION 334 IST NIRGENDS ANGEWENDET.** Weder lokal (es lief kein
+Supabase) noch auf Prod. Bis sie läuft, antwortet `POST …/intake/flag` mit
+einem Fehler: die CHECK-Bedingung auf `news_scan_candidates.status` kennt
+`flagged` nicht, und die beiden Spalten gibt es nicht. Der Melden-Knopf ist
+also gebaut, aber erst nach Migration + Deploy wirksam. **Nächste freie
+Migration bleibt damit 335.**
 
 ## Wo alles liegt
 
@@ -19,6 +28,27 @@ Resonanz-Modal (Hold) und Flag-Modal.
 - `handoff/schleuse-responsive.md` — umgesetzt, nichts offen.
 - `handoff/schleuse-prototype-1b.html` — 853 Z. Nachschlagewerk.
   **Nicht lauffähig, nicht kopieren** — Inline-Styles auf Token übersetzen.
+
+## Was Schritt 4 gebracht hat
+
+**Frontend:** `IntakeQuarantineCard` (Kammer ②, rollenabhängig),
+`IntakeResonanceModal` (Depesche + Suszeptibilitätstafel + Halte-Knopf),
+`IntakeFlagModal` (Melden), `intake-styles.ts` (geteilte Chips und Knöpfe —
+der Schmelztiegel liest sie jetzt auch, das 32. Lint-Tor prüft es).
+
+**Backend:** Migration 334, `models/intake.py`, `services/intake_service.py`,
+`routers/intake.py`, `GET …/candidates/{id}/susceptibility`,
+`ResonanceService.susceptibility_of()` (aus dem Lauf herausgezogen),
+`ScannerService.approve_candidate` nimmt jetzt auch `flagged`.
+10 neue Backend-Tests, 1 neuer Frontend-Test.
+
+🔑 **Zwei Zahlen im Bauplan waren falsch, beide auf dem Schirm eines
+unumkehrbaren Knopfes** — Einzelheiten im Bauplan-Nachtrag „Schritt 4":
+
+- Übersprungen wird bei **0.05**, nicht bei 0.2. `EFFECT_SKIP_THRESHOLD` stand
+  seit Schritt 1 falsch; ein Test nagelt die Zahl jetzt fest.
+- `sus` kommt NICHT aus `SubstrateAttunement`, sondern aus
+  `fn_get_adaptive_susceptibility`. Attunement ist ein Abzug DANACH.
 
 ## Was Schritt 3 gebracht hat
 
@@ -121,14 +151,19 @@ Signal von Hand.
 
 ## Umsetzungsreihenfolge (aus dem Plan)
 
-1 ✅ · 2 ✅ · 3 ✅ · **4 Quarantäne + Resonanz-/Flag-Modal** · 5 Sichtung ·
-6 Lesesaal/Scan-Log/Echo/Kammer ④ · 7 Quote + Abos · 8 alte Views löschen,
-Nav-Eintrag, `social` entfernen.
+1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ · **5 Sichtung** · 6 Lesesaal/Scan-Log/Echo/Kammer ④ ·
+7 Quote + Abos · 8 alte Views löschen, Nav-Eintrag, `social` entfernen.
 
-Für Schritt 4 liegt schon bereit: `intakeState.toEvent/toResonance/toFlagged`,
-`quotaReached`, `zoneName`, die Linse am Signal (`signal.lens`), der Vorschlag
-(`signal.proposal`) und `--modal-body-padding`. Der Flag-Weg braucht Lücke 1
-(`POST …/candidates/{id}/flag`) — bis dahin bleibt er lokal.
+Für Schritt 5 liegt bereit: `intakeState.inTriage/toEntrance/discard/restore`,
+`--modal-body-padding` (die Sichtung ist 1500 px breit und besteht aus
+randlosen Zeilen), `intake-styles.ts` und die Archetyp-Zeichen über
+`CATEGORY_RESONANCE[…].signature` → `icons.resonanceArchetype`.
+
+Offene Backend-Lücken, die Schritt 5 betreffen: **Lücke 2** (Story-Bündelung —
+`/candidates` liefert kein `sources[]` und kein `social_volume`) und **Lücke 3**
+(`fit`-Score). Beide bedeuten: die Sichtung zeigt vorerst eine Zeile je
+Rohsignal, nicht je Geschichte, und die Sortierung „Passung" ist ohne Backend
+eine Heuristik — dann als solche kennzeichnen, nicht als Messwert.
 
 ## Vor jedem Commit
 

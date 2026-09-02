@@ -26,7 +26,7 @@
 
 import type { AdapterInfo, ScanCandidate } from '../services/api/ScannerApiService.js';
 import type { BrowseArticle } from '../services/api/SocialTrendsApiService.js';
-import type { EchoVector, SourceCategory } from './index.js';
+import type { EchoVector, ResonanceSignature, SourceCategory } from './index.js';
 
 /**
  * Die Stufe eines Signals. Jedes Signal hat genau eine — das ist der Punkt der
@@ -134,25 +134,40 @@ export interface IntakeSignal {
   raw: ScanCandidate | BrowseArticle;
 }
 
-// ── Kategorie → Archetyp ────────────────────────────────────────────────────
+// ── Kategorie → Signatur und Archetyp ───────────────────────────────────────
 
 /**
- * Die acht Kategorien des Scanners auf die acht Archetypen.
+ * Die acht Kategorien des Scanners auf Signatur und Archetyp.
  *
- * Die Werte sind die `ResonanceArchetype`-Union, also die Bezeichner, die das
- * Backend führt — NICHT die Anzeigenamen. Übersetzt wird in der Komponente,
- * damit dieselbe Zuordnung in beiden Sprachen gilt.
+ * Das ist die Frontend-Fassung von `CATEGORY_ARCHETYPE_MAP` in
+ * `backend/models/resonance.py` — dieselbe Tabelle, zwei Spalten. Die Werte
+ * sind die Bezeichner, die das Backend führt, NICHT die Anzeigenamen;
+ * übersetzt wird in `components/intake/intake-labels.ts`, damit dieselbe
+ * Zuordnung in beiden Sprachen gilt.
+ *
+ * WARUM BEIDE SPALTEN IN EINER TABELLE: der Archetyp ist das WORT (Der Turm),
+ * die Signatur die KENNUNG, mit der die Resonanz rechnet (`economic_tremor`)
+ * und unter der `icons.resonanceArchetype` ihr Zeichen führt. Zwei getrennte
+ * Tabellen wären zwei Gelegenheiten, sie unterschiedlich zu haben.
  */
-export const CATEGORY_ARCHETYPE: Record<SourceCategory, string> = {
-  economic_crisis: 'The Tower',
-  military_conflict: 'The Shadow',
-  pandemic: 'The Devouring Mother',
-  natural_disaster: 'The Deluge',
-  political_upheaval: 'The Overthrow',
-  tech_breakthrough: 'The Prometheus',
-  cultural_shift: 'The Awakening',
-  environmental_disaster: 'The Entropy',
+export const CATEGORY_RESONANCE: Record<
+  SourceCategory,
+  { signature: ResonanceSignature; archetype: string }
+> = {
+  economic_crisis: { signature: 'economic_tremor', archetype: 'The Tower' },
+  military_conflict: { signature: 'conflict_wave', archetype: 'The Shadow' },
+  pandemic: { signature: 'biological_tide', archetype: 'The Devouring Mother' },
+  natural_disaster: { signature: 'elemental_surge', archetype: 'The Deluge' },
+  political_upheaval: { signature: 'authority_fracture', archetype: 'The Overthrow' },
+  tech_breakthrough: { signature: 'innovation_spark', archetype: 'The Prometheus' },
+  cultural_shift: { signature: 'consciousness_drift', archetype: 'The Awakening' },
+  environmental_disaster: { signature: 'decay_bloom', archetype: 'The Entropy' },
 };
+
+/** Nur die Archetypen — abgeleitet, damit es keine zweite Tabelle gibt. */
+export const CATEGORY_ARCHETYPE: Record<SourceCategory, string> = Object.fromEntries(
+  Object.entries(CATEGORY_RESONANCE).map(([category, entry]) => [category, entry.archetype]),
+) as Record<SourceCategory, string>;
 
 // ── Quellenklasse ───────────────────────────────────────────────────────────
 
@@ -304,8 +319,20 @@ export function effectiveMagnitude(magnitude: number, susceptibility: number): n
   return Math.min(magnitude * susceptibility, 1);
 }
 
-/** Unter diesem Wert überspringt eine Resonanz die Welt. */
-export const EFFECT_SKIP_THRESHOLD = 0.2;
+/**
+ * Unter diesem Wert überspringt eine Resonanz die Welt.
+ *
+ * ⚠ GEMESSEN, NICHT ÜBERNOMMEN. Der Bauplan nennt 0.2 — an zwei Stellen sogar,
+ * als Schwelle UND als Farbgrenze. Der Lauf springt bei **0.05**
+ * (`ResonanceService.SKIP_THRESHOLD`, §5 von `_process_simulation_impact`).
+ * Mit 0.2 hätte die Suszeptibilitätstafel einem Admin „diese Welt wird
+ * übersprungen" für Welten gemeldet, die getroffen werden — und zwar auf dem
+ * Schirm, auf dem er einen unumkehrbaren Knopf hält.
+ *
+ * Der Wert steht hier als RÜCKFALL. Die Wahrheit kommt mit jeder Zeile der
+ * Vorschau mit (`will_skip`), weil nur der Server die Ableitung kennt.
+ */
+export const EFFECT_SKIP_THRESHOLD = 0.05;
 
 /** Die Stufen, die als „im Umlauf" gelten (Kammer ① bis ③). */
 export const ACTIVE_STAGES: readonly IntakeStage[] = ['raw', 'in', 'q', 'ev', 'res', 'flag'];

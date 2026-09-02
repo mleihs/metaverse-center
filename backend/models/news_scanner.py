@@ -28,6 +28,11 @@ class ScanCandidateResponse(BaseModel):
     created_at: datetime
     reviewed_at: datetime | None = None
     reviewed_by_id: UUID | None = None
+    # Nur bei status='flagged' gesetzt (Migration 334). Ohne die Begruendung
+    # sieht eine Meldung in der Liste des Admins aus wie jeder Scanner-Treffer,
+    # und der Grund, warum ein Mensch sie hervorgeholt hat, waere fort.
+    flag_reason: str | None = None
+    flagged_by_simulation_id: UUID | None = None
 
 
 class ApproveCandidateRequest(BaseModel):

@@ -384,6 +384,106 @@ class ResonanceService(BaseService):
 
         return impacts
 
+    # ── Susceptibility ───────────────────────────────────────────────────
+
+    #: Below this effective magnitude a simulation is skipped entirely.
+    #: The number lives here because §5 of `_process_simulation_impact` is the
+    #: only place that acts on it — anything else that shows "skipped" to a
+    #: human must read it from here, not restate it.
+    SKIP_THRESHOLD = 0.05
+
+    @classmethod
+    async def susceptibility_of(
+        cls,
+        supabase: Client,
+        simulation_id: str | UUID,
+        signature: str,
+    ) -> float:
+        """How hard this signature lands in this world.
+
+        Adaptive first (migration 216 — factors in what the world has already
+        weathered), static as the fallback (migration 076), 1.0 if neither RPC
+        is there. Extracted from `_process_simulation_impact` so the PREVIEW an
+        admin is shown before raising a resonance and the number the run
+        actually uses come from one place. Two implementations of the same
+        formula would drift, and the one that drifts is the one nobody runs.
+        """
+        sim_id = str(simulation_id)
+        try:
+            resp = await supabase.rpc(
+                "fn_get_adaptive_susceptibility",
+                {"p_simulation_id": sim_id, "p_signature": signature},
+            ).execute()
+            return float(resp.data) if resp.data is not None else 1.0
+        except (PostgrestAPIError, TypeError, ValueError):
+            pass
+
+        try:
+            resp = await supabase.rpc(
+                "fn_get_resonance_susceptibility",
+                {"p_simulation_id": sim_id, "p_signature": signature},
+            ).execute()
+            susceptibility = float(resp.data) if resp.data is not None else 1.0
+        except (PostgrestAPIError, TypeError, ValueError):
+            susceptibility = 1.0
+        logger.info(
+            "Adaptive susceptibility unavailable for sim %s, using static %.2f",
+            sim_id,
+            susceptibility,
+        )
+        return susceptibility
+
+    @classmethod
+    async def preview_susceptibility(
+        cls,
+        supabase: Client,
+        *,
+        signature: str,
+        magnitude: float,
+    ) -> list[dict]:
+        """What raising this resonance would do, per world — before it is raised.
+
+        WHY THIS EXISTS: raising a resonance is irreversible and hits every
+        active template world at once. The admin UI asks for a hold-to-confirm
+        on exactly that, and a hold-to-confirm whose stated consequence is
+        guessed is worse than none — it looks like knowledge.
+
+        WHAT IS AND IS NOT INCLUDED: susceptibility and `magnitude * sus`
+        (capped at 1.0) are the same numbers the run computes — the cap is the
+        `compute_effective_magnitude` trigger from migration 074, restated here
+        because a preview cannot insert a row to learn it. Attunement depth and
+        anchor protection are NOT applied: both are read per world inside the
+        run and both only ever LOWER the value, so `effective_magnitude` here
+        is an upper bound and `will_skip` is the cautious answer (a world
+        listed as hit may still be skipped, never the other way round). The
+        caller says so in words; it is not left for the reader to infer.
+        """
+        sims_resp = await (
+            supabase.table("simulations")
+            .select("id, name, slug")
+            .eq("status", "active")
+            .eq("simulation_type", "template")
+            .order("name")
+            .execute()
+        )
+        simulations = extract_list(sims_resp)
+
+        rows: list[dict] = []
+        for sim in simulations:
+            susceptibility = await cls.susceptibility_of(supabase, sim["id"], signature)
+            effective = min(round(magnitude * susceptibility, 2), 1.00)
+            rows.append(
+                {
+                    "simulation_id": sim["id"],
+                    "simulation_name": sim.get("name") or sim["id"],
+                    "simulation_slug": sim.get("slug"),
+                    "susceptibility": susceptibility,
+                    "effective_magnitude": effective,
+                    "will_skip": effective < cls.SKIP_THRESHOLD,
+                }
+            )
+        return rows
+
     @classmethod
     async def _process_simulation_impact(
         cls,
@@ -414,27 +514,7 @@ class ResonanceService(BaseService):
         )
 
         # ── 1. Susceptibility (adaptive — uses resonance_memory) ──
-        try:
-            susc_resp = await supabase.rpc(
-                "fn_get_adaptive_susceptibility",
-                {"p_simulation_id": sim_id, "p_signature": signature},
-            ).execute()
-            susceptibility = float(susc_resp.data) if susc_resp.data is not None else 1.0
-        except (PostgrestAPIError, TypeError, ValueError):
-            # Fall back to static susceptibility if adaptive RPC not available
-            try:
-                susc_resp = await supabase.rpc(
-                    "fn_get_resonance_susceptibility",
-                    {"p_simulation_id": sim_id, "p_signature": signature},
-                ).execute()
-                susceptibility = float(susc_resp.data) if susc_resp.data is not None else 1.0
-            except (TypeError, ValueError):
-                susceptibility = 1.0
-            logger.info(
-                "Adaptive susceptibility unavailable for sim %s, using static %.2f",
-                sim_id,
-                susceptibility,
-            )
+        susceptibility = await cls.susceptibility_of(supabase, sim_id, signature)
 
         # ── 2. Event types ──
         try:
@@ -528,7 +608,7 @@ class ResonanceService(BaseService):
             )
 
         # ── 5. Skip low-impact simulations ──
-        if effective_mag < 0.05:
+        if effective_mag < cls.SKIP_THRESHOLD:
             logger.info(
                 "Skipping low-impact simulation %s (effective_mag=%.4f)",
                 sim_name,

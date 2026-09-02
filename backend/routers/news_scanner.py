@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from backend.dependencies import get_admin_supabase, require_platform_admin
 from backend.middleware.rate_limit import RATE_LIMIT_EXTERNAL_API, RATE_LIMIT_STANDARD, limiter
 from backend.models.common import CurrentUser, PaginatedResponse, PaginationMeta, SuccessResponse
+from backend.models.intake import SusceptibilityRow
 from backend.models.news_scanner import (
     ApproveCandidateRequest,
     DashboardResponse,
@@ -20,7 +21,9 @@ from backend.models.news_scanner import (
     UpdateCandidateRequest,
 )
 from backend.services.audit_service import AuditService
+from backend.services.intake_service import IntakeService
 from backend.services.scanning.scanner_service import ScannerService
+from backend.utils.errors import not_found
 from backend.utils.responses import paginated
 from supabase import AsyncClient as Client
 
@@ -129,6 +132,45 @@ async def list_candidates(
             "recommended_threshold": recommended_threshold,
         }
     )
+
+
+@router.get("/candidates/{candidate_id}/susceptibility")
+async def candidate_susceptibility(
+    candidate_id: UUID,
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase: Annotated[Client, Depends(get_admin_supabase)],
+) -> SuccessResponse[list[SusceptibilityRow]]:
+    """What raising this candidate as a resonance would do, per world.
+
+    WHY THIS ENDPOINT EXISTS: approving a candidate raises a resonance, and a
+    resonance is irreversible and hits every active template world at once. The
+    airlock asks for a hold-to-confirm on exactly that. A hold-to-confirm whose
+    stated consequence is guessed is worse than none — it wears the shape of
+    knowledge. These numbers come from the same helper the run itself uses
+    (`ResonanceService.susceptibility_of`), so the preview and the run cannot
+    drift apart.
+
+    `effective_magnitude` is an UPPER BOUND: attunement depth and anchor
+    protection are read per world inside the run and only ever lower it. A
+    world listed as hit may still be skipped; the reverse cannot happen.
+    """
+    resp = await (
+        admin_supabase.table("news_scan_candidates")
+        .select("source_category, magnitude")
+        .eq("id", str(candidate_id))
+        .limit(1)
+        .execute()
+    )
+    if not resp.data:
+        raise not_found(detail="Candidate not found.")
+
+    candidate = resp.data[0]
+    rows = await IntakeService.susceptibility_preview(
+        admin_supabase,
+        source_category=candidate["source_category"],
+        magnitude=float(candidate["magnitude"]),
+    )
+    return SuccessResponse(data=[SusceptibilityRow(**row) for row in rows])
 
 
 @router.post("/candidates/{candidate_id}/approve")

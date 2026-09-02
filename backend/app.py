@@ -101,6 +101,7 @@ from backend.routers import (
     health,
     heartbeat,
     instagram,
+    intake,
     invitations,
     journal,
     locations,
@@ -392,6 +393,7 @@ app.include_router(generation.router)
 app.include_router(prompt_templates.router)
 app.include_router(invitations.router)
 app.include_router(social_trends.router)
+app.include_router(intake.router)
 app.include_router(social_media.router)
 app.include_router(relationships.router)
 app.include_router(echoes.router)
