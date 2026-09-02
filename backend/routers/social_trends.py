@@ -32,6 +32,7 @@ from backend.services.audit_service import AuditService
 from backend.services.base_service import serialize_for_json
 from backend.services.event_service import EventService
 from backend.services.external.guardian import GuardianService
+from backend.services.external.news_errors import ExternalNewsError
 from backend.services.external.newsapi import NewsAPIService
 from backend.services.external_service_resolver import ExternalServiceResolver
 from backend.services.generation_service import GenerationService
@@ -73,6 +74,43 @@ async def _resolve_news_service(
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=f"Unknown source: {source}",
+    )
+
+
+def _upstream_news_error(source: str, exc: Exception) -> HTTPException:
+    """Turn a news-provider failure into an answer that names its cause.
+
+    All three fetch routes used to answer every failure with
+    ``502 "External API error. Please try again."``. On 2026-09-02 the failure
+    that actually occurred was ``401 Unauthorized`` from the Guardian — the
+    stored key is a well-formed UUID the provider no longer accepts. Retrying
+    a dead key never helps, so the one sentence the caller got sent them
+    looking for an outage instead of for a key. The distinction is the whole
+    point of this function.
+    """
+    if isinstance(exc, ExternalNewsError):
+        if exc.is_auth_failure:
+            return HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=(
+                    f"{source} refused the configured API key ({exc.status_code}). "
+                    f"A platform admin has to renew '{source}_api_key' in the "
+                    f"platform settings — retrying will not help."
+                ),
+            )
+        if exc.is_rate_limited:
+            return HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"{source} is rate-limiting this platform. Try again later.",
+            )
+        if exc.status_code is not None:
+            return HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"{source} answered {exc.status_code}. Please try again.",
+            )
+    return HTTPException(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        detail=f"{source} could not be reached. Please try again.",
     )
 
 
@@ -121,10 +159,7 @@ async def fetch_trends(
         raise
     except Exception as exc:
         logger.exception("External news API error", extra={"source": body.source})
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="External API error. Please try again.",
-        ) from exc
+        raise _upstream_news_error(body.source, exc) from exc
 
     stored = await SocialTrendsService.store_fetched_trends(supabase, simulation_id, raw_trends)
     await AuditService.safe_log(
@@ -259,10 +294,7 @@ async def workflow(
         raise
     except Exception as exc:
         logger.exception("External news API error", extra={"source": body.source})
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="External API error. Please try again.",
-        ) from exc
+        raise _upstream_news_error(body.source, exc) from exc
 
     stored = await SocialTrendsService.store_fetched_trends(supabase, simulation_id, raw_trends)
     await AuditService.safe_log(
@@ -318,10 +350,7 @@ async def browse_articles(
         raise
     except Exception as exc:
         logger.exception("External news API error", extra={"source": body.source})
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="External API error. Please try again.",
-        ) from exc
+        raise _upstream_news_error(body.source, exc) from exc
 
     return SuccessResponse(data=articles)
 

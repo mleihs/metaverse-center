@@ -367,3 +367,343 @@ class TestScanResult:
         assert r.is_structured is True
         assert r.source_category == "natural_disaster"
         assert r.magnitude == 0.85
+
+
+# ---------------------------------------------------------------------------
+# External news errors — the upstream status must survive the raise
+# ---------------------------------------------------------------------------
+
+class TestExternalNewsError:
+    """A provider that refuses our key is not a provider that is unwell.
+
+    Both news clients used to raise a bare ``Exception`` carrying a formatted
+    string and nothing else, which is why a 401 and a 503 were indistinguish-
+    able to every caller. These tests pin the distinction.
+    """
+
+    def test_guardian_error_is_an_external_news_error(self):
+        from backend.services.external.guardian import GuardianError
+        from backend.services.external.news_errors import ExternalNewsError
+
+        assert issubclass(GuardianError, ExternalNewsError)
+
+    def test_newsapi_error_is_an_external_news_error(self):
+        from backend.services.external.news_errors import ExternalNewsError
+        from backend.services.external.newsapi import NewsAPIError
+
+        assert issubclass(NewsAPIError, ExternalNewsError)
+
+    def test_401_is_an_auth_failure(self):
+        from backend.services.external.guardian import GuardianError
+
+        exc = GuardianError("Guardian API error 401: Unauthorized", status_code=401)
+        assert exc.is_auth_failure is True
+        assert exc.is_rate_limited is False
+
+    def test_403_is_an_auth_failure(self):
+        from backend.services.external.newsapi import NewsAPIError
+
+        assert NewsAPIError("forbidden", status_code=403).is_auth_failure is True
+
+    def test_429_is_rate_limited_not_auth(self):
+        from backend.services.external.guardian import GuardianError
+
+        exc = GuardianError("Guardian API rate limit exceeded.", status_code=429)
+        assert exc.is_rate_limited is True
+        assert exc.is_auth_failure is False
+
+    def test_503_is_neither(self):
+        from backend.services.external.guardian import GuardianError
+
+        exc = GuardianError("Guardian API error 503: down", status_code=503)
+        assert exc.is_auth_failure is False
+        assert exc.is_rate_limited is False
+
+    def test_status_may_be_absent(self):
+        """NewsAPI answers 200 with ``{"status": "error"}`` — no HTTP status."""
+        from backend.services.external.newsapi import NewsAPIError
+
+        exc = NewsAPIError("NewsAPI returned status: error")
+        assert exc.status_code is None
+        assert exc.is_auth_failure is False
+
+
+# ---------------------------------------------------------------------------
+# Adapter isolation — one bad source must not end the cycle
+# ---------------------------------------------------------------------------
+
+class _AdminStub:
+    """Admin client that refuses every query — templates fall back to inline."""
+
+    def table(self, *_args, **_kwargs):
+        msg = "no database in this test"
+        raise ValueError(msg)
+
+
+class TestAdapterIsolation:
+    """A refused API key used to take the whole scan cycle with it.
+
+    ``run_scan_cycle`` isolated each adapter with a NARROW exception tuple.
+    ``GuardianError`` matched none of its members, so it escaped the boundary
+    and ended the cycle — every adapter after it in the list included. It
+    never showed on prod only because no Guardian key was configured and the
+    adapter reported ``unavailable`` before ever calling out. Entering a key
+    would have armed it, which is exactly what the resume note asked for next.
+    """
+
+    @staticmethod
+    def _register(monkeypatch, adapters: dict):
+        from backend.services.scanning import scanner_service as mod
+
+        monkeypatch.setattr(mod, "get_adapter", lambda name: adapters[name])
+
+    @pytest.mark.asyncio
+    async def test_refused_key_is_reported_and_the_cycle_continues(self, monkeypatch):
+        from backend.services.external.guardian import GuardianError
+        from backend.services.scanning.scanner_service import ScannerService
+
+        class _Refused:
+            name = "guardian"
+            requires_api_key = True
+            api_key_setting = "guardian_api_key"
+            extra_settings = ()
+            _api_key = "dead-key"
+
+            async def is_available(self):
+                return True
+
+            async def fetch(self):
+                raise GuardianError(
+                    "Guardian API error 401: Unauthorized", status_code=401
+                )
+
+        class _Quiet:
+            name = "usgs_earthquakes"
+            requires_api_key = False
+            api_key_setting = None
+            extra_settings = ()
+
+            async def is_available(self):
+                return True
+
+            async def fetch(self):
+                return []
+
+        self._register(monkeypatch, {"guardian": _Refused(), "usgs_earthquakes": _Quiet()})
+
+        metrics = await ScannerService.run_scan_cycle(
+            _AdminStub(),
+            config={"adapters": ["guardian", "usgs_earthquakes"], "api_keys": {}},
+            adapter_names=["guardian", "usgs_earthquakes"],
+        )
+
+        assert metrics["adapters"]["guardian"]["status"] == "unauthorized"
+        # The point of the test: the adapter AFTER the failing one still ran.
+        assert metrics["adapters"]["usgs_earthquakes"]["status"] == "ok"
+
+    @pytest.mark.asyncio
+    async def test_an_unlisted_exception_type_no_longer_escapes(self, monkeypatch):
+        """The barrier must hold for a type nobody thought to enumerate."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        class _Exotic:
+            name = "gdelt"
+            requires_api_key = False
+            api_key_setting = None
+            extra_settings = ()
+
+            async def is_available(self):
+                return True
+
+            async def fetch(self):
+                raise RuntimeError("something nobody listed in a tuple")
+
+        class _Quiet:
+            name = "usgs_earthquakes"
+            requires_api_key = False
+            api_key_setting = None
+            extra_settings = ()
+
+            async def is_available(self):
+                return True
+
+            async def fetch(self):
+                return []
+
+        self._register(monkeypatch, {"gdelt": _Exotic(), "usgs_earthquakes": _Quiet()})
+
+        metrics = await ScannerService.run_scan_cycle(
+            _AdminStub(),
+            config={"adapters": ["gdelt", "usgs_earthquakes"], "api_keys": {}},
+            adapter_names=["gdelt", "usgs_earthquakes"],
+        )
+
+        assert metrics["adapters"]["gdelt"]["status"] == "error"
+        assert metrics["adapters"]["usgs_earthquakes"]["status"] == "ok"
+
+    @pytest.mark.asyncio
+    async def test_a_provider_outage_is_not_an_auth_failure(self, monkeypatch):
+        from backend.services.external.newsapi import NewsAPIError
+        from backend.services.scanning.scanner_service import ScannerService
+
+        class _Down:
+            name = "newsapi"
+            requires_api_key = True
+            api_key_setting = "newsapi_api_key"
+            extra_settings = ()
+            _api_key = "a-key"
+
+            async def is_available(self):
+                return True
+
+            async def fetch(self):
+                raise NewsAPIError("NewsAPI error 503: down", status_code=503)
+
+        self._register(monkeypatch, {"newsapi": _Down()})
+
+        metrics = await ScannerService.run_scan_cycle(
+            _AdminStub(),
+            config={"adapters": ["newsapi"], "api_keys": {}},
+            adapter_names=["newsapi"],
+        )
+
+        assert metrics["adapters"]["newsapi"]["status"] == "error"
+
+
+# ---------------------------------------------------------------------------
+# The answer a caller gets — it must name the cause
+# ---------------------------------------------------------------------------
+
+class TestUpstreamNewsErrorMapping:
+    """``502 "External API error. Please try again."`` was the answer to
+    everything, including a dead key, where retrying is precisely the wrong
+    advice. It cost about a day on 2026-09-02."""
+
+    def test_refused_key_names_the_setting_to_renew(self):
+        from backend.routers.social_trends import _upstream_news_error
+        from backend.services.external.guardian import GuardianError
+
+        exc = _upstream_news_error(
+            "guardian", GuardianError("401: Unauthorized", status_code=401)
+        )
+        assert exc.status_code == 502
+        assert "guardian_api_key" in exc.detail
+        assert "retrying will not help" in exc.detail
+
+    def test_rate_limit_answers_429(self):
+        from backend.routers.social_trends import _upstream_news_error
+        from backend.services.external.newsapi import NewsAPIError
+
+        exc = _upstream_news_error("newsapi", NewsAPIError("slow down", status_code=429))
+        assert exc.status_code == 429
+
+    def test_outage_names_the_upstream_status(self):
+        from backend.routers.social_trends import _upstream_news_error
+        from backend.services.external.guardian import GuardianError
+
+        exc = _upstream_news_error("guardian", GuardianError("down", status_code=503))
+        assert exc.status_code == 502
+        assert "503" in exc.detail
+
+    def test_unknown_failure_still_answers_502(self):
+        from backend.routers.social_trends import _upstream_news_error
+
+        exc = _upstream_news_error("guardian", RuntimeError("connection reset"))
+        assert exc.status_code == 502
+        assert "guardian" in exc.detail
+
+
+# ---------------------------------------------------------------------------
+# Bureau dispatch — a half dispatch is worse than none
+# ---------------------------------------------------------------------------
+
+class TestBureauDispatchBudget:
+    """27 of the first 50 dispatches on production stopped mid-word, 7 were
+    empty strings. Prose hides its own truncation — that is why it took 197
+    days to notice. These tests hold the two guards that now catch it."""
+
+    @staticmethod
+    def _patch(monkeypatch, *, answer: str, completion_tokens: int):
+        """Stand in for the whole OpenRouter round trip."""
+        from backend.services.scanning import scanner_service as mod
+
+        class _FakeOpenRouter:
+            def __init__(self, _api_key):
+                self.last_usage = None
+
+            async def generate_with_system(self, **kwargs):
+                self.last_usage = {"completion_tokens": completion_tokens}
+                return answer
+
+        async def _fake_admin():
+            return object()
+
+        monkeypatch.setattr(mod, "OpenRouterService", _FakeOpenRouter)
+        monkeypatch.setattr(mod, "get_admin_supabase_client", _fake_admin)
+        monkeypatch.setattr(mod, "get_platform_model", lambda _purpose: "test/model")
+
+    @staticmethod
+    def _result():
+        return ScanResult(
+            source_id="x",
+            source_name="guardian",
+            title="Magnitude 6.1 earthquake off northern Honshu",
+            description="No tsunami warning was issued.",
+            source_category="natural_disaster",
+            magnitude=0.6,
+        )
+
+    @pytest.mark.asyncio
+    async def test_a_whole_dispatch_is_kept(self, monkeypatch):
+        from backend.services.scanning.scanner_service import ScannerService
+
+        self._patch(monkeypatch, answer="  The ground remembers.  ", completion_tokens=264)
+        got = await ScannerService._generate_dispatch(
+            self._result(), {"openrouter_api_key": "k"}
+        )
+        assert got == "The ground remembers."
+
+    @pytest.mark.asyncio
+    async def test_an_answer_that_spent_its_whole_budget_is_discarded(self, monkeypatch):
+        """The exact shape of the 27: readable text, ending nowhere."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        self._patch(
+            monkeypatch,
+            answer="**Monitoring Classification:** SUB-SEISMIC / TREMOR-7741 / WATCH-",
+            completion_tokens=ScannerService._DISPATCH_MAX_TOKENS,
+        )
+        got = await ScannerService._generate_dispatch(
+            self._result(), {"openrouter_api_key": "k"}
+        )
+        assert got is None
+
+    @pytest.mark.asyncio
+    async def test_whitespace_only_becomes_none_not_an_empty_string(self, monkeypatch):
+        """The shape of the 7: `_extract_content` lets `"\\n\\n"` through
+        (it is not falsy), and `.strip()` then leaves nothing. The column
+        already has a way to say "no dispatch", and it is NULL."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        self._patch(monkeypatch, answer="\n\n  \n", completion_tokens=12)
+        got = await ScannerService._generate_dispatch(
+            self._result(), {"openrouter_api_key": "k"}
+        )
+        assert got is None
+
+    @pytest.mark.asyncio
+    async def test_a_db_template_may_raise_the_ceiling(self, monkeypatch):
+        """The template row in the database wins over the code constant — which
+        is why migration 338 has to change BOTH. Here the row allows more, so an
+        answer above the code default is still whole."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        self._patch(monkeypatch, answer="A longer dispatch.", completion_tokens=900)
+        got = await ScannerService._generate_dispatch(
+            self._result(),
+            {
+                "openrouter_api_key": "k",
+                "_templates": {"scanner_bureau_dispatch": {"max_tokens": 2048}},
+            },
+        )
+        assert got == "A longer dispatch."

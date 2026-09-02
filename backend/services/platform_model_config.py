@@ -71,6 +71,33 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     # in `handoff/denkmodell-als-standard-2026-09-02.md` und ist hier bewusst
     # NICHT beantwortet.
     "model_classify": "deepseek/deepseek-chat",
+    # `dispatch` — Schreiben, nicht Denken.
+    #
+    # Die Bureau-Depesche ist der zweite LLM-Aufruf des Scanners: 100–200
+    # Wörter Prosa je Kandidat. Sie lief auf `model_default`, also demselben
+    # Denkmodell wie der Klassifikator, mit einem festen Budget von 512.
+    #
+    # GEMESSEN 02.09.2026 an den 50 Depeschen, die auf Prod entstanden sind:
+    #
+    #     50 Depeschen · 7 vollständig LEER · 27 mitten im Wort abgeschnitten
+    #     heil: 16
+    #
+    # Eine davon endet auf „… / DELUGE SUBTYPE / MAGN". Ein halber Satz sieht
+    # aus wie ein Stil, und genau deshalb ist es niemandem aufgefallen.
+    #
+    # Direkt gegen OpenRouter mit dem echten Depeschen-Prompt, viermal
+    # derselbe Prompt:
+    #
+    #     deepseek-v4-flash-0731   cap  512   completion 502   davon Denken 219
+    #     deepseek-v4-flash-0731   cap 1024   completion 914   davon Denken 620
+    #     deepseek-v4-flash-0731   cap 1536   completion 527   davon Denken 328
+    #     deepseek-chat            cap  512   completion 250   davon Denken   0
+    #
+    # ⚠ Das Denken schwankt bei GLEICHEM Prompt zwischen 219 und 620 Token.
+    # Eine feste Zahl kann das nicht auffangen — deshalb ist die Antwort ein
+    # Modell ohne Denken und nicht ein grösseres Budget. Der Text ist dabei
+    # nicht schlechter: 171 Wörter im richtigen Ton, in 250 statt 914 Token.
+    "model_dispatch": "deepseek/deepseek-chat",
     # Dev defaults — the cheap tier, matching the *_dev rows in platform_settings
     "model_default_dev": "deepseek/deepseek-v4-flash-0731",
     "model_fallback_dev": "google/gemini-2.5-flash-lite",
@@ -78,6 +105,7 @@ HARDCODED_DEFAULTS: dict[str, str] = {
     "model_forge_dev": "deepseek/deepseek-v4-flash-0731",
     "model_forecast_dev": "anthropic/claude-haiku-4.5",
     "model_classify_dev": "deepseek/deepseek-chat",
+    "model_dispatch_dev": "deepseek/deepseek-chat",
 }
 
 _MODEL_KEYS = tuple(HARDCODED_DEFAULTS.keys())
@@ -180,7 +208,20 @@ def get_platform_model(purpose: str) -> str:
     declared = AI_PURPOSES.get(purpose)
     if declared is not None:
         base_key = f"model_{declared.model_key}"
-    elif purpose in ("forge", "research", "fallback", "classify"):
+    elif f"model_{purpose}" in HARDCODED_DEFAULTS:
+        # A TIER, asked for by its own name. This used to be a hand-written
+        # tuple `("forge", "research", "fallback", "classify")` beside a dict
+        # that already held exactly the same knowledge — and on 2026-09-02 the
+        # two disagreed: the scanner asked for `classify` while the tuple still
+        # listed three names, so it got `model_default` (a thinking model) and
+        # classified nothing. Three places said `deepseek-chat`; the fourth
+        # said nothing at all, which rule 3 below turns into a silent default.
+        #
+        # A constraint written twice is twice incomplete. The tiers ARE the
+        # keys of HARDCODED_DEFAULTS, so ask that dict instead of a copy of it:
+        # adding a model key now adds its tier in the same edit, and the
+        # trapdoor cannot reopen. `test_every_model_key_resolves_to_itself`
+        # holds it.
         base_key = f"model_{purpose}"
     else:
         base_key = "model_default"

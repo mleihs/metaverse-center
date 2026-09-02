@@ -81,10 +81,13 @@ __all__ = [
     "purpose_names",
 ]
 
-# The four platform_settings rows a purpose may resolve its model from, plus
-# `forecast`. Each maps to a `model_<key>` setting (and a `model_<key>_dev`
-# variant outside production) — see `platform_model_config.HARDCODED_DEFAULTS`.
-ModelKey = Literal["default", "fallback", "forge", "research", "forecast", "classify"]
+# The platform_settings rows a purpose may resolve its model from. Each maps to
+# a `model_<key>` setting (and a `model_<key>_dev` variant outside production);
+# `platform_model_config.HARDCODED_DEFAULTS` is the authority on which exist and
+# why each one is not simply `default`. No count is written here on purpose —
+# the sentence used to say "the four, plus forecast" and was wrong twice over
+# by the time anyone read it again.
+ModelKey = Literal["default", "fallback", "forge", "research", "forecast", "classify", "dispatch"]
 
 # `auto` means "send nothing, the model decides". Deliberately distinct from
 # `off`, which sends {"enabled": false} and suppresses thinking outright.

@@ -306,3 +306,47 @@ class TestGetPlatformReasoning:
         assert REASONING_DEFAULTS["reasoning_entity"] == "off"
         platform_model_config._cache = {"reasoning_entity": "high"}
         assert get_platform_reasoning("entity") == {"effort": "high"}
+
+
+# ── Tiers are the keys of HARDCODED_DEFAULTS, not a copy of them ────────
+
+
+class TestTierResolution:
+    """The trapdoor that swallowed `classify` on 2026-09-02.
+
+    `get_platform_model` used to compare the purpose against a hand-written
+    tuple of tier names that sat beside a dict already holding exactly the same
+    knowledge. When `model_classify` was added to the dict and not to the tuple,
+    the scanner asked for `classify`, silently received `model_default` — a
+    thinking model — and classified nothing. Rule 3 does not raise; a missing
+    tier just becomes the default.
+
+    So the tuple is gone and the dict answers. This test is what keeps it gone.
+    """
+
+    def test_every_model_key_resolves_to_itself(self):
+        with _patch_env("production"):
+            for key in HARDCODED_DEFAULTS:
+                if key.endswith("_dev"):
+                    continue
+                tier = key.removeprefix("model_")
+                platform_model_config._cache = {key: f"x/{tier}"}
+                assert get_platform_model(tier) == f"x/{tier}", (
+                    f"tier {tier!r} does not resolve to {key!r} — it fell through "
+                    "to model_default, which is the 2026-09-02 defect"
+                )
+
+    def test_dispatch_resolves_to_model_dispatch(self):
+        platform_model_config._cache = {"model_dispatch": "x/dispatch"}
+        with _patch_env("production"):
+            assert get_platform_model("dispatch") == "x/dispatch"
+
+    def test_dispatch_default_does_not_think(self):
+        """Not a style preference — a thinking model spends 219-620 tokens of
+        the same budget before the first word, and the dispatch budget is 640.
+        The two non-thinking DeepSeek models are `deepseek-chat` and
+        `deepseek-chat-v3-0324` (measured 2026-09-02)."""
+        assert HARDCODED_DEFAULTS["model_dispatch"] in (
+            "deepseek/deepseek-chat",
+            "deepseek/deepseek-chat-v3-0324",
+        )

@@ -16,6 +16,7 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.config import settings
 from backend.models.resonance import ARCHETYPE_DESCRIPTIONS, CATEGORY_ARCHETYPE_MAP
 from backend.services.base_service import serialize_for_json
+from backend.services.external.news_errors import ExternalNewsError
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
 from backend.services.platform_model_config import get_platform_model
 from backend.services.resonance_service import ResonanceService
@@ -242,7 +243,24 @@ class ScannerService(BaseSchedulerMixin):
                 metrics["adapters"][name] = {"status": "ok", "fetched": len(results)}
                 metrics["total_fetched"] += len(results)
                 all_results.extend(results)
-            except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            except ExternalNewsError as exc:
+                # A provider that refuses our key is a distinct thing from a
+                # provider that is unwell, and the scan log is the only place
+                # anyone will ever read it. Say which.
+                if exc.is_auth_failure:
+                    logger.error("Adapter %s: the provider refused the configured API key", name)
+                    metrics["adapters"][name] = {"status": "unauthorized", "fetched": 0}
+                else:
+                    logger.exception("Adapter %s fetch failed", name)
+                    metrics["adapters"][name] = {"status": "error", "fetched": 0}
+            except Exception:  # noqa: BLE001 — isolation boundary, see below
+                # ONE adapter must never end the cycle. This used to be a
+                # narrow tuple, and every adapter that raised a type outside it
+                # (both news clients did) escaped the boundary and took the
+                # remaining adapters, the classification and the staging with
+                # it. An isolation barrier that only isolates the failures it
+                # was told about is not a barrier. Observed, never swallowed:
+                # the traceback goes to the log and the adapter is marked.
                 logger.exception("Adapter %s fetch failed", name)
                 metrics["adapters"][name] = {"status": "error", "fetched": 0}
 
@@ -407,6 +425,21 @@ class ScannerService(BaseSchedulerMixin):
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.exception("Failed to stage candidate: %s", result.title[:80])
 
+    # The answer budget for one dispatch.
+    #
+    # DERIVED, not chosen: the prompt asks for 100-200 words. Measured against
+    # the real prompt on 2026-09-02, `deepseek-chat` wrote 171 words in 264
+    # completion tokens — 1.54 tokens per word of this markdown-heavy register.
+    # The prompt's own ceiling of 200 words is therefore ~310 tokens, and this
+    # number is that doubled, so a run that goes long still finishes its
+    # sentence.
+    #
+    # It is NOT sized to also pay for thinking. That is the point: `model_dispatch`
+    # resolves to a model that does not think, and if an operator ever points it
+    # at one that does, the ceiling check below says so out loud instead of
+    # storing half a sentence.
+    _DISPATCH_MAX_TOKENS = 640
+
     # Inline fallback prompts — used when DB templates are unavailable
     _DISPATCH_SYSTEM_PROMPT = (
         "You write bureau dispatches — official reports from the Bureau of Substrate Monitoring, "
@@ -486,6 +519,10 @@ class ScannerService(BaseSchedulerMixin):
             )
             user_prompt = cls._DISPATCH_USER_TEMPLATE.format(**format_values)
 
+        answer_budget = cls._DISPATCH_MAX_TOKENS
+        if db_template:
+            answer_budget = int(db_template.get("max_tokens") or cls._DISPATCH_MAX_TOKENS)
+
         try:
             openrouter = OpenRouterService(api_key)
             # Bureau Ops Deferral A.3 — platform-wide dispatch generation;
@@ -496,17 +533,47 @@ class ScannerService(BaseSchedulerMixin):
                 purpose="scanner_dispatch",
             )
             dispatch = await openrouter.generate_with_system(
-                model=get_platform_model("default"),
+                # `dispatch`, not `default`. Writing 150 words of bureau prose
+                # is not deliberation, and `model_default` is a thinking model
+                # that spent 219-620 tokens of the SAME budget on thinking
+                # before the first word — see HARDCODED_DEFAULTS["model_dispatch"]
+                # for the four measurements this rests on.
+                model=get_platform_model("dispatch"),
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=float(db_template.get("temperature", 0.9)) if db_template else 0.9,
-                max_tokens=int(db_template.get("max_tokens", 512)) if db_template else 512,
+                max_tokens=answer_budget,
                 budget=budget,
             )
-            return dispatch.strip()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OpenRouterError):
             logger.warning("Bureau dispatch generation failed for: %s", result.title[:80])
             return None
+
+        # A HALF DISPATCH IS WORSE THAN NONE.
+        #
+        # `bureau_dispatch` is prose, so a truncated one reads like a stylistic
+        # choice — which is why 27 of the first 50 stopped mid-word and nobody
+        # noticed. Nothing downstream can tell the difference, and neither can
+        # a reader. The one thing that can is right here: an answer that spent
+        # the whole budget almost certainly had more to say.
+        used = (openrouter.last_usage or {}).get("completion_tokens", 0)
+        if used >= answer_budget:
+            logger.warning(
+                "Bureau dispatch hit its ceiling (%d/%d tokens) and was discarded: %s. "
+                "Raise prompt_templates.max_tokens for scanner_bureau_dispatch, or check "
+                "whether model_dispatch points at a thinking model.",
+                used,
+                answer_budget,
+                result.title[:80],
+            )
+            return None
+
+        # An answer of pure whitespace passes `_extract_content` (it is not
+        # falsy) and then strips to nothing. Seven of the first fifty rows on
+        # production hold an empty string for exactly this reason — a column
+        # that means "no dispatch" already exists, and it is NULL.
+        text = dispatch.strip()
+        return text or None
 
     # ── Admin Operations ──────────────────────────────────────────────────
 
