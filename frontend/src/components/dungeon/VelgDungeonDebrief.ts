@@ -97,6 +97,18 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
   @state() private _imLicht: string | null = null;
 
   /**
+   * Das Stück, das gerade am Zeiger hängt.
+   *
+   * Ziehen ist die KÜR, Klicken der Vertrag: alles hier ist auch ohne
+   * Zeigegerät erreichbar, und der Ablegepfad endet in derselben Methode wie
+   * der Klickpfad. Zwei Wege zu demselben Befehl, nicht zwei Befehle.
+   */
+  @state() private _gezogen: string | null = null;
+
+  /** Über welchem Ziel der Zeiger gerade schwebt. */
+  @state() private _ueberZiel: string | null = null;
+
+  /**
    * Alle laufenden Zeitgeber der Zeremonie.
    *
    * ⚠ Sie MÜSSEN beim Abmelden und beim Überspringen geräumt werden. Ein
@@ -161,9 +173,13 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
     this._aktivesStueck = this._aktivesStueck === item.id ? null : item.id;
   }
 
-  private _waehleZiel(agent: AgentCombatStateClient): void {
-    const item = this._verteilbar.find((i) => i.id === this._aktivesStueck);
+  private _waehleZiel(agent: AgentCombatStateClient, stueckId?: string): void {
+    const gesucht = stueckId ?? this._aktivesStueck;
+    const item = this._verteilbar.find((i) => i.id === gesucht);
     if (!item) return;
+    // Der Ablegepfad muss dieselbe Karte aktiv setzen wie der Klickpfad, sonst
+    // sucht der Dimensionsschritt danach ins Leere.
+    this._aktivesStueck = item.id;
 
     // Ein Persönlichkeits-Modifikator braucht eine Dimension, sonst weist der
     // Server ihn zurück. Also fragen, statt eine zu erfinden.
@@ -420,6 +436,14 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
           .rarityTell=${verdeckt ? this._verrat(item.tier) : 'none'}
           ?highlighted=${aktiv}
           ?dimmed=${gedimmt}
+          .draggable=${!verdeckt && this._zeremonie === 'ready' && !zugewiesen}
+          @card-drag-start=${() => {
+            this._gezogen = item.id;
+          }}
+          @dragend=${() => {
+            this._gezogen = null;
+            this._ueberZiel = null;
+          }}
           @click=${() =>
             // Eine verdeckte Karte wartet nicht auf ihren Auftritt, wenn der
             // Spieler sie schon sehen will.
@@ -467,9 +491,29 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
               <button
                 class="ziel ${item && !gefangen ? 'ziel--moeglich' : ''} ${
                   this._wartetAufDimension === agent.agent_id ? 'ziel--wartet' : ''
+                } ${this._ueberZiel === agent.agent_id ? 'ziel--drueber' : ''} ${
+                  this._gezogen && !gefangen ? 'ziel--ablage' : ''
                 }"
-                ?disabled=${gefangen || !item || wartet}
+                ?disabled=${gefangen || (!item && !this._gezogen) || wartet}
                 @click=${() => this._waehleZiel(agent)}
+                @dragover=${(e: DragEvent) => {
+                  if (gefangen || !this._gezogen) return;
+                  // Ohne preventDefault lehnt der Browser das Ablegen ab und
+                  // es gibt kein `drop` — die stille Variante des Nichtstuns.
+                  e.preventDefault();
+                  this._ueberZiel = agent.agent_id;
+                }}
+                @dragleave=${() => {
+                  if (this._ueberZiel === agent.agent_id) this._ueberZiel = null;
+                }}
+                @drop=${(e: DragEvent) => {
+                  e.preventDefault();
+                  const gezogen = this._gezogen;
+                  this._gezogen = null;
+                  this._ueberZiel = null;
+                  if (gefangen || !gezogen) return;
+                  this._waehleZiel(agent, gezogen);
+                }}
               >
                 <span class="ziel__name">${agent.agent_name}</span>
                 <span class="ziel__zustand"
@@ -910,6 +954,15 @@ export class VelgDungeonDebrief extends SignalWatcher(LitElement) {
     .ziel--moeglich {
       border-color: color-mix(in srgb, var(--color-success) 60%, transparent);
       background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface-raised));
+    }
+    /* Waehrend etwas am Zeiger haengt, zeigen die gueltigen Ablagen sich an. */
+    .ziel--ablage {
+      border-style: dashed;
+    }
+    .ziel--drueber {
+      border-color: var(--color-success);
+      border-style: solid;
+      background: color-mix(in srgb, var(--color-success) 16%, var(--color-surface-raised));
     }
     .ziel--wartet {
       border-color: var(--color-accent-amber);
