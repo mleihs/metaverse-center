@@ -1,190 +1,117 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
-**Stand 02.09.2026, nach Schritt 2.** Drei Commits auf main, nichts gepusht.
-Prod läuft `dba881d0`.
+**Stand 02.09.2026, nach Schritt 3.** Vier Commits auf main, nichts gepusht.
+Prod läuft `dba881d0` — älter als alle vier.
 
     273e8d6a  Design-Paket, Prototyp-Extrakt, Nachträge
     5ca4ef00  Schritt 1 — types/intake.ts, IntakeStateManager.ts, 15 Tests
     cf0619c2  Schritt 2 — IntakeView, IntakeSensorTile, Responsive, 37 Übersetzungen
+    e8a86344  Resume-Notiz + Vorarbeit Schritt 3
+    (neu)     Schritt 3 — IntakeCrucibleModal, intake-labels, 77 Übersetzungen
 
-▶ **ALS NÄCHSTES: Schritt 3, der Schmelztiegel** (`IntakeCrucibleModal.ts`).
-Er ERSETZT `components/social/TransformationModal.ts` — die erste bestehende
-Datei, die angefasst wird.
+▶ **ALS NÄCHSTES: Schritt 4** — Quarantäne-Karte rollenabhängig,
+Resonanz-Modal (Hold) und Flag-Modal.
 
 ## Wo alles liegt
 
-- `handoff/schleuse-event-intake.md` — der Bauplan (342 Z., inkl. meiner zwei Nachträge am Ende)
-- `handoff/schleuse-prototype-1b.html` — 853 Z., Block 1b als Nachschlagewerk: Keyframes
-  (Z. 10–42), Template mit allen Modals (bis Z. 518), Logik-Auszug (Z. 520–853).
+- `handoff/schleuse-event-intake.md` — der Bauplan, inzwischen mit **drei**
+  Nachträgen am Ende (Palette · trockener Zufluss · Schritt 3).
+- `handoff/schleuse-responsive.md` — umgesetzt, nichts offen.
+- `handoff/schleuse-prototype-1b.html` — 853 Z. Nachschlagewerk.
   **Nicht lauffähig, nicht kopieren** — Inline-Styles auf Token übersetzen.
-- Quelle beider Dateien: `~/Dev/Buchhaltung/Metaverse.center (6).zip`
 
-## Verifiziert (nicht nochmal prüfen)
+## Was Schritt 3 gebracht hat
 
-- Alle 17 im Plan genannten Repo-Dateien existieren.
-- Alle 10 genannten API-Methoden existieren (`ScannerApiService`: `triggerScan`,
-  `toggleAdapter`, `getDashboard`, `approveCandidate`, `rejectCandidate`, `getScanLog`;
-  `SocialTrendsApiService`: `transformArticle`, `batchTransform`, `integrateArticle`,
-  `batchIntegrate`).
-- `lint-color-ok` wird von `lint-color-tokens.sh` gelesen (Z. 47, 68) — der Pragma trägt.
-- Bureau-Palette liegt als Privat-Variablen in `components/terminal/BureauTerminal.ts`
-  Z. 60–71, jede bereits mit `/* lint-color-ok */`.
+Neu: `components/intake/IntakeCrucibleModal.ts`, `components/intake/intake-labels.ts`.
+Geändert: `IntakeView.ts` (ein Knopf „Transformieren" am Platzhalter der
+Kammer ①, damit das Modal erreichbar ist), `IntakeStateManager.ts` (Zonen),
+`types/intake.ts` (`IntakeTone`, `INTAKE_FREEDOMS`, `transformRequestOf`),
+`shared/BaseModal.ts` (`--modal-body-padding`, Vorgabe unverändert),
+`tests/intake-signal.test.ts` (5 Tests dazu → 1068 grün).
 
-## 🔑 Die Token-Falle (zweimal zugeschlagen, beide Male dokumentiert)
+**Die vier Abweichungen vom Plan und ihre Gründe stehen im Bauplan-Nachtrag**
+(drei statt fünf Schritte · kein `GenerationProgress` · `<textarea>` statt
+`contenteditable` · keine Zeugen-Zeile). Kurz: der Plan beschreibt an diesen
+Stellen eine Bühne, kein Verhalten.
 
-1. Der Plan nannte vier Token, die es NICHT gibt (`--color-accent`, `--color-text`,
-   `--color-border-subtle`, `--color-forge`). `lint-color-tokens.sh` fängt das nicht —
-   es prüft rohe Hex, nicht undefinierte Namen. Eine verworfene Deklaration meldet nichts.
-2. Meine Korrektur war selbst falsch: ich schrieb `--color-primary`. Den Token GIBT es,
-   aber `ThemeService.ts:80` bildet das Weltfeld `color_primary` darauf ab — er wechselt
-   pro Welt. Für eine Bureau-Fläche ist `--color-accent-amber` (`_colors.css:165`) richtig.
-   **Ein Token-Name kann existieren und trotzdem der falsche sein.**
-   Prüffrage: gehört diese Farbe der WELT oder der PLATTFORM?
-   Nebenbei: `--color-accent-amber-dim` ist `#be5e09`, nicht `#b45309` — am 31.08. für
-   Kontrast angehoben (`_colors.css:168`). Der Prototyp trägt den alten Wert.
+**Der Schmelztiegel integriert NICHT.** `in → q` ist sein ganzer Auftrag;
+`q → ev` gehört in Kammer ② und kommt in Schritt 4.
 
-## ⚠ Der Zufluss ist trocken (am 02.09. gemessen)
+## 🔑 Drei Lehren, die weiterreichen als diese View
 
-- `POST …/social-trends/browse` mit `source: guardian` → **Cloudflare-502 in 580 ms**,
-  `text/html` statt JSON. Mit `source: newsapi` → sauberes JSON 400 „NewsAPI key not
-  configured". Die Route ist also gesund, nur der Guardian-Zweig bringt den Ursprung zum
-  Schweigen. Ursache steht im Backend-Log, dort noch nicht nachgesehen.
+**1. Ein Token-Name kann existieren und trotzdem der falsche sein** (Schritt 2).
+`--color-primary` gibt es, aber `ThemeService.ts:80` bildet das Weltfeld
+`color_primary` darauf ab — er wechselt pro Welt. Prüffrage: gehört diese Farbe
+der WELT oder der PLATTFORM? Für Bureau-Flächen ist `--color-accent-amber`
+richtig.
+
+**2. Eine wiederverwendete Zeichenkette erbt eine fremde Übersetzung**
+(Schritt 3, viermal). Die Kennung ist der Hash der QUELLE: `msg('Record')` bekam
+„Aktenvermerk", `msg('Register')` bekam „Registrieren" (der Titel der
+Anmeldeseite), `msg('Tremor')` bekam „Tremor" (eine Journal-Fragmentart),
+`msg('Balanced')` bekam „Ausgeglichen". Alle vier sehen im Code richtig aus.
+**Rezept vor jedem `i18n:build`:** jede neue `msg()`-Zeichenkette gegen `de.xlf`
+halten und bei jedem Treffer fragen, ob dort dieselbe Sache gemeint ist.
+
+**3. Ein Regler, der nichts bewegt, muss das sagen.** Der Aufruf nimmt keine
+Linse entgegen (Lücke 4), also erreichen Tonlage, Freiheit und Anweisung heute
+nichts. Sie stehen trotzdem da — mit einer Marke `°` und einer Fussnote, die
+sagt was wirkt und was nicht. `LENS_REACHES_MODEL` in der Datei ist der eine
+Schalter, der beides wieder entfernt. Zeugen dagegen sind gar nicht erst gebaut:
+für sie gibt es nicht einmal einen Speicherort, an dem sie später wirken würden.
+
+## ⚠ Geteilter Arbeitsbaum — was hier gerade schiefgehen kann
+
+Beim Festschreiben von Schritt 3 stand in `de.xlf` und `locales/generated/de.ts`
+bereits die unfertige Arbeit eines Peers (Bauzustandsleiter, Beutekatalog:
+3 Einheiten ersetzt, 3 neu). `npm run i18n:extract` schreibt die GANZE Datei —
+wer sie danach committet, nimmt die halbe Arbeit eines anderen mit und löscht
+dabei Übersetzungen, die der Code auf HEAD noch braucht.
+
+**Rezept:** nach `i18n:extract` die IDs gegen `git show HEAD:…de.xlf` diffen und
+alles, was nicht aus der eigenen Datei stammt, vor dem Commit
+zurückbauen — der Commit soll `HEAD + eigene Einheiten` sein, die Arbeitskopie
+darf `HEAD + Peer + eigene` bleiben. Für `generated/de.ts` gilt dasselbe: der
+Build liest den QUELLBAUM, findet dort die Peer-Änderungen und wirft die
+HEAD-Übersetzungen weg, die dazu nicht mehr passen. Die drei betroffenen
+Einträge wurden nach dem Build von Hand zurückgestellt.
+
+Ebenfalls fremd und **nicht anfassen**: `frontend/scripts/lint-condition-ladder-matches-taxonomy.sh`
+(unversioniert) plus der Eintrag dazu in `frontend/package.json`. Das Tor
+scheitert gerade an `lint-lint-scripts-anchored` (fehlender Anker-Vorspann) —
+das ist die Baustelle des Peers, nicht unsere. Alle übrigen 29 Tore sind grün.
+
+## ⚠ Der Zufluss ist trocken (am 02.09. gemessen, unverändert)
+
+- `POST …/social-trends/browse` mit `source: guardian` → **Cloudflare-502 in
+  580 ms**, `text/html` statt JSON. Mit `source: newsapi` → sauberes JSON 400
+  „NewsAPI key not configured". Die Route ist gesund, nur der Guardian-Zweig
+  bringt den Ursprung zum Schweigen. **Ursache steht im Backend-Log, dort noch
+  nicht nachgesehen.**
 - Deshalb sieht der Nutzer „Failed to load articles" statt der echten Meldung:
-  `BaseApiService.handleResponse` ruft `response.json()` auf HTML, das wirft, und
-  `errorMessage` bleibt auf dem Standardwert. **Gilt für JEDEN Endpunkt der App.**
-- `ScannerService` steht im Scheduler (Takt 6 h), hängt an `news_scanner_enabled`;
-  Zustand von aussen nicht lesbar (`platform_settings` ist service_role-only).
-- Prod-Bestand: 12 Trends, alle in der Welt „Velgarien", alle `guardian`, alle vom
+  `BaseApiService.handleResponse` ruft `response.json()` auf HTML, das wirft,
+  und `errorMessage` bleibt auf dem Standardwert. **Gilt für JEDEN Endpunkt.**
+- Prod-Bestand: 12 Trends, alle in „Velgarien", alle `guardian`, alle vom
   16./17.02.2026. 15 von 16 Welten haben null. Seither 197 Tage nichts.
 
-## Umsetzungsreihenfolge (aus dem Plan, § Umsetzungsreihenfolge)
+**Folge für die Abnahme:** der Schmelztiegel ist bisher nur gegen den Code
+geprüft (tsc, 1068 Tests, 29 Lint-Tore), nicht am Schirm — Kammer ① ist auf
+jeder echten Welt leer, weil seit Februar nichts hereinkommt. Wer ihn sehen
+will, braucht zuerst einen fliessenden Zufluss (Guardian-502) oder ein
+Signal von Hand.
 
-Schritte 1 und 2 sind fertig. Es folgen 3 (Schmelztiegel), 4 (Quarantäne +
-Resonanz-/Flag-Modal), 5 (Sichtung), 6 (Lesesaal/Scan-Log/Echo/Kammer ④),
-7 (Quote + Abos), 8 (alte Views löschen, Nav-Eintrag, `social` entfernen).
+## Umsetzungsreihenfolge (aus dem Plan)
 
-**Responsive steht schon**: `handoff/schleuse-responsive.md` ist umgesetzt —
-drei Breakpoints (1600/1920/2560), `container-type: inline-size` auf jeder
-Kammer. Die Schleuse ist KEIN Cockpit und gehört NICHT in `FULL_HEIGHT_VIEWS`;
-`.shell__content` deckelt sie bereits auf `--stage-measure`.
+1 ✅ · 2 ✅ · 3 ✅ · **4 Quarantäne + Resonanz-/Flag-Modal** · 5 Sichtung ·
+6 Lesesaal/Scan-Log/Echo/Kammer ④ · 7 Quote + Abos · 8 alte Views löschen,
+Nav-Eintrag, `social` entfernen.
+
+Für Schritt 4 liegt schon bereit: `intakeState.toEvent/toResonance/toFlagged`,
+`quotaReached`, `zoneName`, die Linse am Signal (`signal.lens`), der Vorschlag
+(`signal.proposal`) und `--modal-body-padding`. Der Flag-Weg braucht Lücke 1
+(`POST …/candidates/{id}/flag`) — bis dahin bleibt er lokal.
 
 ## Vor jedem Commit
-
-`bash frontend/scripts/lint-color-tokens.sh && bash frontend/scripts/lint-llm-content.sh`
-plus `lint-backtick-in-css.mjs` (die Backtick-im-css-Kommentar-Falle) und `tsc`.
-
-## 🔑 Zwei Lehren aus Schritt 2
-
-**1. Ein Token-Name kann existieren und trotzdem der falsche sein.** Ich hatte
-`#f59e0b` auf `--color-primary` abgebildet — den Token gibt es, aber
-`ThemeService.ts:80` bildet das Weltfeld `color_primary` darauf ab, er wechselt
-pro Welt. Für eine Bureau-Fläche ist `--color-accent-amber` richtig. Prüffrage:
-gehört diese Farbe der WELT oder der PLATTFORM?
-
-**2. Der eigene Warnhinweis schützt nicht vor der eigenen Falle — zum zweiten
-Mal.** Ein Peer meldete mir EINEN Backtick in einem css-Kommentar; im selben
-Arbeitsschritt habe ich den Stilblock neu geschrieben und **46 neue** eingebaut.
-Ein Backtick beendet das Template, alles danach parst als JavaScript, und
-`lint:full` scheitert an der ersten Stufe für ALLE im geteilten Baum.
-Vor jedem Commit: `node scripts/lint-backtick-in-css.mjs`.
-
-## i18n-Rezept (vom Peer, neu im Repo)
-
-    cd frontend
-    npm run i18n:extract          # NICHT `npx lit-localize extract`
-    # jede neue <trans-unit> in src/locales/xliff/de.xlf braucht ein <target>
-    npm run i18n:build            # baut UND dekodiert die HTML-Entities
-
-`de.xlf` UND `de.ts` mitcommitten. Zwei Tore prüfen das:
-`locale-targets-wellformed` (Test) und `lint-no-html-entities-in-locales.sh`.
-Anrede: das Projekt **duzt**. Belegtes Vokabular: Eignung, Zustand, Stimmung,
-Stärke, Splitter, Schmiede, Überlieferung, Dunkelkammer, Wesenszug —
-und **Schleuse** für Airlock.
-
-## Wem was gehört (Stand 02.09., 10:05)
-
-- `velgarien-rebuild-6e`: Forge/BYOK, `backend/routers/forge.py`, `ai_utils.py`,
-  `components/forge/**`, `AdminForgeTab.ts`, `AdminUsersTab.ts`, Migrationen
-  330–333. **Nächste freie Migration: 334.**
-- `Frontseite-Redesign Abschluss (L1–L7)`: `how-to-play/**` (Beutekatalog —
-  führt den Themen-Slug `loot` und ein `route`-Feld auf `TOPICS` ein).
-  Inzwischen behoben, `tsc` und biome wieder still. **Nicht anfassen.**
-- Ich (`velgarien-rebuild-af`): alles unter `components/intake/**`,
-  `types/intake.ts`, `services/IntakeStateManager.ts`, `handoff/schleuse-*`.
-  Später nötig: `layout/SimulationNav.ts`, `admin/AdminPanel.ts`,
-  Löschung von `social/SocialTrendsView.ts` + `social/TransformationModal.ts`.
-
----
-
-# Schritt 3 — der Schmelztiegel (Vorarbeit, 02.09.)
-
-`components/intake/IntakeCrucibleModal.ts`, ERSETZT
-`components/social/TransformationModal.ts` (980 Z.). Vom Peer freigegeben.
-
-## Der eine Unterschied zum alten Modal
-
-Das alte macht Transformieren UND Integrieren in einem Assistenten
-(`preview → transform → integrate`, `_handleIntegrate` ab Z. 615).
-**Der Schmelztiegel integriert NICHT.** Er endet in der Quarantäne:
-
-    in → q    Schmelztiegel        transformArticle
-    q  → ev   „Nur hier" (Kammer ②) integrateArticle
-
-Das ist der Kern der Schleuse — zwischen „daraus könnte ein Ereignis werden"
-und „es IST eins" liegt eine Entscheidung, und die gehört in die Quarantäne,
-nicht ans Ende eines Assistenten. `intakeState.toQuarantine(id, {lens, proposal})`
-ist der Übergang; `toEvent(id)` kommt erst in Schritt 4.
-
-## Bausteine, geprüft
-
-- `shared/BaseModal.ts` → `<velg-base-modal ?open modal-name="…" @modal-close>`,
-  Slots: `header`, default, `footer`.
-- `shared/GenerationProgress.ts` → `GenerationStep`-Interface;
-  `generationProgress.run('transform', async (progress) => …)` ist das Muster,
-  wie es `TransformationModal.ts:545` benutzt. `show(title, steps)`,
-  `.activeStep`.
-- `socialTrendsApi.transformArticle(simId, {article_name, article_platform,
-  article_url?, article_raw_data?})` → `{original_title, transformation:
-  {content?, narrative?, title?, description?, event_type?, impact_level?,
-  model_used?}}`.
-
-## Backend-Lücke, die den Bau NICHT blockiert
-
-`transform-article` nimmt **kein** `lens` entgegen (Lücke 4 im Plan). Bis das
-kommt: Linse lokal am Signal halten (`intakeState.patch(id, {lens})`), beim
-Aufruf nur die vorhandenen Felder schicken, und `steps[]`/`protocol` aus dem
-Client füllen statt aus der Antwort. Im Code als Lücke markieren, nicht
-stillschweigend erfinden.
-
-## Was der Plan für die Linse vorschreibt
-
-Grid `80px 1fr`: Ort (Zonen der Welt) · **Vektor** · Tonlage
-`[Amtlich | Propaganda | Gerücht | Protokoll]` · Typ `[Krise | Dekret | Unruhe |
-Katastrophe | Fest | Gerücht | Entdeckung]` + Wucht 1–10 · Reaktionen
-`● erzeugen` + `[3 | 5 | 8]` · Zeugen · Freiheit `[Treu 0.4 | Ausgewogen 0.7 |
-Frei 0.9]` · Anweisung (Freitext).
-
-⚠ **Der Vektor im Plan ist falsch.** Der Plan listet `[Handel | Traum |
-Architektur | Sprache | Krankheit]`. Die echte Union `EchoVector`
-(`types/index.ts:981`) hat SIEBEN Werte und „Krankheit" ist keiner davon:
-
-    commerce · language · memory · resonance · architecture · dream · desire
-
-Deutsch: Handel · Sprache · Gedächtnis · Resonanz · Architektur · Traum ·
-Begehren. Steht schon als Kommentar in `types/intake.ts`.
-
-Ort/Vektor/Tonlage ändern → sofort neu generieren.
-Typ/Wucht/Reaktionen → nur Parameter, kein neuer Lauf.
-
-## Responsive (aus `schleuse-responsive.md`)
-
-Modal 1000 px, `width: min(1000px, calc(100vw - 2 * var(--stage-gutter)))`,
-`max-height: calc(100vh - 2 * var(--space-12))`, Körper `overflow: auto`.
-Körper `1fr 4px 1fr` → **unter 860 gestapelt** (Wirklichkeit oben, Trennbalken
-horizontal 4 px, Welt unten). Linsen-Grid `80px 1fr` bleibt, Chips umbrechen.
-Bei ≥ 2560 NICHT breiter werden.
-
-## Vor dem Commit, immer
 
     cd frontend
     node scripts/lint-backtick-in-css.mjs   # ZUERST — bricht sonst den Baum für alle
@@ -194,3 +121,40 @@ Bei ≥ 2560 NICHT breiter werden.
 
 Und mit ausdrücklichen Pfaden committen (`git commit -- <pfade>`), nie
 `git add .` — im geteilten Baum liegen immer fremde Dateien.
+
+## i18n-Rezept
+
+    cd frontend
+    npm run i18n:extract          # NICHT `npx lit-localize extract`
+    # jede neue <trans-unit> in src/locales/xliff/de.xlf braucht ein <target>
+    # jede WIEDERVERWENDETE Quelle gegen ihr bestehendes <target> prüfen (s. o.)
+    npm run i18n:build            # baut UND dekodiert die HTML-Entities
+
+`de.xlf` UND `de.ts` mitcommitten. Zwei Tore prüfen das:
+`locale-targets-wellformed` (Test) und `lint-no-html-entities-in-locales.sh`.
+Anrede: das Projekt **duzt**. Belegtes Vokabular: Eignung, Zustand, Stimmung,
+Stärke, Splitter, Schmiede, Überlieferung, Dunkelkammer, Wesenszug, **Schleuse**
+(Airlock), **Schmelztiegel**, **Quarantäne**, **Sichtung**, **Lesesaal**,
+**Nachhall**, **Wirklichkeit**, **Linse**, **Wucht**, **Tonlage**, **Fassung**.
+
+## Wem was gehört (Stand 02.09., 10:35)
+
+- `velgarien-rebuild-6e`: Forge/BYOK, `backend/routers/forge.py`, `ai_utils.py`,
+  `components/forge/**`, `AdminForgeTab.ts`, `AdminUsersTab.ts`, Migrationen
+  330–333. **Nächste freie Migration: 334.**
+- Ein Peer arbeitet gerade an der **Bauzustandsleiter + Beutekatalog**:
+  `components/buildings/BuildingEditModal.ts`, `how-to-play/htp-topic-data.ts`,
+  `docs/specs/game-systems.md`, `frontend/scripts/lint-condition-ladder-matches-taxonomy.sh`,
+  `frontend/package.json`. **Nicht anfassen**, und seine Übersetzungen nicht
+  mitcommitten (s. o.).
+- Ich (`velgarien-rebuild-af`): alles unter `components/intake/**`,
+  `types/intake.ts`, `services/IntakeStateManager.ts`, `handoff/schleuse-*`,
+  `handoff/RESUME-schleuse.md`. Später nötig: `layout/SimulationNav.ts`,
+  `admin/AdminPanel.ts`, Löschung von `social/SocialTrendsView.ts` +
+  `social/TransformationModal.ts`.
+
+## Ausserdem offen (nicht Schleuse)
+
+- Der **Guardian-502** (Backend-Log noch nicht angesehen) — blockiert die
+  Abnahme der ganzen Schleuse, siehe oben.
+- Die **16 Dungeon-Befunde** in `handoff/dungeon-durchspielen-2026-08-31.md`.

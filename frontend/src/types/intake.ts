@@ -58,11 +58,32 @@ export interface IntakeSourceRef {
   velocity?: string;
 }
 
+/**
+ * Die Tonlage, in der die Welt von dem Signal erfährt.
+ *
+ * Im Zustand steht die Kennung, nicht das Wort: „Amtlich" ist die deutsche
+ * Beschriftung von `official`, und eine beim Schreiben aufgelöste Beschriftung
+ * wäre in ihrer Sprache eingefroren — ein englischer Leser bekäme später das
+ * deutsche Wort zurück. Die Wörter stehen in `components/intake/intake-labels.ts`.
+ */
+export type IntakeTone = 'official' | 'propaganda' | 'rumour' | 'record';
+
+export const INTAKE_TONES: readonly IntakeTone[] = ['official', 'propaganda', 'rumour', 'record'];
+
+/**
+ * Die drei Freiheitsgrade der Erzeugung.
+ *
+ * Der Wert IST die Temperatur — es gibt keine zweite Tabelle, die „Ausgewogen"
+ * auf 0.7 abbildet und irgendwann daneben liegt.
+ */
+export const INTAKE_FREEDOMS = [0.4, 0.7, 0.9] as const;
+export type IntakeFreedom = (typeof INTAKE_FREEDOMS)[number];
+
 /** Die Linse: wie aus dem Signal ein Ereignis DIESER Welt wird. */
 export interface IntakeLens {
   zone: string;
   vector: EchoVector;
-  tone: string;
+  tone: IntakeTone;
   type: string;
   /** Wucht 1–10. Ändert nur die Integration, nicht den erzeugten Text. */
   impact: number;
@@ -235,6 +256,46 @@ export function fromBrowseArticle(a: BrowseArticle): IntakeSignal {
     sources: [{ name: a.platform, count: 1 }],
     socialVolume: 0,
     raw: a,
+  };
+}
+
+// ── Aufruf ──────────────────────────────────────────────────────────────────
+
+/** Was `transformArticle` von einem Signal braucht. */
+export interface IntakeTransformRequest {
+  article_name: string;
+  article_platform: string;
+  article_url?: string;
+  article_raw_data?: Record<string, unknown>;
+}
+
+/**
+ * Den Aufruf-Körper für den Schmelztiegel bauen.
+ *
+ * WARUM HIER UND NICHT IM MODAL: dass ein Kandidat seine Herkunft in
+ * `article_platform` trägt und ein gebrowster Artikel in `platform`, ist der
+ * letzte Rest der beiden Vokabulare, die die Schleuse zusammenführt. Er gehört
+ * an dieselbe Stelle wie die beiden `from*`-Funktionen darüber und nicht in
+ * eine Komponente — sonst steht der Unterschied wieder an zwei Orten.
+ *
+ * Fällt `article_platform` aus, tritt der Adapter an seine Stelle: er IST die
+ * Stelle, die die Meldung geliefert hat. Ein Leerstring wäre die Unwahrheit.
+ */
+export function transformRequestOf(signal: IntakeSignal): IntakeTransformRequest {
+  const raw = signal.raw;
+  if ('source_adapter' in raw) {
+    return {
+      article_name: raw.title,
+      article_platform: raw.article_platform || raw.source_adapter,
+      article_url: raw.article_url ?? undefined,
+      article_raw_data: raw.article_raw_data ?? undefined,
+    };
+  }
+  return {
+    article_name: raw.name,
+    article_platform: raw.platform,
+    article_url: raw.url,
+    article_raw_data: raw.raw_data,
   };
 }
 
