@@ -623,6 +623,12 @@ Antworte auf {locale_name}.',
 ) ON CONFLICT DO NOTHING;
 
 -- 11. news_transformation (EN)
+--
+-- ⚠ {lens_directives} und max_tokens 900 muessen MIT Migration 341 uebereinstimmen.
+-- Die Saat laeuft in CI NACH den Migrationen: eine Migration, die diese Zeilen
+-- aendert, trifft auf einer frischen Datenbank null Zeilen, und die Saat schreibt
+-- danach den alten Stand. Der Fix waere dort unsichtbar wirkungslos.
+-- Gemessen: mit Linse und cap 400 endet der Aufruf auf finish_reason=length.
 INSERT INTO prompt_templates (
     simulation_id, template_type, prompt_category, locale, template_name,
     prompt_content, system_prompt, variables, default_model,
@@ -635,12 +641,12 @@ Title: {news_title}
 Content: {news_content}
 
 Rewrite the article as if it happened in the simulation world.
-Maintain the core facts but adapt names, places, and context.
+Maintain the core facts but adapt names, places, and context.{lens_directives}
 Generate a JSON object with: "title", "description", "event_type", "impact_level" (1-10).
 Respond in {locale_name}.',
     'You are a narrative journalist in a simulation world.',
-    '[{"name": "simulation_name"}, {"name": "news_title"}, {"name": "news_content"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.2-3b-instruct:free', 0.8, 400, true, admin_id
+    '[{"name": "simulation_name"}, {"name": "news_title"}, {"name": "news_content"}, {"name": "locale_name"}, {"name": "lens_directives"}]',
+    'meta-llama/llama-3.2-3b-instruct:free', 0.8, 900, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 11. news_transformation (DE)
@@ -656,12 +662,12 @@ Titel: {news_title}
 Inhalt: {news_content}
 
 Schreibe den Artikel um, als ob er in der Simulationswelt stattgefunden hätte.
-Behalte die Kernfakten bei, passe aber Namen, Orte und Kontext an.
+Behalte die Kernfakten bei, passe aber Namen, Orte und Kontext an.{lens_directives}
 Generiere ein JSON-Objekt mit: "title", "description", "event_type", "impact_level" (1-10).
 Antworte auf {locale_name}.',
     'Du bist ein narrativer Journalist in einer Simulationswelt.',
-    '[{"name": "simulation_name"}, {"name": "news_title"}, {"name": "news_content"}, {"name": "locale_name"}]',
-    'meta-llama/llama-3.2-3b-instruct:free', 0.8, 400, true, admin_id
+    '[{"name": "simulation_name"}, {"name": "news_title"}, {"name": "news_content"}, {"name": "locale_name"}, {"name": "lens_directives"}]',
+    'meta-llama/llama-3.2-3b-instruct:free', 0.8, 900, true, admin_id
 ) ON CONFLICT DO NOTHING;
 
 -- 12. news_agent_reaction (EN)

@@ -72,12 +72,31 @@ CREATE INDEX IF NOT EXISTS idx_news_scan_candidates_source
 
 DO $$
 DECLARE
+  kandidaten integer;
   nachgetragen integer;
   doppelt integer;
 BEGIN
+  SELECT count(*) INTO kandidaten FROM public.news_scan_candidates;
   SELECT count(*) INTO nachgetragen
     FROM public.news_scan_candidates WHERE source_id IS NOT NULL;
-  IF nachgetragen = 0 THEN
+
+  /*
+   * ⚠ BERICHTIGT: die erste Fassung warf hier, wenn `nachgetragen = 0` — und
+   * auf einer FRISCHEN Datenbank ist die Tabelle leer, es gibt also nichts
+   * nachzutragen. Die Migration haette CI abgebrochen.
+   *
+   * Das ist dieselbe Bauart, die an einem Tag fuenfmal repariert wurde (299,
+   * 305, 309, 311, 314), und ich habe sie in meiner eigenen 345 als vermieden
+   * BESCHRIEBEN, waehrend sie hier stand. Gemeldet von `velgarien-rebuild-6e`.
+   *
+   * Die Regel: eine Selbstpruefung darf gegen ihre eigene WIRKUNG pruefen, nie
+   * gegen den BESTAND der Plattform. Die Voraussetzung wird deshalb ehrlich,
+   * die Zusicherung bleibt scharf — und NOTICE statt Schweigen, denn ein
+   * ausgesetzter Test ist kein bestandener.
+   */
+  IF kandidaten = 0 THEN
+    RAISE NOTICE 'Keine Kandidaten vorhanden — Nachtragsprobe ausgesetzt (frische Datenbank?)';
+  ELSIF nachgetragen = 0 THEN
     RAISE EXCEPTION 'Die Nachtragung hat keine einzige Zeile getroffen — das Namenspaar stimmt nicht';
   END IF;
 
@@ -92,7 +111,7 @@ BEGIN
     RAISE EXCEPTION '% Paare (Quelle, Kennung) benennen mehr als einen Kandidaten — kein Schluessel', doppelt;
   END IF;
 
-  RAISE NOTICE 'source_id nachgetragen fuer % Kandidaten', nachgetragen;
+  RAISE NOTICE 'source_id nachgetragen fuer % von % Kandidaten', nachgetragen, kandidaten;
 END $$;
 
 COMMIT;

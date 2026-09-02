@@ -87,9 +87,28 @@ Respond in {locale_name}.',
 
 DO $$
 DECLARE
+  vorlagen integer;
   ohne_platzhalter integer;
   zu_klein integer;
 BEGIN
+  /*
+   * Auf einer FRISCHEN Datenbank gibt es diese Vorlagen hier noch nicht: sie
+   * kommen aus `supabase/seed/006_prompt_templates.sql`, und die Saat laeuft
+   * NACH den Migrationen. Beide Pruefungen unten bestuenden dann trivial —
+   * null falsche Zeilen, weil null Zeilen.
+   *
+   * Das ist kein Fehler, aber es muss DASTEHEN: ein Test, der besteht, weil er
+   * nichts zu pruefen fand, ist kein bestandener Test. Und der eigentliche
+   * Schutz liegt woanders: die Saat traegt denselben Platzhalter und dasselbe
+   * Budget. Wer eines von beiden aendert, muss das andere mitaendern.
+   */
+  SELECT count(*) INTO vorlagen
+    FROM public.prompt_templates
+   WHERE template_type = 'news_transformation' AND simulation_id IS NULL;
+  IF vorlagen = 0 THEN
+    RAISE NOTICE 'Keine Plattform-Vorlagen fuer news_transformation — Probe ausgesetzt (frische Datenbank? die Saat kommt spaeter)';
+  END IF;
+
   SELECT count(*) INTO ohne_platzhalter
     FROM public.prompt_templates
    WHERE template_type = 'news_transformation'
