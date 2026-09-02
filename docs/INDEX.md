@@ -9,7 +9,7 @@ tags: [index, catalog, documentation]
 
 # Documentation Index
 
-> Auto-generated from frontmatter. 83 documents, 11 categories + 9 ADRs.
+> Auto-generated from frontmatter. 90 documents, 11 categories + 9 ADRs.
 
 ## Specifications (19)
 
@@ -75,7 +75,7 @@ tags: [index, catalog, documentation]
 | [TCG Card System — Unified Design Concept](explanations/tcg-card-system.md) | 0.1 | 2026-03-07 | en | draft |
 | [Techstack Recommendation](explanations/techstack-recommendation.md) | 1.5 | 2026-02-28 | de | active |
 
-## Analysis (9)
+## Analysis (14)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
@@ -88,6 +88,11 @@ tags: [index, catalog, documentation]
 | [Epoch Cross-Reference Analysis: Game Balance Report](analysis/epoch-cross-reference-analysis.md) | 1.0 | 2026-03-02 | en | active |
 | [Epoch Playthrough: Bug Fix Verification](analysis/epoch-playthrough.md) | 1.0 | 2026-02-28 | en | active |
 | [The Simulation Forge — Full Production Run, 2026-08-29/30](analysis/forge-prod-run-2026-08-30.md) | 1.0 | 2026-08-30 | en | active |
+| [Der Ledger weicht ab, das Schema nicht — 55 Migrationen nachgemessen](analysis/ledger-gegen-schema-2026-08-31.md) | — | 2026-08-31 | de | measured |
+| [Der Zufluss der Schleuse — Reddit, Bluesky und was stattdessen da ist](analysis/schleuse-zufluss-2026-09-02.md) | — | 2026-09-02 | de | measured |
+| [Systemprüfung — Dungeons, Epochen, DRIFT, Simulationskern, Hilfe, Oberfläche](analysis/system-review-2026-08-30.md) | 1.0 | 2026-08-30 | de | active |
+| [Warum keine Events entstehen — die Schwellen und die Zahlen, die sie nie erreichen](analysis/warum-keine-events-2026-08-31.md) | — | 2026-08-31 | de | measured |
+| [Zitatprüfung: 46 Epigraphe schreiben sich einer echten Person zu](analysis/zitatpruefung-2026-09-01.md) | — | 2026-09-01 | de | — |
 
 ## Audits (1)
 
@@ -95,14 +100,16 @@ tags: [index, catalog, documentation]
 |----------|---------|------|------|--------|
 | [Simulation Forge — Live Playthrough Audit](audits/forge-playthrough-audit-2026-03-07.md) | 1.0 | 2026-03-07 | en | active |
 
-## Plans (4)
+## Plans (6)
 
 | Document | Version | Date | Lang | Status |
 |----------|---------|------|------|--------|
 | [Bureau Ops — AI Spend & Signal Control Center Implementation Plan](plans/bureau-ops-implementation-plan.md) | 1.0 | 2026-04-21 | en | ready-to-implement |
 | [W1 — Der Vertrag für KI-erzeugte Prompt-Vorlagen](plans/forge-w1-prompt-template-contract.md) | 1.0 | 2026-08-30 | de | implementing |
+| [Neue Frontseite — Umsetzungsplan zum Design-Handoff (Variante 3a)](plans/landing-page-redesign-2026-08-31.md) | 1.0 | 2026-08-31 | de | ready-to-implement |
 | [Per-Simulation World Map — Handover (Phases 4-7)](plans/per-simulation-world-map-handover.md) | 1.0 | 2026-05-10 | en | active |
 | [Per-Simulation Procedural World Map — Implementation Plan](plans/per-simulation-world-map-plan.md) | 1.0 | 2026-05-10 | en | implementing |
+| [Umsetzungsplan zur Systemprüfung vom 30.08.2026](plans/system-review-remediation-2026-08-30.md) | 1.0 | 2026-08-30 | de | ready-to-implement |
 
 ## Other (1)
 

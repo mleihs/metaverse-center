@@ -70,6 +70,13 @@ describe('sourceKindOf', () => {
   });
 
   it('erkennt strukturierte, soziale, interne und halbstrukturierte Quellen', () => {
+    // ⚠ `reddit` und `bluesky` sind am 02.09.2026 gemessen NICHT verdrahtet —
+    // der Scanner führt zehn Adapter, keiner davon sozial. Dieser Test prüft
+    // also eine Zuordnung, die heute nichts trifft. Er bleibt, weil die Regel
+    // („eine Sozialquelle erzeugt nie einen eigenen Kandidaten") den Tag
+    // überleben soll, an dem jemand den Adapter baut — aber wer ihn grün
+    // sieht, darf daraus NICHT schliessen, dass der Zufluss steht.
+    // Messung: docs/analysis/schleuse-zufluss-2026-09-02.md
     expect(sourceKindOf('usgs_earthquakes', adapter())).toBe('structured');
     expect(sourceKindOf('reddit')).toBe('social');
     expect(sourceKindOf('bluesky')).toBe('social');
