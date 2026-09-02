@@ -20,9 +20,15 @@ Sichtung ist der Griff, der dem Brett bis heute fehlte.
                          07196983 (337 umbenannt) · b778e6ee (299, Peer)
                          — EIN geteilter Baum: wer pusht, pusht alle vier
 
-▶ **ALS NÄCHSTES: pushen und ausrollen**, dann Schritt 6 (Lesesaal · Scan-Log ·
-Echo · Kammer ④). Vor dem Ausrollen: CI zum FESTGESCHRIEBENEN Commit befragen,
-nicht lokal über einer Arbeitskopie prüfen.
+▶ **ALS NÄCHSTES: Schritt 8 — und der ist kein Löschen, sondern ein Teilen.**
+`social/SocialTrendsView.ts` (1989 Zeilen) trägt neben dem ersetzten
+Artikel-Browse auch **Botschaften und Weltgesundheit**, die die Schleuse nie
+abgedeckt hat. Wer die Datei löscht, löscht sie mit. Erst die Botschaften in
+eine eigene View heben, dann den `social`-Eintrag aus der Navigation nehmen.
+
+Ebenfalls offen: **Abonnements** (Lücke 6 — es gibt weder Tabelle noch
+Endpunkt; der ehrliche Platzhalter steht in der View) und die sechs
+Backend-Lücken unten.
 
 ## Was heute dazugekommen ist
 
