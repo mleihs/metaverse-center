@@ -677,6 +677,24 @@ export class VelgGameCard extends LitElement {
     :host([size="lg"]) .pip__label { font-size: 7px; }
 
     /* ── Subtitle & Badges ── */
+    /*
+      Der Untertitel traegt den Beruf, und Berufe sind laenger als eine Zeile.
+
+      Auf Prod gemessen (02.09.2026): 111 Agenten mit Beruf, 104 VERSCHIEDENE
+      Werte, Mittel 36 Zeichen, 15 davon laenger als 34. In eine 200-px-Karte
+      passen bei 9 px rund 34 Zeichen — jeder siebte Beruf der Plattform wurde
+      also abgeschnitten, nicht nur der eine, der auffiel.
+
+      Ein "white-space: nowrap" galt bis dahin in JEDER Groesse. Das ist richtig,
+      wo kein Platz ist (xs blendet den Untertitel ohnehin aus, sm hat 120 px),
+      und falsch, wo welcher da ist. Ab md darf er auf zwei Zeilen umbrechen;
+      die Ellipse bleibt als letzte Grenze, damit ein 380-Zeichen-Wert (der
+      laengste auf dem Bestand, aus einer Welt von vor der Laengendisziplin)
+      die Karte nicht sprengt.
+
+      Bewusst NICHT der Weg, den einzelnen zu langen Beruf zu kuerzen: das
+      haette einen von fuenfzehn behoben und den Grund stehen gelassen.
+    */
     .card__subtitle {
       font-family: var(--card-font-body);
       font-size: 9px;
@@ -690,6 +708,15 @@ export class VelgGameCard extends LitElement {
     :host([size="xs"]) .card__subtitle { display: none; }
     :host([size="sm"]) .card__subtitle { font-size: 8px; }
     :host([size="lg"]) .card__subtitle { font-size: 12px; }
+
+    :host([size="md"]) .card__subtitle,
+    :host([size="lg"]) .card__subtitle {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
 
     .card__description {
       font-family: var(--card-font-body);
