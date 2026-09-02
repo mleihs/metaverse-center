@@ -27,6 +27,42 @@ export interface ArticleMeta {
 }
 
 class SeoService {
+  constructor() {
+    // `lit-localize-status` ist das Ereignis des Rahmenwerks selbst; es feuert
+    // mit status 'ready', sobald eine Sprache geladen und aktiv ist.
+    window.addEventListener('lit-localize-status', this._onLocaleChange);
+  }
+
+  /** Die zuletzt gesetzte Titelquelle, damit ein Sprachwechsel sie neu auswerten kann. */
+  private _titleSource: string[] | (() => string[]) | null = null;
+
+  /** Nur der Titel -- KEINE Ruecksetzung der route-fluechtigen Meta-Tags.
+   *
+   * Das ist der Grund, warum diese Methode getrennt von `setTitle` steht:
+   * `setTitle` setzt absichtlich robots, og:type und og:image auf die
+   * Plattformvorgaben zurueck, und Routen legen ihre Abweichungen DANACH
+   * darueber. Ein Sprachwechsel, der `setTitle` erneut aufriefe, wuerde genau
+   * diese Abweichungen stillschweigend wegwischen -- die noindex-Undichtigkeit
+   * des Dispatch-Terminals, nur andersherum.
+   */
+  private _applyTitle(): void {
+    const parts = typeof this._titleSource === 'function' ? this._titleSource() : (this._titleSource ?? []);
+    document.title = parts.length === 0 ? DEFAULT_TITLE : `${parts.join(' – ')} | ${SITE_NAME}`;
+    this._setMetaProperty('og:title', document.title);
+    this._setMeta('twitter:title', document.title);
+  }
+
+  /** Neu auswerten, wenn lit-localize eine andere Sprache geladen hat.
+   *
+   * Am Ereignis des Rahmenwerks aufgehaengt und nicht am `localeService`: so
+   * gibt es keine Abhaengigkeit zwischen zwei Diensten, und die Aktualisierung
+   * greift auch, wenn eine Sprache auf einem anderen Weg gesetzt wird.
+   */
+  private _onLocaleChange = (event: Event): void => {
+    const detail = (event as CustomEvent<{ status?: string }>).detail;
+    if (detail?.status === 'ready' && this._titleSource !== null) this._applyTitle();
+  };
+
   /** Set page title from parts: ['Agents', 'Station Null'] → "Agents – Station Null | metaverse.center".
    *
    * Must be called FIRST in every route's SEO block. Implicitly resets all
@@ -41,14 +77,18 @@ class SeoService {
    * This guarantees stale state from a previous route can never leak between
    * SPA navigations — the fix for the bureau-dispatch noindex leak generalised
    * to every social/SEO tag. */
-  setTitle(parts: string[]): void {
-    if (parts.length === 0) {
-      document.title = DEFAULT_TITLE;
-    } else {
-      document.title = `${parts.join(' – ')} | ${SITE_NAME}`;
-    }
-    this._setMetaProperty('og:title', document.title);
-    this._setMeta('twitter:title', document.title);
+  setTitle(parts: string[] | (() => string[])): void {
+    // Als AUFRUF merken, nicht als Zeichenkette.
+    //
+    // Die Titel liefen bis 02.09.2026 gar nicht durch `msg()` -- 0 von 24
+    // Routen --, der Reiter stand also auch auf der deutschen Seite englisch
+    // ("Build a World. Watch It Live."). Sie nur zu uebersetzen waere eine halbe
+    // Reparatur gewesen: `setTitle` laeuft EINMAL beim Navigieren, und wer
+    // danach die Sprache wechselt, behaelt den alten Reiter, bis er zufaellig
+    // eine andere Seite aufruft. Deshalb wird die FUNKTION gemerkt und beim
+    // Sprachwechsel neu ausgewertet (siehe `_onLocaleChange`).
+    this._titleSource = parts;
+    this._applyTitle();
     // Route-ephemeral defaults — overrides layer on top
     this._setMeta('robots', DEFAULT_ROBOTS);
     this._setMetaProperty('og:type', DEFAULT_OG_TYPE);

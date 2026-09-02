@@ -140,7 +140,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           const ok = await this._guardGuest();
           if (ok) {
-            seoService.setTitle(['Sign In']);
+            seoService.setTitle(() => [msg('Sign In')]);
             seoService.setDescription(
               'Sign in to metaverse.center — access your operative terminal and explore simulated worlds.',
             );
@@ -156,7 +156,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           const ok = await this._guardGuest();
           if (ok) {
-            seoService.setTitle(['Register']);
+            seoService.setTitle(() => [msg('Register')]);
             seoService.setDescription(
               'Create your operative account on metaverse.center — join the Bureau of Multiverse Observation.',
             );
@@ -171,7 +171,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-operative-dashboard></velg-operative-dashboard>`,
         enter: async () => {
           await this._authReady;
-          seoService.setTitle(['Operative Terminal']);
+          seoService.setTitle(() => [msg('Operative Terminal')]);
           seoService.setDescription(
             'Your operative command center — monitor active epochs, browse simulation worlds, and track substrate anomalies.',
           );
@@ -191,7 +191,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/multiverse/CartographerMap.js'))))
             return false;
-          seoService.setTitle(['Multiverse Map']);
+          seoService.setTitle(() => [msg('Multiverse Map')]);
           seoService.setDescription(
             'Explore the multiverse map — view active simulations, connections, and live battle statistics.',
           );
@@ -211,7 +211,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))))
             return false;
-          seoService.setTitle(['Epoch Command Center']);
+          seoService.setTitle(() => [msg('Epoch Command Center')]);
           seoService.setCanonical('/epoch');
           seoService.setBreadcrumbs([
             { name: 'Home', url: 'https://metaverse.center/' },
@@ -228,7 +228,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/epoch/EpochInviteAcceptView.js'))))
             return false;
-          seoService.setTitle(['Epoch Summons']);
+          seoService.setTitle(() => [msg('Epoch Summons')]);
           seoService.setDescription(
             'Accept an epoch invitation — join competitive PvP operations and deploy your simulation.',
           );
@@ -248,7 +248,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/epoch/EpochCommandCenter.js'))))
             return false;
-          seoService.setTitle(['Epoch Command Center']);
+          seoService.setTitle(() => [msg('Epoch Command Center')]);
           seoService.setCanonical('/epoch');
           seoService.setRobots('noindex');
           analyticsService.trackPageView('/epoch/:id', document.title);
@@ -269,7 +269,7 @@ export class VelgApp extends LitElement {
               !(await this._lazy(() => import('./components/forge/VelgForgeClearanceRequired.js')))
             )
               return false;
-            seoService.setTitle(['Forge \u2013 Clearance Required']);
+            seoService.setTitle(() => [msg('Forge \u2013 Clearance Required')]);
             seoService.setDescription(
               'Architect clearance is required to shape new worlds in the Forge.',
             );
@@ -279,7 +279,7 @@ export class VelgApp extends LitElement {
           }
           if (!(await this._lazy(() => import('./components/forge/VelgForgeWizard.js'))))
             return false;
-          seoService.setTitle(['The Simulation Forge']);
+          seoService.setTitle(() => [msg('The Simulation Forge')]);
           seoService.setDescription(
             'Create new simulations with the Simulation Forge \u2013 design worlds, set parameters, and launch your game.',
           );
@@ -365,7 +365,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/lore/BureauArchives.js'))))
             return false;
-          seoService.setTitle(['Bureau Archives']);
+          seoService.setTitle(() => [msg('Bureau Archives')]);
           seoService.setDescription(
             'Declassified archives of the Bureau of Impossible Geography — the complete mythology of the Fracture, the Bleed, and the Convergence.',
           );
@@ -386,7 +386,7 @@ export class VelgApp extends LitElement {
           if (!ok) return false;
           if (!(await this._lazy(() => import('./components/platform/VelgAchievementGrid.js'))))
             return false;
-          seoService.setTitle(['Commendations']);
+          seoService.setTitle(() => [msg('Commendations')]);
           seoService.setDescription(
             'Your operative commendations and earned badges across dungeons, epochs, and challenges.',
           );
@@ -408,7 +408,7 @@ export class VelgApp extends LitElement {
           if (!ok) return false;
           if (!(await this._lazy(() => import('./components/journal/VelgResonanceJournal.js'))))
             return false;
-          seoService.setTitle(['Resonance Journal']);
+          seoService.setTitle(() => [msg('Resonance Journal')]);
           seoService.setDescription(
             'Your personal record of fragments gathered from every simulation, dungeon, and epoch – a journal that reflects how you played.',
           );
@@ -433,7 +433,7 @@ export class VelgApp extends LitElement {
           if (!ok) return false;
           if (!(await this._lazy(() => import('./components/journal/VelgConstellationCanvas.js'))))
             return false;
-          seoService.setTitle(['Constellation']);
+          seoService.setTitle(() => [msg('Constellation')]);
           seoService.setDescription(
             'A composition of journal fragments arranged on a canvas – a pattern that produces meaning of its own.',
           );
@@ -469,7 +469,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/bureau/BureauDispatchView.js'))))
             return false;
-          seoService.setTitle(['Bureau Dispatch Terminal']);
+          seoService.setTitle(() => [msg('Bureau Dispatch Terminal')]);
           seoService.setDescription(
             'Decode classified Bureau transmissions. Enter your cipher code to unlock declassified dispatches.',
           );
@@ -485,7 +485,7 @@ export class VelgApp extends LitElement {
           html`<velg-invitation-accept-view .token=${token ?? ''}></velg-invitation-accept-view>`,
         enter: async () => {
           await this._authReady;
-          seoService.setTitle(['Invitation']);
+          seoService.setTitle(() => [msg('Invitation')]);
           seoService.setDescription(
             'Accept your invitation to join a simulation on metaverse.center.',
           );
@@ -501,7 +501,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           const ok = await this._guardAuth();
           if (ok) {
-            seoService.setTitle(['Profile']);
+            seoService.setTitle(() => [msg('Profile')]);
             seoService.setDescription(
               'Manage your operative profile, wallet, preferences, and account settings.',
             );
@@ -521,7 +521,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           const ok = await this._guardAuth();
           if (ok) {
-            seoService.setTitle(['Correspondence']);
+            seoService.setTitle(() => [msg('Correspondence')]);
             seoService.setDescription('Choose which epoch emails the Bureau sends you.');
             seoService.setCanonical('/settings/notifications');
             analyticsService.trackPageView('/settings/notifications', document.title);
@@ -539,7 +539,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-unsubscribe-view></velg-unsubscribe-view>`,
         enter: async () => {
           await this._authReady;
-          seoService.setTitle(['Unsubscribe']);
+          seoService.setTitle(() => [msg('Unsubscribe')]);
           seoService.setDescription('Stop receiving a kind of email from the Bureau.');
           seoService.setRobots('noindex, nofollow');
           return true;
@@ -551,7 +551,7 @@ export class VelgApp extends LitElement {
         enter: async () => {
           const ok = await this._guardAuth();
           if (ok) {
-            seoService.setTitle(['New Simulation']);
+            seoService.setTitle(() => [msg('New Simulation')]);
             seoService.setDescription(
               'Create a new simulation — build your world and launch it to the metaverse.',
             );
@@ -572,7 +572,7 @@ export class VelgApp extends LitElement {
             return false;
           }
           if (!(await this._lazy(() => import('./components/admin/AdminPanel.js')))) return false;
-          seoService.setTitle(['Admin']);
+          seoService.setTitle(() => [msg('Admin')]);
           seoService.setDescription(
             'Platform administration — manage users, simulations, settings, and system health.',
           );
@@ -753,7 +753,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/landing/WorldsGallery.js'))))
             return false;
-          seoService.setTitle(['Explore Living Worlds']);
+          seoService.setTitle(() => [msg('Explore Living Worlds')]);
           seoService.setDescription(
             'Browse player-created civilizations — each with AI-powered characters, evolving cities, and stories that write themselves.',
           );
@@ -773,7 +773,7 @@ export class VelgApp extends LitElement {
           await this._authReady;
           if (!(await this._lazy(() => import('./components/landing/ChronicleFeed.js'))))
             return false;
-          seoService.setTitle(['The Chronicle Feed']);
+          seoService.setTitle(() => [msg('The Chronicle Feed')]);
           seoService.setDescription(
             'Every world writes its own newspaper. Read AI-generated broadsheets from active simulations — fiction tied to real gameplay events.',
           );
@@ -854,7 +854,7 @@ export class VelgApp extends LitElement {
         render: () => html`<velg-landing-page></velg-landing-page>`,
         enter: async () => {
           await this._authReady;
-          seoService.setTitle(['Build a World. Watch It Live.']);
+          seoService.setTitle(() => [msg('Build a World. Watch It Live.')]);
           seoService.setDescription(
             'Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves. Build your own world or explore others.',
           );
@@ -876,7 +876,7 @@ export class VelgApp extends LitElement {
             this._router.goto('/dashboard');
             return false;
           }
-          seoService.setTitle(['Build a World. Watch It Live.']);
+          seoService.setTitle(() => [msg('Build a World. Watch It Live.')]);
           seoService.setDescription(
             'Create AI-powered civilizations with characters who remember, cities that evolve, and stories that write themselves. Build your own world or explore others.',
           );
