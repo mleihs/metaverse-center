@@ -34,6 +34,7 @@ from backend.services.scanning.classifier import (
     _MAX_COMPLETION_TOKENS,
     _TOKENS_OVERHEAD,
     _TOKENS_PER_ITEM,
+    _as_list,
     classify_batch,
 )
 
@@ -144,3 +145,44 @@ class TestDerAbbruchWirdBenanntNichtVerschwiegen:
             out = await classify_batch([_result(i) for i in range(3)], svc, "m")
         assert len(out) == 3
         assert any("cut off" in r.getMessage() for r in caplog.records)
+
+
+class TestDieFormDerAntwortIstNichtVerlaesslich:
+    """Ein Modell verpackt dieselbe Liste mal so, mal anders."""
+
+    def test_a_bare_array_is_taken_as_is(self):
+        assert _as_list([{"index": 0}]) == [{"index": 0}]
+
+    def test_a_wrapped_array_is_unwrapped(self):
+        # GEMESSEN auf Prod, 02.09.2026: `deepseek-chat` antwortete mit
+        # {"classifications": [...]} statt mit einem nackten Array — und
+        # `isinstance(parsed, list)` verwarf damit alle sieben Ueberschriften
+        # eines Zyklus. In der Auswertung sah das aus wie „nichts war relevant".
+        assert _as_list({"classifications": [{"index": 0}]}) == [{"index": 0}]
+
+    def test_two_lists_are_ambiguous_and_refused(self):
+        # Lieber nichts als die falsche Liste: welche gemeint ist, weiss hier
+        # niemand, und eine geratene waere schlimmer als eine fehlende.
+        assert _as_list({"a": [1], "b": [2]}) is None
+
+    def test_an_object_without_a_list_is_refused(self):
+        assert _as_list({"a": 1}) is None
+
+    @pytest.mark.asyncio
+    async def test_the_wrapped_shape_classifies_end_to_end(self):
+        entries = ", ".join(
+            f'{{"index": {i}, "category": "pandemic", "significance": 5, "reason": "x"}}'
+            for i in range(3)
+        )
+        wrapped = f'```json\n{{"classifications": [{entries}]}}\n```'
+        svc, _ = _openrouter(wrapped)
+        out = await classify_batch([_result(i) for i in range(3)], svc, "m")
+        assert all(r.source_category == "pandemic" for r in out)
+
+
+class TestDasBudgetIstGemessen:
+    def test_per_item_covers_the_spread_out_shape(self):
+        # Kompakt gemessen: 32-33 Token je Stueck. Auf Prod kam bei knappem
+        # Budget die gespreizte Form (Objekt, Einrueckung, Markdown-Zaun), und
+        # 82 je Stueck reichten NICHT. 96 ist das Dreifache des Gemessenen.
+        assert _TOKENS_PER_ITEM >= 96
