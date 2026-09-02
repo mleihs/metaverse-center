@@ -54,7 +54,12 @@ def _byok_status_keys(sql: str) -> set[str]:
     # jsonb_build_object('key', value, 'key', value, …) — keys sit at even
     # positions, so take every quoted literal that is followed by a comma and
     # drop the one naming the object itself.
-    keys = set(re.findall(r"'([a-z_]+)',", block))
+    #
+    # The digit in the class is not decoration: written as `[a-z_]+` this
+    # missed `openrouter_last4` and `replicate_last4` entirely and reported
+    # two correctly-declared fields as orphans. A gate that cannot read half
+    # the names it checks answers a different question than the one asked.
+    keys = set(re.findall(r"'([a-z0-9_]+)',", block))
     return keys - {"byok_status"}
 
 

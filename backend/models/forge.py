@@ -550,15 +550,55 @@ class BYOKStatus(BaseModel):
 
     has_openrouter_key: bool
     has_replicate_key: bool
+    #: Last characters of the stored key, so a card can show an identity
+    #: (``sk-or-v1-•••••7f3a``) instead of only "configured". Not a secret.
+    openrouter_last4: str | None = None
+    replicate_last4: str | None = None
     #: When the STORED key last went through at the provider. None = never
     #: checked, not invalid.
     openrouter_verified_at: datetime | None = None
     replicate_verified_at: datetime | None = None
+    #: When the key was last handed out for a real call (stamped hourly).
+    openrouter_last_used_at: datetime | None = None
+    replicate_last_used_at: datetime | None = None
     byok_allowed: bool  # whether user is permitted to use BYOK at all
     byok_bypass: bool  # per-user bypass flag
     system_bypass_enabled: bool
     effective_bypass: bool
     access_policy: str = "per_user"  # "none", "all", "per_user"
+    #: After this many days without a confirmation the card carries a notice.
+    stale_after_days: int = 90
+    #: Status of this account's latest access request, if it ever made one.
+    request_status: Literal["pending", "approved", "rejected"] | None = None
+
+
+class BYOKRequestCreate(BaseModel):
+    """A person asking to be allowed a personal key."""
+
+    reason: str | None = Field(None, max_length=1000)
+
+
+class BYOKRequest(BaseModel):
+    """One access request, as the admin inbox lists it."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    user_id: str
+    reason: str | None = None
+    status: Literal["pending", "approved", "rejected"]
+    created_at: datetime
+    reviewed_at: datetime | None = None
+
+
+class BYOKRecheckResult(BaseModel):
+    """Answer of a re-check against the provider for the STORED key."""
+
+    valid: bool
+    detail: str
+    response_ms: int = 0
+    #: False when there was no stored key to check in the first place.
+    had_key: bool = True
 
 
 # ── Feature Purchase Models ──────────────────────────────────────────

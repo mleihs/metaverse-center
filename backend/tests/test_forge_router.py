@@ -25,9 +25,10 @@ from backend.dependencies import (
     get_supabase,
 )
 from backend.models.common import CurrentUser
+from backend.models.forge import TestBYOKResult as ProviderKeyTestResult
 from backend.routers import forge as forge_module
 from backend.tests.conftest import MOCK_ADMIN_EMAIL
-from backend.utils.encryption import current_key_version, decrypt
+from backend.utils.encryption import current_key_version, decrypt, encrypt
 
 # ── Constants ────────────────────────────────────────────────────────────
 
@@ -431,6 +432,85 @@ class TestForgeBYOK:
             json={"provider": "openrouter", "key": "sk-or-test-123"},
         )
         assert resp.status_code == 403
+
+    @pytest.mark.integration
+    @patch("backend.services.forge_draft_service.ForgeDraftService.test_provider_key", new_callable=AsyncMock)
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    def test_recheck_stamps_only_when_the_provider_says_yes(
+        self, mock_admin, mock_test, regular_client_full, encryption_key
+    ):
+        """Re-checking asks about the key ON FILE, and only a yes gets stamped.
+
+        This is the question "configured" could never answer: a key revoked at
+        the provider three weeks ago looks identical to a working one here.
+        """
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        user_sb.rpc_data["fn_mark_user_api_key_verified"] = {"success": True}
+
+        keys_client = _mock_supabase()
+        keys_client.rpc_data["fn_get_user_api_keys"] = {"openrouter": encrypt("sk-or-v1-stored")}
+        mock_admin.return_value = keys_client
+        mock_test.return_value = ProviderKeyTestResult(valid=True, detail="ok", response_ms=12)
+
+        resp = client.post("/api/v1/forge/byok/recheck/openrouter")
+
+        assert resp.status_code == 200
+        assert resp.json()["data"]["valid"] is True
+        # The key that was checked is the STORED one, decrypted server-side —
+        # the caller never re-entered it.
+        assert mock_test.await_args.args[1] == "sk-or-v1-stored"
+        assert "fn_mark_user_api_key_verified" in _rpc_names(user_sb)
+
+    @pytest.mark.integration
+    @patch("backend.services.forge_draft_service.ForgeDraftService.test_provider_key", new_callable=AsyncMock)
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    def test_recheck_without_a_stored_key_stamps_nothing(
+        self, mock_admin, mock_test, regular_client_full, encryption_key
+    ):
+        """Nothing on file is not a failure — and must not touch the stamp."""
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = True
+
+        keys_client = _mock_supabase()
+        keys_client.rpc_data["fn_get_user_api_keys"] = {}
+        mock_admin.return_value = keys_client
+
+        resp = client.post("/api/v1/forge/byok/recheck/openrouter")
+
+        assert resp.status_code == 200
+        body = resp.json()["data"]
+        assert body["had_key"] is False
+        assert body["valid"] is False
+        mock_test.assert_not_awaited()
+        assert "fn_mark_user_api_key_verified" not in _rpc_names(user_sb)
+
+    @pytest.mark.integration
+    def test_asking_for_access_is_open_to_the_not_yet_allowed(self, regular_client_full):
+        """The request endpoint must NOT sit behind the permission it asks for.
+
+        Every account on production is in exactly this state — policy
+        `per_user`, nobody granted — so a gate here would make the endpoint
+        reachable only by people who no longer need it.
+        """
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = False
+        chain = user_sb.table.return_value
+        result = MagicMock()
+        result.data = [{
+            "id": "11111111-1111-1111-1111-111111111111",
+            "user_id": str(USER_ID),
+            "reason": "I pay for my own calls.",
+            "status": "pending",
+            "created_at": "2026-09-02T12:00:00+00:00",
+            "reviewed_at": None,
+        }]
+        chain.execute = AsyncMock(return_value=result)
+
+        resp = client.post("/api/v1/forge/byok/request", json={"reason": "I pay for my own calls."})
+
+        assert resp.status_code == 200
+        assert resp.json()["data"]["status"] == "pending"
 
     @pytest.mark.integration
     def test_wallet_summary_agrees_with_what_the_write_endpoint_accepts(self, architect_client):

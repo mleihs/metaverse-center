@@ -14,7 +14,7 @@ import sentry_sdk
 from fastapi import HTTPException, status
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate, TestBYOKResult
+from backend.models.forge import BYOKRecheckResult, ForgeDraftCreate, ForgeDraftUpdate, TestBYOKResult
 from backend.utils.db import maybe_single_data
 from backend.utils.encryption import current_key_version, decrypt, encrypt
 from backend.utils.errors import not_found, server_error
@@ -45,6 +45,14 @@ class WalletNotFoundError(Exception):
     """
 
     def __init__(self, detail: str = "Unable to store the API key. Please try again."):
+        self.detail = detail
+        super().__init__(detail)
+
+
+class DuplicateRequestError(Exception):
+    """Raised when an account already has an open access request."""
+
+    def __init__(self, detail: str = "There is already an open request for this account."):
         self.detail = detail
         super().__init__(detail)
 
@@ -390,6 +398,12 @@ class ForgeDraftService:
                     "p_provider": provider,
                     "p_encrypted_key": encrypt(value),
                     "p_key_version": version,
+                    # Four characters so a card can show WHICH key is on file.
+                    # A person with two accounts at one provider could not tell
+                    # them apart before, and a key withdrawn at the provider
+                    # looked exactly like a working one. Not a secret: nothing
+                    # follows from four characters of a ~73-character key.
+                    "p_last4": value[-4:],
                 },
             ).execute()
             if not (resp.data or {}).get("success"):
@@ -448,6 +462,100 @@ class ForgeDraftService:
         except (PostgrestAPIError, httpx.HTTPError, ValueError) as exc:
             logger.debug("Could not stamp last_verified_at", exc_info=exc)
             return False
+
+    @staticmethod
+    async def recheck_stored_key(supabase: Client, user_id: UUID, provider: str) -> BYOKRecheckResult:
+        """Ask the provider whether the key ON FILE still works.
+
+        ``last_verified_at`` could only ever be stamped by someone typing the
+        same key in again (migration 333), which answers the wrong question:
+        what matters is whether the STORED key still carries. The server holds
+        the plaintext, so it can simply ask — and that is the whole difference
+        between "configured" and "works".
+
+        ``supabase`` is the user-JWT client: the stamp goes through
+        ``fn_mark_user_api_key_verified``, which writes for ``auth.uid()``.
+        """
+        if provider not in ("openrouter", "replicate"):
+            raise InvalidProviderError(provider)
+
+        or_key, rep_key = await ForgeDraftService.get_user_keys(user_id)
+        stored = or_key if provider == "openrouter" else rep_key
+        if not stored:
+            return BYOKRecheckResult(
+                valid=False,
+                detail="No key on file for this provider.",
+                had_key=False,
+            )
+
+        result = await ForgeDraftService.test_provider_key(provider, stored)
+        if result.valid:
+            await supabase.rpc("fn_mark_user_api_key_verified", {"p_provider": provider}).execute()
+
+        return BYOKRecheckResult(valid=result.valid, detail=result.detail, response_ms=result.response_ms)
+
+    @staticmethod
+    async def create_byok_request(supabase: Client, user_id: UUID, reason: str | None) -> dict:
+        """File an access request. One open request per account (unique index).
+
+        The policy shipped as ``per_user`` with nobody granted, which made this
+        a door without a handle for every account on production: no form, no
+        hint, no way to ask. This is the handle.
+        """
+        try:
+            resp = await (
+                supabase.table("byok_requests")
+                .insert({"user_id": str(user_id), "reason": reason})
+                .execute()
+            )
+        except PostgrestAPIError as exc:
+            # 23505 = unique_violation on idx_byok_requests_one_pending.
+            if getattr(exc, "code", None) == "23505":
+                raise DuplicateRequestError() from exc
+            raise
+        rows = extract_list(resp)
+        return rows[0] if rows else {}
+
+    @staticmethod
+    async def list_byok_requests(admin_supabase: Client, status: str = "pending") -> list[dict]:
+        """The admin inbox: requests waiting for a decision, oldest first."""
+        resp = await (
+            admin_supabase.table("byok_requests")
+            .select("*")
+            .eq("status", status)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        return extract_list(resp)
+
+    @staticmethod
+    async def resolve_byok_request(
+        admin_supabase: Client,
+        request_id: UUID,
+        *,
+        approve: bool,
+        reviewer_id: UUID,
+        admin_notes: str | None = None,
+    ) -> dict:
+        """Decide one request — status AND permission in one transaction.
+
+        Split into two writes there would be a state "approved but not
+        enabled", which is the shape of half-repair nobody finds afterwards.
+        ``fn_resolve_byok_request`` (migration 335) does both or neither.
+        """
+        resp = await admin_supabase.rpc(
+            "fn_resolve_byok_request",
+            {
+                "p_request_id": str(request_id),
+                "p_approve": approve,
+                "p_reviewer_id": str(reviewer_id),
+                "p_admin_notes": admin_notes,
+            },
+        ).execute()
+        result = resp.data or {}
+        if not result.get("success"):
+            raise not_found("byok_request", request_id)
+        return result
 
     @staticmethod
     async def test_provider_key(provider: str, key: str) -> TestBYOKResult:
