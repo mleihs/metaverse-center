@@ -18,6 +18,7 @@ from backend.models.forge import ForgeLoreOutput, ForgeLoreTranslatedOutput
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     create_forge_agent,
+    key_source_for,
     run_ai,
 )
 from backend.services.forge_feature_service import ForgeFeatureService
@@ -251,6 +252,7 @@ class ForgeLoreService:
             "lore",
             output_type=ForgeLoreOutput,
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         sections = [s.model_dump() for s in result.output.sections]
 
@@ -305,6 +307,7 @@ class ForgeLoreService:
                     "lore_translation",
                     output_type=ForgeLoreTranslatedOutput,
                     admin_supabase=admin_supabase,
+                    key_source=key_source_for(openrouter_key),
                 )
                 translated = result.output.sections[0].model_dump()
                 translations.append(translated)
@@ -632,6 +635,7 @@ REQUIREMENTS:
                     admin_supabase=admin_supabase,
                     simulation_id=simulation_id,
                     user_id=user_id,
+                    key_source=key_source_for(openrouter_key),
                 )
                 sections = [s.model_dump() for s in result.output.sections]
 

@@ -13,7 +13,7 @@ import sentry_sdk
 from backend.config import settings
 from backend.dependencies import get_admin_supabase
 from backend.models.translation import TranslationContext, TranslationResult
-from backend.services.ai_utils import MODEL_CALL_ERRORS, create_forge_agent, run_ai
+from backend.services.ai_utils import MODEL_CALL_ERRORS, create_forge_agent, key_source_for, run_ai
 from backend.services.simulation_service import SimulationService
 from supabase import AsyncClient as Client
 
@@ -161,6 +161,7 @@ class TranslationService:
             "translation",
             output_type=str,
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         return result.output
 
@@ -196,6 +197,7 @@ class TranslationService:
             "translation",
             output_type=TranslationResult,
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         return result.output.translations
 

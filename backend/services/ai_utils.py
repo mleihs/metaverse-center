@@ -187,9 +187,11 @@ async def _record_usage(
     ``AIUsageService.log`` never raises; the client is a process-wide singleton,
     so the added cost is one insert. ``key_source`` is not knowable from here —
     the agent has already been constructed and ``run_ai`` cannot see whether the
-    key behind it was a BYOK key. It records ``"platform"``, matching the
-    column's own default, and threading the real origin down from the key
-    resolver is listed in the analysis rather than guessed at.
+    key behind it was a BYOK key — so the caller that resolved the key passes it
+    in via :func:`key_source_for`. Until 2026-09-02 no caller did, and
+    production showed the consequence exactly: 604 of 604 ledger rows read
+    ``platform``, including every call a user had paid for out of their own
+    account.
     """
     try:
         usage = result.usage()
@@ -220,6 +222,24 @@ async def _record_usage(
         },
         key_source=key_source,
     )
+
+
+def key_source_for(api_key: str | None) -> str:
+    """Name the origin of the key a call ran on, for the cost ledger.
+
+    ``run_ai`` cannot work this out for itself — by the time it sees the agent,
+    the key is already inside it — so the caller that chose the key says so.
+    One helper rather than a ternary at each site: the answer must be the same
+    everywhere, and the same file already learned (finding 11) what happens
+    when two facts about one call are spelled out separately at nine call
+    sites.
+
+    ``"byok"`` means the request was paid by the caller's own provider account.
+    That is not bookkeeping trivia: ``get_budget_states`` weighs the ledger
+    against the platform's caps, and money the platform never spent must not
+    count against them.
+    """
+    return "byok" if api_key else "platform"
 
 
 async def run_ai(

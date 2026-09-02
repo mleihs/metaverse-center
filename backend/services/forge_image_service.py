@@ -8,6 +8,7 @@ import logging
 from uuid import UUID, uuid4
 
 from backend.services.ai_usage_service import AIUsageService
+from backend.services.ai_utils import key_source_for
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.model_resolver import ModelResolver
@@ -30,9 +31,25 @@ class ForgeImageService:
         replicate_api_key: str | None = None,
         openrouter_api_key: str | None = None,
         world_context: str = "",
+        key_source: str = "platform",
     ):
+        """``key_source`` must be STATED, not inferred from the key being set.
+
+        Two different chains reach this constructor with a non-empty
+        ``replicate_api_key`` and they mean opposite things for the ledger: the
+        Forge orchestrator passes the user's OWN key (``byok`` — the platform
+        pays nothing), while ``routers/generation.py`` passes whatever
+        ``ExternalServiceResolver`` produced, which is a simulation override,
+        a platform setting or the ``.env`` value, and is always the platform's
+        money. ``key_source_for()`` cannot tell those apart, so callers that
+        know say so and the default stays the conservative ``"platform"``.
+        (The resolver discards which of its three rungs answered, so the
+        generation path cannot yet distinguish ``simulation`` from ``env``; it
+        is recorded as ``platform``, which is true of who pays.)
+        """
         self._supabase = supabase
         self._simulation_id = simulation_id
+        self._key_source = key_source
         self._replicate = ReplicateService(api_key=replicate_api_key)
         self._generation = GenerationService(
             supabase,
@@ -66,14 +83,21 @@ class ForgeImageService:
         text = re.sub(r"\n{2,}", "\n", text).strip()
         return text
 
-    async def _log_image_usage(self, model: str, purpose: str) -> None:
-        """Fire-and-forget Replicate usage logging."""
+    async def _log_image_usage(self, model: str, purpose: str, api_key: str | None = None) -> None:
+        """Fire-and-forget Replicate usage logging.
+
+        ``api_key`` is the per-call override the portrait and building methods
+        accept. When one is given it is by definition the caller's own key —
+        the platform key never travels that way — so it outranks the
+        constructor's ``key_source``.
+        """
         await AIUsageService.log(
             self._supabase,
             simulation_id=self._simulation_id,
             provider="replicate",
             model=model,
             purpose=purpose,
+            key_source=key_source_for(api_key) if api_key else self._key_source,
         )
 
     @staticmethod
@@ -245,7 +269,7 @@ class ForgeImageService:
             .execute()
         )
 
-        await self._log_image_usage(image_model.model, "portrait")
+        await self._log_image_usage(image_model.model, "portrait", api_key)
         logger.info("Portrait uploaded", extra={"entity_type": "agent", "entity_id": str(agent_id), "path": url})
         return url
 
@@ -346,7 +370,7 @@ class ForgeImageService:
             .execute()
         )
 
-        await self._log_image_usage(image_model.model, "building")
+        await self._log_image_usage(image_model.model, "building", api_key)
         logger.info("Image uploaded", extra={"entity_type": "building", "entity_id": str(building_id), "path": url})
         return url
 

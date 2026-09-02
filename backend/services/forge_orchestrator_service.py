@@ -33,6 +33,7 @@ from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     ai_error_to_http,
     create_forge_agent,
+    key_source_for,
     report_delivery_count,
     run_ai,
     validate_bilingual_output,
@@ -395,6 +396,11 @@ class ForgeOrchestratorService:
             replicate_api_key=replicate_api_key,
             openrouter_api_key=openrouter_api_key,
             world_context=world_context,
+            # Every key that reaches this factory came from
+            # `ForgeDraftService.get_user_keys` — it is the user's own or it is
+            # absent. The image service cannot tell that from the value alone,
+            # so it is stated here.
+            key_source=key_source_for(replicate_api_key),
         )
 
     @staticmethod
@@ -567,6 +573,7 @@ class ForgeOrchestratorService:
                     output_type=ForgeGeographyDraft,
                     admin_supabase=admin_supabase,
                     user_id=user_id,
+                    key_source=key_source_for(or_key),
                 )
                 geo_data = result.output.model_dump()
                 if not geo_data.get("zones"):
@@ -609,6 +616,7 @@ class ForgeOrchestratorService:
                     output_type=counted_list(ForgeAgentDraft, gen_config.agent_count, minimum=1),
                     admin_supabase=admin_supabase,
                     user_id=user_id,
+                    key_source=key_source_for(or_key),
                 )
                 agents_list = [a.model_dump() for a in result.output]
                 report_delivery_count("agent", gen_config.agent_count, len(agents_list), draft_id=str(draft_id))
@@ -628,6 +636,7 @@ class ForgeOrchestratorService:
                     output_type=counted_list(ForgeBuildingDraft, gen_config.building_count, minimum=1),
                     admin_supabase=admin_supabase,
                     user_id=user_id,
+                    key_source=key_source_for(or_key),
                 )
                 buildings_list = [b.model_dump() for b in result.output]
                 report_delivery_count(
@@ -711,6 +720,7 @@ class ForgeOrchestratorService:
                         output_type=ForgeAgentDraft,
                         admin_supabase=admin_supabase,
                         user_id=user_id,
+                        key_source=key_source_for(or_key),
                     )
                 else:
                     result = await run_ai(
@@ -720,6 +730,7 @@ class ForgeOrchestratorService:
                         output_type=ForgeBuildingDraft,
                         admin_supabase=admin_supabase,
                         user_id=user_id,
+                        key_source=key_source_for(or_key),
                     )
                 entity = result.output.model_dump()
             except ModelAPIError as exc:
@@ -2134,6 +2145,7 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
                     admin_supabase=admin_supabase,
                     simulation_id=simulation_id,
                     user_id=user_id,
+                    key_source=key_source_for(openrouter_key),
                 )
                 generated = result.output
                 report_delivery_count(
