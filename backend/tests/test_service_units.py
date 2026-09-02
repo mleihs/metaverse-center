@@ -319,19 +319,44 @@ class TestDungeonContentAdminDeleteItem:
 
 @pytest.mark.integration
 class TestForgeDraftServiceGetUserKeys:
-    """get_user_keys — BYOK key retrieval and decryption."""
+    """get_user_keys — personal API keys, read through the policy.
+
+    The method takes NO client since migration 333: ``user_api_keys`` has no
+    policy for ``authenticated``, so a user-scoped client would come back empty
+    rather than raise, and every call would silently fall back to the platform
+    key. What is mocked here is therefore the admin singleton, and the RPC
+    ``fn_get_user_api_keys`` — which weighs ``fn_user_byok_allowed`` before it
+    hands anything back, so revoking permission actually stops the key being
+    used (finding 6).
+    """
+
+    @staticmethod
+    def _admin_with(rpc_data):
+        """An admin client whose key RPC answers ``rpc_data``."""
+        admin = MagicMock()
+        result = MagicMock()
+        result.data = rpc_data
+        chain = MagicMock()
+        chain.execute = AsyncMock(return_value=result)
+        admin.rpc = MagicMock(return_value=chain)
+        table_chain = MagicMock()
+        for m in ("update", "eq", "or_"):
+            getattr(table_chain, m).return_value = table_chain
+        table_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
+        admin.table = MagicMock(return_value=table_chain)
+        return admin
 
     @pytest.mark.asyncio
     @patch("backend.services.forge_draft_service.decrypt")
-    async def test_both_keys_present(self, mock_decrypt):
-        """User with both encrypted keys gets both decrypted."""
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    async def test_both_keys_present(self, mock_admin, mock_decrypt):
+        """A user with both keys gets both decrypted."""
         mock_decrypt.side_effect = lambda ct: f"decrypted-{ct}"
-        mock_sb, _ = _mock_supabase(execute_data={
-            "encrypted_openrouter_key": "enc-or-key",
-            "encrypted_replicate_key": "enc-rep-key",
-        })
+        mock_admin.return_value = self._admin_with(
+            {"openrouter": "enc-or-key", "replicate": "enc-rep-key"}
+        )
 
-        or_key, rep_key = await ForgeDraftService.get_user_keys(mock_sb, USER_ID)
+        or_key, rep_key = await ForgeDraftService.get_user_keys(USER_ID)
 
         assert or_key == "decrypted-enc-or-key"
         assert rep_key == "decrypted-enc-rep-key"
@@ -339,29 +364,25 @@ class TestForgeDraftServiceGetUserKeys:
 
     @pytest.mark.asyncio
     @patch("backend.services.forge_draft_service.decrypt")
-    async def test_only_openrouter_key(self, mock_decrypt):
-        """User with only openrouter key returns (key, None)."""
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    async def test_only_openrouter_key(self, mock_admin, mock_decrypt):
+        """One provider stored returns (key, None) — one row, not one column."""
         mock_decrypt.return_value = "decrypted-or"
-        mock_sb, _ = _mock_supabase(execute_data={
-            "encrypted_openrouter_key": "enc-or",
-            "encrypted_replicate_key": None,
-        })
+        mock_admin.return_value = self._admin_with({"openrouter": "enc-or"})
 
-        or_key, rep_key = await ForgeDraftService.get_user_keys(mock_sb, USER_ID)
+        or_key, rep_key = await ForgeDraftService.get_user_keys(USER_ID)
 
         assert or_key == "decrypted-or"
         assert rep_key is None
 
     @pytest.mark.asyncio
     @patch("backend.services.forge_draft_service.decrypt")
-    async def test_no_keys_set(self, mock_decrypt):
-        """User with no encrypted keys returns (None, None)."""
-        mock_sb, _ = _mock_supabase(execute_data={
-            "encrypted_openrouter_key": None,
-            "encrypted_replicate_key": None,
-        })
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    async def test_no_keys_stored(self, mock_admin, mock_decrypt):
+        """Nothing stored returns (None, None) and decrypts nothing."""
+        mock_admin.return_value = self._admin_with({})
 
-        or_key, rep_key = await ForgeDraftService.get_user_keys(mock_sb, USER_ID)
+        or_key, rep_key = await ForgeDraftService.get_user_keys(USER_ID)
 
         assert or_key is None
         assert rep_key is None
@@ -369,22 +390,30 @@ class TestForgeDraftServiceGetUserKeys:
 
     @pytest.mark.asyncio
     @patch("backend.services.forge_draft_service.decrypt")
-    async def test_no_wallet_row(self, mock_decrypt):
-        """User without a wallet row (maybe_single returns None) returns (None, None)."""
-        mock_sb, _ = _mock_supabase(execute_data=None)
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    async def test_revoked_permission_yields_nothing(self, mock_admin, mock_decrypt):
+        """Permission withdrawn: the RPC answers empty even with keys on file.
 
-        or_key, rep_key = await ForgeDraftService.get_user_keys(mock_sb, USER_ID)
+        This is finding 6 in test form. Clearing ``byok_allowed`` used to close
+        the door in front of a key that went on being used behind it, because
+        the read path never asked the policy at all.
+        """
+        mock_admin.return_value = self._admin_with({})
 
-        assert or_key is None
-        assert rep_key is None
+        or_key, rep_key = await ForgeDraftService.get_user_keys(USER_ID)
+
+        assert (or_key, rep_key) == (None, None)
         mock_decrypt.assert_not_called()
 
+    @pytest.mark.asyncio
+    @patch("backend.services.forge_draft_service.decrypt")
+    @patch("backend.services.forge_draft_service.get_admin_supabase_client", new_callable=AsyncMock)
+    async def test_null_rpc_answer_is_survivable(self, mock_admin, mock_decrypt):
+        """``resp.data`` of None must not crash the generation run."""
+        mock_admin.return_value = self._admin_with(None)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 4.3  SettingsService.list_dungeon_overrides / get_dungeon_override
-# ═══════════════════════════════════════════════════════════════════════════
-
-
+        assert await ForgeDraftService.get_user_keys(USER_ID) == (None, None)
+        mock_decrypt.assert_not_called()
 @pytest.mark.integration
 class TestSettingsServiceListDungeonOverrides:
     """list_dungeon_overrides — template simulations + override configs."""

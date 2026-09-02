@@ -133,11 +133,18 @@ class TestUserWallet:
     def test_from_attributes(self):
         assert UserWallet.model_config["from_attributes"] is True
 
-    def test_defaults(self):
+    def test_carries_no_key_material(self):
+        """The wallet must not be able to serialise a key outward.
+
+        It used to declare ``encrypted_openrouter_key`` /
+        ``encrypted_replicate_key`` (finding 9). Since migration 333 the keys
+        live in ``user_api_keys``, service_role only, and the wallet has no
+        field that could carry one.
+        """
         now = datetime.now(tz=UTC)
         w = UserWallet(user_id=uuid4(), forge_tokens=3, is_architect=True, created_at=now, updated_at=now)
-        assert w.encrypted_openrouter_key is None
-        assert w.encrypted_replicate_key is None
+        assert "encrypted_openrouter_key" not in w.model_dump()
+        assert "encrypted_replicate_key" not in w.model_dump()
 
 
 class TestPhilosophicalAnchor:
@@ -330,5 +337,20 @@ class TestUpdateBYOKRequest:
         assert req.replicate_key is None
 
     def test_with_keys(self):
-        req = UpdateBYOKRequest(openrouter_key="sk-or-v1-test", replicate_key="r8_test")
-        assert req.openrouter_key == "sk-or-v1-test"
+        req = UpdateBYOKRequest(
+            openrouter_key="sk-or-v1-0123456789abcdef",
+            replicate_key="r8_0123456789abcdef",
+        )
+        assert req.openrouter_key == "sk-or-v1-0123456789abcdef"
+
+    def test_a_fragment_is_not_a_key(self):
+        """There used to be no bound at all (finding 9).
+
+        The floor rejects the fat-fingered fragment before it is stored as if
+        it were a key; the ceiling keeps a paste accident or a hostile payload
+        out of ``encrypt()`` and out of the database.
+        """
+        with pytest.raises(ValidationError):
+            UpdateBYOKRequest(openrouter_key="sk-")
+        with pytest.raises(ValidationError):
+            UpdateBYOKRequest(replicate_key="r8_" + "x" * 600)

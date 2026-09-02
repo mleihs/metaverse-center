@@ -36,6 +36,7 @@ from backend.services.attunement_service import AttunementService
 from backend.services.autonomous_event_service import AutonomousEventService
 from backend.services.bond.whisper_service import WhisperService
 from backend.services.bureau_response_service import BureauResponseService
+from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry, state_word_de
 from backend.services.narrative_arc_service import NarrativeArcService
@@ -45,8 +46,6 @@ from backend.services.simulation_setting_contracts import (
     heartbeat_override_categories,
 )
 from backend.services.social.scheduler_base import BaseSchedulerMixin
-from backend.utils.db import maybe_single_data
-from backend.utils.encryption import decrypt
 from backend.utils.errors import not_found
 from backend.utils.responses import extract_list
 from backend.utils.settings import (
@@ -1080,15 +1079,13 @@ class HeartbeatService(BaseSchedulerMixin):
             if not owner_resp.data:
                 return None, False
 
-            wallet_data = await maybe_single_data(
-                admin.table("user_wallets")
-                .select("encrypted_openrouter_key")
-                .eq("user_id", owner_resp.data[0]["user_id"])
-                .maybe_single()
-            )
-            enc_key = (wallet_data or {}).get("encrypted_openrouter_key")
-            if enc_key:
-                return decrypt(enc_key), True
+            # Third and last copy of "select the ciphertext, decrypt it",
+            # folded into the one accessor (migration 333 moved the storage;
+            # a copy left behind here would have gone on reading a column that
+            # is on its way out).
+            or_key, _ = await ForgeDraftService.get_user_keys(UUID(owner_resp.data[0]["user_id"]))
+            if or_key:
+                return or_key, True
         except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OSError):
             logger.debug("BYOK key resolution failed for autonomy")
 

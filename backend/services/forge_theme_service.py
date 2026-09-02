@@ -21,6 +21,7 @@ from backend.services.ai_utils import (
     key_source_for,
     run_ai,
 )
+from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.prompt_contracts import (
     PromptContract,
@@ -31,8 +32,6 @@ from backend.services.prompt_contracts import (
 )
 from backend.services.prompt_service import report_contract_violation
 from backend.services.theme_contrast import audit_style_prompts, enforce_theme_contrast
-from backend.utils.db import maybe_single_data
-from backend.utils.encryption import decrypt
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -788,16 +787,12 @@ class ForgeThemeService:
             )
             current_theme = {s["setting_key"]: s["setting_value"] for s in (extract_list(settings_resp))}
 
-            # Get user BYOK key
-            wallet_data = await maybe_single_data(
-                admin_supabase.table("user_wallets")
-                .select("encrypted_openrouter_key")
-                .eq("user_id", str(user_id))
-                .maybe_single()
-            )
-            or_key = None
-            if wallet_data and wallet_data.get("encrypted_openrouter_key"):
-                or_key = decrypt(wallet_data["encrypted_openrouter_key"])
+            # The personal key, through the one accessor that knows where the
+            # ciphertext lives. This used to be its own select plus its own
+            # decrypt — one of three copies of the same six lines, each of
+            # which would have had to be found again when the storage moved
+            # (migration 333).
+            or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
             variants = []
             if settings.forge_mock_mode:

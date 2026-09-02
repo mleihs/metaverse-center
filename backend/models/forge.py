@@ -486,31 +486,46 @@ class ForgeDraft(ForgeDraftBase):
 
 
 class UserWallet(BaseModel):
-    """User wallet/quota information."""
+    """User wallet/quota information.
+
+    Carries no key material. It used to declare
+    ``encrypted_openrouter_key`` / ``encrypted_replicate_key`` (finding 9),
+    which meant any endpoint returning this model would have serialised the
+    ciphertext outward — and since migration 333 the keys do not live here at
+    all. What a caller may know about a key is whether one is on file, and
+    ``BYOKStatus`` says that.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
     user_id: UUID
     forge_tokens: int
     is_architect: bool
-    encrypted_openrouter_key: str | None = None
-    encrypted_replicate_key: str | None = None
     created_at: datetime
     updated_at: datetime
 
 
-class UpdateBYOKRequest(BaseModel):
-    """Schema for users to securely update their BYOK keys."""
+#: An OpenRouter key is ~73 characters, a Replicate token ~40. The ceiling is
+#: generous enough for either provider to change its format and low enough that
+#: a paste accident or a hostile payload never reaches ``encrypt()`` or the
+#: database (finding 9: there was no bound at all). The floor rejects the
+#: fat-fingered fragment before it is stored as if it were a key.
+_API_KEY_MIN = 8
+_API_KEY_MAX = 512
 
-    openrouter_key: str | None = None
-    replicate_key: str | None = None
+
+class UpdateBYOKRequest(BaseModel):
+    """Schema for users to securely store their own API keys."""
+
+    openrouter_key: str | None = Field(None, min_length=_API_KEY_MIN, max_length=_API_KEY_MAX)
+    replicate_key: str | None = Field(None, min_length=_API_KEY_MIN, max_length=_API_KEY_MAX)
 
 
 class TestBYOKRequest(BaseModel):
     """Schema for testing a BYOK key against a provider."""
 
     provider: Literal["openrouter", "replicate"]
-    key: str
+    key: str = Field(min_length=_API_KEY_MIN, max_length=_API_KEY_MAX)
 
 
 class TestBYOKResult(BaseModel):

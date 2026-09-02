@@ -27,7 +27,7 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser
 from backend.routers import forge as forge_module
 from backend.tests.conftest import MOCK_ADMIN_EMAIL
-from backend.utils.encryption import decrypt
+from backend.utils.encryption import current_key_version, decrypt
 
 # ── Constants ────────────────────────────────────────────────────────────
 
@@ -322,7 +322,7 @@ class TestForgeBYOK:
         try it first.
         """
         client, user_sb, admin_sb = architect_client
-        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True, "message": "Keys updated successfully."}
+        user_sb.rpc_data["fn_set_user_api_key"] = {"success": True, "message": "Key stored."}
 
         resp = client.put(
             "/api/v1/forge/wallet/keys",
@@ -331,24 +331,28 @@ class TestForgeBYOK:
 
         assert resp.status_code == 200
         assert resp.json()["success"] is True
-        assert "fn_update_user_byok_keys" in _rpc_names(user_sb)
-        assert "fn_update_user_byok_keys" not in _rpc_names(admin_sb)
+        assert "fn_set_user_api_key" in _rpc_names(user_sb)
+        assert "fn_set_user_api_key" not in _rpc_names(admin_sb)
 
     @pytest.mark.integration
     def test_key_is_encrypted_before_it_reaches_the_database(self, architect_client, encryption_key):
         """What travels to the RPC is ciphertext that decrypts back to the key."""
         client, user_sb, _ = architect_client
-        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+        user_sb.rpc_data["fn_set_user_api_key"] = {"success": True}
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-secret-value"})
         assert resp.status_code == 200
 
         params = next(
-            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_update_user_byok_keys"
+            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_set_user_api_key"
         )
-        stored = params["p_encrypted_openrouter_key"]
+        assert params["p_provider"] == "openrouter"
+        stored = params["p_encrypted_key"]
         assert stored != "sk-or-secret-value"
         assert decrypt(stored) == "sk-or-secret-value"
+        # The version that encrypted it travels with it — without that column
+        # rotating SETTINGS_ENCRYPTION_KEY has no way to find what is left.
+        assert params["p_key_version"] == current_key_version()
 
     @pytest.mark.integration
     def test_platform_admin_passes_a_policy_that_grants_nobody(self, architect_client, encryption_key):
@@ -361,7 +365,7 @@ class TestForgeBYOK:
         client, user_sb, admin_sb = architect_client
         admin_sb.rpc_data["fn_user_byok_allowed"] = False
         user_sb.rpc_data["fn_user_byok_allowed"] = False
-        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+        user_sb.rpc_data["fn_set_user_api_key"] = {"success": True}
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
         assert resp.status_code == 200
@@ -376,12 +380,12 @@ class TestForgeBYOK:
         """
         client, user_sb, _ = regular_client_full
         user_sb.rpc_data["fn_user_byok_allowed"] = True
-        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+        user_sb.rpc_data["fn_set_user_api_key"] = {"success": True}
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
 
         assert resp.status_code == 200
-        assert "fn_update_user_byok_keys" in _rpc_names(user_sb)
+        assert "fn_set_user_api_key" in _rpc_names(user_sb)
 
     @pytest.mark.integration
     def test_non_architect_still_cannot_reach_the_forge_itself(self, regular_client):
@@ -399,22 +403,22 @@ class TestForgeBYOK:
 
         assert resp.status_code == 403
         assert "BYOK access not granted" in resp.json()["detail"]
-        assert "fn_update_user_byok_keys" not in _rpc_names(user_sb)
+        assert "fn_set_user_api_key" not in _rpc_names(user_sb)
 
     @pytest.mark.integration
     def test_delete_key_goes_through_the_user_client(self, regular_client_full, encryption_key):
         """DELETE routes the same self-validating RPC the same way."""
         client, user_sb, _ = regular_client_full
         user_sb.rpc_data["fn_user_byok_allowed"] = True
-        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+        user_sb.rpc_data["fn_clear_user_api_key"] = {"success": True}
 
         resp = client.delete("/api/v1/forge/wallet/keys/openrouter")
 
         assert resp.status_code == 200
         params = next(
-            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_update_user_byok_keys"
+            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_clear_user_api_key"
         )
-        assert params["p_clear_openrouter"] is True
+        assert params["p_provider"] == "openrouter"
 
     @pytest.mark.integration
     def test_key_test_endpoint_keeps_the_policy_gate(self, regular_client_full):

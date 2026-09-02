@@ -212,39 +212,47 @@ export const TOPICS: TopicDefinition[] = [
     title: msg('Bring Your Own Key'),
     icon: 'key',
     description: msg(
-      'Supply your own OpenRouter + Replicate keys to bypass the platform forge-token quota and unlock unlimited AI generation.',
+      'Optionally run the Forge on your own OpenRouter and Replicate accounts instead of the project key.',
     ),
     accent: '--color-primary',
     readTime: msg('4 min'),
     tldr: () => [
-      msg('Two optional keys: OpenRouter (language + agents) and Replicate (imagery)'),
-      msg('AES-256 encrypted at rest, never echoed back in plain text after registration'),
-      msg('Bypass the platform forge-token quota as soon as both keys are configured'),
+      msg('Entirely optional \u2013 without a key of your own, everything runs on the project key'),
+      msg('Two keys: OpenRouter (text) and Replicate (imagery), stored AES-256 encrypted'),
+      msg('It reaches the Forge and the autonomous events of worlds you own \u2013 not chat'),
+      msg('A platform admin enables it per account; the token waiver is a separate switch'),
       msg('Costs are billed directly to your OpenRouter and Replicate accounts'),
-      msg('Configure inside the Forge Mint panel or under Settings \u2192 Integrations'),
+      msg('Enter them under Keyring in your personnel file'),
     ],
     sections: () => [
       {
         kind: 'text',
         content: msg(
-          'Every AI operation on the platform \u2013 narrative generation, agent dialogue, image materialization \u2013 consumes either a Forge Token from the platform quota or routes directly to an AI provider using your personal key. BYOK (Bring Your Own Key) lets you attach your own OpenRouter and Replicate accounts so the platform runs every request through your credentials instead of the shared pool.',
+          'BYOK is a mode, not a rule. Without a key of your own, every AI operation on the platform runs on the project key \u2013 that is the normal case, it costs you nothing, and nothing here needs doing. A key you enter is used instead of the project key wherever it reaches, and the bill goes to your provider account rather than to the platform.',
         ),
       },
       {
         kind: 'callouts',
         items: [
           {
+            type: 'warn',
+            label: msg('Where the key actually reaches'),
+            text: msg(
+              'Two places, not everywhere: the Forge \u2013 the whole world-building run, including lore, theme, translations and the Darkroom images \u2013 and phase 9 of the heartbeat, the autonomous events of worlds you own. Chat, the chronicle, resonance, the dungeon, the bureau terminal and social posts run on the model configuration of the world they belong to and never see a personal key.',
+            ),
+          },
+          {
             type: 'info',
             label: msg('OpenRouter \u2013 Language Relay'),
             text: msg(
-              'Powers narrative generation, agent conversation, Astrolabe research, chat responses, and bureau terminal agent replies. An OpenRouter account gives you routed access to Claude, GPT, Gemini, Llama, and dozens of other models under a single key.',
+              'Powers the text side of the Forge: Astrolabe research, philosophical anchors, agents and buildings, lore, dossiers and their translations. An OpenRouter account gives you routed access to Claude, GPT, Gemini, Llama and dozens of other models under a single key.',
             ),
           },
           {
             type: 'info',
             label: msg('Replicate \u2013 Visual Array'),
             text: msg(
-              'Powers Darkroom rendering, agent portraits, building imagery, and simulation lore visuals. Replicate hosts the FLUX and Stable Diffusion image pipelines that the platform calls for every visual generation.',
+              'Powers Darkroom rendering, agent portraits, building imagery and simulation lore visuals. Replicate hosts the FLUX and Stable Diffusion image pipelines that the platform calls for every visual generation.',
             ),
           },
         ],
@@ -252,7 +260,7 @@ export const TOPICS: TopicDefinition[] = [
       {
         kind: 'text',
         content: msg(
-          'Both keys are encrypted with AES-256 at rest. After registration they are never echoed back in plain text \u2013 the panel only shows a masked preview and a revoke button. Keys can be replaced or revoked at any time, which invalidates the encrypted copy immediately.',
+          'Both keys are encrypted with AES-256 at rest and never leave the server. After you enter one, the panel only reports that a key is on file and when it was last confirmed at the provider \u2013 the value itself is never shown again. Revoking deletes the stored key. If an administrator withdraws permission, or switches personal keys off platform-wide, your key stops being used from the very next call.',
         ),
       },
       {
@@ -260,46 +268,46 @@ export const TOPICS: TopicDefinition[] = [
         items: [
           {
             type: 'tip',
-            label: msg('When to register keys'),
+            label: msg('Two switches, not one'),
             text: msg(
-              'If you plan to mint many shards, generate agent portraits in bulk, or run long narrative sessions, BYOK removes the forge-token friction and reduces cost per run. If you are just exploring, the platform quota (or an Architect-granted bypass) is usually enough.',
+              'Whether you may use a personal key and whether forging then costs you no tokens are separate decisions, both made by a platform admin. A key of your own does not automatically waive the forge tokens \u2013 the waiver is granted, and it only takes effect once both keys are on file, since only then does the platform stop paying.',
             ),
           },
           {
             type: 'warn',
             label: msg('Cost responsibility'),
             text: msg(
-              'When BYOK is active, every AI call is billed directly to your OpenRouter and Replicate accounts. The platform does not cap, proxy, or throttle those charges. Review your usage dashboards on both providers after heavy sessions.',
+              'While your key is in use, those calls are billed directly to your OpenRouter and Replicate accounts. The platform does not cap, proxy or throttle those charges, and they do not count against its own budget. Review your usage dashboards on both providers after heavy sessions.',
             ),
           },
         ],
       },
       {
         kind: 'readout',
-        title: msg('Where to register keys'),
+        title: msg('Where to enter keys'),
         data: () => [
           {
-            label: msg('Forge Mint'),
+            label: msg('Keyring'),
             value: msg(
-              'Open the Mint panel from the Forge \u2013 the BYOK card appears below the token bundles.',
-            ),
-          },
-          {
-            label: msg('Settings \u2192 Integrations'),
-            value: msg(
-              'Owners and architects can register per-simulation AI Provider Overrides here.',
+              'In your personnel file, next to Identity and Correspondence \u2013 the key belongs to you, not to a world.',
             ),
           },
           {
             label: msg('Admin \u2192 Forge'),
-            value: msg('Platform admins manage their own personal keys in SEC-08.'),
+            value: msg('Platform admins reach the same panel in SEC-08.'),
+          },
+          {
+            label: msg('Not the same thing'),
+            value: msg(
+              'Settings \u2192 Integrations sets AI provider keys for ONE world, paid by whoever owns it. That is a world\u2019s setting, not your key.',
+            ),
           },
         ],
       },
       {
         kind: 'text',
         content: msg(
-          'Get your keys at openrouter.ai/keys and replicate.com/account/api-tokens. Paste them into the Forge Mint panel (or Settings \u2192 Integrations), use the Verify Clearance button to confirm a live round-trip, and hit Register. The platform switches to BYOK routing immediately \u2013 the "CLEARANCE: UNLIMITED" banner confirms the bypass is active.',
+          'Get your keys at openrouter.ai/keys and replicate.com/account/api-tokens. Enter them under Keyring in your personnel file, use Verify Clearance to confirm a live round-trip, and register. If the section says the account runs on the project key, personal keys have not been enabled for you \u2013 an administrator does that.',
         ),
       },
     ],

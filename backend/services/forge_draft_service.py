@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import logging
+import secrets
 import time
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 from uuid import UUID
 
@@ -14,10 +16,11 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 
 from backend.models.forge import ForgeDraftCreate, ForgeDraftUpdate, TestBYOKResult
 from backend.utils.db import maybe_single_data
-from backend.utils.encryption import decrypt, encrypt
+from backend.utils.encryption import current_key_version, decrypt, encrypt
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.settings import upsert_platform_setting
+from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -254,31 +257,77 @@ class ForgeDraftService:
         return response.data[0]
 
     @staticmethod
-    async def get_user_keys(supabase: Client, user_id: UUID) -> tuple[str | None, str | None]:
-        """Fetch and decrypt a user's BYOK API keys.
+    async def get_user_keys(user_id: UUID) -> tuple[str | None, str | None]:
+        """Fetch and decrypt a user's personal API keys.
 
-        Returns (openrouter_key, replicate_key) — None if not set.
+        Returns (openrouter_key, replicate_key) — None where none is stored.
+
+        TAKES NO CLIENT, deliberately. Since migration 333 the ciphertext lives
+        in ``user_api_keys``, which carries no policy for ``authenticated`` at
+        all: only ``service_role`` can read it. A parameter would let a caller
+        hand in the user-scoped client, and RLS would answer with an empty
+        result rather than an error — the keys would silently look absent and
+        every call would quietly fall back to the platform key. A wrong answer
+        that looks like a legitimate one is worse than no parameter, so the
+        admin singleton is fetched here and there is nothing to get wrong.
+
+        Three call sites used to do this by hand — this one,
+        ``ForgeThemeService.generate_variants`` and
+        ``HeartbeatService._resolve_autonomy_key`` — each with its own select
+        and its own ``decrypt``. They now all come through here.
+
+        Returns nothing when the platform has withdrawn permission, whether per
+        user or platform-wide: the RPC checks ``fn_user_byok_allowed`` before
+        it hands anything back, so a revoked account falls back to the project
+        key on the very next call.
         """
-        logger.debug("Fetching BYOK keys for user %s", user_id)
-        data = await maybe_single_data(
-            supabase.table("user_wallets")
-            .select("encrypted_openrouter_key, encrypted_replicate_key")
-            .eq("user_id", str(user_id))
-            .maybe_single()
-        ) or {}
+        admin = await get_admin_supabase_client()
+        # `fn_get_user_api_keys` weighs the policy inside the same query that
+        # reads the ciphertext (finding 6). A separate check here would be a
+        # line to forget at the next call site — and forgetting it is exactly
+        # what happened: revoking `byok_allowed` used to close the door in
+        # front of a key that went on being used behind it.
+        resp = await admin.rpc("fn_get_user_api_keys", {"p_user_id": str(user_id)}).execute()
+        by_provider: dict[str, str] = resp.data or {}
 
-        or_key = data.get("encrypted_openrouter_key")
-        rep_key = data.get("encrypted_replicate_key")
-
-        decrypted_or = decrypt(or_key) if or_key else None
-        decrypted_rep = decrypt(rep_key) if rep_key else None
+        decrypted_or = decrypt(by_provider["openrouter"]) if by_provider.get("openrouter") else None
+        decrypted_rep = decrypt(by_provider["replicate"]) if by_provider.get("replicate") else None
 
         if decrypted_or:
             logger.debug("Using personal OpenRouter key for user %s", user_id)
         if decrypted_rep:
             logger.debug("Using personal Replicate key for user %s", user_id)
 
+        if by_provider:
+            await ForgeDraftService._touch_last_used(admin, user_id)
+
         return decrypted_or, decrypted_rep
+
+    #: How stale ``last_used_at`` may get before it is stamped again. The
+    #: question the column answers is "is this key still in use", which needs
+    #: hours, not seconds — and a write on every model call would be one extra
+    #: round-trip per generated entity.
+    _LAST_USED_STALE_AFTER = timedelta(hours=1)
+
+    @staticmethod
+    async def _touch_last_used(admin: Client, user_id: UUID) -> None:
+        """Stamp ``last_used_at`` when it is stale, in ONE statement.
+
+        Not a fetch-compute-update: the freshness test is part of the filter
+        (ADR-007). Failure is swallowed — a bookkeeping timestamp must never
+        take down a generation run that already has its key.
+        """
+        cutoff = (datetime.now(UTC) - ForgeDraftService._LAST_USED_STALE_AFTER).isoformat()
+        try:
+            await (
+                admin.table("user_api_keys")
+                .update({"last_used_at": datetime.now(UTC).isoformat()})
+                .eq("user_id", str(user_id))
+                .or_(f"last_used_at.is.null,last_used_at.lt.{cutoff}")
+                .execute()
+            )
+        except (PostgrestAPIError, httpx.HTTPError) as exc:
+            logger.debug("last_used_at stamp failed (non-blocking)", exc_info=exc)
 
     @staticmethod
     async def check_byok_allowed(supabase: Client, user_id: UUID, *, is_admin: bool = False) -> bool:
@@ -310,39 +359,43 @@ class ForgeDraftService:
         openrouter_key: str | None,
         replicate_key: str | None,
     ) -> dict:
-        """Update a user's BYOK encrypted keys.
+        """Store the caller's own API keys, one row per provider.
 
         ``supabase`` MUST be the user-JWT client (``get_supabase``), never the
-        effective/admin one. ``fn_update_user_byok_keys`` (migr. 125/218/330)
-        is SECURITY DEFINER and validates ownership itself via
-        ``auth.uid() IS DISTINCT FROM p_user_id`` — that self-check is exactly
-        why ADR-006 lets it stay ``authenticated``-callable, and it is also why
-        the service-role JWT breaks it: that token carries no ``sub``, so
-        ``auth.uid()`` is NULL and every admin request raised *Not authorized
-        to update another user's keys*. Migration 330 makes the RPC create the
-        wallet row when there is none, so a non-architect can deposit a key.
+        effective/admin one. ``fn_set_user_api_key`` (migration 333) takes NO
+        user id at all — it writes for ``auth.uid()``, which is the strongest
+        form of the self-validating exception in ADR-006 and the one shape in
+        which the bug this replaces cannot be written down: a service-role JWT
+        carries no ``sub``, so ``auth.uid()`` is NULL and the function refuses
+        outright instead of writing somewhere wrong.
+
+        ``user_id`` is kept for the audit trail and for the assertion below; it
+        is not sent to the database.
         """
-        params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
-        has_update = False
-
-        if openrouter_key is not None:
-            params["p_encrypted_openrouter_key"] = encrypt(openrouter_key) if openrouter_key else None
-            has_update = True
-        if replicate_key is not None:
-            params["p_encrypted_replicate_key"] = encrypt(replicate_key) if replicate_key else None
-            has_update = True
-
-        if not has_update:
+        writes = [
+            ("openrouter", openrouter_key),
+            ("replicate", replicate_key),
+        ]
+        written = [provider for provider, value in writes if value]
+        if not written:
             return {"message": "No keys updated."}
 
-        resp = await supabase.rpc("fn_update_user_byok_keys", params).execute()
-        result = resp.data or {}
+        version = current_key_version()
+        for provider, value in writes:
+            if not value:
+                continue
+            resp = await supabase.rpc(
+                "fn_set_user_api_key",
+                {
+                    "p_provider": provider,
+                    "p_encrypted_key": encrypt(value),
+                    "p_key_version": version,
+                },
+            ).execute()
+            if not (resp.data or {}).get("success"):
+                raise WalletNotFoundError()
 
-        if not result.get("success"):
-            raise WalletNotFoundError(
-                result.get("error", "User wallet not found. Must be an architect first."),
-            )
-
+        logger.info("Stored personal API keys for user %s: %s", user_id, ", ".join(written))
         return {"message": "Keys updated successfully."}
 
     @staticmethod
@@ -351,28 +404,50 @@ class ForgeDraftService:
         user_id: UUID,
         provider: str,
     ) -> dict:
-        """Remove a single BYOK key (set to NULL).
+        """Remove one personal API key.
 
-        Uses the ``p_clear_*`` flags added in migration 218. ``supabase`` must
-        be the user-JWT client for the same reason as ``update_user_keys``.
+        Deletes the row rather than nulling a column (migration 333). Revoking
+        now means the key is gone, not merely unreachable — see finding 6:
+        clearing ``byok_allowed`` never removed anything, it only closed the
+        door in front of a key that stayed on file and stayed in use.
+
+        ``supabase`` must be the user-JWT client for the same reason as
+        ``update_user_keys``.
         """
-        params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
-        if provider == "openrouter":
-            params["p_clear_openrouter"] = True
-        elif provider == "replicate":
-            params["p_clear_replicate"] = True
-        else:
+        if provider not in ("openrouter", "replicate"):
             raise InvalidProviderError(provider)
 
-        resp = await supabase.rpc("fn_update_user_byok_keys", params).execute()
-        result = resp.data or {}
+        resp = await supabase.rpc("fn_clear_user_api_key", {"p_provider": provider}).execute()
+        if not (resp.data or {}).get("success"):
+            raise WalletNotFoundError()
 
-        if not result.get("success"):
-            raise WalletNotFoundError(
-                result.get("error", "User wallet not found. Must be an architect first."),
-            )
-
+        logger.info("Removed personal %s key for user %s", provider, user_id)
         return {"message": f"{provider} key removed successfully."}
+
+    @staticmethod
+    async def mark_key_verified(supabase: Client, user_id: UUID, provider: str, tested_key: str) -> bool:
+        """Stamp ``last_verified_at`` when the key just tested IS the stored one.
+
+        Verification is only worth recording about the key the platform will
+        actually use. The test endpoint accepts a raw key that may never have
+        been stored — pasting a colleague's key into the field and getting a
+        green tick says nothing about this account — so the stored ciphertext
+        is decrypted and compared first. ``supabase`` is the user-JWT client:
+        ``fn_mark_user_api_key_verified`` stamps for ``auth.uid()``.
+
+        Returns whether a stamp was written. Never raises: a timestamp must not
+        turn a successful key test into an error.
+        """
+        try:
+            stored_or, stored_rep = await ForgeDraftService.get_user_keys(user_id)
+            stored = stored_or if provider == "openrouter" else stored_rep
+            if not stored or not secrets.compare_digest(stored, tested_key):
+                return False
+            resp = await supabase.rpc("fn_mark_user_api_key_verified", {"p_provider": provider}).execute()
+            return bool((resp.data or {}).get("success"))
+        except (PostgrestAPIError, httpx.HTTPError, ValueError) as exc:
+            logger.debug("Could not stamp last_verified_at", exc_info=exc)
+            return False
 
     @staticmethod
     async def test_provider_key(provider: str, key: str) -> TestBYOKResult:

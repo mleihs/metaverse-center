@@ -456,7 +456,7 @@ class ForgeOrchestratorService:
             research_sources: list[dict[str, str]] = []
             anchors = [PhilosophicalAnchor(**a) for a in mock.mock_anchors(seed)]
         else:
-            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
             try:
                 # 1. Scrape web context
@@ -549,7 +549,7 @@ class ForgeOrchestratorService:
             else:
                 raise bad_request(f"Invalid chunk type: {chunk_type}")
 
-        or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
+        or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
         # Build geography context for agent/building chunks
         geography = draft_data.get("geography") or None
@@ -694,7 +694,7 @@ class ForgeOrchestratorService:
             else:
                 entity = mock.mock_single_building(seed, entity_index, entity_total)
         else:
-            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
             prompt = _build_entity_prompt(
                 entity_type,
@@ -1050,7 +1050,7 @@ class ForgeOrchestratorService:
             geography = draft_data.get("geography", {})
             agents = draft_data.get("agents", [])
             buildings = draft_data.get("buildings", [])
-            or_key, _ = await ForgeDraftService.get_user_keys(supabase, user_id)
+            or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
             try:
                 theme_data = await ForgeThemeService.generate_theme(
@@ -1559,7 +1559,7 @@ class ForgeOrchestratorService:
         t_batch = time.monotonic()
 
         try:
-            or_key, rep_key = await ForgeDraftService.get_user_keys(supabase, user_id)
+            or_key, rep_key = await ForgeDraftService.get_user_keys(user_id)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
             logger.exception("Failed to fetch BYOK keys — using platform keys")
             or_key, rep_key = None, None
@@ -2311,10 +2311,7 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
             or_key = None
             rep_key = None
             if user_id:
-                or_key, rep_key = await ForgeDraftService.get_user_keys(
-                    admin_supabase,
-                    user_id,
-                )
+                or_key, rep_key = await ForgeDraftService.get_user_keys(user_id)
 
             image_service = await ForgeOrchestratorService._create_image_service(
                 admin_supabase,

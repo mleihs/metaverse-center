@@ -23,6 +23,13 @@ class Settings(BaseSettings):
 
     # Security
     settings_encryption_key: str = ""
+    #: Optional key HISTORY for rotating ``SETTINGS_ENCRYPTION_KEY``, comma
+    #: separated, OLDEST FIRST. New values are encrypted with the LAST entry;
+    #: every entry can still decrypt what it wrote. A row records which one
+    #: was used (``user_api_keys.key_version``, 1-based), so after appending a
+    #: key you know exactly what is left to re-encrypt. Unset means "one key",
+    #: which is ``settings_encryption_key`` and version 1 — the state today.
+    settings_encryption_keys: str = ""
 
     # Email — Resend API is the primary transport (DKIM d=metaverse.center, DMARC-aligned).
     # When resend_api_key is set, EmailService sends via Resend; otherwise it falls back to
