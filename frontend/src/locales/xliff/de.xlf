@@ -2122,14 +2122,6 @@
   <source>Source</source>
   <target>Quelle</target>
 </trans-unit>
-<trans-unit id="sa6807e6651c3fdb7">
-  <source>The Guardian</source>
-  <target>The Guardian</target>
-</trans-unit>
-<trans-unit id="s91a65cb55433adb4">
-  <source>Limit</source>
-  <target>Limit</target>
-</trans-unit>
 <trans-unit id="s78d60a97137f0946">
   <source>Social Media</source>
   <target>Soziale Medien</target>
@@ -2146,42 +2138,6 @@
   <source>Neutral</source>
   <target>Neutral</target>
 </trans-unit>
-<trans-unit id="s2a9501ccb60465a5">
-  <source>Transformation failed</source>
-  <target>Transformation fehlgeschlagen</target>
-</trans-unit>
-<trans-unit id="sa2ee4b71caaef3ba">
-  <source>Event created from trend</source>
-  <target>Ereignis aus Trend erstellt</target>
-</trans-unit>
-<trans-unit id="sec63df53256678c2">
-  <source>Integration failed</source>
-  <target>Integration fehlgeschlagen</target>
-</trans-unit>
-<trans-unit id="s2b631bf5b4abd6e1">
-  <source>Event Title</source>
-  <target>Ereignistitel</target>
-</trans-unit>
-<trans-unit id="s67de03e17f9fa15b">
-  <source>Title for the new event</source>
-  <target>Titel für das neue Ereignis</target>
-</trans-unit>
-<trans-unit id="s1656634f954771b3">
-  <source>Event description (pre-filled from transformation)</source>
-  <target>Ereignisbeschreibung (vorausgefüllt aus Transformation)</target>
-</trans-unit>
-<trans-unit id="s0fd75cc6a1aad906">
-  <source>News</source>
-  <target>Nachrichten</target>
-</trans-unit>
-<trans-unit id="s4e569c28d35cf151">
-  <source>Transforming...</source>
-  <target>Transformierung...</target>
-</trans-unit>
-<trans-unit id="s2730460594150969">
-  <source>Re-Transform</source>
-  <target>Erneut transformieren</target>
-</trans-unit>
 <trans-unit id="sc16e00a7a8b2fde2">
   <source>Back</source>
   <target>Zurück</target>
@@ -2189,10 +2145,6 @@
 <trans-unit id="s99775221d3003db4">
   <source>Creating...</source>
   <target>Erstellen...</target>
-</trans-unit>
-<trans-unit id="s2113011d879c7730">
-  <source>Save as Event</source>
-  <target>Als Ereignis speichern</target>
 </trans-unit>
 <trans-unit id="sd0ea7366ebc403ff">
   <source>Event</source>
@@ -2241,18 +2193,6 @@
 <trans-unit id="sef4eb1eaf7ab6fff">
   <source>AI transforming article</source>
   <target>KI transformiert Artikel</target>
-</trans-unit>
-<trans-unit id="sdc63ec20b1ccc2db">
-  <source>AI transforming article...</source>
-  <target>KI transformiert Artikel...</target>
-</trans-unit>
-<trans-unit id="s3aae3d4a7b611137">
-  <source>Processing result...</source>
-  <target>Ergebnis wird verarbeitet...</target>
-</trans-unit>
-<trans-unit id="s4b8ea3a188d02ea7">
-  <source>Transformation complete</source>
-  <target>Transformation abgeschlossen</target>
 </trans-unit>
 <trans-unit id="s62b8d126a7bef112">
   <source>Generating agent reactions...</source>
@@ -2425,65 +2365,9 @@
   <source>Event Referenced</source>
   <target>Event referenziert</target>
 </trans-unit>
-<trans-unit id="s5c790af89996fdfe">
-  <source>Failed to load articles</source>
-  <target>Artikel konnten nicht geladen werden</target>
-</trans-unit>
 <trans-unit id="scc1db59d292cbc4c">
   <source>Section</source>
   <target>Rubrik</target>
-</trans-unit>
-<trans-unit id="s13730661a22ebb88">
-  <source>All Sections</source>
-  <target>Alle Rubriken</target>
-</trans-unit>
-<trans-unit id="sab66c5269937c0d4">
-  <source>Search query (optional)</source>
-  <target>Suchbegriff (optional)</target>
-</trans-unit>
-<trans-unit id="s2e1167d02811dfdc">
-  <source>e.g. climate, technology...</source>
-  <target>z.B. Klima, Technologie...</target>
-</trans-unit>
-<trans-unit id="s3c777006dd236508">
-  <source>Load Articles</source>
-  <target>Artikel laden</target>
-</trans-unit>
-<trans-unit id="s17c6bfaa75895ad6">
-  <source>Selected Article</source>
-  <target>Ausgewaehlter Artikel</target>
-</trans-unit>
-<trans-unit id="s3aeba787c1a1b3cf">
-  <source>Read Article</source>
-  <target>Artikel lesen</target>
-</trans-unit>
-<trans-unit id="s639f30f9c1fd5cba">
-  <source>Deselect</source>
-  <target>Abwaehlen</target>
-</trans-unit>
-<trans-unit id="se7118cd75b4a4086">
-  <source>Browse News</source>
-  <target>Nachrichten durchsuchen</target>
-</trans-unit>
-<trans-unit id="s8fc7fc210f0097ec">
-  <source>Loading articles...</source>
-  <target>Artikel werden geladen...</target>
-</trans-unit>
-<trans-unit id="s659bd4838db8f671">
-  <source>No articles found</source>
-  <target>Keine Artikel gefunden</target>
-</trans-unit>
-<trans-unit id="s0f51454f932e2e46">
-  <source>Event created with <x id="0" equiv-text="${result.reactions_count}"/> agent reactions</source>
-  <target>Event erstellt mit <x id="0" equiv-text="${result.reactions_count}"/> Agenten-Reaktionen</target>
-</trans-unit>
-<trans-unit id="s6d90940f8abe4a87">
-  <source>Generate agent reactions</source>
-  <target>Agenten-Reaktionen generieren</target>
-</trans-unit>
-<trans-unit id="s34f37a8446976da9">
-  <source>Number of agents</source>
-  <target>Anzahl Agenten</target>
 </trans-unit>
 <trans-unit id="s1e1e9c666b144c27">
   <source>Flux Dev (recommended)</source>
@@ -3238,9 +3122,6 @@
 <trans-unit id="sdc2508aba9b9ef42">
   <source>Settings saved successfully.</source>
 <target>Einstellungen erfolgreich gespeichert.</target></trans-unit>
-<trans-unit id="scac48aec63cfdb2d">
-  <source>Sign in to browse and transform news articles</source>
-<target>Anmelden, um Nachrichtenartikel zu durchsuchen und umzuwandeln</target></trans-unit>
 <trans-unit id="sa7a2675b308a9053">
   <source>Embassy</source>
 <target>Botschaft</target></trans-unit>
@@ -6148,7 +6029,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Fit</source>
 <target>Eignung</target></trans-unit>
 <trans-unit id="s2fa05f91c1baa29b">
-  <source>Remove <x id="0" equiv-text="${article.name}"/></source>
+  <source>Remove <x id="0" equiv-text="${label}"/></source>
 <target>Entfernen: <x id="0" equiv-text="${agent.name}"/></target></trans-unit>
 <trans-unit id="s592d3177bd1108ca">
   <source>Strongest</source>
@@ -8241,98 +8122,25 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s01ff83cec32f0e1a">
   <source>Click and drag to select range</source>
 <target>Klicken und ziehen um Bereich auszuwählen</target></trans-unit>
-<trans-unit id="s533f236a19143513">
-  <source>Transformation steps</source>
-<target>Transformationsschritte</target></trans-unit>
 <trans-unit id="s2d9f1c3f36509bd3">
   <source>Reality</source>
 <target>Wirklichkeit</target></trans-unit>
-<trans-unit id="s45d993b39864fd54">
-  <source>Crucible</source>
-<target>Schmelztiegel</target></trans-unit>
 <trans-unit id="s30e7d26db131cc61">
   <source>The Crucible</source>
 <target>Der Schmelztiegel</target></trans-unit>
-<trans-unit id="se21b5a92ee96634c">
-  <source>Batch transformation</source>
-  <target>Stapel-Transformation</target>
-</trans-unit>
-<trans-unit id="s5f629a6cf64431bc">
-  <source>Transforming articles</source>
-  <target>Artikel transformieren</target>
-</trans-unit>
-<trans-unit id="s042876fc8150215f">
-  <source>Preparing batch...</source>
-  <target>Stapel wird vorbereitet...</target>
-</trans-unit>
-<trans-unit id="s95d0f61607068b70">
-  <source>Transforming <x id="0" equiv-text="${this._selectedBatch.length}"/> articles...</source>
-  <target>Transformieren <x id="0" equiv-text="${this._selectedBatch.length}"/> Artikel werden umgewandelt...</target></trans-unit>
-<trans-unit id="s497cb278c4dc1ced">
-  <source><x id="0" equiv-text="${successCount}"/> articles transformed</source>
-  <target><x id="0" equiv-text="${successCount}"/> Artikel umgewandelt</target></trans-unit>
-<trans-unit id="s63c3f6340ac18839">
-  <source>Batch transformation failed</source>
-  <target>Stapel-Transformation fehlgeschlagen</target>
-</trans-unit>
-<trans-unit id="s6e99a3dafcacd929">
-  <source>Batch integration</source>
-  <target>Stapel-Integration</target>
-</trans-unit>
 <trans-unit id="sc64abdd5dd1492f7">
   <source>Creating events</source>
   <target>Ereignisse erstellen</target>
 </trans-unit>
 <trans-unit id="sb5e04f0f17068399">
-  <source>Creating <x id="0" equiv-text="${successResults.length}"/> events...</source>
+  <source>Creating <x id="0" equiv-text="${taking.length}"/> events...</source>
   <target>Erstellen <x id="0" equiv-text="${successResults.length}"/> Ereignisse werden erstellt...</target></trans-unit>
-<trans-unit id="s96d51078b80ada7d">
-  <source><x id="0" equiv-text="${events.length}"/> events created, <x id="1" equiv-text="${reactions_count}"/> reactions generated</source>
-  <target><x id="0" equiv-text="${events.length}"/> Ereignisse erstellt, <x id="1" equiv-text="${reactions_count}"/> Reaktionen generiert</target></trans-unit>
 <trans-unit id="s84723316a6846776">
-  <source><x id="0" equiv-text="${events.length}"/> events created</source>
+  <source><x id="0" equiv-text="${admitted}"/> events created</source>
   <target><x id="0" equiv-text="${events.length}"/> Ereignisse erstellt</target></trans-unit>
-<trans-unit id="s4e18dc70d79243ca">
-  <source><x id="0" equiv-text="${errors.length}"/> items failed</source>
-  <target><x id="0" equiv-text="${errors.length}"/> Elemente fehlgeschlagen</target></trans-unit>
-<trans-unit id="s28e28eb2dc898e86">
-  <source>Batch integration failed</source>
-  <target>Stapel-Integration fehlgeschlagen</target>
-</trans-unit>
-<trans-unit id="safda35e3d523b59b">
-  <source>Batch</source>
-  <target>Stapel</target>
-</trans-unit>
-<trans-unit id="sbe4508f09222c889">
-  <source>Single</source>
-  <target>Einzeln</target>
-</trans-unit>
-<trans-unit id="s8ebb29dc39bd3641">
-  <source>Staging Rack</source>
-  <target>Bereitstellungsleiste</target>
-</trans-unit>
-<trans-unit id="s23be3fdf4afb1658">
-  <source>Transform All</source>
-  <target>Alle transformieren</target>
-</trans-unit>
-<trans-unit id="sbe495d73da9d6747">
-  <source>Integrating...</source>
-  <target>Wird integriert...</target>
-</trans-unit>
-<trans-unit id="s8672be3d48cb090b">
-  <source>Integrate <x id="0" equiv-text="${successCount}"/> Events</source>
-  <target>Integrieren <x id="0" equiv-text="${successCount}"/> Ereignisse integrieren</target></trans-unit>
 <trans-unit id="sb4f1dffbb6be6302">
   <source>Clear</source>
   <target>Leeren</target>
-</trans-unit>
-<trans-unit id="s00c130cb1f15686e">
-  <source>Transformation Results</source>
-  <target>Transformationsergebnisse</target>
-</trans-unit>
-<trans-unit id="s1ec2ee1083d41a35">
-  <source>Already imported</source>
-  <target>Bereits importiert</target>
 </trans-unit>
 <trans-unit id="s279a7b8753353031">
   <source>Auto-generated cascade event from zone pressure overflow</source>
@@ -8436,18 +8244,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="sb5bac455582f08b9">
   <source>Scanning substrate...</source>
 <target>Substrat wird gescannt...</target></trans-unit>
-<trans-unit id="s52682253bab2dd18">
-  <source>Select an article first</source>
-<target>Wähle zuerst einen Artikel aus</target></trans-unit>
-<trans-unit id="s8483f8340c6ffe53">
-  <source>Resonance created</source>
-<target>Resonanz erstellt</target></trans-unit>
-<trans-unit id="saf8f8705eb7df6ef">
-  <source>Failed to create resonance</source>
-<target>Resonanz konnte nicht erstellt werden</target></trans-unit>
-<trans-unit id="sabcb2d973e53e655">
-  <source>Create substrate resonance from selected article</source>
-<target>Substratresonanz aus ausgewähltem Artikel erstellen</target></trans-unit>
 <trans-unit id="s3c0d63e078a89f95">
   <source>Create Resonance</source>
 <target>Resonanz erstellen</target></trans-unit>
@@ -12181,9 +11977,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s95210477031b8b53">
   <source>No shards found</source>
 <target>Keine Shards gefunden</target></trans-unit>
-<trans-unit id="sc402e30752117741">
-  <source>News articles</source>
-<target>Nachrichtenartikel</target></trans-unit>
 <trans-unit id="s3925392a0cd3b566">
   <source>processing</source>
 <target>In Bearbeitung</target></trans-unit>
@@ -23242,10 +23035,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
         <target>Mehr erfahren</target>
       
 </trans-unit>
-<trans-unit id="s13306837bd3aa7f5">
-  <source>How do social trends work?</source>
-        <target>Wie funktionieren Social Trends?</target>
-      </trans-unit>
 <trans-unit id="saf69b51630da71b8">
   <source>Usage: assign &lt;item#&gt; &lt;agent_name&gt; [dimension]</source>
         <target>Nutzung: assign &lt;gegenstand#&gt; &lt;agenten_name&gt; [dimension]</target>
@@ -31362,6 +31151,74 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s2d49e614b8e40b64">
   <source>What you fetch lands in triage, not at the entrance: you asked a source, you did not pick these fifteen. Nothing here is classified yet – magnitude and archetype come from the crucible.</source>
   <target>Was du abrufst, landet in der Sichtung, nicht im Eingang: du hast eine Quelle befragt, nicht diese fünfzehn ausgewählt. Eingeordnet ist hier noch nichts – Magnitude und Archetyp kommen aus dem Schmelztiegel.</target>
+</trans-unit>
+<trans-unit id="se9a4e6be24eb8d7c">
+  <source>Transforming the entrance</source>
+  <target>Der Eingang wird verwandelt</target>
+</trans-unit>
+<trans-unit id="s0d093750352c40fc">
+  <source>Writing proposals</source>
+  <target>Vorschläge werden geschrieben</target>
+</trans-unit>
+<trans-unit id="s9c64196d7e03bda0">
+  <source>Writing <x id="0" equiv-text="${signals.length}"/> proposals...</source>
+  <target><x id="0" equiv-text="${signals.length}"/> Vorschläge werden geschrieben …</target>
+</trans-unit>
+<trans-unit id="sefcd2592021649e6">
+  <source>Each one still needs a place before it becomes an event.</source>
+  <target>Jeder braucht noch einen Ort, bevor er ein Ereignis wird.</target>
+</trans-unit>
+<trans-unit id="s57ee433db23d2fc4">
+  <source>The batch transformation failed.</source>
+  <target>Die Stapel-Verwandlung ist gescheitert.</target>
+</trans-unit>
+<trans-unit id="s94056b3c001a5985">
+  <source><x id="0" equiv-text="${created}"/> proposals written</source>
+  <target><x id="0" equiv-text="${created}"/> Vorschläge geschrieben</target>
+</trans-unit>
+<trans-unit id="s1987fe3b78342bff">
+  <source>Nothing in quarantine has a lens yet. The crucible gives it one.</source>
+  <target>Nichts in der Quarantäne hat eine Linse. Der Schmelztiegel gibt ihr eine.</target>
+</trans-unit>
+<trans-unit id="s7149d5f7955d90a9">
+  <source>The daily quota is used up. Nothing was admitted.</source>
+  <target>Die Tagesquote ist aufgebraucht. Es wurde nichts aufgenommen.</target>
+</trans-unit>
+<trans-unit id="s26723346d1663471">
+  <source>Admitting to this world</source>
+  <target>Aufnahme in diese Welt</target>
+</trans-unit>
+<trans-unit id="s43ee11140966a46c">
+  <source>The batch admission failed.</source>
+  <target>Die Stapel-Aufnahme ist gescheitert.</target>
+</trans-unit>
+<trans-unit id="s440bf65313a4a798">
+  <source><x id="0" equiv-text="${errors.length}"/> could not be admitted</source>
+  <target><x id="0" equiv-text="${errors.length}"/> konnten nicht aufgenommen werden</target>
+</trans-unit>
+<trans-unit id="seee134fd74a1f80c">
+  <source><x id="0" equiv-text="${leftBehind}"/> stay in quarantine – the daily quota is reached.</source>
+  <target><x id="0" equiv-text="${leftBehind}"/> bleiben in der Quarantäne – die Tagesquote ist erreicht.</target>
+</trans-unit>
+<trans-unit id="se8de5f85e6a2d5b4">
+  <source><x id="0" equiv-text="${admitted}"/> events, <x id="1" equiv-text="${reactions_count}"/> reactions</source>
+  <target><x id="0" equiv-text="${admitted}"/> Ereignisse, <x id="1" equiv-text="${reactions_count}"/> Reaktionen</target>
+</trans-unit>
+<trans-unit id="sb68d9319f6b0a019">
+  <source>Write a proposal for everything at the entrance</source>
+  <target>Für alles im Eingang einen Vorschlag schreiben lassen</target>
+</trans-unit>
+<trans-unit id="sc77ca7350063c834">
+  <source>All → 2</source>
+  <target>Alle → ②</target>
+</trans-unit>
+<trans-unit id="s6934482904678725">
+  <source>Admit everything that has a lens</source>
+  <target>Alles aufnehmen, was eine Linse hat</target>
+</trans-unit>
+<trans-unit id="s88e7d794fb061b78">
+  <source>All here only</source>
+  <target>Alle ▣ nur hier</target>
 </trans-unit>
 </body>
 </file>
