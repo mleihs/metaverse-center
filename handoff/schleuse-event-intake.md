@@ -307,3 +307,92 @@ zeigt dann ihren generischen Rückfalltext — im Fall der Social-View wörtlich
 „Failed to load articles" statt „502 Bad gateway". Ein Rückfall auf
 `HTTP <status>` plus die ersten Zeichen des Körpers wäre die kleinste
 Reparatur mit der grössten Reichweite.
+
+---
+
+## Nachtrag (Claude Code, 02.09.2026) — Schritt 3, was anders gebaut wurde
+
+Der Schmelztiegel steht (`components/intake/IntakeCrucibleModal.ts`). Vier
+Stellen weichen vom Bauplan ab, jede aus einem gemessenen Grund.
+
+### 1. Drei Schritte statt fünf, und die Zeit wird gemessen
+
+Der Plan zeigt während der Erzeugung fünf Schritte mit Millisekunden („Signal
+gelesen · Ort verankert · Zeugen befragt · Tonlage gesetzt · Wirkung
+gerechnet"). `POST /transform-article` ist EIN Aufruf; der Dienst tut nichts
+davon in fünf Teilen, und die Zahlen im Prototyp sind gesetzt (380, 520, 660,
+800, 940 — arithmetische Folge, kein Messwert). Eine Fortschrittsanzeige, die
+Schritte erfindet, ist keine Anzeige. Es stehen jetzt drei Schritte da, die
+alle stimmen — *Signal übergeben · Modell antwortet · Antwort gesetzt* — mit
+einer laufenden, echten Uhr. Sobald Lücke 4 `steps[]` liefert, treten dessen
+Schritte an ihre Stelle.
+
+### 2. Nicht `GenerationProgress`
+
+Der Dateiplan nennt das Modul. Es ist eine Vollbild-Auflage (`position: fixed`,
+`--z-notification`) und würde genau die Terminal-Fläche verdecken, über die es
+berichtet — das Zusehen beim Schreiben ist der Sinn dieser Hälfte. Der Typ
+`GenerationStep` wird von dort geliehen, die Bühne nicht.
+
+### 3. `<textarea>` statt `contenteditable`
+
+Ein `contenteditable` in einem Lit-Template wird beim nächsten Rendern
+überschrieben und bringt weder Beschriftung noch Formular-Tastaturbedienung
+mit. Aussehen gleich, Zusicherung besser.
+
+### 4. Keine Zeugen-Zeile
+
+Zeugen könnten heute nur den erzeugten TEXT beeinflussen, und der Aufruf nimmt
+keine Linse entgegen (Lücke 4). Weder `transform-article` noch
+`integrate-article` hat ein Feld dafür. Ein Steuerelement, dessen Zustand
+nirgends eintreten kann, ist kein Steuerelement. **Nachzuholen, sobald Lücke 4
+steht** — dann gehört auch die Regel „Ort/Vektor/Tonlage ändern → sofort neu
+generieren" angeschlossen, die aus demselben Grund heute nicht greift.
+
+### Was die Linse heute erreicht
+
+    Typ · Wucht · Reaktionen        → bei der Aufnahme (`integrateArticle`, Schritt 4)
+    Ort · Vektor                    → Anzeige auf der Quarantäne-Karte, später das Echo
+    Tonlage · Freiheit · Anweisung  → noch nirgends
+
+Die dritte Zeile steht als Fussnote unter dem Linsen-Raster, nicht als
+Kommentar im Code: ein Regler, der nichts bewegt und das nicht sagt, ist eine
+Lüge auf dem Schirm. `LENS_REACHES_MODEL` in der Datei ist der eine Schalter,
+der Marke und Fussnote wieder entfernt.
+
+### Was nebenbei entstanden ist
+
+- **`--modal-body-padding`** in `shared/BaseModal.ts` (Vorgabe unverändert
+  `--space-6`). Ein Modal, dessen Körper aus randlosen Zeilen besteht, braucht
+  die Polsterung an den Zeilen; sonst enden alle Trennlinien 24 px vor dem
+  Rahmen. Sichtung, Lesesaal und Scan-Log werden ihn ebenfalls brauchen.
+- **`intakeState.zones` + `loadZones` + `zoneName`.** Die Linse hält eine
+  Zonen-**ID**, nicht den Namen — eine ID überlebt eine Umbenennung. Damit
+  braucht jede Stelle, die eine Linse anzeigt, dieselbe Auflösung; sie steht
+  deshalb einmal im Manager.
+- **`transformRequestOf(signal)`** in `types/intake.ts`. Dass ein Kandidat
+  seine Herkunft in `article_platform` trägt und ein gebrowster Artikel in
+  `platform`, ist der letzte Rest der beiden Vokabulare; er steht bei den
+  beiden `from*`-Funktionen und nicht in einer Komponente.
+- **`components/intake/intake-labels.ts`** — Archetyp, Tonlage, Wucht-Wort,
+  Freiheitsgrad. Der Vektor wird NICHT zum zweiten Mal übersetzt: dafür gibt es
+  `bleedVectorLabel` in `utils/enum-labels.ts`, und zwei Tabellen für eine
+  Union laufen auseinander.
+
+### Eine i18n-Falle, die hier viermal zuschlug
+
+Die Kennung einer Übersetzung ist der Hash der QUELLZEICHENKETTE. Wer eine
+bestehende Zeichenkette wiederverwendet, erbt ihre Übersetzung — auch die
+falsche. Vier Fälle, alle vor dem Festschreiben gefunden:
+
+    'Record'   → „Aktenvermerk"  (gemeint war die Tonlage „Protokoll")
+    'Register' → „Registrieren"  (Titel der Anmeldeseite, gemeint war „Tonlage")
+    'Tremor'   → „Tremor"        (Journal-Fragmentart, gemeint war „Erschütterung")
+    'Balanced' → „Ausgeglichen"  (vier Presets, gemeint war „Ausgewogen")
+
+Rezept: vor dem Setzen der Ziele jede `msg()`-Zeichenkette der neuen Datei
+gegen `de.xlf` halten und bei jedem Treffer fragen, ob dort DIESELBE Sache
+gemeint ist. Die neuen Quellen heissen deshalb `Protocol`, `Tone`, `Shock`,
+`Measured`. Nebenbei: `'Reality'` hatte „Realität"; das Wort der Schleuse ist
+„Wirklichkeit", und der einzige andere Leser war `TransformationModal` — also
+dieselbe Fläche, dieselbe Sache. Ziel geändert.

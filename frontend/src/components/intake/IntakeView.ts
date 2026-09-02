@@ -25,10 +25,11 @@
 import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { intakeState } from '../../services/IntakeStateManager.js';
 import type { IntakeSignal } from '../../types/intake.js';
 import { icons } from '../../utils/icons.js';
+import './IntakeCrucibleModal.js';
 import './IntakeSensorTile.js';
 
 /** Wie viele Minuten seit einem ISO-Zeitstempel vergangen sind. */
@@ -433,6 +434,10 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       color: var(--color-text-secondary);
       padding: var(--space-2);
       border: var(--border-width-thin) dashed var(--color-border);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      align-items: flex-start;
     }
 
     .error {
@@ -543,6 +548,15 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
 
   /** Anzeigename der Welt für die Brotkrume. */
   @property({ type: String }) simulationName = '';
+
+  /**
+   * Das Signal, das gerade im Schmelztiegel liegt.
+   *
+   * Leer heisst: der Schmelztiegel ist zu. Die ID und nicht das Signal selbst,
+   * damit das Modal beim nächsten Rendern die AKTUELLE Fassung aus dem Manager
+   * liest statt einer Kopie, die beim Öffnen richtig war.
+   */
+  @state() private _crucibleSignalId = '';
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -718,6 +732,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     title: string,
     items: IntakeSignal[],
     emptyText: string,
+    action?: (s: IntakeSignal) => unknown,
   ) {
     return html`
       <section class="chamber chamber--${modifier}" aria-label=${title}>
@@ -729,10 +744,37 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           ${
             items.length === 0
               ? html`<p class="empty">${emptyText}</p>`
-              : items.map((s) => html`<div class="placeholder">${s.headline}</div>`)
+              : items.map(
+                  (s) => html`<div class="placeholder">
+                    <span>${s.headline}</span>
+                    ${action ? action(s) : nothing}
+                  </div>`,
+                )
           }
         </div>
       </section>
+    `;
+  }
+
+  /**
+   * Der Weg in den Schmelztiegel.
+   *
+   * Die Karten der Kammern kommen erst in den Schritten 4–6; bis dahin trägt
+   * der Platzhalter den einen Knopf, ohne den Schritt 3 unerreichbar wäre.
+   * Eine Komponente, die niemand öffnen kann, ist nicht gebaut, sondern
+   * abgelegt.
+   */
+  private _renderTransformAction(s: IntakeSignal) {
+    return html`
+      <button
+        class="act"
+        type="button"
+        @click=${() => {
+          this._crucibleSignalId = s.id;
+        }}
+      >
+        ${msg('Transform')}
+      </button>
     `;
   }
 
@@ -748,6 +790,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           msg('1 Entrance · admitted'),
           intakeState.inEntrance.value,
           msg('Nothing admitted yet. Pick from triage, or let a subscription fill it.'),
+          (s) => this._renderTransformAction(s),
         )}
         ${this._renderChamber(
           'q',
@@ -768,6 +811,14 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           msg('No aftermath recorded. Echoes and impacts appear here.'),
         )}
       </div>
+      <velg-intake-crucible-modal
+        ?open=${this._crucibleSignalId !== ''}
+        .simulationId=${this.simulationId}
+        signal-id=${this._crucibleSignalId}
+        @modal-close=${() => {
+          this._crucibleSignalId = '';
+        }}
+      ></velg-intake-crucible-modal>
     `;
   }
 }

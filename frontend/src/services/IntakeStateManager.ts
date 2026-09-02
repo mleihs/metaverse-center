@@ -18,6 +18,7 @@
  */
 
 import { computed, signal } from '@preact/signals-core';
+import type { Zone } from '../types/index.js';
 import {
   fromBrowseArticle,
   fromScanCandidate,
@@ -25,7 +26,7 @@ import {
   type IntakeStage,
 } from '../types/intake.js';
 import { appState } from './AppStateManager.js';
-import { scannerApi, socialTrendsApi } from './api/index.js';
+import { locationsApi, scannerApi, socialTrendsApi } from './api/index.js';
 import type { AdapterInfo, ScanCandidate, ScannerDashboard } from './api/ScannerApiService.js';
 import { captureError } from './SentryService.js';
 
@@ -51,6 +52,18 @@ class IntakeStateManager {
   readonly dashboard = signal<ScannerDashboard | null>(null);
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+
+  /**
+   * Die Zonen der Welt — die Orte, an denen ein Signal ankommen kann.
+   *
+   * WARUM HIER UND NICHT IM SCHMELZTIEGEL: die Linse hält eine Zonen-ID, nicht
+   * den Zonennamen. Eine ID ist beständig, ein Name wird umbenannt — und wer
+   * den Namen einfriert, zeigt später den alten. Damit braucht aber JEDE
+   * Stelle, die eine Linse anzeigt (Schmelztiegel, Quarantäne-Karte, Lesesaal,
+   * Protokoll), dieselbe Auflösung. Zwei Ladewege für dieselbe Liste wären zwei
+   * Gelegenheiten, sie unterschiedlich zu haben.
+   */
+  readonly zones = signal<Zone[]>([]);
 
   /** Wie viele Ereignisse diese Welt heute schon aufgenommen hat. */
   readonly eventsToday = signal<number>(0);
@@ -157,6 +170,36 @@ class IntakeStateManager {
   }
 
   /**
+   * Die Zonen der Welt holen, einmal je Welt.
+   *
+   * Ein Fehlschlag ist kein Grund, die Schleuse anzuhalten: ohne Zonen fehlt
+   * der Linse ihre Ortsauswahl, alles andere arbeitet weiter. Deshalb landet
+   * er in `captureError` und nicht in `error` — `error` deckelt das ganze
+   * Board, und ein leeres Board wegen einer fehlenden Ortsliste wäre die
+   * falsche Auskunft.
+   */
+  async loadZones(simulationId: string): Promise<void> {
+    if (this.zones.value.length > 0 && this.zones.value[0].simulation_id === simulationId) return;
+    try {
+      const resp = await locationsApi.listZones(
+        simulationId,
+        appState.currentSimulationMode.value,
+        {
+          limit: '200',
+        },
+      );
+      if (resp.success && resp.data) this.zones.value = resp.data;
+    } catch (err) {
+      captureError(err, { source: 'IntakeStateManager.loadZones' });
+    }
+  }
+
+  /** Der Name einer Zone, oder Leerstring, wenn die Liste sie nicht kennt. */
+  zoneName(zoneId: string): string {
+    return this.zones.value.find((z) => z.id === zoneId)?.name ?? '';
+  }
+
+  /**
    * Neue Signale einmischen, ohne bestehende Stufen zu überschreiben.
    *
    * Ein erneutes Laden darf ein Signal nicht zurückwerfen: wer gerade etwas in
@@ -246,6 +289,7 @@ class IntakeStateManager {
   clear(): void {
     this.signals.value = new Map();
     this.dashboard.value = null;
+    this.zones.value = [];
     this.error.value = null;
     this.loading.value = false;
     this.eventsToday.value = 0;

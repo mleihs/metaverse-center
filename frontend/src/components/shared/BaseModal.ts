@@ -109,8 +109,17 @@ export class VelgBaseModal extends LitElement {
       box-shadow: var(--shadow-pressed, none);
     }
 
+    /*
+     * Die Polsterung ist ein Haken, kein Gesetz.
+     *
+     * Die meisten Modals wollen sie. Eines, das seinen Körper in Zeilen
+     * gliedert, die von Rand zu Rand laufen (Schmelztiegel, Sichtung,
+     * Scan-Log), will sie an den Zeilen und nicht am Körper — sonst steht
+     * jede Trennlinie 24 px vom Rahmen entfernt in der Luft. Der Standard
+     * bleibt unverändert; wer ihn braucht, muss nichts tun.
+     */
     .modal__body {
-      padding: var(--space-6);
+      padding: var(--modal-body-padding, var(--space-6));
       overflow-y: auto;
       flex: 1;
     }
@@ -140,7 +149,7 @@ export class VelgBaseModal extends LitElement {
       }
 
       .modal__body {
-        padding: var(--space-4);
+        padding: var(--modal-body-padding, var(--space-4));
       }
 
       .modal__footer {

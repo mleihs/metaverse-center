@@ -17,7 +17,9 @@ import {
   fromBrowseArticle,
   fromScanCandidate,
   sourceKindOf,
+  transformRequestOf,
 } from '../src/types/intake.js';
+import { impactWord } from '../src/components/intake/intake-labels.js';
 
 function adapter(over: Partial<AdapterInfo> = {}): AdapterInfo {
   return {
@@ -178,5 +180,66 @@ describe('effectiveMagnitude', () => {
   it('markiert eine übersprungene Welt unter der Schwelle', () => {
     expect(effectiveMagnitude(0.3, 0.5)).toBeLessThan(EFFECT_SKIP_THRESHOLD);
     expect(effectiveMagnitude(0.8, 0.9)).toBeGreaterThan(EFFECT_SKIP_THRESHOLD);
+  });
+});
+
+
+describe('transformRequestOf', () => {
+  it('nimmt beim Kandidaten die Plattform des Artikels, wenn es eine gibt', () => {
+    const req = transformRequestOf(
+      fromScanCandidate(candidate({ article_platform: 'guardian' })),
+    );
+    expect(req.article_platform).toBe('guardian');
+    expect(req.article_name).toBe('Beben vor der Küste');
+    expect(req.article_url).toBe('https://example.org/a');
+  });
+
+  it('fällt auf den Adapter zurück, wenn der Kandidat keine Plattform trägt', () => {
+    // Der Adapter IST die Stelle, die die Meldung geliefert hat. Ein
+    // Leerstring wäre die Unwahrheit — und das Backend verlangt das Feld.
+    const req = transformRequestOf(fromScanCandidate(candidate()));
+    expect(req.article_platform).toBe('usgs_earthquakes');
+  });
+
+  it('reicht `null`-Felder als `undefined` weiter, nicht als null', () => {
+    // `article_url: null` würde als JSON-null im Körper landen und Pydantic
+    // gegen ein `str | None` laufen lassen, das hier nichts zu suchen hat.
+    const req = transformRequestOf(candidateSignalWithoutUrl());
+    expect(req.article_url).toBeUndefined();
+    expect(req.article_raw_data).toBeUndefined();
+  });
+
+  it('bildet auch einen gebrowsten Artikel auf dieselbe Gestalt ab', () => {
+    const req = transformRequestOf(
+      fromBrowseArticle({
+        name: 'Weissfäule in den Brutgewölben',
+        platform: 'guardian',
+        url: 'https://example.org/b',
+        raw_data: { trail_text: 'Kurzfassung' },
+      }),
+    );
+    expect(req).toEqual({
+      article_name: 'Weissfäule in den Brutgewölben',
+      article_platform: 'guardian',
+      article_url: 'https://example.org/b',
+      article_raw_data: { trail_text: 'Kurzfassung' },
+    });
+  });
+});
+
+function candidateSignalWithoutUrl() {
+  return fromScanCandidate(candidate({ article_url: null, article_raw_data: null }));
+}
+
+describe('impactWord', () => {
+  it('nennt die vier Stufen an ihren Schwellen', () => {
+    // Die Schwellen stehen im Bauplan; sie hier festzunageln ist der einzige
+    // Weg, sie beim Umbauen der Chips nicht stillschweigend zu verschieben.
+    expect(impactWord(1)).toBe(impactWord(3));
+    expect(impactWord(4)).toBe(impactWord(6));
+    expect(impactWord(7)).toBe(impactWord(8));
+    expect(impactWord(3)).not.toBe(impactWord(4));
+    expect(impactWord(6)).not.toBe(impactWord(7));
+    expect(impactWord(8)).not.toBe(impactWord(9));
   });
 });
