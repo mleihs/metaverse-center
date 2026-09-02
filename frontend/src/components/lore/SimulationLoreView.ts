@@ -343,6 +343,12 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
     await this._loadLore(simId);
   }
 
+  /** Der Weltname in der Sprache des Lesers; `t()` faellt auf `name` zurueck. */
+  private _simName(): string {
+    const sim = appState.currentSimulation.value;
+    return sim ? t(sim, 'name') : '';
+  }
+
   protected render() {
     const slug = this._getSlug();
     const canEdit = appState.canEdit.value;
@@ -403,7 +409,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       ${
         this._showCeremony
           ? html`<velg-dossier-reveal
-            .simulationName=${appState.currentSimulation.value?.name ?? ''}
+            .simulationName=${this._simName()}
             @dossier-ceremony-complete=${this._handleCeremonyComplete}
           ></velg-dossier-reveal>`
           : nothing
@@ -415,7 +421,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
           this._caseFileMode && classifiedSections.length > 0
             ? html`<velg-case-file
               .sections=${classifiedSections}
-              .simulationName=${appState.currentSimulation.value?.name ?? ''}
+              .simulationName=${this._simName()}
               .basePath=${slug}
             ></velg-case-file>`
             : nothing

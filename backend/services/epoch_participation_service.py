@@ -41,7 +41,7 @@ class EpochParticipationService:
         resp = await (
             supabase.table("epoch_participants")
             .select(
-                "*, simulations(name, slug, simulation_type, source_template_id),"
+                "*, simulations(name, name_de, slug, simulation_type, source_template_id),"
                 " bot_players(name, personality, difficulty)"
             )
             .eq("epoch_id", str(epoch_id))

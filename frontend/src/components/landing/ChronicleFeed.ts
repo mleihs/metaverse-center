@@ -33,6 +33,7 @@ interface FeedChronicle extends Chronicle {
   simulation?: {
     id: string;
     name: string;
+    name_de?: string | null;
     slug: string;
     theme: string;
     banner_url?: string;
@@ -357,7 +358,7 @@ export class VelgChronicleFeed extends LitElement {
     const sim = chronicle.simulation;
     const themeColor = sim ? getThemeColor(sim.theme) : 'var(--color-text-muted)';
     const simSlug = sim?.slug ?? '';
-    const simName = sim?.name ?? msg('Unknown World');
+    const simName = sim ? t(sim, 'name') : msg('Unknown World');
     const readMoreHref = sim ? `/simulations/${simSlug}/chronicle` : '#';
 
     return html`

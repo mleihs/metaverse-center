@@ -14,6 +14,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { BattleLogEntry, BattleLogEventType, EpochParticipant } from '../../types/index.js';
 import { PERSONALITY_COLORS } from '../../utils/bot-colors.js';
 import { icons } from '../../utils/icons.js';
+import { t } from '../../utils/locale-fields.js';
 import { getBattleEventIcon } from '../../utils/operative-icons.js';
 
 @localized()
@@ -368,7 +369,7 @@ export class VelgEpochBattleLog extends LitElement {
   private _resolveSimName(simId?: string): string | null {
     if (!simId) return null;
     const p = this.participants.find((pp) => pp.simulation_id === simId);
-    return p?.simulations?.name ?? null;
+    return p?.simulations ? t(p.simulations, 'name') : null;
   }
 
   private _getBotPersonality(simId?: string): string | null {

@@ -133,7 +133,10 @@ class TestGetUserMemberships:
         # Verify correct table and select
         mock_sb.table.assert_called_once_with("simulation_members")
         mock_sb.table.return_value.select.assert_called_once_with(
-            "simulation_id, member_role, joined_at, simulations(name, slug)",
+            # `name_de` faehrt mit `name` mit: die Mitgliederliste zeigt den
+            # Weltnamen, und `t(sim, "name")` im Frontend kann nur waehlen,
+            # was der Server geladen hat.
+            "simulation_id, member_role, joined_at, simulations(name, name_de, slug)",
         )
 
     async def test_returns_empty_list_when_no_memberships(self):

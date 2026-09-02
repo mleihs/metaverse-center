@@ -1340,7 +1340,7 @@ export class VelgEventDetailsPanel extends LitElement {
 
   private _getSimulationName(simId: string): string {
     const sim = this._simulations.find((s) => s.id === simId);
-    return sim?.name ?? simId;
+    return sim ? t(sim, 'name') : simId;
   }
 
   private _handleTriggerEchoClick(): void {

@@ -52,6 +52,7 @@ from backend.models.drift import (
 from backend.services.travel.chart_generator import ChartGeneratorService
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, forbidden, not_found, server_error
+from backend.utils.locale_fields import localized_field
 from backend.utils.settings import load_platform_settings, parse_setting_bool
 from supabase import AsyncClient as Client
 
@@ -200,7 +201,7 @@ class DriftService:
             supabase.table("drift_chart_nodes")
             .select(
                 "id, stable_key, node_type, simulation_id, x, y, "
-                "frequency_mask, distance_band, payload, simulations(name)"
+                "frequency_mask, distance_band, payload, simulations(name, name_de)"
             )
             .eq("chart_version", version)
             .execute()
@@ -219,7 +220,7 @@ class DriftService:
 
     @staticmethod
     def _flatten_node(node: dict) -> dict:
-        """Lift the embedded simulations(name) onto simulation_name (None for non-homes)."""
+        """Lift the embedded simulations(name, name_de) onto simulation_name (None for non-homes)."""
         embed = node.pop("simulations", None)
         node["simulation_name"] = embed.get("name") if isinstance(embed, dict) else None
         return node
@@ -659,7 +660,7 @@ class DriftService:
 
         worlds_resp = await (
             supabase.table("drift_chart_nodes")
-            .select("simulation_id, simulations(name)")
+            .select("simulation_id, simulations(name, name_de)")
             .eq("chart_version", run.chart_version)
             .eq("node_type", "broadcast_rand")
             .neq("simulation_id", origin_sim)
@@ -675,7 +676,9 @@ class DriftService:
                 if not sim_id:
                     continue
                 embed = world.get("simulations")
-                world_name = embed.get("name") if isinstance(embed, dict) else None
+                # DRIFT antwortet durchgehend deutsch (title_de, brief_de,
+                # "Unbenannt"), also auch der Weltname.
+                world_name = localized_field(embed, "name", "de", default="") or None
                 offers.append(
                     QuestOfferResponse(
                         template_key=tmpl["template_key"],

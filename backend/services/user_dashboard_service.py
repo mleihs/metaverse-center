@@ -161,7 +161,7 @@ class UserDashboardService:
             .select(
                 "epoch_id, current_rp, has_acted_this_cycle, "
                 "game_epochs(id, name, status, epoch_type, current_cycle, config, cycle_deadline_at), "
-                "simulations(name, banner_url)"
+                "simulations(name, name_de, banner_url)"
             )
             .eq("user_id", user_id_str)
             .eq("is_bot", False)

@@ -582,7 +582,8 @@ export class VelgEmbassyCreateModal extends LitElement {
   private _renderAmbassadorsStep() {
     const localAgent = this._localAgents.find((a) => a.id === this._localAmbassadorId);
     const partnerAgent = this._partnerAgents.find((a) => a.id === this._partnerAmbassadorId);
-    const currentSimName = appState.currentSimulation.value?.name ?? msg('Local');
+    const cur = appState.currentSimulation.value;
+    const currentSimName = cur ? t(cur, 'name') : msg('Local');
     const partnerSimName = this._getTargetSimulation()?.name ?? msg('Partner');
 
     return html`
@@ -702,7 +703,8 @@ export class VelgEmbassyCreateModal extends LitElement {
   private _renderConfirmStep() {
     const target = this._getSelectedTargetBuilding();
     const targetSim = this._getTargetSimulation();
-    const currentSimName = appState.currentSimulation.value?.name ?? msg('Local');
+    const cur = appState.currentSimulation.value;
+    const currentSimName = cur ? t(cur, 'name') : msg('Local');
     const localAgent = this._localAgents.find((a) => a.id === this._localAmbassadorId);
     const partnerAgent = this._partnerAgents.find((a) => a.id === this._partnerAmbassadorId);
 

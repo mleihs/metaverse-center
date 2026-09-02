@@ -1414,6 +1414,8 @@ export interface EpochParticipant {
   afk_replaced_by_ai?: boolean;
   simulations?: {
     name: string;
+    /** Deutscher Titel; `t(sim, 'name')` faellt auf `name` zurueck, wenn leer. */
+    name_de?: string | null;
     slug: string;
     simulation_type?: SimulationType;
     source_template_id?: UUID;
@@ -1825,7 +1827,7 @@ export interface AdminMembership {
   user_id: string;
   simulation_id: string;
   member_role: string;
-  simulations?: { id: string; name: string; slug: string };
+  simulations?: { id: string; name: string; name_de?: string | null; slug: string };
 }
 
 // --- Notification Preferences ---

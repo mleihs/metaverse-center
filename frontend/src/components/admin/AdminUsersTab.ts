@@ -10,6 +10,7 @@ import { infoBubbleStyles, renderInfoBubble } from '../shared/info-bubble-styles
 import { VelgToast } from '../shared/Toast.js';
 
 import '../shared/ConfirmDialog.js';
+import { memberRoleLabel } from '../../utils/enum-labels.js';
 
 @localized()
 @customElement('velg-admin-users-tab')
@@ -608,7 +609,9 @@ export class VelgAdminUsersTab extends LitElement {
             this._expandedDetail && isExpanded
               ? this._expandedDetail.memberships.map(
                   (m) =>
-                    html`<span class="badge badge--${m.member_role}">${m.simulations?.name ?? m.simulation_id} (${m.member_role})</span>`,
+                    html`<span class="badge badge--${m.member_role}">${
+                      m.simulations ? t(m.simulations, 'name') : m.simulation_id
+                    } (${memberRoleLabel(m.member_role)})</span>`,
                 )
               : nothing
           }
@@ -747,7 +750,7 @@ export class VelgAdminUsersTab extends LitElement {
   private _renderMembershipRow(userId: string, m: AdminMembership) {
     return html`
       <div class="membership-row">
-        <span class="membership-sim">${m.simulations?.name ?? m.simulation_id}</span>
+        <span class="membership-sim">${m.simulations ? t(m.simulations, 'name') : m.simulation_id}</span>
         <select
           class="membership-role-select"
           aria-label=${msg('Change membership role')}

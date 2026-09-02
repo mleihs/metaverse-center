@@ -28,6 +28,7 @@ from backend.services.email_templates import (
 )
 from backend.services.scoring_service import ScoringService
 from backend.utils.db import maybe_single_data
+from backend.utils.locale_fields import localized_field
 from backend.utils.responses import extract_list
 from backend.utils.unsubscribe_tokens import unsubscribe_url
 from supabase import AsyncClient as Client
@@ -93,7 +94,7 @@ class CycleNotificationService:
         """
         participants_resp = await (
             admin_supabase.table("epoch_participants")
-            .select("user_id, simulation_id, simulations(name, slug, source_template_id)")
+            .select("user_id, simulation_id, simulations(name, name_de, slug, source_template_id)")
             .eq("epoch_id", epoch_id)
             .eq("is_bot", False)
             .execute()
@@ -133,7 +134,7 @@ class CycleNotificationService:
         templates: dict[str, dict] = {}
         if template_ids:
             tpl_resp = await (
-                admin_supabase.table("simulations").select("id, slug, name").in_("id", template_ids).execute()
+                admin_supabase.table("simulations").select("id, slug, name, name_de").in_("id", template_ids).execute()
             )
             templates = {s["id"]: s for s in extract_list(tpl_resp)}
 
@@ -155,14 +156,21 @@ class CycleNotificationService:
 
             sim_info = p.get("simulations") or {}
             template = templates.get(sim_info.get("source_template_id") or "", {})
+            # Die Sprache der Empfaengerin steht zwei Zeilen weiter unten im
+            # selben Wörterbuch — der Weltname folgt ihr.
+            mail_locale = prefs.get("email_locale", "en")
             recipients.append(
                 {
                     "user_id": user_id,
                     "email": email,
                     "simulation_id": p["simulation_id"],
-                    "simulation_name": template.get("name") or sim_info.get("name") or "Unknown",
+                    "simulation_name": (
+                        localized_field(template, "name", mail_locale)
+                        or localized_field(sim_info, "name", mail_locale)
+                        or "Unknown"
+                    ),
                     "simulation_slug": template.get("slug") or sim_info.get("slug", ""),
-                    "email_locale": prefs.get("email_locale", "en"),
+                    "email_locale": mail_locale,
                 }
             )
 
@@ -442,7 +450,7 @@ class CycleNotificationService:
                     # Get ally names
                     ally_resp = await (
                         admin_supabase.table("epoch_participants")
-                        .select("simulation_id, simulations(name)")
+                        .select("simulation_id, simulations(name, name_de)")
                         .eq("epoch_id", epoch_id)
                         .eq("team_id", player_team_id)
                         .execute()

@@ -27,6 +27,7 @@ import '../shared/SvgFilters.js';
 import '../shared/PlatformFooter.js';
 import './SimulationHeader.js';
 import './SimulationNav.js';
+import { t } from '../../utils/locale-fields.js';
 import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 /** Map tab path segments to localized labels. */
@@ -1061,7 +1062,9 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
   private _renderBreadcrumb() {
     const sim = appState.currentSimulation.value;
-    const simName = sim?.name ?? '';
+    // `t()` und nicht `sim.name`: der Weltenwaehler zwei Zeilen darueber
+    // zeigte „DER GASLICHT-SUND", die Brotkrume darunter „The Gaslit Reach".
+    const simName = sim ? t(sim, 'name') : '';
     const viewLabel = getTabLabel(this.view);
     const sep = html`<span class="breadcrumb__sep">//</span>`;
 

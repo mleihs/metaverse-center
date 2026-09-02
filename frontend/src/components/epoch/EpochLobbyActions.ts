@@ -786,7 +786,9 @@ export class VelgEpochLobbyActions extends LitElement {
   private _renderSimPicker(joinableSims: import('../../types/index.js').Simulation[]) {
     // State: user has joined → show locked-in deployment card
     if (this.myParticipant) {
-      const simName = this.myParticipant.simulations?.name ?? msg('Unknown Simulation');
+      const simName = this.myParticipant.simulations
+        ? t(this.myParticipant.simulations, 'name')
+        : msg('Unknown Simulation');
       return html`
         <div class="deployed">
           <div class="deployed__card">
@@ -850,7 +852,7 @@ export class VelgEpochLobbyActions extends LitElement {
   }
 
   private _renderOccupiedSlot(p: EpochParticipant, index: number) {
-    const simName = p.simulations?.name ?? msg('Unknown');
+    const simName = p.simulations ? t(p.simulations, 'name') : msg('Unknown');
     const isBot = p.is_bot;
     const personality = (p.bot_players?.personality ?? 'sentinel') as BotPersonality;
     const accentColor = isBot

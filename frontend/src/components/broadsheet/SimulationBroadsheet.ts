@@ -513,7 +513,7 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
 
   protected render() {
     const sim = appState.currentSimulation.value;
-    const simName = sim?.name ?? '';
+    const simName = sim ? t(sim, 'name') : '';
     const atmosphere = this._atmosphereClass;
 
     return html`

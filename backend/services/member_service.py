@@ -44,7 +44,7 @@ class MemberService:
         """
         response = await (
             supabase.table(cls.table_name)
-            .select("simulation_id, member_role, joined_at, simulations(name, slug)")
+            .select("simulation_id, member_role, joined_at, simulations(name, name_de, slug)")
             .eq("user_id", str(user_id))
             .order("joined_at", desc=True)
             .execute()
