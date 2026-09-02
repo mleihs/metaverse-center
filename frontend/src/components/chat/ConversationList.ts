@@ -371,6 +371,16 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
     }
 
 
+    /* Amber, weil die Marke Chrome ist und keine Weltfarbe: sie muss auch
+       dann noch als „Verschluss" lesbar sein, wenn ein Simulationsthema die
+       Umgebung neu einfaerbt. */
+    .conversation__seal {
+      display: inline-flex;
+      vertical-align: -1px;
+      margin-right: var(--space-1);
+      color: var(--color-accent-amber);
+    }
+
     .conversation__agent-name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
@@ -982,7 +992,19 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
                 class="conversation__agent-name"
                 @dblclick=${(e: Event) => this._startRename(e, conversation)}
                 title=${this.readonly ? displayName : msg('Double-click to rename')}
-              >${displayName}</div>`
+              >${
+                /*
+                 * Das Schloss steht NUR, wenn die Sitzung freigegeben ist —
+                 * andernfalls ist die Zeile ohnehin nicht in der Liste. Ohne
+                 * diese Marke saehe eine freigegebene Sperre wie ein
+                 * gewoehnliches Gespraech aus, und man wuesste beim
+                 * Zuschliessen nicht mehr, welche es waren.
+                 */
+                conversation.locked
+                  ? html`<span class="conversation__seal" title=${msg('Under seal')}
+                      aria-label=${msg('Under seal')}>${icons.lock(11)}</span>`
+                  : nothing
+              }${displayName}</div>`
           }
           ${
             !this.readonly
