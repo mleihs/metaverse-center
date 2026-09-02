@@ -30,6 +30,7 @@ import './AgentEditModal.js';
 import './AgentDetailsPanel.js';
 import './VelgRecruitmentOffice.js';
 import { buildAptitudeIndex } from '../../utils/aptitudes.js';
+import { professionLabel } from '../../utils/profession.js';
 
 @localized()
 @customElement('velg-agents-view')
@@ -358,9 +359,9 @@ export class VelgAgentsView extends SignalWatcher(PaginatedLoaderMixin(LitElemen
                     ></velg-aptitude-bars>
                   </div>
                 `
-                    : agent.primary_profession
+                    : professionLabel(agent.primary_profession)
                       ? html`
-                  <span class="lineup__role">${agent.primary_profession}</span>
+                  <span class="lineup__role">${professionLabel(agent.primary_profession)}</span>
                 `
                       : nothing
                 }

@@ -14,6 +14,7 @@ import { icons } from '../../utils/icons.js';
 import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 import { operativeOverlayStyles } from './deploy-operative-styles.js';
 import '../shared/VelgGameCard.js';
+import { professionLabel } from '../../utils/profession.js';
 
 const OP_TYPES: OperativeType[] = [
   'spy',
@@ -836,7 +837,7 @@ export class VelgDraftRosterPanel extends LitElement {
             const best = apt ? this._getBestAptitude(apt) : null;
             const fan = this._fanGeometry(i, total);
 
-            const subtitle = [agent.primary_profession, agent.gender]
+            const subtitle = [professionLabel(agent.primary_profession), agent.gender]
               .filter(Boolean)
               .join(' \u00b7 ');
 

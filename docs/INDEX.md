@@ -81,6 +81,7 @@ tags: [index, catalog, documentation]
 |----------|---------|------|------|--------|
 | [Architecture Cleanliness — Verification & Remediation Plan](analysis/architecture-cleanliness-verification-2026-04-17.md) | — | 2026-04-17 | de | active |
 | [Breitentauglichkeit — Analyse & Maßnahmenkatalog](analysis/breitentauglichkeit-analyse.md) | 1.0 | 2026-03-08 | de | active |
+| [Berufe ohne Bedeutung — drei Systeme, die einander nicht kennen](analysis/berufe-ohne-bedeutung-2026-09-02.md) | — | 2026-09-02 | de | active |
 | [Epoch 2-Player Simulation: 50-Game Analysis](analysis/epoch-2p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 3-Player Simulation: 50-Game Analysis](analysis/epoch-3p-analysis.md) | 1.0 | 2026-02-28 | en | active |
 | [Epoch 4-Player Simulation: 50-Game Analysis](analysis/epoch-4p-analysis.md) | 1.0 | 2026-02-28 | en | active |

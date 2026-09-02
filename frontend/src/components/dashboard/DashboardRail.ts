@@ -40,6 +40,7 @@ import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
 import '../platform/VelgAchievementSummaryCard.js';
 import '../shared/VelgGameCard.js';
+import { professionLabel } from '../../utils/profession.js';
 
 /** Die grösste Stärke, die eine Resonanz tragen kann — der Balken misst dagegen. */
 const MAX_MAGNITUDE = 10;
@@ -257,7 +258,7 @@ export class VelgDashboardRail extends LitElement {
             size="md"
             .name=${agent.name}
             image-url=${agent.portrait_image_url ?? ''}
-            .subtitle=${t(agent, 'profession')}
+            .subtitle=${professionLabel(t(agent, 'profession'))}
             @click=${() => navigate(`/simulations/${agent.simulation_id}/agents/${agent.slug}`)}
           ></velg-game-card>
         </div>

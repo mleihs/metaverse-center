@@ -46,6 +46,7 @@ import type { LandingCitizen } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import '../shared/VelgGameCard.js';
+import { professionLabel } from '../../utils/profession.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
 /** Die Faecherung des Entwurfs: drei Karten, leicht ueberlappend. */
@@ -434,7 +435,7 @@ export class VelgLandingCitizens extends LitElement {
                   size="md"
                   .name=${citizen.name}
                   image-url=${citizen.portrait_image_url ?? ''}
-                  .subtitle=${[t(citizen, 'profession'), citizen.zone_name]
+                  .subtitle=${[professionLabel(t(citizen, 'profession')), citizen.zone_name]
                     .filter(Boolean)
                     .join(' · ')}
                   @click=${() =>

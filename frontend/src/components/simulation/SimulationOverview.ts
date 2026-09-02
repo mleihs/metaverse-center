@@ -36,6 +36,7 @@ import { stripLayout } from './overview-strip.js';
 import '../shared/VelgGameCard.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
+import { professionLabel } from '../../utils/profession.js';
 
 /**
  * How deep the two collection reads go.
@@ -988,7 +989,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
         </span>
         <span style="min-width: 0">
           <span class="duty__name">${agent.name}</span>
-          <span class="duty__role">${t(agent, 'primary_profession')}</span>
+          <span class="duty__role">${professionLabel(t(agent, 'primary_profession'))}</span>
         </span>
         <span class="duty__sum">${entry.sum}</span>
       </button>
@@ -1041,7 +1042,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
                 rarity=${entry.legendary ? 'legendary' : entry.best.value >= 7 ? 'rare' : 'common'}
                 .name=${entry.agent.name}
                 .imageUrl=${entry.agent.portrait_image_url ?? ''}
-                .subtitle=${t(entry.agent, 'primary_profession')}
+                .subtitle=${professionLabel(t(entry.agent, 'primary_profession'))}
                 .aptitudes=${entry.aptitudes}
                 .primaryStat=${entry.sum}
                 .secondaryStat=${entry.best.value}
