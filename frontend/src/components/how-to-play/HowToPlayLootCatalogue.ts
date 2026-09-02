@@ -287,7 +287,7 @@ export class VelgHtpLootCatalogue extends LitElement {
       ></velg-error-state>`;
     }
     const cat = this._catalogue;
-    if (!cat || !cat.items.length) return nothing;
+    if (!cat?.items.length) return nothing;
 
     const nachArchetyp = new Map<string, LootCatalogueEntry[]>();
     for (const item of cat.items) {
