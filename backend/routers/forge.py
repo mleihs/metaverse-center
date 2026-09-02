@@ -477,6 +477,7 @@ async def test_byok_key(
     body: TestBYOKRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_effective_supabase),
+    user_supabase=Depends(get_supabase),
     admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[TestBYOKResult]:
     """Test a BYOK API key against its provider without storing it.
@@ -485,12 +486,19 @@ async def test_byok_key(
     - OpenRouter: GET /api/v1/auth/key (key info, requires valid auth)
     - Replicate: GET /v1/account (account info)
 
-    Nothing is stored, so this needs no user-JWT client — only the same policy
-    gate as the write endpoints.
+    Nothing is stored. The user-JWT client is here for the other half: when the
+    key that verified is the one already on file, ``last_verified_at`` is
+    stamped, so "configured" stops being the only thing the panel can say about
+    a key that may have been revoked at the provider weeks ago.
     """
     await _check_byok_access(supabase, admin_supabase, user)
 
     result = await _draft_service.test_provider_key(body.provider, body.key)
+    if result.valid:
+        # Only meaningful about the key on file — the helper compares before it
+        # stamps, so testing somebody else's key does not mark this account's
+        # as verified.
+        await _draft_service.mark_key_verified(user_supabase, user.id, body.provider, body.key)
     await AuditService.safe_log(
         supabase,
         None,
@@ -721,7 +729,7 @@ async def purchase_classified_dossier(
     )
 
     # Get user's BYOK key if available
-    or_key, _ = await ForgeDraftService.get_user_keys(supabase, user.id)
+    or_key, _ = await ForgeDraftService.get_user_keys(user.id)
 
     background_tasks.add_task(
         safe_background(ForgeLoreService.generate_dossier),
@@ -763,10 +771,7 @@ async def evolve_dossier_section(
     # Get user's BYOK key if available
     or_key = None
     try:
-        or_key, _ = await ForgeDraftService.get_user_keys(
-            admin_supabase,
-            user.id,
-        )
+        or_key, _ = await ForgeDraftService.get_user_keys(user.id)
     except Exception:
         logger.debug("Optional BYOK key retrieval failed, continuing without", exc_info=True)
 
@@ -817,7 +822,7 @@ async def purchase_recruitment(
         "recruitment",
     )
 
-    or_key, rep_key = await ForgeDraftService.get_user_keys(supabase, user.id)
+    or_key, rep_key = await ForgeDraftService.get_user_keys(user.id)
 
     background_tasks.add_task(
         safe_background(_orchestrator_service.recruit_agents),

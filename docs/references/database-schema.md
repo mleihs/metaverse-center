@@ -3702,3 +3702,62 @@ SECURITY DEFINER, REVOKE FROM PUBLIC/anon/authenticated. Atomisches Upsert fuer 
 - `idx_bonds_user_sim(user_id, simulation_id)`, `idx_bonds_agent(agent_id)`, `idx_bonds_active(simulation_id, status) WHERE status IN (...)`
 - `idx_whispers_bond_created(bond_id, created_at DESC)`, `idx_whispers_unread(bond_id) WHERE read_at IS NULL`
 - `idx_memories_bond_created(bond_id, created_at DESC)`, `idx_memories_bond_type(bond_id, memory_type)`
+
+---
+
+## `user_api_keys` — persönliche API-Schlüssel (Migration 333)
+
+Ersetzt die zwei Spalten `user_wallets.encrypted_openrouter_key` /
+`encrypted_replicate_key` (Migration 055). Der Grund ist nicht Ästhetik: zwei
+Spalten beantworten drei Fragen nicht — welcher Verschlüsselungsschlüssel den
+Geheimtext erzeugt hat (also ob man ihn je rotieren kann), wie ein dritter
+Anbieter dazukommt, und ob ein hinterlegter Schlüssel überhaupt noch trägt.
+
+| Spalte | Typ | Beschreibung |
+|--------|-----|--------------|
+| `id` | `uuid PK` | |
+| `user_id` | `uuid NOT NULL REFERENCES auth.users ON DELETE CASCADE` | |
+| `provider` | `text NOT NULL CHECK (openrouter\|replicate)` | Ein weiterer Anbieter ist eine Zeile, keine Spalte |
+| `encrypted_key` | `text NOT NULL` | Fernet/AES-256, `backend/utils/encryption.py` |
+| `key_version` | `integer NOT NULL DEFAULT 1 CHECK (>= 1)` | 1-basierte Stelle in `SETTINGS_ENCRYPTION_KEYS` (ältester zuerst). Ohne diesen Wert ist ein Schlüsselwechsel nicht durchführbar, weil niemand weiß, was noch offen ist |
+| `last_verified_at` | `timestamptz` | Zuletzt beim Anbieter bestätigt — und nur, wenn der geprüfte Schlüssel der HINTERLEGTE war |
+| `last_used_at` | `timestamptz` | Zuletzt für einen Aufruf hergegeben; stündlich gestempelt, nicht pro Aufruf |
+| `created_at` / `updated_at` | `timestamptz` | Trigger `set_updated_at` |
+
+`UNIQUE (user_id, provider)`.
+
+### RLS
+
+Eingeschaltet, mit genau EINER Regel: `Platform admins manage all API keys`.
+Für `authenticated` gibt es bewusst KEINE Leseregel — der Geheimtext verlässt
+die Datenbank nur über den `service_role`-Client. Die alte Wallet-Regel
+erlaubte dem Besitzer `SELECT` auf die eigene Zeile und damit auf den
+Geheimtext (Befund 9); die Oberfläche zeigt ohnehin nie mehr als „hinterlegt /
+nicht hinterlegt".
+
+Folge für den Code: `ForgeDraftService.get_user_keys(user_id)` nimmt **keinen
+Client** entgegen und holt sich das Admin-Singleton selbst. Ein Parameter
+könnte den Nutzer-Client bekommen, RLS antwortete mit einer leeren Menge statt
+mit einem Fehler, und jeder Aufruf fiele stillschweigend auf den
+Plattformschlüssel zurück.
+
+### RPCs (SECURITY DEFINER)
+
+| Funktion | Signatur | Beschreibung |
+|----------|----------|--------------|
+| `fn_set_user_api_key` | `(p_provider text, p_encrypted_key text, p_key_version integer DEFAULT 1)` | Upsert für `auth.uid()`. **Kein `p_user_id`** — die stärkste Form der Selbstprüfung aus ADR-006 ist die, in der es keinen fremden Nutzer zu übergeben gibt. Setzt `last_verified_at` zurück (ein neuer Schlüssel ist nicht der geprüfte alte). `authenticated` + `service_role`. |
+| `fn_clear_user_api_key` | `(p_provider text)` | Löscht die Zeile für `auth.uid()`. Widerruf entfernt, statt nur zu sperren (Befund 6). |
+| `fn_mark_user_api_key_verified` | `(p_provider text)` | Stempelt `last_verified_at`. Der Server vergleicht vorher, ob der geprüfte Schlüssel der hinterlegte ist. |
+
+`fn_update_user_byok_keys(uuid, text, text, boolean, boolean)` ist seit 333
+**depreciert**: der Rumpf schreibt in `user_api_keys` weiter und hält die alten
+Spalten als Echo synchron, damit ein Backend-Stand vor dem Deploy nichts
+verliert. Sie fällt zusammen mit den beiden Spalten in einer späteren
+Migration.
+
+### Leser mit einer Wahrheit
+
+`fn_get_wallet_summary` und `fn_user_has_byok_bypass` lesen die
+Schlüssel-Existenz seit 333 aus `user_api_keys`, `admin_get_user` ebenfalls
+(nur `has_*_key` als Tatsache, nie der Wert). `byok_status` trägt zusätzlich
+`openrouter_verified_at` / `replicate_verified_at`.

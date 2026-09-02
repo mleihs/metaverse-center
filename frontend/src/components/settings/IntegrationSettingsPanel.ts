@@ -17,6 +17,8 @@ interface IntegrationSection {
   id: string;
   title: string;
   fields: IntegrationField[];
+  /** Optional line under the header, for a section whose name is not enough. */
+  note?: string;
   /** Optional contextual help link rendered next to the section header. */
   helpTip?: { topic: TopicSlug; label: string };
 }
@@ -87,8 +89,17 @@ function getSections(): IntegrationSection[] {
     },
     {
       id: 'ai_providers',
-      title: msg('AI Provider Overrides'),
-      helpTip: { topic: 'byok', label: msg('What is BYOK?') },
+      // Finding 7: two different things wore one name. These fields belong to
+      // THIS WORLD – they are stored in `simulation_settings`, they apply to
+      // everyone who plays here, and whoever owns the world pays for them. A
+      // key that belongs to a PERSON lives in the Keyring in their file and is
+      // billed to them. The section used to be called "AI Provider Overrides"
+      // and carried a "What is BYOK?" link, which said the opposite.
+      title: msg('AI provider keys for this world'),
+      note: msg(
+        'Applies to this world only and is billed to whoever owns it. Your own personal key lives under Keyring in your file.',
+      ),
+      helpTip: { topic: 'byok', label: msg('World key or personal key?') },
       fields: [
         {
           key: 'openrouter_api_key',
@@ -116,6 +127,13 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
     settingsStyles,
     titleGroupStyles,
     css`
+      .int-section__note {
+        margin: 0 0 var(--space-3);
+        font-size: var(--text-xs);
+        line-height: var(--leading-relaxed);
+        color: var(--color-text-muted);
+      }
+
       .int-section {
         display: flex;
         flex-direction: column;
@@ -344,6 +362,7 @@ export class VelgIntegrationSettingsPanel extends BaseSettingsPanel {
                   ${this._savingSections.has(section.id) ? msg('Saving...') : msg('Save')}
                 </button>
               </div>
+              ${section.note ? html`<p class="int-section__note">${section.note}</p>` : nothing}
               <div class="settings-form">
                 ${section.fields.map((field) => this._renderField(field))}
               </div>

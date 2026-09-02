@@ -201,6 +201,14 @@ export interface TokenPurchase {
 export interface BYOKStatus {
   has_openrouter_key: boolean;
   has_replicate_key: boolean;
+  /**
+   * When the STORED key last went through at the provider (migration 333).
+   * `null` means never checked, not invalid – "configured" says nothing about
+   * whether a key still works, and a key revoked at OpenRouter three weeks ago
+   * looked identical to a working one.
+   */
+  openrouter_verified_at: string | null;
+  replicate_verified_at: string | null;
   byok_allowed: boolean;
   byok_bypass: boolean;
   system_bypass_enabled: boolean;

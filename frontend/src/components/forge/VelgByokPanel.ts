@@ -28,6 +28,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { forgeApi, type TestBYOKResult } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
+import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
@@ -527,6 +528,13 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       color: var(--color-text-quiet);
     }
 
+    .byok__key-verified {
+      font-family: var(--font-mono, monospace);
+      font-size: var(--text-xs, 12px);
+      color: var(--color-text-quiet);
+      margin: var(--space-1, 4px) 0 0;
+    }
+
     /* ── Nicht freigeschaltet ────────────────────────── */
 
     .byok__notice {
@@ -771,6 +779,8 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
           </span>
         </div>
 
+        ${hasKey ? this._renderVerifiedLine(provider) : nothing}
+
         <p class="byok__key-desc">
           ${description}
           <a class="byok__key-link" href=${signupUrl} target="_blank" rel="noopener noreferrer">
@@ -848,6 +858,30 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
             : nothing
         }
       </div>
+    `;
+  }
+
+  /**
+   * What a stored key is actually WORTH knowing about.
+   *
+   * "configured" only ever said that a row exists. A key revoked at the
+   * provider three weeks ago looked exactly like a working one, and the first
+   * sign was a failed generation. The stamp is written when the key on file is
+   * the one that just passed "Verify Clearance" (migration 333).
+   */
+  private _renderVerifiedLine(provider: 'openrouter' | 'replicate') {
+    const byok = forgeStateManager.byokStatus.value;
+    const verifiedAt =
+      provider === 'openrouter' ? byok.openrouter_verified_at : byok.replicate_verified_at;
+
+    return html`
+      <p class="byok__key-verified">
+        ${
+          verifiedAt
+            ? msg(str`Confirmed at the provider on ${formatDate(verifiedAt)}`)
+            : msg('Never confirmed at the provider – enter the key and verify it.')
+        }
+      </p>
     `;
   }
 

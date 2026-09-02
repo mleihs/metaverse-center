@@ -128,6 +128,8 @@ class ForgeStateManager {
   readonly byokStatus = signal<BYOKStatus>({
     has_openrouter_key: false,
     has_replicate_key: false,
+    openrouter_verified_at: null,
+    replicate_verified_at: null,
     byok_allowed: false,
     byok_bypass: false,
     system_bypass_enabled: false,

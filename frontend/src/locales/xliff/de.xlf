@@ -1586,10 +1586,6 @@
   <source>Enter NewsAPI key...</source>
   <target>NewsAPI-Schlüssel eingeben...</target>
 </trans-unit>
-<trans-unit id="sc085e9fc5467b965">
-  <source>AI Provider Overrides</source>
-  <target>KI-Anbieter-Überschreibungen</target>
-</trans-unit>
 <trans-unit id="sf82256d2a11b1a97">
   <source>OpenRouter API Key</source>
   <target>OpenRouter API-Schlüssel</target>
@@ -23148,101 +23144,25 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Bring Your Own Key</source>
         <target>Eigener Schlüssel</target>
       </trans-unit>
-<trans-unit id="s687063f379d1d036">
-  <source>Supply your own OpenRouter + Replicate keys to bypass the platform forge-token quota and unlock unlimited AI generation.</source>
-        <target>Hinterlege deine eigenen OpenRouter- und Replicate-Schlüssel, um das Plattform-Forge-Token-Kontingent zu umgehen und unbegrenzte KI-Generierung freizuschalten.</target>
-      </trans-unit>
-<trans-unit id="s75a08ad733843755">
-  <source>Two optional keys: OpenRouter (language + agents) and Replicate (imagery)</source>
-        <target>Zwei optionale Schlüssel: OpenRouter (Sprache + Agenten) und Replicate (Bilder)</target>
-      </trans-unit>
-<trans-unit id="sedbaccac0de8c19b">
-  <source>AES-256 encrypted at rest, never echoed back in plain text after registration</source>
-        <target>AES-256-verschlüsselt gespeichert; nach der Registrierung nie wieder im Klartext sichtbar</target>
-      </trans-unit>
-<trans-unit id="s5c2c18dad6655fe0">
-  <source>Bypass the platform forge-token quota as soon as both keys are configured</source>
-        <target>Umgeht das Forge-Token-Kontingent, sobald beide Schlüssel konfiguriert sind</target>
-      </trans-unit>
 <trans-unit id="s11b10d3958184924">
   <source>Costs are billed directly to your OpenRouter and Replicate accounts</source>
         <target>Kosten werden direkt über deine OpenRouter- und Replicate-Konten abgerechnet</target>
-      </trans-unit>
-<trans-unit id="sca3c8572d7f40ba6">
-  <source>Configure inside the Forge Mint panel or under Settings → Integrations</source>
-        <target>Konfigurierbar im Forge-Mint-Panel oder unter Einstellungen → Integrationen</target>
-      </trans-unit>
-<trans-unit id="sa466de3decd24a8b">
-  <source>Every AI operation on the platform – narrative generation, agent dialogue, image materialization – consumes either a Forge Token from the platform quota or routes directly to an AI provider using your personal key. BYOK (Bring Your Own Key) lets you attach your own OpenRouter and Replicate accounts so the platform runs every request through your credentials instead of the shared pool.</source>
-        <target>Jede KI-Operation auf der Plattform – Narrativgenerierung, Agenten-Dialoge, Bild-Materialisierung – verbraucht entweder ein Forge-Token aus dem Plattform-Kontingent oder läuft direkt über einen KI-Anbieter mit deinem persönlichen Schlüssel. BYOK (Bring Your Own Key) bindet deine eigenen OpenRouter- und Replicate-Konten an, sodass die Plattform jede Anfrage über deine Anmeldedaten statt über den gemeinsamen Pool ausführt.</target>
       </trans-unit>
 <trans-unit id="s9d4d5ca21af22eec">
   <source>OpenRouter – Language Relay</source>
         <target>OpenRouter – Sprach-Relais</target>
       </trans-unit>
-<trans-unit id="s2738ab021c607e8f">
-  <source>Powers narrative generation, agent conversation, Astrolabe research, chat responses, and bureau terminal agent replies. An OpenRouter account gives you routed access to Claude, GPT, Gemini, Llama, and dozens of other models under a single key.</source>
-        <target>Treibt Narrativgenerierung, Agenten-Konversation, Astrolab-Recherche, Chat-Antworten und Antworten im Bureau-Terminal an. Ein OpenRouter-Konto ermöglicht dir geroutete Zugriffe auf Claude, GPT, Gemini, Llama und Dutzende weitere Modelle unter einem einzigen Schlüssel.</target>
-      </trans-unit>
 <trans-unit id="s9ea5c54e9072e14a">
   <source>Replicate – Visual Array</source>
         <target>Replicate – Visuelles Array</target>
-      </trans-unit>
-<trans-unit id="s3bbeae2f4f3db4bf">
-  <source>Powers Darkroom rendering, agent portraits, building imagery, and simulation lore visuals. Replicate hosts the FLUX and Stable Diffusion image pipelines that the platform calls for every visual generation.</source>
-        <target>Treibt Darkroom-Rendering, Agenten-Porträts, Gebäudebilder und Simulation-Lore-Grafiken an. Replicate hostet die FLUX- und Stable-Diffusion-Bildpipelines, die die Plattform für jede visuelle Generierung aufruft.</target>
-      </trans-unit>
-<trans-unit id="sfa169f5762affcd3">
-  <source>Both keys are encrypted with AES-256 at rest. After registration they are never echoed back in plain text – the panel only shows a masked preview and a revoke button. Keys can be replaced or revoked at any time, which invalidates the encrypted copy immediately.</source>
-        <target>Beide Schlüssel werden mit AES-256 verschlüsselt gespeichert. Nach der Registrierung werden sie nie mehr im Klartext angezeigt – das Panel zeigt nur eine maskierte Vorschau und einen Widerrufs-Button. Schlüssel lassen sich jederzeit ersetzen oder widerrufen; die verschlüsselte Kopie wird dabei sofort ungültig.</target>
-      </trans-unit>
-<trans-unit id="s790e286946c38061">
-  <source>When to register keys</source>
-        <target>Wann du Schlüssel registrieren solltest</target>
-      </trans-unit>
-<trans-unit id="s1ffcf4610afd1995">
-  <source>If you plan to mint many shards, generate agent portraits in bulk, or run long narrative sessions, BYOK removes the forge-token friction and reduces cost per run. If you are just exploring, the platform quota (or an Architect-granted bypass) is usually enough.</source>
-        <target>Wenn du viele Shards minten, Agenten-Porträts in großer Zahl generieren oder lange Narrativsitzungen fahren willst, nimmt BYOK die Forge-Token-Reibung raus und senkt die Kosten pro Durchlauf. Wer nur erkundet, kommt meist mit dem Plattform-Kontingent (oder einem von Architect gewährten Bypass) aus.</target>
       </trans-unit>
 <trans-unit id="s2a312ea8385e8db6">
   <source>Cost responsibility</source>
         <target>Kostenverantwortung</target>
       </trans-unit>
-<trans-unit id="sd791c62eaf4f25cc">
-  <source>When BYOK is active, every AI call is billed directly to your OpenRouter and Replicate accounts. The platform does not cap, proxy, or throttle those charges. Review your usage dashboards on both providers after heavy sessions.</source>
-        <target>Wenn BYOK aktiv ist, wird jeder KI-Aufruf direkt über deine OpenRouter- und Replicate-Konten abgerechnet. Die Plattform deckelt, proxied oder drosselt diese Abrechnungen nicht. Prüfe nach intensiven Sitzungen die Nutzungs-Dashboards beider Anbieter.</target>
-      </trans-unit>
-<trans-unit id="s805a15b8d0c85ade">
-  <source>Where to register keys</source>
-        <target>Wo du Schlüssel registrierst</target>
-      </trans-unit>
-<trans-unit id="s546d0589e0163de8">
-  <source>Forge Mint</source>
-        <target>Forge Mint</target>
-      </trans-unit>
-<trans-unit id="s8afac70a7bfebe0d">
-  <source>Open the Mint panel from the Forge – the BYOK card appears below the token bundles.</source>
-        <target>Öffne das Mint-Panel aus der Forge heraus – die BYOK-Karte erscheint unterhalb der Token-Bundles.</target>
-      </trans-unit>
-<trans-unit id="s9da23253d91b426d">
-  <source>Settings → Integrations</source>
-        <target>Einstellungen → Integrationen</target>
-      </trans-unit>
-<trans-unit id="s2980d3cd6d171156">
-  <source>Owners and architects can register per-simulation AI Provider Overrides here.</source>
-        <target>Besitzer und Architekten können hier simulationspezifische KI-Provider-Overrides registrieren.</target>
-      </trans-unit>
 <trans-unit id="sf4666d0f2ece2009">
   <source>Admin → Forge</source>
         <target>Admin → Forge</target>
-      </trans-unit>
-<trans-unit id="sa1c9287a59d19536">
-  <source>Platform admins manage their own personal keys in SEC-08.</source>
-        <target>Plattform-Admins verwalten ihre persönlichen Schlüssel in SEC-08.</target>
-      </trans-unit>
-<trans-unit id="s7851ee87a941179c">
-  <source>Get your keys at openrouter.ai/keys and replicate.com/account/api-tokens. Paste them into the Forge Mint panel (or Settings → Integrations), use the Verify Clearance button to confirm a live round-trip, and hit Register. The platform switches to BYOK routing immediately – the "CLEARANCE: UNLIMITED" banner confirms the bypass is active.</source>
-        <target>Hole dir die Schlüssel auf openrouter.ai/keys und replicate.com/account/api-tokens. Füge sie im Forge-Mint-Panel (oder unter Einstellungen → Integrationen) ein, bestätige den Live-Round-Trip mit dem Verify-Clearance-Button und klicke Registrieren. Die Plattform schaltet sofort auf BYOK-Routing um – das Banner "CLEARANCE: UNLIMITED" bestätigt, dass der Bypass aktiv ist.</target>
       </trans-unit>
 <trans-unit id="s2d523ae9ceb39e0e">
   <source>Form emotional bonds with agents who notice your attention and begin sharing their inner thoughts.</source>
@@ -30222,6 +30142,110 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="se7ee3136a0cfa861">
   <source>Open the Keyring in your file</source>
   <target>Schlüsselbund in deiner Akte öffnen</target>
+</trans-unit>
+<trans-unit id="s0016a6317abe9174">
+  <source>Confirmed at the provider on <x id="0" equiv-text="${formatDate(verifiedAt)}"/></source>
+  <target>Beim Anbieter bestätigt am <x id="0" equiv-text="${formatDate(verifiedAt)}"/></target>
+</trans-unit>
+<trans-unit id="s5eeaebdc11a19b5b">
+  <source>Never confirmed at the provider – enter the key and verify it.</source>
+  <target>Noch nie beim Anbieter bestätigt – trag den Schlüssel ein und prüf ihn.</target>
+</trans-unit>
+<trans-unit id="s77a6b486572811c6">
+  <source>Optionally run the Forge on your own OpenRouter and Replicate accounts instead of the project key.</source>
+  <target>Die Schmiede wahlweise über deine eigenen Konten bei OpenRouter und Replicate laufen lassen statt über den Projektschlüssel.</target>
+</trans-unit>
+<trans-unit id="s422396813c6628af">
+  <source>Entirely optional – without a key of your own, everything runs on the project key</source>
+  <target>Völlig freiwillig – ohne eigenen Schlüssel läuft alles über den Projektschlüssel</target>
+</trans-unit>
+<trans-unit id="s1138d1d5138f1ac7">
+  <source>Two keys: OpenRouter (text) and Replicate (imagery), stored AES-256 encrypted</source>
+  <target>Zwei Schlüssel: OpenRouter (Text) und Replicate (Bilder), AES-256-verschlüsselt hinterlegt</target>
+</trans-unit>
+<trans-unit id="s60b15e0a858db1dd">
+  <source>It reaches the Forge and the autonomous events of worlds you own – not chat</source>
+  <target>Er wirkt in der Schmiede und bei den autonomen Ereignissen deiner eigenen Welten – nicht im Gespräch</target>
+</trans-unit>
+<trans-unit id="s88f0eff59b48df6c">
+  <source>A platform admin enables it per account; the token waiver is a separate switch</source>
+  <target>Ein Plattform-Admin schaltet ihn pro Konto frei; der Token-Erlass ist ein eigener Schalter</target>
+</trans-unit>
+<trans-unit id="sadc3e68b6843fe16">
+  <source>Enter them under Keyring in your personnel file</source>
+  <target>Einzutragen unter „Schlüsselbund" in deiner Personalakte</target>
+</trans-unit>
+<trans-unit id="sa64eb235fd05fc2b">
+  <source>BYOK is a mode, not a rule. Without a key of your own, every AI operation on the platform runs on the project key – that is the normal case, it costs you nothing, and nothing here needs doing. A key you enter is used instead of the project key wherever it reaches, and the bill goes to your provider account rather than to the platform.</source>
+  <target>BYOK ist ein Modus, keine Regel. Ohne eigenen Schlüssel läuft jede KI-Anfrage der Plattform über den Projektschlüssel – das ist der Normalfall, er kostet dich nichts, und hier ist nichts zu tun. Ein eingetragener Schlüssel tritt an die Stelle des Projektschlüssels, so weit er reicht, und die Rechnung geht an dein Anbieterkonto statt an die Plattform.</target>
+</trans-unit>
+<trans-unit id="seee315a5d7bd9ae6">
+  <source>Where the key actually reaches</source>
+  <target>Wie weit der Schlüssel wirklich reicht</target>
+</trans-unit>
+<trans-unit id="s89faf25e104707f2">
+  <source>Two places, not everywhere: the Forge – the whole world-building run, including lore, theme, translations and the Darkroom images – and phase 9 of the heartbeat, the autonomous events of worlds you own. Chat, the chronicle, resonance, the dungeon, the bureau terminal and social posts run on the model configuration of the world they belong to and never see a personal key.</source>
+  <target>Zwei Stellen, nicht überall: die Schmiede – der ganze Weltenbau samt Überlieferung, Erscheinungsbild, Übersetzungen und Dunkelkammer-Bildern – und Phase 9 des Herzschlags, also die autonomen Ereignisse deiner eigenen Welten. Gespräch, Chronik, Resonanz, Verlies, Büro-Terminal und Social-Beiträge laufen über die Modell-Einstellung ihrer Welt und sehen nie einen persönlichen Schlüssel.</target>
+</trans-unit>
+<trans-unit id="s033542f9edae79eb">
+  <source>Powers the text side of the Forge: Astrolabe research, philosophical anchors, agents and buildings, lore, dossiers and their translations. An OpenRouter account gives you routed access to Claude, GPT, Gemini, Llama and dozens of other models under a single key.</source>
+  <target>Treibt die Textseite der Schmiede an: Astrolabium-Recherche, philosophische Anker, Agenten und Gebäude, Überlieferung, Dossiers und deren Übersetzungen. Ein OpenRouter-Konto gibt dir unter einem Schlüssel Zugang zu Claude, GPT, Gemini, Llama und Dutzenden weiteren Modellen.</target>
+</trans-unit>
+<trans-unit id="scb311d5939f03ac1">
+  <source>Powers Darkroom rendering, agent portraits, building imagery and simulation lore visuals. Replicate hosts the FLUX and Stable Diffusion image pipelines that the platform calls for every visual generation.</source>
+  <target>Treibt die Dunkelkammer an: Agentenporträts, Gebäudebilder und die Bilder zur Überlieferung. Replicate betreibt die Bildstrecken FLUX und Stable Diffusion, die die Plattform für jede Bilderzeugung ruft.</target>
+</trans-unit>
+<trans-unit id="sb88d895600ce2c56">
+  <source>Both keys are encrypted with AES-256 at rest and never leave the server. After you enter one, the panel only reports that a key is on file and when it was last confirmed at the provider – the value itself is never shown again. Revoking deletes the stored key. If an administrator withdraws permission, or switches personal keys off platform-wide, your key stops being used from the very next call.</source>
+  <target>Beide Schlüssel liegen AES-256-verschlüsselt und verlassen den Server nie. Nach dem Eintragen meldet das Feld nur noch, dass ein Schlüssel hinterlegt ist und wann er zuletzt beim Anbieter bestätigt wurde – der Wert selbst wird nicht wieder gezeigt. Widerrufen löscht den hinterlegten Schlüssel. Nimmt eine Verwaltung die Erlaubnis zurück oder schaltet eigene Schlüssel plattformweit ab, wird deiner ab dem nächsten Aufruf nicht mehr benutzt.</target>
+</trans-unit>
+<trans-unit id="s268fa2f5b9eea354">
+  <source>Two switches, not one</source>
+  <target>Zwei Schalter, nicht einer</target>
+</trans-unit>
+<trans-unit id="s10ab39d2e50ccbf8">
+  <source>Whether you may use a personal key and whether forging then costs you no tokens are separate decisions, both made by a platform admin. A key of your own does not automatically waive the forge tokens – the waiver is granted, and it only takes effect once both keys are on file, since only then does the platform stop paying.</source>
+  <target>Ob du einen eigenen Schlüssel benutzen darfst und ob das Schmieden dich dann keine Token kostet, sind zwei Entscheidungen, beide beim Plattform-Admin. Ein eigener Schlüssel erlässt die Schmiede-Token nicht von selbst – der Erlass wird gewährt, und er greift erst, wenn beide Schlüssel hinterlegt sind, denn erst dann zahlt die Plattform nicht mehr mit.</target>
+</trans-unit>
+<trans-unit id="s3740685dcbad2177">
+  <source>While your key is in use, those calls are billed directly to your OpenRouter and Replicate accounts. The platform does not cap, proxy or throttle those charges, and they do not count against its own budget. Review your usage dashboards on both providers after heavy sessions.</source>
+  <target>Solange dein Schlüssel benutzt wird, gehen diese Aufrufe direkt auf deine Konten bei OpenRouter und Replicate. Die Plattform deckelt, vermittelt und drosselt diese Kosten nicht, und sie zählen auch nicht gegen ihr eigenes Budget. Sieh nach starken Sitzungen in die Verbrauchsübersichten beider Anbieter.</target>
+</trans-unit>
+<trans-unit id="s891d35ac7e621b2d">
+  <source>Where to enter keys</source>
+  <target>Wo Schlüssel eingetragen werden</target>
+</trans-unit>
+<trans-unit id="s4f7208251e2b1b40">
+  <source>In your personnel file, next to Identity and Correspondence – the key belongs to you, not to a world.</source>
+  <target>In deiner Personalakte, neben Identität und Korrespondenz – der Schlüssel gehört dir, nicht einer Welt.</target>
+</trans-unit>
+<trans-unit id="s5d0546282c62738b">
+  <source>Platform admins reach the same panel in SEC-08.</source>
+  <target>Plattform-Admins erreichen dasselbe Feld unter SEC-08.</target>
+</trans-unit>
+<trans-unit id="s9f4560dd7f7ca239">
+  <source>Not the same thing</source>
+  <target>Nicht dasselbe</target>
+</trans-unit>
+<trans-unit id="sc231e84d1543a5d0">
+  <source>Settings → Integrations sets AI provider keys for ONE world, paid by whoever owns it. That is a world’s setting, not your key.</source>
+  <target>Einstellungen → Integrationen setzt KI-Schlüssel für EINE Welt, bezahlt von der Person, der sie gehört. Das ist die Einstellung einer Welt, nicht dein Schlüssel.</target>
+</trans-unit>
+<trans-unit id="s5ef57483a14ed517">
+  <source>Get your keys at openrouter.ai/keys and replicate.com/account/api-tokens. Enter them under Keyring in your personnel file, use Verify Clearance to confirm a live round-trip, and register. If the section says the account runs on the project key, personal keys have not been enabled for you – an administrator does that.</source>
+  <target>Deine Schlüssel bekommst du auf openrouter.ai/keys und replicate.com/account/api-tokens. Trag sie unter „Schlüsselbund" in deiner Personalakte ein, bestätige mit „Freigabe prüfen" einen echten Durchgang und registriere sie. Steht dort, das Konto laufe über den Projektschlüssel, sind eigene Schlüssel für dich noch nicht freigeschaltet – das macht eine Verwaltung.</target>
+</trans-unit>
+<trans-unit id="s693dd9d2147c61a9">
+  <source>AI provider keys for this world</source>
+  <target>KI-Schlüssel für diese Welt</target>
+</trans-unit>
+<trans-unit id="sdff8cca6ced12468">
+  <source>Applies to this world only and is billed to whoever owns it. Your own personal key lives under Keyring in your file.</source>
+  <target>Gilt nur für diese Welt und geht auf die Rechnung der Person, der sie gehört. Dein eigener Schlüssel liegt unter „Schlüsselbund" in deiner Akte.</target>
+</trans-unit>
+<trans-unit id="scf744818b4c84509">
+  <source>World key or personal key?</source>
+  <target>Weltschlüssel oder eigener Schlüssel?</target>
 </trans-unit>
 </body>
 </file>

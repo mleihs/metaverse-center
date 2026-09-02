@@ -1452,6 +1452,25 @@ interface UserWallet {
                                       // TRUE when account_tier IN ('architect', 'director').
   byok_bypass: boolean;              // Per-user BYOK bypass for token costs.
   byok_allowed: boolean;             // Per-user BYOK access (when policy is 'per_user').
+  // NO key material. The encrypted_* fields were removed in migration 333 —
+  // a personal key belongs to the person, not to the Forge wallet, and now
+  // lives in `user_api_keys` (one row per provider, service_role only).
+}
+```
+
+**BYOKStatus** (from `fn_get_wallet_summary`, extended in migration 333):
+
+```typescript
+interface BYOKStatus {
+  has_openrouter_key: boolean;        // A key is on file. Says nothing about validity.
+  has_replicate_key: boolean;
+  openrouter_verified_at: string | null;  // When the STORED key last went through at
+  replicate_verified_at: string | null;   // the provider. null = never checked.
+  byok_allowed: boolean;              // May this person use a personal key at all.
+  byok_bypass: boolean;               // Per-user token waiver (admin policy).
+  system_bypass_enabled: boolean;
+  effective_bypass: boolean;          // Waiver in force: allowed + both keys + bypass.
+  access_policy: 'none' | 'all' | 'per_user';
 }
 ```
 
