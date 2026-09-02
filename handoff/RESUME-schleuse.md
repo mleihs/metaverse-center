@@ -1,29 +1,38 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
-**Stand 02.09.2026, nach Schritt 4.** Sieben Commits auf main, nichts gepusht.
-⚠ **Prod läuft `33b6e4d5`** (gemessen `curl -s https://metaverse.center/ | head -c 200`),
-NICHT mehr `dba881d0` — die Notiz war an dieser Stelle veraltet und ich habe
-den alten Wert mehrfach weitergetragen, bevor ich nachgesehen habe. Prod hat
-damit Schritt 1+2 der Schleuse, aber nicht 3/4 und nicht die Verdrahtung.
-🔑 Welcher Commit läuft, sagt der Server selbst — nie die eigene Notiz.
+**Stand 02.09.2026, nach Schritt 4 + Deploy.**
 
-    273e8d6a  Design-Paket, Prototyp-Extrakt, Nachträge
-    5ca4ef00  Schritt 1 — types/intake.ts, IntakeStateManager.ts, 15 Tests
-    cf0619c2  Schritt 2 — IntakeView, IntakeSensorTile, Responsive, 37 Übersetzungen
-    e8a86344  Resume-Notiz + Vorarbeit Schritt 3
-    e36a4bc7  Schritt 3 — IntakeCrucibleModal, intake-labels, 77 Übersetzungen
-    4de50a56  Berichtigung: der Endstand war ein anderer als der eigene Diff
-    (neu)     Schritt 4 — Quarantäne, Resonanz, Melden + Migr. 334 + 2 Endpunkte
+▶ **AUF PROD LIVE seit 12:18: `790d56a2`.** Schritte 1–4 der Schleuse sind
+draussen, die Verdrahtung auch, Migration 334 ist angewendet (mit Ledger-Zeile,
+nachgemessen), und `news_scanner_adapters` enthält `bluesky`.
 
-▶ **ALS NÄCHSTES: Schritt 5** — Sichtung (`IntakeTriageModal`) mit
-Story-Bündelung, Filtern, Mehrfachauswahl, Tastatur und Rauschen.
+⚠ **DER LETZTE RIEGEL STEHT NOCH:** `news_scanner_enabled = false`. Solange er
+steht, läuft kein Zyklus und die Kammern bleiben leer. Ein Umlegen startet
+einen wiederkehrenden Auftrag (6 h) mit Modellaufrufen; `auto_create` bleibt
+`false`, es entsteht also nichts ohne einen Menschen. Rücknehmbar durch
+Zurückstellen.
 
-⚠ **MIGRATION 334 IST NIRGENDS ANGEWENDET.** Weder lokal (es lief kein
-Supabase) noch auf Prod. Bis sie läuft, antwortet `POST …/intake/flag` mit
-einem Fehler: die CHECK-Bedingung auf `news_scan_candidates.status` kennt
-`flagged` nicht, und die beiden Spalten gibt es nicht. Der Melden-Knopf ist
-also gebaut, aber erst nach Migration + Deploy wirksam. **Nächste freie
-Migration bleibt damit 335.**
+    UPDATE platform_settings SET setting_value = 'true'::jsonb
+     WHERE setting_key = 'news_scanner_enabled';
+
+▶ **ALS NÄCHSTES: Schritt 5** — Sichtung (`IntakeTriageModal`).
+
+🔑 **Zwei Merksätze aus dem Deploy:**
+- **Ein einzelner Aufruf gegen eine Anwendung im Wechsel misst, welchen
+  Behälter er erwischt hat, nicht welcher Stand ausgerollt ist.** Gemessen:
+  `504 422 422 422 422` für dieselbe URL. Der belastbare Beleg ist
+  `/openapi.json` der laufenden Instanz.
+- **Coolify baut den Branch-Stand zum Zeitpunkt des Auslösens.** Ein Push
+  danach geht still nicht mit (dem Peer ist genau das passiert).
+
+⚠ **CI ist auf `main` ROT und war es schon vor diesem Deploy.** Zwei Ursachen,
+beide ohne Wirkung auf die Laufzeit: (1) Migration 299 besteht auf einer
+FRISCHEN Datenbank ihre eigene Selbstprüfung nicht, weil die Saat nach den
+Migrationen läuft — vorbestehend seit 31.08.; (2) eine Formatierung in
+`utils/key-providers.ts`, vom Peer inzwischen behoben (`64a67bbc`, nicht im
+Deploy). **Ein rotes CI ist als Tor wertlos** — beim nächsten echten Fehler
+sieht es genauso aus. Punkt (1) gehört aufgeräumt, vermutlich indem die Prüfung
+an die Saat-Reihenfolge gebunden wird statt entschärft.
 
 ## Wo alles liegt
 
