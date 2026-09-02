@@ -16,6 +16,8 @@ import {
   effectiveMagnitude,
   fromBrowseArticle,
   fromScanCandidate,
+  imageOf,
+  isScanCandidate,
   sourceKindOf,
   transformRequestOf,
 } from '../src/types/intake.js';
@@ -273,5 +275,71 @@ describe('impactWord', () => {
     expect(impactWord(3)).not.toBe(impactWord(4));
     expect(impactWord(6)).not.toBe(impactWord(7));
     expect(impactWord(8)).not.toBe(impactWord(9));
+  });
+});
+
+describe('imageOf', () => {
+  /*
+   * VIER Quellen, VIER Namen. Die Sichtung hat ein Bildfach, das wegfällt, wenn
+   * keines da ist — welche der beiden Gestalten eine Karte annimmt, hängt allein
+   * an dieser Funktion.
+   */
+  it('findet das Bild unter jedem der vier Namen', () => {
+    expect(imageOf({ thumbnail: 'https://g/a.jpg' })).toBe('https://g/a.jpg');
+    expect(imageOf({ image_url: 'https://n/b.jpg' })).toBe('https://n/b.jpg');
+    expect(imageOf({ socialimage: 'https://d/c.jpg' })).toBe('https://d/c.jpg');
+    expect(imageOf({ thumb: 'https://b/d.jpg' })).toBe('https://b/d.jpg');
+  });
+
+  /*
+   * ⚠ REGRESSION. Ein Grep nach `"(thumbnail|image_url|thumb|image)"` suchte den
+   * Schlüssel als GANZES Wort und übersah `socialimage`, das `image` ENTHÄLT,
+   * aber nicht so heisst. GDELT galt daraufhin als bildlose Quelle. Der Test
+   * hält den Namen fest, den das Muster nicht traf.
+   */
+  it('kennt GDELTs `socialimage` — den Namen, den ein zu enges Muster übersah', () => {
+    expect(imageOf({ socialimage: 'https://gdelt/x.png' })).toBe('https://gdelt/x.png');
+  });
+
+  it('nimmt nur, was wie eine Adresse aussieht', () => {
+    expect(imageOf({ thumbnail: '' })).toBeUndefined();
+    expect(imageOf({ thumbnail: 'nicht-mal-ein-schema' })).toBeUndefined();
+    expect(imageOf({ thumbnail: 42 })).toBeUndefined();
+  });
+
+  it('kommt mit fehlenden Rohdaten zurecht', () => {
+    expect(imageOf(null)).toBeUndefined();
+    expect(imageOf(undefined)).toBeUndefined();
+    expect(imageOf({})).toBeUndefined();
+  });
+
+  it('hängt das Bild an beide Zuflüsse', () => {
+    expect(
+      fromScanCandidate(candidate({ article_raw_data: { thumbnail: 'https://g/a.jpg' } })).imageUrl,
+    ).toBe('https://g/a.jpg');
+    expect(
+      fromBrowseArticle({
+        name: 'Titel',
+        platform: 'guardian',
+        url: 'https://example.org/c',
+        raw_data: { thumbnail: 'https://g/b.jpg' },
+      }).imageUrl,
+    ).toBe('https://g/b.jpg');
+  });
+
+  it('lässt das Bildfach weg, wo die Messdienste nichts liefern', () => {
+    expect(fromScanCandidate(candidate()).imageUrl).toBeUndefined();
+  });
+});
+
+describe('isScanCandidate', () => {
+  /*
+   * Der Unterschied entscheidet, ob „Verwerfen" ein `POST …/reject` ist oder nur
+   * eine Stufe im Zustand. Wer ihn falsch trifft, verliert entweder eine
+   * Entscheidung beim nächsten Laden oder ruft ins Leere.
+   */
+  it('unterscheidet Kandidat und gebrowsten Artikel', () => {
+    expect(isScanCandidate(candidate())).toBe(true);
+    expect(isScanCandidate({ name: 'x', platform: 'guardian' })).toBe(false);
   });
 });

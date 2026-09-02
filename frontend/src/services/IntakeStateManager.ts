@@ -43,6 +43,26 @@ export type IntakeRole = 'architect' | 'admin';
  */
 export const DEFAULT_DAILY_QUOTA = 5;
 
+/**
+ * Rückfall für die Empfehlungsschwelle, solange der Server keine geliefert hat.
+ *
+ * Derselbe Wert, den `compute_recommended_threshold` ohne Kandidaten zurückgibt
+ * (`scanner_service.py`). Ein anderer wäre eine zweite Meinung über dieselbe
+ * Sache.
+ */
+export const DEFAULT_RECOMMENDED_THRESHOLD = 0.6;
+
+/**
+ * Wie viele Kandidaten eine Ladung holt.
+ *
+ * Das Maximum des Endpunkts (`Query(ge=1, le=100)`). Die Vorgabe war 25, und
+ * eine Sichtung, deren Aufgabe „die Menge bewältigen" ist, hätte damit von 83
+ * Kandidaten auf Produktion 25 gezeigt — sortiert nach `created_at DESC`, also
+ * die neuesten. Was darüber hinausgeht, sagt die Sichtung als Zahl an; still
+ * abschneiden darf sie nicht.
+ */
+const CANDIDATE_PAGE_SIZE = 100;
+
 class IntakeStateManager {
   // ── Rohzustand ────────────────────────────────────────────────────────────
 
@@ -68,6 +88,28 @@ class IntakeStateManager {
   /** Wie viele Ereignisse diese Welt heute schon aufgenommen hat. */
   readonly eventsToday = signal<number>(0);
   readonly dailyQuota = signal<number>(DEFAULT_DAILY_QUOTA);
+
+  /**
+   * Ab welcher Magnitude der Server ein Signal empfiehlt.
+   *
+   * GERECHNET, NICHT GESETZT: `compute_recommended_threshold` nimmt die
+   * Magnitude an der Grenze der obersten 20 % der wartenden Kandidaten, mit
+   * einem Boden von 0.40. Die Empfehlung bewegt sich also mit dem, was
+   * tatsächlich hereinkam — an einem stillen Tag empfiehlt sie weniger streng
+   * als an einem lauten.
+   *
+   * Der Bauplan nennt an dieser Stelle die feste Zahl 0.40. Das ist genau der
+   * Boden dieser Rechnung und damit ihr schwächster Fall; wer sie fest
+   * einträgt, empfiehlt an einem Tag mit 44 Unwetterwarnungen die halbe Liste.
+   */
+  readonly recommendedThreshold = signal<number>(DEFAULT_RECOMMENDED_THRESHOLD);
+
+  /**
+   * Wie viele Kandidaten der Server insgesamt hat — nicht, wie viele geladen
+   * sind. Der Unterschied gehört auf den Schirm: eine Sichtung, die 100 von
+   * 240 zeigt und das verschweigt, behauptet, man hätte alles gesehen.
+   */
+  readonly totalCandidates = signal<number>(0);
 
   // ── Abgeleitet ────────────────────────────────────────────────────────────
 
@@ -140,12 +182,14 @@ class IntakeStateManager {
         this.dashboard.value = dash.data;
       }
 
-      const resp = await scannerApi.listCandidates();
+      const resp = await scannerApi.listCandidates({ limit: String(CANDIDATE_PAGE_SIZE) });
       if (!resp.success || !resp.data) {
         this.error.value = resp.error?.message ?? null;
         return;
       }
       const adapters = this.dashboard.value?.adapters;
+      this.recommendedThreshold.value = resp.data.recommended_threshold;
+      this.totalCandidates.value = resp.data.meta.total;
       this._merge(resp.data.items.map((c: ScanCandidate) => fromScanCandidate(c, adapters)));
     } catch (err) {
       captureError(err, { source: 'IntakeStateManager.loadScanner' });
@@ -307,6 +351,8 @@ class IntakeStateManager {
     this.error.value = null;
     this.loading.value = false;
     this.eventsToday.value = 0;
+    this.recommendedThreshold.value = DEFAULT_RECOMMENDED_THRESHOLD;
+    this.totalCandidates.value = 0;
   }
 }
 

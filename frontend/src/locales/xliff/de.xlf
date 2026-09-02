@@ -31067,6 +31067,142 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Debrief Terminal</source>
 <target>Nachbesprechungs-Terminal</target>
 </trans-unit>
+<trans-unit id="s61b4fcf179792c9d">
+  <source>Discarding did not reach the scanner.</source>
+  <target>Das Verwerfen hat den Scanner nicht erreicht.</target>
+</trans-unit>
+<trans-unit id="s3fea484c3ae6a668">
+  <source><x id="0" equiv-text="${n}"/> signals are at the entrance.</source>
+  <target><x id="0" equiv-text="${n}"/> Signale liegen im Eingang.</target>
+</trans-unit>
+<trans-unit id="s1876742e8a6fc4bc">
+  <source>Search headline, abstract, source</source>
+  <target>Überschrift, Anriss, Quelle durchsuchen</target>
+</trans-unit>
+<trans-unit id="s0ffcb0bea9808a62">
+  <source>Search the triage</source>
+  <target>Die Sichtung durchsuchen</target>
+</trans-unit>
+<trans-unit id="s74dea8806e19236b">
+  <source>Newest</source>
+  <target>Neueste</target>
+</trans-unit>
+<trans-unit id="s148b6a12142c9863">
+  <source>Net speed</source>
+  <target>Netz-Tempo</target>
+</trans-unit>
+<trans-unit id="s6503d08923663565">
+  <source>Minimum magnitude</source>
+  <target>Mindest-Magnitude</target>
+</trans-unit>
+<trans-unit id="sa6ab5184d6315895">
+  <source>From</source>
+  <target>Ab</target>
+</trans-unit>
+<trans-unit id="sbc1bf9fa7ba5de6e">
+  <source>recommended <x id="0" equiv-text="${recommended.toFixed(2)}"/></source>
+  <target>empfohlen <x id="0" equiv-text="${recommended.toFixed(2)}"/></target>
+</trans-unit>
+<trans-unit id="se6f09b190519daa4">
+  <source>all</source>
+  <target>alle</target>
+</trans-unit>
+<trans-unit id="s8e1ccb2587bc643e">
+  <source>Admit the <x id="0" equiv-text="${TOP_PICK_COUNT}"/> strongest</source>
+  <target>Die <x id="0" equiv-text="${TOP_PICK_COUNT}"/> stärksten aufnehmen</target>
+</trans-unit>
+<trans-unit id="s0d0f17a2c3f687b4">
+  <source>move</source>
+  <target>bewegen</target>
+</trans-unit>
+<trans-unit id="s032cd9f1245d3645">
+  <source>Space</source>
+  <target>Leertaste</target>
+</trans-unit>
+<trans-unit id="se5cdd1fdda325ef2">
+  <source>admit</source>
+  <target>aufnehmen</target>
+</trans-unit>
+<trans-unit id="s9898c6537288eb01">
+  <source>discard</source>
+  <target>verwerfen</target>
+</trans-unit>
+<trans-unit id="s1cab31534e6d1ce4">
+  <source>A social source never becomes a line of its own. It only lends speed and reach to a story that is already here. None is connected today.</source>
+  <target>Eine Sozialquelle wird nie eine eigene Zeile. Sie leiht einer Geschichte, die schon hier ist, nur Tempo und Reichweite. Heute ist keine angeschlossen.</target>
+</trans-unit>
+<trans-unit id="s2a2c6e93cc24fe0c">
+  <source>recommended</source>
+  <target>empfohlen</target>
+</trans-unit>
+<trans-unit id="sa596794acaf2f9aa">
+  <source>Not yet classified – the crucible measures it.</source>
+  <target>Noch nicht eingeordnet – der Schmelztiegel misst sie.</target>
+</trans-unit>
+<trans-unit id="s99e0658973352ef6">
+  <source>unmeasured</source>
+  <target>ungemessen</target>
+</trans-unit>
+<trans-unit id="sf2b5d3236e6f1ab3">
+  <source>Select "<x id="0" equiv-text="${signal.headline}"/>"</source>
+  <target>„<x id="0" equiv-text="${signal.headline}"/>" auswählen</target>
+</trans-unit>
+<trans-unit id="se70f1fe2c92904bb">
+  <source>To the entrance</source>
+  <target>In den Eingang</target>
+</trans-unit>
+<trans-unit id="s8232a6adecc14c7f">
+  <source>Discard "<x id="0" equiv-text="${signal.headline}"/>"</source>
+  <target>„<x id="0" equiv-text="${signal.headline}"/>" verwerfen</target>
+</trans-unit>
+<trans-unit id="s454586b0ec003686">
+  <source>Reading the scanner</source>
+  <target>Der Scanner wird gelesen</target>
+</trans-unit>
+<trans-unit id="s10f2af77f116f9ae">
+  <source>Nothing is waiting. The next scan cycle brings more.</source>
+  <target>Es wartet nichts. Der nächste Scan-Zyklus liefert nach.</target>
+</trans-unit>
+<trans-unit id="se762f5f283a168a3">
+  <source>No signal matches these filters.</source>
+  <target>Kein Signal passt zu diesen Filtern.</target>
+</trans-unit>
+<trans-unit id="s08076247518b0c49">
+  <source>Triage · <x id="0" equiv-text="${waiting}"/> waiting</source>
+  <target>Sichtung · <x id="0" equiv-text="${waiting}"/> warten</target>
+</trans-unit>
+<trans-unit id="sf49b162bc777181d">
+  <source>Selection to the entrance</source>
+  <target>Auswahl in den Eingang</target>
+</trans-unit>
+<trans-unit id="sf0375c8dbf45f297">
+  <source>Discard selection</source>
+  <target>Auswahl verwerfen</target>
+</trans-unit>
+<trans-unit id="sf2c91c3f7c277588">
+  <source>° Fit and net speed are not sorted yet: the Bureau does not deliver either number per candidate. Nothing here computes a stand-in for them – a fit that is secretly the magnitude would look like a second, independent measurement.</source>
+  <target>° Passung und Netz-Tempo sortieren noch nicht: das Bureau liefert keine der beiden Zahlen je Kandidat. Hier wird auch kein Ersatz dafür gerechnet – eine Passung, die heimlich die Magnitude ist, sähe aus wie eine zweite, unabhängige Messung.</target>
+</trans-unit>
+<trans-unit id="sf7a122f5d59f2f65">
+  <source>Nothing here expires. A signal you neither admit nor discard stays in triage until someone decides.</source>
+  <target>Hier verfällt nichts. Ein Signal, das du weder aufnimmst noch verwirfst, bleibt in der Sichtung, bis jemand entscheidet.</target>
+</trans-unit>
+<trans-unit id="s584b1d3ff5018df7">
+  <source><x id="0" equiv-text="${loaded}"/> of <x id="1" equiv-text="${total}"/> candidates loaded – the newest first.</source>
+  <target><x id="0" equiv-text="${loaded}"/> von <x id="1" equiv-text="${total}"/> Kandidaten geladen – die neuesten zuerst.</target>
+</trans-unit>
+<trans-unit id="s653c8df03dcb8986">
+  <source>Triage · nothing waiting</source>
+  <target>Sichtung · nichts wartet</target>
+</trans-unit>
+<trans-unit id="se7421d0c2c60c54d">
+  <source>Fit for this world</source>
+  <target>Passung</target>
+</trans-unit>
+<trans-unit id="s5f927adfbdc85aef">
+  <source>Open triage</source>
+  <target>Sichtung öffnen</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -164,6 +164,56 @@ export const intakeControlStyles = css`
 `;
 
 /**
+ * Die Farbe einer Quellenklasse — an EINER Stelle.
+ *
+ * Die Sensorkachel führte sie als `:host([kind='…'])`, weil die Klasse dort auf
+ * dem Host steht. Die Sichtung braucht dieselbe Farbe an einem Punkt und einem
+ * Wort MITTEN in einer Karte, wo `:host` nicht greift. Zwei Tabellen für
+ * dieselben sechs Werte wären zwei Gelegenheiten, dass ein Adapter in der
+ * Leiste grün und in der Sichtung bernstein ist.
+ *
+ * ⚠ Der erste Anlauf schrieb `var(--color-source-structured)` in die Sichtung.
+ * Diesen Token gibt es nicht — der Rückfall hätte gegriffen, JEDER Punkt wäre
+ * grau gewesen, und nichts hätte es gemeldet. Deshalb steht die Zuordnung hier
+ * und nicht als zusammengesetzter Tokenname am Aufrufort: ein Name, der
+ * gebildet wird, kann auf nichts zeigen, ohne dass es auffällt.
+ *
+ * Beide Selektorformen sind Absicht: `:host([kind])` für die Kachel,
+ * `[data-kind]` für alles, was in einer Karte liegt.
+ */
+export const intakeKindColorStyles = css`
+  :host,
+  [data-kind] {
+    --_kind: var(--color-text-secondary);
+  }
+
+  :host([kind='structured']),
+  [data-kind='structured'] {
+    --_kind: var(--color-accent-green);
+  }
+  :host([kind='semi']),
+  [data-kind='semi'] {
+    --_kind: var(--color-epoch-influence);
+  }
+  :host([kind='llm']),
+  [data-kind='llm'] {
+    --_kind: var(--color-accent-amber);
+  }
+  :host([kind='internal']),
+  [data-kind='internal'] {
+    --_kind: var(--color-info);
+  }
+  :host([kind='social']),
+  [data-kind='social'] {
+    --_kind: var(--color-text-secondary);
+  }
+  :host([kind='nokey']),
+  [data-kind='nokey'] {
+    --_kind: var(--color-danger);
+  }
+`;
+
+/**
  * Die Farben des Bureaus.
  *
  * Es gibt sie NICHT als globale Token, und das ist Absicht: die Depesche des
