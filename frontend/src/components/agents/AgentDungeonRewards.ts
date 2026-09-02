@@ -20,6 +20,7 @@ import { captureError } from '../../services/SentryService.js';
 import type { AgentLootEffect } from '../../types/dungeon.js';
 import { LOOT_TIER_MARKERS } from '../../utils/dungeon-formatters.js';
 import { icons } from '../../utils/icons.js';
+import { formatParams } from '../shared/loot-param-labels.js';
 
 import '../shared/LoadingState.js';
 
@@ -255,8 +256,16 @@ export class VelgAgentDungeonRewards extends LitElement {
         return msg('Reduced event impact');
       case 'arc_modifier':
         return msg('Reduced escalation pressure');
+      // `personality_modifier` und `simulation_modifier` werden hier gespeichert
+      // wie die uebrigen fuenf, hatten aber keinen Zweig — die Zeile erschien mit
+      // Etikett und ohne Wert. Beide tragen ihre Mechanik ausschliesslich in den
+      // Parametern, also werden die Parameter gezeigt.
+      case 'personality_modifier':
+      case 'simulation_modifier':
+        return formatParams(p);
       default:
-        return '';
+        // Eine kuenftige Wirkungsart soll einen Wert zeigen statt zu schweigen.
+        return formatParams(p);
     }
   }
 
