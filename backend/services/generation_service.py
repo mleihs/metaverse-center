@@ -451,6 +451,9 @@ class GenerationService:
         news_title: str,
         news_content: str,
         locale: str = "de",
+        *,
+        lens_directives: str = "",
+        temperature: float | None = None,
     ) -> dict:
         """Transform a real news article into the simulation narrative.
 
@@ -465,8 +468,12 @@ class GenerationService:
                 "news_content": news_content,
                 "simulation_name": await self._get_simulation_name(),
                 "locale_name": LOCALE_NAMES.get(locale, locale),
+                # Immer geliefert, im Normalfall leer — siehe
+                # `SocialTrendsService.render_lens_directives`.
+                "lens_directives": lens_directives,
             },
             locale=locale,
+            temperature=temperature,
         )
 
         raw_content = result.get("content", "")
@@ -1166,6 +1173,7 @@ class GenerationService:
         locale: str,
         *,
         game_context: dict | None = None,
+        temperature: float | None = None,
     ) -> dict:
         """Core generation pipeline: resolve prompt + model, call LLM with fallback.
 
@@ -1215,6 +1223,7 @@ class GenerationService:
             system_prompt=system_prompt,
             user_prompt=filled_prompt,
             purpose=template_type,
+            temperature=temperature,
         )
 
         return {
@@ -1233,6 +1242,7 @@ class GenerationService:
         user_prompt: str,
         *,
         purpose: str = "description",
+        temperature: float | None = None,
     ) -> str:
         """Call LLM with 3-layer resilience: backoff-retry → fallback → default.
 
@@ -1276,7 +1286,11 @@ class GenerationService:
                     model=model.model_id,
                     system_prompt=system_prompt,
                     user_prompt=user_prompt,
-                    temperature=model.temperature,
+                    # Der Aufrufer darf die Temperatur der Vorlage ueberstimmen.
+                    # `None` heisst „nichts zu sagen" und laesst die Vorlage
+                    # gelten — 0.0 waere ein WERT und muss durchkommen, deshalb
+                    # `is not None` und kein `or`.
+                    temperature=temperature if temperature is not None else model.temperature,
                     max_tokens=model.max_tokens,
                     budget=budget,
                 )

@@ -49,8 +49,14 @@
  * wird deshalb am Signal gespeichert und wirkt gestaffelt:
  *
  *     Typ · Wucht · Reaktionen   →  bei der Aufnahme (`integrateArticle`)
- *     Ort · Vektor               →  auf der Quarantäne-Karte, später am Echo
- *     Tonlage · Freiheit · Anweisung → noch nirgends
+ *     Ort · Vektor               →  im Prompt UND auf der Quarantäne-Karte
+ *     Tonlage · Anweisung        →  im Prompt
+ *     Freiheit                   →  als TEMPERATUR des Aufrufs
+ *
+ * ⚠ SEIT DEM 02.09.2026 ERREICHT ALLES DAVON DAS MODELL (Lücke 4, Migration
+ * 341). Der Ort geht als NAME hinein, nicht als Kennung. Die Freiheit steht
+ * nicht im Text, sondern ist die Temperatur — `GenerationService._generate`
+ * nimmt sie entgegen und überstimmt damit die Temperatur der Vorlage.
  *
  * Die letzte Zeile steht als Fussnote am Raster, nicht als Kommentar im Code:
  * ein Regler, der nichts bewegt und das nicht sagt, ist eine Lüge auf dem
@@ -97,12 +103,16 @@ import { intakeControlStyles } from './intake-styles.js';
 /**
  * Erreicht die Linse das Modell?
  *
- * Solange `false`, tragen die Zeilen, die nur der Erzeugung dienten, eine
- * Marke und das Raster eine Fussnote. Wird Lücke 4 geschlossen, kippt diese
- * Konstante auf `true`, die Marke verschwindet, und `_run()` schickt die Linse
- * mit. Ein Schalter, kein Sweep.
+ * ✅ SEIT DEM 02.09.2026 JA — Lücke 4 ist zu (Migration 341 + `TransformLens`
+ * im Backend). Die Marke `°` und die Fussnote sind damit weg, und `_run()`
+ * schickt die Linse mit.
+ *
+ * Die Konstante BLEIBT stehen, statt ausgebaut zu werden: sie ist die Stelle,
+ * an der ein Leser die Frage beantwortet bekommt, ohne den Aufruf zu suchen —
+ * und wer sie auf `false` dreht, sieht sofort, was daran hing. Ein Wert, der
+ * einmal `false` war, erklärt seine Gegenwart besser als sein Fehlen.
  */
-const LENS_REACHES_MODEL = false;
+const LENS_REACHES_MODEL = true;
 
 /** Wie viele Agenten auf ein Ereignis reagieren dürfen. */
 const REACTION_COUNTS = [3, 5, 8] as const;
@@ -876,10 +886,25 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
 
     try {
       this._stepIndex = 1;
-      const resp = await socialTrendsApi.transformArticle(
-        this.simulationId,
-        transformRequestOf(signal),
-      );
+      const resp = await socialTrendsApi.transformArticle(this.simulationId, {
+        ...transformRequestOf(signal),
+        /*
+         * Die Linse geht MIT (Lücke 4, Migration 341). Der Ort als NAME, nicht
+         * als Kennung: im Zustand steht die ID, weil ein Name umbenannt wird —
+         * das Modell aber schreibt Prosa und kann mit einer UUID nichts
+         * anfangen. `zoneName` löst hier auf, an der einen Stelle, an der die
+         * Auflösung hingehört.
+         */
+        lens: this._lens
+          ? {
+              zone_name: intakeState.zoneName(this._lens.zone) || undefined,
+              vector: this._lens.vector,
+              tone: this._lens.tone,
+              instructions: this._lens.instructions?.trim() || undefined,
+              creativity: this._lens.creativity,
+            }
+          : undefined,
+      });
       const ms = Date.now() - started;
       if (this._clockTimer) clearInterval(this._clockTimer);
       this._clockTimer = null;
@@ -1420,9 +1445,22 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
         cls: 'proto__value',
       },
       {
-        key: msg('Kept only'),
+        /*
+         * Hiess bis zum 02.09.2026 „Nur behalten" — die Linse wurde am Signal
+         * gespeichert und ging NICHT mit. Seit Migration 341 geht sie mit, und
+         * das Protokoll muss das sagen: es ist der Schirm, auf dem jemand
+         * nachliest, was das Modell wirklich bekommen hat.
+         */
+        key: msg('Lens sent'),
         value: msg(
-          str`place ${zoneName} · vector ${bleedVectorLabel(lens.vector)} · tone ${toneLabel(lens.tone)} · freedom ${freedomLabel(lens.creativity ?? 0.7)}`,
+          str`place ${zoneName} · vector ${bleedVectorLabel(lens.vector)} · tone ${toneLabel(lens.tone)}`,
+        ),
+        cls: 'proto__value proto__value--lens',
+      },
+      {
+        key: msg('Freedom'),
+        value: msg(
+          str`${freedomLabel(lens.creativity ?? 0.7)} · temperature ${(lens.creativity ?? 0.7).toFixed(1)}, overriding the template`,
         ),
         cls: 'proto__value proto__value--lens',
       },
@@ -1440,13 +1478,21 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       },
     ];
 
-    if (!LENS_REACHES_MODEL) {
-      lines.splice(4, 0, {
-        key: msg('Gap'),
-        value: msg('The call accepts no lens yet, and reports no steps or token count.'),
-        cls: 'proto__value proto__value--gap',
-      });
-    }
+    /*
+     * Was von der alten Lücken-Zeile ÜBRIG BLEIBT.
+     *
+     * Sie sagte zweierlei: der Aufruf nehme keine Linse, und er melde weder
+     * Schritte noch Token. Die erste Hälfte ist seit Migration 341 falsch, die
+     * zweite stimmt weiter — `transform-article` antwortet mit der
+     * Verwandlung und sonst nichts. Eine Zeile, deren eine Hälfte falsch
+     * geworden ist, wird nicht gelöscht, sondern auf ihre wahre Hälfte
+     * gekürzt.
+     */
+    lines.splice(5, 0, {
+      key: msg('Gap'),
+      value: msg('The call reports no steps and no token count.'),
+      cls: 'proto__value proto__value--gap',
+    });
 
     return html`
       <div class="row proto">

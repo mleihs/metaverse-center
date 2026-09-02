@@ -707,3 +707,66 @@ class TestBureauDispatchBudget:
             },
         )
         assert got == "A longer dispatch."
+
+
+# ---------------------------------------------------------------------------
+# Die Linse erreicht das Modell (Luecke 4)
+# ---------------------------------------------------------------------------
+
+class TestLensDirectives:
+    """Der Schmelztiegel stellt seit Schritt 3 Regler, die nichts bewegten.
+
+    Was hier geprueft wird, ist die Uebersetzung von Zustand in Anweisung — und
+    vor allem die beiden Grenzfaelle, die eine Vorlage zerbrechen: KEINE Linse
+    und eine LEERE Linse muessen denselben Leerstring liefern, denn
+    `str.format` verlangt den Platzhalter in jedem Fall.
+    """
+
+    @staticmethod
+    def _render(**kwargs):
+        from backend.models.social_trend import TransformLens
+        from backend.services.social_trends_service import SocialTrendsService
+
+        return SocialTrendsService.render_lens_directives(TransformLens(**kwargs))
+
+    def test_no_lens_is_an_empty_string(self):
+        from backend.services.social_trends_service import SocialTrendsService
+
+        assert SocialTrendsService.render_lens_directives(None) == ""
+
+    def test_an_empty_lens_is_also_empty(self):
+        """Eine Linse, in der nichts gesetzt ist, darf keinen Block erzeugen."""
+        assert self._render() == ""
+
+    def test_the_place_is_named(self):
+        out = self._render(zone_name="Speranza")
+        assert "Speranza" in out
+        assert "Additional direction:" in out
+
+    def test_the_tone_becomes_a_sentence(self):
+        """Im Zustand steht `rumour`, im Prompt ein Satz — eine Kennung ist
+        keine Anweisung."""
+        out = self._render(tone="rumour")
+        assert "rumour" not in out
+        assert "word of mouth" in out
+
+    def test_an_unknown_tone_is_dropped_silently(self):
+        assert self._render(tone="erfunden") == ""
+
+    def test_free_instructions_travel_verbatim(self):
+        out = self._render(instructions="  Lass den Hafen verlassen wirken.  ")
+        assert "Lass den Hafen verlassen wirken." in out
+
+    def test_every_part_becomes_its_own_line(self):
+        out = self._render(
+            zone_name="Speranza",
+            vector="commerce",
+            tone="official",
+            instructions="Kurz halten.",
+        )
+        assert out.count("\n- ") == 4
+
+    def test_creativity_is_not_in_the_text(self):
+        """Die Freiheit ist die TEMPERATUR des Aufrufs, kein Prompt-Text — sonst
+        stuende dieselbe Angabe an zwei Orten."""
+        assert self._render(creativity=0.9) == ""
