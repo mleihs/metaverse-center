@@ -302,7 +302,7 @@ class BotGameState:
         # Participants (sim names, not strategies)
         parts_resp = await (
             supabase.table("epoch_participants")
-            .select("id, simulation_id, team_id, is_bot, simulations(name, slug)")
+            .select("id, simulation_id, team_id, is_bot, simulations(name, name_de, slug)")
             .eq("epoch_id", epoch_id)
             .execute()
         )

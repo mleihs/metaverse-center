@@ -17,6 +17,7 @@ from backend.services.email_templates import (
 )
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import gone, not_found, server_error
+from backend.utils.locale_fields import localized_field
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -95,11 +96,11 @@ class InvitationService:
         try:
             simulation = await maybe_single_data(
                 supabase.table("simulations")
-                .select("name")
+                .select("name, name_de")
                 .eq("id", invitation["simulation_id"])
                 .maybe_single()
             )
-            simulation_name = (simulation or {}).get("name") or "a simulation"
+            simulation_name = localized_field(simulation, "name", email_locale) or "a simulation"
             invite_url = f"{settings.site_url}/invitations/{invitation['invite_token']}"
 
             html_body = render_simulation_invitation(
@@ -110,9 +111,7 @@ class InvitationService:
                 expires_at=invitation.get("expires_at"),
                 email_locale=email_locale,
             )
-            subject = simulation_invitation_subject(
-                simulation_name, inviter_label or "A member", email_locale
-            )
+            subject = simulation_invitation_subject(simulation_name, inviter_label or "A member", email_locale)
             return await EmailService.send(
                 recipient,
                 subject,
@@ -136,7 +135,7 @@ class InvitationService:
         """Validate and return an invitation by token."""
         response = await (
             supabase.table("simulation_invitations")
-            .select("*, simulations(name)")
+            .select("*, simulations(name, name_de)")
             .eq("invite_token", token)
             .limit(1)
             .execute()

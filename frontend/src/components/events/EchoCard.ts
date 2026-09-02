@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { EchoStatus, EventEcho, Simulation } from '../../types/index.js';
 import '../shared/VelgBadge.js';
+import { t } from '../../utils/locale-fields.js';
 
 @localized()
 @customElement('velg-echo-card')
@@ -123,7 +124,7 @@ export class VelgEchoCard extends LitElement {
 
   private _getSimulationName(id: string): string {
     const sim = this.simulations.find((s) => s.id === id);
-    return sim?.name ?? msg('Unknown');
+    return sim ? t(sim, 'name') : msg('Unknown');
   }
 
   private _getVectorDisplayName(vector: string): string {

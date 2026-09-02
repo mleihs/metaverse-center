@@ -197,7 +197,7 @@ class ResonanceService(BaseService):
         """List all impacts for a resonance, including simulation names/slugs."""
         response = await (
             supabase.table("resonance_impacts")
-            .select("*, simulations(name, slug)")
+            .select("*, simulations(name, name_de, slug)")
             .eq("resonance_id", str(resonance_id))
             .order("created_at", desc=True)
             .execute()

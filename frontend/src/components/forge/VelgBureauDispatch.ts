@@ -4,6 +4,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { t } from '../../utils/locale-fields.js';
 
 const BUREAU_SERVICES = [
   {
@@ -543,7 +544,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     if (!this.open && !this._closing) return nothing;
 
     const sim = appState.currentSimulation.value;
-    const simName = sim?.name ?? '—';
+    const simName = sim ? t(sim, 'name') : '\u2014';
     const balance = forgeStateManager.walletBalance.value;
     const bypass = forgeStateManager.hasTokenBypass.value;
     const totalCost = BUREAU_SERVICES.reduce((sum, s) => sum + s.cost, 0);

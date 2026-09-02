@@ -173,7 +173,7 @@ class ChronicleService:
                 "id, simulation_id, epoch_id, edition_number, period_start, period_end, "
                 "title, headline, content, title_de, headline_de, content_de, "
                 "model_used, published_at, created_at, updated_at, "
-                "simulations!inner(id, name, slug, theme, banner_url)",
+                "simulations!inner(id, name, name_de, slug, theme, banner_url)",
                 count="exact",
             )
             .eq("simulations.status", "active")

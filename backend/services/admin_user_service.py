@@ -66,7 +66,7 @@ class AdminUserService:
         # Fetch memberships via PostgREST
         memberships_resp = await (
             admin_supabase.table("simulation_members")
-            .select("*, simulations(id, name, slug)")
+            .select("*, simulations(id, name, name_de, slug)")
             .eq("user_id", str(user_id))
             .execute()
         )
