@@ -125,6 +125,52 @@ Vorgabewert (1em) drastisch erhöhen (er nennt bis 40rem), und dann ist die
 Spaltenhöhe wieder unausgeglichen — also genau das weg, wofür man Masonry
 wollte.
 
+## ⚠ BERICHTIGUNG: „Es gibt keine Bilder" war falsch
+
+Ich hatte geschrieben, der Zufluss liefere überwiegend keine Bilder. Der Nutzer
+hat widersprochen — zu Recht. Ich hatte zwei Aussagen verwechselt: „heute
+liegen keine Bilder in der Datenbank" und „die Quellen liefern keine". Nur die
+erste stimmte, und auch die nur, weil auf Prod kein Guardian-Schlüssel steht.
+
+**Jeden Dienst einzeln abgefragt (02.09.2026, echte Antworten):**
+
+| Adapter | liefert | Feld | kommt es an? |
+|---|---|---|---|
+| guardian | **Teaserbild** | `fields.thumbnail` (wird ausdrücklich mit `show-fields` angefragt) | ✓ |
+| newsapi | **Teaserbild** | `urlToImage` → `image_url` | ✓ |
+| gdelt | **Teaserbild** | `socialimage` | ✓ |
+| bluesky | **Teaserbild** | `external.thumb` | ✓ seit heute |
+| who_outbreaks | **Karte/Fallkurve** | `<img src>` im HTML von `Overview` | ✗ → **heute nachgerüstet** |
+| gdacs | Warnstufen-Piktogramm | `properties.icon` (`Green/FL.png`) | ✗ (Symbol, kein Teaser) |
+| disease_sh | Landesflagge | `countryInfo.flag` | ✗ (Symbol, kein Teaser) |
+| usgs_earthquakes | — | — | — |
+| noaa_alerts | — | — | — |
+| nasa_eonet | — | — | — |
+| hackernews | — (die API hat keines; das Bild läge im verlinkten Artikel) | — | — |
+
+**Also: vier von elf liefern ein echtes Teaserbild und geben es weiter, ein
+fünfter tut es seit heute.** Die drei ohne sind Messdienste — Erdbeben,
+Unwetterwarnungen, Naturereignisse. Das sind keine Nachrichtenbeiträge,
+sondern Sensorwerte; sie haben nie ein Bild und werden nie eines haben.
+
+Die Frage des Nutzers — *welche Nachrichtenbeiträge dieser Tage haben denn kein
+Teaserbild?* — hat damit die Antwort: **keine.** Jede redaktionelle Quelle im
+Zulauf trägt eines.
+
+🔑 **Dritter Fehlalarm desselben Tages durch ein zu enges eigenes Messgerät.**
+Mein Grep suchte `"(thumbnail|image_url|thumb|image|icon)"` — mit Anführungs-
+zeichen um den ganzen Ausdruck, also den Schlüssel als GANZES Wort. `socialimage`
+enthält `image`, heisst aber nicht so, und fiel durch. GDELT galt mir deshalb
+als bildlos, obwohl der Adapter das Feld längst behält. (Vgl. der `[a-z_]+`-
+Fehlalarm eines Peers am selben Tag, dem Ziffern fehlten.)
+
+## Was das für Masonry ändert — und was nicht
+
+Das Bild-Argument ist damit **weg**: Bilder gibt es, in unterschiedlichen
+Seitenverhältnissen, und genau dafür ist Masonry gemacht.
+
+Es bleiben zwei Argumente:
+
 ## Warum es für die SICHTUNG trotzdem nicht passt
 
 Zwei Gründe, die unabhängig vom Browserstand und von WCAG gelten:
@@ -161,17 +207,42 @@ Im **Lesesaal** (Schritt 6): „Eingang in Ruhe lesen", nach Ort/Archetyp/Quelle
 gruppiert — eine Stöberfläche, keine Rangliste. Dort trägt die Optik, und der
 Rang steht nicht auf dem Spiel. Der Nutzer hat für diesen Zweck ausdrücklich
 erlaubt, von der Regel abzuweichen, wenn die Oberfläche sonst leidet.
-**Empfehlung für Schritt 6:** `display: grid-lanes` mit erhöhter
-`flow-tolerance` als PROGRESSIVE Verbesserung über dem gleichförmigen Raster —
-`@supports (display: grid-lanes)`. Dann bekommt Safari heute das Bessere,
-alle anderen das Ordentliche, und wenn Chrome und Firefox nachziehen, ändert
-sich nichts am Code.
+**Entscheidung des Nutzers (02.09.):** Grid Lanes hat keinen Browser-Support,
+also etwas anderes, das Masonry kann.
+
+**Empfehlung: keine Bibliothek, sondern CSS Grid mit Zeilen-Spannweite.**
+
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-auto-rows: 8px;            /* feines Raster */
+    /* je Karte: grid-row-end: span ceil(hoehe / 8) — aus einem ResizeObserver */
+
+Rund vierzig Zeilen, keine Abhängigkeit, läuft heute in jedem Browser. Und der
+entscheidende Vorteil gegenüber Grid Lanes: **die DOM-Reihenfolge bleibt die
+Anzeigereihenfolge.** Die Karten füllen von links nach rechts in Quelltext-
+Reihenfolge, jede so hoch, wie sie ist — der Boden wird ausgefranst, die
+Reihenfolge nicht. Damit entfällt der WCAG-2.4.3-Fehler, den Grid Lanes
+mitbringt, vollständig statt ihn mit `flow-tolerance` zu mildern.
+
+Warum keine der fertigen Bibliotheken:
+
+| | |
+|---|---|
+| Masonry (desandro) | die vom Nutzer verlinkte, jQuery-Ära, ~25 kB, ordnet um |
+| Isotope | selber Autor, **kommerzielle Lizenz** für nicht-quelloffene Nutzung |
+| Colcade | 2 kB, aber hängt spaltenweise an — zerstört die DOM-Reihenfolge |
+| Muuri | kann viel mehr (Ziehen, Sortieren), entsprechend schwer |
+| @egjs/infinitegrid | gepflegt, aber ein Rahmenwerk für ein Layout |
+
+Alle bringen dieselbe Umordnung mit, die das Eigenbau-Raster gerade vermeidet —
+und eine Abhängigkeit in einem Lit-/Shadow-DOM-Haus mit strenger CSP.
 
 ## Voraussetzung, am 02.09. geschaffen
 
-Der Bluesky-Adapter legt jetzt `thumb` in `article_raw_data` ab — die **URL**
-des Vorschaubilds von bsky.app, kein Blob. Sie lebt so lange wie der Kandidat
-und verschwindet mit ihm. Ohne dieses Feld gäbe es gar kein Bild zu zeigen.
+Zwei Adapter tragen ihr Bild jetzt mit, die es vorher wegwarfen:
+`bluesky_social.py` (`external.thumb`) und `who_outbreaks.py` (das erste
+`<img>` aus dem `Overview`-HTML, gegen die drei jüngsten echten Meldungen
+geprüft). Gespeichert wird jeweils die **URL**, kein Blob — sie lebt so lange
+wie der Kandidat und verschwindet mit ihm.
 
 ## Quellen
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 
 import httpx
@@ -14,6 +15,34 @@ logger = logging.getLogger(__name__)
 
 WHO_API_URL = "https://www.who.int/api/news/diseaseoutbreaknews"
 TIMEOUT = 20
+
+
+#: Ein Bild im HTML der WHO-Meldung.
+#:
+#: Die Disease-Outbreak-News fuehren KEIN Bildfeld — ihre Karten und
+#: Fallkurven stehen als `<img>` im HTML von `Overview` bzw. `Epidemiology`
+#: (`https://cdn.who.int/media/images/...`). Wer nur nach einem Schluessel
+#: sucht, der „image" heisst, findet sie nicht und haelt die Quelle fuer
+#: bildlos. Am 02.09.2026 nachgemessen: die drei juengsten Meldungen tragen
+#: jede eines.
+_IMG_SRC = re.compile(r'<img[^>]+src="(https://cdn\.who\.int/[^"]+)"', re.IGNORECASE)
+
+
+def _first_image(item: dict) -> str | None:
+    """Die erste Bild-URL aus den HTML-Feldern einer Meldung, oder `None`.
+
+    Reihenfolge ist bedeutungstragend: `Overview` traegt in aller Regel die
+    Uebersichtskarte, `Epidemiology` die Fallkurve. Die Uebersicht ist das
+    bessere Teaserbild.
+    """
+    for field in ("Overview", "Epidemiology", "Response", "FurtherInformation"):
+        html = item.get(field)
+        if not isinstance(html, str):
+            continue
+        found = _IMG_SRC.search(html)
+        if found:
+            return found.group(1)
+    return None
 
 
 @register_adapter
@@ -60,6 +89,7 @@ class WHOOutbreaksAdapter(SourceAdapter):
                     raw_data={
                         "DonId": don_id,
                         "PublicationDate": item.get("PublicationDateAndTime"),
+                        "image_url": _first_image(item),
                     },
                     # Category is known (always pandemic), but leave for LLM to set magnitude
                     source_category="pandemic",
