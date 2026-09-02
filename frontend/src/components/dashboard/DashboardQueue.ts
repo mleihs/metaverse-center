@@ -34,8 +34,8 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { ActiveEpochParticipation } from '../../types/index.js';
+import { epochStatusLabel } from '../../utils/enum-labels.js';
 import { navigate } from '../../utils/navigation.js';
-import { humanizeEnum } from '../../utils/text.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
 @localized()
@@ -285,7 +285,7 @@ export class VelgDashboardQueue extends LitElement {
           </span>
         </div>
         <p class="cell__context">
-          ${msg(str`${p.simulation_name} · ${humanizeEnum(p.epoch_status)} · Cycle ${p.current_cycle} of ${p.total_cycles}`)}
+          ${msg(str`${p.simulation_name} · ${epochStatusLabel(p.epoch_status)} · Cycle ${p.current_cycle} of ${p.total_cycles}`)}
         </p>
         <div class="cell__foot">
           <span class="cell__metric">${msg(str`RP ${p.current_rp} / ${p.rp_cap}`)}</span>

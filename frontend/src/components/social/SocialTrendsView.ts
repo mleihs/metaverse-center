@@ -18,6 +18,11 @@ import type {
   SimulationHealth,
   SourceCategory,
 } from '../../types/index.js';
+import {
+  bleedVectorLabel,
+  effectivenessLabel,
+  embassyStatusLabel,
+} from '../../utils/enum-labels.js';
 import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
@@ -1502,7 +1507,7 @@ export class VelgSocialTrendsView extends LitElement {
             style="background: ${themeColor}"
           ></span>
           <span class="embassy-card__sim-name">${t(partner.simulation, 'name')}</span>
-          <velg-badge variant=${statusVariant}>${humanizeEnum(embassy.status)}</velg-badge>
+          <velg-badge variant=${statusVariant}>${embassyStatusLabel(embassy.status)}</velg-badge>
         </div>
 
         <div class="embassy-card__partner">
@@ -1555,12 +1560,12 @@ export class VelgSocialTrendsView extends LitElement {
                       : effLabel === 'limited'
                         ? 'warning'
                         : 'danger'
-                }>${humanizeEnum(effLabel)}</velg-badge>`
+                }>${effectivenessLabel(effLabel)}</velg-badge>`
               : nothing
           }
           ${
             embassy.bleed_vector
-              ? html`<velg-badge variant="info">${humanizeEnum(embassy.bleed_vector)}</velg-badge>`
+              ? html`<velg-badge variant="info">${bleedVectorLabel(embassy.bleed_vector)}</velg-badge>`
               : nothing
           }
         </div>
