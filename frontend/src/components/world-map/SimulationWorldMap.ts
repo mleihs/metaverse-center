@@ -43,6 +43,7 @@ import {
 import '../shared/EmptyState.js';
 import '../shared/ErrorState.js';
 
+import { professionLabel } from '../../utils/profession.js';
 // Component CSS is loaded as a string via Vite's `?inline` query and injected
 // at runtime into the appropriate scope (Document or containing ShadowRoot) —
 // see `ensureComponentStyles` below. Plain `import './world-map.css'` would
@@ -1313,7 +1314,7 @@ export class VelgSimulationWorldMap extends SignalWatcher(LitElement) {
         };
       }
       case 'agent': {
-        const profession = t(sel.agent, 'profession');
+        const profession = professionLabel(t(sel.agent, 'profession'));
         return {
           kindLabel: msg('Agent'),
           name: sel.agent.name,

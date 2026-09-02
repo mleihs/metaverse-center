@@ -18,6 +18,7 @@ import { VelgToast } from '../shared/Toast.js';
 import { cardFrameFromTheme, cardThemeStyle } from './forge-card-data.js';
 
 import '../shared/VelgGameCard.js';
+import { professionLabel } from '../../utils/profession.js';
 
 /**
  * Cinematic "Dimensional Breach" ceremony after shard materialization.
@@ -2217,7 +2218,7 @@ export class VelgForgeCeremony extends LitElement {
 
     const agentCards = this.agents.map((a) => ({
       name: a.name,
-      subtitle: t(a, 'primary_profession'),
+      subtitle: professionLabel(t(a, 'primary_profession')),
       imageUrl: agentImageMap.get(a.name) ?? '',
       kind: 'agent' as const,
     }));

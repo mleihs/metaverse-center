@@ -20,6 +20,7 @@ import { customElement, property } from 'lit/decorators.js';
 import type { DriftDock } from '../../types/drift.js';
 import { icons } from '../../utils/icons.js';
 import '../shared/VelgAvatar.js';
+import { professionLabel } from '../../utils/profession.js';
 
 @localized()
 @customElement('velg-drift-dock-panel')
@@ -265,8 +266,8 @@ export class VelgDriftDockPanel extends LitElement {
                         <span class="dock__agent-meta">
                           <span class="dock__agent-name">${a.name}</span>
                           ${
-                            a.primary_profession
-                              ? html`<span class="dock__agent-role">${a.primary_profession}</span>`
+                            professionLabel(a.primary_profession)
+                              ? html`<span class="dock__agent-role">${professionLabel(a.primary_profession)}</span>`
                               : nothing
                           }
                         </span>

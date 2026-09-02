@@ -45,6 +45,7 @@ import { VelgToast } from '../shared/Toast.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgSectionHeader.js';
+import { professionLabel } from '../../utils/profession.js';
 
 /** Mirrors RESPONSE_CONFIG in backend/services/bureau_response_service.py. */
 interface ProtocolSpec {
@@ -830,7 +831,7 @@ export class VelgBureauResponsePanel extends LitElement {
         class="officer"
         aria-pressed=${picked}
         ?disabled=${full}
-        title=${agent.primary_profession ?? agent.name}
+        title=${professionLabel(agent.primary_profession) || agent.name}
         @click=${() => this._toggleAgent(agent.id)}
       >
         <velg-avatar

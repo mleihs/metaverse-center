@@ -7,6 +7,7 @@ import { t } from '../../utils/locale-fields.js';
 import type { CardBadge, CardRarity } from '../shared/VelgGameCard.js';
 import '../shared/VelgGameCard.js';
 import { INFLUENCE_FORMULA } from '../../utils/metric-formulas.js';
+import { professionLabel } from '../../utils/profession.js';
 
 @localized()
 @customElement('velg-agent-card')
@@ -127,8 +128,7 @@ export class VelgAgentCard extends LitElement {
   }
 
   private _getSubtitle(): string {
-    const prof = t(this.agent, 'primary_profession');
-    return prof || '';
+    return professionLabel(t(this.agent, 'primary_profession'));
   }
 
   private _getEntityUrl(): string {

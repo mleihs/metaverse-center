@@ -44,6 +44,7 @@ import './MissionCard.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgAptitudeBars.js';
 import { buildAptitudeIndex } from '../../utils/aptitudes.js';
+import { professionLabel } from '../../utils/profession.js';
 import { VelgToast } from '../shared/Toast.js';
 import { deployOperativeStyles } from './deploy-operative-styles.js';
 
@@ -789,7 +790,7 @@ export class VelgDeployOperativeModal extends LitElement {
 								${(() => {
                   const apt = this._aptitudeMap.get(agent.id) ?? null;
                   const best = apt ? this._getBestAptitude(apt) : null;
-                  const subtitle = [agent.primary_profession, agent.gender]
+                  const subtitle = [professionLabel(agent.primary_profession), agent.gender]
                     .filter(Boolean)
                     .join(' \u00b7 ');
                   return html`<velg-game-card
@@ -1161,7 +1162,7 @@ export class VelgDeployOperativeModal extends LitElement {
             const isSelected = agent.id === this._selectedAgentId;
             const apt = this._aptitudeMap.get(agent.id) ?? null;
             const best = apt ? this._getBestAptitude(apt) : null;
-            const subtitle = [agent.primary_profession, agent.gender]
+            const subtitle = [professionLabel(agent.primary_profession), agent.gender]
               .filter(Boolean)
               .join(' \u00b7 ');
 

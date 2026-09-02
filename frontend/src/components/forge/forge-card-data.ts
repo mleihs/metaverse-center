@@ -28,6 +28,7 @@ import type { ForgeAgentDraft, ForgeBuildingDraft } from '../../services/api/For
 import { cardFrameFromConfig } from '../../services/card-frame.js';
 import { conditionDots, conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
+import { professionLabel } from '../../utils/profession.js';
 import { humanizeEnum } from '../../utils/text.js';
 import type { CardBadge, CardRarity, CardType } from '../shared/VelgGameCard.js';
 
@@ -61,7 +62,7 @@ export function agentCardView(agent: ForgeAgentDraft): ForgeCardView {
   return {
     type: 'agent',
     name: agent.name,
-    subtitle: t(agent, 'primary_profession'),
+    subtitle: professionLabel(t(agent, 'primary_profession')),
     description: t(agent, 'background'),
     badges: faction ? [{ label: faction }] : [],
     rarity: DRAFT_RARITY,
