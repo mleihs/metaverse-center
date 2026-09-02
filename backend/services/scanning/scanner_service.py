@@ -405,6 +405,11 @@ class ScannerService(BaseSchedulerMixin):
         row = serialize_for_json(
             {
                 "source_category": result.source_category,
+                # Der Schluessel zum Protokoll (Migration 343). Beide Zeilen
+                # entstehen aus DEMSELBEN `ScanResult` — ihn hier nicht
+                # mitzuschreiben war der Grund, warum das Scan-Protokoll nicht
+                # sagen konnte, was aus einer Zeile geworden ist.
+                "source_id": result.source_id,
                 "title": result.title,
                 "description": result.description or result.classification_reason,
                 "bureau_dispatch": dispatch,
@@ -656,7 +661,48 @@ class ScannerService(BaseSchedulerMixin):
         response = await query.execute()
         data = extract_list(response)
         total = response.count if response.count is not None else len(data)
+        await cls._attach_intake_status(admin, data)
         return data, total
+
+    @staticmethod
+    async def _attach_intake_status(admin: Client, rows: list[dict]) -> None:
+        """Jeder Protokollzeile ihren Schleusen-Stand anheften, in EINER Abfrage.
+
+        Eine Abfrage je Zeile waeren bei 200 Zeilen 200 Aufrufe fuer eine
+        Tabelle, die zusammen in eine Antwort passt. Gefragt wird deshalb nach
+        allen Kennungen der Seite auf einmal; die Zuordnung passiert im
+        Speicher.
+
+        Ein Fehlschlag ist kein Grund, das Protokoll zu verweigern: ohne den
+        Stand ist es immer noch das Protokoll. Deshalb `None` statt eines
+        Abbruchs — beobachtet wird er trotzdem.
+        """
+        for row in rows:
+            row["intake_status"] = None
+
+        source_ids = [r["source_id"] for r in rows if r.get("source_id")]
+        if not source_ids:
+            return
+
+        try:
+            resp = await (
+                admin.table("news_scan_candidates")
+                .select("source_adapter, source_id, status")
+                .in_("source_id", source_ids)
+                .execute()
+            )
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
+            logger.exception("Failed to attach intake status to %d scan log rows", len(rows))
+            return
+
+        by_key = {
+            (c["source_adapter"], c["source_id"]): c["status"]
+            for c in extract_list(resp)
+            if c.get("source_id")
+        }
+        for row in rows:
+            key = (row.get("source_name"), row.get("source_id"))
+            row["intake_status"] = by_key.get(key)
 
     @classmethod
     async def update_candidate(
@@ -681,7 +727,18 @@ class ScannerService(BaseSchedulerMixin):
         offset: int = 0,
         source: str | None = None,
     ) -> tuple[list[dict], int]:
-        """Recent scan history. Returns (data, total)."""
+        """Recent scan history, each row with what became of it.
+
+        `intake_status` kommt aus `news_scan_candidates` und ist `None`, wenn
+        die Zeile nie einer wurde — also fuer alles, was die Vorfilterung
+        aussortiert hat, und fuer die Zeilen von vor Migration 343, die sich
+        nicht eindeutig zuordnen liessen.
+
+        Der Abgleich laeuft ueber (`source_name`, `source_id`), den Schluessel,
+        den beide Tabellen seit Migration 343 teilen. Vorher gab es nur den
+        Titel, und der lieferte auf Prod 149 Treffer bei 222 und 83 Zeilen —
+        Zeilen ja, die richtigen nein.
+        """
         query = admin.table("news_scan_log").select("*", count="exact")
 
         if source:

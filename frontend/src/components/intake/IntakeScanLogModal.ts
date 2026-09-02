@@ -21,22 +21,26 @@
  * Vierteln nicht. Genau diese Zahl beantwortet die Frage „lohnt sich diese
  * Quelle", und sie stand bisher nirgends auf dem Schirm.
  *
- * ── WAS NICHT DRINSTEHT, UND WARUM NICHT GERATEN WIRD ───────────────────────
+ * ── DIE SPALTE „ERGEBNIS" — ERST NACH EINEM ECHTEN SCHLÜSSEL ────────────────
  *
- * Der Bauplan will eine Spalte „Ergebnis" mit der Schleusen-Stufe (in Sichtung
- * / Eingang / Quarantäne / Ereignis / Resonanz / gemeldet / verworfen). Das ist
- * Backend-Lücke 7, und sie lässt sich hier nicht umgehen:
- *
- * `news_scan_log` und `news_scan_candidates` teilen KEINEN Schlüssel. Das
- * Kandidatenblatt führt `source_adapter`, aber keine `source_id`. Übrig bleibt
- * der Titel — und ein Abgleich darüber liefert auf Prod 149 Treffer bei 222
- * Log-Zeilen und 83 Kandidaten. Eine Zahl, die grösser ist als beide Seiten
- * sinnvoll hergeben, ist keine Identität, sondern ein Kreuzprodukt über
- * wiederholte Überschriften.
+ * Bis zum 02.09.2026 zeigte sie nur „eingeordnet / aussortiert", denn
+ * `news_scan_log` und `news_scan_candidates` teilten KEINEN Schlüssel: das
+ * Kandidatenblatt führte `source_adapter`, aber keine `source_id`. Übrig blieb
+ * der Titel — und ein Abgleich darüber lieferte 149 Treffer bei 222 Log-Zeilen
+ * und 83 Kandidaten, also ein Kreuzprodukt über wiederholte Überschriften.
  *
  * 🔑 Eine Verknüpfung über ein Feld, das kein Schlüssel IST, liefert
- * zuverlässig Zeilen — nur nicht die richtigen. Die Spalte zeigt deshalb, was
- * das Log selbst weiss: eingeordnet oder aussortiert.
+ * zuverlässig Zeilen — nur nicht die richtigen.
+ *
+ * Migration 343 gibt dem Kandidaten die `source_id` (beide Zeilen entstehen aus
+ * DEMSELBEN `ScanResult`, sie wurde nur nie mitgeschrieben) und trägt sie für
+ * die 125 von 134 alten Zeilen nach, bei denen (Quelle, Titel) GENAU EINE
+ * Protokollzeile trifft. Die neun mehrdeutigen bleiben leer — eine Zuordnung zu
+ * raten, um eine Spalte voll zu bekommen, wäre derselbe Fehler in klein.
+ *
+ * Die Spalte zeigt deshalb jetzt drei Dinge und hält sie auseinander:
+ * aussortiert · eingeordnet, aber ohne Kandidat zuzuordnen · und den echten
+ * Stand in der Schleuse.
  */
 
 import { localized, msg, str } from '@lit/localize';
@@ -58,6 +62,38 @@ import { intakeControlStyles } from './intake-styles.js';
 
 /** Das Maximum des Endpunkts (`Query(ge=1, le=200)`). */
 const PAGE_SIZE = 200;
+
+/**
+ * Was aus einer Protokollzeile geworden ist, in einem Wort.
+ *
+ * Drei Fälle, und sie werden AUSEINANDERGEHALTEN, weil sie verschiedene Dinge
+ * heissen: aussortiert (die Vorfilterung hat sie verworfen), eingeordnet aber
+ * ohne zuordenbaren Kandidaten (`intake_status` ist null — entweder gab es nie
+ * einen oder es ist eine der neun mehrdeutigen Zeilen von vor Migration 343),
+ * und der echte Stand in der Schleuse.
+ */
+function outcomeLabel(r: ScanLogEntry): string {
+  if (!r.classified) return msg('filtered out');
+  switch (r.intake_status) {
+    case 'pending':
+      return msg('in triage');
+    case 'approved':
+      return msg('resonance');
+    case 'rejected':
+      return msg('discarded');
+    case 'flagged':
+      return msg('reported');
+    default:
+      return msg('classified');
+  }
+}
+
+function outcomeClass(r: ScanLogEntry): string {
+  if (!r.classified) return 'out--dropped';
+  if (r.intake_status === 'rejected') return 'out--dropped';
+  if (r.intake_status) return 'out--live';
+  return 'out--kept';
+}
 
 type LogFilter = 'all' | 'kept' | 'dropped';
 
@@ -201,6 +237,11 @@ export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
         color: var(--color-text-muted);
       }
 
+      /* Ein Stand IN der Schleuse ist etwas anderes als „nur eingeordnet". */
+      .out--live {
+        color: var(--color-accent-amber-readable);
+      }
+
       tr.dropped .c-title {
         color: var(--color-text-muted);
       }
@@ -302,9 +343,7 @@ export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
         </td>
         <td class="c-mag">${r.magnitude !== null ? r.magnitude.toFixed(2) : '–'}</td>
         <td class="c-when">${formatRelativeTime(r.scanned_at)}</td>
-        <td class="c-out ${r.classified ? 'out--kept' : 'out--dropped'}">
-          ${r.classified ? msg('classified') : msg('filtered out')}
-        </td>
+        <td class="c-out ${outcomeClass(r)}">${outcomeLabel(r)}</td>
       </tr>
     `;
   }
