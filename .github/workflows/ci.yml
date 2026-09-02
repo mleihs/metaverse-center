@@ -177,6 +177,25 @@ jobs:
         run: bash scripts/lint-role-vocabulary.sh
         working-directory: .
 
+      # Die Hilfe, der Bau-Editor und die Spezifikation nannten dieselbe
+      # Zustands-Leiter, und alle drei nannten sie falsch: `Moderate` ist keine
+      # Sprosse, `good` wiegt 0,85 statt 1,0. Einmal in der Hilfe korrigiert,
+      # blieb der Satz an den beiden anderen Orten stehen — weil niemand
+      # gefragt hat, wo er sonst noch steht. Das Tor bindet jede Angabe an das
+      # Saatgut in Migration 031.
+      - name: Frontend lint (Zustands-Leiter gegen die Taxonomie)
+        run: bash scripts/lint-condition-ladder-matches-taxonomy.sh
+        working-directory: .
+
+      # Beide liefen bisher NUR in `lint:full` und damit nie in CI.
+      - name: Frontend lint (keine HTML-Entities in den Uebersetzungen)
+        run: bash frontend/scripts/lint-no-html-entities-in-locales.sh
+        working-directory: .
+
+      - name: Repo lint (Workflows parsen)
+        run: bash scripts/lint-workflows-parse.sh
+        working-directory: .
+
       # A pydantic-ai run raises ModelAPIError on a timeout — the PARENT of
       # ModelHTTPError, so `except ModelHTTPError` misses it, and no httpx/Key/
       # Type/ValueError tuple ever saw it. Fourteen handlers written to degrade

@@ -1141,7 +1141,7 @@ export const TOPICS: TopicDefinition[] = [
       {
         kind: 'text',
         content: msg(
-          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair \u2013 the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.',
+          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair \u2013 the only effect in play that lifts a ruined building back up (an architect can also set the condition by hand in the building editor). The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.',
         ),
       },
       {
@@ -1203,7 +1203,7 @@ export const TOPICS: TopicDefinition[] = [
       msg(
         'Aptitude boosts, memories, moodlets, event and arc modifiers, permanent and next-run bonuses',
       ),
-      msg('Building repair is here too: the only way a ruined building ever recovers'),
+      msg('Building repair is here too: the only effect in play that lifts a ruined building'),
       msg('Read from the same record the run uses, so it is never out of date'),
     ],
     sections: () => [],

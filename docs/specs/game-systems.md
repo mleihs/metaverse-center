@@ -898,7 +898,7 @@ Info bubbles use the existing `_renderInfoBubble(text)` pattern (`.info-bubble` 
 |-------|-----------------|
 | **Name** | "Building identifier. AI uses this for narrative flavor in events and descriptions." |
 | **Type** | "Determines the building's function and staffing requirements. Critical types (hospital, power plant, barracks) have 2x weight in zone stability calculations. Matching bleed vectors (e.g., 'market' resonates with Commerce bleed)." |
-| **Condition** | "Physical state of the building. Directly multiplies staffing effectiveness: Good x1.0, Moderate x0.75, Poor x0.5, Ruined x0.2. Destructive events can degrade condition. Low-condition buildings drag down zone stability." |
+| **Condition** | "Physical state of the building. Directly multiplies staffing effectiveness. Standard ladder: excellent x1.0, good x0.85, fair x0.7, poor x0.5, ruined x0.2 (per-world rungs live in `simulation_taxonomies.game_weight`, migration 031/311 \u2014 `Moderate` is not a rung and never was). Destructive events step it down one rung via `fn_degrade_building`; only dungeon loot (`building_repair`) and a manual edit step it back up. Low-condition buildings drag down zone stability." |
 | **Capacity** | "Maximum population the building supports. The ratio of assigned agents to capacity determines staffing level. Understaffed critical buildings reduce zone security." |
 | **Construction Year** | "Historical period. Feeds into AI image generation and lore. Buildings with explicit construction years resonate with Architecture bleed vector." |
 | **Style** | "Architectural aesthetic. Affects AI image generation. When Architecture bleed transmits, this style may influence buildings in the target simulation." |

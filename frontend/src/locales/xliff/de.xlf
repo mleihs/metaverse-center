@@ -3358,9 +3358,6 @@
 <trans-unit id="s56a04c2da7d54e72">
   <source>Determines function and staffing requirements. Critical types (hospital, power plant) have 2x weight in zone stability. Markets resonate with Commerce bleed.</source>
 <target>Bestimmt Funktion und Personalbedarf. Kritische Typen (Krankenhaus, Kraftwerk) haben 2x Gewicht in der Zonenstabilität. Märkte schwingen bei Commerce Bleed mit.</target></trans-unit>
-<trans-unit id="s697a71b66db3a018">
-  <source>Multiplies staffing effectiveness: Good x1.0, Moderate x0.75, Poor x0.5, Ruined x0.2. Destructive events can degrade condition.</source>
-<target>Multipliziert die Effektivität von Staffeln: Gut x1,0, Mäßig x0,75, Schlecht x0,5, Ruiniert x0,2. Zerstörerische Ereignisse können den Zustand verschlechtern.</target></trans-unit>
 <trans-unit id="se7634feb36431e33">
   <source>Short functional summary (1-2 sentences). Used as context in AI image generation and event narratives.</source>
 <target>Kurze funktionale Zusammenfassung (1-2 Sätze). Wird als Kontext in der KI-Bilderzeugung und in Ereigniserzählungen verwendet.</target></trans-unit>
@@ -8249,7 +8246,7 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <target>Transformationsschritte</target></trans-unit>
 <trans-unit id="s2d9f1c3f36509bd3">
   <source>Reality</source>
-<target>Realität</target></trans-unit>
+<target>Wirklichkeit</target></trans-unit>
 <trans-unit id="s45d993b39864fd54">
   <source>Crucible</source>
 <target>Schmelztiegel</target></trans-unit>
@@ -30388,10 +30385,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Forge tokens are waived only when an administrator grants it, and only once both keys are on file.</source>
   <target>Schmiede-Token entfallen nur, wenn eine Verwaltung es gewährt – und erst, wenn beide Schlüssel hinterlegt sind.</target>
 </trans-unit>
-<trans-unit id="s5536e12d3130b6f4">
-  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair – the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.</source>
-  <target>Nach dem Sieg über den Endgegner öffnet sich das Nachbesprechungs-Terminal – die Verteilung der Beute, Stück für Stück an einzelne Mitglieder der Gruppe. 105 Stücke gibt es, über die acht Archetypen verteilt, in zwölf Wirkungsarten: Eignungs-Verstärkungen (gedeckelt bei +2 je Agent, damit niemand unantastbar wird), Erinnerungen, die die Persönlichkeit formen, Moodlets, die von selbst verklingen, Ereignis- und Bogen-Modifikatoren, dauerhafte Boni und solche für den nächsten Lauf, dazu die Gebäudereparatur – der einzige Weg, auf dem ein zerstörtes Gebäude je wieder auf die Beine kommt. Der vollständige Katalog, mit der Wirkung jedes Stücks und dem Archetyp, der es fallen lässt, steht im Thema „Beutekatalog".</target>
-</trans-unit>
 <trans-unit id="s99a300f66daaef26">
   <source>Loot Catalogue</source>
   <target>Beutekatalog</target>
@@ -30416,13 +30409,329 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Aptitude boosts, memories, moodlets, event and arc modifiers, permanent and next-run bonuses</source>
   <target>Eignungs-Verstärkungen, Erinnerungen, Moodlets, Ereignis- und Bogen-Modifikatoren, dauerhafte Boni und solche für den nächsten Lauf</target>
 </trans-unit>
-<trans-unit id="s590cfbf5d6da494b">
-  <source>Building repair is here too: the only way a ruined building ever recovers</source>
-  <target>Auch die Gebäudereparatur steht hier: der einzige Weg, auf dem ein zerstörtes Gebäude je wieder auf die Beine kommt</target>
-</trans-unit>
 <trans-unit id="s372769224a8bc4f7">
   <source>Read from the same record the run uses, so it is never out of date</source>
   <target>Aus demselben Bestand gelesen, aus dem der Lauf schöpft – er kann also nie veralten</target>
+</trans-unit>
+<trans-unit id="s60cc10ca9e096620">
+  <source>Official</source>
+  <target>Amtlich</target>
+</trans-unit>
+<trans-unit id="sf4f03a7d8b448cef">
+  <source>Rumour</source>
+  <target>Gerücht</target>
+</trans-unit>
+<trans-unit id="s403346467aaf7978">
+  <source>Unrest</source>
+  <target>Aufruhr</target>
+</trans-unit>
+<trans-unit id="s755534d76fba9e71">
+  <source>Overthrow</source>
+  <target>Umsturz</target>
+</trans-unit>
+<trans-unit id="s1cadc7bfdbc44f4a">
+  <source>Faithful</source>
+  <target>Treu</target>
+</trans-unit>
+<trans-unit id="sa6895584d61478fb">
+  <source>Free</source>
+  <target>Frei</target>
+</trans-unit>
+<trans-unit id="sdc3fc9312ab8c45e">
+  <source>Temperature 0.4 · names the source</source>
+  <target>Temperatur 0.4 · nennt die Quelle</target>
+</trans-unit>
+<trans-unit id="s3c7e2a17b76ccbad">
+  <source>Temperature 0.7 · the default</source>
+  <target>Temperatur 0.7 · die Vorgabe</target>
+</trans-unit>
+<trans-unit id="s3c5ddf667fbab0c6">
+  <source>Temperature 0.9 · invents around it</source>
+  <target>Temperatur 0.9 · erfindet dazu</target>
+</trans-unit>
+<trans-unit id="sd3aaa4c2aa0e0dfb">
+  <source>Signal handed over</source>
+  <target>Signal übergeben</target>
+</trans-unit>
+<trans-unit id="s6c89bc45a91b7430">
+  <source>Model answering</source>
+  <target>Modell antwortet</target>
+</trans-unit>
+<trans-unit id="s9fca0695739144fb">
+  <source>Answer set</source>
+  <target>Antwort gesetzt</target>
+</trans-unit>
+<trans-unit id="s3a64b37bd96efdfd">
+  <source>The crucible stayed cold. No answer arrived.</source>
+  <target>Der Schmelztiegel blieb kalt. Es kam keine Antwort.</target>
+</trans-unit>
+<trans-unit id="sba880b953fef3857">
+  <source>The crucible stayed cold.</source>
+  <target>Der Schmelztiegel blieb kalt.</target>
+</trans-unit>
+<trans-unit id="s1c7d83e8dc6b85de">
+  <source>Saved.</source>
+  <target>Gespeichert.</target>
+</trans-unit>
+<trans-unit id="s7b4d0f58e9016d16">
+  <source>Lens for "<x id="0" equiv-text="${title}"/>" changed · <x id="1" equiv-text="${type}"/> · impact <x id="2" equiv-text="${lens.impact}"/></source>
+  <target>Linse für „<x id="0" equiv-text="${title}"/>" geändert · <x id="1" equiv-text="${type}"/> · Wucht <x id="2" equiv-text="${lens.impact}"/></target>
+</trans-unit>
+<trans-unit id="sc88f36d067f1aae7">
+  <source>without reactions</source>
+  <target>ohne Reaktionen</target>
+</trans-unit>
+<trans-unit id="s27c627b12bdda019">
+  <source><x id="0" equiv-text="${lens.n}"/> reactions</source>
+  <target><x id="0" equiv-text="${lens.n}"/> Reaktionen</target>
+</trans-unit>
+<trans-unit id="sf05578b8e26a6597">
+  <source>"<x id="0" equiv-text="${title}"/>" is in quarantine · <x id="1" equiv-text="${type}"/> · impact <x id="2" equiv-text="${lens.impact}"/> · <x id="3" equiv-text="${reactions}"/></source>
+  <target>„<x id="0" equiv-text="${title}"/>" steht in der Quarantäne · <x id="1" equiv-text="${type}"/> · Wucht <x id="2" equiv-text="${lens.impact}"/> · <x id="3" equiv-text="${reactions}"/></target>
+</trans-unit>
+<trans-unit id="sbe719b1034940a70">
+  <source>1 Signal</source>
+  <target>1 Signal</target>
+</trans-unit>
+<trans-unit id="se00e3d31c3f0ce07">
+  <source>2 Lens</source>
+  <target>2 Linse</target>
+</trans-unit>
+<trans-unit id="s86dde57c6fba6c4a">
+  <source>3 World</source>
+  <target>3 Welt</target>
+</trans-unit>
+<trans-unit id="sb11e9a55cc567dc7">
+  <source>The source sent a headline and nothing else.</source>
+  <target>Die Quelle schickte eine Schlagzeile und sonst nichts.</target>
+</trans-unit>
+<trans-unit id="s2e0c68be1fa79ae8">
+  <source>Working</source>
+  <target>arbeitet</target>
+</trans-unit>
+<trans-unit id="sf0a45db704b4c72f">
+  <source>Writing</source>
+  <target>schreibt</target>
+</trans-unit>
+<trans-unit id="s0d0fc6cc5f48e490">
+  <source>World · <x id="0" equiv-text="${zoneName}"/></source>
+  <target>Welt · <x id="0" equiv-text="${zoneName}"/></target>
+</trans-unit>
+<trans-unit id="sb3f587fb07e23973">
+  <source>Nothing has been forged yet.</source>
+  <target>Noch liegt nichts im Tiegel.</target>
+</trans-unit>
+<trans-unit id="s60c3a69a0f56c309">
+  <source>Title of the event</source>
+  <target>Titel des Ereignisses</target>
+</trans-unit>
+<trans-unit id="s47baa3708fe838f8">
+  <source>Text of the event</source>
+  <target>Text des Ereignisses</target>
+</trans-unit>
+<trans-unit id="s13b3f5afa0862d1c">
+  <source>Place</source>
+  <target>Ort</target>
+</trans-unit>
+<trans-unit id="s609ee9df97fed0c1">
+  <source>This world has no zones yet.</source>
+  <target>Diese Welt hat noch keine Zonen.</target>
+</trans-unit>
+<trans-unit id="s7d628314eec95d44">
+  <source>Kind · impact</source>
+  <target>Typ · Wucht</target>
+</trans-unit>
+<trans-unit id="sc0450961b7c3fa6d">
+  <source>This world has no event kinds yet.</source>
+  <target>Diese Welt hat noch keine Ereignistypen.</target>
+</trans-unit>
+<trans-unit id="s2f38eba5649cf0b8">
+  <source>Impact from 1 to 10</source>
+  <target>Wucht von 1 bis 10</target>
+</trans-unit>
+<trans-unit id="se8375f7c5ba8dd91">
+  <source>Impact <x id="0" equiv-text="${value}"/></source>
+  <target>Wucht <x id="0" equiv-text="${value}"/></target>
+</trans-unit>
+<trans-unit id="sd85a76d1947c8249">
+  <source>changes the admission, not the text</source>
+  <target>ändert die Aufnahme, nicht den Text</target>
+</trans-unit>
+<trans-unit id="sf4332fb59ef69b87">
+  <source>agents answering in the world</source>
+  <target>Agenten, die in der Welt antworten</target>
+</trans-unit>
+<trans-unit id="s2dfe527ea3103571">
+  <source>Freedom</source>
+  <target>Freiheit</target>
+</trans-unit>
+<trans-unit id="sa29774d1f8ed60bf">
+  <source>Instruction</source>
+  <target>Anweisung</target>
+</trans-unit>
+<trans-unit id="s78beca9dd441716d">
+  <source>One sentence to the writer, if you have one.</source>
+  <target>Ein Satz an den Schreiber, falls du einen hast.</target>
+</trans-unit>
+<trans-unit id="s8c271e64aa1e4c8a">
+  <source>Instruction to the writer</source>
+  <target>Anweisung an den Schreiber</target>
+</trans-unit>
+<trans-unit id="se19e2ed58cd65d6c">
+  <source>Versions</source>
+  <target>Fassungen</target>
+</trans-unit>
+<trans-unit id="sf00467b1c6f66095">
+  <source>V<x id="0" equiv-text="${i + 1}"/> · <x id="1" equiv-text="${toneLabel(v.tone)}"/> · <x id="2" equiv-text="${freedomLabel(v.creativity)}"/></source>
+  <target>V<x id="0" equiv-text="${i + 1}"/> · <x id="1" equiv-text="${toneLabel(v.tone)}"/> · <x id="2" equiv-text="${freedomLabel(v.creativity)}"/></target>
+</trans-unit>
+<trans-unit id="s04264167ab94c75c">
+  <source>Forge again</source>
+  <target>Neu schmelzen</target>
+</trans-unit>
+<trans-unit id="s89dfbda712a2d927">
+  <source>none chosen</source>
+  <target>kein Ort gewählt</target>
+</trans-unit>
+<trans-unit id="s43ac4bc6c64ff9fd">
+  <source>not reported</source>
+  <target>nicht gemeldet</target>
+</trans-unit>
+<trans-unit id="s60147fb4fa4a8e0c">
+  <source>running</source>
+  <target>läuft</target>
+</trans-unit>
+<trans-unit id="s0e033946b3a882fa">
+  <source><x id="0" equiv-text="${model}"/> · <x id="1" equiv-text="${variant.ms}"/> ms measured</source>
+  <target><x id="0" equiv-text="${model}"/> · <x id="1" equiv-text="${variant.ms}"/> ms gemessen</target>
+</trans-unit>
+<trans-unit id="s19e0adc07a575c88">
+  <source><x id="0" equiv-text="${lens.n}"/> agent reactions</source>
+  <target><x id="0" equiv-text="${lens.n}"/> Agenten-Reaktionen</target>
+</trans-unit>
+<trans-unit id="s1fc2e3a0c9550dfa">
+  <source>no kind chosen</source>
+  <target>kein Typ gewählt</target>
+</trans-unit>
+<trans-unit id="sdfa47b9ce9ac1889">
+  <source>Call</source>
+  <target>Aufruf</target>
+</trans-unit>
+<trans-unit id="s8c2b2ecf9380a914">
+  <source><x id="0" equiv-text="${signal.source}"/> · "<x id="1" equiv-text="${signal.headline}"/>" · <x id="2" equiv-text="${archetype}"/> · magnitude <x id="3" equiv-text="${signal.magnitude.toFixed(2)}"/></source>
+  <target><x id="0" equiv-text="${signal.source}"/> · „<x id="1" equiv-text="${signal.headline}"/>" · <x id="2" equiv-text="${archetype}"/> · Magnitude <x id="3" equiv-text="${signal.magnitude.toFixed(2)}"/></target>
+</trans-unit>
+<trans-unit id="sf6be14a0e7bf4952">
+  <source>Sent along</source>
+  <target>Mitgeschickt</target>
+</trans-unit>
+<trans-unit id="s4a552fafdf923b77">
+  <source>title, platform, URL and the raw record of the source</source>
+  <target>Titel, Plattform, URL und der Rohsatz der Quelle</target>
+</trans-unit>
+<trans-unit id="s8c3102a118508bf5">
+  <source>Kept only</source>
+  <target>Nur behalten</target>
+</trans-unit>
+<trans-unit id="s87052d42e2f9dfa6">
+  <source>Admission</source>
+  <target>Aufnahme</target>
+</trans-unit>
+<trans-unit id="s54cd9d20337f6de3">
+  <source><x id="0" equiv-text="${kind}"/> · impact <x id="1" equiv-text="${lens.impact}"/>/10 · <x id="2" equiv-text="${admission}"/></source>
+  <target><x id="0" equiv-text="${kind}"/> · Wucht <x id="1" equiv-text="${lens.impact}"/>/10 · <x id="2" equiv-text="${admission}"/></target>
+</trans-unit>
+<trans-unit id="sc148a227f471a04b">
+  <source><x id="0" equiv-text="${this._variants.length}"/> versions · V<x id="1" equiv-text="${this._variantIndex + 1}"/> chosen · editable before it moves on</source>
+  <target><x id="0" equiv-text="${this._variants.length}"/> Fassungen · V<x id="1" equiv-text="${this._variantIndex + 1}"/> gewählt · vor dem Weitergeben änderbar</target>
+</trans-unit>
+<trans-unit id="seaf97719986faf4f">
+  <source>Gap</source>
+  <target>Lücke</target>
+</trans-unit>
+<trans-unit id="s859a466b3b51d26b">
+  <source>The call accepts no lens yet, and reports no steps or token count.</source>
+  <target>Der Aufruf nimmt noch keine Linse entgegen und meldet weder Schritte noch Tokenzahl.</target>
+</trans-unit>
+<trans-unit id="s955d64a3144d1486">
+  <source>Done · the text can be edited</source>
+  <target>fertig · der Text ist änderbar</target>
+</trans-unit>
+<trans-unit id="scc1086e24888a9a1">
+  <source>Waiting for the model</source>
+  <target>wartet auf das Modell</target>
+</trans-unit>
+<trans-unit id="se94689ae7ef35f3a">
+  <source>Setting the answer</source>
+  <target>setzt die Antwort</target>
+</trans-unit>
+<trans-unit id="s51fb1bdb32707eb3">
+  <source>Nothing came back</source>
+  <target>nichts zurückgekommen</target>
+</trans-unit>
+<trans-unit id="s24d4aa44fda8c21f">
+  <source>Nothing loaded</source>
+  <target>nichts geladen</target>
+</trans-unit>
+<trans-unit id="s274d2b54e43353d4">
+  <source>To quarantine</source>
+  <target>In die Quarantäne</target>
+</trans-unit>
+<trans-unit id="s01b26b81a03fa608">
+  <source>Keep this lens</source>
+  <target>Linse übernehmen</target>
+</trans-unit>
+<trans-unit id="s77a7c19678f0984b">
+  <source>Crucible · signal into world</source>
+  <target>Schmelztiegel · Signal in die Welt</target>
+</trans-unit>
+<trans-unit id="s4e60b7ba2bb0a9aa">
+  <source>Change the lens</source>
+  <target>Linse ändern</target>
+</trans-unit>
+<trans-unit id="sc51cd076cb466d86">
+  <source>This signal is no longer in the airlock.</source>
+  <target>Dieses Signal liegt nicht mehr in der Schleuse.</target>
+</trans-unit>
+<trans-unit id="sb6172daf69658df1">
+  <source>Shock</source>
+  <target>Erschütterung</target>
+</trans-unit>
+<trans-unit id="se3a1b90525f24861">
+  <source>Measured</source>
+  <target>Ausgewogen</target>
+</trans-unit>
+<trans-unit id="sa34218ebaf88db77">
+  <source>Open the source</source>
+  <target>Quelle öffnen</target>
+</trans-unit>
+<trans-unit id="s5a6efcfb3a10a381">
+  <source>Tone</source>
+  <target>Tonlage</target>
+</trans-unit>
+<trans-unit id="s5a6bdea977de993c">
+  <source>° Place, vector, tone, freedom and instruction do not reach the model yet – the call takes no lens. They are kept with the signal and take effect once it does. Kind, impact and reactions are already in force: they travel with the admission.</source>
+  <target>° Ort, Vektor, Tonlage, Freiheit und Anweisung erreichen das Modell noch nicht – der Aufruf nimmt keine Linse entgegen. Sie bleiben am Signal und wirken, sobald er es tut. Typ, Wucht und Reaktionen gelten schon jetzt: sie gehen mit der Aufnahme mit.</target>
+</trans-unit>
+<trans-unit id="sf83579a3ad6a3b6a">
+  <source>Call record</source>
+  <target>Aufruf-Protokoll</target>
+</trans-unit>
+<trans-unit id="s444909b1d3518958">
+  <source>place <x id="0" equiv-text="${zoneName}"/> · vector <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · tone <x id="2" equiv-text="${toneLabel(lens.tone)}"/> · freedom <x id="3" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/></source>
+  <target>Ort <x id="0" equiv-text="${zoneName}"/> · Vektor <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · Tonlage <x id="2" equiv-text="${toneLabel(lens.tone)}"/> · Freiheit <x id="3" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/></target>
+</trans-unit>
+<trans-unit id="s0cb0b327045dfa03">
+  <source>Multiplies staffing effectiveness. The standard ladder runs excellent x1.0, good x0.85, fair x0.7, poor x0.5, ruined x0.2 – a world may name its own rungs. Destructive events step the condition down one rung; dungeon loot repair and this field are what step it back up.</source>
+<target>Vervielfacht die Wirksamkeit der Besetzung. Die übliche Leiter lautet ausgezeichnet ×1,0, gut ×0,85, mäßig ×0,7, schlecht ×0,5, zerstört ×0,2 – eine Welt darf ihre Sprossen selbst benennen. Zerstörerische Ereignisse setzen den Zustand eine Sprosse tiefer; wieder hinauf bringen ihn die Gebäudereparatur aus dem Verlies und dieses Feld.</target>
+</trans-unit>
+<trans-unit id="sd760316f3f712b4e">
+  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair – the only effect in play that lifts a ruined building back up (an architect can also set the condition by hand in the building editor). The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.</source>
+<target>Nach dem Sieg über den Endgegner öffnet sich das Nachbesprechungs-Terminal – die Verteilung der Beute, Stück für Stück an einzelne Mitglieder der Gruppe. 105 Stücke gibt es, über die acht Archetypen verteilt, in zwölf Wirkungsarten: Eignungs-Verstärkungen (gedeckelt bei +2 je Agent, damit niemand unantastbar wird), Erinnerungen, die die Persönlichkeit formen, Moodlets, die von selbst verklingen, Ereignis- und Bogen-Modifikatoren, dauerhafte Boni und solche für den nächsten Lauf, dazu die Gebäudereparatur – die einzige Wirkung im Spiel, die ein zerstörtes Gebäude wieder auf die Beine bringt (von Hand kann ein Architekt den Zustand im Bau-Editor setzen). Der vollständige Katalog, mit der Wirkung jedes Stücks und dem Archetyp, der es fallen lässt, steht im Thema „Beutekatalog“.</target>
+</trans-unit>
+<trans-unit id="s50cfb93dfb1aa1ac">
+  <source>Building repair is here too: the only effect in play that lifts a ruined building</source>
+<target>Auch die Gebäudereparatur steht hier: die einzige Wirkung im Spiel, die ein zerstörtes Gebäude wieder aufrichtet</target>
 </trans-unit>
 </body>
 </file>

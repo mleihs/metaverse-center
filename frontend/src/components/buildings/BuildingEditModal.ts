@@ -385,7 +385,11 @@ export class VelgBuildingEditModal extends LitElement {
             <div class="form__group">
               <label class="form__label" for="building_condition">
                 ${msg('Condition')}
-                ${renderInfoBubble(msg('Multiplies staffing effectiveness: Good x1.0, Moderate x0.75, Poor x0.5, Ruined x0.2. Destructive events can degrade condition.'))}
+                ${renderInfoBubble(
+                  msg(
+                    'Multiplies staffing effectiveness. The standard ladder runs excellent x1.0, good x0.85, fair x0.7, poor x0.5, ruined x0.2 \u2013 a world may name its own rungs. Destructive events step the condition down one rung; dungeon loot repair and this field are what step it back up.',
+                  ),
+                )}
               </label>
               <select
                 class="form__select"
