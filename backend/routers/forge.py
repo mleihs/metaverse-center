@@ -12,6 +12,8 @@ from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
     get_effective_supabase,
+    get_supabase,
+    is_platform_admin,
     require_architect,
     require_owner_or_platform_admin,
     require_platform_admin,
@@ -74,13 +76,21 @@ _draft_service = ForgeDraftService()
 _orchestrator_service = ForgeOrchestratorService()
 
 
-async def _check_byok_access(supabase, user_id: UUID) -> None:
+async def _check_byok_access(supabase, admin_supabase, user: CurrentUser) -> None:
     """Verify BYOK access — shared guard for update/delete/test endpoints.
+
+    This is the POLICY gate ("may this person use a personal key at all"), not
+    a Forge gate: depositing a key requires nothing but a signed-in account,
+    and whoever deposits none keeps running on the platform key. Platform
+    admins pass because they are the ones who set the policy — without that,
+    the shipped default (``per_user`` with nobody granted) locked out the only
+    account able to grant anything.
 
     Raises HTTPException(403) if denied, HTTPException(500) on check failure.
     """
     try:
-        allowed = await ForgeDraftService.check_byok_allowed(supabase, user_id)
+        admin = await is_platform_admin(user, admin_supabase)
+        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id, is_admin=admin)
         if not allowed:
             raise HTTPException(status_code=403, detail="BYOK access not granted.")
     except HTTPException:
@@ -332,10 +342,15 @@ async def list_token_bundles(
 async def get_wallet(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_effective_supabase),
+    admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[WalletSummary]:
     """Get the current user's forge wallet."""
     try:
-        data = await _draft_service.get_wallet(supabase, user.id)
+        data = await _draft_service.get_wallet(
+            supabase,
+            user.id,
+            is_admin=await is_platform_admin(user, admin_supabase),
+        )
     except WalletUnavailableError as exc:
         raise HTTPException(status_code=503, detail=exc.detail) from exc
     return SuccessResponse(data=data)
@@ -385,14 +400,27 @@ async def get_purchase_history(
 async def update_byok(
     request: Request,
     body: UpdateBYOKRequest,
-    user: Annotated[CurrentUser, Depends(require_architect())],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_effective_supabase),
+    user_supabase=Depends(get_supabase),
+    admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[MessageResponse]:
-    """Update personal API keys (BYOK) for the Simulation Forge."""
-    await _check_byok_access(supabase, user.id)
+    """Store the caller's own API keys (BYOK).
+
+    Not gated by ``require_architect()``: a key belongs to the PERSON, the
+    Forge is only one of the two places it is spent. The gates that remain are
+    "signed in" and the platform's BYOK policy.
+
+    ``user_supabase`` is deliberate and not interchangeable with ``supabase``:
+    ``fn_update_user_byok_keys`` authorises itself through ``auth.uid()``, and
+    the effective client hands platform admins a service-role JWT with no
+    ``sub``. Passing that one raised *Not authorized to update another user's
+    keys* on every admin request.
+    """
+    await _check_byok_access(supabase, admin_supabase, user)
 
     try:
-        result = await _draft_service.update_user_keys(supabase, user.id, body.openrouter_key, body.replicate_key)
+        result = await _draft_service.update_user_keys(user_supabase, user.id, body.openrouter_key, body.replicate_key)
     except WalletNotFoundError as exc:
         raise HTTPException(status_code=404, detail=exc.detail) from exc
     await AuditService.safe_log(
@@ -412,14 +440,19 @@ async def update_byok(
 async def delete_byok_key(
     request: Request,
     provider: Literal["openrouter", "replicate"],
-    user: Annotated[CurrentUser, Depends(require_architect())],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_effective_supabase),
+    user_supabase=Depends(get_supabase),
+    admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[MessageResponse]:
-    """Remove a single BYOK API key (openrouter or replicate)."""
-    await _check_byok_access(supabase, user.id)
+    """Remove a single BYOK API key (openrouter or replicate).
+
+    Same two reasons as ``update_byok`` for the gate and for ``user_supabase``.
+    """
+    await _check_byok_access(supabase, admin_supabase, user)
 
     try:
-        result = await _draft_service.clear_user_key(supabase, user.id, provider)
+        result = await _draft_service.clear_user_key(user_supabase, user.id, provider)
     except InvalidProviderError as exc:
         raise HTTPException(status_code=400, detail=exc.detail) from exc
     except WalletNotFoundError as exc:
@@ -442,16 +475,20 @@ async def delete_byok_key(
 async def test_byok_key(
     request: Request,
     body: TestBYOKRequest,
-    user: Annotated[CurrentUser, Depends(require_architect())],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
     supabase=Depends(get_effective_supabase),
+    admin_supabase=Depends(get_admin_supabase),
 ) -> SuccessResponse[TestBYOKResult]:
     """Test a BYOK API key against its provider without storing it.
 
     Makes a lightweight API call to verify the key is valid:
     - OpenRouter: GET /api/v1/auth/key (key info, requires valid auth)
     - Replicate: GET /v1/account (account info)
+
+    Nothing is stored, so this needs no user-JWT client — only the same policy
+    gate as the write endpoints.
     """
-    await _check_byok_access(supabase, user.id)
+    await _check_byok_access(supabase, admin_supabase, user)
 
     result = await _draft_service.test_provider_key(body.provider, body.key)
     await AuditService.safe_log(
