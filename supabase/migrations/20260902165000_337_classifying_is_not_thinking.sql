@@ -44,6 +44,29 @@
 -- das nur im Code steht, ist das eine Modell, das ein Betreiber nicht wechseln
 -- kann.
 
+-- ── NACHTRAG 02.09.2026: der Zeitstempel war belegt ────────────────────────
+--
+-- Diese Datei hiess zuerst `20260902160000_337_…` — DENSELBEN Zeitstempel trug
+-- bereits `336_four_numbers_before_a_decision` eines Peers. Beide wurden auf
+-- Prod angewendet und beide wirken; die Ledger-Zeile aber traegt
+-- `on conflict (version) do nothing`, und weil 336 zuerst da war, ist der
+-- Eintrag fuer 337 LAUTLOS ausgefallen. Im Ledger stand danach EINE Zeile auf
+-- `20260902160000`, und zwar unter dem Namen der 336.
+--
+-- Das ist schlimmer als ein fehlender Beleg: `supabase migration list` und
+-- `db push` vergleichen VERSIONEN, nicht Namen. `20260902160000` galt als
+-- angewandt, also waeren kuenftig BEIDE Dateien uebersprungen worden — heute
+-- folgenlos, weil beide wirklich drin sind, beim naechsten `migration repair`
+-- zweideutig.
+--
+-- Deshalb der eigene Zeitstempel `20260902165000` (Inhalt unveraendert, die
+-- Reihenfolge zwischen 336 und 338 bleibt) und eine nachgetragene Ledger-Zeile.
+-- Das erneute Anwenden auf einer Datenbank, die 337 schon hat, ist harmlos:
+-- ein INSERT mit ON CONFLICT DO NOTHING und eine Selbstpruefung.
+--
+-- 🔑 Zwei Migrationen mit demselben Zeitstempel sind KEIN Schoenheitsfehler.
+-- Der Zeitstempel IST der Schluessel.
+
 BEGIN;
 
 INSERT INTO public.platform_settings (setting_key, setting_value, description)

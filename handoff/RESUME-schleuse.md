@@ -9,6 +9,8 @@ Sichtung ist der Griff, der dem Brett bis heute fehlte.
                                      Doku-Commit NACH dem Auslösen)
     Migrationen          334 · 337 · 338 drauf · 339 hat ein Peer belegt
                          → nächste freie 340
+                         (337 heisst seit dem Zusammenstoss mit 336
+                          `20260902165000_337_…`; Ledger 334–339 lückenlos)
     news_scanner_enabled true · Takt 6 h · auto_create false
     Adapter              11 registriert, 6 aktiv (inkl. bluesky), 5/11 online
     Kandidaten           83  (NOAA 44 · NASA 24 · GDACS 8 · USGS 7)
@@ -108,13 +110,29 @@ Lücke 1 (Melden) ist zu — Migration 334. Offen:
   Der Lese-Weg (`decrypt_setting`) reicht Klartext durch, also fällt es nicht
   auf. Heute steht keine `*_api_key`-Zeile in `platform_settings` — der erste
   Schlüssel, den jemand einträgt, liegt dort unverschlüsselt.
-- **Migration 336 und 337 teilen sich einen Zeitstempel** (`20260902160000`).
-  Beide sind auf Prod wirksam (geprüft: Funktion da, Zeilen da), aber der Ledger
-  trägt die Version nur EINMAL. Ein Beleg über `migration list` ist an dieser
-  Stelle falsch.
-- **CI ist rot** (Migration 299 besteht auf einer FRISCHEN Datenbank ihre eigene
-  Selbstprüfung nicht — die Saat läuft nach den Migrationen). Erreicht die
-  Laufzeit nicht. Ein rotes Tor sagt beim nächsten echten Fehler nichts.
+- **Der Zeitstempel-Zusammenstoss 336/337 ist BEHOBEN** (02.09., nachmittags,
+  Befund eines Peers). Meine erste Fassung dieses Absatzes war zu milde: 337
+  hatte nicht eine geteilte Ledger-Zeile, sondern **gar keine** — der Eintrag
+  scheiterte an `on conflict (version) do nothing`, weil 336 mit demselben
+  Zeitstempel zuerst da war, und der überlebende Eintrag trug 336s Namen.
+  `migration list` und `db push` vergleichen VERSIONEN, nicht Namen; damit
+  wären künftig BEIDE Dateien übersprungen worden. Behoben: 337 heisst jetzt
+  `20260902165000_337_…` (Inhalt unverändert, Reihenfolge unverändert), die
+  Ledger-Zeile ist nachgetragen, der Ledger trägt 334–339 lückenlos.
+- **⚠ CI ist rot — und das hat heute nachweislich etwas gekostet.** Der Grund
+  ist Migration 299 (besteht auf einer FRISCHEN Datenbank ihre eigene
+  Selbstprüfung nicht, weil die Saat nach den Migrationen läuft) und hat mit
+  336/337 nichts zu tun. Aber `scripts/lint-migration-order.sh` **existiert,
+  hängt in CI und beschreibt genau diesen Zusammenstoss in seinem eigenen
+  Kopfkommentar** — es hätte ihn beim ersten Push gemeldet. Gemessen: gegen den
+  Baum bei `dfca7bb3` meldet es die Kollision, gegen den Baum danach meldet es
+  `PASS: 331 Migrationen`.
+
+  🔑 **Das ist der Beleg für den Satz, der sonst nur eine Warnung ist: ein rotes
+  Tor sagt beim nächsten echten Fehler nichts.** Es war nicht so, dass niemand
+  hinsah — es war so, dass Hinsehen nichts gebracht hätte, weil rot schon der
+  Normalzustand war. **Migration 299 zu reparieren ist deshalb dringender als
+  es aussieht.**
 
 ## 🔑 Was heute gelehrt hat (gilt weiter)
 
