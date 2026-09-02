@@ -179,8 +179,13 @@ function getModelMeta(): Record<string, ModelSettingMeta> {
  * `backend/services/platform_model_config.py`.
  */
 const MODEL_OPTIONS = [
-  { id: 'deepseek/deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
-  { id: 'deepseek/deepseek-v4-flash-0731', label: 'DeepSeek V4 Flash 0731' },
+  // 02.09.2026: die beiden DeepSeek-V4-Denkmodelle sind hier RAUS, auf
+  // Entscheidung des Nutzers („deepseek 4 thinking war zu teuer"). Sie stehen
+  // auch nicht mehr als Auswahl zur Verfügung, damit „Auf Vorgaben
+  // zurücksetzen" sie nicht durch die Hintertür zurückholt. Begründung samt
+  // Preisen: HARDCODED_DEFAULTS in backend/services/platform_model_config.py.
+  { id: 'deepseek/deepseek-chat', label: 'DeepSeek Chat' },
+  { id: 'deepseek/deepseek-chat-v3-0324', label: 'DeepSeek Chat v3-0324' },
   { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
   { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
   { id: 'anthropic/claude-sonnet-4.6', label: 'Claude Sonnet 4.6' },
@@ -216,14 +221,14 @@ function getModelTip(key: string): string {
  * backend is not cosmetic – it is a live footgun on the production database.
  */
 const DEFAULTS: Record<SettingKey, string> = {
-  model_default: 'deepseek/deepseek-v4-flash-0731',
+  model_default: 'deepseek/deepseek-chat',
   model_fallback: 'google/gemini-2.5-flash-lite',
-  model_research: 'deepseek/deepseek-v4-flash-0731',
-  model_forge: 'deepseek/deepseek-v4-pro',
-  model_default_dev: 'deepseek/deepseek-v4-flash-0731',
+  model_research: 'deepseek/deepseek-chat',
+  model_forge: 'deepseek/deepseek-chat',
+  model_default_dev: 'deepseek/deepseek-chat',
   model_fallback_dev: 'google/gemini-2.5-flash-lite',
-  model_research_dev: 'deepseek/deepseek-v4-flash-0731',
-  model_forge_dev: 'deepseek/deepseek-v4-flash-0731',
+  model_research_dev: 'deepseek/deepseek-chat',
+  model_forge_dev: 'deepseek/deepseek-chat',
   reasoning_entity: 'off',
   reasoning_chunk: 'off',
   reasoning_lore: 'off',
