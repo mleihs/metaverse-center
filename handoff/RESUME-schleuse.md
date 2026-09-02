@@ -6,11 +6,12 @@ konnte, und die Botschaften haben ein eigenes Zuhause.
 
     live auf Prod        2177281c (Peer-Deploy) — meine Backend-Reparaturen
                          (a3993cef) sind dessen Vorfahr und wirken
-    Migrationen          334·337·338·340·341·343 auf Prod · nächste freie 344
+    Migrationen          334·337·338·340·341·343·345 auf Prod · nächste freie 346
+                         (344 ist für den Peer reserviert)
                          (⚠ 343 kollidierte mit einem Peer — meine hält die
                           Ledger-Zeile, seine zieht auf 344)
     Frontend             8/8 Schritte, 30 Lint-Tore grün, 1182 Tests
-    Backend-Lücken       3 von 6 zu (4, 5, 7); offen 2, 3, 6
+    Backend-Lücken       5 von 6 zu (2, 4, 5, 7 + Bündelung); offen 3 und 6
     news_scanner_enabled ⚠ FALSE — ein Peer hat die ganze autonome KI-Schicht
                          abgeschaltet (leeres OpenRouter-Konto). Für einen
                          gezielten Lauf kurz anmachen und ihm Bescheid sagen.
@@ -23,11 +24,10 @@ also nicht dringend, sondern fällig:
     ✅ 5  Tagesquote                            — Einzel- UND Stapelweg
     ✅ 7  Scan-Log zeigt die Schleusen-Stufe    — Migration 343, 218bdf35
 
-    2  Story-Bündelung   sources[] + social_volume je Kandidat
-                         → schaltet in der Sichtung „Netz-Tempo" frei.
-                         Der Schlüssel dafür ist seit Migration 343 da
-                         (source_adapter, source_id) — die Bündelung selbst
-                         ist eine Ähnlichkeitsfrage und noch offen.
+    ✅ 2  Story-Bündelung                       — Migration 345, 83a066ee
+          „Netz-Tempo" sortiert seit dem, und die Regel „eine Sozialquelle
+          wird nie eine eigene Zeile" wird jetzt DURCHGESETZT statt
+          beschrieben (`SourceAdapter.is_supporting`).
     3  Passungs-Score    fit je Kandidat × Welt
                          → schaltet „Passung" frei (ein Schalter:
                            BUREAU_RANKS_THE_SIGNALS)
