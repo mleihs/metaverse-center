@@ -14,8 +14,11 @@ Sichtung ist der Griff, der dem Brett bis heute fehlte.
     news_scanner_enabled true · Takt 6 h · auto_create false
     Adapter              11 registriert, 6 aktiv (inkl. bluesky), 5/11 online
     Kandidaten           83  (NOAA 44 · NASA 24 · GDACS 8 · USGS 7)
-    ungepusht            a3993cef (Scanner-Reparaturen) · 3c418ae2 (Sichtung)
-                         + der Doku-Commit dieser Notiz
+    live seit 2177281c   a3993cef — die Scanner-Reparaturen SIND auf Prod
+                         (ein Peer-Push nahm sie mit; als Vorfahr gemessen)
+    ungepusht            3c418ae2 (Sichtung) · dfca7bb3 (Doku) ·
+                         07196983 (337 umbenannt) · b778e6ee (299, Peer)
+                         — EIN geteilter Baum: wer pusht, pusht alle vier
 
 ▶ **ALS NÄCHSTES: pushen und ausrollen**, dann Schritt 6 (Lesesaal · Scan-Log ·
 Echo · Kammer ④). Vor dem Ausrollen: CI zum FESTGESCHRIEBENEN Commit befragen,
@@ -119,20 +122,32 @@ Lücke 1 (Melden) ist zu — Migration 334. Offen:
   wären künftig BEIDE Dateien übersprungen worden. Behoben: 337 heisst jetzt
   `20260902165000_337_…` (Inhalt unverändert, Reihenfolge unverändert), die
   Ledger-Zeile ist nachgetragen, der Ledger trägt 334–339 lückenlos.
-- **⚠ CI ist rot — und das hat heute nachweislich etwas gekostet.** Der Grund
-  ist Migration 299 (besteht auf einer FRISCHEN Datenbank ihre eigene
-  Selbstprüfung nicht, weil die Saat nach den Migrationen läuft) und hat mit
-  336/337 nichts zu tun. Aber `scripts/lint-migration-order.sh` **existiert,
-  hängt in CI und beschreibt genau diesen Zusammenstoss in seinem eigenen
-  Kopfkommentar** — es hätte ihn beim ersten Push gemeldet. Gemessen: gegen den
-  Baum bei `dfca7bb3` meldet es die Kollision, gegen den Baum danach meldet es
-  `PASS: 331 Migrationen`.
+- **⚠ Das Tor HAT gemeldet — gelesen hat es niemand.** Ich schrieb zuerst,
+  `lint-migration-order.sh` habe geschwiegen, weil CI rot war. Falsch; ein Peer
+  hat es berichtigt, und ich habe es mit `gh run view 33632203585 --log`
+  nachgeprüft. Im Protokoll steht, im selben Lauf, wortwörtlich:
 
-  🔑 **Das ist der Beleg für den Satz, der sonst nur eine Warnung ist: ein rotes
-  Tor sagt beim nächsten echten Fehler nichts.** Es war nicht so, dass niemand
-  hinsah — es war so, dass Hinsehen nichts gebracht hätte, weil rot schon der
-  Normalzustand war. **Migration 299 zu reparieren ist deshalb dringender als
-  es aussieht.**
+      FAIL: zwei Migrationen teilen sich einen Zeitstempel — das ist der Primärschlüssel.
+        20260902160000:
+          20260902160000_336_four_numbers_before_a_decision.sql
+          20260902160000_337_classifying_is_not_thinking.sql
+
+  Mit beiden Dateinamen und der fertigen Reparaturanweisung.
+
+  🔑 **Ausgefallen ist nicht das Messgerät, sondern das LESEN.** Der Lauf war
+  aus einem anderen Grund rot (Migration 299), also sagte „rot" nichts mehr, und
+  niemand öffnete das Protokoll. Das ist unangenehmer als ein schweigendes Tor:
+  **ein schweigendes Tor repariert man, ein übersehenes nicht.** Nicht
+  Verdeckung, sondern Abstumpfung.
+
+  **Rezept bei rotem CI:** nicht „ist eh rot", sondern
+  `gh run view <id> --log | grep -E 'FAIL'` — zehn Sekunden für alle ANDEREN
+  Befunde im selben Protokoll.
+
+  Migration 299 selbst hat `velgarien-rebuild-6e` übernommen (`b778e6ee`, liegt
+  im geteilten Baum). ⚠ Offen bleibt, ob DAHINTER weitere Migrationen auf
+  frischer Datenbank scheitern — der Lauf bricht mit `ON_ERROR_STOP` ab, alles
+  danach ist ungemessen.
 
 ## 🔑 Was heute gelehrt hat (gilt weiter)
 
