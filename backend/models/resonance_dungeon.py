@@ -175,6 +175,11 @@ class DungeonInstance(BaseModel):
     loot_assignments: dict[str, str] = Field(default_factory=dict)  # loot_id → agent_id
     loot_extra_params: dict[str, dict] = Field(default_factory=dict)  # loot_id → extra params
     auto_apply_loot: list[dict] = Field(default_factory=list)  # pre-built auto-apply items
+    # Was die abgelaufene Frist ohne Zutun des Spielers zugewiesen hat, mit
+    # Begruendung je Stueck: {"item_id", "agent_id", "reason": "suggestion" |
+    # "fallback"}. Leer, solange der Spieler selbst bestaetigt — das Finale
+    # unterscheidet daran, ob es eine Wahl oder einen Ablauf beschreibt.
+    auto_assigned: list[dict] = Field(default_factory=list)
 
     # Objektanker (Variation C — "Wandernde Dinge")
     # 2 object IDs selected from ANCHOR_OBJECTS pool at run creation
@@ -223,11 +228,7 @@ class DungeonInstance(BaseModel):
             "room_cleared_flags": [r.index for r in self.rooms if r.cleared],
             "room_revealed_flags": [r.index for r in self.rooms if r.revealed],
             "room_scouted_flags": [r.index for r in self.rooms if r.scouted],
-            "room_encounter_ids": {
-                r.index: r.encounter_template_id
-                for r in self.rooms
-                if r.encounter_template_id
-            },
+            "room_encounter_ids": {r.index: r.encounter_template_id for r in self.rooms if r.encounter_template_id},
             "used_banter_ids": self.used_banter_ids,
             "used_encounter_ids": self.used_encounter_ids,
             "phase_timer": self.phase_timer.model_dump(mode="json") if self.phase_timer else None,
@@ -358,9 +359,15 @@ class RestRequest(BaseModel):
     agent_ids: list[UUID] = Field(..., min_length=1)
 
 
-BIG_FIVE_DIMENSIONS = frozenset({
-    "openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism",
-})
+BIG_FIVE_DIMENSIONS = frozenset(
+    {
+        "openness",
+        "conscientiousness",
+        "extraversion",
+        "agreeableness",
+        "neuroticism",
+    }
+)
 
 
 class LootAssignment(BaseModel):
@@ -820,6 +827,12 @@ class DistributeConfirmResponse(BaseModel):
 
     loot_result: dict = Field(default_factory=dict)
     state: DungeonClientState
+    # Leer, wenn der Spieler selbst bestaetigt hat. Gefuellt, wenn die Frist
+    # ablief — dann steht hier je Stueck, wer es bekam und warum. Ohne dieses
+    # Feld koennte das Finale eine automatische Verteilung nicht von einer
+    # gewaehlten unterscheiden und wuerde eine Entscheidung behaupten, die
+    # niemand getroffen hat.
+    auto_assigned: list[dict] = Field(default_factory=list)
 
 
 # ── Encounter/Loot Data Models ──────────────────────────────────────────────
