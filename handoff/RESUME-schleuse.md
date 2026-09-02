@@ -6,8 +6,11 @@ konnte, und die Botschaften haben ein eigenes Zuhause.
 
     live auf Prod        2177281c (Peer-Deploy) — meine Backend-Reparaturen
                          (a3993cef) sind dessen Vorfahr und wirken
-    Migrationen          334 · 337 · 338 · 340 auf Prod · nächste freie 341
+    Migrationen          334·337·338·340·341·343 auf Prod · nächste freie 344
+                         (⚠ 343 kollidierte mit einem Peer — meine hält die
+                          Ledger-Zeile, seine zieht auf 344)
     Frontend             8/8 Schritte, 30 Lint-Tore grün, 1182 Tests
+    Backend-Lücken       3 von 6 zu (4, 5, 7); offen 2, 3, 6
     news_scanner_enabled ⚠ FALSE — ein Peer hat die ganze autonome KI-Schicht
                          abgeschaltet (leeres OpenRouter-Konto). Für einen
                          gezielten Lauf kurz anmachen und ihm Bescheid sagen.
@@ -16,18 +19,25 @@ konnte, und die Botschaften haben ein eigenes Zuhause.
 Backend-Lücken — und die sind in der Oberfläche jeweils BENANNT statt geraten,
 also nicht dringend, sondern fällig:
 
+    ✅ 4  transform-article nimmt eine `lens`   — Migration 341, f0c78f2f
+    ✅ 5  Tagesquote                            — Einzel- UND Stapelweg
+    ✅ 7  Scan-Log zeigt die Schleusen-Stufe    — Migration 343, 218bdf35
+
     2  Story-Bündelung   sources[] + social_volume je Kandidat
-                         → schaltet in der Sichtung „Netz-Tempo" frei
+                         → schaltet in der Sichtung „Netz-Tempo" frei.
+                         Der Schlüssel dafür ist seit Migration 343 da
+                         (source_adapter, source_id) — die Bündelung selbst
+                         ist eine Ähnlichkeitsfrage und noch offen.
     3  Passungs-Score    fit je Kandidat × Welt
                          → schaltet „Passung" frei (ein Schalter:
                            BUREAU_RANKS_THE_SIGNALS)
-    4  transform-article nimmt eine `lens` entgegen
-                         → nimmt dem Schmelztiegel die °-Fussnote
+                         ⚠ WIE gerechnet wird, ist eine SPIELENTSCHEIDUNG,
+                         keine technische: Kategorie↔Zone, Agentenrollen,
+                         Vektor-Verfügbarkeit sind Vorschläge des Bauplans,
+                         keine gemessenen Grössen. Nicht allein entscheiden.
     6  intake_subscriptions
-                         → die einzige Kammer-Zusage, die noch fehlt
-    7  Scan-Log um die Schleusen-Stufe
-                         → braucht zuerst einen SCHLÜSSEL zwischen
-                           news_scan_log und news_scan_candidates
+                         → weder Tabelle noch Endpunkt; die einzige
+                           Kammer-Zusage, die noch fehlt
 
 Lücke 5 (Quote) ist an der Oberfläche erledigt: Einzelaufnahme UND Stapel
 deckeln.
