@@ -64,6 +64,43 @@ _HISTORY_BUDGET_RATIO = 0.6  # use 60% of context for history
 _MAX_MESSAGES_HARD = 200  # prevent huge DB queries
 _MIN_MESSAGES = 20
 
+# ── Zeichen je Token, je Sprache ──────────────────────────────────────────
+#
+# GEMESSEN AM 02.09.2026 an 419 PARALLELEN Textpaaren aus der Produktion
+# (`agent_memories.content/content_de`, `agents.background/_de`,
+# `agents.character/_de`, `buildings.description/_de`) — dieselbe Aussage in
+# beiden Sprachen, damit nur die Sprache den Unterschied macht, nicht der
+# Inhalt. Tokenisiert mit `tiktoken`:
+#
+#                     o200k_base (GPT-4o)      cl100k_base (GPT-4)
+#     Englisch            4,61                     4,42
+#     Deutsch             4,01                     3,37
+#     Token DE / EN       1,26×                    1,44×
+#
+# Deutsch braucht für DENSELBEN Inhalt 26–44 % mehr Token. Der Grund ist
+# nicht die Textlänge allein (Deutsch ist nur 9,4 % länger in Zeichen),
+# sondern die Zerlegung: Komposita und Umlaute fallen in mehr Stücke.
+#
+# ⚠ Die alte Annahme "4 chars per token which is conservative for English
+# prose" war in BEIDE Richtungen falsch: für Englisch zu vorsichtig (echte
+# 4,4–4,6) und für Deutsch zu großzügig (echte 3,4–4,0). Der zweite Fehler
+# ist der gefährliche — er lässt mehr Verlauf mitschicken, als das Fenster
+# fasst, und der Aufruf scheitert dann beim Anbieter.
+#
+# Genommen wird die PESSIMISTISCHE Kodierung (cl100k), nicht die günstigere:
+# unterschätzte Token sind die teure Richtung, und Claude tokenisiert
+# Deutsch näher an cl100k als an o200k. Fail-closed, wie bei
+# `_DEFAULT_CONTEXT_WINDOW`.
+#
+# KEIN Tokenisierer zur Laufzeit: `tiktoken` lädt seine BPE-Tabellen beim
+# ersten Aufruf über das Netz und hängt hier nur transitiv an
+# `tavily-python`. Beides gehört nicht in den Anfragepfad eines Chats.
+_CHARS_PER_TOKEN: dict[str, float] = {
+    "de": 3.4,
+    "en": 4.4,
+}
+_CHARS_PER_TOKEN_DEFAULT = 3.4  # unbekannte Sprache: die teurere Annahme
+
 
 def _max_history_messages(model_id: str) -> int:
     """Compute the maximum number of history messages for a given model.
@@ -98,6 +135,66 @@ def _max_history_messages(model_id: str) -> int:
     budget = int(context_tokens * _HISTORY_BUDGET_RATIO) - _CONTEXT_RESERVE
     estimated = budget // _TOKENS_PER_MESSAGE_ESTIMATE
     return max(_MIN_MESSAGES, min(estimated, _MAX_MESSAGES_HARD))
+
+
+def _history_token_budget(model_id: str) -> int:
+    """Wie viele Token der Verlauf höchstens belegen darf."""
+    context_tokens = _DEFAULT_CONTEXT_WINDOW
+    model_lower = model_id.lower()
+    for prefix, tokens in _CONTEXT_WINDOWS.items():
+        if prefix in model_lower:
+            context_tokens = tokens
+            break
+    return max(0, int(context_tokens * _HISTORY_BUDGET_RATIO) - _CONTEXT_RESERVE)
+
+
+def _trim_history_to_budget(messages: list[dict], model_id: str, locale: str) -> list[dict]:
+    """Kürzt den Verlauf auf das, was wirklich ins Fenster passt.
+
+    WARUM DAS NICHT SCHON VORHER SO WAR
+    ``_max_history_messages`` teilt ein Tokenbudget durch eine feste Schätzung
+    von 250 Token je Nachricht und liefert eine ANZAHL. Das ist eine Vermutung
+    über Text, der beim Kürzen längst vorliegt — die Nachrichten sind geladen,
+    ihre Länge ist bekannt, und trotzdem wird geraten.
+
+    Gemessen an den echten Nachrichten auf Prod (02.09.2026, o200k_base):
+
+        Mittel 161 Token · Median 107 · p90 314 · Maximum 682
+
+    Die 250 liegen also über dem Mittel, aber unter p90 — und sie kennen die
+    Sprache nicht. Zwanzig deutsche Nachrichten am oberen Rand sprengen ein
+    Budget, das die Zählung für eingehalten hält.
+
+    Diese Funktion misst stattdessen: von der JÜNGSTEN Nachricht rückwärts,
+    bis das Budget voll ist. Die Anzahl bleibt als Datenbankgrenze bestehen
+    (sie hält die Abfrage klein); hier entscheidet die Länge.
+
+    Die Reihenfolge des Rückwärtsgehens ist der Kern: was zuletzt gesagt
+    wurde, ist das, was ein Gespräch trägt. Von vorne zu kürzen hieße, den
+    Agenten den Anfang behalten und das Ende vergessen zu lassen — genau der
+    Fehler, den ``_load_history`` am 31.08. abgelegt hat.
+    """
+    if not messages:
+        return messages
+
+    budget = _history_token_budget(model_id)
+    if budget <= 0:
+        return messages[-_MIN_MESSAGES:]
+
+    zeichen_je_token = _CHARS_PER_TOKEN.get(locale.lower()[:2], _CHARS_PER_TOKEN_DEFAULT)
+    verbraucht = 0.0
+    behalten = 0
+    for nachricht in reversed(messages):
+        text = str(nachricht.get("content") or "")
+        # Vier Token Aufschlag je Nachricht fuer Rolle und Trennzeichen, wie
+        # die Anbieter sie im Nachrichtenformat berechnen.
+        kosten = len(text) / zeichen_je_token + 4
+        if verbraucht + kosten > budget and behalten >= _MIN_MESSAGES:
+            break
+        verbraucht += kosten
+        behalten += 1
+
+    return messages[-behalten:] if behalten else messages[-_MIN_MESSAGES:]
 
 
 @dataclass(slots=True)
@@ -1277,7 +1374,10 @@ class ChatAIService:
         )
         messages = extract_list(response)
         messages.reverse()
-        return messages
+        # Die Anzahl hat die Abfrage begrenzt; die LÄNGE entscheidet, was
+        # davon mitgeht. Erst hier liegt der Text vor, also erst hier lässt
+        # sich messen statt schätzen.
+        return _trim_history_to_budget(messages, model_id, await self._get_locale())
 
     async def _get_locale(self) -> str:
         """Get the simulation's content locale (cached per instance)."""
