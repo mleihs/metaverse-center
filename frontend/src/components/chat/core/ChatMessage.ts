@@ -154,6 +154,21 @@ export class ChatMessage extends LitElement {
      * ⚠ Wer die Knopfgroesse in MessageActions aendert, aendert diese
      * Rechnung. Die beiden Zahlen gehoeren zusammen.
      */
+    /* Der „+"-Knopf der Reaktionsleiste folgt derselben Regel wie die
+       Aktionsleiste: er erscheint, wenn die Zeile beruehrt oder mit der
+       Tastatur betreten wird. Liegt schon eine Reaktion vor, traegt die Leiste
+       ohnehin sichtbare Pillen — dann darf der Knopf mitstehen, sonst muesste
+       man raten, wo man eine zweite hinzufuegt. */
+    velg-reaction-bar {
+      --reaction-add-opacity: 0;
+    }
+
+    .row:hover velg-reaction-bar,
+    .row:focus-within velg-reaction-bar,
+    velg-reaction-bar.has-reactions {
+      --reaction-add-opacity: 1;
+    }
+
     velg-message-actions {
       position: absolute;
       top: -18px;
@@ -357,8 +372,17 @@ export class ChatMessage extends LitElement {
             ?plainText=${this.participant?.role === 'player'}
           ></velg-chat-bubble>
           ${
-            !isOptimistic && (m.reactions?.length ?? 0) > 0
+            /*
+             * Die Leiste steht IMMER (ausser an einer optimistischen Nachricht,
+             * die noch keine Kennung beim Server hat). Vorher hing sie an
+             * `reactions.length > 0` — um die erste Reaktion zu setzen, musste
+             * also schon eine da sein. Ohne Reaktionen ist sie nur der
+             * „+"-Knopf, und der wird ueber --reaction-add-opacity erst beim
+             * Beruehren der Zeile sichtbar.
+             */
+            !isOptimistic
               ? html`<velg-reaction-bar
+                class=${(m.reactions?.length ?? 0) > 0 ? 'has-reactions' : ''}
                 .messageId=${m.id}
                 .reactions=${m.reactions ?? []}
               ></velg-reaction-bar>`

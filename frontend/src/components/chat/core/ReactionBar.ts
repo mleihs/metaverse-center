@@ -109,6 +109,19 @@ export class ReactionBar extends LitElement {
     }
 
     /* --- Add reaction button --- */
+    /* Sichtbarkeit von AUSSEN steuerbar.
+     *
+     * Der Picker haengt seit jeher an diesem Knopf (Popover API, in
+     * firstUpdated verdrahtet) — nur wurde die ganze Leiste bloss gerendert,
+     * wenn schon jemand reagiert hatte. Ein Weg, der sich selbst voraussetzt:
+     * um die erste Reaktion zu setzen, musste bereits eine da sein.
+     *
+     * Die Leiste steht jetzt immer; ohne Reaktionen ist sie nur dieser eine
+     * Knopf, und ChatMessage blendet ihn ueber die Variable ein, sobald die
+     * Zeile beruehrt oder mit der Tastatur betreten wird. Cross-Shadow geht
+     * das nur so: :hover des Elternteils erreicht diesen Knopf nicht, eine
+     * geerbte Custom Property schon.
+     */
     .add-btn {
       display: inline-flex;
       align-items: center;
@@ -121,6 +134,8 @@ export class ReactionBar extends LitElement {
       cursor: pointer;
       color: var(--color-text-quiet);
       transition: all var(--transition-fast);
+      opacity: var(--reaction-add-opacity, 1);
+      transition: opacity var(--transition-fast);
     }
 
     .add-btn:hover {

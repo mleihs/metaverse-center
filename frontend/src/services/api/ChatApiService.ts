@@ -16,6 +16,35 @@ export class ChatApiService extends BaseApiService {
     return this.getSimulationData(`/simulations/${simulationId}/chat/conversations`, mode);
   }
 
+  /**
+   * Das eigene Kontopasswort erneut nachweisen.
+   *
+   * Der Server stellt dafuer KEIN Token aus und merkt sich nichts — die
+   * Antwort sagt nur, wie lange die Oberflaeche das Ja gelten lassen darf.
+   */
+  reauth(password: string): Promise<ApiResponse<{ valid_for_seconds: number }>> {
+    return this.post('/auth/reauth', { password });
+  }
+
+  /**
+   * Den Verschluss eines Gespraechs umlegen.
+   *
+   * Das Passwort geht im SELBEN Aufruf mit: so liegt kein Fenster zwischen
+   * Nachweis und Wirkung, und die Oberflaeche muss keinen Nachweis-Zustand
+   * fuehren, dem der Server ohnehin nicht glauben koennte.
+   */
+  setConversationLock(
+    simulationId: string,
+    conversationId: string,
+    locked: boolean,
+    password: string,
+  ): Promise<ApiResponse<{ id: string; locked: boolean }>> {
+    return this.patch(`/simulations/${simulationId}/chat/conversations/${conversationId}/lock`, {
+      locked,
+      password,
+    });
+  }
+
   createConversation(
     simulationId: string,
     data: { agent_ids: string[]; title?: string },

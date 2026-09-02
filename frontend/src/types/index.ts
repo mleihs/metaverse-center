@@ -734,6 +734,8 @@ export interface ChatConversation {
   agent_id?: UUID;
   title?: string;
   status: 'active' | 'archived';
+  /** Sichtschutz vor Mitlesern am Geraet — kein Datenschutz. Siehe Migration 349. */
+  locked?: boolean;
   locale?: string;
   message_count: number;
   last_message_at?: string;

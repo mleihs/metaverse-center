@@ -1,6 +1,8 @@
 import { localized, msg } from '@lit/localize';
+import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { chatLock } from '../../services/chat/ChatLockService.js';
 import { captureError } from '../../services/SentryService.js';
 import type { AgentBrief, ChatConversation } from '../../types/index.js';
 import { formatRelativeTime } from '../../utils/date-format.js';
@@ -34,7 +36,7 @@ interface GroupedConversations {
 
 @localized()
 @customElement('velg-conversation-list')
-export class VelgConversationList extends LitElement {
+export class VelgConversationList extends SignalWatcher(LitElement) {
   static styles = [
     markerSelectionStyles,
     css`
@@ -56,12 +58,138 @@ export class VelgConversationList extends LitElement {
 
     /* ── Search ───────────────────────────────────────── */
 
-    .search {
+    /* Die EINE Kopfleiste der Liste.
+     *
+     * Vorher standen hier zwei uebereinander: ChatViews sidebar__header mit
+     * dem Wort „Gespraeche" und einem „+ Neu", darunter das Suchfeld an einem
+     * Aussenabstand. Zwei Koepfe fuer eine Spalte, und keiner davon endete auf
+     * der Linie des Fensterkopfs rechts. Der Titel entfaellt ersatzlos — die
+     * Gruppenlabels (Angepinnt, Heute, Gestern) sagen laengst, was die Spalte
+     * ist.
+     *
+     * --chat-header-h kommt aus ChatView und wird durch die Schattengrenze
+     * vererbt; der Rueckfallwert haelt die Komponente ausserhalb der Ansicht
+     * am Leben. */
+    /* Der Fuss der Liste: was verschlossen ist, wird GEZAEHLT gezeigt, nicht
+       benannt. Die Zahl ist die einzige Auskunft, die hier gefahrlos steht. */
+    .seal-tile {
       display: flex;
       align-items: center;
       gap: var(--space-2);
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 44px;
+      padding: var(--space-2-5) var(--space-3);
+      margin-top: auto;
+      text-align: left;
+      background: var(--color-surface-sunken);
+      border: none;
+      border-top: var(--border-light);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      transition: color var(--transition-fast), background var(--transition-fast);
+    }
+
+    .seal-tile:hover {
+      color: var(--color-primary);
+      background: var(--color-surface-raised);
+    }
+
+    .seal-tile:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .seal-tile__icon {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+
+    .seal-tile__text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .seal-tile__hint {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      text-transform: none;
+      letter-spacing: normal;
+      color: var(--color-text-quiet);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .seal-tile {
+        transition: none;
+      }
+    }
+
+    .list__header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      min-height: calc(var(--chat-header-h, 58px) - var(--border-width-default));
+      box-sizing: border-box;
+      padding-inline: var(--space-3);
+      background: var(--color-surface-header);
+      border-bottom: var(--border-medium);
+      flex-shrink: 0;
+    }
+
+    .list__new-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      height: 28px;
+      padding-inline: var(--space-2-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-black);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-inverse);
+      background: var(--color-primary);
+      border: var(--border-width-default) solid var(--color-border);
+      box-shadow: var(--shadow-xs);
+      cursor: pointer;
+      transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+    }
+
+    .list__new-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .list__new-btn:active {
+      transform: translate(0);
+      box-shadow: var(--shadow-pressed);
+    }
+
+    .list__new-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .list__new-label {
+      white-space: nowrap;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+      gap: var(--space-2);
       padding: var(--space-2) var(--space-3);
-      margin: var(--space-2) var(--space-3) 0;
       background: var(--_search-bg);
       border: var(--border-width-thin) solid var(--_search-border);
       transition:
@@ -416,6 +544,21 @@ export class VelgConversationList extends LitElement {
     }
 
     /* ── Responsive ───────────────────────────────────── */
+    /* Mobil traegt der Knopf nur noch das Zeichen — das Wort „Neu" nimmt die
+       Breite, die der Suchzeile fehlt. Das Beruehrungsziel bleibt bei 44 px,
+       auch wenn der Knopf schmaler aussieht. */
+    @media (max-width: 640px) {
+      .list__new-label {
+        display: none;
+      }
+
+      .list__new-btn {
+        width: 44px;
+        height: 44px;
+        padding-inline: 0;
+      }
+    }
+
 
     @media (max-width: 640px) {
       .conversation {
@@ -538,18 +681,34 @@ export class VelgConversationList extends LitElement {
     return 'older';
   }
 
+  /** Wie viele Gespraeche gerade unter Verschluss liegen. */
+  private get _lockedCount(): number {
+    return this.conversations.filter((c) => c.locked).length;
+  }
+
   private get _groupedConversations(): GroupedConversations {
     const term = this._searchTerm.toLowerCase().trim();
 
+    /*
+     * Verschlossene Gespraeche fallen VOR der Suche heraus, nicht danach.
+     * Sonst faende die Suche ihre Titel — und ein Titel ist oft schon die
+     * Auskunft, die verborgen bleiben soll. Ist die Sitzung freigegeben,
+     * laufen sie in ihren normalen Gruppen mit, wie die Spezifikation es
+     * verlangt.
+     */
+    const sichtbar = chatLock.unlocked.value
+      ? this.conversations
+      : this.conversations.filter((c) => !c.locked);
+
     // Filter by search term
     const filtered = term
-      ? this.conversations.filter((conv) => {
+      ? sichtbar.filter((conv) => {
           const agents = this._getAgents(conv);
           const agentNames = agents.map((a) => a.name.toLowerCase()).join(' ');
           const title = (conv.title ?? '').toLowerCase();
           return agentNames.includes(term) || title.includes(term);
         })
-      : this.conversations;
+      : sichtbar;
 
     const groups: GroupedConversations = {
       pinned: [],
@@ -658,6 +817,59 @@ export class VelgConversationList extends LitElement {
     this.dispatchEvent(
       new CustomEvent('conversation-select', {
         detail: conversation,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  /**
+   * Die Verschluss-Kachel am Fuss der Liste.
+   *
+   * Sie erscheint nur, wenn es etwas zu oeffnen GIBT — eine Kachel „0
+   * Gespraeche unter Verschluss" waere eine Auskunft ueber nichts. Ist die
+   * Sitzung bereits freigegeben, bietet sie stattdessen an, wieder
+   * abzuschliessen.
+   */
+  private _renderSealTile(): TemplateResult | typeof nothing {
+    const anzahl = this._lockedCount;
+    if (anzahl === 0) return nothing;
+
+    if (chatLock.unlocked.value) {
+      return html`
+        <button class="seal-tile seal-tile--open" @click=${() => chatLock.revoke()}>
+          <span class="seal-tile__icon">${icons.lock(14)}</span>
+          <span>${msg('Lock again')}</span>
+        </button>
+      `;
+    }
+
+    return html`
+      <button class="seal-tile" @click=${this._handleReveal}>
+        <span class="seal-tile__icon">${icons.lock(14)}</span>
+        <span class="seal-tile__text">
+          <span class="seal-tile__count">${msg('Under seal')} · ${anzahl}</span>
+          <span class="seal-tile__hint">${msg('Enter password')}</span>
+        </span>
+      </button>
+    `;
+  }
+
+  private _handleLock(e: Event, conversation: ChatConversation): void {
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('conversation-lock-request', {
+        detail: { conversation, purpose: conversation.locked ? 'unlock' : 'lock' },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _handleReveal(): void {
+    this.dispatchEvent(
+      new CustomEvent('conversation-lock-request', {
+        detail: { conversation: null, purpose: 'reveal' },
         bubbles: true,
         composed: true,
       }),
@@ -822,6 +1034,14 @@ export class VelgConversationList extends LitElement {
                 ? html`
                 <div class="conversation__actions">
                   <button
+                    class="conversation__action"
+                    title=${conversation.locked ? msg('Remove lock') : msg('Lock conversation')}
+                    aria-label=${conversation.locked ? msg('Remove lock') : msg('Lock conversation')}
+                    @click=${(e: Event) => this._handleLock(e, conversation)}
+                  >
+                    ${icons.lock(14)}
+                  </button>
+                  <button
                     class="conversation__action-btn"
                     @click=${(e: Event) => this._handleArchive(e, conversation)}
                   >
@@ -869,6 +1089,7 @@ export class VelgConversationList extends LitElement {
 
   private _renderSearch(): TemplateResult {
     return html`
+      <div class="list__header">
       <div class="search">
         <span class="search__icon">${icons.search(14)}</span>
         <input
@@ -885,7 +1106,27 @@ export class VelgConversationList extends LitElement {
             : nothing
         }
       </div>
+      ${
+        this.readonly
+          ? nothing
+          : html`
+            <button
+              class="list__new-btn"
+              @click=${this._handleNewConversation}
+              title=${msg('New conversation')}
+              aria-label=${msg('New conversation')}
+            >
+              ${icons.plus(14)}
+              <span class="list__new-label">${msg('New')}</span>
+            </button>
+          `
+      }
+      </div>
     `;
+  }
+
+  private _handleNewConversation(): void {
+    this.dispatchEvent(new CustomEvent('conversation-new', { bubbles: true, composed: true }));
   }
 
   // ---------------------------------------------------------------------------
@@ -908,9 +1149,14 @@ export class VelgConversationList extends LitElement {
 
   protected render() {
     if (this.conversations.length === 0) {
-      return html`<velg-empty-state
-        message=${msg('No conversations yet')}
-      ></velg-empty-state>`;
+      // ⚠ Der Kopf steht AUCH hier. Vorher kehrte diese Stelle frueh zurueck,
+      // und mit dem Kopf verschwaende jetzt der „+ Neu"-Knopf — genau in dem
+      // Zustand, in dem er als einziger weiterhilft.
+      return html`
+        ${this._renderSearch()}
+        <velg-empty-state message=${msg('No conversations yet')}></velg-empty-state>
+        ${this._renderSealTile()}
+      `;
     }
 
     const groups = this._groupedConversations;
@@ -943,6 +1189,7 @@ export class VelgConversationList extends LitElement {
           </div>
         `
       }
+      ${this._renderSealTile()}
     `;
   }
 }

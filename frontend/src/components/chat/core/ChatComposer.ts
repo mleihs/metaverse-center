@@ -98,7 +98,13 @@ export class ChatComposer extends LitElement {
          If these two ever disagree, the caret stops lining up with the
          message it produces. */
       padding-block: var(--space-4);
-      padding-inline: max(var(--space-4), calc((100% - 1080px) / 2));
+      /* Dieselbe Mindestrinne wie im Verlauf darueber (ChatFeed .feed,
+         --space-6). Sie stand hier auf --space-4; oberhalb der Lesebreite
+         faellt das nicht auf, weil dann beide Seiten zentrieren. Darunter
+         klemmen sie auf VERSCHIEDENE Werte — bei 900 px gemessen: Verlauf 24,
+         Verfasser 16, der Sendeknopf also 8 px weiter rechts als die Kante
+         der Nachrichten ueber ihm. */
+      padding-inline: max(var(--space-6), calc((100% - 1080px) / 2));
       border-top: var(--border-medium);
       background: var(--_composer-bg);
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);

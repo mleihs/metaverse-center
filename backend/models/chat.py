@@ -72,6 +72,7 @@ class ConversationResponse(BaseModel):
     agent_id: UUID | None = None
     title: str | None = None
     status: str = "active"
+    locked: bool = False
     message_count: int = 0
     last_message_at: datetime | None = None
     created_at: datetime
