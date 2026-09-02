@@ -48,6 +48,48 @@ Die Schuld sichtbar zu benennen ist der kleinere Schaden — aber nur, solange
 sie sichtbar bleibt.
 
 ## Regeln im geteilten Arbeitsbaum
+
+- **Ein Deploy von `main` bringt JEDEN fremden Commit mit — auch den, dessen
+  Migration noch nicht auf Prod ist.** Am 02.09.2026 lief ein Deploy für eine
+  Hilfe-Reparatur und nahm den BYOK-Umbau einer anderen Sitzung mit, deren
+  Migrationen 330–333 bewusst nicht angewandt waren („das liegt beim Nutzer" —
+  richtig nach diesen Regeln). Gemessen kurz vor dem Umschalten:
+
+      to_regprocedure('fn_get_user_api_keys')   false
+      to_regclass('user_api_keys')              false
+      ForgeDraftService.get_user_keys()         ruft sie UNGESCHÜTZT
+
+  Aufrufer: `forge.py:732`, `:774`, `:825`, `forge_theme_service.py:795` — die
+  Erzeugungspfade der Forge. Der Deploy hätte nicht eine Nebenseite, sondern
+  **jeden Forge-Lauf** gebrochen.
+
+  ⚠ Niemand hatte einen Fehler gemacht. Die Kopplung war der Fehler, und sie
+  ist unsichtbar, solange jeder nur seinen eigenen Commit ansieht. Deshalb, in
+  beide Richtungen:
+
+  * **Wer eine Migration committet, ohne sie anzuwenden, sagt es dem, der als
+    Nächstes deployt** — im Commit UND in der Sitzungsnachricht.
+  * **Wer deployt, fragt, was er mitnimmt.** `git log --oneline <live>..HEAD`
+    nennt jeden fremden Commit; eine neue Migrationsdatei darin ist ein Halt.
+
+  Gefunden hat es nur, dass die Statusmeldung des Peers nicht abgehakt, sondern
+  auf den eigenen laufenden Deploy bezogen wurde.
+
+- **Der Migrations-Ledger ist kein Beleg — aber seine Lücke ist auch keiner.**
+  Am selben Tag meldete ein Peer, die Migrationen 328/329 fehlten auf Prod: der
+  Ledger endete bei `20260901090000`. Am OBJEKT gemessen waren beide längst da
+  (`simulations.origin_prompt`, `anchor_choices`, `forge_drafts.simulation_id`,
+  `fn_materialize_shard` mit der Herkunft, 13 Welten mit Ausgangssatz). Nur die
+  Buchungszeilen fehlten.
+
+  🔑 Die Falle ist schärfer als „glaub dem Ledger nicht": er log nicht. Er sagte
+  wahrheitsgemäß „keine Zeile" — und **die Abwesenheit einer Zeile ist kein
+  Beleg für die Abwesenheit der Wirkung.** Ein Buchführungsfehler und ein
+  Sachverhalt sehen in derselben Abfrage gleich aus. Prüfe mit
+  `to_regclass` / `to_regprocedure` / `information_schema.columns` / `prosrc`,
+  nie mit `schema_migrations` allein. Und trage die Zeile nach, sobald du die
+  Wirkung belegt hast: sonst stellt die nächste Sitzung dieselbe Frage.
+
 - **Immer `git commit -F <datei> -- <dateiliste>`.** Nie `git commit -a`, nie
   `git commit` ohne Pfade: `git add <pfade>` allein schützt NICHT, wenn zwischen
   `add` und `commit` jemand anders etwas einlegt — das hat hier schon einmal
