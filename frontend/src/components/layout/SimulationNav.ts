@@ -55,6 +55,23 @@ function getTabs(): NavTab[] {
       requireSetting: 'show_chronicle',
     },
     { label: msg('Events'), path: 'events', group: 'core', icon: () => icons.bolt(14) },
+    /*
+     * Direkt hinter den Ereignissen, weil die Schleuse ist, wo sie herkommen.
+     *
+     * NUR FUER SCHREIBBERECHTIGTE. Die Schleuse ist eine Arbeitsflaeche, kein
+     * Schaufenster: jede Handlung darin (transformieren, aufnehmen, melden)
+     * setzt Mitgliedschaft voraus, und die Sensorlage kommt aus einem
+     * Endpunkt, den nur das Bureau erreicht. Einem Gast einen Reiter zu zeigen,
+     * hinter dem fuer ihn nichts liegt, ist keine Offenheit — es ist eine Tuer
+     * ohne Raum dahinter.
+     */
+    {
+      label: msg('Airlock'),
+      path: 'intake',
+      group: 'core',
+      icon: () => icons.doorEnter(14),
+      requireFlag: () => appState.canEdit.value,
+    },
     { label: msg('Terminal'), path: 'terminal', group: 'core', icon: () => icons.terminal(14) },
     { label: msg('Dungeon'), path: 'dungeon', group: 'core', icon: () => icons.dungeonDepth(14) },
 

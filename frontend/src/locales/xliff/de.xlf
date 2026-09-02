@@ -24424,13 +24424,13 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source><x id="0" equiv-text="${user.user_email}"/> joined <x id="1" equiv-text="${since}"/></source>
 <target><x id="0" equiv-text="${user.user_email}"/> ist <x id="1" equiv-text="${since}"/> beigetreten</target></trans-unit>
 <trans-unit id="sd988a9395d37c0f8">
-  <source><x id="0" equiv-text="${n}"/> min ago</source>
+  <source><x id="0" equiv-text="${this.minutesAgo}"/> min ago</source>
 <target>vor <x id="0" equiv-text="${n}"/> Min.</target></trans-unit>
 <trans-unit id="s43b7e70c64bffbb8">
   <source>in <x id="0" equiv-text="${n}"/> min</source>
 <target>in <x id="0" equiv-text="${n}"/> Min.</target></trans-unit>
 <trans-unit id="saf2e0363e12de264">
-  <source><x id="0" equiv-text="${n}"/> h ago</source>
+  <source><x id="0" equiv-text="${Math.floor(this.minutesAgo / 60)}"/> h ago</source>
 <target>vor <x id="0" equiv-text="${n}"/> Std.</target></trans-unit>
 <trans-unit id="s96714dffd038d8a4">
   <source>in <x id="0" equiv-text="${n}"/> h</source>
@@ -30888,6 +30888,10 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s5da1f14cbb7b92cd">
   <source>Report signal</source>
   <target>Melden</target>
+</trans-unit>
+<trans-unit id="s5639d931e3f200fa">
+  <source>The sensor picture belongs to the Bureau. What comes through reaches you at the entrance.</source>
+  <target>Die Sensorlage gehört dem Bureau. Was durchkommt, erreicht dich am Eingang.</target>
 </trans-unit>
 </body>
 </file>

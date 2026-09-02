@@ -118,6 +118,20 @@ class IntakeStateManager {
    * Kandidaten trotzdem: eine Liste ohne Farben ist besser als keine Liste.
    */
   async loadScanner(): Promise<void> {
+    /*
+     * NUR DER ADMIN. Der ganze `news_scanner`-Router haengt an
+     * `require_platform_admin()` — Sensorlage UND Kandidatenliste. Ein
+     * Architekt bekam hier bis zum 02.09. zwei 422/403 und sah statt seiner
+     * Schleuse die rohe Fehlermeldung „Field required" (so heisst FastAPIs
+     * fehlender Authorization-Header) ueber einem leeren Brett.
+     *
+     * Aufgefallen ist das nicht im Test und nicht im Typ, sondern erst beim
+     * HINSEHEN: die View war vier Schritte lang nicht erreichbar, weil ihr der
+     * Navigationseintrag fehlte, und was niemand oeffnen kann, meldet auch
+     * niemand. Der Eingang eines Architekten fuellt sich ueber `loadBrowse`,
+     * nicht ueber den Scanner.
+     */
+    if (this.role.value !== 'admin') return;
     this.loading.value = true;
     this.error.value = null;
     try {

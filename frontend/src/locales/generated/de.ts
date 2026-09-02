@@ -3031,6 +3031,7 @@ I am returning my Bureau credentials. I am staying. Not because the Cite has con
 's561636778c81cf82': `Es gab einst eine einzige Welt. Niemand ist sich einig, wie sie hieß.`,
 's561f17c159e545b8': `KAMPFBEGEGNUNG`,
 's5630cac31798937f': `Resonanz-Auswirkung`,
+'s5639d931e3f200fa': `Die Sensorlage gehört dem Bureau. Was durchkommt, erreicht dich am Eingang.`,
 's56406bf7a779a822': `Abstimmung gesperrt`,
 's565579eb627ac5e2': `Wie die Belegungsmarken zu lesen sind`,
 's56568f38f290c1d8': str`${0}-Kandidaten anzeigen`,

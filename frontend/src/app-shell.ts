@@ -668,6 +668,11 @@ export class VelgApp extends LitElement {
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'chat', entitySlug),
       },
       {
+        path: '/simulations/:id/intake',
+        render: ({ id }) => this._renderSimulationView(id ?? '', 'intake'),
+        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'intake', entitySlug),
+      },
+      {
         path: '/simulations/:id/social',
         render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'social', entitySlug),
@@ -1285,6 +1290,16 @@ export class VelgApp extends LitElement {
         break;
       case 'social':
         content = html`<velg-social-trends-view .simulationId=${resolvedId}></velg-social-trends-view>`;
+        break;
+      /*
+       * Die Schleuse. Sie bekommt den Weltnamen mit, weil ihre Brotkrume ihn
+       * zeigt — `intakeState` kennt Signale, nicht Welten.
+       */
+      case 'intake':
+        content = html`<velg-intake-view
+          .simulationId=${resolvedId}
+          .simulationName=${appState.currentSimulation.value?.name ?? ''}
+        ></velg-intake-view>`;
         break;
       case 'locations':
         content = html`<velg-locations-view .simulationId=${resolvedId}></velg-locations-view>`;
