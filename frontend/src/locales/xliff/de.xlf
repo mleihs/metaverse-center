@@ -30995,6 +30995,78 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>reveal</source>
 <target>aufdecken</target>
 </trans-unit>
+<trans-unit id="s81772e0d0b6e4f0e">
+  <source>Openness</source>
+<target>Offenheit</target>
+</trans-unit>
+<trans-unit id="s2f3813563a2d4bca">
+  <source>Conscientiousness</source>
+<target>Gewissenhaftigkeit</target>
+</trans-unit>
+<trans-unit id="sabeff813f492d4d3">
+  <source>Extraversion</source>
+<target>Extraversion</target>
+</trans-unit>
+<trans-unit id="s04e9dcff0a1b3380">
+  <source>Agreeableness</source>
+<target>Verträglichkeit</target>
+</trans-unit>
+<trans-unit id="s5fb9fb912ab833bf">
+  <source>Neuroticism</source>
+<target>Neurotizismus</target>
+</trans-unit>
+<trans-unit id="sc14f024185017e0f">
+  <source>Fifteen seconds.</source>
+<target>Fünfzehn Sekunden.</target>
+</trans-unit>
+<trans-unit id="sceda9261c59a18dc">
+  <source>One minute left.</source>
+<target>Noch eine Minute.</target>
+</trans-unit>
+<trans-unit id="sd941798e0999d27a">
+  <source>Debrief</source>
+<target>Nachbesprechung</target>
+</trans-unit>
+<trans-unit id="s618fddf29f697275">
+  <source>The distribution closes in <x id="0" equiv-text="${uhr}"/>. Whatever is still open then goes to the Bureau's suggestion, without your say.</source>
+<target>Die Verteilung schließt in <x id="0" equiv-text="${uhr}"/>. Was dann noch offen ist, geht an den Vorschlag des Bureaus – ohne dein Zutun.</target>
+</trans-unit>
+<trans-unit id="s6645989d121e777d">
+  <source>System effects – no choice</source>
+<target>Systemwirkungen – ohne Wahl</target>
+</trans-unit>
+<trans-unit id="s2b34e9ca0922e0bb">
+  <source>Which dimension?</source>
+<target>Welche Dimension?</target>
+</trans-unit>
+<trans-unit id="s105763a18068a16d">
+  <source>"<x id="0" equiv-text="${localizedField(item, 'name')}"/>" chosen – who should have it?</source>
+<target>„<x id="0" equiv-text="${localizedField(item, 'name')}"/>“ gewählt – wem soll es gehören?</target>
+</trans-unit>
+<trans-unit id="s9c5b9714d96e7d8d">
+  <source>Choose a piece, then a party member. Suggestions are suggestions, not choices already made.</source>
+<target>Wähle ein Stück, dann ein Gruppenmitglied. Vorschläge sind Vorschläge, keine Vorwahl.</target>
+</trans-unit>
+<trans-unit id="s28daa2daa91955aa">
+  <source>captured – no target</source>
+<target>gefangen – kein Ziel</target>
+</trans-unit>
+<trans-unit id="sae6923135b3146c1">
+  <source><x id="0" equiv-text="${offen}"/> still open</source>
+<target><x id="0" equiv-text="${offen}"/> noch offen</target>
+</trans-unit>
+<trans-unit id="sb51ca0dd40fc13b7">
+  <source>Seal the distribution</source>
+<target>Verteilung besiegeln</target>
+</trans-unit>
+<trans-unit id="s30b0e2e14277cdda">
+  <source>Hold…</source>
+<target>Halten …</target>
+</trans-unit>
+<trans-unit id="s9b6d82c00fdcad4e">
+  <source>Debrief Terminal</source>
+<target>Nachbesprechungs-Terminal</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

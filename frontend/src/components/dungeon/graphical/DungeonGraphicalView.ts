@@ -91,6 +91,7 @@ import '../DungeonHeader.js';
 import '../DungeonMap.js';
 import '../DungeonPartyPanel.js';
 import '../DungeonQuickActions.js';
+import '../VelgDungeonDebrief.js';
 import '../DungeonViewToggle.js';
 import { dungeonGraphicalStyles } from './dungeon-graphical-styles.js';
 import './DungeonChronicle.js';
@@ -522,6 +523,7 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
     const archetype = dungeonState.clientState.value?.archetype ?? '';
     const env = resolveDungeonEnvironment(archetype, dungeonState.archetypeState.value);
     const inCombat = dungeonState.isInCombat.value;
+    const verteilt = dungeonState.clientState.value?.phase === 'distributing';
     const description = dungeonState.lastRoomDescription.value;
     const meterLabel = meterLabelFor(env.fxProfile);
     const accent = ACCENT_BY_FX[env.fxProfile];
@@ -648,10 +650,16 @@ export class VelgDungeonGraphicalView extends SignalWatcher(LitElement) {
         </div>
 
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
+          <!-- Die Verteilung bekommt die Flaeche, nicht eine Knopfreihe darin.
+               Beide Ansichten haengen dieselbe Komponente ein: eine Buehne nur
+               im Terminal waere derselbe Gleichstands-Bruch, den die Sitzung
+               vom 29.08. zwischen den zwei Oberflaechen beseitigt hat. -->
           ${
             inCombat
               ? html`<velg-dungeon-combat-bar compact></velg-dungeon-combat-bar>`
-              : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
+              : verteilt
+                ? html`<velg-dungeon-debrief></velg-dungeon-debrief>`
+                : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
           }
         </div>
       </div>

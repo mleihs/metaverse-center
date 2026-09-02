@@ -1,0 +1,203 @@
+/**
+ * Das Nachbesprechungs-Terminal — was daran nicht verrutschen darf.
+ *
+ * Drei Dinge sind hier keine Geschmacksfrage, sondern eine Kopplung an den
+ * Server oder an die Spielregel:
+ *
+ * 1. DIE NUMMER IM BEFEHL zählt nur die VERTEILBAREN Stücke. Zählte die Bühne
+ *    die Auto-Wirkungen mit, zeigte `assign 3` auf ein anderes Stück als das,
+ *    auf das der Spieler geklickt hat — ohne Fehlermeldung, mit falscher
+ *    Wirkung. Das ist der teuerste denkbare Fehler in dieser Komponente.
+ * 2. EINE GEFANGENE AGENTIN IST KEIN ZIEL. Der Server nimmt die Zuweisung
+ *    nicht an; die Bühne darf sie deshalb nicht anbieten.
+ * 3. `personality_modifier` DARF NICHT OHNE DIMENSION abgeschickt werden.
+ */
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Der Zustandsverwalter zieht die API-Schicht mit, und die verlangt beim Laden
+// `VITE_SUPABASE_*`. Der Stub haelt sie aus dem Test heraus — dieselbe Technik
+// wie in `base-api-service-get-simulation-data.test.ts`.
+vi.mock('../src/services/supabase/client.js', () => ({
+  supabase: { auth: { signOut: vi.fn().mockResolvedValue({}) } },
+}));
+
+// ⚠ Nebenwirkungs-Import: käme die Klasse nur in Typ-Positionen vor, entfernte
+// esbuild ihn restlos und `@customElement` liefe nie.
+await import('../src/components/dungeon/VelgDungeonDebrief.js');
+type VelgDungeonDebrief =
+  import('../src/components/dungeon/VelgDungeonDebrief.js').VelgDungeonDebrief;
+const { dungeonState } = await import('../src/services/DungeonStateManager.js');
+import type { DungeonClientState, LootItem } from '../src/types/dungeon.js';
+
+function stueck(id: string, effect_type: string, tier = 1): LootItem {
+  return {
+    id,
+    name_en: `Item ${id}`,
+    name_de: `Stück ${id}`,
+    tier,
+    effect_type,
+    effect_params: { bonus: 1 },
+    description_en: 'x',
+    description_de: 'y',
+  };
+}
+
+function agent(agent_id: string, agent_name: string, condition = 'healthy') {
+  return { agent_id, agent_name, condition } as DungeonClientState['party'][number];
+}
+
+/**
+ * Nur die Felder, die der Debrief liest. Der Rest des Zustands ist für diese
+ * Komponente unerreichbar, und ein vollständiger Aufbau würde die Prüfung an
+ * Felder binden, die sie gar nicht anfasst.
+ */
+function zustand(over: Partial<DungeonClientState>): DungeonClientState {
+  return {
+    phase: 'distributing',
+    party: [agent('a1', 'Fenn'), agent('a2', 'Voss'), agent('a3', 'Ilva', 'captured')],
+    pending_loot: [],
+    loot_assignments: {},
+    loot_suggestions: {},
+    ...over,
+  } as DungeonClientState;
+}
+
+async function buehne(over: Partial<DungeonClientState>): Promise<VelgDungeonDebrief> {
+  dungeonState.clientState.value = zustand(over);
+  const el = document.createElement('velg-dungeon-debrief') as VelgDungeonDebrief;
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+function wurzel(el: VelgDungeonDebrief): ShadowRoot {
+  const r = el.shadowRoot;
+  if (!r) throw new Error('kein shadowRoot');
+  return r;
+}
+
+/** Alle Befehle einsammeln, die die Bühne aussendet. */
+function lauscher(el: VelgDungeonDebrief): string[] {
+  const raus: string[] = [];
+  el.addEventListener('terminal-command', (e) => raus.push((e as CustomEvent<string>).detail));
+  return raus;
+}
+
+describe('VelgDungeonDebrief', () => {
+  beforeEach(() => {
+    dungeonState.clientState.value = null;
+    dungeonState.timerRemaining.value = null;
+    document.body.innerHTML = '';
+  });
+
+  it('rendert nichts außerhalb der Verteilungsphase', async () => {
+    const el = await buehne({ phase: 'exploring' });
+    expect(wurzel(el).querySelector('.buehne')).toBeNull();
+  });
+
+  it('zählt die Befehlsnummer NUR über die verteilbaren Stücke', async () => {
+    // stress_heal und arc_modifier wirken ohne Wahl und dürfen nicht mitzählen.
+    const el = await buehne({
+      pending_loot: [
+        stueck('L1', 'stress_heal'),
+        stueck('L2', 'aptitude_boost'),
+        stueck('L3', 'arc_modifier'),
+        stueck('L4', 'memory'),
+      ],
+    });
+    const befehle = lauscher(el);
+    const r = wurzel(el);
+
+    // Zweites verteilbares Stück (L4) wählen …
+    const karten = r.querySelectorAll('velg-game-card');
+    expect(karten).toHaveLength(2); // L2 und L4, nicht vier
+    (karten[1] as HTMLElement).click();
+    await el.updateComplete;
+
+    // … und Fenn geben.
+    const ziele = r.querySelectorAll<HTMLButtonElement>('.ziel');
+    ziele[0].click();
+    await el.updateComplete;
+
+    // Wäre die Auto-Wirkung mitgezählt worden, stünde hier `assign 4`.
+    expect(befehle).toEqual(['assign 2 Fenn']);
+  });
+
+  it('bietet eine gefangene Agentin nicht als Ziel an', async () => {
+    const el = await buehne({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    const r = wurzel(el);
+    (r.querySelector('velg-game-card') as HTMLElement).click();
+    await el.updateComplete;
+
+    const ziele = Array.from(r.querySelectorAll<HTMLButtonElement>('.ziel'));
+    const ilva = ziele.find((b) => b.textContent?.includes('Ilva'));
+    expect(ilva?.disabled, 'die gefangene Agentin war anklickbar').toBe(true);
+
+    const befehle = lauscher(el);
+    ilva?.click();
+    await el.updateComplete;
+    expect(befehle).toEqual([]);
+  });
+
+  it('schickt personality_modifier erst nach der Dimension', async () => {
+    const el = await buehne({ pending_loot: [stueck('L1', 'personality_modifier')] });
+    const befehle = lauscher(el);
+    const r = wurzel(el);
+
+    (r.querySelector('velg-game-card') as HTMLElement).click();
+    await el.updateComplete;
+    r.querySelectorAll<HTMLButtonElement>('.ziel')[0].click();
+    await el.updateComplete;
+
+    // Noch nichts gesendet — die Dimension fehlt.
+    expect(befehle).toEqual([]);
+    const dims = r.querySelectorAll<HTMLButtonElement>('.dimension');
+    expect(dims).toHaveLength(5);
+
+    dims[1].click(); // conscientiousness
+    await el.updateComplete;
+    expect(befehle).toEqual(['assign 1 Fenn conscientiousness']);
+  });
+
+  it('zeigt die Frist mit Uhr und Balken, sobald ein Zeitgeber läuft', async () => {
+    dungeonState.timerRemaining.value = 125_000;
+    const el = await buehne({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    const r = wurzel(el);
+    expect(r.querySelector('[role="timer"]')?.textContent?.trim()).toBe('2:05');
+    expect(r.querySelector('.frist__fuellung')).not.toBeNull();
+    expect(r.querySelector('.frist--gefahr')).toBeNull();
+  });
+
+  it('wechselt bei 60 und 15 Sekunden die Stufe, ohne zu blinken', async () => {
+    dungeonState.timerRemaining.value = 45_000;
+    const warn = await buehne({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    expect(wurzel(warn).querySelector('.frist--warnung')).not.toBeNull();
+    warn.remove();
+
+    dungeonState.timerRemaining.value = 9_000;
+    const gefahr = await buehne({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    expect(wurzel(gefahr).querySelector('.frist--gefahr')).not.toBeNull();
+  });
+
+  it('gibt den Bestätigen-Knopf erst frei, wenn nichts mehr offen ist', async () => {
+    const el = await buehne({
+      pending_loot: [stueck('L1', 'aptitude_boost'), stueck('L2', 'memory')],
+      loot_assignments: { L1: 'a1' },
+    });
+    const knopf = wurzel(el).querySelector('velg-hold-button') as HTMLElement & {
+      disabled: boolean;
+    };
+    expect(knopf.disabled, 'ein offenes Stück, Knopf trotzdem frei').toBe(true);
+
+    el.remove();
+    const fertig = await buehne({
+      pending_loot: [stueck('L1', 'aptitude_boost'), stueck('L2', 'memory')],
+      loot_assignments: { L1: 'a1', L2: 'a2' },
+    });
+    const knopf2 = wurzel(fertig).querySelector('velg-hold-button') as HTMLElement & {
+      disabled: boolean;
+    };
+    expect(knopf2.disabled).toBe(false);
+  });
+});
