@@ -676,17 +676,31 @@ export class ChatFeed extends LitElement {
   // ---------------------------------------------------------------------------
 
   protected willUpdate(changed: Map<string, unknown>): void {
-    // Request auto-scroll when message list or stream content changes
-    if (changed.has('messages') || changed.has('streamContent') || changed.has('typingUsers')) {
-      this._scroll.requestAutoScroll();
+    // A streamed answer grows many times per second. Animating each growth
+    // would cancel and restart the same scroll before it ever arrived, and the
+    // view would trail the text it is supposed to follow — so live content is
+    // followed instantly and only discrete events get the animation.
+    if (changed.has('streamContent')) {
+      this._scroll.requestAutoScroll('instant');
+    }
+
+    if (changed.has('messages')) {
+      // Opening a conversation loads its whole history at once. Animating from
+      // the first message to the last would scroll through weeks of text; there
+      // is nothing to follow there, only a destination.
+      const previous = changed.get('messages');
+      const isFirstLoad = !Array.isArray(previous) || previous.length === 0;
+      this._scroll.requestAutoScroll(isFirstLoad ? 'instant' : 'smooth');
+    }
+
+    if (changed.has('typingUsers')) {
+      this._scroll.requestAutoScroll('smooth');
     }
   }
 
   protected firstUpdated(): void {
     const feed = this.renderRoot.querySelector('.feed') as HTMLElement | null;
-    const anchor = this.renderRoot.querySelector('.scroll-anchor') as HTMLElement | null;
-    if (feed) this._scroll.attach(feed);
-    if (anchor) this._scroll.attachAnchor(anchor);
+    this._scroll.attach(feed);
   }
 
   // ---------------------------------------------------------------------------
