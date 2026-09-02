@@ -414,10 +414,21 @@ BEGIN
   ORDER BY b.id
   LIMIT 1;
 
+  -- NACHTRAG 02.09.2026: keine EXCEPTION mehr, wenn es keinen Bau gibt.
+  --
+  -- Auf einer frischen Datenbank ist `buildings` leer — die Saat laeuft NACH
+  -- den Migrationen. Die Probe brach dort ab und riss den CI-Lauf mit; fuenfter
+  -- Fall derselben Bauart nach 299, 305, 311 und 314: eine Migration prueft
+  -- sich gegen den INHALT der Produktionsdatenbank statt gegen ihre eigene
+  -- Wirkung.
+  --
+  -- Der Kern der Probe bleibt unangetastet: gibt es einen Bau, wird der
+  -- Waechter wirklich ausgeloest und wieder zurueckgenommen. Nur die
+  -- VORAUSSETZUNG sagt jetzt die Wahrheit statt zu werfen. NOTICE und nicht
+  -- Schweigen — ein ausgesetzter Test ist kein bestandener.
   IF v_id IS NULL THEN
-    RAISE EXCEPTION 'Migration 309: kein Bau auf der Leiter — die Probe kann nicht laufen';
-  END IF;
-
+    RAISE NOTICE 'Migration 309: kein Bau auf der Leiter — Wirkprobe (f) ausgesetzt (frische Datenbank?)';
+  ELSE
   BEGIN
     UPDATE buildings SET building_condition = fn_building_condition_step(v_alt, 1) WHERE id = v_id;
     SELECT building_condition_de INTO v_neu_de FROM buildings WHERE id = v_id;
@@ -455,6 +466,7 @@ BEGIN
     -- gehört trotzdem nach draussen.
     RAISE;
   END;
+  END IF;  -- schliesst das ELSE der Wirkprobe (f)
 
   -- (g) Rechte. Zwei Widerrufe je NEUER Funktion; gemessen, nicht angenommen.
   IF has_function_privilege('anon', 'fn_building_condition_de(uuid,text)', 'EXECUTE')
