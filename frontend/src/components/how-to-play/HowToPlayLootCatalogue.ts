@@ -43,6 +43,70 @@ import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
 import { htpBackStyles, htpHeroStyles } from './htp-shared-styles.js';
 
+/**
+ * Was ein Parameter BEDEUTET — die Mechanik in Worten.
+ *
+ * Der Katalog zeigte zuerst nur Name, Stufe, Flavour-Text, Wirkungsart und
+ * Fallgewicht. Der Nutzer hat gefragt, was er damit anfangen soll: „personality
+ * modifier, Fundgewicht 20 — was macht das Item mechanisch?" Er hatte recht.
+ * Die Antwort stand die ganze Zeit in den Daten und wurde weggeworfen.
+ *
+ *     Spiegelscherbe des Spiegelpalasts
+ *     {"delta": 5, "trait": "openness",
+ *      "description_de": "… Offenheit +5."}
+ *
+ * Gemessen ueber alle 105 Stuecke: ALLE tragen Parameter, aber nur ZWOELF
+ * tragen eine eigene Wirkungsbeschreibung. Wer nur die Prosa zeigt, laesst 93
+ * Stuecke ohne Mechanik — also muessen die Parameter selbst lesbar werden.
+ *
+ * ⚠ Ein Schluessel ohne Beschriftung wird LESBAR GEMACHT, nicht durchgereicht:
+ * `check_bonus` wird „Check bonus". Dieselbe Regel wie bei den Bau-Taxonomien
+ * heute frueh — ein Datenbankbezeichner gehoert nie auf eine Karte, und ein
+ * neuer Parameter soll degradieren statt zu entgleisen.
+ */
+const PARAM_LABEL: Readonly<Record<string, () => string>> = {
+  aptitude: () => msg('Aptitude'),
+  aptitude_choices: () => msg('Choice of aptitude'),
+  boost: () => msg('Increase'),
+  boost_amount: () => msg('Increase'),
+  bonus: () => msg('Bonus'),
+  bonus_pct: () => msg('Bonus (percent)'),
+  bonus_type: () => msg('Bonus type'),
+  check_bonus: () => msg('Check bonus'),
+  condition_improvement: () => msg('Condition rungs'),
+  condition_tiers: () => msg('Condition rungs'),
+  decay_type: () => msg('Decay'),
+  delta: () => msg('Change'),
+  big_five_delta: () => msg('Personality change'),
+  dimension: () => msg('Dimension'),
+  duration_rooms: () => msg('Lasts (rooms)'),
+  duration_ticks: () => msg('Lasts (ticks)'),
+  emotion: () => msg('Emotion'),
+  importance: () => msg('Weight of the memory'),
+  impact_level_reduction: () => msg('Impact reduced by'),
+  max_total_bonus: () => msg('Maximum in total'),
+  moodlet_type: () => msg('Mood'),
+  morale_boost: () => msg('Morale'),
+  player_choice: () => msg('You choose'),
+  scope: () => msg('Applies to'),
+  strength: () => msg('Strength'),
+  stress_heal: () => msg('Stress removed'),
+  stress_resist: () => msg('Stress resistance'),
+  stress_damage_bonus: () => msg('Damage from stress'),
+  trait: () => msg('Trait'),
+  when: () => msg('When'),
+};
+
+/** Parameter, die KEINE Mechanik sind, sondern Text fuer das Debriefing. */
+const NARRATIVE_PARAMS = new Set(['description_en', 'description_de', 'content_en', 'content_de']);
+
+/** `check_bonus` → `Check bonus`. Der letzte Ausweg, nie die erste Wahl. */
+function humaniseKey(key: string): string {
+  const worte = key.split(/[_-]+/).filter(Boolean);
+  if (!worte.length) return key;
+  return [worte[0].charAt(0).toUpperCase() + worte[0].slice(1), ...worte.slice(1)].join(' ');
+}
+
 /** Die drei Stufen, wie das Debriefing sie nennt. */
 const TIER_LABEL: Readonly<Record<number, () => string>> = {
   1: () => msg('Minor'),
@@ -186,6 +250,43 @@ export class VelgHtpLootCatalogue extends LitElement {
         color: var(--color-text-secondary);
       }
 
+      /*
+       * Die Wirkung steht abgesetzt vom Flavour-Text: das eine ist Erzaehlung,
+       * das andere ist, was passiert. Auf einer Karte, die beides in einem
+       * Absatz zeigt, liest man das zweite als Fortsetzung des ersten.
+       */
+      .item__effect {
+        margin: 0;
+        padding-block-start: var(--space-2);
+        border-block-start: var(--border-width-thin) dashed var(--_rule);
+        font-family: var(--font-mono);
+        font-size: var(--text-2xs);
+        line-height: var(--leading-relaxed);
+        color: var(--color-text-primary);
+      }
+
+      .item__params {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: var(--space-1) var(--space-3);
+        margin: 0;
+        padding-block-start: var(--space-2);
+        border-block-start: var(--border-width-thin) dashed var(--_rule);
+        font-family: var(--font-mono);
+        font-size: var(--text-2xs);
+      }
+
+      .item__params dt {
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+        color: var(--color-text-quiet);
+      }
+
+      .item__params dd {
+        margin: 0;
+        color: var(--color-text-primary);
+      }
+
       .item__foot {
         display: flex;
         flex-wrap: wrap;
@@ -246,6 +347,42 @@ export class VelgHtpLootCatalogue extends LitElement {
     `;
   }
 
+  /**
+   * Was das Stueck TUT — Prosa, wenn es welche hat, sonst seine Parameter.
+   *
+   * Zwoelf der 105 tragen eine eigene Wirkungsbeschreibung; die ist
+   * geschrieben und schlaegt jede Aufzaehlung. Die uebrigen 93 tragen nur
+   * Werte, und die werden hier zu lesbaren Paaren — sonst stuende auf der
+   * Karte „personality modifier" und sonst nichts, und der Leser wuesste
+   * genauso wenig wie vorher.
+   */
+  private _renderWirkung(item: LootCatalogueEntry) {
+    const p = item.effect_params ?? {};
+    const prosa = this._say(String(p.description_en ?? ''), String(p.description_de ?? ''));
+    if (prosa.trim()) {
+      return html`<p class="item__effect">${prosa}</p>`;
+    }
+
+    const paare = Object.entries(p)
+      .filter(([k, v]) => !NARRATIVE_PARAMS.has(k) && v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => ({
+        label: PARAM_LABEL[k]?.() ?? humaniseKey(k),
+        wert: typeof v === 'boolean' ? (v ? msg('yes') : msg('no')) : String(v),
+      }));
+    if (!paare.length) return nothing;
+
+    return html`
+      <dl class="item__params">
+        ${paare.map(
+          (x) => html`
+            <dt>${x.label}</dt>
+            <dd>${x.wert}</dd>
+          `,
+        )}
+      </dl>
+    `;
+  }
+
   private _renderItem(item: LootCatalogueEntry) {
     const tier = TIER_LABEL[item.tier]?.() ?? String(item.tier);
     return html`
@@ -255,6 +392,7 @@ export class VelgHtpLootCatalogue extends LitElement {
           <span class="item__tier item__tier--${item.tier}">${tier}</span>
         </div>
         <p class="item__desc">${this._say(item.description_en, item.description_de)}</p>
+        ${this._renderWirkung(item)}
         <div class="item__foot">
           <span>${item.effect_type.replace(/_/g, ' ')}</span>
           <span>${msg(str`Drop weight ${item.drop_weight}`)}</span>
