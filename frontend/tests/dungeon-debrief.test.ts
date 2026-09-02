@@ -63,7 +63,23 @@ function zustand(over: Partial<DungeonClientState>): DungeonClientState {
   } as DungeonClientState;
 }
 
+/**
+ * Bühne im Zustand `ready`.
+ *
+ * Die Komponente beginnt VERSIEGELT — das ist die Zeremonie und wird weiter
+ * unten eigens geprüft. Die Prüfungen der Verteilungslogik wollen den Zustand
+ * DANACH, also wird hier übersprungen wie ein Spieler es täte: über den Knopf,
+ * nicht über einen Griff in den privaten Zustand.
+ */
 async function buehne(over: Partial<DungeonClientState>): Promise<VelgDungeonDebrief> {
+  const el = await versiegelt(over);
+  el.shadowRoot?.querySelector<HTMLButtonElement>('.siegel__ueberspringen')?.click();
+  await el.updateComplete;
+  return el;
+}
+
+/** Bühne, wie sie in die Phase eintritt: versiegelt. */
+async function versiegelt(over: Partial<DungeonClientState>): Promise<VelgDungeonDebrief> {
   dungeonState.clientState.value = zustand(over);
   const el = document.createElement('velg-dungeon-debrief') as VelgDungeonDebrief;
   document.body.appendChild(el);
@@ -199,5 +215,126 @@ describe('VelgDungeonDebrief', () => {
       disabled: boolean;
     };
     expect(knopf2.disabled).toBe(false);
+  });
+});
+
+describe('VelgDungeonDebrief: die Zeremonie', () => {
+  beforeEach(() => {
+    dungeonState.clientState.value = null;
+    dungeonState.timerRemaining.value = null;
+    document.body.innerHTML = '';
+  });
+
+  it('beginnt versiegelt — keine Karten, kein Ziel, aber die FRIST steht schon', async () => {
+    dungeonState.timerRemaining.value = 240_000;
+    const el = await versiegelt({
+      pending_loot: [stueck('L1', 'aptitude_boost'), stueck('L2', 'memory')],
+    });
+    const r = wurzel(el);
+    expect(r.querySelector('.siegel')).not.toBeNull();
+    expect(r.querySelector('velg-game-card'), 'Karten vor dem Siegelbruch').toBeNull();
+    expect(r.querySelector('.ziele'), 'Ziele vor dem Siegelbruch').toBeNull();
+    // Der Zeitgeber laeuft ab Phasenbeginn, nicht ab dem Aufdecken — er muss
+    // hinter dem Siegel sichtbar sein, sonst ist die Warnung wertlos.
+    expect(r.querySelector('[role="timer"]')?.textContent?.trim()).toBe('4:00');
+  });
+
+  it('„Alles aufdecken" überspringt die Zeremonie vollständig', async () => {
+    const el = await versiegelt({
+      pending_loot: [stueck('L1', 'aptitude_boost'), stueck('L2', 'memory', 3)],
+    });
+    (wurzel(el).querySelector('.siegel__ueberspringen') as HTMLButtonElement).click();
+    await el.updateComplete;
+
+    const r = wurzel(el);
+    expect(r.querySelector('.siegel')).toBeNull();
+    const karten = Array.from(r.querySelectorAll('velg-game-card')) as Array<
+      HTMLElement & { faceDown: boolean }
+    >;
+    expect(karten).toHaveLength(2);
+    expect(karten.every((k) => k.faceDown === false), 'eine Karte blieb verdeckt').toBe(true);
+    expect(r.querySelector('.ziele')).not.toBeNull();
+  });
+
+  it('räumt jede Uhr beim Überspringen — sonst schaltet ein Rückruf den Scheinwerfer wieder an', async () => {
+    vi.useFakeTimers();
+    try {
+      dungeonState.clientState.value = zustand({
+        pending_loot: [stueck('L1', 'aptitude_boost', 3), stueck('L2', 'memory')],
+      });
+      const el = document.createElement('velg-dungeon-debrief') as VelgDungeonDebrief;
+      document.body.appendChild(el);
+      await el.updateComplete;
+
+      // Siegel brechen, Zeremonie anlaufen lassen …
+      wurzel(el).querySelector('velg-hold-button')?.dispatchEvent(
+        new CustomEvent('hold-confirmed', { bubbles: true, composed: true }),
+      );
+      await vi.advanceTimersByTimeAsync(700);
+
+      // … und mittendrin überspringen.
+      el.shadowRoot?.querySelector<HTMLButtonElement>('.siegel__ueberspringen')?.click();
+      await el.updateComplete;
+      expect(vi.getTimerCount(), 'nach dem Überspringen laufen noch Uhren').toBe(0);
+
+      // Alles, was danach noch feuern wollte, darf nichts mehr verändern.
+      await vi.advanceTimersByTimeAsync(10_000);
+      await el.updateComplete;
+      expect(wurzel(el).querySelector('.fach--licht'), 'Scheinwerfer nachträglich an').toBeNull();
+      expect(wurzel(el).querySelector('.ziele')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('räumt die Uhren auch beim Abmelden', async () => {
+    vi.useFakeTimers();
+    try {
+      dungeonState.clientState.value = zustand({
+        pending_loot: [stueck('L1', 'aptitude_boost')],
+      });
+      const el = document.createElement('velg-dungeon-debrief') as VelgDungeonDebrief;
+      document.body.appendChild(el);
+      await el.updateComplete;
+      wurzel(el).querySelector('velg-hold-button')?.dispatchEvent(
+        new CustomEvent('hold-confirmed', { bubbles: true, composed: true }),
+      );
+      expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+      el.remove();
+      expect(vi.getTimerCount(), 'abgemeldet, Uhren laufen weiter').toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('lässt eine verdeckte Karte per Klick vorzeitig aufdecken', async () => {
+    vi.useFakeTimers();
+    try {
+      dungeonState.clientState.value = zustand({
+        pending_loot: [stueck('L1', 'aptitude_boost'), stueck('L2', 'memory')],
+      });
+      const el = document.createElement('velg-dungeon-debrief') as VelgDungeonDebrief;
+      document.body.appendChild(el);
+      await el.updateComplete;
+      wurzel(el).querySelector('velg-hold-button')?.dispatchEvent(
+        new CustomEvent('hold-confirmed', { bubbles: true, composed: true }),
+      );
+      await vi.advanceTimersByTimeAsync(700); // Siegel gebrochen, Karten fliegen
+      await el.updateComplete;
+
+      const karten = Array.from(wurzel(el).querySelectorAll('velg-game-card')) as Array<
+        HTMLElement & { faceDown: boolean }
+      >;
+      expect(karten[0].faceDown, 'Karte war schon offen').toBe(true);
+      karten[0].click();
+      await el.updateComplete;
+      expect(
+        (wurzel(el).querySelectorAll('velg-game-card')[0] as HTMLElement & { faceDown: boolean })
+          .faceDown,
+      ).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
