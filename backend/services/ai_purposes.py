@@ -84,7 +84,7 @@ __all__ = [
 # The four platform_settings rows a purpose may resolve its model from, plus
 # `forecast`. Each maps to a `model_<key>` setting (and a `model_<key>_dev`
 # variant outside production) — see `platform_model_config.HARDCODED_DEFAULTS`.
-ModelKey = Literal["default", "fallback", "forge", "research", "forecast"]
+ModelKey = Literal["default", "fallback", "forge", "research", "forecast", "classify"]
 
 # `auto` means "send nothing, the model decides". Deliberately distinct from
 # `off`, which sends {"enabled": false} and suppresses thinking outright.

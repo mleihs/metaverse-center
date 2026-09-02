@@ -275,7 +275,10 @@ class ScannerService(BaseSchedulerMixin):
             classified = await classifier.classify_batch(
                 novel,
                 openrouter,
-                model=get_platform_model("default"),
+                # `classify`, nicht `default`: der Standard ist ein Denkmodell und
+                # verbrauchte sein ganzes Budget, bevor die erste Zeile Antwort
+                # kam (Messung in `platform_model_config.HARDCODED_DEFAULTS`).
+                model=get_platform_model("classify"),
                 system_prompt_override=cls_system_prompt,
                 budget=cls_budget,
             )
