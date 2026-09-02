@@ -29,6 +29,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { intakeState } from '../../services/IntakeStateManager.js';
 import { type IntakeSignal, sourceKindOf } from '../../types/intake.js';
 import { icons } from '../../utils/icons.js';
+import { batchIntegrateQuarantine, batchTransformEntrance } from './intake-batch.js';
 import './IntakeCrucibleModal.js';
 import './IntakeFlagModal.js';
 import './IntakeQuarantineCard.js';
@@ -433,6 +434,48 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       flex: none;
     }
 
+    .chamber__all {
+      margin-inline-start: auto;
+      font-family: var(--font-mono);
+      font-size: var(--_label);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      padding: var(--space-0-5) var(--space-1-5);
+      background: transparent;
+      border: var(--border-width-thin) solid var(--color-border-light);
+      color: var(--color-text-tertiary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .chamber__all:hover:not(:disabled),
+    .chamber__all:focus-visible:not(:disabled) {
+      border-color: var(--color-accent-amber);
+      color: var(--color-text-primary);
+    }
+
+    .chamber__all--green:hover:not(:disabled),
+    .chamber__all--green:focus-visible:not(:disabled) {
+      border-color: var(--color-accent-green);
+      color: var(--color-accent-green);
+    }
+
+    .chamber__all:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .chamber__all:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    /* Nach einem Stapel-Knopf rueckt der naechste Knopf nicht noch einmal. */
+    .chamber__all + .expand--fetch {
+      margin-inline-start: var(--space-1);
+    }
+
     .expand {
       margin-inline-start: auto;
       padding: 0 var(--space-1);
@@ -719,6 +762,9 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
   /** Ob der Zufluss von Hand offen ist. */
   @state() private _browseOpen = false;
 
+  /** Läuft gerade ein Stapel? Sperrt beide Stapel-Knöpfe. */
+  @state() private _batchBusy = false;
+
   /** Ob das Scan-Log offen ist. */
   @state() private _scanLogOpen = false;
 
@@ -960,6 +1006,31 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
   }
 
   /**
+   * „Alle → ②" — für alles im Eingang einen Vorschlag schreiben lassen.
+   *
+   * Setzt KEINE Linse; der Ort bleibt eine Entscheidung je Stück. Die
+   * Begründung steht in `intake-batch.ts`.
+   */
+  private async _batchTransform(): Promise<void> {
+    this._batchBusy = true;
+    try {
+      await batchTransformEntrance(this.simulationId);
+    } finally {
+      this._batchBusy = false;
+    }
+  }
+
+  /** „Alle ▣ nur hier" — aufnehmen, was eine Linse hat, gedeckelt an der Quote. */
+  private async _batchIntegrate(): Promise<void> {
+    this._batchBusy = true;
+    try {
+      await batchIntegrateQuarantine(this.simulationId);
+    } finally {
+      this._batchBusy = false;
+    }
+  }
+
+  /**
    * Kammer ① — und die Zeile, die zur Sichtung führt.
    *
    * Die Sichtung ist kein eigener Ort auf dem Brett: sie ist der Vorraum, aus
@@ -980,6 +1051,15 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       <section class="chamber chamber--entrance" aria-label=${title}>
         <header class="chamber__head">
           <h2 class="chamber__title">${title}</h2>
+          <button
+            type="button"
+            class="chamber__all"
+            ?disabled=${items.length === 0 || this._batchBusy}
+            title=${msg('Write a proposal for everything at the entrance')}
+            @click=${this._batchTransform}
+          >
+            ${msg('All → 2')}
+          </button>
           <button
             type="button"
             class="expand expand--fetch"
@@ -1049,10 +1129,25 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     const items = intakeState.inQuarantine.value;
     const title = msg('2 Quarantine · decide its fate');
 
+    const withLens = items.filter((s) => s.lens && s.proposal).length;
+
     return html`
       <section class="chamber chamber--q" aria-label=${title}>
         <header class="chamber__head">
           <h2 class="chamber__title">${title}</h2>
+          <button
+            type="button"
+            class="chamber__all chamber__all--green"
+            ?disabled=${withLens === 0 || this._batchBusy || intakeState.quotaReached.value}
+            title=${
+              intakeState.quotaReached.value
+                ? msg('Daily quota reached')
+                : msg('Admit everything that has a lens')
+            }
+            @click=${this._batchIntegrate}
+          >
+            ${msg('All here only')}
+          </button>
           <span class="chamber__count">${items.length}</span>
         </header>
         <div class="chamber__body">

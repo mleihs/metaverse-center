@@ -672,10 +672,23 @@ export class VelgApp extends LitElement {
         render: ({ id }) => this._renderSimulationView(id ?? '', 'intake'),
         enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'intake', entitySlug),
       },
+      /*
+       * `/social` ist am 02.09.2026 in der Schleuse aufgegangen (Schritt 8 des
+       * Schleusen-Bauplans). Die Route bleibt als UMLEITUNG stehen und wird
+       * nicht entfernt: eine gemerkte Adresse soll ankommen, nicht ins Leere
+       * laufen. `replaceState` sorgt dafuer, dass der Zurueck-Knopf nicht in
+       * eine Schleife geraet.
+       */
       {
         path: '/simulations/:id/social',
-        render: ({ id }) => this._renderSimulationView(id ?? '', 'social'),
-        enter: async ({ id, entitySlug }) => this._enterSimulationRoute(id, 'social', entitySlug),
+        render: () => html``,
+        enter: async ({ id }) => {
+          if (id) {
+            window.history.replaceState(null, '', `/simulations/${id}/intake`);
+            this._router.goto(`/simulations/${id}/intake`);
+          }
+          return false;
+        },
       },
       {
         path: '/simulations/:id/locations',
@@ -1287,9 +1300,6 @@ export class VelgApp extends LitElement {
         break;
       case 'settings':
         content = html`<velg-settings-view .simulationId=${resolvedId}></velg-settings-view>`;
-        break;
-      case 'social':
-        content = html`<velg-social-trends-view .simulationId=${resolvedId}></velg-social-trends-view>`;
         break;
       /*
        * Die Schleuse. Sie bekommt den Weltnamen mit, weil ihre Brotkrume ihn

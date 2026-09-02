@@ -80,7 +80,6 @@ function getTabs(): NavTab[] {
     { label: msg('Pulse'), path: 'pulse', group: 'more', icon: () => icons.radar(14) },
     { label: msg('Bonds'), path: 'bonds', group: 'more', icon: () => icons.handshake(14) },
     { label: msg('Chat'), path: 'chat', group: 'more', icon: () => icons.messageCircle(14) },
-    { label: msg('Social'), path: 'social', group: 'more', icon: () => icons.megaphone(14) },
     { label: msg('Locations'), path: 'locations', group: 'more', icon: () => icons.mapPin(14) },
     { label: msg('Atlas'), path: 'atlas', group: 'more', icon: () => icons.compassRose(14) },
     {
