@@ -287,6 +287,12 @@ export class VelgHtpLootCatalogue extends LitElement {
         color: var(--color-text-primary);
       }
 
+      /* Ergaenzt einen Satz, ersetzt ihn nicht: keine zweite Trennlinie. */
+      .item__params--quiet {
+        border-block-start: none;
+        padding-block-start: var(--space-1);
+      }
+
       .item__foot {
         display: flex;
         flex-wrap: wrap;
@@ -358,10 +364,28 @@ export class VelgHtpLootCatalogue extends LitElement {
    */
   private _renderWirkung(item: LootCatalogueEntry) {
     const p = item.effect_params ?? {};
+
+    /*
+     * Erzaehltext UND Werte — nicht das eine statt des anderen.
+     *
+     * Die erste Fassung zeigte die geschriebene Beschreibung und hoerte dann
+     * auf. Das las sich gut und liess offen, was genau passiert: „Der Spiegel
+     * zeigt, was der Betrachter will" nennt die Zahl nur nebenbei, und zwei
+     * Stuecke lassen sich so nicht vergleichen.
+     *
+     * ⚠ `content_*` ist NICHT blosser Erzaehltext, auch wenn es neben
+     * `description_*` steht. Bei einer Erinnerung IST es die Wirkung: was der
+     * Agent kuenftig weiss. Ich hatte es weggefiltert — gemessen blieben
+     * dadurch 17 Stuecke uebrig, die nur EINEN Wert zeigten, sechs davon
+     * Erinnerungen mit „Gewicht: 4" und sonst nichts, waehrend „Gelernt, die
+     * Intervalle zwischen den Fluten zu lesen" daneben lag und verworfen wurde.
+     *
+     * Reihenfolge nach Aussagekraft: geschriebene Wirkung, sonst der
+     * Erinnerungsinhalt. Die Werte stehen IMMER darunter.
+     */
     const prosa = this._say(String(p.description_en ?? ''), String(p.description_de ?? ''));
-    if (prosa.trim()) {
-      return html`<p class="item__effect">${prosa}</p>`;
-    }
+    const inhalt = this._say(String(p.content_en ?? ''), String(p.content_de ?? ''));
+    const satz = prosa.trim() || inhalt.trim();
 
     const paare = Object.entries(p)
       .filter(([k, v]) => !NARRATIVE_PARAMS.has(k) && v !== null && v !== undefined && v !== '')
@@ -369,17 +393,25 @@ export class VelgHtpLootCatalogue extends LitElement {
         label: PARAM_LABEL[k]?.() ?? humaniseKey(k),
         wert: typeof v === 'boolean' ? (v ? msg('yes') : msg('no')) : String(v),
       }));
-    if (!paare.length) return nothing;
+
+    if (!satz && !paare.length) return nothing;
 
     return html`
-      <dl class="item__params">
-        ${paare.map(
-          (x) => html`
-            <dt>${x.label}</dt>
-            <dd>${x.wert}</dd>
-          `,
-        )}
-      </dl>
+      ${satz ? html`<p class="item__effect">${satz}</p>` : nothing}
+      ${
+        paare.length
+          ? html`
+            <dl class="item__params ${satz ? 'item__params--quiet' : ''}">
+              ${paare.map(
+                (x) => html`
+                  <dt>${x.label}</dt>
+                  <dd>${x.wert}</dd>
+                `,
+              )}
+            </dl>
+          `
+          : nothing
+      }
     `;
   }
 
