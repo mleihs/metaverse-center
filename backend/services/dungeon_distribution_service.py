@@ -380,7 +380,9 @@ class DungeonDistributionService:
                 raw_apt = params.get("aptitude", "")
                 if "|" in raw_apt:
                     params["aptitude"] = cls._resolve_pipe_aptitude(
-                        instance.party, assigned_agent, raw_apt,
+                        instance.party,
+                        assigned_agent,
+                        raw_apt,
                     )
                 loot_items.append(
                     {
@@ -436,9 +438,61 @@ class DungeonDistributionService:
         return DistributeConfirmResponse(
             loot_result=loot_result,
             state=DungeonCheckpointService.build_client_state(instance),
+            auto_assigned=instance.auto_assigned,
         )
 
     # ── Distribution Timer ─────────────────────────────────────────────────
+
+    @classmethod
+    def _weise_offene_beute_zu(cls, inst: DungeonInstance) -> list[dict]:
+        """Verteilt, was beim Ablauf der Frist noch offen ist.
+
+        Bis 2026-09-02 ging JEDES offene Stueck an ``party[0]`` — an dieselbe
+        Person, gleichgueltig wem es genutzt haette, und selbst dann, wenn sie
+        gefangen war und die Wirkung deshalb verfiel.
+
+        Der Server hatte die bessere Antwort die ganze Zeit dabei:
+        ``_compute_loot_suggestions`` waehlt fuer eine Eignungs-Verstaerkung den
+        Agenten mit dem NIEDRIGSTEN Stand in dieser Eignung und verteilt
+        Erinnerungen reihum — und genau diesen Vorschlag zeigt die Oberflaeche
+        dem Spieler an, waehrend die Uhr laeuft. Nur beim Ablauf wurde er
+        verworfen. Wer die Frist verstreichen laesst, bekommt jetzt das, was ihm
+        die ganze Zeit vorgeschlagen wurde.
+
+        Steht die Methode hier statt im Rueckruf des Zeitgebers, weil sie sonst
+        nur zu pruefen waere, indem ein Test fuenf Minuten wartet — und ein
+        solcher Test wird abgeschaltet statt gelesen.
+
+        Gibt zurueck, was zugewiesen wurde und warum:
+        ``[{"item_id", "agent_id", "reason": "suggestion" | "fallback"}]``.
+        """
+        vorschlaege = DungeonCheckpointService._compute_loot_suggestions(inst)
+
+        # Auffanglinie nur, wenn es keinen Vorschlag gibt: der erste
+        # HANDLUNGSFAEHIGE Agent. `party[0]` kann gefangen sein, und eine
+        # Zuweisung an eine gefangene Person ist eine stille Vernichtung.
+        handlungsfaehig = [a for a in inst.party if can_act(a.condition)]
+        auffang = str((handlungsfaehig or inst.party)[0].agent_id) if inst.party else None
+
+        zugewiesen: list[dict] = []
+        for item in inst.pending_loot:
+            if item.get("effect_type") in AUTO_APPLY_EFFECT_TYPES:
+                continue
+            if item["id"] in inst.loot_assignments:
+                continue
+            vorschlag = vorschlaege.get(item["id"])
+            ziel = vorschlag or auffang
+            if not ziel:
+                continue
+            inst.loot_assignments[item["id"]] = ziel
+            zugewiesen.append(
+                {
+                    "item_id": item["id"],
+                    "agent_id": ziel,
+                    "reason": "suggestion" if vorschlag else "fallback",
+                }
+            )
+        return zugewiesen
 
     @classmethod
     def _start_distribution_timer(cls, instance: DungeonInstance) -> None:
@@ -453,18 +507,16 @@ class DungeonDistributionService:
                 if not inst or inst.phase != "distributing":
                     return
 
-                # Auto-assign unassigned distributable items to the first party agent
-                first_agent_id = str(inst.party[0].agent_id) if inst.party else None
-                if first_agent_id:
-                    for item in inst.pending_loot:
-                        if item.get("effect_type") in AUTO_APPLY_EFFECT_TYPES:
-                            continue
-                        if item["id"] not in inst.loot_assignments:
-                            inst.loot_assignments[item["id"]] = first_agent_id
+                inst.auto_assigned = cls._weise_offene_beute_zu(inst)
 
                 logger.info(
                     "Distribution timer expired — auto-assigned loot",
-                    extra=log_extra(inst, assigned=len(inst.loot_assignments), first_agent=first_agent_id),
+                    extra=log_extra(
+                        inst,
+                        assigned=len(inst.loot_assignments),
+                        auto_assigned=len(inst.auto_assigned),
+                        by_suggestion=sum(1 for a in inst.auto_assigned if a["reason"] == "suggestion"),
+                    ),
                 )
 
                 # Finalize (no user_id — internal call)
@@ -517,9 +569,7 @@ class DungeonDistributionService:
                     "moodlets": [
                         {
                             "moodlet_type": "dungeon_retreat" if retreating else "dungeon_survivor",
-                            "emotion": (
-                                "unease" if retreating else ("dread" if afflicted else "pride")
-                            ),
+                            "emotion": ("unease" if retreating else ("dread" if afflicted else "pride")),
                             "strength": -5 if retreating else (-10 if afflicted else 10),
                             "source_description": (
                                 f"Withdrew from {instance.archetype} dungeon"
@@ -588,7 +638,9 @@ class DungeonDistributionService:
                 raw_apt = params.get("aptitude", "")
                 if "|" in raw_apt:
                     params["aptitude"] = cls._resolve_pipe_aptitude(
-                        instance.party, first_agent_id, raw_apt,
+                        instance.party,
+                        first_agent_id,
+                        raw_apt,
                     )
                 items.append(
                     {
