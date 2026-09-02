@@ -1,0 +1,853 @@
+<!--
+  Referenz-Extrakt: Option 1b „Die Schleuse" aus Event Intake.dc.html (Design-Prototyp).
+  NICHT lauffähig — Design-Component-Template (sc-for / sc-if / {{ holes }}) + zugehörige Logik,
+  ausgeschnitten für Claude Code als Nachschlagewerk für exakte Inline-Styles, Copy und Zustandslogik.
+  Blöcke 1a/1c und die A-/C-Logik sind entfernt. Hex-Werte beim Übertragen auf Tokens mappen (siehe schleuse-event-intake.md).
+  Rollenlogik: isAdmin = (S.roleOverride || props.role) === 'admin'.
+-->
+
+<!-- ═══════════ HELMET-STYLES (Keyframes + Hover-Klassen, die 1b nutzt) ═══════════ -->
+<style>
+    body { margin:0; background:#151515; }
+    a { color:#f59e0b; text-decoration:none; }
+    a:hover { color:#fbbf24; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    @keyframes cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes rise { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+    @keyframes sweep { from{top:-40px} to{top:100%} }
+    .row-h { transition:background .15s, border-color .15s; cursor:pointer; }
+    .row-h:hover { background:#111 !important; }
+    .chip { cursor:pointer; transition:background .15s, color .15s, border-color .15s; user-select:none; }
+    .chip:hover { border-color:#888 !important; color:#e5e5e5 !important; }
+    .btn-amber { cursor:pointer; transition:background .15s, transform .15s, box-shadow .15s; user-select:none; }
+    .btn-amber:hover { background:#fbbf24 !important; transform:translate(-2px,-2px); box-shadow:6px 6px 0 #000 !important; }
+    .btn-ghost { cursor:pointer; transition:border-color .15s, color .15s; user-select:none; }
+    .btn-ghost:hover { border-color:#e5e5e5 !important; color:#e5e5e5 !important; }
+    .card-h { transition:border-color .2s; }
+    .card-h:hover { border-color:#555 !important; }
+    .hold { position:relative; overflow:hidden; cursor:pointer; user-select:none; }
+    .hold .fill { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(0,0,0,.35); }
+    .hold.on .fill { width:100%; transition:width .9s linear; }
+    @keyframes fade-in { from{opacity:0} }
+    @keyframes modal-enter { from{ transform:translateY(20px); opacity:0 } }
+    @keyframes scan-sweep-v { 0%{top:-40px; opacity:1} 100%{top:calc(100% + 40px); opacity:.4} }
+    @keyframes arrow-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    @keyframes dispatch-in { 0%{opacity:0; transform:translateY(8px) scale(.97); clip-path:inset(0 100% 0 0)} 40%{opacity:1; transform:none} 100%{clip-path:inset(0 0 0 0)} }
+    @keyframes progress-decay { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+    @keyframes loading-bar { from{transform:translateX(-100%)} to{transform:translateX(350%)} }
+    @keyframes status-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .x-close { cursor:pointer; transition:all .1s ease; }
+    .x-close:hover { background:#f59e0b !important; color:#0a0a0a !important; border-color:#f59e0b !important; transform:translate(-2px,-2px); box-shadow:4px 4px 0 #000; }
+    .x-close:active { transform:translate(0); box-shadow:none; }
+  </style>
+
+<!-- ═══════════ TEMPLATE 1b ═══════════ -->
+  <!-- ═══════════════════════ 1b — DIE SCHLEUSE ═══════════════════════ -->
+  <div id="1b" data-screen-label="1b Schleuse" style="flex:0 0 auto; width:1600px;">
+    <sc-if value="{{ showRationale }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; gap:28px; align-items:flex-start; margin-bottom:18px;">
+      <a href="#1b" style="display:inline-block; background:#f59e0b; color:#0a0a0a; font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; padding:4px 10px; flex:0 0 auto;">1B</a>
+      <div style="flex:1;">
+        <div style="font-family:'Courier New',monospace; font-weight:700; font-size:20px; letter-spacing:.06em; text-transform:uppercase; color:#e5e5e5; margin-bottom:6px;">Die Schleuse — Sensoren · Eingang · Quarantäne · Freigabe · Nachhall</div>
+        <p style="font-family:'Spectral',Georgia,serif; font-size:15px; line-height:1.55; color:#a0a0a0; margin:0 0 8px; max-width:1150px; text-wrap:pretty;">Der Import als <b style="color:#e5e5e5;">Prozess</b>. Die Kandidaten-Warteschlange des Scanners und der Batch-Modus der Social Trends werden ein Board; das Sensor-Gitter des Admin-Panels wird die Kopfzeile. Jedes Signal wandert durch vier Kammern — und erst in der <b style="color:#e5e5e5;">Quarantäne</b> fällt die Entscheidung über sein Schicksal: <i>Resonanz</i> (alle Welten, nach Suszeptibilität) oder <i>nur hier als Ereignis</i>. <b style="color:#e5e5e5;">Abonnements</b> füllen den Eingang ohne Zutun und vortransformieren; die Tagesquote ist der Balance-Regler. Nachhall zeigt, was ein Signal ausgelöst hat: pro Welt erzeugte Ereignisse, übersprungene Welten, Reaktionen, Echos. Vor dem Eingang liegt die <b style="color:#e5e5e5;">Sichtung</b> — für die Menge gebaut: Rohsignale werden zu <i>Geschichten</i> gebündelt (Guardian ×3 + GDELT ×41 + Reddit ×120 = eine Zeile), filterbar nach Sensor und Magnitude, sortierbar nach Passung, mehrfach auswählbar. Soziale Quellen (Reddit, Bluesky) sind eine eigene Sensor-Klasse: sie verstärken eine Geschichte (Tempo, Reichweite), können aber ohne Nachrichtenanker nie selbst Signal werden — sie landen im Rauschen.</p>
+        <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#666;">Löst: Scanner-Dashboard/Candidates/Log als drei getrennte Tabs · Batch als Fremdkörper · keine Provenienz · Entscheidung Resonanz vs. Ereignis nirgends explizit</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="position:relative; width:1600px; background:#0a0a0a; color:#e5e5e5; border:1px solid #333; box-shadow:6px 6px 0 #000; overflow:hidden;">
+      <div style="height:42px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:#060606; border-bottom:1px solid #222; font-size:10px; letter-spacing:2px; text-transform:uppercase;">
+        <div style="display:flex; gap:14px; color:#888;"><span style="color:#555;">{{ bCrumbRoot }} /</span><span style="color:#e5e5e5;">{{ bCrumbName }}</span><span style="color:#333;">|</span><span style="color:#f59e0b;">Schleuse</span><span style="color:#333;">|</span><span>Welt: <b style="color:#e5e5e5;">The Chitinous Mandate</b> ▾</span></div>
+        <div style="display:flex; gap:16px; align-items:center; color:#888;"><span style="{{ roleBadge }}">{{ roleLabel }}</span><span style="color:#333;">|</span><span style="color:#4ade80;">● Scanner aktiv · Intervall 6 h</span><span style="color:#333;">|</span><span style="color:#e5e5e5;">DE</span><span style="color:#444;">/</span><span>EN</span></div>
+      </div>
+
+      <!-- sensor rail -->
+      <div style="display:flex; align-items:stretch; border-bottom:1px solid #222; background:#060606;">
+        <div style="padding:14px 20px; border-right:1px solid #222; display:flex; flex-direction:column; justify-content:center; gap:4px; flex:0 0 150px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase;">Sensoren</span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">12/13 online · 1 LLM-Aufruf/Zyklus</span></div>
+        <div style="display:grid; grid-template-columns:repeat(13,1fr); flex:1;">
+          <sc-for list="{{ sensors }}" as="s" hint-placeholder-count="11">
+            <div class="card-h" style="{{ s.tileStyle }}">
+              <div style="display:flex; align-items:center; gap:6px; font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:#e5e5e5;"><span style="{{ s.dotStyle }}"></span>{{ s.n }}</div>
+              <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:{{ s.kindColor }};">{{ s.kind }}</div>
+              <div style="display:flex; gap:2px; align-items:center; margin-top:2px;"><sc-for list="{{ s.hitSegs }}" as="h" hint-placeholder-count="4"><span style="{{ h.s }}"></span></sc-for><span style="font-size:9px; color:#888; margin-left:4px;">{{ s.hits }}</span></div>
+              <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#555;">{{ s.last }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="padding:10px 16px; border-left:1px solid #222; display:flex; flex-direction:column; justify-content:center; gap:8px; flex:0 0 150px;">
+          <sc-if value="{{ bIsAdmin }}" hint-placeholder-val="{{ false }}"><span class="btn-ghost" style="text-align:center; padding:8px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b;">◆ Jetzt scannen</span></sc-if>
+          <sc-if value="{{ bIsArch }}" hint-placeholder-val="{{ true }}"><span style="text-align:center; padding:8px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#666; border:1px dashed #333;">Nächster Scan 08:32</span></sc-if>
+          <span class="btn-ghost" onClick="{{ bLogOpen }}" style="text-align:center; padding:6px; font-family:'Courier New',monospace; font-weight:700; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888; border:1px solid #333;">Scan-Log</span>
+          <span style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#555; text-align:center;">02:32 · {{ bFunnel }}</span>
+        </div>
+      </div>
+
+      <!-- quota + subscriptions -->
+      <div style="display:grid; grid-template-columns:360px 1fr; border-bottom:1px solid #222;">
+        <div style="padding:20px 28px; border-right:1px solid #222; background:#060606;">
+          <div style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:8px;">Tagesquote · Einlass in diese Welt</div>
+          <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:10px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:36px; line-height:1; color:#f59e0b;">{{ bEvCount }}</span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#555;">/ 5</span><span style="margin-left:auto; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">Auto-Einlass 04:12</span></div>
+          <div style="display:flex; gap:4px; height:8px;"><sc-for list="{{ bQuotaSegs }}" as="s" hint-placeholder-count="5"><span style="{{ s.style }}"></span></sc-for></div>
+          <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; line-height:1.5; color:#666; margin-top:10px;">Resonanzen zählen nicht auf die Quote — sie kommen von der Plattform, die Welt kann sie nur dämpfen.</div>
+        </div>
+        <div style="padding:16px 28px;">
+          <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:10px;">
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase;">Abonnements</div>
+            <div style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#666;">füllen den Eingang ohne Zutun · {{ bSubCount }} aktiv</div>
+            <span class="btn-ghost" style="margin-left:auto; padding:6px 12px; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">+ Abonnement</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            <sc-for list="{{ bSubs }}" as="s" hint-placeholder-count="4">
+              <div class="card-h" style="border:1px solid #333; background:#0d0d0d; padding:10px 12px; display:flex; flex-direction:column; gap:5px;">
+                <div style="display:flex; align-items:center; gap:8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="color:{{ s.c }};">{{ s.sec }}</span><span style="color:#444;">→</span><span style="color:#e5e5e5;">{{ s.zone }}</span><span style="margin-left:auto; color:#4ade80;">●</span></div>
+                <div style="font-size:10.5px; color:#a0a0a0;">{{ s.rule }}</div>
+                <div style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#555;">{{ s.last }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- board -->
+      <div style="display:grid; grid-template-columns:1fr 1.25fr 1fr 1fr; min-height:720px;">
+        <div style="border-right:1px solid #222;">
+          <div style="padding:16px 20px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase;">① Eingang</span><span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">aufgenommen</span><span class="btn-ghost" onClick="{{ bInAll }}" style="margin-left:auto; padding:4px 8px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888; border:1px solid #333;">Alle → ②</span><span style="font-family:'Courier New',monospace; font-weight:700; color:#888;">{{ bInCount }}</span><span class="btn-ghost" onClick="{{ bEnlargeOpen }}" title="Im Lesesaal öffnen" style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; color:#888; border:1px solid #333;">⤢</span></div>
+          <div class="row-h" onClick="{{ bTriageOpen }}" style="display:flex; align-items:center; gap:10px; padding:10px 20px; border-bottom:1px solid #222; background:#060606;">
+            <span style="width:6px; height:6px; background:#f59e0b; animation:blink 1.6s ease-in-out infinite;"></span>
+            <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#e5e5e5;">Sichtung · <b style="color:#f59e0b;">{{ bStoryCount }}</b> Geschichten warten</span>
+            <span style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666;">aus {{ bRawCount }} Rohsignalen</span>
+            <span style="margin-left:auto; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#f59e0b;">Öffnen →</span>
+          </div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <sc-for list="{{ bIn }}" as="c" hint-placeholder-count="5">
+              <div class="card-h" style="border:1px solid #333; background:#0d0d0d; padding:12px 14px; display:flex; flex-direction:column; gap:7px;">
+                <div style="display:flex; align-items:center; gap:8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="color:#555;">{{ c.src }}</span><span style="{{ c.kindStyle }}">{{ c.kind }}</span><span style="margin-left:auto; color:#666;">{{ c.t }}</span></div>
+                <div style="font-family:'Spectral',Georgia,serif; font-size:14px; line-height:1.35; color:#e5e5e5; text-wrap:pretty;">{{ c.h }}</div>
+                <div style="display:flex; align-items:center; gap:8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="color:{{ c.catColor }};">◈ {{ c.arch }}</span><span style="color:#888;">{{ c.mag }}</span><span style="color:#555;">· {{ c.via }}</span></div>
+                <div style="display:flex; gap:8px; margin-top:2px;">
+                  <span class="btn-ghost" onClick="{{ c.transform }}" style="{{ c.tStyle }}">{{ c.tLabel }}</span>
+                  <span class="btn-ghost" onClick="{{ c.drop }}" style="padding:7px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; border:1px solid #2a2a2a;">Verwerfen</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border-right:1px solid #222; background:#080808;">
+          <div style="padding:16px 20px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#f59e0b;">② Quarantäne</span><span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">Schicksal entscheiden</span><span class="btn-ghost" onClick="{{ bQAll }}" style="margin-left:auto; padding:4px 8px; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80; border:1px solid #2a4a33;">Alle ▣ nur hier</span><span style="font-family:'Courier New',monospace; font-weight:700; color:#f59e0b;">{{ bQCount }}</span></div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <sc-for list="{{ bQ }}" as="c" hint-placeholder-count="3">
+              <div class="card-h" style="border:1px solid #f59e0b; background:#0d0d0d; box-shadow:4px 4px 0 #000; display:flex; flex-direction:column;">
+                <div style="padding:9px 14px; border-bottom:1px solid #222; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; display:flex; gap:8px;"><span>Original</span><span style="color:#333;">·</span><span>{{ c.src }}</span><span style="margin-left:auto; color:{{ c.catColor }};">◈ {{ c.arch }} · {{ c.mag }}</span></div>
+                <div style="padding:9px 14px; font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.4; color:#888; border-bottom:1px solid #222;">{{ c.h }}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                  <div style="padding:10px 14px; border-right:1px solid #222;">
+                    <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:{{ c.resHeadColor }}; margin-bottom:6px;">{{ c.resHead }}</div>
+                    <sc-if value="{{ c.showWorlds }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex; flex-direction:column; gap:3px;">
+                      <sc-for list="{{ c.worlds }}" as="w" hint-placeholder-count="6">
+                        <div style="display:grid; grid-template-columns:78px 1fr 30px; gap:6px; align-items:center; font-size:9px;"><span style="color:{{ w.nameColor }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ w.short }}</span><span style="display:block; height:4px; background:#161616;"><span style="{{ w.bar }}"></span></span><span style="font-family:'Courier New',monospace; color:{{ w.effColor }}; text-align:right;">{{ w.eff }}</span></div>
+                      </sc-for>
+                    </div>
+                    </sc-if>
+                    <sc-if value="{{ c.locked }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12px; line-height:1.5; color:#666;">Für deine Welt: {{ c.myEff }} effektiv. Ob es alle Welten trifft, entscheidet das Bureau — du kannst es melden.</div>
+                    </sc-if>
+                  </div>
+                  <div style="padding:10px 14px;">
+                    <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80; margin-bottom:6px;">▣ als Ereignis · nur hier</div>
+                    <div style="font-family:'Courier New',monospace; font-weight:700; font-size:11.5px; line-height:1.3; letter-spacing:.03em; text-transform:uppercase; color:#e5e5e5; margin-bottom:4px;">{{ c.dTitle }}</div>
+                    <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#666;">{{ c.zone }} · Wucht {{ c.impact }} · {{ c.fxShort }}</div>
+                  </div>
+                </div>
+                <div style="padding:10px 14px 12px; border-top:1px solid #222; display:flex; gap:6px;">
+                  <span class="{{ c.asResClass }}" onClick="{{ c.asRes }}" style="{{ c.asResStyle }}">{{ c.asResLabel }}</span>
+                  <span class="btn-ghost" onClick="{{ c.asEv }}" style="flex:1; text-align:center; padding:8px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80; border:1px solid #4ade80;">▣ Nur hier</span>
+                  <span class="btn-ghost" onClick="{{ c.lens }}" style="padding:8px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">Linse</span>
+                  <span class="btn-ghost" onClick="{{ c.drop }}" style="padding:8px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; border:1px solid #2a2a2a;">✕</span>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ bQEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 10px; text-align:center; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:13px; color:#555;">Die Quarantäne ist leer. Der nächste Scan-Zyklus liefert nach.</div></sc-if>
+          </div>
+        </div>
+
+        <div style="border-right:1px solid #222;">
+          <div style="padding:16px 20px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#4ade80;">③ Freigegeben</span><span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">Resonanzen &amp; Ereignisse</span><span style="margin-left:auto; font-family:'Courier New',monospace; font-weight:700; color:#4ade80;">{{ bPubCount }}</span></div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <sc-for list="{{ bPub }}" as="c" hint-placeholder-count="4">
+              <div class="card-h" style="border:1px solid #333; background:#0d0d0d; display:flex; flex-direction:column; animation:rise .4s ease both;">
+                <div style="padding:9px 14px; background:#111; border-bottom:1px solid #333; display:flex; align-items:center; gap:8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="padding:2px 6px; border:1px solid {{ c.scopeColor }}; color:{{ c.scopeColor }};">{{ c.scope }}</span><span style="color:#888;">{{ c.sub }}</span><span style="margin-left:auto; color:#666;">{{ c.when }}</span></div>
+                <div style="padding:11px 14px;">
+                  <div style="font-family:'Courier New',monospace; font-weight:700; font-size:12.5px; line-height:1.3; letter-spacing:.04em; text-transform:uppercase; color:#e5e5e5; margin-bottom:7px;">{{ c.title }}</div>
+                  <div style="font-size:10px; color:#888; line-height:1.5;">{{ c.stats }}</div>
+                </div>
+                <div style="padding:7px 14px; border-top:1px solid #222; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#555; display:flex; gap:10px; align-items:center;"><span>Herkunft: {{ c.src }}</span><sc-if value="{{ c.isEv }}" hint-placeholder-val="{{ false }}"><span class="btn-ghost" onClick="{{ c.echo }}" style="margin-left:auto; padding:3px 8px; color:#3b82f6; border:1px solid #1e3a5f;">↗ Echo</span></sc-if><span style="{{ c.openStyle }}">Öffnen →</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#060606;">
+          <div style="padding:16px 20px; border-bottom:1px solid #222; display:flex; align-items:center; gap:10px;"><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:#3b82f6;">④ Nachhall</span><span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">was es auslöste</span></div>
+          <div style="padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <sc-for list="{{ bAfter }}" as="c" hint-placeholder-count="4">
+              <div style="border:1px solid #222; background:#0a0a0a; padding:11px 14px; display:flex; flex-direction:column; gap:6px;">
+                <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:{{ c.c }};">{{ c.kind }}</div>
+                <div style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.45; color:#a0a0a0; text-wrap:pretty;">{{ c.text }}</div>
+                <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#555;">← {{ c.from }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Sichtung (Triage) ── -->
+      <sc-if value="{{ bTriage }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ bTriageClose }}" style="position:absolute; inset:0; z-index:40; background:rgba(0,0,0,.7); display:flex; justify-content:center; align-items:flex-start; padding-top:48px; animation:fade-in .2s ease both;">
+        <div onClick="{{ bStop }}" style="width:1500px; background:#0a0a0a; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both; display:flex; flex-direction:column; max-height:calc(100% - 100px);">
+          <div style="display:flex; align-items:center; gap:18px; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">Sichtung · Rohsignale</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">{{ bFunnel }}</span>
+            <span style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; color:#666;">Gleiche Nachricht aus mehreren Quellen = eine Geschichte. Soziale Quellen verstärken, gründen aber nie.</span>
+            <span class="x-close" onClick="{{ bTriageClose }}" style="margin-left:auto; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:12px 24px; border-bottom:1px solid #222; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px; border:1px solid #333; background:#060606; padding:8px 10px; font-size:11px; color:#666; width:280px;"><span style="color:#888;">⌕</span>Geschichten durchsuchen …</div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#666; margin-left:8px;">Sortierung</span>
+            <sc-for list="{{ bTriageSorts }}" as="s" hint-placeholder-count="4"><span class="chip" onClick="{{ s.go }}" style="{{ s.style }}">{{ s.label }}</span></sc-for>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#666; margin-left:8px;">Magnitude</span>
+            <sc-for list="{{ bTriageMins }}" as="s" hint-placeholder-count="4"><span class="chip" onClick="{{ s.go }}" style="{{ s.style }}">{{ s.label }}</span></sc-for>
+            <span class="btn-ghost" onClick="{{ bTop5 }}" style="margin-left:auto; padding:8px 14px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b;">Top 5 nach Passung aufnehmen</span>
+            <span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">↑↓ · Leertaste wählen · ⏎ aufnehmen · x verwerfen</span>
+          </div>
+          <div style="display:grid; grid-template-columns:230px 1fr; flex:1; min-height:0;">
+            <div style="border-right:1px solid #222; padding:16px 18px; display:flex; flex-direction:column; gap:14px; background:#060606; overflow:auto;">
+              <div style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Sensoren · Geschichten je Quelle</div>
+              <div style="display:flex; flex-direction:column; gap:3px;">
+                <sc-for list="{{ bTriageSens }}" as="s" hint-placeholder-count="12">
+                  <div onClick="{{ s.go }}" style="{{ s.style }}"><span style="font-size:9px; color:{{ s.kindColor }};">{{ s.mark }}</span><span style="display:flex; flex-direction:column;"><span style="font-size:10.5px; color:#e5e5e5;">{{ s.n }}</span><span style="font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:{{ s.kindColor }};">{{ s.kind }}</span></span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:11px; color:#888;">{{ s.count }}</span></div>
+                </sc-for>
+              </div>
+              <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12px; line-height:1.5; color:#666; border-top:1px solid #222; padding-top:12px;">Sozial (Reddit, Bluesky) liefert Tempo und Reichweite zu einer bestehenden Geschichte. Ohne Nachrichtenanker landet es im Rauschen — auch bei 12k Posts.</div>
+            </div>
+            <div style="overflow:auto; min-height:0; display:flex; flex-direction:column;">
+              <div style="display:grid; grid-template-columns:28px 1fr 130px 80px 210px; gap:16px; padding:8px 16px; border-bottom:1px solid #222; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; position:sticky; top:0; background:#0a0a0a; z-index:1;"><span></span><span>Geschichte · Quellen · {{ bRowCount }} sichtbar</span><span>Magnitude</span><span>Passung</span><span>Status</span></div>
+              <sc-for list="{{ bRows }}" as="r" hint-placeholder-count="10">
+                <div class="row-h" style="{{ r.style }}">
+                  <span onClick="{{ r.toggle }}" style="font-family:'Courier New',monospace; font-size:14px; color:#888; cursor:pointer; text-align:center;">{{ r.check }}</span>
+                  <div style="min-width:0;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="color:#666;">{{ r.t }}</span><span style="color:{{ r.catColor }};">◈ {{ r.arch }}</span><span style="{{ r.kindStyle }}">{{ r.kind }}</span><span style="{{ r.recStyle }}">{{ r.rec }}</span><span style="color:#555;">{{ r.clsNote }}</span><span style="color:#888; margin-left:auto;">{{ r.soc }}</span></div>
+                    <div style="font-family:'Spectral',Georgia,serif; font-size:14.5px; line-height:1.35; color:#e5e5e5; text-wrap:pretty;">{{ r.h }}</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:7px;"><sc-for list="{{ r.srcs }}" as="s" hint-placeholder-count="3"><span style="{{ s.style }}">{{ s.label }}</span></sc-for></div>
+                  </div>
+                  <div><div style="height:4px; background:#1a1a1a; margin-bottom:5px;"><div style="{{ r.magBar }}"></div></div><div style="font-family:'Courier New',monospace; font-size:11px; color:#a0a0a0;">{{ r.magTxt }} · {{ r.zone }}</div></div>
+                  <div style="font-family:'Courier New',monospace; font-weight:700; font-size:15px; color:{{ r.fitColor }};">{{ r.fit }}%</div>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <sc-if value="{{ r.isRaw }}" hint-placeholder-val="{{ true }}">
+                      <span class="btn-ghost" onClick="{{ r.take }}" style="padding:7px 12px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b;">In den Eingang</span>
+                      <span class="btn-ghost" onClick="{{ r.drop }}" style="padding:7px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; border:1px solid #2a2a2a;">✕</span>
+                    </sc-if>
+                    <sc-if value="{{ r.isDone }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:3px 8px; border:1px solid #4ade80; color:#4ade80;">✓ {{ r.stLabel }}</span></sc-if>
+                    <sc-if value="{{ r.isOut }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">verworfen</span><span class="btn-ghost" onClick="{{ r.back }}" style="padding:5px 8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888; border:1px solid #333;">zurück</span></sc-if>
+                  </div>
+                </div>
+              </sc-for>
+              <div onClick="{{ bNoiseToggle }}" class="row-h" style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-top:1px solid #222; background:#060606; margin-top:auto;">
+                <span style="font-family:'Courier New',monospace; color:#666;">{{ bNoiseMark }}</span>
+                <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">Rauschen · <b style="color:#e5e5e5;">17.1k</b> soziale Posts ohne Nachrichtenanker</span>
+                <span style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#555;">nur Tempo, kein Ereignis → nie als Signal zulässig</span>
+              </div>
+              <sc-if value="{{ bNoiseOpen }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ bNoise }}" as="n" hint-placeholder-count="4">
+                  <div style="display:grid; grid-template-columns:1fr 220px 1fr; gap:16px; padding:9px 16px 9px 42px; border-top:1px solid #1a1a1a; background:#060606; font-size:11px; opacity:.6;"><span style="font-family:'Spectral',Georgia,serif; color:#a0a0a0;">{{ n.h }}</span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#777;">{{ n.src }}</span><span style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#555;">{{ n.why }}</span></div>
+                </sc-for>
+              </sc-if>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; padding:12px 24px; border-top:1px solid #222; background:#0d0d0d;">
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;"><b style="color:#e5e5e5;">{{ bSelCount }}</b> ausgewählt</span>
+            <span class="btn-ghost" onClick="{{ bSelTake }}" style="{{ bSelStyle }}">Auswahl in den Eingang</span>
+            <span class="btn-ghost" onClick="{{ bSelDrop }}" style="{{ bSelStyle }}">Auswahl verwerfen</span>
+            <span style="margin-left:auto; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; color:#666;">Alles, was hier nicht aufgenommen wird, verfällt nach 48 h — die Sichtung ist ein Sieb, kein Archiv.</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ── Lesesaal (Eingang vergrößert) ── -->
+      <sc-if value="{{ bEnlarge }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ bEnlargeClose }}" style="position:absolute; inset:0; z-index:40; background:rgba(0,0,0,.7); display:flex; justify-content:center; align-items:flex-start; padding-top:48px; animation:fade-in .2s ease both;">
+        <div onClick="{{ bStop }}" style="width:1500px; background:#0a0a0a; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both; display:flex; flex-direction:column; max-height:calc(100% - 100px);">
+          <div style="display:flex; align-items:center; gap:18px; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">① Eingang · Lesesaal</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;"><b style="color:#e5e5e5;">{{ bInCount }}</b> Signale aufgenommen · warten auf Transformation</span>
+            <span style="margin-left:auto; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#666;">Gliedern nach</span>
+            <sc-for list="{{ bEnlargeGroups }}" as="g" hint-placeholder-count="3"><span class="chip" onClick="{{ g.go }}" style="{{ g.style }}">{{ g.label }}</span></sc-for>
+            <span class="x-close" onClick="{{ bEnlargeClose }}" style="margin-left:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; padding:10px 24px; border-bottom:1px solid #222; flex-wrap:wrap;">
+            <span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-right:6px;">Im Eingang</span>
+            <sc-for list="{{ bEnlargeSummary }}" as="s" hint-placeholder-count="5"><span style="display:inline-flex; align-items:center; gap:6px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:3px 8px; border:1px solid #333; color:#a0a0a0;"><span style="color:{{ s.color }};">◈ {{ s.arch }}</span><b style="color:#e5e5e5;">{{ s.count }}</b></span></sc-for>
+            <span style="margin-left:auto; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; color:#666;">Jedes Signal: links die Wirklichkeit, in der Mitte die Klassifikation, rechts der Vorschlag für die Welt.</span>
+          </div>
+          <div style="overflow:auto; min-height:0; flex:1;">
+            <sc-for list="{{ bGroups }}" as="g" hint-placeholder-count="3">
+              <div>
+                <div style="position:sticky; top:0; z-index:1; display:flex; align-items:baseline; gap:12px; padding:12px 24px 10px; background:#060606; border-bottom:1px solid #222; border-top:1px solid #222;">
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:#f59e0b;">{{ g.name }}</span>
+                  <span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; color:#888;">{{ g.count }}</span>
+                  <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">{{ g.note }}</span>
+                </div>
+                <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="2">
+                  <div class="card-h" style="display:grid; grid-template-columns:1.25fr 1fr 1fr; border-bottom:1px solid #1a1a1a;">
+                    <div style="padding:18px 24px; border-right:1px solid #1a1a1a; min-width:0;">
+                      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;"><span style="color:#666;">{{ c.t }}</span><span style="color:#555;">{{ c.src }}</span><span style="{{ c.kindStyle }}">{{ c.kind }}</span><span style="margin-left:auto; color:#555;">{{ c.via }}</span></div>
+                      <div style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:18px; line-height:1.25; color:#e5e5e5; margin-bottom:8px; text-wrap:pretty;">{{ c.h }}</div>
+                      <div style="font-family:'Spectral',Georgia,serif; font-size:13.5px; line-height:1.6; color:#a0a0a0; text-wrap:pretty;">{{ c.ab }}</div>
+                      <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"><sc-for list="{{ c.srcs }}" as="s" hint-placeholder-count="3"><span style="{{ s.style }}">{{ s.label }}</span></sc-for></div>
+                    </div>
+                    <div style="padding:18px 22px; border-right:1px solid #1a1a1a; display:flex; flex-direction:column; gap:12px;">
+                      <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">Klassifikation</div>
+                      <div style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:{{ c.catColor }};">◈ {{ c.arch }}</div>
+                      <div><div style="display:flex; justify-content:space-between; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-bottom:5px;"><span>Magnitude</span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:12px; color:#e5e5e5;">{{ c.mag }}</span></div><div style="height:4px; background:#1a1a1a;"><div style="{{ c.magBar }}"></div></div><div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:#555; margin-top:5px;">{{ c.clsNote }}</div></div>
+                      <div><div style="display:flex; justify-content:space-between; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-bottom:5px;"><span>Passung zur Welt</span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:14px; color:{{ c.fitColor }};">{{ c.fit }}%</span></div><div style="font-size:10.5px; line-height:1.5; color:#888;">{{ c.why }}</div></div>
+                    </div>
+                    <div style="padding:18px 22px; display:flex; flex-direction:column; gap:12px; background:#080808;">
+                      <div style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#4ade80;">Vorschlag für die Welt</div>
+                      <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13.5px; line-height:1.3; letter-spacing:.04em; text-transform:uppercase; color:#e5e5e5;">{{ c.dTitle }}</div>
+                      <div style="display:flex; gap:6px; flex-wrap:wrap;"><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 6px; border:1px solid #333; color:#a0a0a0;">Ort · {{ c.zone }}</span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 6px; border:1px solid #333; color:#a0a0a0;">Vektor · {{ c.lens }}</span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:2px 6px; border:1px solid #333; color:#a0a0a0;">{{ c.type }} · Wucht {{ c.impact }}</span></div>
+                      <div style="display:flex; align-items:center; gap:6px;"><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; margin-right:4px;">Zeugen</span><sc-for list="{{ c.wits }}" as="w" hint-placeholder-count="3"><span title="{{ w.name }}" style="{{ w.avStyle }}">{{ w.ini }}</span></sc-for></div>
+                      <div style="display:flex; gap:8px; margin-top:auto; flex-wrap:wrap;">
+                        <span class="btn-amber" onClick="{{ c.transform }}" style="padding:9px 14px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:3px 3px 0 #000;">Transformieren →</span>
+                        <span class="btn-ghost" onClick="{{ c.back }}" style="padding:9px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#888; border:1px solid #333;">← Sichtung</span>
+                        <span class="btn-ghost" onClick="{{ c.drop }}" style="padding:9px 10px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; border:1px solid #2a2a2a;">Verwerfen</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <sc-if value="{{ bInEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:60px; text-align:center; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:14px; color:#555;">Der Eingang ist leer. Die Sichtung und die Abonnements füllen ihn zum nächsten Zyklus.</div></sc-if>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; padding:12px 24px; border-top:1px solid #222; background:#0d0d0d; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">
+            <span>Transformieren öffnet den Schmelztiegel · danach Quarantäne</span><span style="color:#333;">·</span><span>Nicht transformierte Signale verfallen nach 48 h</span>
+            <span class="btn-ghost" onClick="{{ bEnlargeSichtung }}" style="margin-left:auto; padding:8px 14px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">Zur Sichtung · {{ bStoryCount }} warten</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ── Modals (BaseModal: Backdrop-Fade + modal-enter) ── -->
+      <sc-if value="{{ bModalOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ bClose }}" style="position:absolute; inset:0; z-index:50; background:rgba(0,0,0,.6); display:flex; align-items:flex-start; justify-content:center; padding-top:120px; animation:fade-in .2s ease both;">
+
+        <sc-if value="{{ bIsCrucible }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ bStop }}" style="width:1000px; background:#111; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">{{ bMTitle }}</span>
+            <span class="x-close" onClick="{{ bClose }}" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:14px; padding:11px 24px; border-bottom:1px solid #222; font-size:9.5px; letter-spacing:2px; text-transform:uppercase;">
+            <span style="color:#e5e5e5;">① Signal</span><span style="{{ bArrow1 }}">▸▸▸</span><span style="color:#f59e0b;">② Linse</span><span style="{{ bArrow2 }}">▸▸▸</span><span style="color:{{ bStep3Color }};">③ Welt</span>
+            <span style="margin-left:auto; color:#666;">{{ bM.src }} · <span style="color:{{ bM.catColor }};">◈ {{ bM.arch }}</span> · {{ bM.mag }}</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 4px 1fr; min-height:260px;">
+            <div style="padding:18px 22px;">
+              <div style="font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#666; margin-bottom:10px;">Wirklichkeit</div>
+              <div style="position:relative; padding:18px 18px 12px; background:#161410; border:1px solid #2a2a2a; box-shadow:2px 3px 0 #1a1a1a;">
+                <span style="position:absolute; top:0; left:0; right:0; height:3px; background:#e5e5e5; opacity:.7;"></span>
+                <div style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:18px; line-height:1.25; color:#e5e5e5; margin-bottom:8px; text-wrap:pretty;">{{ bM.h }}</div>
+                <div style="font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.65; color:#a0a0a0; text-wrap:pretty;">{{ bM.ab }}</div>
+                <div style="display:flex; gap:6px; align-items:baseline; margin-top:10px; padding-top:8px; border-top:1px solid #2a2a2a; font-family:'Spectral',Georgia,serif; font-style:italic; font-size:11px; color:#666;">{{ bM.by }}<span style="font-style:normal; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888;">{{ bM.src }}</span><a href="#1b" style="margin-left:auto; font-style:normal; font-size:10px; color:#888; text-decoration:underline; text-underline-offset:2px;">Quelle öffnen ↗</a></div>
+              </div>
+            </div>
+            <div style="position:relative; background:{{ bDividerBg }}; overflow:hidden;">
+              <sc-if value="{{ bTyping }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:-2px; top:-40px; width:8px; height:60px; background:#4ade80; box-shadow:0 0 12px #4ade80, 0 0 28px rgba(74,222,128,.6); animation:scan-sweep-v 1.6s ease-in-out infinite;"></span></sc-if>
+            </div>
+            <div style="padding:18px 22px;">
+              <div style="display:flex; align-items:center; gap:10px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#4ade80; margin-bottom:10px;"><span>Welt · {{ bLensZone }} · {{ bLensVec }}</span><span style="{{ bWorkBadge }}">{{ bWorkLabel }}</span></div>
+              <div style="position:relative; padding:14px; background:#070907; border:1px solid {{ bOutBorder }}; font-family:'Courier New',monospace; font-size:13px; line-height:1.65; min-height:190px; color:#e5e5e5;">
+                <span style="position:absolute; inset:0; background:repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(74,222,128,.035) 3px, rgba(74,222,128,.035) 4px); pointer-events:none;"></span>
+                <sc-if value="{{ bTyping }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; top:0; left:0; right:0; height:2px; overflow:hidden; background:#1f3a26;"><span style="display:block; width:30%; height:100%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:loading-bar 1.4s ease-in-out infinite;"></span></span></sc-if>
+                <sc-if value="{{ bReading }}" hint-placeholder-val="{{ false }}">
+                <div style="position:relative; display:flex; flex-direction:column; gap:7px; padding-top:4px;">
+                  <sc-for list="{{ bSteps }}" as="s" hint-placeholder-count="5"><div style="{{ s.style }}"><span style="width:14px; display:inline-block;">{{ s.mark }}</span><span>{{ s.label }}</span><span style="margin-left:auto; color:#4ade80; opacity:.6;">{{ s.ms }}</span></div></sc-for>
+                </div>
+                </sc-if>
+                <span contenteditable="{{ bEditable }}" style="position:relative; white-space:pre-wrap; outline:none; display:block;">{{ bTypeText }}</span><sc-if value="{{ bTyping }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block; width:2px; height:1em; background:#4ade80; vertical-align:text-bottom; animation:cursor .8s steps(1) infinite;"></span></sc-if>
+              </div>
+            </div>
+          </div>
+          <div style="padding:14px 24px; border-top:1px solid #222; display:grid; grid-template-columns:80px 1fr; row-gap:10px; column-gap:14px; align-items:center;">
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Ort</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;"><sc-for list="{{ bMZones }}" as="z" hint-placeholder-count="5"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Vektor</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;"><sc-for list="{{ bMVecs }}" as="z" hint-placeholder-count="5"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Tonlage</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;"><sc-for list="{{ bMTones }}" as="z" hint-placeholder-count="4"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Typ · Wucht</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"><sc-for list="{{ bMTypes }}" as="z" hint-placeholder-count="6"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for><span style="width:1px; height:22px; background:#333; margin:0 6px;"></span><span style="display:flex; gap:3px; align-items:flex-end; height:22px;"><sc-for list="{{ bMImpactSegs }}" as="s" hint-placeholder-count="10"><span onClick="{{ s.go }}" style="{{ s.style }}"></span></sc-for></span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; color:#f59e0b;">{{ bMImpact }}<span style="color:#555;">/10</span></span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">{{ bMImpactWord }} · ändert nur die Integration, nicht den Text</span></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Reaktionen</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"><span class="chip" onClick="{{ bMReactToggle }}" style="{{ bMReactStyle }}">{{ bMReactLabel }}</span><sc-for list="{{ bMReactN }}" as="z" hint-placeholder-count="3"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">{{ bMReactNote }}</span></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Zeugen</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"><sc-for list="{{ bMWits }}" as="w" hint-placeholder-count="3"><span class="chip" onClick="{{ w.go }}" style="{{ w.style }}"><span style="{{ w.avStyle }}">{{ w.ini }}</span><span style="text-transform:none; letter-spacing:.5px; font-size:11px;">{{ w.name }}</span></span></sc-for><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">wer im Text zu Wort kommt</span></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Freiheit</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;"><sc-for list="{{ bMFree }}" as="z" hint-placeholder-count="3"><span class="chip" onClick="{{ z.go }}" style="{{ z.style }}">{{ z.name }}</span></sc-for><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">{{ bFreeNote }}</span></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Anweisung</span>
+            <div contenteditable="true" onInput="{{ bInstrInput }}" style="min-height:34px; padding:8px 10px; border:1px solid #333; background:#0a0a0a; font-family:'Spectral',Georgia,serif; font-size:13px; line-height:1.5; color:#a0a0a0; outline:none;">{{ bInstrPlaceholder }}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; padding:10px 24px; border-top:1px solid #222; flex-wrap:wrap;">
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">Varianten</span>
+            <sc-for list="{{ bVariants }}" as="v" hint-placeholder-count="1"><span class="chip" onClick="{{ v.go }}" style="{{ v.style }}">{{ v.label }}</span></sc-for>
+            <span class="btn-ghost" onClick="{{ bReroll }}" style="{{ bRerollStyle }}">↻ Neu würfeln</span>
+            <span class="chip" onClick="{{ bProtoToggle }}" style="margin-left:auto; {{ bProtoStyle }}">{{ bProtoMark }} Protokoll</span>
+          </div>
+          <sc-if value="{{ bProto }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 24px 14px; border-top:1px solid #222; background:#060606; font-family:'Courier New',monospace; font-size:11px; line-height:1.7; color:#a0a0a0; animation:rise .25s ease both;">
+            <sc-for list="{{ bProtoLines }}" as="l" hint-placeholder-count="6"><div style="display:grid; grid-template-columns:120px 1fr; gap:14px;"><span style="color:#666; letter-spacing:1px; text-transform:uppercase; font-size:9.5px; padding-top:2px;">{{ l.k }}</span><span style="color:{{ l.c }};">{{ l.v }}</span></div></sc-for>
+          </div>
+          </sc-if>
+          <div style="display:flex; align-items:center; gap:12px; padding:14px 24px; border-top:1px solid #222; background:#0d0d0d;">
+            <span style="font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#666;">{{ bTypeState }}</span>
+            <span class="btn-ghost" onClick="{{ bClose }}" style="margin-left:auto; padding:10px 16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">Verwerfen</span>
+            <span class="btn-amber" onClick="{{ bConfirmCrucible }}" style="{{ bConfirmStyle }}">{{ bConfirmLabel }}</span>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ bIsResModal }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ bStop }}" style="width:680px; background:#111; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">Resonanz auslösen · <span style="color:{{ bM.catColor }};">◈ {{ bM.arch }}</span></span>
+            <span class="x-close" onClick="{{ bClose }}" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="padding:22px 24px; display:flex; flex-direction:column; gap:16px;">
+            <div style="position:relative; background:#0a0a08; border:1px solid #3d3200; padding:18px 20px;">
+              <span style="position:absolute; top:-1px; left:-1px; width:10px; height:10px; border-top:2px solid #f59e0b; border-left:2px solid #f59e0b;"></span><span style="position:absolute; top:-1px; right:-1px; width:10px; height:10px; border-top:2px solid #f59e0b; border-right:2px solid #f59e0b;"></span><span style="position:absolute; bottom:-1px; left:-1px; width:10px; height:10px; border-bottom:2px solid #f59e0b; border-left:2px solid #f59e0b;"></span><span style="position:absolute; bottom:-1px; right:-1px; width:10px; height:10px; border-bottom:2px solid #f59e0b; border-right:2px solid #f59e0b;"></span>
+              <div style="font-family:'Courier New',monospace; font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#a68a2e; margin-bottom:8px;">Bureau of Substrate Monitoring · Depesche {{ bM.no }}</div>
+              <div style="font-family:'Courier New',monospace; font-size:12.5px; line-height:1.7; color:#f5c542; text-wrap:pretty;">{{ bM.dispatch }}</div>
+            </div>
+            <div style="border:1px solid #222;">
+              <sc-for list="{{ bM.worlds }}" as="w" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:180px 1fr 150px; gap:14px; align-items:center; padding:7px 12px; border-bottom:1px solid #1a1a1a; background:{{ w.bg }};"><span style="font-size:10.5px; color:{{ w.nameColor }};">{{ w.n }}</span><span style="display:block; height:6px; background:#161616;"><span style="{{ w.bar }}"></span></span><span style="font-family:'Courier New',monospace; font-size:11px; color:{{ w.effColor }}; text-align:right; white-space:nowrap;">{{ w.mag }} × {{ w.sus }} = <b>{{ w.eff }}</b></span></div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:14px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#888;"><span>Trifft <b style="color:#f59e0b;">{{ bMHit }}</b> von 6 Welten</span><span style="color:#333;">·</span><span>in 4 h</span><span style="color:#333;">·</span><span style="color:#ef4444;">nicht rückgängig</span></div>
+          </div>
+          <div style="padding:14px 24px; border-top:1px solid #222; background:#0d0d0d;">
+            <div class="{{ bHoldClass }}" onMouseDown="{{ bHoldStart }}" onMouseUp="{{ bHoldEnd }}" onMouseLeave="{{ bHoldEnd }}" style="display:flex; align-items:center; justify-content:center; padding:14px; font-family:'Courier New',monospace; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000;"><span class="fill"></span><span style="position:relative;">{{ bHoldLabel }}</span></div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ bIsFlagModal }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ bStop }}" style="width:560px; background:#111; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">Dem Bureau melden</span>
+            <span class="x-close" onClick="{{ bClose }}" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="padding:22px 24px; display:flex; flex-direction:column; gap:14px;">
+            <div style="font-family:'Spectral',Georgia,serif; font-weight:600; font-size:17px; line-height:1.3; color:#e5e5e5; text-wrap:pretty;">{{ bM.h }}</div>
+            <div style="display:flex; gap:12px; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:#888;"><span style="color:{{ bM.catColor }};">◈ {{ bM.arch }}</span><span>Magnitude {{ bM.mag }}</span><span>Für deine Welt: <b style="color:#e5e5e5;">{{ bM.myEff }}</b></span></div>
+            <div contenteditable="true" style="min-height:70px; padding:10px 12px; border:1px solid #333; background:#0a0a0a; font-family:'Spectral',Georgia,serif; font-size:13.5px; line-height:1.55; color:#a0a0a0; outline:none;">Begründung für das Bureau (optional) — warum sollte dieses Signal alle Welten treffen?</div>
+            <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; color:#666; line-height:1.5;">Das Bureau sichtet gemeldete Signale im nächsten Zyklus. Über Resonanz und Suszeptibilität entscheidet es allein; du wirst benachrichtigt.</div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; padding:14px 24px; border-top:1px solid #222; background:#0d0d0d;">
+            <span class="btn-ghost" onClick="{{ bClose }}" style="padding:10px 16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">Abbrechen</span>
+            <span class="btn-ghost" onClick="{{ bFlagGo }}" style="padding:10px 20px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#f5c542; background:#0a0a08; border:1px solid #a68a2e; box-shadow:4px 4px 0 #000;">◈ Melden →</span>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ bIsEchoModal }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ bStop }}" style="width:620px; background:#111; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">Echo auslösen · <span style="color:#3b82f6;">↗ Nachbarwelt</span></span>
+            <span class="x-close" onClick="{{ bClose }}" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="padding:22px 24px; display:grid; grid-template-columns:100px 1fr; row-gap:14px; column-gap:14px; align-items:start;">
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; padding-top:4px;">Quelle</span>
+            <div style="font-family:'Courier New',monospace; font-weight:700; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:#e5e5e5;">{{ bM.dTitle }}</div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; padding-top:7px;">Ziel</span>
+            <div style="display:flex; flex-direction:column; gap:6px;"><sc-for list="{{ bEchoTargets }}" as="t" hint-placeholder-count="2"><div class="chip" onClick="{{ t.go }}" style="{{ t.style }}"><span style="display:flex; flex-direction:column; gap:2px;"><span style="font-size:11px; letter-spacing:.5px; text-transform:none;">{{ t.name }}</span><span style="font-size:9px; letter-spacing:1px; color:#888;">{{ t.sub }}</span></span><span style="margin-left:auto; font-family:'Courier New',monospace; font-weight:700; font-size:12px;">{{ t.eff }}</span></div></sc-for></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; padding-top:7px;">Vektor</span>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;"><sc-for list="{{ bEchoVecs }}" as="v" hint-placeholder-count="5"><span class="chip" onClick="{{ v.go }}" style="{{ v.style }}">{{ v.name }}</span></sc-for></div>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888; padding-top:2px;">Stärke</span>
+            <div style="display:flex; align-items:center; gap:12px;"><span style="display:flex; gap:3px; align-items:flex-end; height:26px;"><sc-for list="{{ bEchoSegs }}" as="s" hint-placeholder-count="10"><span onClick="{{ s.go }}" style="{{ s.style }}"></span></sc-for></span><span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#3b82f6;">{{ bEchoStr }}<span style="color:#555;">0 %</span></span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555;">{{ bEchoNote }}</span></div>
+            <span></span>
+            <div style="font-family:'Spectral',Georgia,serif; font-style:italic; font-size:12.5px; line-height:1.5; color:#666;">Das Echo kommt als Signal im Eingang der Zielwelt an — dort entscheidet deren Architekt über die Linse.</div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; padding:14px 24px; border-top:1px solid #222; background:#0d0d0d;">
+            <span class="btn-ghost" onClick="{{ bClose }}" style="padding:10px 16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a0a0a0; border:1px solid #333;">Abbrechen</span>
+            <span class="btn-ghost" onClick="{{ bEchoGo }}" style="padding:10px 20px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#e5e5e5; background:#0b1a2e; border:1px solid #3b82f6; box-shadow:4px 4px 0 #000;">↗ Echo auslösen</span>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ bIsLogModal }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ bStop }}" style="width:1200px; background:#111; border:1px solid #333; box-shadow:8px 8px 0 #000; color:#e5e5e5; animation:modal-enter .2s ease-out both; display:flex; flex-direction:column; max-height:calc(100% - 100px);">
+          <div style="display:flex; align-items:center; gap:14px; padding:14px 24px; background:#0d0d0d; border-bottom:2px solid #333;">
+            <span style="font-family:'Courier New',monospace; font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase;">Scan-Log</span>
+            <span style="font-size:9.5px; letter-spacing:2px; text-transform:uppercase; color:#888;">alle gescannten Einträge · Zyklus 02:32 · {{ bLogCount }} Einträge</span>
+            <span class="x-close" onClick="{{ bClose }}" style="margin-left:auto; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:16px; color:#e5e5e5;">✕</span>
+          </div>
+          <div style="overflow:auto; min-height:0;">
+            <div style="display:grid; grid-template-columns:90px 1fr 170px 110px 90px 120px; gap:14px; padding:8px 24px; border-bottom:1px solid #222; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#666; position:sticky; top:0; background:#111;"><span>Quelle</span><span>Titel</span><span>Kategorie</span><span>Magnitude</span><span>Gescannt</span><span>Ergebnis</span></div>
+            <sc-for list="{{ bLog }}" as="l" hint-placeholder-count="12">
+              <div style="display:grid; grid-template-columns:90px 1fr 170px 110px 90px 120px; gap:14px; padding:9px 24px; border-bottom:1px solid #1a1a1a; font-size:11px; align-items:center;"><span style="color:#888;">{{ l.src }}</span><span style="font-family:'Spectral',Georgia,serif; font-size:13px; color:#e5e5e5; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ l.h }}</span><span style="font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:{{ l.catColor }};">{{ l.cat }}</span><span style="font-family:'Courier New',monospace; color:{{ l.magColor }};">{{ l.mag }}</span><span style="color:#666;">{{ l.t }}</span><span style="font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:{{ l.stColor }};">{{ l.st }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- ── Toast (Depesche, dispatch-in) ── -->
+      <sc-if value="{{ bToastOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute; right:24px; bottom:24px; z-index:60; width:400px; background:#111; border:1px solid #333; border-top:2px solid #f59e0b; box-shadow:4px 4px 0 #000; animation:dispatch-in .45s cubic-bezier(.22,1,.36,1) both;">
+        <div style="padding:12px 16px 10px;">
+          <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#f59e0b; margin-bottom:5px;">Depesche · Schleuse</div>
+          <div style="font-family:'Spectral',Georgia,serif; font-size:13.5px; line-height:1.5; color:#e5e5e5; text-wrap:pretty;">{{ bToastText }}</div>
+        </div>
+        <div style="height:2px; background:#f59e0b; transform-origin:left; animation:progress-decay 3.8s linear forwards;"></div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+<!-- ═══════════ LOGIK (Auszug) ═══════════ -->
+<script type="text/plain" data-note="Auszug aus class Component extends DCLogic">
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.CAT = {
+      economic_crisis:{ de:'Wirtschaftskrise', sig:'economic_tremor', sigDe:'Ökonomisches Beben', arch:'Der Turm', color:'#f59e0b', line:'Das Fundament war ein Konsens. Der Konsens hat das Gebäude verlassen.', types:'Handel · Krise · Sozial', disp:'verzeichneten die Instrumente einen Riss in der Statik des Substrats. Was trug, trägt nicht mehr; die Bücher stimmen noch, nur die Gebäude nicht.' },
+      military_conflict:{ de:'Militärkonflikt', sig:'conflict_wave', sigDe:'Konfliktwelle', arch:'Der Schatten', color:'#ef4444', line:'Etwas, das Stille übte, beschließt, nicht mehr zu üben.', types:'Militär · Intrige · Sozial', disp:'registrierten die Instrumente eine Bewegung, die vorher stillhielt. Die Messkurve zeigt keine Absicht, aber eine Richtung.' },
+      pandemic:{ de:'Pandemie', sig:'biological_tide', sigDe:'Biologische Flut', arch:'Die Verschlingende Mutter', color:'#a78bfa', line:'Die Wärme ist vollkommen. Man hört auf, vollkommene Wärme zu hinterfragen. Das ist der Mechanismus.', types:'Sozial · Krise · Eldritch', disp:'meldeten die Instrumente eine Zunahme der Wärme in der biologischen Schicht. Nichts wehrt sich. Das ist die Anomalie.' },
+      natural_disaster:{ de:'Naturkatastrophe', sig:'elemental_surge', sigDe:'Elementare Woge', arch:'Die Sintflut', color:'#3b82f6', line:'Der Grundwasserspiegel hat ein längeres Gedächtnis als die Stadtrechte. Er wartet, bis der Pachtvertrag ausläuft.', types:'Krise · Nautik · Entdeckung', disp:'verzeichneten die Instrumente eine Verschiebung in der tektonischen Schicht des Substrats. Die Wasseradern unter den Städten haben sich erinnert.' },
+      political_upheaval:{ de:'Politischer Umbruch', sig:'authority_fracture', sigDe:'Autoritätsbruch', arch:'Der Umsturz', color:'#dc2626', line:'Der Thron ist besetzt. Er war gestern besetzt. Das sind nicht dieselben Sätze.', types:'Intrige · Militär · Sozial', disp:'registrierten die Instrumente eine Verschiebung dessen, was als Ordnung gelesen wird. Die Siegel sind intakt; was sie siegeln, nicht mehr.' },
+      tech_breakthrough:{ de:'Tech-Durchbruch', sig:'innovation_spark', sigDe:'Innovationsfunke', arch:'Der Prometheus', color:'#4ade80', line:'Das Instrument misst einwandfrei. Was es misst, hat noch keinen Namen. Das ist entweder Fortschritt oder ein Beweis.', types:'Entdeckung · Handel · Intrige', disp:'zeigten die Instrumente einen Ausschlag, den keine Skala vorgesehen hatte. Die Techniker haben eine neue Skala gezeichnet und sind nun unruhig.' },
+      cultural_shift:{ de:'Kulturwandel', sig:'consciousness_drift', sigDe:'Bewusstseinsdrift', arch:'Das Erwachen', color:'#e5e5e5', line:'Ein Gedanke kommt an, ohne geschickt worden zu sein. Er hat das Gewicht einer Erinnerung und die Textur einer Vorahnung.', types:'Sozial · Religiös · Entdeckung', disp:'verzeichneten die Instrumente eine Drift, die nicht von einer Quelle ausgeht, sondern von vielen zugleich. Man nennt das noch nicht Stimmung.' },
+      environmental_disaster:{ de:'Umweltkatastrophe', sig:'decay_bloom', sigDe:'Zerfallsblüte', arch:'Die Entropie', color:'#22c55e', line:'Der Raum enthält noch Unterscheidungen. Wände, Boden, Decke. Die Kategorien verlieren das Interesse.', types:'Krise · Eldritch · Sozial', disp:'meldeten die Instrumente eine langsame Auflösung der Ränder in der organischen Schicht. Nichts bricht. Alles wird weniger deutlich.' },
+    };
+    this.WORLDS = [
+      { n:'The Chitinous Mandate', short:'Mandate', me:true, sus:{ economic_tremor:1.1, conflict_wave:0.9, biological_tide:1.6, elemental_surge:0.6, authority_fracture:0.9, innovation_spark:0.7, consciousness_drift:0.8, decay_bloom:1.3 } },
+      { n:'Velgarien', short:'Velgarien', sus:{ economic_tremor:1.2, conflict_wave:1.5, biological_tide:0.8, elemental_surge:0.6, authority_fracture:1.8, innovation_spark:0.5, consciousness_drift:0.4, decay_bloom:1.0 } },
+      { n:'The Gaslit Reach', short:'Gaslit', sus:{ economic_tremor:0.9, conflict_wave:0.8, biological_tide:1.5, elemental_surge:1.0, authority_fracture:0.7, innovation_spark:1.0, consciousness_drift:1.4, decay_bloom:1.1 } },
+      { n:'Station Null', short:'Station Null', sus:{ economic_tremor:0.7, conflict_wave:1.0, biological_tide:1.0, elemental_surge:0.5, authority_fracture:1.0, innovation_spark:1.6, consciousness_drift:1.0, decay_bloom:1.5 } },
+      { n:'Speranza', short:'Speranza', sus:{ economic_tremor:1.0, conflict_wave:1.4, biological_tide:1.0, elemental_surge:1.8, authority_fracture:1.0, innovation_spark:1.0, consciousness_drift:0.7, decay_bloom:0.8 } },
+      { n:'Cité des Dames', short:'Cité', sus:{ economic_tremor:0.6, conflict_wave:1.0, biological_tide:1.0, elemental_surge:0.5, authority_fracture:1.3, innovation_spark:1.0, consciousness_drift:1.8, decay_bloom:1.0 } },
+    ];
+    this.SENSORS = [
+      { n:'USGS', title:'USGS Erdbeben · strukturiert · 15 min', kind:'strukturiert', on:true, hits:14, last:'vor 4 min' },
+      { n:'NOAA', title:'NOAA Wetterwarnungen · strukturiert', kind:'strukturiert', on:true, hits:3, last:'vor 12 min' },
+      { n:'EONET', title:'NASA EONET · strukturiert', kind:'strukturiert', on:true, hits:1, last:'vor 28 min' },
+      { n:'GDACS', title:'GDACS Katastrophen · strukturiert', kind:'strukturiert', on:true, hits:5, last:'vor 30 min' },
+      { n:'disease.sh', title:'disease.sh · strukturiert', kind:'strukturiert', on:true, hits:0, last:'vor 58 min' },
+      { n:'WHO', title:'WHO Disease Outbreak News · semi', kind:'semi', on:true, hits:2, last:'vor 1 h' },
+      { n:'HN', title:'Hacker News · semi', kind:'semi', on:true, hits:2, last:'vor 5 h' },
+      { n:'Guardian', title:'The Guardian · LLM-klassifiziert', kind:'LLM', on:true, hits:12, last:'vor 5 h' },
+      { n:'NewsAPI', title:'NewsAPI · kein Schlüssel', kind:'kein Key', on:false, hits:0, last:'deaktiviert' },
+      { n:'GDELT', title:'GDELT DOC 2.0 · LLM-klassifiziert', kind:'LLM', on:true, hits:8, last:'vor 5 h' },
+      { n:'Echos', title:'Echos aus Nachbarwelten · intern', kind:'intern', on:true, hits:1, last:'vor 4 h' },
+      { n:'Reddit', title:'Reddit · sozial · nur Verstärkung (Tempo, Reichweite), kein eigener Anker', kind:'sozial', on:true, hits:9, last:'vor 2 min' },
+      { n:'Bluesky', title:'Bluesky · sozial · nur Verstärkung, kein eigener Anker', kind:'sozial', on:true, hits:7, last:'vor 1 min' },
+    ];
+    this.SRCS = {
+      s1:[['USGS',1],['GDACS',1],['Reddit',210,'340/h'],['Bluesky',95,'120/h']], s2:[['Guardian',2],['Reuters',1],['Reddit',34,'12/h']], s3:[['WHO',1],['Guardian',1],['Bluesky',40,'28/h']],
+      s4:[['Guardian',3],['NewsAPI',9],['GDELT',41],['Reddit',120,'60/h']], s5:[['GDELT',212],['Guardian',4],['Reddit',880,'1.2k/h'],['Bluesky',430,'700/h']], s6:[['Reuters',1],['GDELT',18],['Reddit',22]],
+      s7:[['Guardian',2],['GDELT',33],['Bluesky',260,'190/h']], s8:[['HN',1],['Reddit',310,'85/h'],['Bluesky',70]], s9:[['AP',1],['GDELT',4]], s10:[['Echos',1]], s11:[['Guardian',1],['Reddit',15]],
+      s12:[['Guardian',2],['NOAA',1],['GDELT',9],['Reddit',44]], s13:[['GDELT',67],['Reuters',2],['Bluesky',120,'95/h']], s14:[['Reuters',1],['HN',1],['Reddit',56]], s15:[['Guardian',1],['Bluesky',9]],
+      s16:[['NOAA',1],['GDACS',1],['Reddit',140,'210/h']], s17:[['HN',1],['Reddit',420,'260/h'],['Bluesky',180,'110/h']] };
+    this.NOISE = [
+      { h:'„the vibes are off today"', src:'Bluesky ×3.1k · ↑ 900/h', why:'kein Nachrichtenanker · Stimmung ohne Ereignis' },
+      { h:'r/collapse — Weekly Megathread', src:'Reddit ×1.4k', why:'Sammelthread · kein einzelnes Ereignis' },
+      { h:'#Halbfinale · Elfmeterschießen', src:'Bluesky ×12k · ↑ 4k/h', why:'Kategorie Sport ausgeschlossen' },
+      { h:'Product launch livestream thread', src:'Reddit ×620 · ↑ 300/h', why:'Werbung · kein Substrat-Ereignis' },
+    ];
+    this.AG = {
+      ovis:{n:'Dun Ovis',r:'Brutwärter',z:'Unterwabe'}, ysold:{n:'Ysold Crane',r:'Ketzer-Imkerin',z:'Unterwabe',img:'assets/p-fenn.png'},
+      myrr:{n:'Sela Myrr',r:'Chitin-Schmugglerin',z:'Wachs-Börse'}, k9:{n:'Ledger-Drone K-9',r:'Zensus-Drohne',z:'Ledger-Distrikt'},
+      vosk:{n:'Praetor Vosk',r:'Molt-Registrator',z:'Obere Waben',img:'assets/p-wolf.png'}, aquila:{n:'Sister Aquila',r:'Pheromon-Schreiberin',z:'Pheromon-Viertel',img:'assets/p-voss.png'},
+      marn:{n:'Marn Tell',r:'Panzer-Prüfer',z:'Ledger-Distrikt'}, cassar:{n:'Old Cassar',r:'Magistrat a.D.',z:'Pheromon-Viertel'} };
+    this.D = [
+      { id:'s1', t:'07:51', src:'USGS', kind:'strukturiert', cat:'natural_disaster', mag:0.55, by:'Feed · vor 9 min', h:'M 6.8 — 40 km SSE of a coastal city, depth 12 km, alert orange', ab:'Automatischer Eintrag. Richter 6.8 → Magnitude 0.45, Alarmstufe orange +0.10. Tsunami-Flag 0. Kein Modellaufruf nötig.', clsNote:'deterministisch (Richter → Magnitude)',
+        dTitle:'Die Unterwabe bebt: drei Gänge eingestürzt', type:'Katastrophe', impact:8, zone:'Unterwabe', lens:'Architektur', tags:['Beben','Gänge'], wit:['ovis','ysold','k9'], dBody:'Kurz vor der Morgenhäutung schüttelte sich die Wabe. Drei Gänge unter den Brutgewölben sind zu; die Zensus-Drohne zählt, was noch antwortet.', why:'Sektor Naturkatastrophe ↔ Unterwabe (Gewölbe, tief) · Vektor Architektur · strukturiertes Signal', fit:83 },
+      { id:'s2', t:'07:42', src:'Guardian', kind:'LLM', cat:'environmental_disaster', mag:0.30, by:'Guardian Science · vor 2 h', h:'Rare fungus outbreak threatens honeybee colonies across southern Europe', ab:'Beekeepers in France, Spain and Italy report losses of up to 30 % as a chalkbrood variant spreads faster than any previous strain. Agricultural ministries have ordered hive inspections.', clsNote:'Modell: Signifikanz 3 → 0.30',
+        dTitle:'Weißfäule in den Brutgewölben', type:'Krise', impact:7, zone:'Unterwabe', lens:'Krankheit', tags:['Brut','Seuche','Wachs'], wit:['ovis','ysold','myrr','k9'], dBody:'Die Brutwärter der Unterwabe melden seit drei Häutungen einen kalkigen Belag auf den Larvenkammern. Die Molt-Registratur hat die Gewölbe zur Zählung gesperrt; wer hineingeht, kommt mit weißen Händen heraus.', why:'Sektor Umwelt ↔ Brutgewölbe (Wohnraum, 116/120) · Ysold Crane ist Imkerin · Vektor Krankheit offen', fit:94 },
+      { id:'s3', t:'07:20', src:'WHO', kind:'semi', cat:'pandemic', mag:0.40, by:'Disease Outbreak News · vor 3 h', h:'Disease Outbreak News: Marburg virus disease — 14 confirmed cases in two districts', ab:'Kategorie steht fest (Pandemie). Das Modell schätzt nur die Schwere aus Titel und Zusammenfassung: regional, steigend → 0.40.', clsNote:'Kategorie fix, Magnitude per Modell',
+        dTitle:'Die Quarantäne-Waben füllen sich', type:'Krise', impact:6, zone:'Unterwabe', lens:'Krankheit', tags:['Quarantäne','Fieber'], wit:['ovis','ysold'], dBody:'Neun von dreißig Kammern belegt, sagt die Zählung. Gestern waren es vier. Niemand nennt es beim Namen.', why:'Pandemie ↔ Quarantäne-Waben (Medizin, 9/30) · Vektor Krankheit', fit:71 },
+      { id:'s4', t:'07:15', src:'Guardian', kind:'LLM', cat:'economic_crisis', mag:0.30, by:'Guardian Business · vor 3 h', h:'Central bank raises rates for third time this year as inflation refuses to ease', ab:'Policymakers voted 7–2 for a quarter-point rise, warning that borrowing costs may stay elevated well into next year.', clsNote:'Modell: Signifikanz 3 → 0.30',
+        dTitle:'Die Rang-Spindel erhöht den Wachszins zum dritten Mal', type:'Dekret', impact:5, zone:'Wachs-Börse', lens:'Handel', tags:['Wachszins','Spindel'], wit:['myrr','marn','k9'], dBody:'Sieben Registratoren gegen zwei: Der Zins auf geliehenes Wachs steigt um ein Viertelkorn. Die Händlerinnen der Börse sagen, man werde es im nächsten Zyklus in den Fühlern spüren.', why:'Wirtschaft ↔ Wachs-Börse (Markt) · Sela Myrr handelt · Vektor Handel', fit:81 },
+      { id:'s5', t:'06:58', src:'GDELT', kind:'LLM', cat:'political_upheaval', mag:0.60, by:'GDELT · tone −7.2 · vor 4 h', h:'Hundreds of thousands fill the capital as parliament suspends the constitution', ab:'GDELT-Treffer auf „mass protest OR regime change", 212 Artikel in 6 h, Tonwert −7.2. Modell: Signifikanz 6 → 0.60.', clsNote:'Modell: Signifikanz 6 → 0.60',
+        dTitle:'Die Häutungshalle bleibt zu — auf unbestimmte Zeit', type:'Dekret', impact:8, zone:'Obere Waben', lens:'Sprache', tags:['Halle','Dekret'], wit:['vosk','cassar'], dBody:'Die Registratur hat die Ränge der Halle versiegelt. Wer sich häuten will, tut es zu Hause. Praetor Vosk hat unterschrieben; Old Cassar hat gefragt, wer ihn dazu ermächtigt hat.', why:'Politischer Umbruch ↔ Häutungshalle (Zivil, legendär) · Vektor Sprache', fit:77 },
+      { id:'s6', t:'06:50', src:'Reuters', kind:'LLM', cat:'economic_crisis', mag:0.35, by:'Reuters · vor 4 h', h:"Port workers' strike enters second week as freight backlog grows", ab:'Container ships are anchored offshore while unions and operators trade blame; retailers warn of empty shelves.', clsNote:'Modell: Signifikanz 3 → 0.35',
+        dTitle:'Die Trägerdrohnen legen die Fühler nieder', type:'Unruhe', impact:6, zone:'Wachs-Börse', lens:'Handel', tags:['Streik','Börse'], wit:['myrr','k9','marn'], dBody:'Zum zweiten Mal in Folge bleibt die Rampe der Wachs-Börse leer. Die Trägerdrohnen fordern eine zweite Ruhehäutung im Zyklus.', why:'Arbeit ↔ Wachs-Börse (58/60, überlastet) · Vektor Handel', fit:76 },
+      { id:'s7', t:'06:12', src:'Guardian', kind:'LLM', cat:'political_upheaval', mag:0.45, by:'Guardian Politics · vor 5 h', h:'Surveillance bill passes despite a week of street protests', ab:'The law grants agencies access to communications metadata without a warrant; civil-liberties groups vow to challenge it in court.', clsNote:'Modell: Signifikanz 4 → 0.45',
+        dTitle:'Das Archiv darf künftig jede Spur lesen', type:'Dekret', impact:8, zone:'Pheromon-Viertel', lens:'Sprache', tags:['Archiv','Dekret','Spur'], wit:['aquila','cassar','vosk'], dBody:'Per Dekret 0442 darf das Pheromon-Archiv jede Duftspur der Wabe erfassen, ohne den Träger zu befragen. Old Cassar nennt es das Ende des privaten Geruchs.', why:'Politik ↔ Pheromon-Archiv · Sister Aquila ist Schreiberin · Vektor Sprache', fit:88 },
+      { id:'s8', t:'05:44', src:'HN', kind:'semi', cat:'tech_breakthrough', mag:0.50, by:'Hacker News · 812 Punkte · vor 6 h', h:'Quantum error correction demonstrated below threshold on a 105-qubit device', ab:'Score 812, 640 Kommentare → hohe Basis. Modell bestätigt Kategorie Tech-Durchbruch, Signifikanz 5.', clsNote:'Score-Basis + Modell → 0.50',
+        dTitle:'Die Zensus-Drohnen zählen fehlerfrei — zum ersten Mal', type:'Entdeckung', impact:4, zone:'Ledger-Distrikt', lens:'Sprache', tags:['Zensus','Drohne'], wit:['k9','marn'], dBody:'K-9 hat eine Zählung abgeliefert, die mit sich selbst übereinstimmt. Marn Tell hat sie dreimal geprüft. Es ist unheimlich.', why:'Tech ↔ Ledger-Distrikt · K-9 ist Zensus-Drohne · Vektor Sprache', fit:69 },
+      { id:'s9', t:'05:40', src:'AP', kind:'LLM', cat:'cultural_shift', mag:0.15, below:true, by:'AP · vor 6 h', h:'Fire destroys a century of municipal records in overnight archive blaze', ab:'Firefighters contained the blaze by dawn, but officials say most paper records from 1890 to 1990 are lost.', clsNote:'Signifikanz 2 → 0.15 · unter Schwelle 0.20 — nur als lokales Ereignis',
+        dTitle:'Brand im Pheromon-Archiv: vierzig Häutungen Duftspur verloren', type:'Katastrophe', impact:9, zone:'Pheromon-Viertel', lens:'Architektur', tags:['Archiv','Feuer'], wit:['aquila','cassar'], dBody:'In der Nacht brannten die unteren Regale des Archivs. Was an Geruch darin lag, ist nun Rauch. Niemand weiß mehr, wer vor vierzig Häutungen wem versprochen hat.', why:'Welt ↔ Pheromon-Archiv · Vektor Architektur · hohe lokale Wucht, global unter Schwelle', fit:72 },
+      { id:'s10', t:'03:58', src:'Echo · Velgarien', kind:'intern', cat:'economic_crisis', mag:0.25, by:'Botschaft Rang-Spindel ⇄ Zollhaus · vor 4 h', h:'„Die Nebelmaut wird verdoppelt" — Ereignis aus Velgarien, Vektor Handel', ab:'Kein Sensor: ein Ereignis der Nachbarwelt, das über die Botschaft herüberblutet. Stärke nach Botschafts-Effektivität (72 %).', clsNote:'Echo · Bleed-Vektor Handel',
+        dTitle:'Die Spindel verdoppelt den Nebelzoll', type:'Echo', impact:5, zone:'Wachs-Börse', lens:'Handel', tags:['Echo','Zoll'], wit:['myrr','vosk'], dBody:'Was in Velgarien Nebel ist, ist hier Wachs: Die Rang-Spindel verlangt ab sofort den doppelten Zoll auf jedes Fass, das über die Botschaft kommt.', why:'Echo ↔ Botschaft Rang-Spindel · Vektor Handel', fit:66 },
+      { id:'s11', t:'gestern', src:'Guardian', kind:'LLM', cat:'cultural_shift', mag:0.20, imported:true, by:'Guardian Culture · gestern', h:'City festival returns after five-year hiatus with record crowds', ab:'Organisers counted more than 200 000 visitors on the opening night.', clsNote:'bereits eingebracht',
+        dTitle:'Die Häutungsfeier kehrt in die Obere Wabe zurück', type:'Fest', impact:3, zone:'Obere Waben', lens:'Traum', tags:['Fest'], wit:['vosk','ovis'], dBody:'Zum ersten Mal seit fünf Zyklen tanzt die Obere Wabe wieder unter der Halle.', why:'Kultur ↔ Häutungshalle', fit:64 },
+      { id:'s12', raw:true, t:'07:33', src:'Guardian', kind:'LLM', cat:'environmental_disaster', mag:0.35, by:'Guardian Environment · vor 2 h', h:'Third week of 40 °C heat; reservoirs fall to 20 % capacity', ab:'Water rationing begins in three provinces; farmers report crop losses.', clsNote:'Modell: Signifikanz 3 → 0.35', dTitle:'Das Wachs schmilzt in den oberen Rängen', type:'Krise', impact:5, zone:'Obere Waben', lens:'Architektur', tags:['Hitze','Wachs'], wit:['vosk'], dBody:'Die Ränge der Halle tropfen. Praetor Vosk lässt die oberen Kammern räumen.', why:'Umwelt ↔ Obere Waben (Halle) · Vektor Architektur', fit:62 },
+      { id:'s13', raw:true, t:'07:05', src:'GDELT', kind:'LLM', cat:'military_conflict', mag:0.50, by:'GDELT · tone −6.1 · vor 3 h', h:'Border skirmish leaves 12 dead; both sides mobilise reserves', ab:'67 Artikel in 3 h. Modell: Signifikanz 5 → 0.50.', clsNote:'Modell: Signifikanz 5 → 0.50', dTitle:'Die Panzer-Prüfer werden einberufen', type:'Unruhe', impact:6, zone:'Ledger-Distrikt', lens:'Sprache', tags:['Einberufung'], wit:['marn','k9'], dBody:'Marn Tell hat den Marschbefehl auf dem Tisch. Die Zählung wird warten müssen.', why:'Konflikt ↔ Ledger-Distrikt · Marn Tell ist Prüfer', fit:58 },
+      { id:'s14', raw:true, t:'06:40', src:'Reuters', kind:'LLM', cat:'economic_crisis', mag:0.30, by:'Reuters · vor 4 h', h:'Chipmaker warns of global shortage after fab fire halts production', ab:'Automotive and consumer electronics lines expected to idle within weeks.', clsNote:'Modell: Signifikanz 3 → 0.30', dTitle:'Kein Chitin mehr aus der Ostgrube', type:'Krise', impact:5, zone:'Wachs-Börse', lens:'Handel', tags:['Chitin','Grube'], wit:['myrr'], dBody:'Die Ostgrube liefert nicht. Sela Myrr hat plötzlich sehr viele Freunde.', why:'Wirtschaft ↔ Wachs-Börse · Vektor Handel', fit:66 },
+      { id:'s15', raw:true, t:'06:20', src:'Guardian', kind:'LLM', cat:'cultural_shift', mag:0.20, by:'Guardian Culture · vor 5 h', h:'Museum returns looted artefacts after decade-long dispute', ab:'Ceremony held in the capital; further returns are under negotiation.', clsNote:'Modell: Signifikanz 2 → 0.20', dTitle:'Das Archiv gibt die gestohlenen Spuren zurück', type:'Fest', impact:3, zone:'Pheromon-Viertel', lens:'Traum', tags:['Archiv','Rückgabe'], wit:['aquila','cassar'], dBody:'Vierzig Spuren, die nie hier hätten liegen dürfen, werden zurück in die Unterwabe getragen.', why:'Kultur ↔ Pheromon-Archiv · niedrige Wucht', fit:55 },
+      { id:'s16', raw:true, t:'07:48', src:'NOAA', kind:'strukturiert', cat:'natural_disaster', mag:0.60, by:'Feed · vor 12 min', h:'Hurricane warning: Category 3 landfall expected in 36 h', ab:'Automatischer Eintrag. Kategorie 3 → Magnitude 0.60. Kein Modellaufruf nötig.', clsNote:'deterministisch (Kategorie → Magnitude)', dTitle:'Sturmflut an der Rampe der Börse', type:'Katastrophe', impact:7, zone:'Wachs-Börse', lens:'Architektur', tags:['Sturm','Rampe'], wit:['myrr','k9'], dBody:'Die Rampe steht unter Wasser. Die Fässer treiben; die Zensus-Drohne zählt, was schwimmt.', why:'Naturkatastrophe ↔ Wachs-Börse · strukturiertes Signal', fit:70 },
+      { id:'s17', raw:true, t:'05:10', src:'HN', kind:'semi', cat:'tech_breakthrough', mag:0.35, by:'Hacker News · 640 Punkte · vor 7 h', h:'Open-source model matches frontier lab on reasoning benchmark', ab:'Score 640, 410 Kommentare. Modell: Signifikanz 3.', clsNote:'Score-Basis + Modell → 0.35', dTitle:'Eine Drohne ohne Registratur denkt mit', type:'Entdeckung', impact:4, zone:'Ledger-Distrikt', lens:'Sprache', tags:['Drohne'], wit:['k9'], dBody:'K-9 hat eine Schwester, die niemand gebaut hat. Sie zählt richtig.', why:'Tech ↔ Ledger-Distrikt · K-9', fit:52 },
+    ];
+    this.INCOMING = [
+      { id:'r1', cat:'natural_disaster', mag:0.55, etaH:3.7, eta:'3 h 40 min', src:'USGS · M 6.8', h:'M 6.8 — Küstenbeben, Alarmstufe orange', no:'SB-2026-0847', when:'vor 12 min', others:'Speranza 0.99 · Gaslit 0.55 · Station Null 0.28 · Velgarien 0.33 · Cité übersprungen' },
+      { id:'r2', cat:'economic_crisis', mag:0.30, etaH:9, eta:'9 h', src:'GDELT · Bankensturm', h:'Regionalbank schließt Schalter nach Sturm auf die Einlagen', no:'SB-2026-0844', when:'vor 3 h', others:'Velgarien 0.36 · Speranza 0.30 · Gaslit 0.27 · Station Null 0.21 · Cité übersprungen' },
+      { id:'r3', cat:'pandemic', mag:0.40, etaH:19, eta:'19 h', src:'WHO · Marburg', h:'Marburg-Virus — 14 bestätigte Fälle in zwei Distrikten', no:'SB-2026-0841', when:'vor 7 h', others:'Gaslit 0.60 · Velgarien 0.32 · Station Null 0.40 · Speranza 0.40 · Cité 0.40' },
+    ];
+    this.ZONES = [
+      { name:'Obere Waben', safe:78, mood:6, agents:2, bld:'Halle · Spindel', quiet:'Fest vor 9 T' },
+      { name:'Pheromon-Viertel', safe:66, mood:3, agents:2, bld:'Archiv', quiet:'still seit 14 T' },
+      { name:'Ledger-Distrikt', safe:71, mood:1, agents:2, bld:'—', quiet:'still seit 14 T' },
+      { name:'Unterwabe', safe:61, mood:-1, agents:2, bld:'Gewölbe · Quarantäne', quiet:'still seit 14 T · Laune −1' },
+      { name:'Wachs-Börse', safe:58, mood:4, agents:1, bld:'Börse', quiet:'still seit 14 T' },
+    ];
+    let s = 7; this.noise = Array.from({ length: 100 }, () => { s = (s * 9301 + 49297) % 233280; return s / 233280; });
+    this.state = {
+      aSel:1, aScope:'event', aZone:null, aVec:null, aTone:'Amtlich', aWit:{}, aImpact:null, aArch:null, aResMag:null, aDelay:'4 h', aGen:0, aGenText:'', aQueue:[], aPub:[], aHold:false, aLast:'',
+      bStages:{ s1:'q', s3:'q', s5:'q', s4:'in', s6:'in', s8:'in', s10:'in', s9:'in', s7:'ev', s11:'ev', s12:'raw', s13:'raw', s14:'raw', s15:'raw', s16:'raw', s17:'raw' }, bBusy:null,
+      bTriage:false, bTriageSort:'fit', bTriageMin:0, bTriageOff:{}, bTriageSel:{}, bNoiseOpen:false, bEnlarge:false, bEnlargeBy:'zone',
+      cKind:'sig', cZone:'Unterwabe', cSel:'s2', cResSel:'r1', cMag:7, cSus:{}, cHold:false, cDone:false,
+      roleOverride:null, aOwn:{ mandate:true, speranza:false }, aLockHint:false,
+      bModal:null, bLens:null, bLensById:{}, bTypeText:'', bTyping:false, bPhase:'done', bStep:0, bToast:null, bHold:false,
+      bSeed:0, bVariants:[], bVarIdx:0, bFree:'Ausgewogen', bWitOff:{}, bInstr:'', bProto:false,
+      bEchoes:[], bEcho:{ target:'Velgarien', vec:'Handel', str:7 },
+    };
+  }
+
+/* ── Helfer ── */
+  chip(on, color) {
+    color = color || '#f59e0b';
+    const amber = color === '#f59e0b';
+    return `display:inline-flex; align-items:center; gap:8px; padding:6px 11px; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; border:1px solid ${on ? color : '#333'}; color:${on ? (amber ? '#0a0a0a' : '#e5e5e5') : '#888'}; background:${on ? (amber ? '#f59e0b' : 'rgba(245,158,11,.12)') : 'transparent'};`;
+  }
+  av(k, size) {
+    const a = this.AG[k]; size = size || 26;
+    const bg = a.img ? `background-image:url('${a.img}'); background-size:cover; background-position:center top;` : 'background:#1a1a1a;';
+    return `display:inline-flex; align-items:center; justify-content:center; width:${size}px; height:${size}px; ${bg} border:1px solid #333; font-family:'Courier New',monospace; font-weight:700; font-size:10px; color:${a.img ? 'transparent' : '#a0a0a0'}; flex:0 0 auto;`;
+  }
+  ini(k) { return this.AG[k].n.split(' ').map(w => w[0]).join('').slice(0, 2); }
+  impactWord(n) { return n <= 3 ? 'Gerücht' : n <= 6 ? 'Aufruhr' : n <= 8 ? 'Erschütterung' : 'Umsturz'; }
+  kindStyle(k) { const c = { strukturiert:'#4ade80', semi:'#a78bfa', LLM:'#f59e0b', intern:'#3b82f6', sozial:'#a0a0a0', 'kein Key':'#ef4444' }[k] || '#888'; return `color:${c}; border:1px solid ${c}; padding:1px 5px;`; }
+  isSocial(n) { return n === 'Reddit' || n === 'Bluesky'; }
+  socialSum(id) { return (this.SRCS[id] || []).filter(s => this.isSocial(s[0])).reduce((a, s) => a + s[1], 0); }
+  eff(mag, sus) { return Math.min(mag * sus, 1); }
+  effColor(e) { return e < 0.2 ? '#555' : e < 0.4 ? '#a0a0a0' : e < 0.7 ? '#f59e0b' : '#ef4444'; }
+  worldsFor(cat, mag, susOverride) {
+    const sig = this.CAT[cat].sig;
+    return this.WORLDS.map(w => { const sus = (w.me && susOverride) ? susOverride : w.sus[sig]; const e = this.eff(mag, sus); return { n: w.n, short: w.short, mag: mag.toFixed(2), sus: sus.toFixed(1), eff: e.toFixed(2), effColor: this.effColor(e), nameColor: w.me ? '#f59e0b' : '#a0a0a0', bg: w.me ? 'rgba(245,158,11,.06)' : 'transparent', bar: `display:block; height:100%; width:${Math.round(e * 100)}%; background:${this.effColor(e)};`, skipped: e < 0.2 }; });
+  }
+  dispatch(d, mag) { const c = this.CAT[d.cat]; return `Um ${d.t === 'gestern' ? '05:40' : d.t} UTC ${c.disp} ${c.arch} hat sich mit Magnitude ${mag.toFixed(2)} gezeigt${mag >= 0.5 ? ' — der höchste Wert dieser Signatur seit Beginn der Aufzeichnung' : ''}. Die betroffenen Welten werden nach ihrer Suszeptibilität benachrichtigt.`; }
+  startHold(key, done) { if (this.state[key]) return; this.setState({ [key]: true }); this._t = setTimeout(() => { this.setState({ [key]: false }); done(); }, 950); }
+  endHold(key) { clearTimeout(this._t); if (this.state[key]) this.setState({ [key]: false }); }
+  openCrucible(id, edit) {
+    const d = this.D.find(x => x.id === id);
+    const lens = this.state.bLensById[id] || { zone: d.zone, vec: d.lens, tone: 'Amtlich', type: d.type, impact: d.impact, react: true, n: 5 };
+    this.setState({ bModal: { kind: 'crucible', id, edit }, bLens: lens, bSeed: 0, bVariants: [], bVarIdx: 0, bWitOff: {}, bInstr: '', bProto: false });
+    this.typeB(id, lens, 0);
+  }
+  setLensB(k, v) { const lens = { ...this.state.bLens, [k]: v }; this.setState({ bLens: lens }); this.typeB(this.state.bModal.id, lens, this.state.bSeed); }
+  setParamB(k, v) { this.setState(s => ({ bLens: { ...s.bLens, [k]: v } })); }
+  composeB(d, lens, seed, free, witOff) {
+    const lead = { Amtlich: 'Die Registratur gibt bekannt: ', Propaganda: 'Bürger der Wabe! ', Gerücht: 'In den Gängen heißt es, ', Protokoll: 'Beobachtung, Zyklus 7: ' }[lens.tone];
+    const wit = d.wit.filter(w => !witOff[w]).map(w => this.AG[w]);
+    const quotes = ['Das haben wir kommen sehen.', 'Niemand hat uns gefragt.', 'Die Registratur schweigt, also reden wir.', 'Ich zähle weiter. Was soll ich sonst tun.'];
+    const q = wit[0] ? ` „${quotes[(seed + wit.length) % quotes.length]}" — ${wit[0].n}, ${wit[0].r}.` : '';
+    const first = d.dBody.split('. ')[0] + '.';
+    let body = [d.dBody, first + q, d.dBody + q, first + ' ' + (wit[1] ? `${wit[1].n} widerspricht.` : 'Die Zählung läuft weiter.') + q][seed % 4];
+    if (free === 'Treu') body = `Nach Meldung aus ${d.src} („${d.h}"): ` + body;
+    if (free === 'Frei') body += ` In ${lens.zone} träumt man seither von ${lens.vec === 'Traum' ? 'offenen Kammern' : lens.vec === 'Handel' ? 'Wachs, das nicht schmilzt' : lens.vec === 'Krankheit' ? 'weißen Händen' : 'Gängen ohne Ende'}.`;
+    return `${d.dTitle.toUpperCase()}\n[${lens.zone} · ${lens.vec} · ${lens.tone}]\n\n${lead}${body}`;
+  }
+  typeB(id, lens, seed) {
+    const d = this.D.find(x => x.id === id);
+    const free = this.state.bFree, witOff = this.state.bWitOff, instr = this.state.bInstr;
+    const full = this.composeB(d, lens, seed, free, witOff);
+    clearInterval(this._tb); clearInterval(this._ts);
+    const t0 = Date.now();
+    this.setState({ bTyping: true, bPhase: 'reading', bStep: 0, bTypeText: '', bSeed: seed });
+    let st = 0;
+    this._ts = setInterval(() => {
+      st++; this.setState({ bStep: st });
+      if (st >= 5) {
+        clearInterval(this._ts); this.setState({ bPhase: 'typing' });
+        let i = 0;
+        this._tb = setInterval(() => { i += 2; this.setState({ bTypeText: full.slice(0, i) }); if (i >= full.length) { clearInterval(this._tb); this.setState(s => { const v = { text: full, lens, seed, free, instr, wits: d.wit.filter(w => !witOff[w]).map(w => this.AG[w].n), ms: Date.now() - t0, tokens: 380 + Math.round(full.length / 3) }; return { bTyping: false, bPhase: 'done', bVariants: [...s.bVariants, v], bVarIdx: s.bVariants.length }; }); } }, 22);
+      }
+    }, 520);
+  }
+  closeB() { clearInterval(this._tb); clearInterval(this._ts); this.setState({ bModal: null, bTyping: false, bPhase: 'done', bHold: false }); }
+  toastB(text) { clearTimeout(this._tt); this.setState({ bToast: null }); setTimeout(() => this.setState({ bToast: text }), 30); this._tt = setTimeout(() => this.setState({ bToast: null }), 4000); }
+  stageB(id, st) { this.setState(s => ({ bStages: { ...s.bStages, [id]: st } })); }
+  gen() {
+    if (this.props.autoGenerate) { this.setState({ aGen: 2 }); return; }
+    const full = this.state.aScope === 'res' ? 'Signal gelesen ▸ Archetyp bestätigt ▸ Suszeptibilitäten gerechnet ▸ Bureau-Depesche gesetzt ▸ Zeitpunkt gesetzt' : 'Signal gelesen ▸ Ort verankert ▸ Zeugen befragt ▸ Tonlage gesetzt ▸ Wirkung gerechnet ▸ Entwurf gesetzt';
+    this.setState({ aGen: 1, aGenText: '' });
+    let i = 0; clearInterval(this._g);
+    this._g = setInterval(() => { i += 3; this.setState({ aGenText: full.slice(0, i) }); if (i >= full.length) { clearInterval(this._g); setTimeout(() => this.setState({ aGen: 2 }), 300); } }, 45);
+  }
+  componentDidMount() { setTimeout(() => this.gen(), 400); }
+  componentWillUnmount() { clearInterval(this._g); clearInterval(this._tb); clearInterval(this._ts); clearTimeout(this._t); clearTimeout(this._tt); }
+
+  renderVals() {
+    const S = this.state, D = this.D, CAT = this.CAT;
+    const role = S.roleOverride || this.props.role || 'architect', isAdmin = role === 'admin';
+    const role = S.roleOverride || this.props.role || 'architect', isAdmin = role === 'admin';
+    const segStyle = (i, val, hgt, base) => `display:inline-block; width:12px; height:${base + i * hgt}px; background:${i < val ? (i < 3 ? '#a0a0a0' : i < 6 ? '#f59e0b' : '#ef4444') : '#1f1f1f'}; cursor:pointer;`;
+    const sensors = this.SENSORS.map(s => { const c = s.on ? '#4ade80' : '#ef4444'; return { ...s, dotStyle: `width:6px; height:6px; border-radius:50%; background:${c}; ${s.on ? 'box-shadow:0 0 6px ' + c + ';' : ''}`, kindColor: { strukturiert:'#4ade80', semi:'#a78bfa', LLM:'#f59e0b', intern:'#3b82f6', sozial:'#a0a0a0', 'kein Key':'#ef4444' }[s.kind],
+      pillStyle: `display:inline-flex; align-items:center; gap:5px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; padding:3px 7px; border:1px solid ${s.on ? '#333' : '#2a2a2a'}; color:${s.on ? '#a0a0a0' : '#555'};`,
+      tileStyle: `padding:10px 12px; border-right:1px solid #1a1a1a; display:flex; flex-direction:column; gap:3px; background:${s.on ? 'transparent' : '#080808'}; opacity:${s.on ? 1 : .55};`,
+      hitSegs: Array.from({ length: 4 }, (_, i) => ({ s: `display:inline-block; width:8px; height:4px; background:${i < Math.ceil(s.hits / 4) ? '#a0a0a0' : '#222'};` })) }; });
+    /* ── B ── */
+    const stage = (id) => S.bStages[id] || 'out';
+    const bIn = D.filter(d => stage(d.id) === 'in').map(d => ({ ...d, kindStyle: this.kindStyle(d.kind), catColor: CAT[d.cat].color, arch: CAT[d.cat].arch, mag: d.mag.toFixed(2), via: d.kind === 'intern' ? 'Botschaft' : d.below ? 'unter Schwelle' : 'Abo ' + CAT[d.cat].de,
+      tLabel: 'Transformieren →', tStyle: 'padding:7px 12px; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#f59e0b; border:1px solid #f59e0b;',
+      transform: () => this.openCrucible(d.id, false),
+      drop: () => this.setState(s => ({ bStages: { ...s.bStages, [d.id]: 'out' } })) }));
+    const btnBase = 'flex:1; text-align:center; padding:8px; font-family:\'Courier New\',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; ';
+    const bQ = D.filter(d => stage(d.id) === 'q').map(d => ({ ...d, catColor: CAT[d.cat].color, arch: CAT[d.cat].arch, mag: d.mag.toFixed(2), worlds: this.worldsFor(d.cat, d.mag), fxShort: `${Math.round(d.impact * 0.7) + 2} Moodlets`,
+      locked: !isAdmin, showWorlds: isAdmin, myEff: this.worldsFor(d.cat, d.mag)[0].eff,
+      resHead: isAdmin ? '◈ als Resonanz · alle Welten' : '◈ Resonanz · nur Bureau', resHeadColor: isAdmin ? '#f59e0b' : '#666',
+      asResLabel: isAdmin ? '◈ Resonanz' : '◈ Dem Bureau melden', asResClass: isAdmin ? 'btn-amber' : 'btn-ghost',
+      asResStyle: btnBase + (isAdmin ? 'color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:3px 3px 0 #000;' : 'color:#a68a2e; border:1px solid #3d3200;'),
+      asRes: () => this.setState({ bModal: { kind: isAdmin ? 'res' : 'flag', id: d.id } }), lens: () => this.openCrucible(d.id, true),
+      zone: (S.bLensById[d.id] || {}).zone || d.zone, type: (S.bLensById[d.id] || {}).type || d.type, impact: (S.bLensById[d.id] || {}).impact || d.impact, asEv: () => this.setState(s => ({ bStages: { ...s.bStages, [d.id]: 'ev' } })), drop: () => this.setState(s => ({ bStages: { ...s.bStages, [d.id]: 'out' } })) }));
+    const bPubRes = D.filter(d => stage(d.id) === 'res').map(d => { const ws = this.worldsFor(d.cat, d.mag); const h = ws.filter(w => !w.skipped); return { scope: '◈ Resonanz', scopeColor: '#f59e0b', sub: CAT[d.cat].arch, when: 'gerade eben', title: d.h, stats: `detected · trifft in 4 h · ${h.length}/6 Welten · stärkster: ${h.sort((a, b) => b.eff - a.eff)[0].n} ${h[0].eff}`, src: d.src }; });
+    const fixedRes = this.INCOMING.map(r => ({ scope: '◈ Resonanz', scopeColor: '#f59e0b', sub: CAT[r.cat].arch, when: r.when, title: r.h, stats: `detected · trifft in ${r.eta} · ${r.others}`, src: r.src }));
+    const bPubEv = D.filter(d => stage(d.id) === 'ev').map(d => { const lo = S.bLensById[d.id] || {}; const imp = lo.impact || d.impact; const react = lo.react === false ? 0 : (lo.n || 5); return { scope: '▣ ' + (lo.type || d.type), scopeColor: '#4ade80', sub: lo.zone || d.zone, when: d.id === 's11' ? 'vor 9 T' : d.id === 's7' ? 'vor 3 h' : 'gerade eben', title: d.dTitle, stats: `${d.id === 's11' ? 6 : react ? react + Math.round(imp * 0.3) : 0} Reaktionen · ${Math.round(imp * 0.7) + 2} Moodlets · Sicherheit −${Math.round(imp * 1.3)}`, src: d.src, isEv: true, echo: () => this.setState({ bModal: { kind: 'echo', id: d.id }, bEcho: { target: 'Velgarien', vec: lo.vec || d.lens, str: 7 } }) }; });
+    const bPubFlag = D.filter(d => stage(d.id) === 'flag').map(d => ({ scope: '◈ gemeldet', scopeColor: '#a68a2e', sub: CAT[d.cat].arch, when: 'gerade eben', title: d.h, stats: 'wartet auf Sichtung durch das Bureau · Resonanz-Entscheidung und Suszeptibilität liegen dort · du wirst benachrichtigt', src: d.src }));
+    const bPub = [...bPubFlag, ...bPubRes, ...bPubEv, ...fixedRes].map(c => ({ ...c, openStyle: `color:#888; ${c.isEv ? '' : 'margin-left:auto;'}` }));
+    const bAfter = [
+      ...S.bEchoes.map(e => ({ kind: 'Echo · unterwegs nach ' + e.target, c: '#3b82f6', text: `Über ${e.via}, Vektor ${e.vec}, Stärke ${e.str}0 %: „${e.title}" erreicht ${e.target} im nächsten Zyklus als Signal im dortigen Eingang.`, from: e.title })),
+      { kind: 'Impact · Speranza', c: '#f59e0b', text: 'Die Sintflut traf Speranza mit 0.99: zwei Ereignisse erzeugt („Die Mole bricht", „Das Salzarchiv läuft voll"), 11 Reaktionen.', from: 'SB-2026-0847 · USGS' },
+      { kind: 'Impact · übersprungen', c: '#555', text: 'Cité des Dames: 0.55 × 0.5 = 0.28 — Ereignisse erzeugt. Station Null: 0.28. The Chitinous Mandate: 0.33, Ereignis in der Unterwabe angesetzt.', from: 'SB-2026-0847 · USGS' },
+      { kind: 'Reaktion', c: '#4ade80', text: '„Vierzig Häutungen Duft. Ich habe darin gelesen, als ich jung war. Jetzt lese ich Rauch." — Old Cassar', from: 'Das Archiv darf jede Spur lesen' },
+      { kind: 'Echo · unterwegs nach Velgarien', c: '#3b82f6', text: 'Über die Botschaft Rang-Spindel, Vektor Traum: in Velgarien träumt man von tanzenden Waben. Ankunft nächster Zyklus.', from: 'Häutungsfeier' },
+    ];
+    /* ── B modals ── */
+    const M = S.bModal, mD = M ? D.find(x => x.id === M.id) : D[0], mC = CAT[mD.cat];
+    const L = S.bLens || { zone: mD.zone, vec: mD.lens, tone: 'Amtlich', type: mD.type, impact: mD.impact, react: true, n: 5 };
+    const Limp = L.impact || mD.impact, Lreact = L.react !== false, Ln = L.n || 5;
+    const EMB = [{ name: 'Velgarien', sub: 'Botschaft Rang-Spindel ⇄ Zollhaus', eff: 72, via: 'Botschaft Rang-Spindel' }, { name: 'Speranza', sub: 'Konsulat an der Mole · eigene Welt', eff: 41, via: 'Konsulat an der Mole' }];
+    const echoT = EMB.find(e => e.name === S.bEcho.target) || EMB[0];
+    const resToday = D.filter(d => stage(d.id) === 'res').length + this.INCOMING.length;
+    const mW = this.worldsFor(mD.cat, mD.mag), mHit = mW.filter(w => !w.skipped);
+    const lensChip = (k, v) => ({ name: v, go: () => this.setLensB(k, v), style: this.chip(L[k] === v) });
+    const arrow = (on) => `font-family:'Courier New',monospace; font-weight:700; letter-spacing:-1px; color:${on ? '#f59e0b' : '#444'}; ${on ? 'animation:arrow-pulse 2s ease-in-out infinite;' : ''}`;
+    /* ── B Sichtung (triage) ── */
+    const rawTotal = Object.values(this.SRCS).reduce((a, l) => a + l.filter(s => !this.isSocial(s[0])).reduce((x, s) => x + s[1], 0), 0);
+    const stageLabel = { raw: null, in: 'im Eingang', q: 'Quarantäne', ev: 'Ereignis', res: 'Resonanz', flag: 'gemeldet', out: 'verworfen' };
+    const rowsAll = D.map(d => ({ d, srcs: this.SRCS[d.id] || [], st: stage(d.id), soc: this.socialSum(d.id) }));
+    const sensCount = {}; rowsAll.forEach(r => r.srcs.forEach(s => { sensCount[s[0]] = (sensCount[s[0]] || 0) + 1; }));
+    let rows = rowsAll.filter(r => r.d.mag >= S.bTriageMin && r.srcs.some(s => !S.bTriageOff[s[0]]));
+    const sorters = { fit: (a, b) => b.d.fit - a.d.fit, mag: (a, b) => b.d.mag - a.d.mag, new: (a, b) => (b.d.t > a.d.t ? 1 : -1), soc: (a, b) => b.soc - a.soc };
+    rows = rows.sort(sorters[S.bTriageSort]);
+    const selIds = Object.keys(S.bTriageSel).filter(k => S.bTriageSel[k]);
+    const takeIds = (ids, st) => { if (!ids.length) return; this.setState(s => { const b = { ...s.bStages }; ids.forEach(id => { b[id] = st; }); return { bStages: b, bTriageSel: {} }; }); this.toastB(st === 'in' ? `${ids.length} Geschichte${ids.length > 1 ? 'n' : ''} in den Eingang aufgenommen · Klassifikation liegt bereits vor` : `${ids.length} Geschichte${ids.length > 1 ? 'n' : ''} verworfen · bleibt in der Sichtung ausgeblendet`); };
+    const sortChip = (k, label) => ({ label, go: () => this.setState({ bTriageSort: k }), style: this.chip(S.bTriageSort === k) });
+    const mini = 'font-size:9px; letter-spacing:1.5px; text-transform:uppercase;';
+    /* ── B Lesesaal (Eingang vergrößert) ── */
+    const srcChips = (id) => (this.SRCS[id] || []).map(s => { const soc = this.isSocial(s[0]); return { label: `${s[0]} ×${s[1]}${s[2] ? ' · ↑ ' + s[2] : ''}`, style: `${mini} padding:2px 6px; border:1px solid ${soc ? '#2a2a2a' : '#333'}; color:${soc ? '#777' : '#a0a0a0'}; ${soc ? 'border-style:dashed;' : ''}` }; });
+    const keyOf = (c) => S.bEnlargeBy === 'zone' ? c.zone : S.bEnlargeBy === 'arch' ? c.arch : c.src;
+    const gmap = {}; bIn.forEach(c => { const k = keyOf(c); (gmap[k] = gmap[k] || []).push(c); });
+    const gnote = (k, items) => { if (S.bEnlargeBy === 'zone') { const z = this.ZONES.find(z => z.name === k); return z ? `Sicherheit ${z.safe} · Laune ${z.mood > 0 ? '+' : ''}${z.mood} · ${z.quiet}` : ''; } if (S.bEnlargeBy === 'arch') { const c = Object.values(CAT).find(c => c.arch === k); return c ? c.sigDe + ' · erzeugt ' + c.types : ''; } const s = this.SENSORS.find(s => s.n === k); return s ? s.kind + ' · ' + s.title.split(' · ').slice(1).join(' · ') : items[0].kind; };
+    const bGroups = Object.keys(gmap).sort((a, b) => gmap[b].length - gmap[a].length || a.localeCompare(b)).map(k => ({ name: k, count: gmap[k].length, note: gnote(k, gmap[k]), items: gmap[k].map(c => { const m = parseFloat(c.mag); return { ...c, srcs: srcChips(c.id), fitColor: c.fit >= 85 ? '#4ade80' : c.fit >= 70 ? '#f59e0b' : '#888', magBar: `height:4px; width:${Math.round(m * 100)}%; background:${m < 0.2 ? '#555' : m < 0.4 ? '#a0a0a0' : m < 0.7 ? '#f59e0b' : '#ef4444'};`, wits: c.wit.map(w => ({ name: this.AG[w].n, ini: this.ini(w), avStyle: this.av(w, 28) })), back: () => { this.stageB(c.id, 'raw'); this.toastB(`„${c.h.slice(0, 48)}…" zurück in die Sichtung`); } }; }) }));
+    const archCount = {}; bIn.forEach(c => { archCount[c.arch] = (archCount[c.arch] || 0) + 1; });
+    return {
+      showRationale: this.props.showRationale ?? true, sensors,
+      roleArch: () => this.setState({ roleOverride: 'architect', aScope: 'event', aLockHint: false, aGen: this.state.aGen === 2 ? 2 : this.state.aGen }),
+      roleAdmin: () => this.setState({ roleOverride: 'admin', aLockHint: false }),
+      roleArchStyle: this.chip(!isAdmin, '#22c55e') + 'padding:8px 14px;', roleAdminStyle: this.chip(isAdmin) + 'padding:8px 14px;',
+      roleNote: isAdmin ? 'Der Admin sieht alle Sensoren, löst Scans aus, entscheidet über Resonanzen für alle Welten und sieht die Suszeptibilitätstafel aller Welten.' : 'Ein Architekt importiert Signale nur als Ereignisse in seine eigenen Welten (The Chitinous Mandate, Speranza). Resonanzen — Beben für alle Welten — legt ausschließlich das Bureau an; der Architekt kann ein Signal dafür melden und die Suszeptibilität seiner Welt einstellen.',
+      roleLabel: isAdmin ? 'Admin · Plattform' : 'Architekt · 2 Welten',
+      roleBadge: `font-size:9.5px; letter-spacing:2px; text-transform:uppercase; padding:2px 7px; border:1px solid ${isAdmin ? '#f59e0b' : '#4ade80'}; color:${isAdmin ? '#f59e0b' : '#4ade80'};`,
+      bCrumbRoot: isAdmin ? 'Bureau' : 'Simulations', bCrumbName: isAdmin ? 'Substrate Monitoring' : 'The Chitinous Mandate',
+      bIsAdmin: isAdmin, bIsArch: !isAdmin, cIsAdmin: isAdmin, cIsArch: !isAdmin,
+      bTriage: S.bTriage, bTriageOpen: () => this.setState({ bTriage: true }), bTriageClose: () => this.setState({ bTriage: false, bTriageSel: {} }),
+      bRawCount: rawTotal, bStoryCount: rowsAll.filter(r => r.st === 'raw').length, bFunnel: `${rawTotal} roh → ${rowsAll.length} Geschichten → ${bIn.length} im Eingang · ${resToday} Resonanzen heute`,
+      bSubCount: isAdmin ? 4 : 3,
+      bInAll: () => { const ids = bIn.map(c => c.id); if (!ids.length) return; this.setState(s => { const b = { ...s.bStages }; ids.forEach(id => { b[id] = 'q'; }); return { bStages: b }; }); this.toastB(`${ids.length} Signale mit Abo-Linse transformiert · warten in der Quarantäne (Batch, 1 Aufruf)`); },
+      bQAll: () => { const ids = bQ.map(c => c.id); if (!ids.length) return; this.setState(s => { const b = { ...s.bStages }; ids.forEach(id => { b[id] = 'ev'; }); return { bStages: b }; }); this.toastB(`${ids.length} Ereignisse erzeugt · Reaktionen gebündelt generiert`); },
+      bLogOpen: () => this.setState({ bModal: { kind: 'log', id: D[0].id } }), bIsLogModal: M && M.kind === 'log', bLogCount: D.length,
+      bLog: [...D].sort((a, b) => (a.t === 'gestern' ? -1 : b.t === 'gestern' ? 1 : b.t.localeCompare(a.t))).map(d => { const st = stage(d.id); return { src: d.src, h: d.h, cat: CAT[d.cat].de, catColor: CAT[d.cat].color, mag: d.mag.toFixed(2), magColor: this.effColor(d.mag), t: d.t, st: { raw: 'in Sichtung', in: 'Eingang', q: 'Quarantäne', ev: 'Ereignis', res: 'Resonanz', flag: 'gemeldet', out: 'verworfen' }[st], stColor: { raw: '#888', in: '#e5e5e5', q: '#f59e0b', ev: '#4ade80', res: '#f59e0b', flag: '#a68a2e', out: '#555' }[st] }; }),
+      bIsEchoModal: M && M.kind === 'echo',
+      bEchoTargets: EMB.map(e => ({ name: e.name, sub: e.sub, eff: e.eff + ' %', go: () => this.setState(s => ({ bEcho: { ...s.bEcho, target: e.name, str: Math.round(e.eff / 10) } })), style: this.chip(S.bEcho.target === e.name, '#3b82f6') + 'padding:8px 12px; display:flex;' })),
+      bEchoVecs: ['Handel', 'Traum', 'Architektur', 'Sprache', 'Krankheit'].map(v => ({ name: v, go: () => this.setState(s => ({ bEcho: { ...s.bEcho, vec: v } })), style: this.chip(S.bEcho.vec === v, '#3b82f6') })),
+      bEchoSegs: Array.from({ length: 10 }, (_, i) => ({ go: () => this.setState(s => ({ bEcho: { ...s.bEcho, str: i + 1 } })), style: `display:inline-block; width:12px; height:${8 + i * 1.8}px; background:${i < S.bEcho.str ? '#3b82f6' : '#1f1f1f'}; cursor:pointer;` })),
+      bEchoStr: S.bEcho.str, bEchoNote: `Vorgabe ${echoT.eff} % aus Botschafts-Effektivität · überschrieben`,
+      bEchoGo: () => { const e = { target: S.bEcho.target, vec: S.bEcho.vec, str: S.bEcho.str, via: echoT.via, title: mD.dTitle }; this.setState(s => ({ bEchoes: [e, ...s.bEchoes] })); this.closeB(); this.toastB(`↗ Echo nach ${e.target} ausgelöst · Vektor ${e.vec} · Stärke ${e.str}0 % · Ankunft nächster Zyklus`); },
+      bMTypes: ['Krise', 'Dekret', 'Unruhe', 'Katastrophe', 'Fest', 'Gerücht', 'Entdeckung'].map(t => ({ name: t, go: () => this.setParamB('type', t), style: this.chip((L.type || mD.type) === t) })),
+      bMImpactSegs: Array.from({ length: 10 }, (_, i) => ({ go: () => this.setParamB('impact', i + 1), style: segStyle(i, Limp, 1.4, 7) })), bMImpact: Limp, bMImpactWord: this.impactWord(Limp),
+      bMReactToggle: () => this.setParamB('react', !Lreact), bMReactStyle: this.chip(Lreact, '#22c55e'), bMReactLabel: Lreact ? '● Reaktionen erzeugen' : '○ keine Reaktionen',
+      bMReactN: [3, 5, 8].map(n => ({ name: n + ' Agenten', go: () => this.setParamB('n', n), style: this.chip(Lreact && Ln === n) + (Lreact ? '' : 'opacity:.35; pointer-events:none;') })),
+      bMReactNote: Lreact ? `Zeugen zuerst, dann ${Ln - Math.min(Ln, mD.wit.length)} weitere nach Nähe · 1 gebündelter Aufruf` : 'Ereignis ohne KI-Reaktionen · Agenten reagieren erst im nächsten Tick',
+      bTriageSorts: [sortChip('fit', 'Passung'), sortChip('mag', 'Magnitude'), sortChip('new', 'Neu'), sortChip('soc', 'Netz-Tempo')],
+      bTriageMins: [0, 0.2, 0.4, 0.6].map(v => ({ label: v === 0 ? 'alle' : '≥ ' + v.toFixed(2), go: () => this.setState({ bTriageMin: v }), style: this.chip(S.bTriageMin === v) })),
+      bTriageSens: this.SENSORS.filter(s => s.on).map(s => { const off = !!S.bTriageOff[s.n]; return { n: s.n, kind: s.kind, kindColor: { strukturiert:'#4ade80', semi:'#a78bfa', LLM:'#f59e0b', intern:'#3b82f6', sozial:'#a0a0a0' }[s.kind], count: sensCount[s.n] || 0, go: () => this.setState(st => ({ bTriageOff: { ...st.bTriageOff, [s.n]: !off } })),
+        style: `display:grid; grid-template-columns:14px 1fr auto; gap:8px; align-items:center; padding:6px 8px; cursor:pointer; border:1px solid ${off ? 'transparent' : '#222'}; background:${off ? 'transparent' : '#0d0d0d'}; opacity:${off ? .45 : 1};`, mark: off ? '·' : '■' }; }),
+      bRows: rows.map(r => { const d = r.d, c = CAT[d.cat], sel = !!S.bTriageSel[d.id], isRaw = r.st === 'raw', isOut = r.st === 'out'; return {
+        ...d, arch: c.arch, catColor: c.color, kindStyle: this.kindStyle(d.kind), magTxt: d.mag.toFixed(2), rec: d.mag >= 0.4 ? '◆ empfohlen' : '', recStyle: `${mini} color:#f59e0b; ${d.mag >= 0.4 ? '' : 'display:none;'}`, magBar: `height:4px; width:${Math.round(d.mag * 100)}%; background:${d.mag < 0.2 ? '#555' : d.mag < 0.4 ? '#a0a0a0' : d.mag < 0.7 ? '#f59e0b' : '#ef4444'};`, fitColor: d.fit >= 85 ? '#4ade80' : d.fit >= 70 ? '#f59e0b' : '#888',
+        isRaw, isDone: !isRaw && !isOut, isOut, stLabel: stageLabel[r.st] || '', soc: r.soc ? '↑ ' + (r.soc >= 1000 ? (r.soc / 1000).toFixed(1) + 'k' : r.soc) + ' im Netz' : '',
+        srcs: r.srcs.map(s => { const soc = this.isSocial(s[0]); return { label: `${s[0]} ×${s[1]}${s[2] ? ' · ↑ ' + s[2] : ''}`, style: `${mini} padding:2px 6px; border:1px solid ${soc ? '#2a2a2a' : '#333'}; color:${soc ? '#777' : '#a0a0a0'}; ${soc ? 'border-style:dashed;' : ''}` }; }),
+        check: sel ? '■' : '□', toggle: () => this.setState(s => ({ bTriageSel: { ...s.bTriageSel, [d.id]: !sel } })), take: () => takeIds([d.id], 'in'), drop: () => takeIds([d.id], 'out'), back: () => takeIds([d.id], 'raw'),
+        style: `display:grid; grid-template-columns:28px 1fr 130px 80px 210px; gap:16px; align-items:center; padding:12px 16px; border:1px solid ${sel ? '#f59e0b' : 'transparent'}; border-bottom-color:${sel ? '#f59e0b' : '#1a1a1a'}; background:${sel ? 'rgba(245,158,11,.10)' : 'transparent'}; opacity:${isOut ? .4 : 1};` }; }),
+      bRowCount: rows.length, bSelCount: selIds.length, bSelTake: () => takeIds(selIds.filter(id => stage(id) === 'raw'), 'in'), bSelDrop: () => takeIds(selIds.filter(id => stage(id) === 'raw'), 'out'),
+      bTop5: () => takeIds(rowsAll.filter(r => r.st === 'raw').sort((a, b) => b.d.fit - a.d.fit).slice(0, 5).map(r => r.d.id), 'in'),
+      bSelStyle: `padding:9px 16px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; border:1px solid ${selIds.length ? '#f59e0b' : '#333'}; color:${selIds.length ? '#f59e0b' : '#444'}; cursor:${selIds.length ? 'pointer' : 'default'};`,
+      bNoise: this.NOISE, bNoiseOpen: S.bNoiseOpen, bNoiseToggle: () => this.setState(s => ({ bNoiseOpen: !s.bNoiseOpen })), bNoiseMark: S.bNoiseOpen ? '▾' : '▸',
+      bEnlarge: S.bEnlarge, bEnlargeOpen: () => this.setState({ bEnlarge: true }), bEnlargeClose: () => this.setState({ bEnlarge: false }), bEnlargeSichtung: () => this.setState({ bEnlarge: false, bTriage: true }),
+      bEnlargeGroups: [['zone', 'Ort'], ['arch', 'Archetyp'], ['src', 'Quelle']].map(([k, label]) => ({ label, go: () => this.setState({ bEnlargeBy: k }), style: this.chip(S.bEnlargeBy === k) })),
+      bEnlargeSummary: Object.keys(archCount).map(a => ({ arch: a, count: archCount[a], color: (Object.values(CAT).find(c => c.arch === a) || {}).color || '#888' })),
+      bGroups, bInEmpty: bIn.length === 0,
+      bModalOpen: !!M, bIsCrucible: M && M.kind === 'crucible', bIsResModal: M && M.kind === 'res', bIsFlagModal: M && M.kind === 'flag',
+      bM: { ...mD, arch: mC.arch, catColor: mC.color, mag: mD.mag.toFixed(2), worlds: mW, myEff: mW[0].eff, no: 'SB-2026-' + String(850 + D.indexOf(mD)).padStart(4, '0'), dispatch: this.dispatch(mD, mD.mag) },
+      bMHit: mHit.length, bMTitle: M && M.edit ? 'Linse ändern' : 'Schmelztiegel · Signal → Welt',
+      bArrow1: arrow(true), bArrow2: arrow(S.bTyping), bStep3Color: S.bTyping ? '#4ade80' : S.bTypeText ? '#e5e5e5' : '#444',
+      bLensZone: L.zone, bLensVec: L.vec, bTypeText: S.bTypeText, bTyping: S.bTyping, bReading: S.bPhase === 'reading',
+      bTypeState: S.bPhase === 'reading' ? 'Schritt ' + Math.min(S.bStep + 1, 5) + ' / 5 · Kontext wird gesammelt' : S.bPhase === 'typing' ? 'Antwort wird gesetzt …' : 'fertig · Ausgabe editierbar',
+      bWorkLabel: S.bPhase === 'reading' ? '● arbeitet' : S.bPhase === 'typing' ? '● schreibt' : '✓ fertig',
+      bWorkBadge: `font-size:9px; letter-spacing:1.5px; padding:2px 7px; border:1px solid ${S.bTyping ? '#4ade80' : '#333'}; color:${S.bTyping ? '#4ade80' : '#666'}; ${S.bTyping ? 'animation:status-pulse 1.5s ease-in-out infinite;' : ''}`,
+      bDividerBg: S.bTyping ? '#1f3a26' : '#333', bOutBorder: S.bTyping ? '#4ade80' : '#1f3a26',
+      bSteps: ['Signal gelesen', 'Ort verankert · ' + L.zone, 'Zeugen befragt', 'Tonlage gesetzt · ' + L.tone, 'Wirkung gerechnet'].map((label, i) => { const done = i < S.bStep, cur = i === S.bStep; return { label, mark: done ? '✓' : cur ? '▸' : '·', ms: done ? (380 + i * 140) + ' ms' : cur ? '…' : '', style: `display:flex; align-items:center; gap:8px; font-size:12px; color:${done ? '#4ade80' : cur ? '#e5e5e5' : '#444'}; ${cur ? 'animation:status-pulse 1.2s ease-in-out infinite;' : ''}` }; }),
+      bEditable: S.bPhase === 'done' ? 'true' : 'false',
+      bMWits: mD.wit.map(w => { const on = !S.bWitOff[w]; return { name: this.AG[w].n, ini: this.ini(w), avStyle: this.av(w, 22), style: this.chip(on, '#22c55e') + 'padding:4px 10px 4px 4px;', go: () => { const witOff = { ...S.bWitOff, [w]: on }; this.setState({ bWitOff: witOff }); setTimeout(() => this.typeB(M.id, L, S.bSeed), 0); } }; }),
+      bMFree: ['Treu', 'Ausgewogen', 'Frei'].map(f => ({ name: f, style: this.chip(S.bFree === f), go: () => { this.setState({ bFree: f }); setTimeout(() => this.typeB(M.id, L, S.bSeed), 0); } })),
+      bFreeNote: { Treu: 'Temp 0.4 · nennt die Quelle', Ausgewogen: 'Temp 0.7 · Standard', Frei: 'Temp 0.9 · erfindet dazu' }[S.bFree],
+      bInstrInput: (e) => { this.setState({ bInstr: (e.target.textContent || '').trim() }); }, bInstrPlaceholder: S.bInstr || '',
+      bVariants: S.bVariants.map((v, i) => ({ label: `V${i + 1} · ${v.lens.tone} · ${v.free}`, style: this.chip(i === S.bVarIdx), go: () => { clearInterval(this._tb); clearInterval(this._ts); this.setState({ bVarIdx: i, bTypeText: v.text, bLens: v.lens, bFree: v.free, bSeed: v.seed, bTyping: false, bPhase: 'done' }); } })),
+      bReroll: () => { if (S.bTyping) return; this.typeB(M.id, L, S.bSeed + 1); }, bRerollStyle: `padding:7px 12px; font-family:'Courier New',monospace; font-weight:700; font-size:9.5px; letter-spacing:1.5px; text-transform:uppercase; color:${S.bTyping ? '#444' : '#f59e0b'}; border:1px solid ${S.bTyping ? '#333' : '#f59e0b'};`,
+      bProto: S.bProto, bProtoToggle: () => this.setState(s => ({ bProto: !s.bProto })), bProtoMark: S.bProto ? '▾' : '▸', bProtoStyle: this.chip(S.bProto),
+      bProtoLines: (() => { const v = S.bVariants[S.bVarIdx]; const z = this.ZONES.find(z => z.name === L.zone) || {}; const temp = { Treu: 0.4, Ausgewogen: 0.7, Frei: 0.9 }[S.bFree]; return [
+        { k: 'Aufruf', v: `Prompt „news_transformation" v3 · llama-3.3-70b · Temperatur ${temp} · Seed ${S.bSeed}${v ? ` · ${v.ms} ms · ~${v.tokens} Token` : ' · läuft …'}`, c: '#e5e5e5' },
+        { k: 'Signal', v: `${mD.src} · „${mD.h}" · ◈ ${mC.arch} · Magnitude ${mD.mag.toFixed(2)}`, c: '#a0a0a0' },
+        { k: 'Welt-Kontext', v: `Lore-Auszug 1.2k Zeichen · Zone ${L.zone}: Sicherheit ${z.safe}, Laune ${z.mood > 0 ? '+' : ''}${z.mood}, ${z.quiet} · Zeugen: ${mD.wit.filter(w => !S.bWitOff[w]).map(w => this.AG[w].n + ' (' + this.AG[w].r + ')').join(', ') || 'keine'}`, c: '#a0a0a0' },
+        { k: 'Linse', v: `Ort ${L.zone} · Vektor ${L.vec} · Tonlage ${L.tone} · Freiheit ${S.bFree}`, c: '#f59e0b' },
+        { k: 'Anweisung', v: S.bInstr || '— (keine)', c: S.bInstr ? '#e5e5e5' : '#555' },
+        { k: 'Integration', v: `Typ ${L.type || mD.type} · Wucht ${Limp}/10 · ${Lreact ? Ln + ' Agenten-Reaktionen (gebündelt)' : 'ohne Reaktionen'} · Quelle ${mD.src} als Herkunft gespeichert`, c: '#a0a0a0' },
+        { k: 'Schritte', v: 'Signal gelesen 380 ms → Ort verankert 520 ms → Zeugen befragt 660 ms → Tonlage gesetzt 800 ms → Wirkung gerechnet 940 ms → Text gesetzt', c: '#4ade80' },
+        { k: 'Ausgabe', v: `${S.bVariants.length} Variante${S.bVariants.length === 1 ? '' : 'n'} · gewählt V${S.bVarIdx + 1} · Text nach Abschluss editierbar · geht so in die Quarantäne`, c: '#a0a0a0' },
+      ]; })(),
+      bConfirmStyle: `padding:10px 20px; font-family:'Courier New',monospace; font-weight:700; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; background:#f59e0b; border:1px solid #b45309; box-shadow:4px 4px 0 #000; ${S.bTyping ? 'opacity:.35; pointer-events:none;' : ''}`,
+      bMZones: this.ZONES.map(z => lensChip('zone', z.name)), bMVecs: ['Handel', 'Traum', 'Architektur', 'Sprache', 'Krankheit'].map(v => lensChip('vec', v)), bMTones: ['Amtlich', 'Propaganda', 'Gerücht', 'Protokoll'].map(v => lensChip('tone', v)),
+      bClose: () => this.closeB(), bStop: (e) => e.stopPropagation(),
+      bConfirmLabel: M && M.edit ? 'Linse übernehmen' : 'In die Quarantäne →',
+      bConfirmCrucible: () => { const id = M.id; this.setState(s => ({ bLensById: { ...s.bLensById, [id]: L } })); if (!M.edit) this.stageB(id, 'q'); this.closeB(); this.toastB(M.edit ? `Linse für „${mD.dTitle}" geändert · Ort ${L.zone} · Vektor ${L.vec} · ${L.type || mD.type} ${Limp}` : `„${mD.dTitle}" steht in der Quarantäne · ${L.type || mD.type} · Wucht ${Limp} · ${Lreact ? Ln + ' Reaktionen' : 'ohne Reaktionen'}`); },
+      bHoldClass: 'hold' + (S.bHold ? ' on' : ''), bHoldLabel: S.bHold ? 'halten …' : 'Resonanz auslösen (halten)',
+      bHoldStart: () => this.startHold('bHold', () => { const id = M.id; this.stageB(id, 'res'); this.closeB(); this.toastB(`◈ Resonanz „${mC.arch}" ausgelöst · Depesche gesetzt · trifft ${mHit.length} Welten in 4 h`); }), bHoldEnd: () => this.endHold('bHold'),
+      bFlagGo: () => { const id = M.id; this.stageB(id, 'flag'); this.closeB(); this.toastB(`Signal dem Bureau gemeldet · Sichtung im nächsten Zyklus · Für deine Welt ${mW[0].eff} effektiv`); },
+      bToastOpen: !!S.bToast, bToastText: S.bToast || '',
+    };
+  }
+}
+</script>
