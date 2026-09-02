@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from postgrest.exceptions import APIError as PostgrestAPIError
+
 from backend.utils.responses import extract_list
 
 if TYPE_CHECKING:
@@ -38,7 +40,55 @@ async def maybe_single_data(
         if data:
             value = data["field"]
     """
-    resp = await builder.execute()
+    try:
+        resp = await builder.execute()
+    except PostgrestAPIError as exc:
+        # "Missing response" ist ein VERSCHLUCKTER Fehler, keine eigene Ursache.
+        #
+        # postgrest-py, `AsyncMaybeSingleRequestBuilder.execute`:
+        #
+        #     try:
+        #         r = await AsyncSingleRequestBuilder(...).execute()
+        #     except APIError as e:
+        #         if e.details and "The result contains 0 rows" in e.details:
+        #             return None
+        #         # <- KEIN re-raise
+        #     if not r:
+        #         raise APIError({"message": "Missing response", "code": "204", …})
+        #
+        # Jeder APIError ausser "0 rows" faellt also durch, `r` bleibt None, und
+        # geworfen wird eine Meldung, die den Boten nennt statt die Ursache. Der
+        # Hinweis darin ("Please create an issue in postgrest-py") schickt den
+        # Leser in die falsche Richtung.
+        #
+        # Am 02.09.2026 auf Prod eingetreten: Sentry METAVERSE_CENTER-4B,
+        # `agent_opinion_service._check_relationship_thresholds`. Die wirkliche
+        # Ursache war "The result contains 2 rows" — ein `.maybe_single()` auf
+        # einen Filter ueber ZWEI Spalten, waehrend der Eindeutigkeitszwang der
+        # Tabelle ueber DREI laeuft. Aus dem Fehlertext war das nicht zu lesen.
+        #
+        # Der Originalfehler ist in der Bibliothek verloren und nicht mehr zu
+        # bergen. Was hier bleibt, ist die Ursache beim Namen zu nennen, damit
+        # der naechste Leser nicht dieselbe Stunde braucht.
+        if "Missing response" in str(getattr(exc, "message", "") or ""):
+            raise PostgrestAPIError(
+                {
+                    "message": (
+                        "maybe_single() bekam mehr als eine Zeile (oder einen anderen "
+                        "PostgREST-Fehler). postgrest-py hat den Originalfehler "
+                        "verschluckt und 'Missing response' daraus gemacht."
+                    ),
+                    "code": "PGRST116?",
+                    "hint": (
+                        "Filtert die Abfrage wirklich auf einen eindeutigen Schluessel? "
+                        "Ein maybe_single() ueber weniger Spalten als der "
+                        "Eindeutigkeitsindex der Tabelle bricht ab, sobald es die zweite "
+                        "Zeile gibt. Fuer eine reine Existenzpruefung .limit(1) nehmen."
+                    ),
+                    "details": str(exc),
+                }
+            ) from exc
+        raise
     return resp.data if resp else None
 
 
@@ -62,10 +112,7 @@ async def resolve_epoch_sim_names(
         return {}
 
     sims_resp = await (
-        admin_supabase.table("simulations")
-        .select("id, name, slug, source_template_id")
-        .in_("id", sim_ids)
-        .execute()
+        admin_supabase.table("simulations").select("id, name, slug, source_template_id").in_("id", sim_ids).execute()
     )
     sims = extract_list(sims_resp)
 
@@ -73,12 +120,7 @@ async def resolve_epoch_sim_names(
     template_ids = list({s["source_template_id"] for s in sims if s.get("source_template_id")})
     template_map: dict[str, str] = {}
     if template_ids:
-        templates_resp = await (
-            admin_supabase.table("simulations")
-            .select("id, name")
-            .in_("id", template_ids)
-            .execute()
-        )
+        templates_resp = await admin_supabase.table("simulations").select("id, name").in_("id", template_ids).execute()
         template_map = {t["id"]: t["name"] for t in extract_list(templates_resp)}
 
     result: dict[str, dict] = {}

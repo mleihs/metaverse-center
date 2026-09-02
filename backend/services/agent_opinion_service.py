@@ -25,7 +25,6 @@ import httpx
 import structlog
 from postgrest.exceptions import APIError as PostgrestAPIError
 
-from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -481,12 +480,37 @@ class AgentOpinionService:
             result = await query.execute()
 
             for opinion in extract_list(result):
-                existing = await maybe_single_data(
-                    supabase.table("agent_relationships")
+                # `.limit(1)` und NICHT `.maybe_single()`.
+                #
+                # Gefragt ist "gibt es schon IRGENDEINE Beziehung zwischen den
+                # beiden" — der Typ soll hier bewusst keine Rolle spielen (siehe
+                # Docstring: eine Meinung ist gerichtet, eine Beziehung nicht).
+                # Der Eindeutigkeitszwang der Tabelle laeuft aber ueber DREI
+                # Spalten:
+                #
+                #     unique_relationship (source_agent_id, target_agent_id,
+                #                          relationship_type)
+                #
+                # Zwei Agenten duerfen also zugleich `trading_partner` UND
+                # `rival` sein — genau die beiden Arten, die diese Schleife
+                # anlegt. `.maybe_single()` verlangt aber 0 oder 1 Zeile und
+                # bricht bei zweien ab. Auf Prod ist das am 02.09.2026
+                # eingetreten (ein Paar, zwei Zeilen) und hat die
+                # Autonomiephase des Herzschlags fuer eine ganze Welt
+                # abgebrochen: Sentry METAVERSE_CENTER-4B, Tick #924, The
+                # Chitinous Mandate.
+                #
+                # Der Fehlertext half dabei nicht: postgrest-py verschluckt in
+                # `AsyncMaybeSingleRequestBuilder.execute` JEDEN APIError ausser
+                # "0 rows" ohne re-raise und wirft danach das nichtssagende
+                # "Missing response". Siehe `backend/utils/db.py`.
+                existing = extract_list(
+                    await supabase.table("agent_relationships")
                     .select("id")
                     .eq("source_agent_id", opinion["agent_id"])
                     .eq("target_agent_id", opinion["target_agent_id"])
-                    .maybe_single()
+                    .limit(1)
+                    .execute()
                 )
                 if existing:
                     continue
