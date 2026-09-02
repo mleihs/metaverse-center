@@ -313,6 +313,13 @@ export class VelgAdminUsersTab extends LitElement {
       min-width: 120px;
     }
 
+    .forge-access__note {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
     .forge-access__input {
       width: 80px;
     }
@@ -734,6 +741,8 @@ export class VelgAdminUsersTab extends LitElement {
           </button>
         </div>
 
+        ${this._renderByokAccess(detail)}
+
         <div class="detail-actions">
           <button
             class="btn-sm btn-sm--danger"
@@ -745,6 +754,99 @@ export class VelgAdminUsersTab extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Personal API keys, per user — deliberately its own block, NOT part of
+   * "Simulation Forge Access" above it. A key belongs to the person; the Forge
+   * is one of the places it gets spent. Putting the switch under the Forge
+   * heading is how it ended up behind the Architect gate in the first place.
+   *
+   * Both switches write immediately through their own endpoints
+   * (`PUT /forge/admin/user-byok-{allowed,bypass}/{id}`), which have existed
+   * since migration 103 and had no caller at all until now — which is why on
+   * production the count of granted users was zero. They are not part of
+   * "Save Wallet": that button writes `is_architect` and `forge_tokens`, and
+   * its request model knows nothing of BYOK.
+   */
+  private _renderByokAccess(detail: AdminUserDetail) {
+    const onFile = [
+      detail.has_openrouter_key ? 'OpenRouter' : null,
+      detail.has_replicate_key ? 'Replicate' : null,
+    ].filter(Boolean);
+
+    return html`
+      <p class="detail-section-title" style="margin-top:var(--space-6)">
+        ${msg('Personal API keys (BYOK)')}
+      </p>
+      <div class="forge-access">
+        <div class="forge-access__field">
+          <label class="forge-access__label">
+            ${msg('May use own key')}
+            ${renderInfoBubble(msg('Lets this account store its own OpenRouter and Replicate keys and have its requests run through them. Without a key, everything keeps running on the project key. Takes effect while the platform policy is set to "per user" – under "all" everyone may, under "none" nobody.'), 'tip-user-byok-allowed')}
+          </label>
+          <input
+            type="checkbox"
+            aria-label=${msg('Allow personal API keys for this user')}
+            aria-describedby="tip-user-byok-allowed"
+            ?checked=${detail.byok_allowed ?? false}
+            @change=${(e: Event) => this._setByokFlag(detail.id, 'byok_allowed', (e.target as HTMLInputElement).checked)}
+          />
+        </div>
+        <div class="forge-access__field">
+          <label class="forge-access__label">
+            ${msg('Waives forge tokens')}
+            ${renderInfoBubble(msg('With this on, forging costs this account no tokens – but only once BOTH keys are on file, since only then does the platform stop paying. Leave it off to let someone use their own key and still spend tokens.'), 'tip-user-byok-bypass')}
+          </label>
+          <input
+            type="checkbox"
+            aria-label=${msg('Waive forge tokens for this user')}
+            aria-describedby="tip-user-byok-bypass"
+            ?checked=${detail.byok_bypass ?? false}
+            @change=${(e: Event) => this._setByokFlag(detail.id, 'byok_bypass', (e.target as HTMLInputElement).checked)}
+          />
+        </div>
+        <p class="forge-access__note">
+          ${
+            onFile.length > 0
+              ? msg(str`Keys on file: ${onFile.join(', ')}`)
+              : msg('No keys on file for this account.')
+          }
+        </p>
+      </div>
+
+    `;
+  }
+
+  private async _setByokFlag(
+    userId: string,
+    flag: 'byok_allowed' | 'byok_bypass',
+    enabled: boolean,
+  ): Promise<void> {
+    const previous = this._expandedDetail;
+    if (previous) {
+      this._expandedDetail = { ...previous, [flag]: enabled };
+    }
+
+    const result =
+      flag === 'byok_allowed'
+        ? await adminApi.updateUserBYOKAllowed(userId, enabled)
+        : await adminApi.updateUserBYOKBypass(userId, enabled);
+
+    if (result.success) {
+      VelgToast.success(
+        flag === 'byok_allowed'
+          ? enabled
+            ? msg('Personal keys enabled for this account.')
+            : msg('Personal keys switched off for this account.')
+          : enabled
+            ? msg('Forge tokens waived for this account.')
+            : msg('Forge tokens apply again for this account.'),
+      );
+    } else {
+      this._expandedDetail = previous;
+      VelgToast.error(result.error?.message ?? msg('The switch could not be set.'));
+    }
   }
 
   private _renderMembershipRow(userId: string, m: AdminMembership) {

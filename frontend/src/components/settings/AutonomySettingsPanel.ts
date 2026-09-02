@@ -14,6 +14,7 @@ import { localized, msg } from '@lit/localize';
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
+import { navigate } from '../../utils/navigation.js';
 import { BaseSettingsPanel } from '../shared/BaseSettingsPanel.js';
 import '../shared/VelgSectionHeader.js';
 import '../shared/VelgToggle.js';
@@ -258,10 +259,8 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
               ${msg('Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.')}
               <button
                 class="byok-link-btn"
-                @click=${() => {
-                  forgeStateManager.mintOpen.value = true;
-                }}
-              >${msg('Open The Mint to configure your API keys')}</button>
+                @click=${() => navigate('/profile')}
+              >${msg('Open the Keyring in your file')}</button>
               ${renderInfoBubble(msg('The platform admin can also activate autonomy globally, which covers AI costs with the platform key. Contact your admin to request activation for this simulation.'))}
             </div>
           `

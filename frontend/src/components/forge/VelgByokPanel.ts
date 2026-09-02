@@ -1,29 +1,36 @@
 /**
- * VelgByokPanel — Bureau Clearance Protocol
+ * VelgByokPanel — the form for a key that belongs to the person.
  *
- * Standalone BYOK (Bring Your Own Key) management component.
- * Replaces duplicated key management in VelgForgeMint and AdminForgeTab.
+ * One form, two hosts: the Keyring in the personnel file (a person\'s own
+ * keys, where they live) and SEC-08 in the admin console (the same, for the
+ * admin\'s own account). Both hosts already carry a heading and a frame, so
+ * this component draws neither — it used to, and inside SEC-08 that meant the
+ * title stood twice. The former `mode` property encoded exactly that
+ * duplication and is gone with it.
  *
- * Two modes:
- * - 'user' (default): Bureau-themed key-card aesthetic inside the Mint
- * - 'admin': Settings-panel layout inside AdminForgeTab SEC-08
- *
- * Handles all BYOK states internally:
+ * It handles every BYOK state itself, including the one it used to omit:
+ * - NOT ENABLED — the platform runs on the project key for this account.
+ *   Previously the inputs rendered regardless and Save answered 403; on
+ *   production that was every account, because the shipped policy is
+ *   `per_user` and nobody was granted. A form whose only possible outcome is
+ *   failure is worse than no form.
  * - Bypass active (CLEARANCE: UNLIMITED banner + benefit grid)
- * - Awareness (onboarding callout when allowed but no keys)
+ * - Awareness (onboarding callout when enabled but no keys stored)
  * - Key management (input, reveal, validate, save, remove)
+ *
+ * BYOK is a MODE, not a rule: whoever stores no key keeps running on the
+ * project key, and the copy here says so rather than implying a requirement.
  */
 import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { forgeApi, type TestBYOKResult } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
-import '../shared/VelgHelpTip.js';
 
 type KeyValidation = 'valid' | 'invalid' | 'empty';
 type TestState = 'idle' | 'testing' | 'success' | 'error';
@@ -45,11 +52,10 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
 
     /* ── Container ───────────────────────────────────── */
 
+    /* Kein eigener Rahmen: beide Wirte (Personalakte, SEC-08) bringen
+       Rahmen UND Überschrift mit. */
     .byok {
       width: 100%;
-      border: 2px solid var(--_accent-border);
-      background: var(--color-surface-raised);
-      padding: var(--space-6, 24px);
       animation: byok-enter var(--duration-entrance, 350ms) var(--ease-dramatic) both;
     }
 
@@ -58,30 +64,6 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
         opacity: 0;
         transform: translateY(8px);
       }
-    }
-
-    /* ── Header ──────────────────────────────────────── */
-
-    .byok__header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2, 8px);
-      margin-bottom: var(--space-1, 4px);
-    }
-
-    .byok__header-icon {
-      color: var(--_accent);
-      flex-shrink: 0;
-    }
-
-    .byok__title {
-      font-family: var(--font-brutalist, 'Courier New', monospace);
-      font-weight: var(--font-black, 900);
-      font-size: var(--text-base, 16px);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-brutalist, 0.08em);
-      color: var(--_accent);
-      margin: 0;
     }
 
     .byok__subtitle {
@@ -545,20 +527,30 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       color: var(--color-text-quiet);
     }
 
-    /* ── Admin Mode Overrides ────────────────────────── */
+    /* ── Nicht freigeschaltet ────────────────────────── */
 
-    :host([mode='admin']) .byok {
-      border: none;
-      background: transparent;
-      padding: 0;
+    .byok__notice {
+      border: 1px dashed var(--color-border);
+      background: var(--color-surface);
+      padding: var(--space-4, 16px);
+      animation: byok-enter var(--duration-entrance, 350ms) var(--ease-dramatic) both;
     }
 
-    :host([mode='admin']) .byok__title {
-      color: var(--color-text-primary);
+    .byok__notice-title {
+      font-family: var(--font-brutalist, 'Courier New', monospace);
+      font-weight: var(--font-bold, 700);
+      font-size: var(--text-sm, 13px);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist, 0.08em);
+      color: var(--color-text-secondary);
+      margin: 0 0 var(--space-2, 8px);
     }
 
-    :host([mode='admin']) .byok__key-card {
-      border-left-width: 2px;
+    .byok__notice-desc {
+      font-size: var(--text-xs, 12px);
+      line-height: var(--leading-relaxed, 1.625);
+      color: var(--color-text-muted);
+      margin: 0;
     }
 
     /* ── Responsive ───────────────────────────────────── */
@@ -609,8 +601,6 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
     }
   `;
 
-  @property({ type: String, reflect: true }) mode: 'user' | 'admin' = 'user';
-
   @state() private _orKey = '';
   @state() private _repKey = '';
   @state() private _isSaving = false;
@@ -627,15 +617,18 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
   protected render() {
     const byok = forgeStateManager.byokStatus.value;
 
+    // Nicht freigeschaltet heisst: die Eingabefelder gehören hier nicht hin.
+    // Sie standen bisher trotzdem da, und „Speichern" antwortete 403.
+    if (!byok.byok_allowed && !byok.effective_bypass) {
+      return html`<div class="byok">${this._renderNotEnabled(byok.access_policy)}</div>`;
+    }
+
     return html`
       <div class="byok">
-        ${this._renderHeader()}
+        ${this._renderIntro()}
         ${byok.effective_bypass ? this._renderBypassBanner() : nothing}
         ${
-          byok.byok_allowed &&
-          !byok.effective_bypass &&
-          !byok.has_openrouter_key &&
-          !byok.has_replicate_key
+          !byok.effective_bypass && !byok.has_openrouter_key && !byok.has_replicate_key
             ? this._renderAwarenessBanner()
             : nothing
         }
@@ -670,25 +663,30 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
 
   // ── Sub-renders ────────────────────────────────────
 
-  private _renderHeader() {
+  private _renderIntro() {
     return html`
-      <div class="byok__header">
-        <span class="byok__header-icon">${icons.key(18)}</span>
-        <h3 class="byok__title">
-          ${this.mode === 'admin' ? msg('Personal API Keys') : msg('Bureau Clearance Protocol')}
-        </h3>
-        <velg-help-tip
-          topic="byok"
-          label=${msg('What is BYOK?')}
-        ></velg-help-tip>
-      </div>
       <p class="byok__subtitle">
-        ${
-          this.mode === 'admin'
-            ? msg('AES-256 encrypted at rest. Bypass platform quota with your own keys.')
-            : msg('Operative key-card assignment. Keys are AES-256 encrypted at rest.')
-        }
+        ${msg('Stored AES-256 encrypted. Requests then run through your own provider account and are billed there.')}
       </p>
+    `;
+  }
+
+  private _renderNotEnabled(accessPolicy: string) {
+    return html`
+      <div class="byok__notice">
+        <p class="byok__notice-title">${msg('Running on the project key')}</p>
+        <p class="byok__notice-desc">
+          ${
+            accessPolicy === 'none'
+              ? msg(
+                  'Personal keys are switched off across the platform. Every request on this account runs on the project key, and nothing needs to be entered here.',
+                )
+              : msg(
+                  'A personal key is not enabled for this account. Every request runs on the project key. An administrator can enable it – until then there is nothing to enter here.',
+                )
+          }
+        </p>
+      </div>
     `;
   }
 
@@ -889,13 +887,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
           ?disabled=${this._isSaving || !hasInput}
           @click=${this._handleSave}
         >
-          ${
-            this._isSaving
-              ? msg('Registering...')
-              : this.mode === 'admin'
-                ? msg('Save Keys')
-                : msg('Register Keys')
-          }
+          ${this._isSaving ? msg('Registering...') : msg('Register Keys')}
         </button>
         <span class="byok__hint">
           ${

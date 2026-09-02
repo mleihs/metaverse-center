@@ -1820,6 +1820,19 @@ export interface UserWallet {
 export interface AdminUserDetail extends AdminUser {
   memberships: AdminMembership[];
   wallet?: UserWallet;
+  /**
+   * BYOK per user. Flat rather than inside `wallet` on purpose: these four are
+   * meaningful even when there is no wallet row — granting one creates the row
+   * (migration 330) — so nesting them under an object that says "no wallet"
+   * would hide exactly the case the admin needs to act on. `has_*_key` says
+   * only THAT a key is on file; the encrypted value never leaves the database.
+   * Optional because `AdminUserDetailResponse` is `extra="allow"` and makes no
+   * schema promise. Delivered by `admin_get_user` since migration 331.
+   */
+  byok_allowed?: boolean;
+  byok_bypass?: boolean;
+  has_openrouter_key?: boolean;
+  has_replicate_key?: boolean;
 }
 
 export interface AdminMembership {
