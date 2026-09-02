@@ -504,6 +504,12 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       padding: var(--space-2-5, 10px) var(--space-6, 24px);
       cursor: pointer;
       min-height: 44px;
+      /* Die Beschriftung ist zwei Wörter und bleibt eine Zeile. Der Hinweis
+         daneben wurde länger (er sagt jetzt die Wahrheit über den
+         Token-Erlass), und ohne diese zwei Regeln bricht der Knopf mitten im
+         Ausdruck um: „SCHLÜSSEL / REGISTRIEREN". */
+      flex-shrink: 0;
+      white-space: nowrap;
       transition: background var(--transition-fast), color var(--transition-fast);
     }
 
@@ -590,6 +596,10 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       .byok__actions {
         flex-direction: column;
         align-items: stretch;
+      }
+
+      .byok__save-btn {
+        white-space: normal;
       }
 
       .byok__hint {
