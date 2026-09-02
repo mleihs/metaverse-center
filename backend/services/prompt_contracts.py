@@ -266,7 +266,12 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
         ),
         _contract(
             "news_transformation",
-            ("news_title", "news_content", "simulation_name", "locale_name"),
+            # `lens_directives` ist der Block, den der Schmelztiegel der Schleuse
+            # stellt (Ort, Vektor, Tonlage, Anweisung). EIN Platzhalter statt
+            # vier, weil `str.format` jeden benannten Platzhalter verlangt und
+            # vier einzelne auch dann dastehen muessten, wenn es keine Linse
+            # gibt. Er wird immer geliefert und ist im Normalfall leer.
+            ("news_title", "news_content", "simulation_name", "locale_name", "lens_directives"),
         ),
         _contract(
             "social_media_transform_dystopian",

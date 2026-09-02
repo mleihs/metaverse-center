@@ -2,8 +2,10 @@
 
 import logging
 from datetime import UTC, datetime
+from typing import ClassVar
 from uuid import UUID
 
+from backend.models.social_trend import TransformLens
 from backend.services.generation_service import GenerationService
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
@@ -15,14 +17,16 @@ logger = logging.getLogger(__name__)
 class SocialTrendsService:
     """Service for social trends CRUD and workflow operations."""
 
-    @staticmethod
+    @classmethod
     async def transform_article_content(
+        cls,
         gen: GenerationService,
         *,
         title: str,
         platform: str,
         url: str | None = None,
         raw_data: dict | None = None,
+        lens: TransformLens | None = None,
     ) -> dict:
         """Build the news-content block from raw article data and run the AI transformation.
 
@@ -45,7 +49,51 @@ class SocialTrendsService:
         return await gen.generate_news_transformation(
             news_title=title,
             news_content="\n".join(news_content_parts),
+            lens_directives=cls.render_lens_directives(lens),
+            temperature=lens.creativity if lens else None,
         )
+
+    #: Wie eine Tonlage im Prompt heisst. Der Zustand fuehrt die Kennung
+    #: (`official`), das Modell braucht einen Satz.
+    _TONE_DIRECTIVES: ClassVar[dict[str, str]] = {
+        "official": "Write in the register of an official announcement: measured, impersonal, dated.",
+        "propaganda": "Write as the authorities would want it read: confident, selective, reassuring.",
+        "rumour": "Write as it travels by word of mouth: uncertain, partial, second-hand.",
+        "record": "Write as a clerk would file it: terse, factual, without colour.",
+    }
+
+    @classmethod
+    def render_lens_directives(cls, lens: TransformLens | None) -> str:
+        """Die Linse als Anweisungsblock — oder ein Leerstring.
+
+        WARUM EIN BLOCK UND NICHT VIER PLATZHALTER: `str.format` verlangt, dass
+        jeder benannte Platzhalter geliefert wird. Vier einzelne (`{tone}`,
+        `{zone_name}`, …) muessten also auch dann dastehen, wenn es keine Linse
+        gibt — als Leerstellen mitten in Saetzen, die die Vorlage schreibt. Ein
+        Block ist genau EIN Platzhalter, immer geliefert, und im Normalfall
+        leer.
+
+        Er wird ENGLISCH gebaut, wie die uebrigen Systemanweisungen: das ist die
+        Sprache der Anweisung an das Modell, nicht die der Antwort. Fuer die
+        Antwort sorgt `build_language_instruction`.
+        """
+        if lens is None:
+            return ""
+
+        lines: list[str] = []
+        if lens.zone_name:
+            lines.append(f"This happens in {lens.zone_name}. Name the place.")
+        if lens.vector:
+            lines.append(f"It travels along the {lens.vector} vector; let that shape what changes.")
+        tone_line = cls._TONE_DIRECTIVES.get(lens.tone or "")
+        if tone_line:
+            lines.append(tone_line)
+        if lens.instructions:
+            lines.append(lens.instructions.strip())
+
+        if not lines:
+            return ""
+        return "\n".join(("", "Additional direction:", *(f"- {line}" for line in lines), ""))
 
     @staticmethod
     async def list_trends(

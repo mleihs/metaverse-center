@@ -378,6 +378,7 @@ async def transform_article(
             platform=body.article_platform,
             url=body.article_url,
             raw_data=body.article_raw_data,
+            lens=body.lens,
         )
     except Exception as exc:
         logger.exception("AI transformation failed", extra={"article_name": body.article_name})

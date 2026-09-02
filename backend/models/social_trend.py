@@ -52,6 +52,31 @@ class BrowseArticlesRequest(BaseModel):
     limit: int = Field(default=15, ge=1, le=50)
 
 
+class TransformLens(BaseModel):
+    """Wie aus einem Artikel ein Ereignis DIESER Welt wird.
+
+    Der Schmelztiegel der Schleuse stellt diese Regler seit Schritt 3. Bis heute
+    erreichte davon NICHTS das Modell — die Oberflaeche trug deshalb eine
+    Fussnote und eine Marke an jeder Zeile, die nur der Erzeugung diente. Das
+    ist Luecke 4 aus `handoff/schleuse-event-intake.md`, und dies ist ihr
+    Verschluss.
+
+    ⚠ NICHT ALLE Regler des Schmelztiegels stehen hier, und das ist Absicht:
+    `type`, `impact` und die Reaktionen wirken bei der AUFNAHME
+    (`integrate-article`), nicht bei der Erzeugung. Sie hier ZUSAETZLICH
+    mitzuschicken hiesse, dem Modell einen Wert vorzugeben, den es im selben
+    Aufruf auch produzieren soll — zwei Quellen fuer eine Zahl.
+    """
+
+    #: Der NAME des Ortes, nicht seine Kennung. Das Modell schreibt Prosa.
+    zone_name: str | None = Field(default=None, max_length=200)
+    vector: str | None = Field(default=None, max_length=50)
+    tone: str | None = Field(default=None, max_length=50)
+    instructions: str | None = Field(default=None, max_length=2000)
+    #: 0.4 treu, 0.7 ausgewogen, 0.9 frei. Wird zur Temperatur des Aufrufs.
+    creativity: float | None = Field(default=None, ge=0.0, le=2.0)
+
+
 class TransformArticleRequest(BaseModel):
     """Request to transform an ephemeral article (not from DB) into simulation context."""
 
@@ -59,6 +84,7 @@ class TransformArticleRequest(BaseModel):
     article_platform: str
     article_url: str | None = None
     article_raw_data: dict | None = None
+    lens: TransformLens | None = None
 
 
 class IntegrateArticleRequest(BaseModel):

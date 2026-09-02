@@ -30236,10 +30236,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>title, platform, URL and the raw record of the source</source>
   <target>Titel, Plattform, URL und der Rohsatz der Quelle</target>
 </trans-unit>
-<trans-unit id="s8c3102a118508bf5">
-  <source>Kept only</source>
-  <target>Nur behalten</target>
-</trans-unit>
 <trans-unit id="s87052d42e2f9dfa6">
   <source>Admission</source>
   <target>Aufnahme</target>
@@ -30255,10 +30251,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="seaf97719986faf4f">
   <source>Gap</source>
   <target>Lücke</target>
-</trans-unit>
-<trans-unit id="s859a466b3b51d26b">
-  <source>The call accepts no lens yet, and reports no steps or token count.</source>
-  <target>Der Aufruf nimmt noch keine Linse entgegen und meldet weder Schritte noch Tokenzahl.</target>
 </trans-unit>
 <trans-unit id="s955d64a3144d1486">
   <source>Done · the text can be edited</source>
@@ -30323,10 +30315,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sf83579a3ad6a3b6a">
   <source>Call record</source>
   <target>Aufruf-Protokoll</target>
-</trans-unit>
-<trans-unit id="s444909b1d3518958">
-  <source>place <x id="0" equiv-text="${zoneName}"/> · vector <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · tone <x id="2" equiv-text="${toneLabel(lens.tone)}"/> · freedom <x id="3" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/></source>
-  <target>Ort <x id="0" equiv-text="${zoneName}"/> · Vektor <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · Tonlage <x id="2" equiv-text="${toneLabel(lens.tone)}"/> · Freiheit <x id="3" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/></target>
 </trans-unit>
 <trans-unit id="s0cb0b327045dfa03">
   <source>Multiplies staffing effectiveness. The standard ladder runs excellent x1.0, good x0.85, fair x0.7, poor x0.5, ruined x0.2 – a world may name its own rungs. Destructive events step the condition down one rung; dungeon loot repair and this field are what step it back up.</source>
@@ -31219,6 +31207,22 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s88e7d794fb061b78">
   <source>All here only</source>
   <target>Alle ▣ nur hier</target>
+</trans-unit>
+<trans-unit id="sfc78ec719f2f2351">
+  <source>Lens sent</source>
+  <target>Linse mitgeschickt</target>
+</trans-unit>
+<trans-unit id="sf27d13ee2a2db155">
+  <source>place <x id="0" equiv-text="${zoneName}"/> · vector <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · tone <x id="2" equiv-text="${toneLabel(lens.tone)}"/></source>
+  <target>Ort <x id="0" equiv-text="${zoneName}"/> · Vektor <x id="1" equiv-text="${bleedVectorLabel(lens.vector)}"/> · Tonlage <x id="2" equiv-text="${toneLabel(lens.tone)}"/></target>
+</trans-unit>
+<trans-unit id="s91745343b241046a">
+  <source><x id="0" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/> · temperature <x id="1" equiv-text="${(lens.creativity ?? 0.7).toFixed(1)}"/>, overriding the template</source>
+  <target><x id="0" equiv-text="${freedomLabel(lens.creativity ?? 0.7)}"/> · Temperatur <x id="1" equiv-text="${(lens.creativity ?? 0.7).toFixed(1)}"/>, überstimmt die Vorlage</target>
+</trans-unit>
+<trans-unit id="s5ad2c36b8ad17be9">
+  <source>The call reports no steps and no token count.</source>
+  <target>Der Aufruf meldet keine Schritte und keine Token.</target>
 </trans-unit>
 </body>
 </file>

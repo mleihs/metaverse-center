@@ -80,6 +80,22 @@ export class SocialTrendsApiService extends BaseApiService {
       article_platform: string;
       article_url?: string;
       article_raw_data?: Record<string, unknown>;
+      /**
+       * Die Linse des Schmelztiegels — seit Migration 341 erreicht sie das
+       * Modell. Der ORT geht als NAME hinein, nicht als Kennung: das Modell
+       * schreibt Prosa und kann mit einer UUID nichts anfangen.
+       *
+       * `type`, `impact` und die Reaktionen stehen bewusst NICHT hier — sie
+       * wirken bei der Aufnahme, und das Modell liefert `event_type` und
+       * `impact_level` in derselben Antwort selbst.
+       */
+      lens?: {
+        zone_name?: string;
+        vector?: string;
+        tone?: string;
+        instructions?: string;
+        creativity?: number;
+      };
     },
   ): Promise<
     ApiResponse<{
