@@ -29349,7 +29349,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s6639341a73348909">
   <source>The intake desk of the Bureau. You file a single sentence; the Forge answers with coastlines, a census, a founding grudge and a working economy. It names the rivers, seats the parliament, invents the folk songs, and decides – before you can object – which of your words was the important one.</source>
-  <target>Der Anmeldeschalter des Bureaus. Du reichst einen einzigen Satz ein; die Forge antwortet mit Küstenlinien, einer Volkszählung, einem Gründungsgroll und einer laufenden Wirtschaft. Sie benennt die Flüsse, besetzt das Parlament, erfindet die Volkslieder und entscheidet – ehe du widersprechen kannst –, welches deiner Wörter das wichtige war.</target>
+  <target>Der Anmeldeschalter des Bureaus. Du reichst einen einzigen Satz ein; die Forge antwortet mit Küstenlinien, einer Volkszählung, einem Gründungsgroll und einer laufenden Wirtschaft. Sie benennt die Flüsse, besetzt das Parlament, erfindet die Volkslieder und entscheidet, ehe du widersprechen kannst, welches deiner Wörter das wichtige war.</target>
 </trans-unit>
 <trans-unit id="s1a1d72cdbf135aed">
   <source>I wrote "a city that fears the rain" and by evening it had umbrella cartels, a drought cult, and a poet under house arrest. I have never felt so read.</source>
@@ -29968,6 +29968,38 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s7c5de207bc1616ae">
   <source>Section <x id="0" equiv-text="${position}"/></source>
 <target>Abschnitt <x id="0" equiv-text="${position}"/></target>
+</trans-unit>
+<trans-unit id="s2c15b9b13a3e2a80">
+  <source>Register</source>
+<target>Registrieren</target>
+</trans-unit>
+<trans-unit id="s495324570bcf65f8">
+  <source>Forge – Clearance Required</source>
+<target>Forge – Freigabe erforderlich</target>
+</trans-unit>
+<trans-unit id="sf3795a5bcdcf2e22">
+  <source>Bureau Archives</source>
+<target>Bureau-Archive</target>
+</trans-unit>
+<trans-unit id="s934fded3c2604598">
+  <source>Constellation</source>
+<target>Konstellation</target>
+</trans-unit>
+<trans-unit id="sb061ff5a347a296e">
+  <source>Profile</source>
+<target>Profil</target>
+</trans-unit>
+<trans-unit id="s0d7fcbf8f03c7116">
+  <source>Unsubscribe</source>
+<target>Abbestellen</target>
+</trans-unit>
+<trans-unit id="s0422ab7a829d3090">
+  <source>New Simulation</source>
+<target>Neue Simulation</target>
+</trans-unit>
+<trans-unit id="sb7cd516b426cee42">
+  <source>Build a World. Watch It Live.</source>
+<target>Schmiede eine Welt. Sieh ihr beim Leben zu.</target>
 </trans-unit>
 </body>
 </file>

@@ -25,8 +25,6 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { localeService } from '../../services/i18n/locale-service.js';
-import { captureError } from '../../services/SentryService.js';
 import type { LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
@@ -78,40 +76,6 @@ export class VelgLandingSeoFooter extends LitElement {
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-5);
       max-width: 300px;
-    }
-
-    .locale {
-      display: flex;
-      gap: var(--space-2-5);
-      align-items: center;
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-    }
-
-    .locale button {
-      background: none;
-      border: 0;
-      padding: 0;
-      cursor: pointer;
-      font: inherit;
-      letter-spacing: inherit;
-      color: var(--color-text-quiet);
-      transition: color var(--transition-normal);
-    }
-
-    .locale button[aria-current='true'] {
-      color: var(--color-accent-amber);
-    }
-
-    .locale button:hover,
-    .locale button:focus-visible {
-      color: var(--color-accent-amber);
-    }
-
-    .locale__sep {
-      color: var(--color-border);
     }
 
     .col {
@@ -241,21 +205,11 @@ export class VelgLandingSeoFooter extends LitElement {
     navigate(path);
   }
 
-  private async _setLocale(locale: string): Promise<void> {
-    try {
-      await localeService.setLocale(locale);
-    } catch (err) {
-      captureError(err, { source: 'LandingSeoFooter._setLocale' });
-    }
-  }
-
   private _link(path: string, label: string) {
     return html`<a href=${path} @click=${(e: Event) => this._go(e, path)}>${label}</a>`;
   }
 
   protected render() {
-    const locale = localeService.currentLocale;
-
     return html`
       <footer role="contentinfo">
         <div class="columns stage-container">
@@ -266,17 +220,6 @@ export class VelgLandingSeoFooter extends LitElement {
                 'The Bureau of Impossible Geography. AI-simulated living worlds, forged from a sentence, populated by citizens who remember, playing while you sleep.',
               )}
             </p>
-            <div class="locale">
-              <button
-                aria-current=${locale !== 'en'}
-                @click=${() => this._setLocale('de')}
-              >DE</button>
-              <span class="locale__sep" aria-hidden="true">/</span>
-              <button
-                aria-current=${locale === 'en'}
-                @click=${() => this._setLocale('en')}
-              >EN</button>
-            </div>
           </div>
 
           <nav class="col" aria-label=${msg('Systems')}>

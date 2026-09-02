@@ -27,6 +27,8 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { LandingCounts, LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
+import { captureError } from '../../services/SentryService.js';
+import { localeService } from '../../services/i18n/locale-service.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
 import {
@@ -119,6 +121,43 @@ export class VelgLandingHero extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-6);
+    }
+
+    /*
+     * Der Sprachumschalter stand nur in der SEO-Fusszeile, am Ende einer sehr
+     * langen Seite -- vorhanden und praktisch unauffindbar. Wer die Sprache
+     * wechseln will, sucht oben. Er steht jetzt hier und NUR hier: zwei
+     * Schalter fuer dieselbe Sache waeren zwei Orte, an denen jemand kuenftig
+     * einen davon vergisst.
+     */
+    .locale {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wider);
+    }
+
+    .locale button {
+      background: none;
+      border: 0;
+      padding: var(--space-1) 0;
+      cursor: pointer;
+      font: inherit;
+      letter-spacing: inherit;
+      color: var(--color-text-quiet);
+      transition: color var(--transition-normal);
+    }
+
+    .locale button[aria-current='true'],
+    .locale button:hover,
+    .locale button:focus-visible {
+      color: var(--color-accent-amber);
+    }
+
+    .locale__sep {
+      color: var(--color-border);
     }
 
     .nav__link {
@@ -565,6 +604,14 @@ export class VelgLandingHero extends LitElement {
     `;
   }
 
+  private async _setLocale(locale: string): Promise<void> {
+    try {
+      await localeService.setLocale(locale);
+    } catch (err) {
+      captureError(err, { source: 'LandingHero._setLocale' });
+    }
+  }
+
   protected render() {
     const online = this.counts?.worlds_transmitting ?? 0;
 
@@ -585,6 +632,17 @@ export class VelgLandingHero extends LitElement {
           </button>
         </nav>
         <div class="nav__end">
+          <div class="locale" role="group" aria-label=${msg('Language')}>
+            <button
+              aria-current=${localeService.currentLocale !== 'en'}
+              @click=${() => this._setLocale('de')}
+            >DE</button>
+            <span class="locale__sep" aria-hidden="true">/</span>
+            <button
+              aria-current=${localeService.currentLocale === 'en'}
+              @click=${() => this._setLocale('en')}
+            >EN</button>
+          </div>
           <button class="nav__link" @click=${this._openLogin}>${msg('Sign in')}</button>
           <button class="cta cta--sm" @click=${() => navigate('/forge')}>
             ${msg('Forge a World')}
