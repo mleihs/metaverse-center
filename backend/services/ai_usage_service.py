@@ -18,6 +18,8 @@ from __future__ import annotations
 import logging
 from uuid import UUID
 
+import sentry_sdk
+
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -163,8 +165,34 @@ class AIUsageService:
                 .execute()
             )
 
-        except Exception:  # noqa: BLE001 — fire-and-forget, must never propagate
-            logger.debug("AI usage log insert failed (non-blocking)", exc_info=True)
+        except Exception as exc:  # noqa: BLE001 — fire-and-forget, must never propagate
+            # Nicht mehr `debug`.
+            #
+            # Am 02.09.2026 gemessen: der Plattformschluessel hat im September
+            # 1,33 USD ausgegeben, `ai_usage_log` traegt fuer denselben Zeitraum
+            # EINE Zeile ueber 0,000062 USD. Ob Einschuebe scheitern oder ob
+            # schlicht nichts erfolgreich lief, war nicht zu unterscheiden --
+            # weil ein Scheitern hier auf `debug` landete und der Behaelter mit
+            # `DEBUG=false` laeuft. Die Zeile wurde geschrieben und nie gesehen.
+            #
+            # Ein Kostenbuch, dessen Schreibfehler unsichtbar sind, beantwortet
+            # die Frage nicht, fuer die es gebaut wurde ("was kostet Geld"), und
+            # es sagt einem das auch nicht. `BudgetEnforcementService.pre_check`
+            # wiegt gegen genau diese Tabelle; eine Luecke darin ist eine
+            # Obergrenze, die nicht ausloesen kann.
+            #
+            # Fire-and-forget bleibt es: es wird weiterhin nichts erhoben. Nur
+            # ist das Scheitern jetzt zu sehen.
+            logger.warning(
+                "AI usage log insert failed (non-blocking)",
+                extra={"purpose": purpose, "provider": provider, "model": model},
+                exc_info=True,
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("service", "AIUsageService")
+                scope.set_tag("purpose", purpose)
+                scope.set_context("usage_log", {"provider": provider, "model": model})
+                sentry_sdk.capture_exception(exc)
 
     @staticmethod
     async def get_platform_stats(
