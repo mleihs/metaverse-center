@@ -18,7 +18,7 @@
  * kopiert, weiss selten auswendig, ob `r8_` Replicate oder OpenRouter ist —
  * die Software weiss es.
  */
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -260,7 +260,7 @@ export class VelgKeyring extends SignalWatcher(LitElement) {
 
     const provider = detectProvider(raw);
     if (!provider) {
-      this._pasteError = msg(`No known provider. Supported: ${providerNames()}`);
+      this._pasteError = msg(str`No known provider. Supported: ${providerNames()}`);
       return;
     }
 
@@ -270,7 +270,7 @@ export class VelgKeyring extends SignalWatcher(LitElement) {
     this._pasteError = '';
     this._drafts = { ...this._drafts, [provider.id]: raw.replace(/\s+/g, '') };
     VelgToast.info(
-      msg(`${provider.name} recognised – the key is waiting in its card for a check.`),
+      msg(str`${provider.name} recognised – the key is waiting in its card for a check.`),
     );
   }
 

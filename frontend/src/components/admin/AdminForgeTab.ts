@@ -5,6 +5,8 @@ import {
   type AdminBundleEntry,
   type AdminPurchaseLedgerEntry,
   adminApi,
+  type BYOKAdminStats,
+  type BYOKRequestRow,
   type TokenEconomyStats,
 } from '../../services/api/AdminApiService.js';
 import { forgeApi } from '../../services/api/index.js';
@@ -392,6 +394,164 @@ export class VelgAdminForgeTab extends LitElement {
         color: var(--color-accent-amber);
         opacity: 0.5;
       }
+
+      /* ── SEC-08: Kennzahlen, Schwelle, Eingang ─────────── */
+
+      .byok-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+      }
+
+      .byok-stat {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        padding: var(--space-3);
+        border: 1px solid var(--color-border-light);
+        background: var(--color-surface);
+      }
+
+      .byok-stat[data-notice] {
+        border-color: color-mix(in srgb, var(--color-accent-amber) 45%, var(--color-border));
+      }
+
+      .byok-stat__value {
+        font-family: var(--font-brutalist);
+        font-weight: var(--font-black);
+        font-size: var(--text-lg);
+        color: var(--color-text-primary);
+      }
+
+      .byok-stat[data-notice] .byok-stat__value,
+      .byok-stat--money .byok-stat__value {
+        color: var(--color-accent-amber);
+      }
+
+      .byok-stat__label {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        line-height: var(--leading-snug);
+        color: var(--color-text-muted);
+      }
+
+      .byok-inbox {
+        margin-top: var(--space-4);
+      }
+
+      .byok-inbox__title {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin: 0 0 var(--space-2);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        color: var(--color-text-secondary);
+      }
+
+      .byok-inbox__count {
+        padding: 0 var(--space-2);
+        border: 1px solid var(--color-accent-amber);
+        color: var(--color-accent-amber);
+        font-family: var(--font-mono);
+      }
+
+      .byok-inbox__empty {
+        margin: 0;
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+      }
+
+      .byok-request {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border: 1px solid var(--color-border-light);
+        background: var(--color-surface);
+        margin-bottom: var(--space-2);
+      }
+
+      .byok-request__who {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-1) var(--space-3);
+        align-items: baseline;
+      }
+
+      .byok-request__id {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-secondary);
+        overflow-wrap: anywhere;
+      }
+
+      .byok-request__when {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--color-text-muted);
+        margin-left: auto;
+      }
+
+      .byok-request__reason {
+        margin: 0;
+        font-family: var(--font-prose, serif);
+        font-style: italic;
+        font-size: var(--text-sm);
+        line-height: var(--leading-relaxed);
+        color: var(--color-text-secondary);
+      }
+
+      .byok-request__actions {
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      .byok-request__btn {
+        min-height: 32px;
+        padding: var(--space-1) var(--space-3);
+        background: transparent;
+        border: 1px solid var(--color-border);
+        color: var(--color-text-secondary);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wide);
+        cursor: pointer;
+      }
+
+      .byok-request__btn:hover:not(:disabled) {
+        border-color: var(--color-text-primary);
+        color: var(--color-text-primary);
+      }
+
+      .byok-request__btn--yes {
+        border-color: var(--color-accent-green);
+        color: var(--color-accent-green);
+      }
+
+      .byok-request__btn--yes:hover:not(:disabled) {
+        background: var(--color-accent-green);
+        color: var(--color-surface-sunken);
+      }
+
+      .byok-request__btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      .byok-own-keys {
+        margin: 0 0 var(--space-3);
+        font-family: var(--font-brutalist);
+        font-size: var(--text-xs);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-brutalist);
+        color: var(--color-text-secondary);
+      }
     `,
   ];
 
@@ -403,6 +563,9 @@ export class VelgAdminForgeTab extends LitElement {
   // ── BYOK state ──
   @state() private _byokSystemEnabled = false;
   @state() private _byokAccessPolicy: 'none' | 'all' | 'per_user' = 'per_user';
+  @state() private _byokStats: BYOKAdminStats | null = null;
+  @state() private _byokRequests: BYOKRequestRow[] = [];
+  @state() private _resolvingRequest: string | null = null;
 
   // ── Token Economy state ──
   @state() private _economyStats: TokenEconomyStats | null = null;
@@ -431,6 +594,7 @@ export class VelgAdminForgeTab extends LitElement {
     this._loadBundles();
     this._loadPurchases();
     this._loadBYOKSetting();
+    this._loadByokInbox();
   }
 
   // ── Data Loaders ──
@@ -497,6 +661,64 @@ export class VelgAdminForgeTab extends LitElement {
       }
     } catch (err) {
       captureError(err, { source: 'AdminForgeTab._loadBYOKSetting' });
+    }
+  }
+
+  /**
+   * Kennzahlen und Eingang in EINEM Ladeschritt.
+   *
+   * Beide zusammen, weil die Zahl der offenen Anträge in den Kennzahlen steht
+   * und der Eingang sie auflöst — getrennt geladen zeigte die eine „3 offen"
+   * und der andere zwei Zeilen, und niemand wüsste, welche der beiden lügt.
+   */
+  private async _loadByokInbox() {
+    try {
+      const [stats, requests] = await Promise.all([
+        adminApi.getBYOKAdminStats(),
+        adminApi.listBYOKRequests('pending'),
+      ]);
+      if (stats.success && stats.data) this._byokStats = stats.data;
+      if (requests.success && requests.data) this._byokRequests = requests.data;
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._loadByokInbox' });
+    }
+  }
+
+  private async _resolveByokRequest(id: string, approve: boolean) {
+    if (this._resolvingRequest) return;
+    this._resolvingRequest = id;
+    try {
+      const resp = await adminApi.resolveBYOKRequest(id, approve);
+      if (!resp.success) {
+        VelgToast.error(resp.error?.message ?? msg('The request could not be decided.'));
+        return;
+      }
+      VelgToast.success(approve ? msg('Access granted.') : msg('Request declined.'));
+      // Neu laden statt lokal streichen: das Freigeben setzt AUCH die
+      // Erlaubnis, und diese zweite Wirkung steht in den Kennzahlen.
+      await this._loadByokInbox();
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._resolveByokRequest' });
+      VelgToast.error(msg('The request could not be decided.'));
+    } finally {
+      this._resolvingRequest = null;
+    }
+  }
+
+  private async _changeStaleDays(e: Event) {
+    const days = Number.parseInt((e.target as HTMLInputElement).value, 10);
+    if (!Number.isFinite(days) || days < 1 || days > 3650) return;
+    try {
+      const resp = await adminApi.updateBYOKStaleDays(days);
+      if (!resp.success) {
+        VelgToast.error(resp.error?.message ?? msg('The threshold could not be saved.'));
+        return;
+      }
+      VelgToast.success(msg('Threshold saved.'));
+      await this._loadByokInbox();
+    } catch (err) {
+      captureError(err, { source: 'AdminForgeTab._changeStaleDays' });
+      VelgToast.error(msg('The threshold could not be saved.'));
     }
   }
 
@@ -832,6 +1054,11 @@ export class VelgAdminForgeTab extends LitElement {
             ${renderInfoBubble(msg('Personal API key override. Your account uses these keys instead of consuming forge tokens.'), 'tip-byok')}
           </div>
           <div class="forge-section__divider"></div>
+          ${this._renderByokStats()}
+          ${this._renderStaleThreshold()}
+          ${this._renderByokInbox()}
+          <div class="forge-section__divider"></div>
+          <p class="byok-own-keys">${msg('Your own keys')}</p>
           <velg-keyring></velg-keyring>
         </div>
 
@@ -848,6 +1075,115 @@ export class VelgAdminForgeTab extends LitElement {
           </button>
         </div>
 
+      </div>
+    `;
+  }
+
+  /**
+   * Vier Zahlen, bevor jemand entscheidet.
+   *
+   * Der Abstand zwischen „darf" und „hat einen bestätigten Schlüssel" ist die
+   * eigentliche Auskunft: dazwischen stehen Konten, die freigeschaltet sind
+   * und trotzdem auf dem Projektschlüssel laufen.
+   */
+  private _renderByokStats() {
+    const s = this._byokStats;
+    if (!s) return nothing;
+
+    return html`
+      <div class="byok-stats">
+        <div class="byok-stat">
+          <span class="byok-stat__value">${s.allowed_accounts}</span>
+          <span class="byok-stat__label">${msg('accounts allowed')}</span>
+        </div>
+        <div class="byok-stat">
+          <span class="byok-stat__value">${s.with_confirmed_key}</span>
+          <span class="byok-stat__label">${msg('with a confirmed key')}</span>
+        </div>
+        <div class="byok-stat" ?data-notice=${s.stale_keys > 0}>
+          <span class="byok-stat__value">${s.stale_keys}</span>
+          <span class="byok-stat__label">
+            ${msg(str`unconfirmed for over ${s.stale_after_days} days`)}
+          </span>
+        </div>
+        <div class="byok-stat byok-stat--money">
+          <span class="byok-stat__value">$ ${s.user_paid_usd_30d.toFixed(2)}</span>
+          <span class="byok-stat__label">${msg('on user accounts, 30 days – not the platform')}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderStaleThreshold() {
+    const days = this._byokStats?.stale_after_days ?? 90;
+    return html`
+      <div class="field-row field-row--inline field-row--apart field-row--divided">
+        <div class="field-row__label-group">
+          <span class="field-row__label">${msg('Notice after')}</span>
+          <p class="field-row__description">
+            ${msg('Days a stored key may go unconfirmed at its provider before its card carries a notice. A key withdrawn there looks like a valid one until someone asks.')}
+          </p>
+        </div>
+        <input
+          type="number"
+          class="settings-form__input settings-form__input--sm byok-settings-group__number"
+          min="1"
+          max="3650"
+          .value=${String(days)}
+          aria-label=${msg('Notice after how many days')}
+          @change=${this._changeStaleDays}
+        />
+      </div>
+    `;
+  }
+
+  /**
+   * Der Eingang. Ein Antrag geht hier ein, statt dass der Admin von sich aus
+   * eine Liste durchsehen müsste — das ist der Unterschied zwischen einem
+   * Verfahren und einem guten Willen.
+   */
+  private _renderByokInbox() {
+    const open = this._byokRequests;
+    return html`
+      <div class="byok-inbox">
+        <p class="byok-inbox__title">
+          ${msg('Access requests')}
+          ${open.length > 0 ? html`<span class="byok-inbox__count">${open.length}</span>` : nothing}
+        </p>
+        ${
+          open.length === 0
+            ? html`<p class="byok-inbox__empty">${msg('Nothing waiting.')}</p>`
+            : open.map((r) => this._renderByokRequestRow(r))
+        }
+      </div>
+    `;
+  }
+
+  private _renderByokRequestRow(r: BYOKRequestRow) {
+    const busy = this._resolvingRequest === r.id;
+    return html`
+      <div class="byok-request">
+        <div class="byok-request__who">
+          <span class="byok-request__id">${r.user_id}</span>
+          <span class="byok-request__when">${formatDateTime(r.created_at)}</span>
+        </div>
+        ${r.reason ? html`<p class="byok-request__reason">${r.reason}</p>` : nothing}
+        <div class="byok-request__actions">
+          <button
+            class="byok-request__btn byok-request__btn--yes"
+            ?disabled=${busy}
+            @click=${() => this._resolveByokRequest(r.id, true)}
+          >
+            ${msg('Grant')}
+          </button>
+          <button
+            class="byok-request__btn"
+            ?disabled=${busy}
+            @click=${() => this._resolveByokRequest(r.id, false)}
+          >
+            ${msg('Decline')}
+          </button>
+        </div>
       </div>
     `;
   }

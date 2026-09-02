@@ -572,6 +572,24 @@ class BYOKStatus(BaseModel):
     request_status: Literal["pending", "approved", "rejected"] | None = None
 
 
+class BYOKAdminStats(BaseModel):
+    """The state of BYOK across the platform, for SEC-08.
+
+    ``user_paid_usd_30d`` is the one to read carefully — and the field name
+    says so on purpose. It is money spent on USER provider accounts, never the
+    platform's; migration 332 keeps exactly these calls out of the platform's
+    budget cap. A field called ``cost_30d`` would have invited the opposite
+    reading.
+    """
+
+    stale_after_days: int = 90
+    allowed_accounts: int = 0
+    with_confirmed_key: int = 0
+    stale_keys: int = 0
+    user_paid_usd_30d: float = 0.0
+    open_requests: int = 0
+
+
 class BYOKRequestCreate(BaseModel):
     """A person asking to be allowed a personal key."""
 

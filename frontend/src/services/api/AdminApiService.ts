@@ -182,6 +182,33 @@ export class AdminApiService extends BaseApiService {
     return this.put(`/forge/admin/user-byok-allowed/${userId}?enabled=${enabled}`, {});
   }
 
+  /** The state of BYOK across the platform, read in one statement. */
+  async getBYOKAdminStats(): Promise<ApiResponse<BYOKAdminStats>> {
+    return this.get('/forge/admin/byok-stats');
+  }
+
+  /** How long a stored key may go unconfirmed before it carries a notice. */
+  async updateBYOKStaleDays(days: number): Promise<ApiResponse<unknown>> {
+    return this.put(`/forge/admin/byok-stale-days?days=${days}`, {});
+  }
+
+  /** The inbox: access requests waiting for a decision, oldest first. */
+  async listBYOKRequests(
+    status: 'pending' | 'approved' | 'rejected' = 'pending',
+  ): Promise<ApiResponse<BYOKRequestRow[]>> {
+    return this.get(`/forge/admin/byok-requests?status=${status}`);
+  }
+
+  /** Decide one request — status and permission are written together. */
+  async resolveBYOKRequest(
+    requestId: string,
+    approve: boolean,
+    adminNotes?: string,
+  ): Promise<ApiResponse<unknown>> {
+    const notes = adminNotes ? `&admin_notes=${encodeURIComponent(adminNotes)}` : '';
+    return this.put(`/forge/admin/byok-requests/${requestId}?approve=${approve}${notes}`, {});
+  }
+
   // --- Impersonation ---
 
   async impersonateUser(
@@ -406,6 +433,33 @@ export class AdminApiService extends BaseApiService {
   ): Promise<ApiResponse<DungeonOverrideConfig>> {
     return this.put(`/admin/dungeon-override/simulations/${simulationId}`, config);
   }
+}
+
+/**
+ * Der Zustand von BYOK auf der Plattform, für SEC-08.
+ *
+ * `user_paid_usd_30d` ist die Zahl, die man falsch lesen kann, und der
+ * Feldname sagt es deshalb aus: es ist Geld auf NUTZER-Anbieterkonten, nie
+ * das der Plattform. Migration 332 hält genau diese Aufrufe aus der
+ * Plattformkappe heraus; ein Feld namens `cost_30d` hätte die umgekehrte
+ * Lesart eingeladen.
+ */
+export interface BYOKAdminStats {
+  stale_after_days: number;
+  allowed_accounts: number;
+  with_confirmed_key: number;
+  stale_keys: number;
+  user_paid_usd_30d: number;
+  open_requests: number;
+}
+
+export interface BYOKRequestRow {
+  id: string;
+  user_id: string;
+  reason: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  reviewed_at: string | null;
 }
 
 export interface HealthEffectsData {

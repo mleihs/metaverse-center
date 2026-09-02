@@ -517,6 +517,35 @@ class ForgeDraftService:
         return rows[0] if rows else {}
 
     @staticmethod
+    async def byok_admin_stats(admin_supabase: Client) -> dict:
+        """Four numbers the admin needs before deciding anything.
+
+        Deliberately NOT „how many keys are stored" alone. The interesting
+        gap is between allowed and actually working: an account that may use
+        a personal key and never stored one still runs on the project key, and
+        one whose key has not been confirmed for months may already be dead
+        without anyone noticing. The last number is the one that is easy to
+        misread, so it says whose money it is: these costs sit on USER
+        accounts, not on the platform's budget (migration 332 keeps them out
+        of the cap for exactly that reason).
+        """
+        resp = await admin_supabase.rpc("fn_byok_admin_stats", {}).execute()
+        return resp.data or {
+            "allowed_accounts": 0,
+            "with_confirmed_key": 0,
+            "stale_keys": 0,
+            "stale_after_days": 90,
+            "user_paid_usd_30d": 0.0,
+            "open_requests": 0,
+        }
+
+    @staticmethod
+    async def update_byok_stale_days(admin_supabase: Client, days: int, admin_id: UUID) -> dict:
+        """How long a stored key may go unconfirmed before it carries a notice."""
+        await upsert_platform_setting(admin_supabase, "byok_stale_days", days, updated_by_id=admin_id)
+        return {"byok_stale_days": days}
+
+    @staticmethod
     async def list_byok_requests(admin_supabase: Client, status: str = "pending") -> list[dict]:
         """The admin inbox: requests waiting for a decision, oldest first."""
         resp = await (
