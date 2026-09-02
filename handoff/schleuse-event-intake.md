@@ -478,3 +478,79 @@ auch, als was.
 **Nicht gebaut:** die Zeile „Für deine Welt: X effektiv" im Melden-Modal. Die
 Zahl kommt aus einem Endpunkt, den nur Plattform-Admins erreichen. Statt einer
 geratenen steht der wahre Satz da.
+
+---
+
+## Nachtrag (Claude Code, 02.09.2026) — Schritt 5, und was der Bauplan hier verspricht
+
+`components/intake/IntakeTriageModal.ts`, erreichbar über eine Sichtungs-Zeile
+im Kopf von Kammer ①. Fünf Abweichungen vom Plan, jede mit ihrem Grund.
+
+### 1. Karten statt Zeilen — und das Masonry-Raster gehört dem Lesesaal
+
+Der Plan beschreibt Zeilen (`28px 1fr 130px 80px 210px`). Gebaut ist ein
+gleichförmiges Kartenraster mit optionalem Bildfach. Gemessen: **vier** Quellen
+tragen ein Vorschaubild, jede unter einem anderen Namen (`thumbnail` Guardian ·
+`image_url` NewsAPI + WHO · `socialimage` GDELT · `thumb` Bluesky), die vier
+Messdienste tragen nie eines. Eine Zeile mit Bildfach ist für beide Fälle
+falsch: mit Bild zu hoch, ohne Bild ein Loch.
+
+⚠ **Die Resume-Notiz führte das Zeilen-Spannweiten-Raster (`grid-auto-rows: 8px`
+aus einem ResizeObserver) der Sichtung zu. Das ist falsch.** Die Quelle
+(`schleuse-sensorleiste-kaputt-2026-09-02.md`) führt es unter „Wo Masonry DOCH
+richtig wäre" beim **Lesesaal (Schritt 6)** und nennt für die Sichtung zwei
+Gründe DAGEGEN: sie ist eine Rangliste (die Reihenfolge ist die Auskunft), und
+jede Karte trägt fokussierbare Knöpfe (WCAG 2.4.3).
+
+### 2. Passung und Netz-Tempo sind DA und abgeschaltet
+
+Der Plan erlaubt bis zum Backend eine Frontend-Heuristik für `fit`. Es gibt
+keine. Die einzigen Zahlen, aus denen das Frontend eine bauen könnte, sind
+Magnitude und Alter — beide stehen als eigene Sortierung daneben. Eine Passung,
+die heimlich die Magnitude ist, trägt die Gestalt einer zweiten, unabhängigen
+Messung.
+
+Beide Chips tragen `°` und eine Fussnote. `BUREAU_RANKS_THE_SIGNALS` ist der
+eine Schalter zurück, sobald Lücke 2 und 3 zu sind.
+
+### 3. Drei Dinge aus dem Plan sind NICHT gebaut, weil es sie nicht gibt
+
+- **„Verfällt nach 48 h"** — es gibt keinen Verfall. `news_scan_candidates` hat
+  keinen Aufräumer, keinen Cron, keine Frist (über Migrationen und Dienste
+  geprüft). Der Fuss sagt jetzt: hier verfällt nichts, ein Signal bleibt, bis
+  jemand entscheidet. **Wer den Verfall will, muss ihn bauen** — dann ist die
+  Zeile aus dem Plan wieder richtig.
+- **Die Rausch-Zeile** — das Backend filtert VOR dem Ablegen; was es verwirft,
+  erreicht das Frontend nie. Sichtbar wird es erst über das Scan-Log
+  (Schritt 6). Eine Klappe, die garantiert leer ist, ist keine Anzeige.
+- **„Top 5 nach Passung"** heisst „Die 5 stärksten aufnehmen" und nimmt nach
+  Magnitude.
+
+### 4. „◆ empfohlen" kommt vom Server
+
+Der Plan nennt fest `mag ≥ 0.40`. Das ist genau der BODEN von
+`compute_recommended_threshold` (oberste 20 % der wartenden Kandidaten, Boden
+0.40) — also ihr schwächster Fall. Die Sichtung liest
+`intakeState.recommendedThreshold` aus der Antwort und bietet die Zahl auch als
+vierte Filterstufe an.
+
+### 5. Eine stille Deckelung
+
+`loadScanner` rief `listCandidates()` ohne Parameter — Vorgabe `limit=25`. Von
+83 Kandidaten auf Prod hätte die Sichtung 25 gezeigt und nichts dazu gesagt.
+Jetzt 100 (Maximum des Endpunkts), und der Fuss nennt „N von M geladen — die
+neuesten zuerst", sobald mehr da sind.
+
+### Was Schritt 5 nebenbei repariert hat
+
+- **`--color-source-<kind>` gibt es nicht.** Der erste Anlauf setzte diesen
+  zusammengesetzten Tokennamen; der Rückfall hätte gegriffen und JEDER
+  Quellenpunkt wäre grau gewesen, ohne Meldung. Die Zuordnung steht jetzt
+  einmal in `intakeKindColorStyles`; `IntakeSensorTile` liest von dort statt aus
+  seiner eigenen Kopie.
+- **Keine Komponente mit API-Zugriff war testbar** — `services/supabase/client.ts`
+  wirft beim Import ohne `VITE_SUPABASE_URL`, und jedes API-Singleton zieht es
+  mit herein. `vitest.config.ts` trägt jetzt zwei Platzhalter.
+- **Zwei geerbte Übersetzungen abgefangen:** `msg('Fit')` hätte „Eignung"
+  geerbt (die Dungeon-Tauglichkeit), `msg('Open')` „Offen" (der Zustand, wo ein
+  Verb gemeint ist). Eigene Quellsätze: `Fit for this world`, `Open triage`.
