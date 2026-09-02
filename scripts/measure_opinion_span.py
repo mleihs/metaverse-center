@@ -64,7 +64,7 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 PROJECT = "bffjoupddfjaljqrwqck"
 
@@ -74,9 +74,9 @@ RELATIONSHIP_CREATE_THRESHOLD = 60
 RELATIONSHIP_HOSTILE_THRESHOLD = -60
 
 # Der Beginn der Uhr. AB, nicht nach.
-WEG1_DEPLOY = datetime(2026, 8, 31, 11, 19, tzinfo=timezone.utc)  # 13:19 CEST
-AUSSAGEKRAEFTIG_AB = datetime(2026, 9, 21, tzinfo=timezone.utc)
-FRUEHESTENS_SINNVOLL = datetime(2026, 9, 7, tzinfo=timezone.utc)
+WEG1_DEPLOY = datetime(2026, 8, 31, 11, 19, tzinfo=UTC)  # 13:19 CEST
+AUSSAGEKRAEFTIG_AB = datetime(2026, 9, 21, tzinfo=UTC)
+FRUEHESTENS_SINNVOLL = datetime(2026, 9, 7, tzinfo=UTC)
 
 # Ausgangsstand 31.08.2026 (siehe Kopf).
 BASIS = {
@@ -162,7 +162,7 @@ def _diff(jetzt: int, vorher: int) -> str:
 
 
 def main() -> int:
-    jetzt = datetime.now(timezone.utc)
+    jetzt = datetime.now(UTC)
     tage = (jetzt - WEG1_DEPLOY).days
     m = messen()
 
