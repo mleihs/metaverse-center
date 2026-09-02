@@ -874,3 +874,165 @@ class TestIntakeStatusOnTheScanLog:
         rows = [{"source_name": "guardian", "source_id": "g1", "title": "A"}]
         await ScannerService._attach_intake_status(_Broken([]), rows)
         assert rows[0]["intake_status"] is None
+
+
+# ---------------------------------------------------------------------------
+# Story-Buendelung (Luecke 2)
+# ---------------------------------------------------------------------------
+
+class TestStoryBundling:
+    """Drei Quellen ueber dasselbe Beben sind EINE Geschichte.
+
+    Die Vorgaengerin `deduplicate_within_batch` tat zweierlei anders: sie
+    verglich nur INNERHALB derselben Quelle — ein Guardian-Artikel und ein
+    Bluesky-Beitrag wurden deshalb nie zusammengefuehrt — und sie WARF die
+    Duplikate weg, samt der Auskunft, wie viele Quellen etwas melden.
+    """
+
+    @staticmethod
+    def _r(title, source, *, structured=False, supporting=False, magnitude=None, raw=None):
+        return ScanResult(
+            source_id=f"{source}:{title[:8]}",
+            source_name=source,
+            title=title,
+            magnitude=magnitude,
+            is_structured=structured,
+            is_supporting=supporting,
+            raw_data=raw or {},
+        )
+
+    def test_a_lone_story_carries_its_own_source(self):
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch([self._r("Beben vor Honshu", "guardian")])
+        assert len(out) == 1
+        assert out[0].sources == [{"name": "guardian", "count": 1}]
+
+    def test_two_sources_become_one_story(self):
+        """Der Kern: ueber Quellgrenzen HINWEG."""
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("Erdbeben erschuettert Nordjapan", "guardian"),
+                self._r("Erdbeben erschuettert Nordjapan heute", "bluesky", supporting=True),
+            ]
+        )
+        assert len(out) == 1
+        assert {s["name"] for s in out[0].sources} == {"guardian", "bluesky"}
+
+    def test_a_supporting_source_never_carries(self):
+        """Die Regel des Bauplans, hier durchgesetzt statt beschrieben."""
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        # Die belegende Quelle kommt ZUERST — sie darf trotzdem nicht Traeger sein.
+        out = bundle_within_batch(
+            [
+                self._r("Erdbeben erschuettert Nordjapan", "bluesky", supporting=True),
+                self._r("Erdbeben erschuettert Nordjapan heute", "guardian"),
+            ]
+        )
+        assert len(out) == 1
+        assert out[0].source_name == "guardian"
+        assert {s["name"] for s in out[0].sources} == {"guardian", "bluesky"}
+
+    def test_a_measurement_beats_a_mention(self):
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("Erdbeben erschuettert Nordjapan", "guardian"),
+                self._r("Erdbeben erschuettert Nordjapan heute", "usgs_earthquakes", structured=True),
+            ]
+        )
+        assert out[0].source_name == "usgs_earthquakes"
+
+    def test_engagement_is_summed_from_the_social_contributors(self):
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("Erdbeben erschuettert Nordjapan", "guardian"),
+                self._r(
+                    "Erdbeben erschuettert Nordjapan heute",
+                    "bluesky",
+                    supporting=True,
+                    raw={"likes": 120, "reposts": 30},
+                ),
+            ]
+        )
+        assert out[0].social_volume == 150
+
+    def test_the_same_source_twice_raises_its_count(self):
+        """`count` zaehlt BEITRAEGE, nicht Quellen: dass NOAA dieselbe Warnung
+        dreimal absetzt, ist eine andere Auskunft als drei Dienste."""
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("High Wind Warning NWS Billings MT", "noaa_alerts"),
+                self._r("High Wind Warning NWS Billings MT heute", "noaa_alerts"),
+            ]
+        )
+        assert out[0].sources == [{"name": "noaa_alerts", "count": 2}]
+
+    def test_different_stories_stay_apart(self):
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("Erdbeben erschuettert Nordjapan", "guardian"),
+                self._r("Hafenstreik geht in die dritte Woche", "guardian"),
+            ]
+        )
+        assert len(out) == 2
+
+    def test_nothing_is_lost_when_the_carrier_changes(self):
+        """Wenn ein spaeterer Treffer besser traegt, muss er die BISHERIGE
+        Buendelung uebernehmen — sonst faellt die erste Quelle unter den Tisch.
+
+        ⚠ DIESER TEST HAT EINEN ECHTEN FEHLER GEFANGEN, und er tat es nur, weil
+        er DREI Quellen benutzt. Beim Traegerwechsel stand zuerst
+        `_add_source(result, existing)`: der alte Traeger wurde ein zweites Mal
+        gezaehlt, der neue gar nicht eingetragen. Mit zwei Quellen sieht das
+        Ergebnis plausibel aus — eine Quelle, ein Eintrag —, erst die dritte
+        macht die Luecke sichtbar.
+
+        🔑 Ein Test mit dem Mindestfall prueft, ob der Code laeuft. Erst einer
+        mit dem Fall darueber prueft, ob er stimmt.
+        """
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        # Die Titel muessen ueber der Jaccard-Schwelle von 0.70 liegen; ein
+        # zusaetzliches Wort je Titel taete das schon nicht mehr (3 gemeinsame
+        # von 5 im Verbund = 0.6).
+        out = bundle_within_batch(
+            [
+                self._r("Beben vor Honshu", "bluesky", supporting=True, raw={"likes": 10}),
+                self._r("Beben vor Honshu", "guardian"),
+                self._r("Beben vor Honshu", "usgs_earthquakes", structured=True),
+            ]
+        )
+        assert len(out) == 1
+        assert out[0].source_name == "usgs_earthquakes"
+        assert {s["name"] for s in out[0].sources} == {"bluesky", "guardian", "usgs_earthquakes"}
+        # Die Zustimmung des ersten Beitraegers ueberlebt zwei Traegerwechsel.
+        assert out[0].social_volume == 10
+
+    def test_the_threshold_is_a_threshold_and_not_a_promise(self):
+        """Zwei Titel, die ein Mensch als dieselbe Geschichte laese, bleiben
+        getrennt, wenn die Jaccard-Aehnlichkeit unter 0.70 faellt.
+
+        Das ist keine Schwaeche der Buendelung, sondern ihre Grenze — und sie
+        gehoert festgehalten, damit niemand sie fuer einen Fehler haelt und die
+        Schwelle senkt, bis Verschiedenes zusammenfaellt.
+        """
+        from backend.services.scanning.deduplicator import bundle_within_batch
+
+        out = bundle_within_batch(
+            [
+                self._r("Beben vor Honshu gemeldet", "guardian"),
+                self._r("Beben vor Honshu bestaetigt", "usgs_earthquakes", structured=True),
+            ]
+        )
+        assert len(out) == 2

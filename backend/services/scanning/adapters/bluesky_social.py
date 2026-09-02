@@ -131,6 +131,11 @@ class BlueskyScannerAdapter(SourceAdapter):
 
     name = "bluesky"
     display_name = "Bluesky"
+    # Nur Beleg, nie eigene Zeile — die Regel steht im Kopfkommentar dieser
+    # Datei und wird seit der Story-Buendelung auch durchgesetzt, nicht nur
+    # beschrieben: bei einer Geschichte, die auch eine Nachrichtenquelle
+    # gemeldet hat, ist Bluesky die Zusatzquelle und nicht der Traeger.
+    is_supporting = True
     categories = [
         "economic_crisis",
         "military_conflict",

@@ -240,6 +240,12 @@ class ScannerService(BaseSchedulerMixin):
                     continue
 
                 results = await adapter.fetch()
+                # Der Traegerstempel kommt vom ADAPTER, nicht vom Ergebnis: nur
+                # er weiss, ob seine Quelle Beleg oder eigene Zeile ist. Ihn im
+                # Adapter selbst zu setzen hiesse, ihn in elf Dateien zu
+                # wiederholen.
+                for result in results:
+                    result.is_supporting = adapter.is_supporting
                 metrics["adapters"][name] = {"status": "ok", "fetched": len(results)}
                 metrics["total_fetched"] += len(results)
                 all_results.extend(results)
@@ -271,8 +277,9 @@ class ScannerService(BaseSchedulerMixin):
         # Stage 2: PRE-FILTER — keyword reject/boost (no LLM)
         filtered = pre_filter.pre_filter(all_results)
 
-        # Deduplicate within batch (removes near-identical NOAA/USGS titles)
-        filtered = deduplicator.deduplicate_within_batch(filtered)
+        # Buendeln: aehnliche Titel werden EINE Geschichte mit mehreren Quellen
+        # (frueher: das Duplikat flog weg, samt der Auskunft, wie viele es meldeten)
+        filtered = deduplicator.bundle_within_batch(filtered)
 
         # Deduplicate against scan log
         novel = await deduplicator.deduplicate(admin, filtered)
@@ -410,6 +417,12 @@ class ScannerService(BaseSchedulerMixin):
                 # mitzuschreiben war der Grund, warum das Scan-Protokoll nicht
                 # sagen konnte, was aus einer Zeile geworden ist.
                 "source_id": result.source_id,
+                # Story-Buendelung (Luecke 2). `sources` traegt IMMER auch den
+                # Traeger selbst; `social_volume` ist 0, wenn keine Sozialquelle
+                # beigetragen hat — das heisst „keine gemessen", nicht
+                # „niemand hat reagiert".
+                "sources": result.sources,
+                "social_volume": result.social_volume,
                 "title": result.title,
                 "description": result.description or result.classification_reason,
                 "bureau_dispatch": dispatch,

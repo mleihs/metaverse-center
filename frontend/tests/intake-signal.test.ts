@@ -52,6 +52,8 @@ function candidate(over: Partial<ScanCandidate> = {}): ScanCandidate {
     classification_reason: 'deterministisch (Richter → Magnitude)',
     source_adapter: 'usgs_earthquakes',
     source_id: null,
+    sources: [],
+    social_volume: 0,
     is_structured: true,
     status: 'pending',
     resonance_id: null,

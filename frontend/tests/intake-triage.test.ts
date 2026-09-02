@@ -46,6 +46,8 @@ function candidate(over: Partial<ScanCandidate> = {}): ScanCandidate {
     classification_reason: null,
     source_adapter: 'usgs_earthquakes',
     source_id: null,
+    sources: [],
+    social_volume: 0,
     is_structured: true,
     status: 'pending',
     resonance_id: null,
@@ -174,18 +176,32 @@ describe('Der Rang', () => {
    * späterer Beitrag, der sie „endlich anschliesst", indem er sie auf die
    * Magnitude legt, macht dieses Tor rot.
    */
-  it('lässt Passung und Netz-Tempo abgeschaltet, solange das Bureau nicht rechnet', async () => {
+  it('lässt NUR die Passung abgeschaltet, seit das Netz-Tempo gemessen wird', async () => {
     seed([candidate({ id: 'a' })]);
     const el = await sichtung();
     const sort = chips(el, 'sort');
     const disabled = sort.filter((c) => c.disabled);
-    expect(disabled).toHaveLength(2);
-    // Und die beiden ARBEITENDEN sind nicht abgeschaltet.
-    expect(sort.filter((c) => !c.disabled)).toHaveLength(2);
-    for (const chip of disabled) {
-      // Die Fussnoten-Marke steht am Knopf, nicht nur im Fusstext.
-      expect(chip.textContent).toContain('°');
-    }
+    // GENAU EINE. Bis Migration 345 waren es zwei, und ein gemeinsamer
+    // Schalter haette beim Kippen der einen Bedingung fuer die andere
+    // lautlos falsch gestanden.
+    expect(disabled).toHaveLength(1);
+    expect(sort.filter((c) => !c.disabled)).toHaveLength(3);
+    // Die Fussnoten-Marke steht am Knopf, nicht nur im Fusstext.
+    expect(disabled[0].textContent).toContain('°');
+  });
+
+  it('sortiert nach Netz-Tempo, seit die Bündelung eine Reichweite liefert', async () => {
+    seed([
+      candidate({ id: 'a', title: 'still' }),
+      candidate({ id: 'b', title: 'laut' }),
+    ]);
+    intakeState.patch('b', { socialVolume: 420 });
+    const el = await sichtung();
+
+    const sort = chips(el, 'sort');
+    sort[3].click(); // Netz-Tempo
+    await el.updateComplete;
+    expect(headlines(el)[0]).toBe('laut');
   });
 });
 

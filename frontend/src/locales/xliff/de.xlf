@@ -30952,10 +30952,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Discard selection</source>
   <target>Auswahl verwerfen</target>
 </trans-unit>
-<trans-unit id="sf2c91c3f7c277588">
-  <source>° Fit and net speed are not sorted yet: the Bureau does not deliver either number per candidate. Nothing here computes a stand-in for them – a fit that is secretly the magnitude would look like a second, independent measurement.</source>
-  <target>° Passung und Netz-Tempo sortieren noch nicht: das Bureau liefert keine der beiden Zahlen je Kandidat. Hier wird auch kein Ersatz dafür gerechnet – eine Passung, die heimlich die Magnitude ist, sähe aus wie eine zweite, unabhängige Messung.</target>
-</trans-unit>
 <trans-unit id="sf7a122f5d59f2f65">
   <source>Nothing here expires. A signal you neither admit nor discard stays in triage until someone decides.</source>
   <target>Hier verfällt nichts. Ein Signal, das du weder aufnimmst noch verwirfst, bleibt in der Sichtung, bis jemand entscheidet.</target>
@@ -31239,6 +31235,10 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1cd3f4462020234a">
   <source>reported</source>
   <target>gemeldet</target>
+</trans-unit>
+<trans-unit id="s811edfe38f13b2c1">
+  <source>° Fit is not sorted: the Bureau delivers no such number per candidate, and how one would be computed is a decision about the game, not a derivation. Nothing here stands in for it – a fit that is secretly the magnitude would look like a second, independent measurement.</source>
+  <target>° Die Passung sortiert nicht: das Bureau liefert keine solche Zahl je Kandidat, und wie eine zu rechnen wäre, ist eine Entscheidung über das Spiel und keine Ableitung. Hier steht auch kein Ersatz dafür – eine Passung, die heimlich die Magnitude ist, sähe aus wie eine zweite, unabhängige Messung.</target>
 </trans-unit>
 </body>
 </file>

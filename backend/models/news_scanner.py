@@ -22,6 +22,13 @@ class ScanCandidateResponse(BaseModel):
     magnitude: float
     classification_reason: str | None = None
     source_adapter: str
+    #: Die Quellen, die dieselbe Geschichte gemeldet haben (Migration 345).
+    #: Enthaelt IMMER auch den Traeger — eine Geschichte ohne Quelle gibt es
+    #: nicht. Die Vorgabe deckt Zeilen von vor der Migration.
+    sources: list[dict] = []
+    #: Likes + Reposts der beitragenden Sozialquellen. 0 heisst „keine
+    #: gemessen", nicht „niemand hat reagiert".
+    social_volume: int = 0
     #: Zusammen mit `source_adapter` der Schluessel zum Scan-Protokoll
     #: (Migration 343). NULL fuer Zeilen von vor der Migration, die sich nicht
     #: eindeutig zuordnen liessen.

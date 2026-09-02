@@ -27,6 +27,24 @@ class ScanResult:
     classification_reason: str | None = None
     is_structured: bool = False
 
+    #: Nur BELEG, nie eigene Zeile — vom Adapter gestempelt (`is_supporting`).
+    #:
+    #: Der Bauplan der Schleuse stellt eine Regel auf, die nicht verhandelbar
+    #: ist: eine Quelle, die nur Tempo und Reichweite zu einer bestehenden
+    #: Geschichte liefert, wird KEINE eigene Zeile. Bei der Buendelung
+    #: entscheidet dieses Feld, wer Traeger sein darf.
+    is_supporting: bool = False
+
+    #: Die Quellen, die dieselbe Geschichte gemeldet haben (Story-Buendelung).
+    #: Leer, bis `bundle_within_batch` sie fuellt; danach enthaelt sie IMMER
+    #: auch den Traeger selbst — eine Geschichte ohne Quelle gibt es nicht.
+    sources: list[dict[str, Any]] = field(default_factory=list)
+
+    #: Zustimmung im Netz zu dieser Geschichte, aus den beitragenden
+    #: Sozialquellen aufsummiert (Likes + Reposts). 0 heisst „keine gemessen",
+    #: nicht „niemand hat reagiert".
+    social_volume: int = 0
+
 
 class SourceAdapter(ABC):
     """Base class for all event source adapters."""
@@ -38,6 +56,18 @@ class SourceAdapter(ABC):
     requires_api_key: bool
     api_key_setting: str | None = None
     default_interval: int  # seconds between polls
+
+    #: Ist diese Quelle nur BELEG, nie eigene Zeile?
+    #:
+    #: Der Bauplan: „Eine Sozialquelle liefert nur Tempo und Reichweite zu einer
+    #: BESTEHENDEN Geschichte, nie ein eigenes Signal." Ein Adapter, der das von
+    #: sich sagt, wird bei der Buendelung nie Traeger, solange eine andere
+    #: Quelle dieselbe Geschichte meldet.
+    #:
+    #: WARUM AM ADAPTER UND NICHT IN EINER LISTE IM DEDUPLIZIERER: eine Liste
+    #: von Adapternamen an einer zweiten Stelle laeuft auseinander, sobald
+    #: jemand einen Adapter umbenennt. Der Adapter weiss selbst, was er ist.
+    is_supporting: bool = False
 
     #: Further `platform_settings` keys this adapter needs, beyond its API key.
     #:

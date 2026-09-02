@@ -26,12 +26,15 @@
  * Raster aus jenem Dokument gehört dem LESESAAL (Schritt 6) — einer Stöber-
  * fläche ohne Rang. Die Resume-Notiz führt es der Sichtung zu; sie irrt.
  *
- * ── ZWEI REGLER, DIE NICHTS BEWEGEN, UND ES SAGEN ───────────────────────────
+ * ── EIN REGLER, DER NICHTS BEWEGT, UND ES SAGT ──────────────────────────────
  *
- * „Passung" und „Netz-Tempo" stehen im Bauplan als Sortierungen. Beide brauchen
- * Zahlen, die das Backend nicht liefert (Lücke 3: `fit` je Kandidat × Welt;
- * Lücke 2: `social_volume` aus der Story-Bündelung). `fit` ist an jedem Signal
- * `undefined`, `socialVolume` überall 0.
+ * „Passung" und „Netz-Tempo" standen beide still, weil beide Zahlen fehlten.
+ * Seit Migration 345 liefert die Story-Bündelung `social_volume` — **Netz-Tempo
+ * arbeitet, Passung nicht.** Der gemeinsame Schalter musste dafür in zwei
+ * zerfallen; einer für zwei Bedingungen wäre ab dem Tag falsch gewesen, an dem
+ * die erste kippt.
+ *
+ * `fit` ist an jedem Signal weiterhin `undefined` (Lücke 3).
  *
  * Eine Heuristik wäre hier schlimmer als die Lücke: die einzigen Zahlen, aus
  * denen das Frontend etwas bauen könnte, sind Magnitude und Alter — beide
@@ -72,14 +75,39 @@ import { archetypeLabel } from './intake-labels.js';
 import { intakeControlStyles, intakeKindColorStyles } from './intake-styles.js';
 
 /**
- * Rangzahlen des Bureaus erreichen die Schleuse.
+ * Liefert das Bureau eine PASSUNG je Kandidat und Welt? (Lücke 3)
  *
- * Solange `false`, sind „Passung" und „Netz-Tempo" abgeschaltet und das Raster
- * trägt eine Fussnote. Werden Lücke 2 und 3 geschlossen, kippt diese Konstante
- * auf `true` und beide Sortierungen arbeiten. Ein Schalter, kein Sweep — genau
- * wie `LENS_REACHES_MODEL` im Schmelztiegel.
+ * ⚠ EIN SCHALTER FÜR ZWEI DINGE WAR EINER ZU WENIG. Bis zum 02.09.2026 stand
+ * hier `BUREAU_RANKS_THE_SIGNALS` und schaltete „Passung" UND „Netz-Tempo"
+ * gemeinsam ab, weil beide Zahlen fehlten. Mit Migration 345 kam
+ * `social_volume` — und ein gemeinsamer Schalter hätte entweder eine
+ * arbeitende Sortierung weiter gesperrt oder eine tote freigegeben.
+ *
+ * 🔑 Zwei Bedingungen, die zufällig denselben Wert haben, sind nicht eine.
+ * Sobald eine von beiden kippt, wird der gemeinsame Schalter für die andere
+ * falsch — und zwar lautlos.
+ *
+ * `fit` ist an jedem Signal weiterhin `undefined`. Und die Lücke ist nicht
+ * bloss technisch: WIE eine Passung gerechnet wird (Kategorie↔Zone,
+ * Agentenrollen, Vektor-Verfügbarkeit), ist eine Spielentscheidung, keine
+ * Ableitung. Wer sie hier still einbaut, setzt eine Zahl, die später als
+ * Messwert gelesen wird.
  */
-const BUREAU_RANKS_THE_SIGNALS = false;
+const BUREAU_SCORES_THE_FIT = false;
+
+/**
+ * Liefert der Zufluss eine Netz-Reichweite? (Lücke 2 — seit 02.09.2026 ja)
+ *
+ * `social_volume` kommt aus der Story-Bündelung: Likes und Reposts der
+ * Sozialquellen, die zu DERSELBEN Geschichte beigetragen haben (Migration 345).
+ *
+ * ⚠ `0` heisst „keine gemessen", nicht „niemand hat reagiert" — heute liefert
+ * nur Bluesky solche Zahlen, und nur zu Geschichten, die eine
+ * Nachrichtenquelle schon gemeldet hat. Eine Sortierung nach Netz-Tempo zeigt
+ * deshalb oben, was im Netz besprochen WURDE, und darunter alles, worüber
+ * nichts bekannt ist — nicht alles, worüber geschwiegen wurde.
+ */
+const NET_REACH_IS_MEASURED = true;
 
 /** Wie viele „die stärksten" aufnimmt. */
 const TOP_PICK_COUNT = 5;
@@ -745,8 +773,8 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
           <span class="label">${msg('Sort')}</span>
           ${this._renderSortChip('magnitude', msg('Magnitude'), true)}
           ${this._renderSortChip('new', msg('Newest'), true)}
-          ${this._renderSortChip('fit', msg('Fit for this world'), BUREAU_RANKS_THE_SIGNALS)}
-          ${this._renderSortChip('velocity', msg('Net speed'), BUREAU_RANKS_THE_SIGNALS)}
+          ${this._renderSortChip('fit', msg('Fit for this world'), BUREAU_SCORES_THE_FIT)}
+          ${this._renderSortChip('velocity', msg('Net speed'), NET_REACH_IS_MEASURED)}
         </div>
 
         <div class="group" role="group" aria-label=${msg('Minimum magnitude')}>
@@ -998,10 +1026,10 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
 
             <p class="prose prose--quiet foot__note">
               ${
-                BUREAU_RANKS_THE_SIGNALS
+                BUREAU_SCORES_THE_FIT
                   ? nothing
                   : html`${msg(
-                      '° Fit and net speed are not sorted yet: the Bureau does not deliver either number per candidate. Nothing here computes a stand-in for them – a fit that is secretly the magnitude would look like a second, independent measurement.',
+                      '° Fit is not sorted: the Bureau delivers no such number per candidate, and how one would be computed is a decision about the game, not a derivation. Nothing here stands in for it – a fit that is secretly the magnitude would look like a second, independent measurement.',
                     )}<br />`
               }
               ${msg(
