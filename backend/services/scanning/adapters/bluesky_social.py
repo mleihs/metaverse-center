@@ -230,6 +230,16 @@ class BlueskyScannerAdapter(SourceAdapter):
                             "replies": post.get("replyCount", 0),
                             "indexed_at": post.get("indexedAt"),
                             "post_text": (post.get("record") or {}).get("text"),
+                            # Das Vorschaubild der verlinkten Karte.
+                            #
+                            # Die einzige Quelle im Zulauf, die ueberhaupt eines
+                            # mitbringt: die vier Messdienste (USGS, NOAA, NASA,
+                            # GDACS) liefern Zahlen, keine Bilder. Wer eine
+                            # Darstellung mit Bild bauen will, braucht dieses
+                            # Feld — und muss damit rechnen, dass es bei den
+                            # meisten Signalen fehlt. `thumb` ist eine
+                            # CDN-URL von bsky.app, kein Blob.
+                            "thumb": external.get("thumb"),
                         },
                         is_structured=False,
                     )
