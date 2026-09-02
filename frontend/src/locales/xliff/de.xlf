@@ -30203,10 +30203,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>4 Aftermath · what it set off</source>
   <target>4 Nachhall · was es auslöste</target>
 </trans-unit>
-<trans-unit id="s8e9d2f6b5aa2677c">
-  <source>No aftermath recorded. Echoes and impacts appear here.</source>
-  <target>Kein Nachhall verzeichnet. Echos und Wirkungen erscheinen hier.</target>
-</trans-unit>
 <trans-unit id="s99a300f66daaef26">
   <source>Loot Catalogue</source>
   <target>Beutekatalog</target>
@@ -31222,6 +31218,114 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s378e8f3897894583">
   <source>Reveal all</source>
 <target>Alle aufdecken</target>
+</trans-unit>
+<trans-unit id="s685e06e4c4cb0e8d">
+  <source>No aftermath yet. It appears once a resonance from quarantine has reached the worlds.</source>
+  <target>Noch kein Nachhall. Er erscheint, sobald eine Resonanz aus der Quarantäne die Welten erreicht hat.</target>
+</trans-unit>
+<trans-unit id="s98d5496d5e7e759a">
+  <source>Echoes are not listed here: the platform has never recorded one, so a line for them would show a state that has not existed yet.</source>
+  <target>Echos stehen hier nicht: die Plattform hat noch nie eines verzeichnet, eine Zeile dafür zeigte also einen Zustand, den es nie gab.</target>
+</trans-unit>
+<trans-unit id="s154a2d4c40ed69e9">
+  <source>Impact · <x id="0" equiv-text="${e.where}"/> · skipped</source>
+  <target>Wirkung · <x id="0" equiv-text="${e.where}"/> · übersprungen</target>
+</trans-unit>
+<trans-unit id="s77a5a35f0a7f9237">
+  <source>Impact · <x id="0" equiv-text="${e.where}"/> · <x id="1" equiv-text="${e.effective.toFixed(2)}"/></source>
+  <target>Wirkung · <x id="0" equiv-text="${e.where}"/> · <x id="1" equiv-text="${e.effective.toFixed(2)}"/></target>
+</trans-unit>
+<trans-unit id="s2f21db417d723afb">
+  <source>from: <x id="0" equiv-text="${e.origin}"/></source>
+  <target>Herkunft: <x id="0" equiv-text="${e.origin}"/></target>
+</trans-unit>
+<trans-unit id="s0f404cf77398cffd">
+  <source>Unclassified</source>
+  <target>Ohne Einordnung</target>
+</trans-unit>
+<trans-unit id="s1a329d3a09097526">
+  <source>strongest <x id="0" equiv-text="${Math.max(...measured.map((s) =&gt; s.magnitude)).toFixed(2)}"/> · <x id="1" equiv-text="${measured.length}"/> of <x id="2" equiv-text="${items.length}"/> measured</source>
+  <target>stärkste <x id="0" equiv-text="${Math.max(...measured.map((s) =&gt; s.magnitude)).toFixed(2)}"/> · <x id="1" equiv-text="${measured.length}"/> von <x id="2" equiv-text="${items.length}"/> gemessen</target>
+</trans-unit>
+<trans-unit id="s2462b886ee31bfe3">
+  <source>none measured yet</source>
+  <target>noch nichts gemessen</target>
+</trans-unit>
+<trans-unit id="s4aba9979380614e1">
+  <source>Classification</source>
+  <target>Einordnung</target>
+</trans-unit>
+<trans-unit id="sb0b3c74a7708067c">
+  <source>Not classified – the crucible does it.</source>
+  <target>Nicht eingeordnet – das tut der Schmelztiegel.</target>
+</trans-unit>
+<trans-unit id="s1971f3cf8e6cec5f">
+  <source>What it can become</source>
+  <target>Was daraus werden kann</target>
+</trans-unit>
+<trans-unit id="s3701052a42680141">
+  <source>No proposal yet. The crucible writes the title, sets place and vector, and the signal moves on to quarantine.</source>
+  <target>Noch kein Vorschlag. Der Schmelztiegel schreibt den Titel, setzt Ort und Vektor, und das Signal geht weiter in die Quarantäne.</target>
+</trans-unit>
+<trans-unit id="sc418b1fdfb20cdc5">
+  <source>Back to triage</source>
+  <target>Zurück zur Sichtung</target>
+</trans-unit>
+<trans-unit id="sb82b515ff7f3e5a1">
+  <source>Reading room · <x id="0" equiv-text="${items.length}"/> admitted</source>
+  <target>Lesesaal · <x id="0" equiv-text="${items.length}"/> aufgenommen</target>
+</trans-unit>
+<trans-unit id="sb73526e34516e39e">
+  <source>The entrance is empty. Admit something from triage first.</source>
+  <target>Der Eingang ist leer. Nimm zuerst etwas aus der Sichtung auf.</target>
+</trans-unit>
+<trans-unit id="se415bbea6c976fb1">
+  <source>Group by</source>
+  <target>Gliedern nach</target>
+</trans-unit>
+<trans-unit id="s23011163609efe0b">
+  <source>Place and vector are not here: a signal at the entrance has no place yet. It gets one in the crucible.</source>
+  <target>Ort und Vektor stehen hier nicht: ein Signal im Eingang hat noch keinen Ort. Es bekommt ihn im Schmelztiegel.</target>
+</trans-unit>
+<trans-unit id="sa48d76e30aaf4cf6">
+  <source>The scan log could not be read.</source>
+  <target>Das Scan-Protokoll liess sich nicht lesen.</target>
+</trans-unit>
+<trans-unit id="s6d9f4cee6d2d9fb6">
+  <source>filtered out</source>
+  <target>aussortiert</target>
+</trans-unit>
+<trans-unit id="sd52fe29aee77ebab">
+  <source>Reading the scan log</source>
+  <target>Das Scan-Protokoll wird gelesen</target>
+</trans-unit>
+<trans-unit id="s35a5ab2103b8fd15">
+  <source>The scanner has not logged anything yet.</source>
+  <target>Der Scanner hat noch nichts protokolliert.</target>
+</trans-unit>
+<trans-unit id="seea0f53b4dbb2fb3">
+  <source>Outcome</source>
+  <target>Ergebnis</target>
+</trans-unit>
+<trans-unit id="s90dac479021f0640">
+  <source>everything</source>
+  <target>alles</target>
+</trans-unit>
+<trans-unit id="s2d54d6798106b1dd">
+  <source>No entry matches this filter.</source>
+  <target>Kein Eintrag passt zu diesem Filter.</target>
+</trans-unit>
+<trans-unit id="sceef3998630d2f2c">
+  <source><x id="0" equiv-text="${shown}"/> of <x id="1" equiv-text="${this._rows.length}"/> shown · <x id="2" equiv-text="${this._total}"/> logged</source>
+  <target><x id="0" equiv-text="${shown}"/> von <x id="1" equiv-text="${this._rows.length}"/> gezeigt · <x id="2" equiv-text="${this._total}"/> protokolliert</target>
+</trans-unit>
+<trans-unit id="sad8f6ea1216d5789">
+  <source>This is where the noise is: a line marked "filtered out" came in and never became a candidate. What became of a classified line afterwards is not in here – the log and the candidate sheet share no key, and matching them on the headline would produce rows, just not the right ones.</source>
+  <target>Hier ist das Rauschen: eine Zeile mit „aussortiert“ kam herein und wurde nie ein Kandidat. Was aus einer eingeordneten Zeile danach wurde, steht nicht darin – Protokoll und Kandidatenblatt teilen keinen Schlüssel, und ein Abgleich über die Überschrift lieferte Zeilen, nur nicht die richtigen.</target>
+</trans-unit>
+<trans-unit id="sd0ae836ae6854dbc">
+  <source>Open reading room</source>
+  <target>Lesesaal öffnen</target>
 </trans-unit>
 </body>
 </file>

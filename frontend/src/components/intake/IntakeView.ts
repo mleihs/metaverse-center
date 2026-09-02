@@ -34,6 +34,9 @@ import './IntakeFlagModal.js';
 import './IntakeQuarantineCard.js';
 import './IntakeResonanceModal.js';
 import './IntakeSensorTile.js';
+import './IntakeAftermathChamber.js';
+import './IntakeReadingRoomModal.js';
+import './IntakeScanLogModal.js';
 import './IntakeTriageModal.js';
 
 /** Wie viele Minuten seit einem ISO-Zeitstempel vergangen sind. */
@@ -429,6 +432,33 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       flex: none;
     }
 
+    .expand {
+      margin-inline-start: auto;
+      padding: 0 var(--space-1);
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      line-height: 1;
+      cursor: pointer;
+      transition: color var(--transition-fast);
+    }
+
+    .expand:hover:not(:disabled),
+    .expand:focus-visible:not(:disabled) {
+      color: var(--color-accent-amber);
+    }
+
+    .expand:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .expand:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
     /* ── Die Zeile zur Sichtung ──────────────────────────────────────── */
 
     .triage-line {
@@ -671,6 +701,12 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
   /** Ob die Sichtung offen ist. */
   @state() private _triageOpen = false;
 
+  /** Ob der Lesesaal offen ist. */
+  @state() private _readingRoomOpen = false;
+
+  /** Ob das Scan-Log offen ist. */
+  @state() private _scanLogOpen = false;
+
   override connectedCallback(): void {
     super.connectedCallback();
     void intakeState.loadScanner();
@@ -814,8 +850,14 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     `;
   }
 
+  /**
+   * Das Scan-Log öffnen.
+   *
+   * Dieser Knopf stand seit Schritt 2 da und feuerte ein Ereignis, das niemand
+   * abhörte — ein Griff ohne Tür. Seit Schritt 6 hat er eine.
+   */
   private _openScanLog(): void {
-    this.dispatchEvent(new CustomEvent('intake-scan-log', { bubbles: true, composed: true }));
+    this._scanLogOpen = true;
   }
 
   // ── Quote ─────────────────────────────────────────────────────────────────
@@ -923,6 +965,18 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       <section class="chamber chamber--entrance" aria-label=${title}>
         <header class="chamber__head">
           <h2 class="chamber__title">${title}</h2>
+          <button
+            type="button"
+            class="expand"
+            aria-label=${msg('Open reading room')}
+            title=${msg('Open reading room')}
+            ?disabled=${items.length === 0}
+            @click=${() => {
+              this._readingRoomOpen = true;
+            }}
+          >
+            ⤢
+          </button>
           <span class="chamber__count">${items.length}</span>
         </header>
 
@@ -1005,6 +1059,28 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     `;
   }
 
+  /**
+   * Kammer ④ — der Nachhall.
+   *
+   * Der Inhalt liegt in einer eigenen Komponente, weil er als einziger auf dem
+   * Brett NACHLÄDT (die Impacts je ausgelöster Resonanz). Die Kammer selbst
+   * bleibt damit das, was die drei anderen auch sind: eine Sicht, kein Lader.
+   */
+  private _renderAftermath() {
+    const title = msg('4 Aftermath · what it set off');
+
+    return html`
+      <section class="chamber chamber--after" aria-label=${title}>
+        <header class="chamber__head">
+          <h2 class="chamber__title">${title}</h2>
+        </header>
+        <div class="chamber__body">
+          <velg-intake-aftermath-chamber></velg-intake-aftermath-chamber>
+        </div>
+      </section>
+    `;
+  }
+
   protected render() {
     const err = intakeState.error.value;
 
@@ -1020,13 +1096,23 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           intakeState.released.value,
           msg('Nothing released yet.'),
         )}
-        ${this._renderChamber(
-          'after',
-          msg('4 Aftermath · what it set off'),
-          [],
-          msg('No aftermath recorded. Echoes and impacts appear here.'),
-        )}
+        ${this._renderAftermath()}
       </div>
+      <velg-intake-reading-room-modal
+        ?open=${this._readingRoomOpen}
+        @intake-transform=${(e: CustomEvent<{ signalId: string }>) => {
+          this._crucibleSignalId = e.detail.signalId;
+        }}
+        @modal-close=${() => {
+          this._readingRoomOpen = false;
+        }}
+      ></velg-intake-reading-room-modal>
+      <velg-intake-scan-log-modal
+        ?open=${this._scanLogOpen}
+        @modal-close=${() => {
+          this._scanLogOpen = false;
+        }}
+      ></velg-intake-scan-log-modal>
       <velg-intake-triage-modal
         ?open=${this._triageOpen}
         @modal-close=${() => {
