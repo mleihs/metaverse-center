@@ -544,11 +544,29 @@ export class VelgGameCard extends LitElement {
      * including the size-lg clamp of 5. A building's description is prose and
      * is not a caption of any length.
      */
+    /*
+     * Freigegeben heisst nicht unbegrenzt.
+     *
+     * Diese Regel hob die Klammer der schmalen Karte auf — richtig, denn dort
+     * standen zwei Zeilen fuer einen Absatz. Sie hob sie aber GANZ auf, und
+     * damit bestimmt die laengste Beschreibung im Raster die Hoehe aller
+     * Karten daneben. Auf Prod gemessen: 200 Zeichen ohne Klammer, und in
+     * anderen Welten geht das deutlich weiter.
+     *
+     * Sechs Zeilen: genug fuer den Absatz, den der Entwurf hier sehen will
+     * („Bild-Karten 3x mit vollem Beschreibungstext"), und wenig genug, dass
+     * die Karten einer Reihe dieselbe Gestalt behalten. Wer alles lesen will,
+     * oeffnet die Karte — dafuer gibt es die Detailtafel.
+     *
+     * Dieselbe Ueberlegung wie im Register des Dashboards: ungleiche Hoehen
+     * sind kein Rhythmus, sondern die Abwesenheit von einem.
+     */
     :host([full-description]) .card__description {
-      -webkit-line-clamp: unset;
-      line-clamp: unset;
-      display: block;
-      overflow: visible;
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     /*
@@ -586,9 +604,42 @@ export class VelgGameCard extends LitElement {
       height: auto;
     }
 
+    /*
+     * Das ganze Gebaeude, nicht seine oberen 54 %.
+     *
+     * Hier stand height: clamp(160px, 14vw, 220px) — eine feste Hoehe, die
+     * den Flex-Kollaps loeste (siehe Kopplung 2 oben) und dabei einen
+     * Ausschnitt erzwang. Auf Prod gemessen (Der Gaslicht-Sund, 1389 px):
+     *
+     *     Bild natuerlich   1024 x 772   Verhaeltnis 1,33
+     *     Rahmen             542 x 220   Verhaeltnis 2,46
+     *     sichtbar          100 % Breite ·  54 % HOEHE   (object-position: top)
+     *
+     * Also 46 % abgeschnitten, und zwar unten — bei einem Gebaeude Sockel und
+     * Erdgeschoss. Fuer eine Sammelkarte im Hochformat ist ein Bildfenster
+     * richtig; dieser Reiter zeigt aber Bild-Karten, deren Zweck das Bild ist.
+     *
+     * WARUM 4/3 UND contain, NICHT cover
+     *   Die Bildform ist NICHT festgelegt: generate_building_image setzt
+     *   kein aspect_ratio, die 1024x772 sind die Vorgabe des Modells. Ein
+     *   Rahmen mit cover waere also so lange richtig, wie niemand das Modell
+     *   wechselt — und danach still falsch. 4/3 trifft die heutige Form auf
+     *   0,5 % genau (1,333 gegen 1,327, kein sichtbarer Rand), und contain
+     *   zeigt jede andere Form vollstaendig statt sie zu beschneiden.
+     *
+     *   Der Grund dahinter bekommt eine Flaeche, damit ein Rand als Absicht
+     *   liest und nicht als Loch.
+     */
     :host([full-description]) .card__art {
       flex: 0 0 auto;
-      height: clamp(160px, 14vw, 220px);
+      height: auto;
+      aspect-ratio: 4 / 3;
+      background-color: var(--color-surface-sunken);
+    }
+
+    :host([full-description]) .card__art img {
+      object-fit: contain;
+      object-position: center;
     }
 
     :host([full-description]) .card__body {
