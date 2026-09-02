@@ -61,6 +61,7 @@ import type { DemoStep } from './htp-types.js';
  */
 export type TopicSlug =
   | 'world'
+  | 'loot'
   | 'forge'
   | 'byok'
   | 'agents'
@@ -127,6 +128,21 @@ export interface TopicDefinition {
   sections: () => TopicSection[];
   /** Related topic slugs for cross-linking */
   related: TopicSlug[];
+  /**
+   * Eine EIGENE Route statt der Themenseite — fuer Themen, die ihren Inhalt
+   * LADEN statt ihn zu tragen.
+   *
+   * Der Beutekatalog war zuerst nur eine Route und kein Thema. Folge, vom
+   * Nutzer gemeldet: die Suche fand ihn nicht (ihr Index liest `TOPICS`), und
+   * im Dungeon-Thema stand seine Adresse als Fliesstext zum Abtippen. Eine
+   * Seite, die man nur durch Eintippen erreicht, ist gebaut und nicht
+   * vorhanden.
+   *
+   * Ein Thema mit `route` traegt Titel, Beschreibung und Kurzfassung wie jedes
+   * andere — das ist es, was die Suche indiziert — und schickt den Leser dann
+   * an seinen eigenen Ort statt an /guide/:slug.
+   */
+  route?: string;
 }
 
 // Re-export for consumer convenience
@@ -1125,7 +1141,7 @@ export const TOPICS: TopicDefinition[] = [
       {
         kind: 'text',
         content: msg(
-          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair \u2013 the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is at /how-to-play/loot.',
+          'After defeating the boss, you enter the Debrief Terminal \u2013 a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair \u2013 the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.',
         ),
       },
       {
@@ -1156,6 +1172,42 @@ export const TOPICS: TopicDefinition[] = [
       },
     ],
     related: ['terminal', 'agents', 'operatives', 'advanced'],
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    /*
+     * Das einzige Thema, das seinen Inhalt LAEDT statt ihn zu tragen.
+     *
+     * Es hat deshalb keine `sections`: die 105 Stuecke stehen zweisprachig in
+     * der Datenbank und kommen ueber /public/dungeons/loot, aus derselben
+     * Registrierung, die der laufende Dungeon benutzt. Was hier steht, ist nur
+     * das, was die SUCHE finden koennen muss — Titel, Beschreibung,
+     * Kurzfassung.
+     *
+     * Der Eintrag existiert genau dafuer: als reine Route war der Katalog
+     * unauffindbar (der Suchindex liest `TOPICS`), und im Dungeon-Thema stand
+     * seine Adresse als Fliesstext.
+     */
+    slug: 'loot',
+    title: msg('Loot Catalogue'),
+    icon: 'dungeonMap',
+    description: msg(
+      'Every piece a dungeon can yield, what it does mechanically, and which archetype drops it.',
+    ),
+    accent: '--color-accent-amber',
+    readTime: msg('Reference'),
+    route: '/how-to-play/loot',
+    tldr: () => [
+      msg('105 pieces across 8 archetypes, in 12 effect types'),
+      msg('Each entry names its effect in words and its parameters as values'),
+      msg(
+        'Aptitude boosts, memories, moodlets, event and arc modifiers, permanent and next-run bonuses',
+      ),
+      msg('Building repair is here too: the only way a ruined building ever recovers'),
+      msg('Read from the same record the run uses, so it is never out of date'),
+    ],
+    sections: () => [],
+    related: ['dungeons'],
   },
 
   // ────────────────────────────────────────────────────────────────────────

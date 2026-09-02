@@ -44,7 +44,12 @@ import {
   htpHeroStyles,
   htpReducedMotionBase,
 } from './htp-shared-styles.js';
-import { type TopicDefinition, type TopicVisibility, visibleTopics } from './htp-topic-data.js';
+import {
+  TOPICS,
+  type TopicDefinition,
+  type TopicVisibility,
+  visibleTopics,
+} from './htp-topic-data.js';
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -670,9 +675,25 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
 
   // ── Navigation ─────────────────────────────────────────────────────────
 
+  /**
+   * Wohin ein Thema fuehrt — seine eigene Route, sonst die Themenseite.
+   *
+   * Ein Thema mit `route` traegt seinen Inhalt nicht, sondern laedt ihn (der
+   * Beutekatalog). Es steht trotzdem im Register und im Suchindex, denn genau
+   * das war der Fehler davor: eine Seite, die nur als Route existierte, war
+   * ueber die Suche unauffindbar und im Nachbarthema nur als abzutippende
+   * Adresse genannt.
+   *
+   * Der Rueckfall ist die Themenseite, damit ein neues Thema ohne `route`
+   * weiter funktioniert, ohne dass jemand hier etwas eintragen muss.
+   */
+  private _topicHref(slug: string): string {
+    return TOPICS.find((t) => t.slug === slug)?.route ?? `/how-to-play/guide/${slug}`;
+  }
+
   private _navigateToTopic(slug: string) {
     this._showDropdown = false;
-    navigate(`/how-to-play/guide/${slug}`);
+    navigate(this._topicHref(slug));
   }
 
   private _handleCardClick(e: Event, slug: string) {
@@ -818,7 +839,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
     return html`
       <a
         class="card"
-        href=${`/how-to-play/guide/${topic.slug}`}
+        href=${this._topicHref(topic.slug)}
         role="listitem"
         tabindex="0"
         style="--_card-accent: var(${topic.accent}); --i: ${index}"

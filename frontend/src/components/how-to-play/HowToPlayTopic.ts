@@ -1255,6 +1255,21 @@ export class VelgHowToPlayTopic extends LitElement {
     if (!this._topicDef) return this._render404();
 
     const def = this._topicDef;
+
+    /*
+     * Ein Thema mit eigener Route gehoert nicht hierher.
+     *
+     * Der Beutekatalog steht im Register und im Suchindex, traegt aber keine
+     * `sections` — sein Inhalt wird geladen. Wer /guide/loot direkt aufruft
+     * (ein alter Link, ein Lesezeichen, jemand, der die Adresse kennt), saehe
+     * sonst eine Seite mit Kopf und ohne Inhalt: schlimmer als ein 404, weil
+     * sie aussieht, als sei etwas kaputt statt am falschen Ort.
+     */
+    if (def.route) {
+      navigate(def.route);
+      return nothing;
+    }
+
     const sections = def.sections();
     const { prev, next } = getAdjacentTopics(def.slug);
 
