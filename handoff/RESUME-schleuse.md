@@ -20,11 +20,21 @@ Sichtung ist der Griff, der dem Brett bis heute fehlte.
                          07196983 (337 umbenannt) · b778e6ee (299, Peer)
                          — EIN geteilter Baum: wer pusht, pusht alle vier
 
-▶ **ALS NÄCHSTES: Schritt 8 — und der ist kein Löschen, sondern ein Teilen.**
-`social/SocialTrendsView.ts` (1989 Zeilen) trägt neben dem ersetzten
-Artikel-Browse auch **Botschaften und Weltgesundheit**, die die Schleuse nie
-abgedeckt hat. Wer die Datei löscht, löscht sie mit. Erst die Botschaften in
-eine eigene View heben, dann den `social`-Eintrag aus der Navigation nehmen.
+▶ **ALS NÄCHSTES: die drei Stapel-Wege, dann Schritt 8 zu Ende.**
+
+Die Botschaften sind raus (`915e38c5`): `components/embassies/EmbassiesPanel.ts`
+hängt jetzt an der Gebäude-Ansicht, wo Botschaften auch geschlossen werden.
+`SocialTrendsView.ts` ist von 1989 auf ~1400 Zeilen geschrumpft und trägt nur
+noch, was die Schleuse ersetzen SOLL.
+
+**Was zum Löschen noch fehlt** — drei Wege, die die Schleuse nicht kann:
+
+    Stapel-Transformation   `batchTransform`   Sichtung wählt mehrfach aus,
+    Stapel-Aufnahme         `batchIntegrate`   führt aber nur in den Eingang
+    „Resonanz aus Artikel"  Admin-Weg direkt aus der Artikelliste
+
+Erst wenn die drei stehen, ist `SocialTrendsView.ts` wirklich ersetzt und der
+`social`-Eintrag darf aus der Navigation.
 
 Ebenfalls offen: **Abonnements** (Lücke 6 — es gibt weder Tabelle noch
 Endpunkt; der ehrliche Platzhalter steht in der View) und die sechs
