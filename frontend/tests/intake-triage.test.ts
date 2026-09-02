@@ -19,12 +19,15 @@
  * greift zum Netz.
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ⚠ Nebenwirkungs-Import ZUERST, sonst entfernt esbuild ihn und `@customElement`
 // läuft nie — das Element bliebe ein nicht aufgewertetes HTMLElement.
+import '../src/components/intake/IntakeBrowseModal.js';
 import '../src/components/intake/IntakeTriageModal.js';
+import type { VelgIntakeBrowseModal } from '../src/components/intake/IntakeBrowseModal.js';
 import type { VelgIntakeTriageModal } from '../src/components/intake/IntakeTriageModal.js';
+import { socialTrendsApi } from '../src/services/api/index.js';
 import { intakeState } from '../src/services/IntakeStateManager.js';
 import type { ScanCandidate } from '../src/services/api/ScannerApiService.js';
 import { fromScanCandidate, type IntakeSignal } from '../src/types/intake.js';
@@ -71,7 +74,16 @@ async function sichtung(): Promise<VelgIntakeTriageModal> {
   return el;
 }
 
-function root(el: VelgIntakeTriageModal): ShadowRoot {
+async function browseModal(): Promise<VelgIntakeBrowseModal> {
+  const el = document.createElement('velg-intake-browse-modal') as VelgIntakeBrowseModal;
+  el.open = true;
+  el.simulationId = 'sim-1';
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+function root(el: VelgIntakeTriageModal | VelgIntakeBrowseModal): ShadowRoot {
   const r = el.shadowRoot;
   if (!r) throw new Error('kein shadowRoot — die Komponente hat nicht gerendert');
   return r;
@@ -104,6 +116,7 @@ function press(el: VelgIntakeTriageModal, key: string): void {
 beforeEach(() => {
   intakeState.clear();
   document.body.innerHTML = '';
+  vi.restoreAllMocks();
 });
 
 describe('Die Sichtung zeigt, was wartet', () => {
@@ -332,5 +345,58 @@ describe('Die Knöpfe an der Karte', () => {
     await el.updateComplete;
     expect(root(el).querySelector('.count')?.textContent?.trim()).toBe('2');
     expect(boxes[0].getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('Der Zufluss von Hand', () => {
+  /*
+   * `loadBrowse` stand seit Schritt 1 da und hatte KEINEN Aufrufer — für einen
+   * Architekten war die Schleuse ein Brett, dessen erste Kammer sich nie füllen
+   * konnte. Diese Tests halten die beiden Zusagen des Zuflusses fest.
+   */
+
+  it('legt Geholtes in die SICHTUNG, nicht in den Eingang', async () => {
+    vi.spyOn(socialTrendsApi, 'browse').mockResolvedValue({
+      success: true,
+      data: [
+        { name: 'Hafenstreik', platform: 'guardian', url: 'https://example.org/1' },
+        { name: 'Sonnensturm', platform: 'guardian', url: 'https://example.org/2' },
+      ],
+    });
+
+    const el = await browseModal();
+    root(el).querySelector<HTMLButtonElement>('.act--primary')?.click();
+    await el.updateComplete;
+    await el.updateComplete;
+
+    const stages = [...intakeState.signals.value.values()].map((s) => s.stage);
+    expect(stages).toEqual(['raw', 'raw']);
+    expect(intakeState.inEntrance.value).toHaveLength(0);
+    expect(intakeState.inTriage.value).toHaveLength(2);
+  });
+
+  /*
+   * Die Meldung des Servers nennt seit `a3993cef` die Einstellung, die erneuert
+   * werden muss. Ein eigenes „Konnte nicht laden" darüberzulegen wäre der
+   * Rückschritt, den derselbe Tag beseitigt hat.
+   */
+  it('reicht die Meldung des Servers unverändert durch', async () => {
+    vi.spyOn(socialTrendsApi, 'browse').mockResolvedValue({
+      success: false,
+      error: {
+        message:
+          "guardian refused the configured API key (401). A platform admin has to renew 'guardian_api_key'.",
+        code: 'HTTP_502',
+      },
+    });
+
+    const el = await browseModal();
+    root(el).querySelector<HTMLButtonElement>('.act--primary')?.click();
+    await el.updateComplete;
+    await el.updateComplete;
+
+    const text = root(el).querySelector('.fail')?.textContent ?? '';
+    expect(text).toContain('guardian_api_key');
+    expect(text).not.toContain('Failed to load');
   });
 });

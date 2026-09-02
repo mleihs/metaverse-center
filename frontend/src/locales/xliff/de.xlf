@@ -31327,6 +31327,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Open reading room</source>
   <target>Lesesaal öffnen</target>
 </trans-unit>
+<trans-unit id="s07a6fbb66ad4045f">
+  <source>at the entrance</source>
+  <target>im Eingang</target>
+</trans-unit>
+<trans-unit id="sbea92827f6d4d1a4">
+  <source>Fetching articles</source>
+  <target>Artikel werden abgerufen</target>
+</trans-unit>
+<trans-unit id="scd00c5bc6e52832f">
+  <source>Nothing fetched yet. Pick a source and fetch.</source>
+  <target>Noch nichts abgerufen. Wähle eine Quelle und ruf ab.</target>
+</trans-unit>
+<trans-unit id="s95ae5e8f5777fee9">
+  <source>Fetch by hand</source>
+  <target>Von Hand abrufen</target>
+</trans-unit>
+<trans-unit id="s62a38252347bb7e3">
+  <source>Search words, or leave empty for the newest</source>
+  <target>Suchwörter, oder leer lassen für die neuesten</target>
+</trans-unit>
+<trans-unit id="sf7003342bd48c377">
+  <source>Search the source</source>
+  <target>Die Quelle durchsuchen</target>
+</trans-unit>
+<trans-unit id="sf91f407af8aacdc8">
+  <source>all sections</source>
+  <target>alle Rubriken</target>
+</trans-unit>
+<trans-unit id="se0a382fec68a89c4">
+  <source><x id="0" equiv-text="${this._results().length}"/> fetched</source>
+  <target><x id="0" equiv-text="${this._results().length}"/> abgerufen</target>
+</trans-unit>
+<trans-unit id="s2d49e614b8e40b64">
+  <source>What you fetch lands in triage, not at the entrance: you asked a source, you did not pick these fifteen. Nothing here is classified yet – magnitude and archetype come from the crucible.</source>
+  <target>Was du abrufst, landet in der Sichtung, nicht im Eingang: du hast eine Quelle befragt, nicht diese fünfzehn ausgewählt. Eingeordnet ist hier noch nichts – Magnitude und Archetyp kommen aus dem Schmelztiegel.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
