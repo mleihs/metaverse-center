@@ -7,6 +7,7 @@ from datetime import datetime
 
 import httpx
 
+from backend.services.external.news_errors import ExternalNewsError
 from backend.services.external.newsapi import NewsAPIService
 from backend.services.scanning.base_adapter import ScanResult, SourceAdapter
 from backend.services.scanning.registry import register_adapter
@@ -66,6 +67,14 @@ class NewsAPIScannerAdapter(SourceAdapter):
                             is_structured=False,
                         )
                     )
+            except ExternalNewsError as exc:
+                if exc.is_auth_failure:
+                    # A refused key is not a per-country problem — every
+                    # remaining one would fail identically. Let it out, so the
+                    # scan loop records WHY this adapter delivered nothing
+                    # instead of a run of near-identical warnings.
+                    raise
+                logger.warning("NewsAPI country=%s fetch failed", country, exc_info=True)
             except (httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning("NewsAPI country=%s fetch failed", country, exc_info=True)
 

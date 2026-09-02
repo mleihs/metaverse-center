@@ -7,14 +7,16 @@ from typing import Any
 
 import httpx
 
+from backend.services.external.news_errors import ExternalNewsError
+
 logger = logging.getLogger(__name__)
 
 NEWSAPI_BASE_URL = "https://newsapi.org/v2"
 TIMEOUT_SECONDS = 15
 
 
-class NewsAPIError(Exception):
-    """Error from NewsAPI."""
+class NewsAPIError(ExternalNewsError):
+    """Error from NewsAPI — carries the upstream status, see news_errors."""
 
 
 class NewsAPIService:
@@ -43,9 +45,12 @@ class NewsAPIService:
             resp = await client.get(f"{NEWSAPI_BASE_URL}/top-headlines", params=params)
 
             if resp.status_code == 429:
-                raise NewsAPIError("NewsAPI rate limit exceeded.")
+                raise NewsAPIError("NewsAPI rate limit exceeded.", status_code=429)
             if resp.status_code != 200:
-                raise NewsAPIError(f"NewsAPI error {resp.status_code}: {resp.text[:200]}")
+                raise NewsAPIError(
+                    f"NewsAPI error {resp.status_code}: {resp.text[:200]}",
+                    status_code=resp.status_code,
+                )
 
             data = resp.json()
 
@@ -78,9 +83,12 @@ class NewsAPIService:
             resp = await client.get(f"{NEWSAPI_BASE_URL}/everything", params=params)
 
             if resp.status_code == 429:
-                raise NewsAPIError("NewsAPI rate limit exceeded.")
+                raise NewsAPIError("NewsAPI rate limit exceeded.", status_code=429)
             if resp.status_code != 200:
-                raise NewsAPIError(f"NewsAPI error {resp.status_code}: {resp.text[:200]}")
+                raise NewsAPIError(
+                    f"NewsAPI error {resp.status_code}: {resp.text[:200]}",
+                    status_code=resp.status_code,
+                )
 
             data = resp.json()
 

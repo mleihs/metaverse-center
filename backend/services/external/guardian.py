@@ -7,14 +7,16 @@ from typing import Any
 
 import httpx
 
+from backend.services.external.news_errors import ExternalNewsError
+
 logger = logging.getLogger(__name__)
 
 GUARDIAN_BASE_URL = "https://content.guardianapis.com"
 TIMEOUT_SECONDS = 15
 
 
-class GuardianError(Exception):
-    """Error from Guardian API."""
+class GuardianError(ExternalNewsError):
+    """Error from Guardian API — carries the upstream status, see news_errors."""
 
 
 class GuardianService:
@@ -43,9 +45,12 @@ class GuardianService:
             resp = await client.get(f"{GUARDIAN_BASE_URL}/search", params=params)
 
             if resp.status_code == 429:
-                raise GuardianError("Guardian API rate limit exceeded.")
+                raise GuardianError("Guardian API rate limit exceeded.", status_code=429)
             if resp.status_code != 200:
-                raise GuardianError(f"Guardian API error {resp.status_code}: {resp.text[:200]}")
+                raise GuardianError(
+                    f"Guardian API error {resp.status_code}: {resp.text[:200]}",
+                    status_code=resp.status_code,
+                )
 
             data = resp.json()
 
@@ -74,9 +79,12 @@ class GuardianService:
             resp = await client.get(f"{GUARDIAN_BASE_URL}/search", params=params)
 
             if resp.status_code == 429:
-                raise GuardianError("Guardian API rate limit exceeded.")
+                raise GuardianError("Guardian API rate limit exceeded.", status_code=429)
             if resp.status_code != 200:
-                raise GuardianError(f"Guardian API error {resp.status_code}: {resp.text[:200]}")
+                raise GuardianError(
+                    f"Guardian API error {resp.status_code}: {resp.text[:200]}",
+                    status_code=resp.status_code,
+                )
 
             data = resp.json()
 
