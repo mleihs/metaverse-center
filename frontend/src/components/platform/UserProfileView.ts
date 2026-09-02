@@ -1,32 +1,31 @@
 /**
- * Personnel File — the account page, rebuilt around endpoints that exist.
+ * Personnel File — Kopf, Reiter, fünf Blätter.
  *
- * The page called two routes that were never written: `PUT /users/me` behind
- * the Save button and `GET /users/me/memberships` behind the list. Every visit
- * therefore produced an error banner where the memberships belonged, and a Save
- * button whose only possible outcome was failure. Nothing in the interface said
- * so, and no menu linked here at all - which is presumably why it stayed broken.
+ * Vorgeschichte: die Seite rief zwei Routen, die nie geschrieben wurden
+ * (`PUT /users/me`, `GET /users/me/memberships`), zeigte deshalb bei jedem
+ * Besuch ein Fehlerband und einen Speichern-Knopf, dessen einziger möglicher
+ * Ausgang Fehlschlag war. Das ist seit Ende August repariert; was bleibt,
+ * steht unten in den Aktionen.
  *
- * What replaces them:
- *   - Memberships come from `GET /users/me`, which has always returned them.
- *   - The display name is Supabase Auth data (`user_metadata`) and is written
- *     straight through the auth client, per the hybrid pattern in CLAUDE.md.
- *   - The language of Bureau correspondence is a real, separate setting
- *     (`notification_preferences.email_locale`) with a real endpoint, and is
- *     stated as what it is: the language of the post, not of the interface.
+ * DIESER UMBAU (Design-Übergabe „Personalakte & Schlüsselbund") ersetzt den
+ * Stapel aus fünf Sektionen durch Kopf + Reiter + Blätter. Der Grund ist
+ * nicht Mode:
  *
- * The page reads as a personnel file: a header stamp with the account's
- * standing, a form on ruled lines, and the postings as register rows that
- * cascade in. The two figures the platform actually keeps about a person -
- * academy epochs played, and whether the induction was completed - are shown
- * rather than hidden, because a file that omits its own record is decoration.
+ *  - Der Schlüsselbund ist ein Register mit Karten und braucht Breite. Im
+ *    Stapel sass er zwischen Korrespondenz und Zuweisungen und bekam die
+ *    780px der Formularspalte — also eine Karte je Zeile, egal wie breit der
+ *    Schirm war.
+ *  - Ein Stapel hat keine Adresse. Die Münze und das Autonomie-Panel
+ *    verweisen auf den Schlüsselbund; ohne Reiter landete man oben und
+ *    scrollte suchend. Jetzt `/profile#keys`.
+ *  - Der Kopf beantwortet die Frage, für die man herkommt, ohne dass man
+ *    blättert: **worauf läuft dieses Konto gerade** — eigener Schlüssel oder
+ *    Projektschlüssel.
  *
- * The Keyring section is here for the same reason the rest of the page is: an
- * API key belongs to the PERSON. It used to live in `user_wallets` behind the
- * Architect gate, inside a modal called The Mint - three words from the
- * Forge's economy for a thing that is not an economy - and on production not
- * one account could reach it. The form itself is `<velg-byok-panel>`,
- * reused rather than copied; the Mint now links here instead of hosting it.
+ * Breite: `--stage-measure` statt der bisherigen 780px, und alle inneren
+ * Umbrüche sind Container-Queries auf der Blattfläche. Die Akte wird auch im
+ * Admin-Mount mit Seitenleiste gerendert; dort ergibt derselbe Viewport eine
+ * andere Blattbreite, und eine Media-Query hätte dort das Falsche getan.
  */
 
 import { localized, msg, str } from '@lit/localize';
@@ -41,16 +40,22 @@ import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import type { MembershipInfo, NotificationPreferences, UserAccount } from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
+import { memberRoleLabel } from '../../utils/enum-labels.js';
 import { icons } from '../../utils/icons.js';
-import { navigate } from '../../utils/navigation.js';
+import { navigate, updateUrl } from '../../utils/navigation.js';
 import { markerCornerStyles } from '../shared/marker-styles.js';
 import { VelgToast } from '../shared/Toast.js';
-import '../forge/VelgByokPanel.js';
+import '../forge/VelgKeyring.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgBadge.js';
 import '../shared/VelgHelpTip.js';
+import '../shared/VelgTabs.js';
 import '../shared/VelgToggle.js';
+
+/** Die fünf Blätter. Reihenfolge ist die Reihenfolge der Reiter. */
+const SHEET_KEYS = ['file', 'post', 'keys', 'postings', 'record'] as const;
+type SheetKey = (typeof SHEET_KEYS)[number];
 
 const CORRESPONDENCE_LOCALES = [
   { code: 'en', label: 'English' },
@@ -65,9 +70,14 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     css`
     :host {
       display: block;
-      padding: var(--content-padding, var(--space-6));
-      max-width: 780px;
-      margin: 0 auto;
+      /* Die Bühne statt der Formularbreite. Der Schlüsselbund ist ein
+         Register mit Karten; mit 780px bekam er eine Karte je Zeile, egal
+         wie breit der Schirm war. Ab 1920 begrenzt die Buehnenbreite, davor
+         wächst die Akte mit. */
+      max-width: var(--stage-measure);
+      margin-inline: auto;
+      padding-inline: var(--stage-gutter);
+      padding-block: var(--content-padding, var(--space-6));
       --_ink: var(--color-text-primary);
       --_rule: var(--color-border);
       --_stamp: var(--color-primary);
@@ -76,15 +86,193 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
 
     /* ── File header ───────────────────────────────────────── */
 
+    /* Klebt oben, damit „Läuft auf …" und die Reiter beim Blättern durch ein
+       langes Blatt (Zuweisungen) nicht davonlaufen. */
     .file-head {
+      position: sticky;
+      top: 0;
+      z-index: var(--z-sticky);
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: var(--space-4);
+      flex-direction: column;
+      gap: var(--space-1);
+      padding-block: var(--space-4) var(--space-3);
+      background: var(--color-surface-sunken);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .file-head__line {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
       flex-wrap: wrap;
-      padding-bottom: var(--space-3);
-      margin-bottom: var(--space-6);
-      border-bottom: var(--border-medium);
+    }
+
+    .file-head__no {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Blattfläche ───────────────────────────────────────── */
+
+    /* Jeder innere Umbruch reagiert auf DIESE Breite, nicht auf den Viewport:
+       die Akte wird auch im Admin-Mount mit Seitenleiste gerendert, und dort
+       ergibt derselbe Viewport eine andere Blattbreite. */
+    .sheet {
+      container-type: inline-size;
+      padding-top: var(--space-6);
+      animation: sheet-in var(--duration-slow) var(--ease-dramatic) both;
+    }
+
+    @keyframes sheet-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    @container (min-width: 900px) {
+      .grid {
+        grid-template-columns: minmax(0, 1fr) 320px;
+      }
+    }
+
+    .grid__main,
+    .single__body {
+      min-width: 0;
+    }
+
+    .single__head {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: var(--space-3);
+    }
+
+    .single__note {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+
+    /* ── Auf einen Blick ───────────────────────────────────── */
+
+    .glance {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--_rule);
+      background: var(--color-surface-raised);
+    }
+
+    .glance__title {
+      margin: 0;
+      padding: var(--space-3) var(--space-4);
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-brutalist);
+      color: var(--color-text-muted);
+      border-bottom: 1px dashed var(--_rule);
+    }
+
+    .glance__row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: none;
+      border: none;
+      border-bottom: 1px dashed var(--color-border-light);
+      color: var(--color-text-secondary);
+      font-family: inherit;
+      font-size: var(--text-sm);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .glance__row:last-child {
+      border-bottom: none;
+    }
+
+    .glance__row:hover {
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+    }
+
+    .glance__row:focus-visible {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: -2px;
+    }
+
+    .glance__value {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      text-align: right;
+    }
+
+    .glance__value[data-own] {
+      color: var(--color-accent-green);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+
+    .chip {
+      min-height: 36px;
+      padding: var(--space-1-5) var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--_rule);
+      color: var(--color-text-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      cursor: pointer;
+      transition: border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .chip[data-active] {
+      border-color: var(--color-accent-amber);
+      color: var(--color-accent-amber);
+      box-shadow: 0 0 0 3px var(--color-accent-amber-glow);
+    }
+
+    .chip:hover:not(:disabled):not([data-active]) {
+      border-color: var(--color-text-primary);
+      color: var(--color-text-primary);
+    }
+
+    .chip:focus-visible {
+      outline: 2px solid var(--color-border-focus);
+      outline-offset: 2px;
+    }
+
+    .chip:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .posting__key {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    .posting__key[data-own] {
+      color: var(--color-accent-green);
     }
 
     .file-head__title {
@@ -459,10 +647,45 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
   @state() private _savedPrefs: NotificationPreferences | null = null;
   @state() private _savingPrefs = false;
 
+  /** Welches Blatt oben liegt. Kommt aus dem Anker, damit `/profile#keys` trägt. */
+  @state() private _tab: SheetKey = 'file';
+
   connectedCallback(): void {
     super.connectedCallback();
     this._readDisplayNameFromSession();
+    this._readTabFromHash();
+    window.addEventListener('hashchange', this._onHashChange);
     void this._load();
+  }
+
+  disconnectedCallback(): void {
+    window.removeEventListener('hashchange', this._onHashChange);
+    super.disconnectedCallback();
+  }
+
+  /**
+   * Der Anker ist die Adresse eines Blatts. Die Münze und das
+   * Autonomie-Panel verweisen auf `#keys`; ohne diesen Weg landete man oben
+   * und suchte.
+   */
+  private _readTabFromHash(): void {
+    const key = window.location.hash.replace('#', '');
+    if (SHEET_KEYS.includes(key as SheetKey)) {
+      this._tab = key as SheetKey;
+    }
+  }
+
+  private _onHashChange = (): void => {
+    this._readTabFromHash();
+  };
+
+  private _selectTab(key: SheetKey): void {
+    if (key === this._tab) return;
+    this._tab = key;
+    // `updateUrl` vergleicht nur Pfad und Suche, nie den Anker — ein zweiter
+    // Aufruf mit demselben Blatt würde also einen weiteren Verlaufseintrag
+    // schreiben. Deshalb steht der Vergleich hier davor.
+    updateUrl(`${window.location.pathname}#${key}`);
   }
 
   private _readDisplayNameFromSession(): void {
@@ -477,7 +700,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     this._error = null;
     try {
       // `loadWallet` füllt `forgeStateManager.byokStatus`, aus dem
-      // `<velg-byok-panel>` liest. Es fängt seine Fehler selbst ab und gibt
+      // `<velg-keyring>` liest. Es fängt seine Fehler selbst ab und gibt
       // null zurück — ein Ausfall der Geldbörse darf die Akte nicht kippen.
       const [accountRes, prefsRes] = await Promise.all([
         usersApi.getMe(),
@@ -615,25 +838,68 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
 
     return html`
       ${this._renderHead()}
-      ${this._renderIdentity()}
-      ${this._renderCorrespondence()}
-      ${this._renderKeyring()}
-      ${this._renderPostings()}
-      ${this._renderRecord()}
+      <velg-tabs
+        .tabs=${this._tabDefs()}
+        active=${this._tab}
+        @tab-change=${(e: CustomEvent<{ key: string }>) => this._selectTab(e.detail.key as SheetKey)}
+      ></velg-tabs>
+      <div class="sheet" data-sheet=${this._tab}>${this._renderSheet()}</div>
     `;
   }
 
+  private _tabDefs() {
+    const byok = forgeStateManager.byokStatus.value;
+    const hasKey = byok.has_openrouter_key || byok.has_replicate_key;
+    // Der Reiter trägt genau so viel, wie ohne Öffnen wahr ist: einen Punkt,
+    // wenn ein Schlüssel liegt, sonst nichts. Eine Zahl wäre hier eine
+    // Behauptung über Zustände, die man erst im Blatt sieht.
+    return [
+      { key: 'file', label: msg('File') },
+      { key: 'post', label: msg('Correspondence') },
+      { key: 'keys', label: msg('Keyring'), badge: hasKey ? '●' : undefined },
+      {
+        key: 'postings',
+        label: msg('Postings'),
+        badge: this._account?.memberships.length || undefined,
+      },
+      { key: 'record', label: msg('Record') },
+    ];
+  }
+
+  private _renderSheet() {
+    switch (this._tab) {
+      case 'post':
+        return this._renderCorrespondence();
+      case 'keys':
+        return this._renderKeyring();
+      case 'postings':
+        return this._renderPostings();
+      case 'record':
+        return this._renderRecord();
+      default:
+        return this._renderIdentity();
+    }
+  }
+
   private _renderHead() {
-    const email = this._account?.email ?? appState.user.value?.email ?? '';
+    const account = this._account;
+    const email = account?.email ?? appState.user.value?.email ?? '';
+    const name = this._savedDisplayName.trim();
+    const byok = forgeStateManager.byokStatus.value;
+    const ownKey = byok.has_openrouter_key || byok.has_replicate_key;
+
     return html`
       <header class="file-head">
-        <h1 class="file-head__title">
-          ${msg('Personnel File')}
-          <span class="file-head__subject">${email}</span>
-        </h1>
+        <div class="file-head__line">
+          <h1 class="file-head__title">${msg('Personnel File')}</h1>
+          ${account ? html`<span class="file-head__no">${this._fileNumber(account.id)}</span>` : nothing}
+        </div>
+        <p class="file-head__subject">
+          ${name ? html`${name} · ` : nothing}${email}
+        </p>
         <div class="file-head__marks">
           ${
-            this._account?.is_platform_admin
+            account?.is_platform_admin
               ? html`<velg-badge variant="warning">${msg('Platform admin')}</velg-badge>`
               : nothing
           }
@@ -643,21 +909,35 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
               : nothing
           }
           <velg-badge variant="default">
-            ${msg(str`${this._account?.memberships.length ?? 0} postings`)}
+            ${msg(str`${account?.memberships.length ?? 0} postings`)}
+          </velg-badge>
+          <!-- Die Frage, für die man herkommt, ohne dass man blättern muss. -->
+          <velg-badge variant=${ownKey ? 'success' : 'default'}>
+            ${ownKey ? msg('Running on · your own key') : msg('Running on · the project key')}
           </velg-badge>
         </div>
       </header>
     `;
   }
 
+  /**
+   * Eine Aktennummer, die aus der Kennung folgt statt aus einem Zähler.
+   *
+   * Sie hat keine Bedeutung im Datenbestand — sie ist ein Wiedererkennungs-
+   * zeichen für den Menschen, der zwei Akten nebeneinander hat. Deshalb aus
+   * den ersten Zeichen der UUID abgeleitet und nicht gespeichert: eine
+   * gespeicherte Nummer müsste vergeben, geprüft und migriert werden, und
+   * niemand hätte etwas davon.
+   */
+  private _fileNumber(id: string): string {
+    return `P-${id.slice(0, 4).toUpperCase()}-${id.slice(4, 8).toUpperCase()}`;
+  }
+
   private _renderIdentity() {
     const dirty = this._displayName.trim() !== this._savedDisplayName;
     return html`
-      <section class="section" style="--i: 0">
-        <div class="section__head">
-          <h2 class="section__title">${msg('Identity')}</h2>
-        </div>
-        <div class="section__body">
+      <div class="grid">
+        <div class="grid__main">
           <div class="field">
             <label class="field__label" for="profile-email">${msg('Registered address')}</label>
             <input
@@ -719,7 +999,55 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
             ${dirty ? html`<span class="actions__state">${msg('Unsaved change')}</span>` : nothing}
           </div>
         </div>
-      </section>
+        ${this._renderAtAGlance()}
+      </div>
+    `;
+  }
+
+  /**
+   * Was die Akte über dieses Konto weiss, in vier Zeilen.
+   *
+   * Sie steht neben dem Formular, weil sie die Fragen beantwortet, für die
+   * man sonst durch die Reiter blättert. Jede Zeile verweist auf ihr Blatt —
+   * ein Überblick, der nicht weiterführt, ist Zierat.
+   */
+  private _renderAtAGlance() {
+    const account = this._account;
+    const byok = forgeStateManager.byokStatus.value;
+    const ownKey = byok.has_openrouter_key || byok.has_replicate_key;
+    const prefs = this._prefs;
+    const letters = [prefs?.cycle_resolved, prefs?.phase_changed, prefs?.epoch_completed].filter(
+      Boolean,
+    ).length;
+
+    return html`
+      <aside class="glance">
+        <p class="glance__title">${msg('At a glance')}</p>
+        <button class="glance__row" @click=${() => this._selectTab('keys')}>
+          <span>${msg('Keyring')}</span>
+          <span class="glance__value" ?data-own=${ownKey}>
+            ${ownKey ? msg('your own keys') : msg('project key')}
+          </span>
+        </button>
+        <button class="glance__row" @click=${() => this._selectTab('post')}>
+          <span>${msg('Post')}</span>
+          <span class="glance__value">
+            ${CORRESPONDENCE_LOCALES.find((l) => l.code === (prefs?.email_locale ?? 'en'))?.label ?? 'English'}
+            ${msg(str`· ${letters} of 3 letters`)}
+          </span>
+        </button>
+        <button class="glance__row" @click=${() => this._selectTab('postings')}>
+          <span>${msg('Postings')}</span>
+          <span class="glance__value">${account?.memberships.length ?? 0}</span>
+        </button>
+        <button class="glance__row" @click=${() => this._selectTab('record')}>
+          <span>${msg('Academy')}</span>
+          <span class="glance__value">
+            ${msg(str`${account?.academy_epochs_played ?? 0} epochs`)}
+            ${account?.onboarding_completed ? ' ✓' : ''}
+          </span>
+        </button>
+      </aside>
     `;
   }
 
@@ -728,30 +1056,30 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     const dirty = this._prefsDirty;
 
     return html`
-      <section class="section" style="--i: 1">
-        <div class="section__head">
-          <h2 class="section__title">${msg('Correspondence')}</h2>
-          <span class="section__note">${msg('the post, not the interface')}</span>
-        </div>
-        <div class="section__body">
+      <div class="single">
+        <div class="single__body">
           <div class="field">
             <label class="field__label" for="profile-locale">${msg('Language of the post')}</label>
-            <select
-              class="field__select"
-              id="profile-locale"
-              ?disabled=${!prefs}
-              @change=${(e: Event) => {
-                this._setPref('email_locale', (e.target as HTMLSelectElement).value);
-              }}
-            >
-              ${CORRESPONDENCE_LOCALES.map(
-                (l) => html`
-                  <option value=${l.code} ?selected=${l.code === (prefs?.email_locale ?? 'en')}>
+            <!-- Zwei Werte sind keine Liste. Eine Auswahlliste verlangt zwei
+                 Handgriffe (öffnen, wählen) und verbirgt die Alternative;
+                 zwei Chips zeigen beide und brauchen einen. -->
+            <div class="chips" role="radiogroup" aria-label=${msg('Language of the post')}>
+              ${CORRESPONDENCE_LOCALES.map((l) => {
+                const active = l.code === (prefs?.email_locale ?? 'en');
+                return html`
+                  <button
+                    class="chip"
+                    role="radio"
+                    aria-checked=${active ? 'true' : 'false'}
+                    ?data-active=${active}
+                    ?disabled=${!prefs}
+                    @click=${() => this._setPref('email_locale', l.code)}
+                  >
                     ${l.label}
-                  </option>
-                `,
-              )}
-            </select>
+                  </button>
+                `;
+              })}
+            </div>
             <span class="field__hint">
               ${msg('Cycle briefings, invitations and epoch reports arrive in this language. The language of this interface follows the switch in the header.')}
             </span>
@@ -802,39 +1130,37 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
             ${dirty ? html`<span class="actions__state">${msg('Unsaved change')}</span>` : nothing}
           </div>
         </div>
-      </section>
+      </div>
     `;
   }
 
   private _renderKeyring() {
     return html`
-      <section class="section" style="--i: 2">
-        <div class="section__head">
-          <h2 class="section__title">${msg('Keyring')}</h2>
-          <span class="section__note">
+      <div class="single">
+        <div class="single__head">
+          <span class="single__note">
             ${msg("yours, not a world's")}
             <velg-help-tip topic="byok" label=${msg('What is BYOK?')}></velg-help-tip>
           </span>
         </div>
-        <div class="section__body">
+        <div class="single__body">
           <p class="field__hint keyring__lede">
             ${msg('Without a key of your own, everything runs on the project key – that is the normal case and costs you nothing. A key entered here is used instead, for the worlds you forge and for the ones you own.')}
           </p>
-          <velg-byok-panel></velg-byok-panel>
+          <velg-keyring></velg-keyring>
         </div>
-      </section>
+      </div>
     `;
   }
 
   private _renderPostings() {
     const postings = this._account?.memberships ?? [];
     return html`
-      <section class="section" style="--i: 3">
-        <div class="section__head">
-          <h2 class="section__title">${msg('Postings')}</h2>
-          <span class="section__note">${msg(str`${postings.length} on file`)}</span>
+      <div class="single">
+        <div class="single__head">
+          <span class="single__note">${msg(str`${postings.length} on file`)}</span>
         </div>
-        <div class="section__body">
+        <div class="single__body">
           ${
             postings.length === 0
               ? html`<p class="empty">
@@ -851,12 +1177,13 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
                       >
                         <span class="posting__name">${m.simulation_name}</span>
                         <span class="posting__meta">
-                          <span class="posting__role">${m.member_role}</span>
+                          <span class="posting__role">${memberRoleLabel(m.member_role)}</span>
                           ${
                             m.joined_at
                               ? html`<span>${msg(str`since ${formatDate(m.joined_at)}`)}</span>`
                               : nothing
                           }
+                          ${this._renderPullingKey(m)}
                         </span>
                       </button>
                     `,
@@ -865,19 +1192,39 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
               `
           }
         </div>
-      </section>
+      </div>
     `;
+  }
+
+  /**
+   * Welcher Schlüssel in DIESER Welt zieht.
+   *
+   * Die Auskunft folgt dem Backend und behauptet nichts darüber hinaus: der
+   * persönliche Schlüssel greift an zwei Stellen — beim Schmieden (eigener
+   * Entwurf) und in Phase 9 des Herzschlags, und dort ist es der Schlüssel
+   * des WELT-BESITZERS. Für eine Welt, in der man Betrachter oder Redakteur
+   * ist, zieht er also nicht, auch wenn er hinterlegt ist.
+   *
+   * Was hier bewusst FEHLT: ob die Welt selbst einen Schlüssel in ihren
+   * Einstellungen trägt (der ginge vor). Diese Auskunft gibt zurzeit kein
+   * Endpunkt für fremde Welten heraus, und eine geratene wäre schlechter als
+   * keine.
+   */
+  private _renderPullingKey(m: MembershipInfo) {
+    const byok = forgeStateManager.byokStatus.value;
+    const ownKey = byok.has_openrouter_key || byok.has_replicate_key;
+    const pulls = ownKey && m.member_role === 'owner';
+    return html`<span class="posting__key" ?data-own=${pulls}>
+      ${pulls ? msg('your key') : msg('project key')}
+    </span>`;
   }
 
   private _renderRecord() {
     const account = this._account;
     if (!account) return nothing;
     return html`
-      <section class="section" style="--i: 4">
-        <div class="section__head">
-          <h2 class="section__title">${msg('Record')}</h2>
-        </div>
-        <div class="section__body">
+      <div class="single">
+        <div class="single__body">
           <div class="record">
             <div class="record__item">
               <span class="record__value">${account.academy_epochs_played}</span>
@@ -891,7 +1238,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     `;
   }
 }
