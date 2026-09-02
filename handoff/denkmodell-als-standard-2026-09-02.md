@@ -177,3 +177,44 @@ richtige Schraube.
 
 Der Klassifikator bekommt ein eigenes Modell statt des Standards. Alles Weitere
 gehört in diese Prüfung, nicht in eine Nebenbei-Reparatur.
+
+
+---
+
+## Nachtrag: der Weg zum Ende, in vier Irrtümern
+
+Die Reparatur brauchte vier Anläufe. Jeder hat eine echte Sache behoben, und
+jeder war als Diagnose falsch. Das ist das Lehrreiche daran:
+
+| Commit | meine Annahme | was wirklich war |
+|---|---|---|
+| `8245215c` | das JSON wird abgeschnitten | Budget zu klein — richtig, aber nicht der Grund |
+| `d692c921` | das Modell denkt zu viel | stimmt, reichte aber nicht |
+| `f376d368` | `classify` ist verdrahtet | war es nicht: drei Stellen einig, die vierte still anderer Meinung |
+| `fbd6f2ce` | die Antwort ist ein Array | mal ja, mal ein Objekt — die Form ist nicht verlässlich |
+
+🔑 **Was sie verbindet: jedes Mal sah ein Ergebnis plausibel aus, das aus einem
+anderen Grund zustande kam.** „Keine Kandidaten" liest sich wie „nichts war
+relevant". „Empty content" liest sich wie „das Modell ist kaputt". „non-list"
+liest sich wie „das Modell hat Unsinn geliefert". Keine dieser Lesarten war
+richtig, und jede war naheliegend.
+
+## Endstand auf Prod (02.09.2026, 11:46)
+
+    live                 fbd6f2ce, ein Behälter, healthy
+    Modell               deepseek/deepseek-chat  ← greift, im Log bestätigt
+    Klassifikationsfehler keine mehr
+    Bluesky-Adapter      27 verankerte Signale je Zyklus
+    Kandidaten           83 (NOAA 44, NASA 24, GDACS 8, USGS 7)
+
+**Aus Bluesky entsteht weiterhin kein Kandidat — und das ist jetzt eine
+INHALTLICHE Entscheidung, kein Fehler.** Der Klassifikator läuft, meldet
+nichts mehr, und ordnet die verankerten Beiträge als `none` ein. Wer sich die
+Beispiele ansieht („USS Abraham Lincoln docks at Pattaya resort",
+„30 billion euros of gas imports displaced"), findet das nachvollziehbar: es
+sind Nachrichten, aber keine geopolitischen Erschütterungen.
+
+**Was daran noch zu prüfen wäre** — und ausdrücklich nicht heute:
+der Systemprompt des Klassifikators kennt acht Kategorien plus `none`. Ob
+seine Schwelle für „bedeutsam" zur Schleuse passt, ist eine eigene Frage. Der
+Weg dorthin ist jetzt jedenfalls frei.
