@@ -159,6 +159,14 @@ jobs:
 
       - name: Backend lint (migration timestamps unique, numbers in the same order)
         run: bash scripts/lint-migration-order.sh
+
+      # psql liest bis zum Semikolon. Fehlt es hinter der schliessenden
+      # Dollar-Marke einer Funktion, zieht es die naechste Anweisung mit hinein
+      # und meldet den Fehler an einer Stelle, die mit der Ursache nichts zu tun
+      # hat. Migration 319 trug das einen Tag lang unsichtbar, weil die
+      # Migrationskette vorher abbrach und psql nie bis dorthin kam.
+      - name: Backend lint (dollar-quoted blocks terminated)
+        run: bash scripts/lint-migration-statements-terminated.sh
         working-directory: .
 
       - name: Backend lint (return type is the only source of the response shape)
