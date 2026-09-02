@@ -9,6 +9,8 @@ Covers:
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from backend.services.scanning.base_adapter import ScanResult
@@ -770,3 +772,105 @@ class TestLensDirectives:
         """Die Freiheit ist die TEMPERATUR des Aufrufs, kein Prompt-Text — sonst
         stuende dieselbe Angabe an zwei Orten."""
         assert self._render(creativity=0.9) == ""
+
+
+# ---------------------------------------------------------------------------
+# Protokoll und Kandidat teilen einen Schluessel (Luecke 7)
+# ---------------------------------------------------------------------------
+
+class _CandidateStub:
+    """Antwortet auf die eine Abfrage, die `_attach_intake_status` stellt."""
+
+    def __init__(self, rows: list[dict]):
+        self._rows = rows
+        self.asked_for: list[str] = []
+
+    def table(self, _name: str):
+        return self
+
+    def select(self, _cols: str):
+        return self
+
+    def in_(self, _col: str, values: list[str]):
+        self.asked_for = list(values)
+        return self
+
+    async def execute(self):
+        return SimpleNamespace(data=self._rows, count=len(self._rows))
+
+
+class TestIntakeStatusOnTheScanLog:
+    """Die Spalte „Ergebnis" darf nur sagen, was der SCHLUESSEL hergibt.
+
+    Vor Migration 343 gab es keinen; ein Abgleich ueber den Titel lieferte
+    Zeilen, nur nicht die richtigen. Diese Tests halten fest, dass jetzt das
+    PAAR (Quelle, Kennung) zaehlt — nicht eines von beiden.
+    """
+
+    @pytest.mark.asyncio
+    async def test_the_status_is_attached_by_the_pair(self):
+        from backend.services.scanning.scanner_service import ScannerService
+
+        rows = [
+            {"source_name": "guardian", "source_id": "g1", "title": "A"},
+            {"source_name": "noaa_alerts", "source_id": "n1", "title": "B"},
+        ]
+        admin = _CandidateStub(
+            [
+                {"source_adapter": "guardian", "source_id": "g1", "status": "pending"},
+                {"source_adapter": "noaa_alerts", "source_id": "n1", "status": "approved"},
+            ]
+        )
+        await ScannerService._attach_intake_status(admin, rows)
+        assert rows[0]["intake_status"] == "pending"
+        assert rows[1]["intake_status"] == "approved"
+
+    @pytest.mark.asyncio
+    async def test_the_same_id_under_another_source_does_not_match(self):
+        """Der Schluessel ist das PAAR. Zwei Quellen duerfen dieselbe Kennung
+        fuehren — ein Abgleich nur ueber die Kennung waere wieder der alte
+        Fehler in neuem Gewand."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        rows = [{"source_name": "guardian", "source_id": "shared", "title": "A"}]
+        admin = _CandidateStub(
+            [{"source_adapter": "noaa_alerts", "source_id": "shared", "status": "pending"}]
+        )
+        await ScannerService._attach_intake_status(admin, rows)
+        assert rows[0]["intake_status"] is None
+
+    @pytest.mark.asyncio
+    async def test_rows_without_a_key_stay_none(self):
+        """Die neun mehrdeutigen Zeilen von vor der Migration."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        rows = [{"source_name": "guardian", "source_id": None, "title": "A"}]
+        admin = _CandidateStub([])
+        await ScannerService._attach_intake_status(admin, rows)
+        assert rows[0]["intake_status"] is None
+        # Und es wird gar nicht erst gefragt, wenn es nichts zu fragen gibt.
+        assert admin.asked_for == []
+
+    @pytest.mark.asyncio
+    async def test_one_query_for_the_whole_page(self):
+        """Eine Abfrage je Zeile waeren bei 200 Zeilen 200 Aufrufe."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        rows = [{"source_name": "guardian", "source_id": f"g{i}", "title": "x"} for i in range(50)]
+        admin = _CandidateStub([])
+        await ScannerService._attach_intake_status(admin, rows)
+        assert len(admin.asked_for) == 50
+
+    @pytest.mark.asyncio
+    async def test_a_broken_lookup_does_not_take_the_log_down(self):
+        """Ohne den Stand ist es immer noch das Protokoll."""
+        from backend.services.scanning.scanner_service import ScannerService
+
+        class _Broken(_CandidateStub):
+            async def execute(self):
+                msg = "no database"
+                raise ValueError(msg)
+
+        rows = [{"source_name": "guardian", "source_id": "g1", "title": "A"}]
+        await ScannerService._attach_intake_status(_Broken([]), rows)
+        assert rows[0]["intake_status"] is None

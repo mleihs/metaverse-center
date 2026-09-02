@@ -31224,6 +31224,22 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>The call reports no steps and no token count.</source>
   <target>Der Aufruf meldet keine Schritte und keine Token.</target>
 </trans-unit>
+<trans-unit id="saedc35de8c008452">
+  <source>in triage</source>
+  <target>in der Sichtung</target>
+</trans-unit>
+<trans-unit id="s7da05cdc16e78cdf">
+  <source>resonance</source>
+  <target>Resonanz</target>
+</trans-unit>
+<trans-unit id="sc4f01afe976eb518">
+  <source>discarded</source>
+  <target>verworfen</target>
+</trans-unit>
+<trans-unit id="s1cd3f4462020234a">
+  <source>reported</source>
+  <target>gemeldet</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

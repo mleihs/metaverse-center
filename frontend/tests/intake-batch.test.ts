@@ -38,6 +38,7 @@ function candidate(over: Partial<ScanCandidate> = {}): ScanCandidate {
     magnitude: 0.55,
     classification_reason: null,
     source_adapter: 'usgs_earthquakes',
+    source_id: null,
     is_structured: true,
     status: 'pending',
     resonance_id: null,

@@ -46,6 +46,8 @@ export interface ScanCandidate {
   magnitude: number;
   classification_reason: string | null;
   source_adapter: string;
+  /** Mit `source_adapter` der Schlüssel zum Scan-Protokoll (Migration 343). */
+  source_id: string | null;
   is_structured: boolean;
   status: string;
   resonance_id: string | null;
@@ -86,6 +88,17 @@ export interface ScanLogEntry {
   classified: boolean;
   source_category: string | null;
   magnitude: number | null;
+  /**
+   * Was aus dieser Zeile geworden ist — der Status des Kandidaten, den sie
+   * erzeugt hat (`pending` · `approved` · `rejected` · `flagged`).
+   *
+   * `null` heisst: sie wurde nie einer. Das gilt für alles, was die
+   * Vorfilterung aussortiert hat, und für die Zeilen von vor Migration 343,
+   * die sich nicht eindeutig zuordnen liessen. Der Unterschied zwischen
+   * „aussortiert" und „nicht zuzuordnen" steht NICHT hier — er steht in der
+   * Spalte `classified` daneben.
+   */
+  intake_status: string | null;
 }
 
 export interface ScanCandidateList {

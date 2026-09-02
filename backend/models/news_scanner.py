@@ -22,6 +22,10 @@ class ScanCandidateResponse(BaseModel):
     magnitude: float
     classification_reason: str | None = None
     source_adapter: str
+    #: Zusammen mit `source_adapter` der Schluessel zum Scan-Protokoll
+    #: (Migration 343). NULL fuer Zeilen von vor der Migration, die sich nicht
+    #: eindeutig zuordnen liessen.
+    source_id: str | None = None
     is_structured: bool
     status: str
     resonance_id: UUID | None = None
