@@ -24,6 +24,7 @@ from backend.models.forge import (
     AdminBundleUpdate,
     AdminPurchaseLedgerEntry,
     AdminTokenGrant,
+    BYOKAdminStats,
     BYOKRecheckResult,
     BYOKRequest,
     BYOKRequestCreate,
@@ -581,6 +582,40 @@ async def request_byok_access(
         {"has_reason": bool(body.reason)},
     )
     return SuccessResponse(data=row)
+
+
+@router.get("/admin/byok-stats")
+async def get_byok_admin_stats(
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase=Depends(get_admin_supabase),
+) -> SuccessResponse[BYOKAdminStats]:
+    """Four numbers about the state of BYOK, read in one statement.
+
+    Read together, not separately: an approval landing between two queries
+    would show a state that never existed.
+    """
+    stats = await ForgeDraftService.byok_admin_stats(admin_supabase)
+    return SuccessResponse(data=stats)
+
+
+@router.put("/admin/byok-stale-days")
+async def update_byok_stale_days(
+    days: Annotated[int, Query(ge=1, le=3650)],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase=Depends(get_admin_supabase),
+) -> SuccessResponse[MessageResponse]:
+    """How long a stored key may go unconfirmed before it carries a notice."""
+    await ForgeDraftService.update_byok_stale_days(admin_supabase, days, admin.id)
+    await AuditService.safe_log(
+        admin_supabase,
+        None,
+        admin.id,
+        "platform_settings",
+        None,
+        "update_byok_stale_days",
+        {"days": days},
+    )
+    return SuccessResponse(data={"message": "Threshold saved."})
 
 
 @router.get("/admin/byok-requests")
