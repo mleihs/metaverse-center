@@ -23012,11 +23012,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
         <target>Freigabe verfügbar</target>
       
 </trans-unit>
-<trans-unit id="s0e79083100924cb2">
-  <source>Supply your operative credentials below to unlock unrestricted materialization access. No forge tokens required.</source>
-        <target>Hinterleg unten deine Einsatzreferenzen, um uneingeschränkten Materialisierungszugang freizuschalten. Keine Forge-Tokens nötig.</target>
-      
-</trans-unit>
 <trans-unit id="sa93afc16e7d08bb5">
   <source>Get your key</source>
         <target>Hol dir deinen Schlüssel</target>
@@ -23065,16 +23060,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s44c7ba2e987b7784">
   <source>Register Keys</source>
         <target>Schlüssel registrieren</target>
-      
-</trans-unit>
-<trans-unit id="se49bf8ea368639d2">
-  <source>Both keys configured. Enter new values to update.</source>
-        <target>Beide Schlüssel konfiguriert. Gib neue Werte ein, um zu aktualisieren.</target>
-      
-</trans-unit>
-<trans-unit id="sec13750226a5b2ad">
-  <source>Configure both keys to enable unlimited access.</source>
-        <target>Konfiguriere beide Schlüssel, um unbegrenzten Zugang freizuschalten.</target>
       
 </trans-unit>
 <trans-unit id="s95701a268edea00a">
@@ -29843,10 +29828,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Degrades a target building by one rung on its own world’s condition ladder – each world names its own rungs, and the lowest is always a ruin.</source>
 <target>Setzt ein Gebäude eine Sprosse tiefer auf der Zustandsleiter seiner eigenen Welt – jede Welt benennt ihre Sprossen selbst, und die unterste ist immer eine Ruine.</target>
 </trans-unit>
-<trans-unit id="sd3374f60f08540f3">
-  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair – the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is at /how-to-play/loot.</source>
-<target>Nach dem Sieg über den Boss betrittst du das Nachbesprechungs-Terminal – dort verteilst du die Beute auf einzelne Mitglieder des Trupps. 105 Stücke gibt es über die acht Archetypen hinweg, in zwölf Wirkungsarten: Eignungsschübe (gedeckelt bei +2 je Agent, damit niemand unantastbar wird), Erinnerungen, die den Charakter formen, Moodlets, die von allein verklingen, Ereignis- und Bogenmodifikatoren, dauerhafte Boni und solche für die nächste Fahrt, sowie Gebäudereparatur – der einzige Weg, auf dem eine Ruine je zurückkommt. Der vollständige Katalog, mit der Wirkung jedes Stücks und dem Archetyp, der es fallen lässt, steht unter /how-to-play/loot.</target>
-</trans-unit>
 <trans-unit id="sa9decb06c2d16ac7">
   <source>Forge your world</source>
 <target>Schmiede deine Welt</target>
@@ -30394,6 +30375,54 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s8e9d2f6b5aa2677c">
   <source>No aftermath recorded. Echoes and impacts appear here.</source>
   <target>Kein Nachhall verzeichnet. Echos und Wirkungen erscheinen hier.</target>
+</trans-unit>
+<trans-unit id="s2f86a7b8365745fd">
+  <source>This account may use its own keys. Enter them below and requests run through your provider account instead of the project key. Whether that also waives the forge tokens is a separate grant.</source>
+  <target>Dieses Konto darf eigene Schlüssel benutzen. Trag sie unten ein, dann laufen die Anfragen über dein Anbieterkonto statt über den Projektschlüssel. Ob damit auch die Schmiede-Token entfallen, ist eine eigene Freigabe.</target>
+</trans-unit>
+<trans-unit id="sdedf0964959897fc">
+  <source>Both keys on file. Enter new values to replace them.</source>
+  <target>Beide Schlüssel hinterlegt. Neue Werte eintragen, um sie zu ersetzen.</target>
+</trans-unit>
+<trans-unit id="sfc3cbcf8f05163dc">
+  <source>Forge tokens are waived only when an administrator grants it, and only once both keys are on file.</source>
+  <target>Schmiede-Token entfallen nur, wenn eine Verwaltung es gewährt – und erst, wenn beide Schlüssel hinterlegt sind.</target>
+</trans-unit>
+<trans-unit id="s5536e12d3130b6f4">
+  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair – the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is the Loot Catalogue topic.</source>
+  <target>Nach dem Sieg über den Endgegner öffnet sich das Nachbesprechungs-Terminal – die Verteilung der Beute, Stück für Stück an einzelne Mitglieder der Gruppe. 105 Stücke gibt es, über die acht Archetypen verteilt, in zwölf Wirkungsarten: Eignungs-Verstärkungen (gedeckelt bei +2 je Agent, damit niemand unantastbar wird), Erinnerungen, die die Persönlichkeit formen, Moodlets, die von selbst verklingen, Ereignis- und Bogen-Modifikatoren, dauerhafte Boni und solche für den nächsten Lauf, dazu die Gebäudereparatur – der einzige Weg, auf dem ein zerstörtes Gebäude je wieder auf die Beine kommt. Der vollständige Katalog, mit der Wirkung jedes Stücks und dem Archetyp, der es fallen lässt, steht im Thema „Beutekatalog".</target>
+</trans-unit>
+<trans-unit id="s99a300f66daaef26">
+  <source>Loot Catalogue</source>
+  <target>Beutekatalog</target>
+</trans-unit>
+<trans-unit id="s4132fa531e353aa0">
+  <source>Every piece a dungeon can yield, what it does mechanically, and which archetype drops it.</source>
+  <target>Jedes Stück, das ein Verlies hergeben kann: was es bewirkt und welcher Archetyp es fallen lässt.</target>
+</trans-unit>
+<trans-unit id="sfe88d270aa3e71da">
+  <source>Reference</source>
+  <target>Nachschlagewerk</target>
+</trans-unit>
+<trans-unit id="s7bf93f4c671ecc67">
+  <source>105 pieces across 8 archetypes, in 12 effect types</source>
+  <target>105 Stücke über 8 Archetypen, in 12 Wirkungsarten</target>
+</trans-unit>
+<trans-unit id="sd9d3b331a52d81de">
+  <source>Each entry names its effect in words and its parameters as values</source>
+  <target>Jeder Eintrag nennt seine Wirkung in Worten und seine Werte als Zahlen</target>
+</trans-unit>
+<trans-unit id="s3eb36464264162dd">
+  <source>Aptitude boosts, memories, moodlets, event and arc modifiers, permanent and next-run bonuses</source>
+  <target>Eignungs-Verstärkungen, Erinnerungen, Moodlets, Ereignis- und Bogen-Modifikatoren, dauerhafte Boni und solche für den nächsten Lauf</target>
+</trans-unit>
+<trans-unit id="s590cfbf5d6da494b">
+  <source>Building repair is here too: the only way a ruined building ever recovers</source>
+  <target>Auch die Gebäudereparatur steht hier: der einzige Weg, auf dem ein zerstörtes Gebäude je wieder auf die Beine kommt</target>
+</trans-unit>
+<trans-unit id="s372769224a8bc4f7">
+  <source>Read from the same record the run uses, so it is never out of date</source>
+  <target>Aus demselben Bestand gelesen, aus dem der Lauf schöpft – er kann also nie veralten</target>
 </trans-unit>
 </body>
 </file>

@@ -741,7 +741,7 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
       <div class="byok__awareness">
         <div class="byok__awareness-title">${msg('Clearance Available')}</div>
         <p class="byok__awareness-desc">
-          ${msg('Supply your operative credentials below to unlock unrestricted materialization access. No forge tokens required.')}
+          ${msg('This account may use its own keys. Enter them below and requests run through your provider account instead of the project key. Whether that also waives the forge tokens is a separate grant.')}
         </p>
       </div>
     `;
@@ -926,8 +926,10 @@ export class VelgByokPanel extends SignalWatcher(LitElement) {
         <span class="byok__hint">
           ${
             bothConfigured
-              ? msg('Both keys configured. Enter new values to update.')
-              : msg('Configure both keys to enable unlimited access.')
+              ? msg('Both keys on file. Enter new values to replace them.')
+              : msg(
+                  'Forge tokens are waived only when an administrator grants it, and only once both keys are on file.',
+                )
           }
         </span>
       </div>
