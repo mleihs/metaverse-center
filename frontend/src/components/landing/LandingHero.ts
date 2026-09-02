@@ -25,10 +25,10 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { localeService } from '../../services/i18n/locale-service.js';
+import { captureError } from '../../services/SentryService.js';
 import type { LandingCounts, LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
-import { captureError } from '../../services/SentryService.js';
-import { localeService } from '../../services/i18n/locale-service.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
 import {
