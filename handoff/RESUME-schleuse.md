@@ -1,44 +1,40 @@
-# RESUME — Schleuse (Event-Intake) einbauen
+# RESUME — Schleuse (Event-Intake)
 
-**Stand 02.09.2026, später Nachmittag.** Schritte 1–5 gebaut. Der Scanner läuft
-auf Prod, die Klassifikation funktioniert, die Depeschen sind repariert, und die
-Sichtung ist der Griff, der dem Brett bis heute fehlte.
+**Stand 02.09.2026, Abend. ALLE ACHT SCHRITTE SIND GEBAUT.** Die alte
+`social/SocialTrendsView.ts` ist gelöscht; die Schleuse kann alles, was sie
+konnte, und die Botschaften haben ein eigenes Zuhause.
 
-    live auf Prod        fbd6f2ce   (gemessen im HTML-Kopf; ⚠ die alte Notiz
-                                     sagte 90c4397d — das ist ein reiner
-                                     Doku-Commit NACH dem Auslösen)
-    Migrationen          334 · 337 · 338 drauf · 339 hat ein Peer belegt
-                         → nächste freie 340
-                         (337 heisst seit dem Zusammenstoss mit 336
-                          `20260902165000_337_…`; Ledger 334–339 lückenlos)
-    news_scanner_enabled true · Takt 6 h · auto_create false
-    Adapter              11 registriert, 6 aktiv (inkl. bluesky), 5/11 online
-    Kandidaten           83  (NOAA 44 · NASA 24 · GDACS 8 · USGS 7)
-    live seit 2177281c   a3993cef — die Scanner-Reparaturen SIND auf Prod
-                         (ein Peer-Push nahm sie mit; als Vorfahr gemessen)
-    ungepusht            3c418ae2 (Sichtung) · dfca7bb3 (Doku) ·
-                         07196983 (337 umbenannt) · b778e6ee (299, Peer)
-                         — EIN geteilter Baum: wer pusht, pusht alle vier
+    live auf Prod        2177281c (Peer-Deploy) — meine Backend-Reparaturen
+                         (a3993cef) sind dessen Vorfahr und wirken
+    Migrationen          334 · 337 · 338 · 340 auf Prod · nächste freie 341
+    Frontend             8/8 Schritte, 30 Lint-Tore grün, 1182 Tests
+    news_scanner_enabled ⚠ FALSE — ein Peer hat die ganze autonome KI-Schicht
+                         abgeschaltet (leeres OpenRouter-Konto). Für einen
+                         gezielten Lauf kurz anmachen und ihm Bescheid sagen.
 
-▶ **ALS NÄCHSTES: die drei Stapel-Wege, dann Schritt 8 zu Ende.**
+▶ **ALS NÄCHSTES: es gibt keinen Schritt 9.** Was bleibt, sind die
+Backend-Lücken — und die sind in der Oberfläche jeweils BENANNT statt geraten,
+also nicht dringend, sondern fällig:
 
-Die Botschaften sind raus (`915e38c5`): `components/embassies/EmbassiesPanel.ts`
-hängt jetzt an der Gebäude-Ansicht, wo Botschaften auch geschlossen werden.
-`SocialTrendsView.ts` ist von 1989 auf ~1400 Zeilen geschrumpft und trägt nur
-noch, was die Schleuse ersetzen SOLL.
+    2  Story-Bündelung   sources[] + social_volume je Kandidat
+                         → schaltet in der Sichtung „Netz-Tempo" frei
+    3  Passungs-Score    fit je Kandidat × Welt
+                         → schaltet „Passung" frei (ein Schalter:
+                           BUREAU_RANKS_THE_SIGNALS)
+    4  transform-article nimmt eine `lens` entgegen
+                         → nimmt dem Schmelztiegel die °-Fussnote
+    6  intake_subscriptions
+                         → die einzige Kammer-Zusage, die noch fehlt
+    7  Scan-Log um die Schleusen-Stufe
+                         → braucht zuerst einen SCHLÜSSEL zwischen
+                           news_scan_log und news_scan_candidates
 
-**Was zum Löschen noch fehlt** — drei Wege, die die Schleuse nicht kann:
+Lücke 5 (Quote) ist an der Oberfläche erledigt: Einzelaufnahme UND Stapel
+deckeln.
 
-    Stapel-Transformation   `batchTransform`   Sichtung wählt mehrfach aus,
-    Stapel-Aufnahme         `batchIntegrate`   führt aber nur in den Eingang
-    „Resonanz aus Artikel"  Admin-Weg direkt aus der Artikelliste
-
-Erst wenn die drei stehen, ist `SocialTrendsView.ts` wirklich ersetzt und der
-`social`-Eintrag darf aus der Navigation.
-
-Ebenfalls offen: **Abonnements** (Lücke 6 — es gibt weder Tabelle noch
-Endpunkt; der ehrliche Platzhalter steht in der View) und die sechs
-Backend-Lücken unten.
+Zwei Dinge, die ein MENSCH tun muss, stehen weiter unten unverändert: einen
+frischen Guardian-Schlüssel eintragen und entscheiden, was mit den 34
+beschädigten Depeschen geschieht.
 
 ## Was heute dazugekommen ist
 

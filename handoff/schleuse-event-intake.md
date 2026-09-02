@@ -614,3 +614,38 @@ Tabelle noch Endpunkt; der ehrliche Platzhalter steht seit Schritt 2 in der View
 Wer die Datei löscht, löscht die Botschaften mit. Der `social`-Eintrag in der
 Navigation bleibt deshalb stehen, bis die Botschaften ein eigenes Zuhause haben.
 Das ist eine eigene Aufgabe.
+
+---
+
+## Nachtrag (Claude Code, 02.09.2026) — Schritt 8, und was NICHT nachgebaut wurde
+
+Die alte View ist gelöscht (`SocialTrendsView.ts` + `TransformationModal.ts`,
+2969 Zeilen). Vorher wurden drei Wege geprüft, die sie konnte:
+
+**1 + 2. Die Stapel-Wege — gebaut** (`components/intake/intake-batch.ts`), als
+„Alle → ②" und „Alle ▣ nur hier" in den Kammerköpfen.
+
+⚠ **Die Stapel-Verwandlung setzt KEINE Linse.** Der Plan schreibt „mit
+Abo-Linse"; Abonnements gibt es nicht, also müsste man eine erfinden — und eine
+Linse trägt den ORT. 🔑 Ein Stapel darf abnehmen, was gleichförmig ist, und
+nicht, was je Stück eine Entscheidung IST.
+
+Die Stapel-Aufnahme deckelt an der Tagesquote und rückt nur so viele Signale
+vor, wie der Server wirklich angelegt hat (`events` und `errors` kommen
+getrennt).
+
+**3. „Resonanz aus Artikel" — NICHT nachgebaut, weil abgelöst.** Der alte Knopf
+riet die Kategorie aus dem Zeitungsressort (Rückfall `cultural_shift`), setzte
+die Magnitude fest auf 0.5 und traf mit einem Klick alle Welten. Die Schleuse
+zeigt stattdessen die echte Klassifikation, die Suszeptibilitätstafel je Welt
+und einen Halte-Knopf; ein Admin, der von Hand anlegen will, hat
+`AdminResonancesTab`. Zweimal ersetzt, beide Male durch etwas Besseres.
+
+**Der Duplikat-Fänger — nicht portiert, gemessen.** `_isDedup` verglich
+Artikel-Überschriften mit Ereignistiteln; Ereignisse tragen aber den
+VERWANDELTEN Titel, und auf Prod haben **0 von 112** Ereignissen ein
+`metadata.source_article`. Es gibt keinen Anker. Wer Duplikate erkennen will,
+braucht zuerst den Quellartikel AM Ereignis — Backend-Arbeit.
+
+**Die Route bleibt als Umleitung.** `/simulations/:id/social` → `/intake`, mit
+`replaceState`. Eine gemerkte Adresse soll ankommen, nicht ins Leere laufen.
