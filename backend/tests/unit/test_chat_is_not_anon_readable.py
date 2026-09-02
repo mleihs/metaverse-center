@@ -109,10 +109,41 @@ class TestDieGegenrichtlinienBleiben:
         )
         assert "auth.uid()" in statements, "Die Prüfung erkennt die Gegenrichtlinie nicht"
 
-    def test_acceptance_refuses_an_empty_measurement(self, statements: str) -> None:
-        """Auf leeren Tabellen bestünde jede Sperre."""
-        assert "Nichts zu verbergen" in statements
-        assert re.search(r"v_gespraeche = 0 OR v_nachrichten = 0", statements)
+    def test_acceptance_names_an_empty_measurement(self, statements: str) -> None:
+        """Auf leeren Tabellen bestünde jede Sperre — das muss AUSGESPROCHEN werden.
+
+        Der Test hiess bis zum 02.09.2026 ``refuses_an_empty_measurement`` und
+        verlangte ein ``RAISE EXCEPTION``. Die Absicht war richtig und ist es
+        weiterhin: eine leer bestandene Messung ist keine bestandene. Die FOLGE
+        war es nicht — die Saat laeuft nach den Migrationen, auf einer frischen
+        Datenbank ist ``chat_conversations`` leer, und die Migration brach dort
+        ab. Sie war damit nicht streng, sondern unausfuehrbar; CI kam zwei Tage
+        nicht an ihr vorbei.
+
+        Beides ist zu haben. "Ich konnte nicht messen" ist eine andere Aussage
+        als "ich habe gemessen und es war gut" — sie muss nur ausgesprochen
+        werden. Geprueft wird deshalb jetzt: der leere Fall wird ERKANNT, er
+        wird BENANNT, und er wird nicht als Bestehen ausgegeben. Ob mit
+        EXCEPTION oder NOTICE, ist die Entscheidung der Migration; still
+        durchwinken darf sie ihn nicht.
+        """
+        # 1. Der leere Fall wird erkannt.
+        assert re.search(r"v_gespraeche = 0 OR v_nachrichten = 0", statements), (
+            "Der Abnahmeblock unterscheidet den leeren Fall nicht — dann besteht "
+            "er auf leeren Tabellen, ohne etwas gemessen zu haben"
+        )
+
+        # 2. Und er sagt etwas dazu. Ein Zweig ohne RAISE waere ein Schweigen.
+        zweig = statements[statements.index("v_gespraeche = 0 OR v_nachrichten = 0") :][:600]
+        assert "RAISE" in zweig, "Der leere Fall wird stillschweigend durchgewunken"
+
+        # 3. Und was er sagt, darf nicht nach Bestehen klingen.
+        assert re.search(r"nichts zu verbergen", zweig, re.IGNORECASE), (
+            "Der leere Fall wird nicht beim Namen genannt"
+        )
+        assert re.search(r"AUSGESETZT|nicht bestanden|Erwartet|Nichts zu verbergen", zweig), (
+            "Die Meldung sagt nicht, dass hier NICHT gemessen wurde"
+        )
 
     def test_no_policy_is_created(self, statements: str) -> None:
         assert "CREATE POLICY" not in statements, "Die Migration legt eine Richtlinie an — sie soll nur entfernen"
