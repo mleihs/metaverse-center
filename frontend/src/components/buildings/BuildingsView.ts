@@ -27,6 +27,7 @@ import './BuildingCard.js';
 import './BuildingEditModal.js';
 import './BuildingDetailsPanel.js';
 import './EmbassyCreateModal.js';
+import '../embassies/EmbassiesPanel.js';
 
 @localized()
 @customElement('velg-buildings-view')
@@ -469,6 +470,14 @@ export class VelgBuildingsView extends SignalWatcher(PaginatedLoaderMixin(LitEle
               : nothing
           }
         </header>
+
+        <!--
+          Die diplomatische Uebersicht stand bis zum 02.09.2026 in
+          social/SocialTrendsView.ts, mitten zwischen Nachrichtenartikeln.
+          Botschaften werden HIER geschlossen (EmbassyCreateModal, EmbassyLink),
+          also gehoert die Uebersicht auch hierher. Verschoben, nicht veraendert.
+        -->
+        <velg-embassies-panel .simulationId=${this.simulationId}></velg-embassies-panel>
 
         <velg-filter-bar
           .filters=${this._getFilterConfigs()}
