@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
+from typing import Literal
 from uuid import UUID
 
 import httpx
@@ -33,9 +34,14 @@ _SERVER_OWNED_ANCHOR_KEYS = frozenset({"scans", "seed"})
 
 
 class WalletNotFoundError(Exception):
-    """Raised when a user wallet does not exist (user must be an architect)."""
+    """Raised when the BYOK key RPC could not reach a wallet row.
 
-    def __init__(self, detail: str = "User wallet not found. Must be an architect first."):
+    Since migration 330 depositing a key CREATES the wallet row when there is
+    none — a key belongs to the person, not to the Forge — so this is a
+    defensive path, no longer the ordinary answer for a non-architect.
+    """
+
+    def __init__(self, detail: str = "Unable to store the API key. Please try again."):
         self.detail = detail
         super().__init__(detail)
 
@@ -275,14 +281,25 @@ class ForgeDraftService:
         return decrypted_or, decrypted_rep
 
     @staticmethod
-    async def check_byok_allowed(supabase: Client, user_id: UUID) -> bool:
-        """Check whether a user is allowed to use BYOK keys.
+    async def check_byok_allowed(supabase: Client, user_id: UUID, *, is_admin: bool = False) -> bool:
+        """Check whether a user may use a personal API key (BYOK).
 
-        Calls the fn_user_byok_allowed RPC which evaluates per-user and
-        system-wide BYOK access policies.
+        BYOK is a MODE, not a rule: whoever deposits no key keeps running on
+        the platform key. This answers only "may this person deposit and use
+        one", which the platform governs on two levels — ``byok_access_policy``
+        (``none`` / ``all`` / ``per_user``) and, under ``per_user``, the
+        ``byok_allowed`` flag on the wallet row. Both live in
+        ``fn_user_byok_allowed``.
 
-        Returns True if allowed, False otherwise.
+        ``is_admin`` is the one thing SQL cannot answer here. The platform
+        admin check is the 3-tier Python one (email allowlist → cached DB ids
+        → refresh, see ``backend/dependencies.is_platform_admin``); the SQL
+        ``is_platform_admin()`` reads ``auth.uid()``, which is NULL on the
+        service-role client an admin request carries. Whoever SETS the policy
+        must not be locked out by it, so the caller passes the answer in.
         """
+        if is_admin:
+            return True
         resp = await supabase.rpc("fn_user_byok_allowed", {"p_user_id": str(user_id)}).execute()
         return bool(resp.data)
 
@@ -295,9 +312,15 @@ class ForgeDraftService:
     ) -> dict:
         """Update a user's BYOK encrypted keys.
 
-        Uses ``fn_update_user_byok_keys`` RPC (migration 125, updated 218)
-        which runs as SECURITY DEFINER, validating ownership inside the
-        function.  This avoids the previous service_role bypass.
+        ``supabase`` MUST be the user-JWT client (``get_supabase``), never the
+        effective/admin one. ``fn_update_user_byok_keys`` (migr. 125/218/330)
+        is SECURITY DEFINER and validates ownership itself via
+        ``auth.uid() IS DISTINCT FROM p_user_id`` — that self-check is exactly
+        why ADR-006 lets it stay ``authenticated``-callable, and it is also why
+        the service-role JWT breaks it: that token carries no ``sub``, so
+        ``auth.uid()`` is NULL and every admin request raised *Not authorized
+        to update another user's keys*. Migration 330 makes the RPC create the
+        wallet row when there is none, so a non-architect can deposit a key.
         """
         params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
         has_update = False
@@ -330,7 +353,8 @@ class ForgeDraftService:
     ) -> dict:
         """Remove a single BYOK key (set to NULL).
 
-        Uses the ``p_clear_*`` flags added in migration 218.
+        Uses the ``p_clear_*`` flags added in migration 218. ``supabase`` must
+        be the user-JWT client for the same reason as ``update_user_keys``.
         """
         params: dict[str, str | bool | None] = {"p_user_id": str(user_id)}
         if provider == "openrouter":
@@ -392,12 +416,19 @@ class ForgeDraftService:
             return TestBYOKResult(valid=False, detail="Unexpected error during key verification.")
 
     @staticmethod
-    async def get_wallet(supabase: Client, user_id: UUID) -> dict:
+    async def get_wallet(supabase: Client, user_id: UUID, *, is_admin: bool = False) -> dict:
         """Get the current user's forge wallet (includes account_tier and BYOK status).
 
-        Uses a single composite RPC (fn_get_wallet_summary, migration 108)
-        that consolidates the wallet query, BYOK policy checks, and platform
-        settings into one DB round-trip.
+        Uses a single composite RPC (fn_get_wallet_summary, migration 108,
+        widened in 330) that consolidates the wallet query, BYOK policy checks,
+        and platform settings into one DB round-trip.
+
+        ``is_admin`` carries the same override as ``check_byok_allowed``, and
+        for the same reason it must be applied HERE rather than only at the
+        write endpoint: ``byok_status.byok_allowed`` is what the frontend hides
+        the key form behind. An admin who may save a key but is told they may
+        not gets a form that never appears — the exact shape of the bug this
+        replaces, only inverted.
         """
         _default: dict = {
             "forge_tokens": 0,
@@ -415,7 +446,10 @@ class ForgeDraftService:
         }
         try:
             resp = await supabase.rpc("fn_get_wallet_summary", {"p_user_id": str(user_id)}).execute()
-            return resp.data or _default
+            summary = resp.data or _default
+            if is_admin and isinstance(summary.get("byok_status"), dict):
+                summary["byok_status"]["byok_allowed"] = True
+            return summary
         except (PostgrestAPIError, httpx.HTTPError) as exc:
             logger.exception("fn_get_wallet_summary RPC failed")
             sentry_sdk.capture_exception(exc)
@@ -603,23 +637,37 @@ class ForgeDraftService:
         return {"byok_access_policy": policy}
 
     @staticmethod
+    async def _set_wallet_flag(
+        admin_supabase: Client,
+        target_user_id: UUID,
+        column: Literal["byok_bypass", "byok_allowed"],
+        enabled: bool,
+    ) -> None:
+        """Set one per-user BYOK flag, creating the wallet row if absent.
+
+        An UPDATE was the original shape and it was silently unreachable: on
+        production only four wallet rows exist, all architects, so granting
+        BYOK to anyone else answered 404 — the admin could not open the door
+        for the very people the ``per_user`` policy exists for. The wallet row
+        is platform-wide metadata about a person (migr. 055), not an architect
+        badge: it is created with ``account_tier = 'observer'`` and the
+        ``trg_sync_architect_flag`` trigger derives ``is_architect = false``,
+        so creating one grants no Forge privilege whatsoever.
+        """
+        await (
+            admin_supabase.table("user_wallets")
+            .upsert({"user_id": str(target_user_id), column: enabled}, on_conflict="user_id")
+            .execute()
+        )
+
+    @staticmethod
     async def update_user_byok_bypass(
         admin_supabase: Client,
         target_user_id: UUID,
         enabled: bool,
     ) -> dict:
-        """Toggle per-user BYOK bypass (admin only).
-
-        Raises HTTPException 404 if user wallet not found.
-        """
-        resp = await (
-            admin_supabase.table("user_wallets")
-            .update({"byok_bypass": enabled})
-            .eq("user_id", str(target_user_id))
-            .execute()
-        )
-        if not resp.data:
-            raise not_found("wallet")
+        """Toggle per-user BYOK bypass — the token waiver — for one user (admin only)."""
+        await ForgeDraftService._set_wallet_flag(admin_supabase, target_user_id, "byok_bypass", enabled)
         return {"user_id": str(target_user_id), "byok_bypass": enabled}
 
     @staticmethod
@@ -628,18 +676,8 @@ class ForgeDraftService:
         target_user_id: UUID,
         enabled: bool,
     ) -> dict:
-        """Grant or revoke BYOK access for a specific user (admin only).
-
-        Raises HTTPException 404 if user wallet not found.
-        """
-        resp = await (
-            admin_supabase.table("user_wallets")
-            .update({"byok_allowed": enabled})
-            .eq("user_id", str(target_user_id))
-            .execute()
-        )
-        if not resp.data:
-            raise not_found("wallet")
+        """Grant or revoke BYOK access for a specific user (admin only)."""
+        await ForgeDraftService._set_wallet_flag(admin_supabase, target_user_id, "byok_allowed", enabled)
         return {"user_id": str(target_user_id), "byok_allowed": enabled}
 
     @staticmethod

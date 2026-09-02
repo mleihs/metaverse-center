@@ -13,9 +13,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
+from cryptography.fernet import Fernet
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.config import settings as app_settings
 from backend.dependencies import (
     get_admin_supabase,
     get_current_user,
@@ -25,6 +27,7 @@ from backend.dependencies import (
 from backend.models.common import CurrentUser
 from backend.routers import forge as forge_module
 from backend.tests.conftest import MOCK_ADMIN_EMAIL
+from backend.utils.encryption import decrypt
 
 # ── Constants ────────────────────────────────────────────────────────────
 
@@ -43,7 +46,16 @@ def _make_user(uid: UUID, email: str, token: str = "mock") -> CurrentUser:  # no
 
 
 def _mock_supabase() -> MagicMock:
-    """Build a chainable Supabase mock with async execute."""
+    """Build a chainable Supabase mock with async execute.
+
+    ``mock.rpc`` is a real ``MagicMock`` with a side effect rather than a fixed
+    return value, so a test can (a) hand each RPC its own answer through
+    ``mock.rpc_data[name] = ...`` and (b) read back from ``mock.rpc.call_args_list``
+    WHICH client an RPC was routed through. The second half matters: the BYOK
+    save endpoint failed in production precisely because a self-validating
+    SECURITY DEFINER function was called on the service-role client, and a test
+    that hands the same mock to every dependency cannot see that at all.
+    """
     mock = MagicMock()
     chain = MagicMock()
     result = MagicMock()
@@ -57,37 +69,80 @@ def _mock_supabase() -> MagicMock:
     ):
         getattr(chain, m).return_value = chain
     mock.table.return_value = chain
-    mock.rpc.return_value = chain
+
+    mock.rpc_data = {}
+
+    def _rpc(name, params=None):
+        rpc_chain = MagicMock()
+        rpc_result = MagicMock()
+        rpc_result.data = mock.rpc_data.get(name)
+        rpc_chain.execute = AsyncMock(return_value=rpc_result)
+        return rpc_chain
+
+    mock.rpc = MagicMock(side_effect=_rpc)
     return mock
+
+
+def _rpc_names(mock: MagicMock) -> list[str]:
+    """Names of the RPCs that were routed through this particular client."""
+    return [call.args[0] for call in mock.rpc.call_args_list]
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────────
 
 
 @pytest.fixture()
-def architect_client():
-    """TestClient with architect privileges (admin email in PLATFORM_ADMIN_EMAILS)."""
-    user = _make_user(USER_ID, ADMIN_EMAIL)
-    mock_sb = _mock_supabase()
-    admin_sb = _mock_supabase()
+def encryption_key():
+    """Give the process a real Fernet key for the duration of one test.
 
-    app.dependency_overrides[get_current_user] = lambda: user
-    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_admin_supabase] = lambda: admin_sb
-
-    yield TestClient(app), mock_sb, admin_sb
-    app.dependency_overrides.clear()
+    BYOK tests exercise ``encrypt()`` for real rather than patching it away —
+    the round trip through the encryption layer is part of what "the key is
+    stored" means, and CI carries no ``SETTINGS_ENCRYPTION_KEY``.
+    """
+    previous = app_settings.settings_encryption_key
+    app_settings.settings_encryption_key = Fernet.generate_key().decode()
+    yield
+    app_settings.settings_encryption_key = previous
 
 
 @pytest.fixture()
-def regular_client():
-    """TestClient with an authenticated non-architect, non-admin user."""
-    user = _make_user(USER_ID, USER_EMAIL)
-    mock_sb = _mock_supabase()
+def architect_client():
+    """TestClient for a PLATFORM ADMIN (admin email in PLATFORM_ADMIN_EMAILS).
+
+    Wired the way production wires it, which the previous version of this
+    fixture did not: ``get_effective_supabase`` auto-elevates admins to the
+    service-role client, so it yields ``admin_sb`` here, while ``get_supabase``
+    stays the user-JWT client. Handing ONE mock to both hid the whole class of
+    bug where a function that reads ``auth.uid()`` is called on a token that
+    has no ``sub``.
+
+    Yields ``(client, user_sb, admin_sb)``.
+    """
+    user = _make_user(USER_ID, ADMIN_EMAIL)
+    user_sb = _mock_supabase()
     admin_sb = _mock_supabase()
 
-    # Make the wallet check return is_architect=False so require_architect rejects
+    app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_effective_supabase] = lambda: admin_sb
+    app.dependency_overrides[get_supabase] = lambda: user_sb
+    app.dependency_overrides[get_admin_supabase] = lambda: admin_sb
+
+    yield TestClient(app), user_sb, admin_sb
+    app.dependency_overrides.clear()
+
+
+def _regular_user_overrides() -> tuple[MagicMock, MagicMock]:
+    """Dependency wiring for a signed-in, non-architect, non-admin user.
+
+    The wallet lookup answers "no row", which is what makes
+    ``require_architect()`` reject — and, since the BYOK endpoints no longer
+    ask it, what makes those endpoints prove they serve an ordinary account.
+    ``get_effective_supabase`` returns the user client: no elevation.
+    """
+    user = _make_user(USER_ID, USER_EMAIL)
+    user_sb = _mock_supabase()
+    admin_sb = _mock_supabase()
+
     wallet_resp = MagicMock()
     wallet_resp.data = None  # no wallet row → not an architect
     wallet_chain = MagicMock()
@@ -97,11 +152,25 @@ def regular_client():
     admin_sb.table.return_value = wallet_chain
 
     app.dependency_overrides[get_current_user] = lambda: user
-    app.dependency_overrides[get_effective_supabase] = lambda: mock_sb
-    app.dependency_overrides[get_supabase] = lambda: mock_sb
+    app.dependency_overrides[get_effective_supabase] = lambda: user_sb
+    app.dependency_overrides[get_supabase] = lambda: user_sb
     app.dependency_overrides[get_admin_supabase] = lambda: admin_sb
+    return user_sb, admin_sb
 
+
+@pytest.fixture()
+def regular_client():
+    """TestClient with an authenticated non-architect, non-admin user."""
+    _regular_user_overrides()
     yield TestClient(app)
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def regular_client_full():
+    """``regular_client`` plus its mocks — ``(client, user_sb, admin_sb)``."""
+    user_sb, admin_sb = _regular_user_overrides()
+    yield TestClient(app), user_sb, admin_sb
     app.dependency_overrides.clear()
 
 
@@ -231,39 +300,162 @@ class TestForgeWallet:
 
 
 class TestForgeBYOK:
-    """BYOK (Bring Your Own Key) key management endpoints."""
+    """BYOK key management — the person's key, not the Forge's.
+
+    These tests deliberately do NOT patch ``check_byok_allowed`` or
+    ``update_user_keys``. The previous versions patched both, which is why the
+    suite stayed green while the endpoint answered 403 and then 500 in
+    production: two independent locks lay on top of each other and no test
+    touched either. What is mocked here is the Supabase client and nothing
+    above it, so the policy gate, the client choice and the encryption round
+    trip all run for real.
+    """
 
     @pytest.mark.integration
-    @patch.object(forge_module._draft_service, "update_user_keys", new_callable=AsyncMock)
-    @patch("backend.routers.forge.ForgeDraftService.check_byok_allowed", new_callable=AsyncMock)
-    def test_update_keys_when_allowed(self, mock_check, mock_update, architect_client):
-        """PUT /forge/wallet/keys succeeds when BYOK is allowed."""
-        mock_check.return_value = True
-        mock_update.return_value = {"message": "Keys updated."}
+    def test_write_rpc_goes_through_the_user_client(self, architect_client, encryption_key):
+        """The self-validating RPC must be called on the user-JWT client.
 
-        client, _, _ = architect_client
+        ``fn_update_user_byok_keys`` authorises via ``auth.uid()``. The
+        effective client hands a platform admin a service-role JWT, which
+        carries no ``sub`` — so routing this RPC there raised *Not authorized
+        to update another user's keys* for exactly the accounts most likely to
+        try it first.
+        """
+        client, user_sb, admin_sb = architect_client
+        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True, "message": "Keys updated successfully."}
+
         resp = client.put(
             "/api/v1/forge/wallet/keys",
             json={"openrouter_key": "sk-or-test-123", "replicate_key": None},
         )
+
         assert resp.status_code == 200
-        body = resp.json()
-        assert body["success"] is True
-        mock_update.assert_awaited_once()
+        assert resp.json()["success"] is True
+        assert "fn_update_user_byok_keys" in _rpc_names(user_sb)
+        assert "fn_update_user_byok_keys" not in _rpc_names(admin_sb)
 
     @pytest.mark.integration
-    @patch("backend.routers.forge.ForgeDraftService.check_byok_allowed", new_callable=AsyncMock)
-    def test_update_keys_denied_when_not_allowed(self, mock_check, architect_client):
-        """PUT /forge/wallet/keys returns 403 when BYOK is not allowed."""
-        mock_check.return_value = False
+    def test_key_is_encrypted_before_it_reaches_the_database(self, architect_client, encryption_key):
+        """What travels to the RPC is ciphertext that decrypts back to the key."""
+        client, user_sb, _ = architect_client
+        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
 
-        client, _, _ = architect_client
-        resp = client.put(
-            "/api/v1/forge/wallet/keys",
-            json={"openrouter_key": "sk-or-test-123"},
+        resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-secret-value"})
+        assert resp.status_code == 200
+
+        params = next(
+            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_update_user_byok_keys"
         )
+        stored = params["p_encrypted_openrouter_key"]
+        assert stored != "sk-or-secret-value"
+        assert decrypt(stored) == "sk-or-secret-value"
+
+    @pytest.mark.integration
+    def test_platform_admin_passes_a_policy_that_grants_nobody(self, architect_client, encryption_key):
+        """Whoever sets the policy cannot be locked out by it.
+
+        Production shipped ``byok_access_policy = 'per_user'`` with
+        ``byok_allowed`` true for nobody — so the admin console rendered the
+        key fields and Save answered *BYOK access not granted*.
+        """
+        client, user_sb, admin_sb = architect_client
+        admin_sb.rpc_data["fn_user_byok_allowed"] = False
+        user_sb.rpc_data["fn_user_byok_allowed"] = False
+        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+
+        resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
+        assert resp.status_code == 200
+
+    @pytest.mark.integration
+    def test_signed_in_non_architect_may_deposit_a_key(self, regular_client_full, encryption_key):
+        """A key belongs to the person — being an architect is not the question.
+
+        This account fails ``require_architect()`` (the wallet lookup answers
+        "no row"), which is what used to close the endpoint at 403 before the
+        policy was ever consulted.
+        """
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+
+        resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
+
+        assert resp.status_code == 200
+        assert "fn_update_user_byok_keys" in _rpc_names(user_sb)
+
+    @pytest.mark.integration
+    def test_non_architect_still_cannot_reach_the_forge_itself(self, regular_client):
+        """Opening the key endpoints must not open the Forge with them."""
+        assert regular_client.post("/api/v1/forge/drafts", json={"seed_prompt": "x"}).status_code == 403
+        assert regular_client.get("/api/v1/forge/drafts").status_code == 403
+
+    @pytest.mark.integration
+    def test_update_keys_denied_when_policy_grants_nobody(self, regular_client_full, encryption_key):
+        """PUT /forge/wallet/keys returns 403 when BYOK is not granted — and writes nothing."""
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = False
+
+        resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
+
         assert resp.status_code == 403
         assert "BYOK access not granted" in resp.json()["detail"]
+        assert "fn_update_user_byok_keys" not in _rpc_names(user_sb)
+
+    @pytest.mark.integration
+    def test_delete_key_goes_through_the_user_client(self, regular_client_full, encryption_key):
+        """DELETE routes the same self-validating RPC the same way."""
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        user_sb.rpc_data["fn_update_user_byok_keys"] = {"success": True}
+
+        resp = client.delete("/api/v1/forge/wallet/keys/openrouter")
+
+        assert resp.status_code == 200
+        params = next(
+            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_update_user_byok_keys"
+        )
+        assert params["p_clear_openrouter"] is True
+
+    @pytest.mark.integration
+    def test_key_test_endpoint_keeps_the_policy_gate(self, regular_client_full):
+        """Testing a key is still gated — it spends a request against a provider."""
+        client, user_sb, _ = regular_client_full
+        user_sb.rpc_data["fn_user_byok_allowed"] = False
+
+        resp = client.post(
+            "/api/v1/forge/wallet/keys/test",
+            json={"provider": "openrouter", "key": "sk-or-test-123"},
+        )
+        assert resp.status_code == 403
+
+    @pytest.mark.integration
+    def test_wallet_summary_agrees_with_what_the_write_endpoint_accepts(self, architect_client):
+        """The form the UI hides behind ``byok_allowed`` must not lie to the admin.
+
+        The summary RPC evaluates the policy alone; the admin override lives in
+        Python. If only the write endpoint knew about it, an admin would be
+        allowed to save into a form that never renders.
+        """
+        client, _, admin_sb = architect_client
+        admin_sb.rpc_data["fn_get_wallet_summary"] = {
+            "forge_tokens": 0,
+            "is_architect": True,
+            "account_tier": "architect",
+            "byok_status": {
+                "has_openrouter_key": False,
+                "has_replicate_key": False,
+                "byok_allowed": False,
+                "byok_bypass": False,
+                "system_bypass_enabled": False,
+                "effective_bypass": False,
+                "access_policy": "per_user",
+            },
+        }
+
+        resp = client.get("/api/v1/forge/wallet")
+
+        assert resp.status_code == 200
+        assert resp.json()["data"]["byok_status"]["byok_allowed"] is True
 
 
 # ══════════════════════════════════════════════════════════════════════════
