@@ -87,13 +87,25 @@ import { intakeControlStyles, intakeKindColorStyles } from './intake-styles.js';
  * Sobald eine von beiden kippt, wird der gemeinsame Schalter für die andere
  * falsch — und zwar lautlos.
  *
- * `fit` ist an jedem Signal weiterhin `undefined`. Und die Lücke ist nicht
- * bloss technisch: WIE eine Passung gerechnet wird (Kategorie↔Zone,
- * Agentenrollen, Vektor-Verfügbarkeit), ist eine Spielentscheidung, keine
- * Ableitung. Wer sie hier still einbaut, setzt eine Zahl, die später als
- * Messwert gelesen wird.
+ * ✅ SEIT DEM 02.09.2026 JA — und zwar OHNE eine erfundene Formel.
+ *
+ * Der Bauplan schlug „Kategorie↔Zone-Match, Agenten-Rollen-Match,
+ * Vektor-Verfügbarkeit" vor. Alle drei wären Erfindungen mit einer Gewichtung,
+ * die niemand belegen kann, und das Ergebnis sähe hinterher wie ein Messwert
+ * aus. Genommen wird stattdessen die Zahl, die das Spiel SCHON HAT: die
+ * Suszeptibilität dieser Welt für diese Signatur — derselbe Wert, mit dem der
+ * Resonanzlauf entscheidet, wie hart etwas einschlägt.
+ *
+ * 🔑 Wo eine Zahl erfunden werden müsste, lohnt zuerst die Frage, ob das Spiel
+ * sie nicht schon führt.
+ *
+ * ⚠ Sie hängt an (Welt, SIGNATUR), nicht am einzelnen Signal: zwei
+ * Unwetterwarnungen haben dieselbe Passung. Das ist die Aussage, nicht ihre
+ * Vereinfachung — Passung sagt „wie sehr geht diese ART von Sache diese Welt
+ * an", die Magnitude sagt „wie gross ist DIESE hier". Zwei Achsen, zwei
+ * Sortierungen.
  */
-const BUREAU_SCORES_THE_FIT = false;
+const BUREAU_SCORES_THE_FIT = true;
 
 /**
  * Liefert der Zufluss eine Netz-Reichweite? (Lücke 2 — seit 02.09.2026 ja)
@@ -342,6 +354,23 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         color: var(--_kind);
       }
 
+      .fit {
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .fit--mid {
+        color: var(--color-accent-amber-readable);
+      }
+
+      .fit--high {
+        color: var(--color-accent-green);
+      }
+
       .pick {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
@@ -572,7 +601,12 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         sorted.sort((a, b) => Date.parse(b.observedAt) - Date.parse(a.observedAt));
         break;
       case 'fit':
-        sorted.sort((a, b) => (b.fit ?? 0) - (a.fit ?? 0));
+        /*
+         * `undefined` heisst „unbekannt", nicht „passt nicht": ein Signal ohne
+         * Kategorie hat keine Signatur. Es sortiert deshalb ans ENDE (-1),
+         * nicht an den Anfang und nicht gleichauf mit einer gemessenen 0.
+         */
+        sorted.sort((a, b) => (intakeState.fitOf(b) ?? -1) - (intakeState.fitOf(a) ?? -1));
         break;
       case 'velocity':
         sorted.sort((a, b) => b.socialVolume - a.socialVolume);
@@ -859,6 +893,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
     const recommended =
       signal.magnitude > 0 && signal.magnitude >= intakeState.recommendedThreshold.value;
     const shot = this._brokenShots.has(signal.id) ? undefined : signal.imageUrl;
+    const fit = intakeState.fitOf(signal);
 
     return html`
       <li
@@ -891,6 +926,13 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
           }
           <span class="kind" data-kind=${signal.sourceKind}>${signal.sourceKind}</span>
           ${recommended ? html`<span class="pick">${msg('recommended')}</span>` : nothing}
+          ${
+            fit !== undefined
+              ? html`<span class="fit ${fit >= 85 ? 'fit--high' : fit >= 70 ? 'fit--mid' : ''}"
+                  >${msg(str`fit ${fit}`)}</span
+                >`
+              : nothing
+          }
         </div>
 
         <h3 class="headline">${signal.headline}</h3>
@@ -1025,13 +1067,9 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
             </button>
 
             <p class="prose prose--quiet foot__note">
-              ${
-                BUREAU_SCORES_THE_FIT
-                  ? nothing
-                  : html`${msg(
-                      '° Fit is not sorted: the Bureau delivers no such number per candidate, and how one would be computed is a decision about the game, not a derivation. Nothing here stands in for it – a fit that is secretly the magnitude would look like a second, independent measurement.',
-                    )}<br />`
-              }
+              ${msg(
+                'Fit is how susceptible this world is to that kind of signature – the same number the resonance run uses. It belongs to the world and the kind, not to the single signal: two storm warnings share it.',
+              )}<br />
               ${msg(
                 'Nothing here expires. A signal you neither admit nor discard stays in triage until someone decides.',
               )}

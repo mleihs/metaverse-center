@@ -31236,9 +31236,13 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>reported</source>
   <target>gemeldet</target>
 </trans-unit>
-<trans-unit id="s811edfe38f13b2c1">
-  <source>° Fit is not sorted: the Bureau delivers no such number per candidate, and how one would be computed is a decision about the game, not a derivation. Nothing here stands in for it – a fit that is secretly the magnitude would look like a second, independent measurement.</source>
-  <target>° Die Passung sortiert nicht: das Bureau liefert keine solche Zahl je Kandidat, und wie eine zu rechnen wäre, ist eine Entscheidung über das Spiel und keine Ableitung. Hier steht auch kein Ersatz dafür – eine Passung, die heimlich die Magnitude ist, sähe aus wie eine zweite, unabhängige Messung.</target>
+<trans-unit id="s9945137fa1a27e0e">
+  <source>fit <x id="0" equiv-text="${fit}"/></source>
+  <target>Passung <x id="0" equiv-text="${fit}"/></target>
+</trans-unit>
+<trans-unit id="s7d450c71b1b9d649">
+  <source>Fit is how susceptible this world is to that kind of signature – the same number the resonance run uses. It belongs to the world and the kind, not to the single signal: two storm warnings share it.</source>
+  <target>Die Passung ist die Empfänglichkeit dieser Welt für eine Signatur – dieselbe Zahl, mit der der Resonanzlauf rechnet. Sie gehört der Welt und der Art, nicht dem einzelnen Signal: zwei Unwetterwarnungen teilen sie.</target>
 </trans-unit>
 </body>
 </file>

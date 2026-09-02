@@ -20,10 +20,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 
-from backend.dependencies import get_admin_supabase, get_current_user, require_role
+from backend.dependencies import (
+    get_admin_supabase,
+    get_current_user,
+    get_effective_supabase,
+    require_role,
+)
 from backend.middleware.rate_limit import RATE_LIMIT_STANDARD, limiter
 from backend.models.common import CurrentUser, SuccessResponse
-from backend.models.intake import FlaggedSignalResponse, FlagSignalRequest
+from backend.models.intake import (
+    FlaggedSignalResponse,
+    FlagSignalRequest,
+    SignatureFitResponse,
+)
 from backend.services.audit_service import AuditService
 from backend.services.intake_service import IntakeService
 from supabase import AsyncClient as Client
@@ -78,3 +87,23 @@ async def flag_signal(
     )
 
     return SuccessResponse(data=FlaggedSignalResponse(**candidate))
+
+
+@router.get("/fit")
+async def signature_fit(
+    simulation_id: UUID,
+    _user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[list[SignatureFitResponse]]:
+    """Wie sehr diese Welt fuer jede Signatur empfaenglich ist (Luecke 3).
+
+    Acht Zeilen, eine je Signatur — nicht eine je Kandidat. Die Passung haengt
+    an (Welt, Signatur); zwei Unwetterwarnungen haben dieselbe. Das ist keine
+    Vereinfachung, sondern die Aussage: Passung sagt „wie sehr geht diese ART
+    von Sache diese Welt an", die Magnitude sagt „wie gross ist DIESE hier".
+
+    `viewer` reicht: die Empfaenglichkeit einer Welt ist eine Eigenschaft der
+    Welt, keine Handlung an ihr.
+    """
+    return SuccessResponse(data=await IntakeService.signature_fit(supabase, simulation_id))

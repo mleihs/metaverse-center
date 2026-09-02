@@ -1036,3 +1036,60 @@ class TestStoryBundling:
             ]
         )
         assert len(out) == 2
+
+
+# ---------------------------------------------------------------------------
+# Die Passung (Luecke 3)
+# ---------------------------------------------------------------------------
+
+class TestSignatureFit:
+    """Die Passung ist KEINE erfundene Formel.
+
+    Der Bauplan schlaegt „Kategorie↔Zone-Match, Agenten-Rollen-Match,
+    Vektor-Verfuegbarkeit" vor — drei Groessen, die es als Messwerte nicht gibt.
+    Genommen wird die Suszeptibilitaet, mit der der Resonanzlauf ohnehin
+    rechnet. Diese Tests halten fest, dass es dabei bleibt.
+    """
+
+    @pytest.mark.asyncio
+    async def test_one_row_per_signature_not_per_candidate(self, monkeypatch):
+        from backend.models.resonance import CATEGORY_ARCHETYPE_MAP
+        from backend.services import intake_service as mod
+        from backend.services.intake_service import IntakeService
+
+        async def _fake(_supabase, _sim, signature):
+            return 0.5
+
+        monkeypatch.setattr(mod.ResonanceService, "susceptibility_of", _fake)
+        out = await IntakeService.signature_fit(object(), "sim-1")
+
+        signatures = {s for s, _ in CATEGORY_ARCHETYPE_MAP.values()}
+        assert len(out) == len(signatures)
+        assert {r["signature"] for r in out} == signatures
+
+    @pytest.mark.asyncio
+    async def test_the_number_is_the_susceptibility_scaled(self, monkeypatch):
+        from backend.services import intake_service as mod
+        from backend.services.intake_service import IntakeService
+
+        async def _fake(_supabase, _sim, _signature):
+            return 0.73
+
+        monkeypatch.setattr(mod.ResonanceService, "susceptibility_of", _fake)
+        out = await IntakeService.signature_fit(object(), "sim-1")
+        assert {r["fit"] for r in out} == {73}
+
+    @pytest.mark.asyncio
+    async def test_it_is_capped_at_a_hundred(self, monkeypatch):
+        """`fn_get_adaptive_susceptibility` darf ueber 1.0 gehen — eine Welt kann
+        empfaenglicher als normal sein. Eine Passung von 140 % waere auf dem
+        Schirm trotzdem Unsinn."""
+        from backend.services import intake_service as mod
+        from backend.services.intake_service import IntakeService
+
+        async def _fake(_supabase, _sim, _signature):
+            return 1.4
+
+        monkeypatch.setattr(mod.ResonanceService, "susceptibility_of", _fake)
+        out = await IntakeService.signature_fit(object(), "sim-1")
+        assert {r["fit"] for r in out} == {100}

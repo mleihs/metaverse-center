@@ -176,18 +176,38 @@ describe('Der Rang', () => {
    * späterer Beitrag, der sie „endlich anschliesst", indem er sie auf die
    * Magnitude legt, macht dieses Tor rot.
    */
-  it('lässt NUR die Passung abgeschaltet, seit das Netz-Tempo gemessen wird', async () => {
+  it('hat keine abgeschaltete Sortierung mehr', async () => {
     seed([candidate({ id: 'a' })]);
     const el = await sichtung();
     const sort = chips(el, 'sort');
-    const disabled = sort.filter((c) => c.disabled);
-    // GENAU EINE. Bis Migration 345 waren es zwei, und ein gemeinsamer
-    // Schalter haette beim Kippen der einen Bedingung fuer die andere
-    // lautlos falsch gestanden.
-    expect(disabled).toHaveLength(1);
-    expect(sort.filter((c) => !c.disabled)).toHaveLength(3);
-    // Die Fussnoten-Marke steht am Knopf, nicht nur im Fusstext.
-    expect(disabled[0].textContent).toContain('°');
+    // Von zwei toten Sortierungen über eine zu null: Migration 345 brachte das
+    // Netz-Tempo, der Passungs-Endpunkt die Passung. Wer hier wieder eine
+    // abschaltet, soll es begründen müssen.
+    expect(sort.filter((c) => c.disabled)).toHaveLength(0);
+    expect(sort).toHaveLength(4);
+  });
+
+  it('sortiert nach Passung, und Unbekanntes landet HINTEN', async () => {
+    seed([
+      candidate({ id: 'a', title: 'ohne Kategorie', source_category: '' }),
+      candidate({ id: 'b', title: 'Pandemie', source_category: 'pandemic' }),
+      candidate({ id: 'c', title: 'Beben', source_category: 'natural_disaster' }),
+    ]);
+    intakeState.fitBySignature.value = new Map([
+      ['biological_tide', 30],
+      ['elemental_surge', 90],
+    ]);
+    const el = await sichtung();
+
+    const sort = chips(el, 'sort');
+    sort[2].click(); // Passung
+    await el.updateComplete;
+    /*
+     * `undefined` heisst „unbekannt", nicht „passt nicht". Ein Signal ohne
+     * Kategorie darf deshalb nicht wie eine gemessene 0 behandelt werden und
+     * schon gar nicht vorne stehen.
+     */
+    expect(headlines(el)).toEqual(['Beben', 'Pandemie', 'ohne Kategorie']);
   });
 
   it('sortiert nach Netz-Tempo, seit die Bündelung eine Reichweite liefert', async () => {
