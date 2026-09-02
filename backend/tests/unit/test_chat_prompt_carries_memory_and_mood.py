@@ -41,6 +41,35 @@ _SERVICE = _ROOT / "backend" / "services" / "chat_ai_service.py"
 _REQUIRED = ("agent_memories", "agent_mood")
 
 
+def _platform_template_statements(path: Path) -> list[str]:
+    """Die Anweisungen, die die beiden PLATTFORM-Chatvorlagen schreiben.
+
+    Bewusst nicht nach dem Verb gesucht.
+
+    Bis zum 02.09.2026 stand hier ``re.findall(r"UPDATE prompt_templates…")``
+    mit ``len(...) == 2``. Das prüfte die FORM statt der WIRKUNG: als die
+    Migration auf ``INSERT … ON CONFLICT DO UPDATE`` umgestellt wurde — weil
+    ein reines UPDATE auf einer frischen Datenbank null Zeilen trifft und die
+    Migration an ihrer eigenen Abnahme scheiterte —, fand der Test null
+    Anweisungen und wurde rot bei einer RICHTIGEN Änderung. Schlimmer: die
+    Schwesterzusicherung über die weltbezogenen Vorlagen lief danach über eine
+    leere Liste und bestand lautlos, ohne noch etwas zu prüfen.
+
+    Ein Test, der ``UPDATE`` fordert, verbietet nebenbei jedes Upsert. Das ist
+    mehr, als er sagen wollte. Gesucht wird deshalb, was die Anweisung TUT:
+    sie schreibt ``prompt_templates`` für ``chat_system_prompt``.
+    """
+    sql = _sql_without_comments(path)
+    # Der DO-Block der Abnahme enthält eigene Semikolons und ist keine
+    # schreibende Anweisung — vor dem Zerlegen heraus.
+    sql = re.sub(r"DO \$\$.*?\$\$;", "", sql, flags=re.DOTALL)
+    return [
+        stmt
+        for stmt in sql.split(";")
+        if "prompt_templates" in stmt and "chat_system_prompt" in stmt
+    ]
+
+
 def _sql_without_comments(path: Path) -> str:
     """J3b: der Kopfkommentar der Migration erklärt den Defekt und nennt dabei
     genau die gesuchten Platzhalter. Ohne Bereinigung bestünde jede Zusicherung
@@ -94,14 +123,15 @@ def test_the_service_supplies_both() -> None:
 
 def test_the_migration_puts_both_into_the_platform_templates() -> None:
     """Glied 4, der eigentliche Fix. Beide Sprachen, beide Platzhalter."""
-    sql = _sql_without_comments(_MIGRATION)
-
-    updates = re.findall(r"UPDATE prompt_templates(.*?);", sql, re.DOTALL)
-    assert len(updates) == 2, f"{len(updates)} UPDATE-Anweisungen — erwartet werden zwei (de und en)"
+    statements = _platform_template_statements(_MIGRATION)
+    assert len(statements) == 2, (
+        f"{len(statements)} Anweisungen schreiben die Plattform-Chatvorlagen — "
+        "erwartet werden zwei (de und en)"
+    )
 
     for locale in ("'en'", "'de'"):
-        block = next((u for u in updates if f"locale = {locale}" in u), None)
-        assert block is not None, f"kein UPDATE für locale = {locale}"
+        block = next((u for u in statements if locale in u), None)
+        assert block is not None, f"keine Anweisung für locale = {locale}"
         for name in _REQUIRED:
             assert "{" + name + "}" in block, f"{name} fehlt im {locale}-Vorlagentext"
             assert f'"name": "{name}"' in block, f"{name} fehlt in der variables-Liste für {locale}"
@@ -109,11 +139,11 @@ def test_the_migration_puts_both_into_the_platform_templates() -> None:
 
 def test_the_migration_leaves_world_owned_templates_alone() -> None:
     """Regel W6: eine Weltvorlage ist Autorschaft, kein Datenbestand."""
-    sql = _sql_without_comments(_MIGRATION)
-    updates = re.findall(r"UPDATE prompt_templates(.*?);", sql, re.DOTALL)
-    for u in updates:
+    statements = _platform_template_statements(_MIGRATION)
+    assert statements, "keine schreibende Anweisung gefunden — dann prüft dieser Test nichts"
+    for u in statements:
         assert "simulation_id IS NULL" in u, (
-            "ein UPDATE ohne `simulation_id IS NULL` würde auch weltbezogene Vorlagen "
+            "eine Anweisung ohne `simulation_id IS NULL` würde auch weltbezogene Vorlagen "
             "überschreiben — genau der automatische Reparaturlauf, den W6 verbietet"
         )
 
