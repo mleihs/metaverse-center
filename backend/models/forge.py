@@ -537,10 +537,23 @@ class TestBYOKResult(BaseModel):
 
 
 class BYOKStatus(BaseModel):
-    """BYOK bypass status for a user."""
+    """BYOK status for a user — the shape ``fn_get_wallet_summary`` returns.
+
+    Every key the RPC puts inside ``byok_status`` must be declared HERE.
+    Pydantic v2 defaults to ``extra="ignore"``, so an undeclared field is
+    dropped without a word: migration 333 added ``openrouter_verified_at`` /
+    ``replicate_verified_at``, the frontend type declared them, the SQL
+    returned them — and this model swallowed both, so the key card could only
+    ever say "never confirmed". Bound by
+    ``backend/tests/unit/test_byok_status_contract.py``.
+    """
 
     has_openrouter_key: bool
     has_replicate_key: bool
+    #: When the STORED key last went through at the provider. None = never
+    #: checked, not invalid.
+    openrouter_verified_at: datetime | None = None
+    replicate_verified_at: datetime | None = None
     byok_allowed: bool  # whether user is permitted to use BYOK at all
     byok_bypass: bool  # per-user bypass flag
     system_bypass_enabled: bool
