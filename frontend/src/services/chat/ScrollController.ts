@@ -89,6 +89,7 @@ export class ScrollController implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _container: HTMLElement | null = null;
   private _lastScrollTop = 0;
+  private _resizeObserver: ResizeObserver | null = null;
 
   /** Pending auto-scroll — set by requestAutoScroll(), consumed by hostUpdated(). */
   private _pendingBehavior: ScrollBehavior | null = null;
@@ -119,10 +120,33 @@ export class ScrollController implements ReactiveController {
   /** Attach the scrollable container element. */
   attach(el: Element | null | undefined): void {
     if (!el || el === this._container) return;
-    this._container?.removeEventListener('scroll', this._onScroll);
+    this._detachContainer();
     this._container = el as HTMLElement;
     this._lastScrollTop = this._container.scrollTop;
     this._container.addEventListener('scroll', this._onScroll, { passive: true });
+
+    /*
+     * WARUM DAS SCROLLEN NACH EINEM NEULADEN NICHT REICHTE.
+     *
+     * Beim Oeffnen wird korrekt ans Ende gerollt — und danach treffen die
+     * Portraits ein. Ein `<img>` ohne bekannte Groesse ist im Augenblick des
+     * Rollens 0 px hoch und waechst erst mit seinen Bytes; jedes geladene Bild
+     * schiebt den Boden ein Stueck weiter nach unten, unter der Ansicht
+     * hindurch. Der Rollbefehl war also richtig und traf trotzdem daneben,
+     * weil das Ziel sich nach ihm noch bewegt hat.
+     *
+     * `load` steigt nicht auf, also wird es in der ERFASSUNGS-Phase gehoert.
+     * Und nur solange die Ansicht angeheftet ist: wer Geschichte liest, will
+     * nicht von einem nachgeladenen Bild ans Ende gerissen werden.
+     */
+    this._container.addEventListener('load', this._onContentSettled, { capture: true });
+
+    // Fenster- oder Panelgroesse aendert `clientHeight` und damit, wo „unten"
+    // liegt. Dasselbe Argument, anderer Anlass.
+    if (typeof ResizeObserver === 'function') {
+      this._resizeObserver = new ResizeObserver(this._onContentSettled);
+      this._resizeObserver.observe(this._container);
+    }
   }
 
   /** Programmatic scroll to the newest message. Re-pins the feed. */
@@ -203,8 +227,25 @@ export class ScrollController implements ReactiveController {
     }
   };
 
-  private _teardown(): void {
+  /**
+   * Etwas hat sich gesetzt (ein Bild, eine Groesse). Stand die Ansicht am Ende,
+   * muss sie dort BLEIBEN — ohne Animation, denn hier wird nichts gefolgt,
+   * hier wird eine Position gehalten.
+   */
+  private readonly _onContentSettled = (): void => {
+    if (this.userScrolledUp || !this._container) return;
+    this._performScroll('instant');
+  };
+
+  private _detachContainer(): void {
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
     this._container?.removeEventListener('scroll', this._onScroll);
+    this._container?.removeEventListener('load', this._onContentSettled, { capture: true });
+  }
+
+  private _teardown(): void {
+    this._detachContainer();
     this._container = null;
   }
 }
