@@ -824,9 +824,22 @@ BEGIN
    WHERE t.taxonomy_type = 'building_condition' AND t.value = 'pristine'
    ORDER BY t.simulation_id
    LIMIT 1;
+  -- NACHTRAG 02.09.2026: keine EXCEPTION mehr, wenn der Bestand fehlt.
+  --
+  -- Auf einer frischen Datenbank gibt es keine Welt, die `pristine` fuehrt —
+  -- die Saat laeuft NACH den Migrationen. Die Probe brach dort ab und riss den
+  -- ganzen CI-Lauf mit ("Migration 311: keine Welt fuehrt pristine"). Sie ist
+  -- damit dritter Fall derselben Bauart nach 299 und 305: eine Migration, die
+  -- sich gegen den INHALT der Produktionsdatenbank prueft statt gegen ihre
+  -- eigene Wirkung.
+  --
+  -- Die Zusicherungen selbst bleiben unangetastet und scharf. Nur ihre
+  -- VORAUSSETZUNG ist jetzt ehrlich: ist die Welt da, wird geprueft; ist sie
+  -- nicht da, sagt die Migration das und laeuft weiter. Ein ausgesetzter Test
+  -- ist kein bestandener — deshalb NOTICE und nicht Schweigen.
   IF v_sim IS NULL THEN
-    RAISE EXCEPTION 'Migration 311: keine Welt fuehrt pristine — die Probe kann nicht laufen';
-  END IF;
+    RAISE NOTICE 'Migration 311: keine Welt fuehrt pristine — Probe (c) ausgesetzt (frische Datenbank?)';
+  ELSE
 
   -- Die Sprosse unmittelbar unter `pristine` in DIESER Welt.
   SELECT l.value INTO v_text
@@ -861,12 +874,12 @@ BEGIN
                         AND u.taxonomy_type = 'building_condition' AND u.value = 'pristine')
    LIMIT 1;
   IF v_ohne IS NULL THEN
-    RAISE EXCEPTION 'Migration 311: keine Welt ohne pristine — die Gegenprobe kann nicht laufen';
-  END IF;
-  IF fn_building_condition_step(v_ohne, 'excellent', -1) <> 'excellent' THEN
+    RAISE NOTICE 'Migration 311: keine Welt ohne pristine — Gegenprobe ausgesetzt (frische Datenbank?)';
+  ELSIF fn_building_condition_step(v_ohne, 'excellent', -1) <> 'excellent' THEN
     RAISE EXCEPTION
       'Migration 311: eine Welt OHNE pristine bekaeme durch Reparatur einen Wert, den sie nicht benennen kann';
   END IF;
+  END IF;  -- schliesst das ELSE der pristine-Probe
 
   -- (d) Und in KEINER Richtung darf ein Schreiber das Vokabular verlassen.
   --     Geprueft ueber alle Welten und alle Werte, die ihre Bauten tragen.
