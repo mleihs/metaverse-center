@@ -2188,6 +2188,12 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
                         .select("id")
                         .eq("simulation_id", str(simulation_id))
                         .eq("name", agent_draft.name)
+                        # Der Name ist nicht eindeutig — `uq_agents_simulation_slug`
+                        # laeuft ueber den slug. Zwei Namensgleiche in einer Welt
+                        # sind erlaubt; gesucht ist einer, um ein Portraet
+                        # anzuhaengen.
+                        .order("created_at")
+                        .limit(1)
                         .maybe_single()
                     )
 
@@ -2435,6 +2441,12 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
             .select("setting_value")
             .eq("simulation_id", str(simulation_id))
             .eq("setting_key", "philosophical_anchor")
+            # Der Eindeutigkeitszwang von `simulation_settings` laeuft ueber
+            # (simulation_id, category, setting_key) — DREI Spalten. Derselbe
+            # Schluessel darf also in zwei Kategorien stehen, und dann bricht ein
+            # maybe_single ueber zwei Spalten ab.
+            .order("created_at")
+            .limit(1)
             .maybe_single()
         )
 

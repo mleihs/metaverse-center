@@ -98,6 +98,22 @@ class DossierEvolutionService:
                 .eq("simulation_id", str(simulation_id))
                 .eq("chapter", "CLASSIFIED")
                 .eq("arcanum", arcanum)
+                # Die aelteste, und ausdruecklich nur EINE.
+                #
+                # (simulation_id, chapter, arcanum) ist NICHT eindeutig — der
+                # Eindeutigkeitszwang von `simulation_lore` laeuft ueber
+                # (simulation_id, slug). Auf Prod gemessen am 02.09.2026: 20
+                # Gruppen tragen dieselbe Kombination doppelt. Ohne `limit(1)`
+                # ist das kein theoretisches Risiko, sondern ein laufender
+                # Fehler: postgrest-py wirft dann "Missing response" (der
+                # Originalfehler wird dort verschluckt, siehe utils/db.py), und
+                # die Dossier-Entwicklung dieser Welt bricht ab.
+                #
+                # `order` und nicht nur `limit`, weil die Zeile fortgeschrieben
+                # wird: ohne feste Reihenfolge entwickelte jeder Lauf eine
+                # andere der Doppelten weiter.
+                .order("created_at")
+                .limit(1)
                 .maybe_single()
             )
             if not section:

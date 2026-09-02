@@ -367,6 +367,17 @@ jobs:
           PGPASSWORD: postgres
         run: PGHOST=localhost PGPORT=54322 bash scripts/lint-seed-carries-migration-effects.sh
 
+      # `.maybe_single()` verlangt 0 oder 1 Zeile. Trifft es zwei, verschluckt
+      # postgrest-py den Originalfehler und wirft ein nichtssagendes
+      # "Missing response". Das Tor prueft je Aufrufstelle, ob die Filterspalten
+      # einen eindeutigen Index VOLL abdecken (oder `.limit(1)` dabeisteht) —
+      # es braucht dafuer die Indexdefinitionen, also die migrierte Datenbank.
+      # Anlass: Sentry METAVERSE_CENTER-4B, 02.09.2026.
+      - name: maybe_single() trifft hoechstens eine Zeile
+        env:
+          PGPASSWORD: postgres
+        run: PGHOST=localhost PGPORT=54322 bash scripts/lint-maybe-single-is-unique.sh
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
