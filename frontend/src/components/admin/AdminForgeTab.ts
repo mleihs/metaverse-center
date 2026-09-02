@@ -832,7 +832,7 @@ export class VelgAdminForgeTab extends LitElement {
             ${renderInfoBubble(msg('Personal API key override. Your account uses these keys instead of consuming forge tokens.'), 'tip-byok')}
           </div>
           <div class="forge-section__divider"></div>
-          <velg-byok-panel mode="admin"></velg-byok-panel>
+          <velg-byok-panel></velg-byok-panel>
         </div>
 
         <!-- SEC-09: Maintenance -->

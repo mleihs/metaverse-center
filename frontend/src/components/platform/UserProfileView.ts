@@ -20,6 +20,13 @@
  * cascade in. The two figures the platform actually keeps about a person -
  * academy epochs played, and whether the induction was completed - are shown
  * rather than hidden, because a file that omits its own record is decoration.
+ *
+ * The Keyring section is here for the same reason the rest of the page is: an
+ * API key belongs to the PERSON. It used to live in `user_wallets` behind the
+ * Architect gate, inside a modal called The Mint - three words from the
+ * Forge's economy for a thing that is not an economy - and on production not
+ * one account could reach it. The form itself is `<velg-byok-panel>`,
+ * reused rather than copied; the Mint now links here instead of hosting it.
  */
 
 import { localized, msg, str } from '@lit/localize';
@@ -29,6 +36,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { usersApi } from '../../services/api/index.js';
 import { notificationPreferencesApi } from '../../services/api/NotificationPreferencesApiService.js';
+import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
 import type { MembershipInfo, NotificationPreferences, UserAccount } from '../../types/index.js';
@@ -37,9 +45,11 @@ import { icons } from '../../utils/icons.js';
 import { navigate } from '../../utils/navigation.js';
 import { markerCornerStyles } from '../shared/marker-styles.js';
 import { VelgToast } from '../shared/Toast.js';
+import '../forge/VelgByokPanel.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgBadge.js';
+import '../shared/VelgHelpTip.js';
 import '../shared/VelgToggle.js';
 
 const CORRESPONDENCE_LOCALES = [
@@ -149,6 +159,9 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     }
 
     .section__note {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1-5);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--color-text-muted);
@@ -187,6 +200,11 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       line-height: var(--leading-snug);
       color: var(--color-text-muted);
+    }
+
+    .keyring__lede {
+      margin: 0 0 var(--space-4);
+      line-height: var(--leading-relaxed);
     }
 
     .field__input,
@@ -458,9 +476,13 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     this._loading = true;
     this._error = null;
     try {
+      // `loadWallet` füllt `forgeStateManager.byokStatus`, aus dem
+      // `<velg-byok-panel>` liest. Es fängt seine Fehler selbst ab und gibt
+      // null zurück — ein Ausfall der Geldbörse darf die Akte nicht kippen.
       const [accountRes, prefsRes] = await Promise.all([
         usersApi.getMe(),
         notificationPreferencesApi.getPreferences(),
+        forgeStateManager.loadWallet(),
       ]);
 
       if (accountRes.success && accountRes.data) {
@@ -595,6 +617,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       ${this._renderHead()}
       ${this._renderIdentity()}
       ${this._renderCorrespondence()}
+      ${this._renderKeyring()}
       ${this._renderPostings()}
       ${this._renderRecord()}
     `;
@@ -783,10 +806,30 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     `;
   }
 
+  private _renderKeyring() {
+    return html`
+      <section class="section" style="--i: 2">
+        <div class="section__head">
+          <h2 class="section__title">${msg('Keyring')}</h2>
+          <span class="section__note">
+            ${msg("yours, not a world's")}
+            <velg-help-tip topic="byok" label=${msg('What is BYOK?')}></velg-help-tip>
+          </span>
+        </div>
+        <div class="section__body">
+          <p class="field__hint keyring__lede">
+            ${msg('Without a key of your own, everything runs on the project key – that is the normal case and costs you nothing. A key entered here is used instead, for the worlds you forge and for the ones you own.')}
+          </p>
+          <velg-byok-panel></velg-byok-panel>
+        </div>
+      </section>
+    `;
+  }
+
   private _renderPostings() {
     const postings = this._account?.memberships ?? [];
     return html`
-      <section class="section" style="--i: 2">
+      <section class="section" style="--i: 3">
         <div class="section__head">
           <h2 class="section__title">${msg('Postings')}</h2>
           <span class="section__note">${msg(str`${postings.length} on file`)}</span>
@@ -830,7 +873,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     const account = this._account;
     if (!account) return nothing;
     return html`
-      <section class="section" style="--i: 3">
+      <section class="section" style="--i: 4">
         <div class="section__head">
           <h2 class="section__title">${msg('Record')}</h2>
         </div>

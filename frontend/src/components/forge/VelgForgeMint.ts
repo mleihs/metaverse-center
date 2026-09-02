@@ -8,13 +8,13 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from '../../services/AnalyticsService.js';
 import { appState } from '../../services/AppStateManager.js';
-import type { TokenBundle } from '../../services/api/ForgeApiService.js';
+import type { BYOKStatus, TokenBundle } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { formatDate } from '../../utils/date-format.js';
+import { navigate } from '../../utils/navigation.js';
 import { forgeButtonStyles } from '../shared/forge-console-styles.js';
 import { titleGroupStyles } from '../shared/title-group-styles.js';
 import '../shared/VelgHelpTip.js';
-import './VelgByokPanel.js';
 
 @localized()
 @customElement('velg-forge-mint')
@@ -357,6 +357,27 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         margin-top: var(--space-4, 16px);
       }
 
+      .mint__link {
+        display: inline;
+        margin-left: var(--space-2, 8px);
+        padding: 0;
+        background: none;
+        border: none;
+        border-bottom: 1px solid currentColor;
+        font: inherit;
+        color: var(--color-mint-brass);
+        cursor: pointer;
+      }
+
+      .mint__link:hover {
+        color: var(--color-text-primary);
+      }
+
+      .mint__link:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
+      }
+
       /* ── Toast ────────────────────────────────────────── */
 
       .mint__toast {
@@ -472,6 +493,37 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       }
     }
   };
+
+  /**
+   * The Mint sells tokens. A personal API key is not a token and never was —
+   * it belongs to the person, and it now lives in the personnel file. What
+   * stays here is the one line the Mint genuinely owns: whether this account
+   * currently spends tokens at all, and where to change that.
+   */
+  private _renderKeyringLink(byok: BYOKStatus) {
+    const stored = byok.has_openrouter_key || byok.has_replicate_key;
+    return html`
+      <p class="mint__callout">
+        ${
+          byok.effective_bypass
+            ? msg('Your own keys are in use – shards cost you no tokens.')
+            : stored
+              ? msg(
+                  'Your own keys are on file. Forging still spends tokens until an administrator waives them.',
+                )
+              : msg('No key of your own on file – everything here runs on the project key.')
+        }
+        <button class="mint__link" type="button" @click=${this._openKeyring}>
+          ${msg('Keyring in your file')}
+        </button>
+      </p>
+    `;
+  }
+
+  private _openKeyring(): void {
+    this._close();
+    navigate('/profile');
+  }
 
   private _close(): void {
     forgeStateManager.mintOpen.value = false;
@@ -685,11 +737,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
               : nothing
           }
 
-          ${
-            byok.effective_bypass || byok.byok_allowed
-              ? html`<velg-byok-panel></velg-byok-panel>`
-              : nothing
-          }
+          ${this._renderKeyringLink(byok)}
 
           ${this._renderHistory()}
         </div>

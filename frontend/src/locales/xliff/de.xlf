@@ -7073,10 +7073,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>Personal API Keys (BYOK)</source>
   <target>Persönliche API-Schlüssel (BYOK)</target>
 </trans-unit>
-<trans-unit id="s27dc199688c5bb1c">
-  <source>Save Keys</source>
-  <target>Schlüssel speichern</target>
-</trans-unit>
 <trans-unit id="sa8e0d534b8bd6b93">
   <source>Forge Overview</source>
   <target>Forge – Übersicht</target>
@@ -12038,9 +12034,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s7a9261e9976a5462">
   <source>Materialized</source>
 <target>Materialisiert</target></trans-unit>
-<trans-unit id="sb9c754a5df2a1983">
-  <source>AES-256 encrypted at rest. Bypass platform quota with your own keys.</source>
-<target>AES-256-verschlüsselt im Ruhezustand. Plattform-Kontingent mit eigenen Schlüsseln umgehen.</target></trans-unit>
 <trans-unit id="s59499b0db5d46564">
   <source>Model Configuration</source>
 <target>Modellkonfiguration</target></trans-unit>
@@ -22998,21 +22991,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
         <target>Treibt Darkroom-Rendering, Agenten-Porträts und Gebäudebilder an.</target>
       
 </trans-unit>
-<trans-unit id="s140b61b5f9a58de7">
-  <source>Personal API Keys</source>
-        <target>Persönliche API-Schlüssel</target>
-      
-</trans-unit>
-<trans-unit id="s8bb0882ba5cbb0bb">
-  <source>Bureau Clearance Protocol</source>
-        <target>Büro-Freigabeprotokoll</target>
-      
-</trans-unit>
-<trans-unit id="sc59008f3e539bc95">
-  <source>Operative key-card assignment. Keys are AES-256 encrypted at rest.</source>
-        <target>Einsatzkarten-Zuweisung für Operative. Schlüssel sind AES-256-verschlüsselt gespeichert.</target>
-      
-</trans-unit>
 <trans-unit id="s241cb59e99730160">
   <source>Unlimited narrative generation</source>
         <target>Unbegrenzte Narrativgenerierung</target>
@@ -23373,11 +23351,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="scf772089d612d83a">
   <source>Agent autonomy requires an OpenRouter API key to power AI narrative generation (autonomous events, morning briefings). Rule-based mechanics have zero AI cost, but the feature needs a key to be activated.</source>
         <target>Agenten-Autonomie braucht einen OpenRouter-API-Schlüssel für die KI-Narrativgenerierung (autonome Ereignisse, Morgen-Briefings). Regelbasierte Mechaniken kosten nichts an KI, aber für die Aktivierung des Features ist ein Schlüssel nötig.</target>
-      
-</trans-unit>
-<trans-unit id="s7eb683da731e9d96">
-  <source>Open The Mint to configure your API keys</source>
-        <target>Öffne Die Mint, um deine API-Schlüssel zu konfigurieren</target>
       
 </trans-unit>
 <trans-unit id="s1ee46e473e46d4c8">
@@ -29641,9 +29614,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s36538edf2140d51d">
   <source>Simulation Roster</source>
 <target>Simulationsbestand</target></trans-unit>
-<trans-unit id="s49deb8d615de7651">
-  <source>One sentence in. A civilization out.</source>
-<target>Ein Satz hinein. Eine Zivilisation heraus.</target></trans-unit>
 <trans-unit id="s28d9c2ff99e8abb7">
   <source><x id="0" equiv-text="${role}"/> // <x id="1" equiv-text="${theme}"/></source>
 <target><x id="0" equiv-text="${role}"/> // <x id="1" equiv-text="${theme}"/></target></trans-unit>
@@ -30036,6 +30006,222 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s47ddc41ff5da557e">
   <source>Dormant</source>
 <target>Ruhend</target>
+</trans-unit>
+<trans-unit id="s930cbd74cb718447">
+  <source>Personal API keys (BYOK)</source>
+  <target>Persönliche API-Schlüssel (BYOK)</target>
+</trans-unit>
+<trans-unit id="s0fd22a1a51fbcfba">
+  <source>May use own key</source>
+  <target>Darf eigenen Schlüssel nutzen</target>
+</trans-unit>
+<trans-unit id="s088ea0809cb2c791">
+  <source>Lets this account store its own OpenRouter and Replicate keys and have its requests run through them. Without a key, everything keeps running on the project key. Takes effect while the platform policy is set to "per user" – under "all" everyone may, under "none" nobody.</source>
+  <target>Erlaubt diesem Konto, eigene Schlüssel für OpenRouter und Replicate zu hinterlegen; die Anfragen laufen dann darüber. Ohne Schlüssel läuft weiterhin alles über den Projektschlüssel. Wirksam, solange die Plattform auf „pro Nutzer" steht – bei „alle" dürfen alle, bei „niemand" niemand.</target>
+</trans-unit>
+<trans-unit id="sdef9884549df8e36">
+  <source>Allow personal API keys for this user</source>
+  <target>Persönliche API-Schlüssel für diesen Nutzer erlauben</target>
+</trans-unit>
+<trans-unit id="sa20065c7113a34fd">
+  <source>Waives forge tokens</source>
+  <target>Erlässt Schmiede-Token</target>
+</trans-unit>
+<trans-unit id="s3b2d89a256b7f103">
+  <source>With this on, forging costs this account no tokens – but only once BOTH keys are on file, since only then does the platform stop paying. Leave it off to let someone use their own key and still spend tokens.</source>
+  <target>Damit kostet das Schmieden dieses Konto keine Token – aber erst, wenn BEIDE Schlüssel hinterlegt sind, denn erst dann zahlt die Plattform nicht mehr mit. Ausgeschaltet lassen, wenn jemand den eigenen Schlüssel nutzen und trotzdem Token verbrauchen soll.</target>
+</trans-unit>
+<trans-unit id="s4193bcad9f7bc9a0">
+  <source>Waive forge tokens for this user</source>
+  <target>Schmiede-Token für diesen Nutzer erlassen</target>
+</trans-unit>
+<trans-unit id="sf01476d9eaae3d4c">
+  <source>Keys on file: <x id="0" equiv-text="${onFile.join(', ')}"/></source>
+  <target>Hinterlegte Schlüssel: <x id="0" equiv-text="${onFile.join(', ')}"/></target>
+</trans-unit>
+<trans-unit id="s7ae60a0cbf1ac86b">
+  <source>No keys on file for this account.</source>
+  <target>Für dieses Konto ist kein Schlüssel hinterlegt.</target>
+</trans-unit>
+<trans-unit id="seda24328ddcf2df2">
+  <source>Personal keys enabled for this account.</source>
+  <target>Eigene Schlüssel für dieses Konto freigeschaltet.</target>
+</trans-unit>
+<trans-unit id="s09c125e690ce3561">
+  <source>Personal keys switched off for this account.</source>
+  <target>Eigene Schlüssel für dieses Konto abgeschaltet.</target>
+</trans-unit>
+<trans-unit id="sbce05a2ab2f3bac8">
+  <source>Forge tokens waived for this account.</source>
+  <target>Schmiede-Token für dieses Konto erlassen.</target>
+</trans-unit>
+<trans-unit id="s4e13b45be604259e">
+  <source>Forge tokens apply again for this account.</source>
+  <target>Für dieses Konto gelten wieder Schmiede-Token.</target>
+</trans-unit>
+<trans-unit id="s2ac9c7fafdbaf46d">
+  <source>The switch could not be set.</source>
+  <target>Der Schalter ließ sich nicht setzen.</target>
+</trans-unit>
+<trans-unit id="s332d3703f2b58dd9">
+  <source>The Bureau asks for one sentence. What grows from it does not ask you again.</source>
+  <target>Das Büro erbittet einen Satz. Was daraus wächst, fragt dich nicht mehr.</target>
+</trans-unit>
+<trans-unit id="s08c59bd0e5214944">
+  <source>Stored AES-256 encrypted. Requests then run through your own provider account and are billed there.</source>
+  <target>AES-256-verschlüsselt hinterlegt. Die Anfragen laufen dann über dein eigenes Anbieterkonto und werden dort abgerechnet.</target>
+</trans-unit>
+<trans-unit id="s834e80b0317fa14c">
+  <source>Running on the project key</source>
+  <target>Läuft über den Projektschlüssel</target>
+</trans-unit>
+<trans-unit id="sb1f19e31eff9fcb0">
+  <source>Personal keys are switched off across the platform. Every request on this account runs on the project key, and nothing needs to be entered here.</source>
+  <target>Eigene Schlüssel sind plattformweit abgeschaltet. Jede Anfrage dieses Kontos läuft über den Projektschlüssel; hier ist nichts einzutragen.</target>
+</trans-unit>
+<trans-unit id="s5cf17ebbcbfe4397">
+  <source>A personal key is not enabled for this account. Every request runs on the project key. An administrator can enable it – until then there is nothing to enter here.</source>
+  <target>Für dieses Konto ist kein eigener Schlüssel freigeschaltet. Jede Anfrage läuft über den Projektschlüssel. Ein Administrator kann das freischalten – bis dahin ist hier nichts einzutragen.</target>
+</trans-unit>
+<trans-unit id="sdd961ad9ab7a88db">
+  <source>Your own keys are in use – shards cost you no tokens.</source>
+  <target>Deine eigenen Schlüssel sind in Gebrauch – Splitter kosten dich keine Token.</target>
+</trans-unit>
+<trans-unit id="s1720fe9c7769e42f">
+  <source>Your own keys are on file. Forging still spends tokens until an administrator waives them.</source>
+  <target>Deine eigenen Schlüssel sind hinterlegt. Das Schmieden verbraucht weiter Token, bis ein Administrator sie erlässt.</target>
+</trans-unit>
+<trans-unit id="sd6410d251464a0e0">
+  <source>No key of your own on file – everything here runs on the project key.</source>
+  <target>Kein eigener Schlüssel hinterlegt – hier läuft alles über den Projektschlüssel.</target>
+</trans-unit>
+<trans-unit id="sefefa46008fe7baa">
+  <source>Keyring in your file</source>
+  <target>Schlüsselbund in deiner Akte</target>
+</trans-unit>
+<trans-unit id="s69efd85354e31dcf">
+  <source>Choice of aptitude</source>
+  <target>Wahl der Eignung</target>
+</trans-unit>
+<trans-unit id="sa738fafcacd44aad">
+  <source>Increase</source>
+  <target>Zuwachs</target>
+</trans-unit>
+<trans-unit id="s0d6fd11908abd044">
+  <source>Bonus</source>
+  <target>Bonus</target>
+</trans-unit>
+<trans-unit id="s4a7942e06557c7d4">
+  <source>Bonus (percent)</source>
+  <target>Bonus (Prozent)</target>
+</trans-unit>
+<trans-unit id="s1307ebb6e6ef46a4">
+  <source>Bonus type</source>
+  <target>Bonusart</target>
+</trans-unit>
+<trans-unit id="s5d0ef745a223b1c4">
+  <source>Check bonus</source>
+  <target>Probenbonus</target>
+</trans-unit>
+<trans-unit id="s2a52a42b1f6b73c5">
+  <source>Condition rungs</source>
+  <target>Sprossen der Zustandsleiter</target>
+</trans-unit>
+<trans-unit id="s2f64461723d3df5d">
+  <source>Change</source>
+  <target>Änderung</target>
+</trans-unit>
+<trans-unit id="sf571603354f5a5f9">
+  <source>Personality change</source>
+  <target>Änderung der Persönlichkeit</target>
+</trans-unit>
+<trans-unit id="s38ff9b10f8324c19">
+  <source>Lasts (rooms)</source>
+  <target>Hält an (Räume)</target>
+</trans-unit>
+<trans-unit id="sfa1f9729854211db">
+  <source>Lasts (ticks)</source>
+  <target>Hält an (Takte)</target>
+</trans-unit>
+<trans-unit id="se6f096754bac73c2">
+  <source>Emotion</source>
+  <target>Gefühl</target>
+</trans-unit>
+<trans-unit id="sde51482996ab2b04">
+  <source>Weight of the memory</source>
+  <target>Gewicht der Erinnerung</target>
+</trans-unit>
+<trans-unit id="s440011afd8c7a136">
+  <source>Impact reduced by</source>
+  <target>Wucht gemindert um</target>
+</trans-unit>
+<trans-unit id="sf351fbe35d11c55a">
+  <source>Maximum in total</source>
+  <target>Höchstens insgesamt</target>
+</trans-unit>
+<trans-unit id="s3fced0f37d2c0f5f">
+  <source>Morale</source>
+  <target>Moral</target>
+</trans-unit>
+<trans-unit id="sb428744132d504b5">
+  <source>You choose</source>
+  <target>Du wählst</target>
+</trans-unit>
+<trans-unit id="s2e081dcaddba4560">
+  <source>Applies to</source>
+  <target>Gilt für</target>
+</trans-unit>
+<trans-unit id="s6676f62dd9436b25">
+  <source>Stress removed</source>
+  <target>Abgebauter Stress</target>
+</trans-unit>
+<trans-unit id="sda722e463e2df83e">
+  <source>Stress resistance</source>
+  <target>Stressfestigkeit</target>
+</trans-unit>
+<trans-unit id="sdbdffe6462f5711c">
+  <source>Damage from stress</source>
+  <target>Schaden aus Stress</target>
+</trans-unit>
+<trans-unit id="s9ea7730d371db36b">
+  <source>Trait</source>
+  <target>Wesenszug</target>
+</trans-unit>
+<trans-unit id="sc683c10250a1b719">
+  <source>When</source>
+  <target>Wann</target>
+</trans-unit>
+<trans-unit id="sb53f7a197981b790">
+  <source>yes</source>
+  <target>ja</target>
+</trans-unit>
+<trans-unit id="s08b35907b5589afa">
+  <source>no</source>
+  <target>nein</target>
+</trans-unit>
+<trans-unit id="s7f6c4d5dc4ff68b9">
+  <source>Loading more worlds...</source>
+  <target>Weitere Welten werden geladen...</target>
+</trans-unit>
+<trans-unit id="s34a566e0d53519b1">
+  <source>All <x id="0" equiv-text="${this._total}"/> worlds on record.</source>
+  <target>Alle <x id="0" equiv-text="${this._total}"/> verzeichneten Welten.</target>
+</trans-unit>
+<trans-unit id="s42d042e0c6828026">
+  <source>Keyring</source>
+  <target>Schlüsselbund</target>
+</trans-unit>
+<trans-unit id="s7108abbc35f7fd11">
+  <source>yours, not a world's</source>
+  <target>deiner, nicht der einer Welt</target>
+</trans-unit>
+<trans-unit id="sdafd7a97628be897">
+  <source>Without a key of your own, everything runs on the project key – that is the normal case and costs you nothing. A key entered here is used instead, for the worlds you forge and for the ones you own.</source>
+  <target>Ohne eigenen Schlüssel läuft alles über den Projektschlüssel – das ist der Normalfall und kostet dich nichts. Ein hier eingetragener Schlüssel wird stattdessen benutzt: für die Welten, die du schmiedest, und für die, die dir gehören.</target>
+</trans-unit>
+<trans-unit id="se7ee3136a0cfa861">
+  <source>Open the Keyring in your file</source>
+  <target>Schlüsselbund in deiner Akte öffnen</target>
 </trans-unit>
 </body>
 </file>
