@@ -9,17 +9,18 @@ import { navigate } from '../../utils/navigation.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import '../shared/VelgSectionHeader.js';
+import { SIMULATION_THEMES, simulationThemeLabel } from '../../utils/enum-labels.js';
 import { settingsStyles } from '../shared/settings-styles.js';
 
+/**
+ * Die Auswahl liest Reihenfolge UND Wort aus `utils/enum-labels.ts`.
+ *
+ * Vorher standen die sechs Übersetzungen hier — und NUR hier. Das Einsatz-
+ * terminal zeigte dieselben Themenwelten über `humanizeEnum()` und damit auf
+ * Englisch, obwohl das deutsche Wort zwei Dateien weiter fertig dastand.
+ */
 function getThemeOptions(): Array<{ value: SimulationTheme; label: string }> {
-  return [
-    { value: 'dystopian', label: msg('Dystopian') },
-    { value: 'utopian', label: msg('Utopian') },
-    { value: 'fantasy', label: msg('Fantasy') },
-    { value: 'scifi', label: msg('Sci-Fi') },
-    { value: 'historical', label: msg('Historical') },
-    { value: 'custom', label: msg('Custom') },
-  ];
+  return SIMULATION_THEMES.map((value) => ({ value, label: simulationThemeLabel(value) }));
 }
 
 interface GeneralFormData {

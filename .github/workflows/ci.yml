@@ -173,6 +173,10 @@ jobs:
         run: bash scripts/lint-no-dead-single-guard.sh
         working-directory: .
 
+      - name: Lint (server, type and label know the same roles)
+        run: bash scripts/lint-role-vocabulary.sh
+        working-directory: .
+
       # A pydantic-ai run raises ModelAPIError on a timeout — the PARENT of
       # ModelHTTPError, so `except ModelHTTPError` misses it, and no httpx/Key/
       # Type/ValueError tuple ever saw it. Fourteen handlers written to degrade

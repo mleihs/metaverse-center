@@ -41,9 +41,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { DashboardWorld } from '../../types/index.js';
+import { memberRoleLabel, simulationThemeLabel } from '../../utils/enum-labels.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
-import { humanizeEnum } from '../../utils/text.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
 @localized()
@@ -517,12 +517,12 @@ export class VelgDashboardWorlds extends LitElement {
         <span class="row__body">
           <span class="row__titleline">
             <span class="row__name">${t(world, 'name')}</span>
-            ${world.theme ? html`<span class="row__theme">${humanizeEnum(world.theme)}</span>` : nothing}
+            ${world.theme ? html`<span class="row__theme">${simulationThemeLabel(world.theme)}</span>` : nothing}
           </span>
           <p class="row__desc">${t(world, 'description')}</p>
         </span>
         <span class="row__meta">
-          <span>${humanizeEnum(world.member_role)}</span>
+          <span>${memberRoleLabel(world.member_role)}</span>
           <span>${msg(str`${world.agent_count} AG · ${world.building_count} BLDG`)}</span>
         </span>
       </button>
@@ -538,8 +538,8 @@ export class VelgDashboardWorlds extends LitElement {
     // einem Fragezeichen darin lässt sich nicht sinnvoll übersetzen, weil die
     // Übersetzerin nicht sieht, welcher Zweig gemeint ist. Dafür gibt es ein
     // eigenes Lint-Tor, und es hat hier zugeschlagen.
-    const role = humanizeEnum(world.member_role);
-    const theme = world.theme ? humanizeEnum(world.theme) : '';
+    const role = memberRoleLabel(world.member_role);
+    const theme = world.theme ? simulationThemeLabel(world.theme) : '';
 
     return html`
       <div class="preview">

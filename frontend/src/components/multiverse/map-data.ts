@@ -3,21 +3,20 @@
  * connection descriptions (i18n-ready for when dynamic data replaces these).
  */
 
-import { msg } from '@lit/localize';
+import { BLEED_VECTORS, bleedVectorLabel } from '../../utils/enum-labels.js';
 
 export { getGlowColor, getThemeColor, THEME_COLORS } from '../../utils/theme-colors.js';
 
-/** Vector display labels (function for locale-aware evaluation) */
+/**
+ * Die Beschriftungen der Blutungsvektoren, gebaut aus `utils/enum-labels.ts`.
+ *
+ * Vorher stand die Liste hier ein zweites Mal — Wort für Wort dieselbe wie im
+ * Botschaftsbereich. Eine Kopie, die stimmt, ist keine harmlose Kopie: sie
+ * stimmt nur, bis jemand einen achten Vektor hinzufügt und die eine der beiden
+ * Listen findet.
+ */
 export function getVectorLabels(): Record<string, string> {
-  return {
-    commerce: msg('Commerce'),
-    language: msg('Language'),
-    memory: msg('Memory'),
-    resonance: msg('Resonance'),
-    architecture: msg('Architecture'),
-    dream: msg('Dream'),
-    desire: msg('Desire'),
-  };
+  return Object.fromEntries(BLEED_VECTORS.map((v) => [v, bleedVectorLabel(v)]));
 }
 
 /** Embassy edge color — warm orange, distinct from bleed purple */

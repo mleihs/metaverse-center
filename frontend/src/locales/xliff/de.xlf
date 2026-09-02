@@ -4970,7 +4970,7 @@
 </trans-unit>
 <trans-unit id="s16e1bead7b9c95ce">
   <source>Memory</source>
-  <target>Speicher</target>
+  <target>Erinnerung</target>
 </trans-unit>
 <trans-unit id="s89015a2a26679d2e">
   <source>Collective trauma and shared history. Past events resonate forward.</source>
@@ -29555,7 +29555,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Awaiting your move</source>
 <target>Wartet auf deinen Zug</target></trans-unit>
 <trans-unit id="s20bb5fbba567e8f2">
-  <source><x id="0" equiv-text="${p.simulation_name}"/> · <x id="1" equiv-text="${humanizeEnum(p.epoch_status)}"/> · Cycle <x id="2" equiv-text="${p.current_cycle}"/> of <x id="3" equiv-text="${p.total_cycles}"/></source>
+  <source><x id="0" equiv-text="${p.simulation_name}"/> · <x id="1" equiv-text="${epochStatusLabel(p.epoch_status)}"/> · Cycle <x id="2" equiv-text="${p.current_cycle}"/> of <x id="3" equiv-text="${p.total_cycles}"/></source>
 <target><x id="0" equiv-text="${p.simulation_name}"/> · <x id="1" equiv-text="${humanizeEnum(p.epoch_status)}"/> · Zyklus <x id="2" equiv-text="${p.current_cycle}"/> von <x id="3" equiv-text="${p.total_cycles}"/></target></trans-unit>
 <trans-unit id="s2169566db649176e">
   <source>RP <x id="0" equiv-text="${p.current_rp}"/> / <x id="1" equiv-text="${p.rp_cap}"/></source>
@@ -30000,6 +30000,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sb7cd516b426cee42">
   <source>Build a World. Watch It Live.</source>
 <target>Schmiede eine Welt. Sieh ihr beim Leben zu.</target>
+</trans-unit>
+<trans-unit id="s3bb786d3b55ba37c">
+  <source>Cancelled</source>
+<target>Abgebrochen</target>
+</trans-unit>
+<trans-unit id="sa53a63bde1ffad63">
+  <source>Proposed</source>
+<target>Beantragt</target>
+</trans-unit>
+<trans-unit id="s155e35813a089462">
+  <source>Suspended</source>
+<target>Ausgesetzt</target>
+</trans-unit>
+<trans-unit id="s8c1562c1aaa9ac55">
+  <source>Not staffed</source>
+<target>Ohne Stellen</target>
+</trans-unit>
+<trans-unit id="s8dabd78cd8272448">
+  <source>Critically understaffed</source>
+<target>Kritisch unterbesetzt</target>
+</trans-unit>
+<trans-unit id="s674771da2b78fc80">
+  <source>Understaffed</source>
+<target>Unterbesetzt</target>
+</trans-unit>
+<trans-unit id="s33f0514e87d207c1">
+  <source>Optimal</source>
+<target>Optimal</target>
+</trans-unit>
+<trans-unit id="s31f8b51bab0966a5">
+  <source>Limited</source>
+<target>Eingeschränkt</target>
+</trans-unit>
+<trans-unit id="s47ddc41ff5da557e">
+  <source>Dormant</source>
+<target>Ruhend</target>
 </trans-unit>
 </body>
 </file>

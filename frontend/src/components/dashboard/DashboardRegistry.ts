@@ -19,9 +19,9 @@ import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Simulation } from '../../types/index.js';
+import { simulationThemeLabel } from '../../utils/enum-labels.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
-import { humanizeEnum } from '../../utils/text.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
 /**
@@ -306,7 +306,7 @@ export class VelgDashboardRegistry extends LitElement {
             : nothing
         }
         <span class="card__veil"></span>
-        <span class="card__tag">${humanizeEnum(world.theme)}</span>
+        <span class="card__tag">${simulationThemeLabel(world.theme)}</span>
         <span class="card__foot">
           <span class="card__name">${t(world, 'name')}</span>
           <span class="card__stats">
