@@ -35,6 +35,8 @@ from postgrest.exceptions import APIError as PostgrestAPIError
 from backend.dependencies import get_admin_supabase
 from backend.models.generation import AutonomousEventNarrative
 from backend.services.agent_mood_service import AgentMoodService
+from backend.services.ai_usage_service import AIUsageService
+from backend.services.ai_utils import key_source_for
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.echo_service import EchoService
 from backend.services.event_service import EventService
@@ -581,6 +583,25 @@ class AutonomousEventService:
                 temperature=0.7,
                 max_tokens=512,
                 budget=budget,
+            )
+            # The other half of the budget. `BudgetContext` above weighs this
+            # call against `ai_budget` BEFORE it runs; nothing wrote the row
+            # afterwards, so autonomous events were pre-checked against a
+            # number they never contributed to (the same shape as finding 34,
+            # one file further along). `key_source` matters here in particular:
+            # phase 9 of the heartbeat runs on the WORLD OWNER's personal key
+            # when they have one, and that money is not the platform's.
+            # The repair call below is deliberately not logged separately —
+            # `repair_json_output` is shared by several callers and owns its
+            # own accounting question.
+            await AIUsageService.log(
+                admin_supabase,
+                simulation_id=simulation_id,
+                provider="openrouter",
+                model=resolved.model_id,
+                purpose="event_generation",
+                usage=openrouter.last_usage,
+                key_source=key_source_for(openrouter_api_key),
             )
             # `repair_json_output` takes four arguments and is a coroutine.
             # This used to read `repair_json_output(content)` — one positional

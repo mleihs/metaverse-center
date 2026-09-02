@@ -19,6 +19,7 @@ from backend.models.forge import PhilosophicalAnchor, counted_list
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     create_forge_agent,
+    key_source_for,
     report_delivery_count,
     run_ai,
     validate_bilingual_output,
@@ -349,6 +350,7 @@ class ResearchService:
                 research_prompt,
                 "research",
                 admin_supabase=admin_supabase,
+                key_source=key_source_for(openrouter_key),
             )
             parts.append(f"[LLM RESEARCH]\n{result.output}")
         except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
@@ -468,6 +470,7 @@ class ResearchService:
             # ceiling stops a fourth from costing a scan's tokens. See finding 10.
             output_type=counted_list(PhilosophicalAnchor, _ANCHOR_COUNT, minimum=_ANCHOR_MINIMUM),
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         # Patch empty _de fields with EN fallback so downstream never sees blanks
         anchor_de_fields = ["title_de", "literary_influence_de", "core_question_de", "description_de"]

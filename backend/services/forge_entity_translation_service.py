@@ -8,7 +8,7 @@ from uuid import UUID
 
 from backend.dependencies import get_admin_supabase
 from backend.models.forge import ForgeEntityTranslationOutput
-from backend.services.ai_utils import create_forge_agent, run_ai
+from backend.services.ai_utils import create_forge_agent, key_source_for, run_ai
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -118,6 +118,7 @@ class ForgeEntityTranslationService:
             "translation",
             output_type=ForgeEntityTranslationOutput,
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         output = result.output
 

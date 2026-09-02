@@ -18,6 +18,7 @@ from backend.models.forge import ForgeThemeOutput
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     create_forge_agent,
+    key_source_for,
     run_ai,
 )
 from backend.services.forge_feature_service import ForgeFeatureService
@@ -251,6 +252,7 @@ class ForgeThemeService:
             "theme",
             output_type=ForgeThemeOutput,
             admin_supabase=admin_supabase,
+            key_source=key_source_for(openrouter_key),
         )
         theme_data = result.output.model_dump()
 
@@ -464,6 +466,7 @@ class ForgeThemeService:
                 "style_refine",
                 admin_supabase=admin_supabase,
                 simulation_id=simulation_id,
+                key_source=key_source_for(openrouter_key),
             )
 
             # Parse response
@@ -653,6 +656,7 @@ class ForgeThemeService:
                 "templates",
                 admin_supabase=admin_supabase,
                 simulation_id=simulation_id,
+                key_source=key_source_for(openrouter_key),
             )
             text = result.output if isinstance(result.output, str) else str(result.output)
 
@@ -837,6 +841,7 @@ different typography. Same world, radically different visual identity."""
                         admin_supabase=admin_supabase,
                         simulation_id=simulation_id,
                         user_id=user_id,
+                        key_source=key_source_for(or_key),
                     )
                     variant_data = result.output.model_dump()
                     variant_data["variant_name"] = f"Variant {i + 1}"

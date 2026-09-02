@@ -13,6 +13,7 @@ from backend.models.translation import TranslationContext
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     create_forge_agent,
+    key_source_for,
     run_ai,
 )
 from backend.services.translation_service import TranslationService
@@ -172,6 +173,7 @@ class DossierEvolutionService:
                 "dossier_evolution",
                 admin_supabase=admin_supabase,
                 simulation_id=simulation_id,
+                key_source=key_source_for(openrouter_key),
             )
             addendum = result.output if isinstance(result.output, str) else str(result.output)
 
