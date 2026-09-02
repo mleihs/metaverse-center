@@ -159,6 +159,7 @@ jobs:
 
       - name: Backend lint (migration timestamps unique, numbers in the same order)
         run: bash scripts/lint-migration-order.sh
+        working-directory: .
 
       # psql liest bis zum Semikolon. Fehlt es hinter der schliessenden
       # Dollar-Marke einer Funktion, zieht es die naechste Anweisung mit hinein
