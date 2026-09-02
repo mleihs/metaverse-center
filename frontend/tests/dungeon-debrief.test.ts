@@ -338,3 +338,77 @@ describe('VelgDungeonDebrief: die Zeremonie', () => {
     }
   });
 });
+
+describe('VelgDungeonDebrief: Ziehen ist die Kür, Klicken der Vertrag', () => {
+  beforeEach(() => {
+    dungeonState.clientState.value = null;
+    dungeonState.timerRemaining.value = null;
+    document.body.innerHTML = '';
+  });
+
+  /** Ein Ablegen, wie der Browser es auslöst. */
+  function ablegen(ziel: HTMLElement): void {
+    ziel.dispatchEvent(new Event('dragover', { bubbles: true, cancelable: true }));
+    ziel.dispatchEvent(new Event('drop', { bubbles: true, cancelable: true }));
+  }
+
+  it('legt ein gezogenes Stück beim Ziel ab — mit demselben Befehl wie ein Klick', async () => {
+    const el = await buehne({
+      pending_loot: [stueck('L1', 'stress_heal'), stueck('L2', 'aptitude_boost')],
+    });
+    const befehle = lauscher(el);
+    const r = wurzel(el);
+
+    r.querySelector('velg-game-card')?.dispatchEvent(
+      new CustomEvent('card-drag-start', { bubbles: true, composed: true }),
+    );
+    await el.updateComplete;
+    ablegen(r.querySelectorAll<HTMLButtonElement>('.ziel')[1]);
+    await el.updateComplete;
+
+    // Die Auto-Wirkung zählt auch hier nicht mit: L2 ist das ERSTE verteilbare.
+    expect(befehle).toEqual(['assign 1 Voss']);
+  });
+
+  it('nimmt kein Ablegen auf einer gefangenen Agentin an', async () => {
+    const el = await buehne({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    const befehle = lauscher(el);
+    const r = wurzel(el);
+
+    r.querySelector('velg-game-card')?.dispatchEvent(
+      new CustomEvent('card-drag-start', { bubbles: true, composed: true }),
+    );
+    await el.updateComplete;
+    const ilva = Array.from(r.querySelectorAll<HTMLButtonElement>('.ziel')).find((b) =>
+      b.textContent?.includes('Ilva'),
+    );
+    ablegen(ilva as HTMLElement);
+    await el.updateComplete;
+
+    expect(befehle).toEqual([]);
+  });
+
+  it('führt auch beim Ziehen über den Dimensionsschritt', async () => {
+    const el = await buehne({ pending_loot: [stueck('L1', 'personality_modifier')] });
+    const befehle = lauscher(el);
+    const r = wurzel(el);
+
+    r.querySelector('velg-game-card')?.dispatchEvent(
+      new CustomEvent('card-drag-start', { bubbles: true, composed: true }),
+    );
+    await el.updateComplete;
+    ablegen(r.querySelectorAll<HTMLButtonElement>('.ziel')[0]);
+    await el.updateComplete;
+
+    expect(befehle, 'ohne Dimension abgeschickt').toEqual([]);
+    r.querySelectorAll<HTMLButtonElement>('.dimension')[0].click();
+    await el.updateComplete;
+    expect(befehle).toEqual(['assign 1 Fenn openness']);
+  });
+
+  it('macht eine verdeckte Karte nicht ziehbar', async () => {
+    const el = await versiegelt({ pending_loot: [stueck('L1', 'aptitude_boost')] });
+    // Noch versiegelt: es gibt gar keine Karte.
+    expect(wurzel(el).querySelector('velg-game-card')).toBeNull();
+  });
+});
