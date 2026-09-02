@@ -4342,9 +4342,6 @@
 <trans-unit id="s07311903233fe50c">
   <source>Gathers intelligence from target simulation. Instant deployment, low cost, low risk.</source>
 <target>Sammelt Informationen aus der Zielsimulation. Sofortiger Einsatz, geringe Kosten, geringes Risiko.</target></trans-unit>
-<trans-unit id="sf859a71262c50db0">
-  <source>Degrades a target building's condition by one level (good → moderate → poor → ruined).</source>
-<target>Verschlechtert den Zustand eines Zielgebäudes um eine Stufe (gut → mäßig → schlecht → ruiniert).</target></trans-unit>
 <trans-unit id="s50c423524405aaff">
   <source>Launches a propaganda campaign in target simulation.</source>
 <target>Startet eine Propagandakampagne in der Zielsimulation.</target></trans-unit>
@@ -9663,10 +9660,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
   <source>How Metrics Change</source>
   <target>Wie sich Kennzahlen ändern</target>
 </trans-unit>
-<trans-unit id="sc5825dd4b60effc1">
-  <source>Building Readiness drops when saboteurs damage your buildings (good → moderate → poor → ruined). Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links. All metrics recover over time but can be boosted by deploying guardians and fortifying zones.</source>
-  <target>Gebäude-Bereitschaft sinkt, wenn Saboteure deine Gebäude beschädigen (gut → mittel → schlecht → zerstört). Zonenstabilität sinkt, wenn feindliche Operative erfolgreich sind oder Kaskaden-Ereignisse feuern. Botschaftseffektivität fällt, wenn Infiltratoren deine diplomatischen Verbindungen kompromittieren. Alle Werte erholen sich über die Zeit, lassen sich aber durch Wächter-Einsätze und Zonen-Befestigungen anheben.</target>
-</trans-unit>
 <trans-unit id="sd179b0a3e2791a70">
   <source>These metrics are computed from materialized database views that aggregate across all your buildings, zones, and embassies. They update automatically after each cycle resolution. The dashboard uses info bubbles to explain each metric’s formula.</source>
   <target>Diese Metriken werden aus materialisierten Datenbank-Views berechnet, die über alle deine Gebäude, Zonen und Botschaften aggregieren. Sie aktualisieren sich automatisch nach jeder Zyklusauflösung. Das Dashboard erklärt jede Formel über Info-Bubbles.</target>
@@ -14688,9 +14681,6 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s83bcd9832e5e6a55">
   <source>Meet more characters</source>
 <target>Weitere Charaktere kennenlernen</target></trans-unit>
-<trans-unit id="sdf260a2775d36086">
-  <source>Build Your World</source>
-<target>Baue deine Welt</target></trans-unit>
 <trans-unit id="s18cfc8da58d12b99">
   <source>Explore Worlds</source>
 <target>Welten erkunden</target></trans-unit>
@@ -20259,10 +20249,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="sba31a68f4b293299">
   <source>Each operative type unlocks a school of abilities. Spy abilities reveal enemy weaknesses. Guardian abilities protect allies. Saboteur abilities deal area damage. Propagandist abilities manipulate enemy stress. Infiltrator abilities bypass defenses. Assassin abilities deal concentrated damage. Higher agent aptitudes unlock stronger abilities within each school.</source>
   <target>Jeder Agententyp schaltet eine Schule von Fähigkeiten frei. Spion-Fähigkeiten enthüllen feindliche Schwächen. Wächter-Fähigkeiten schützen Verbündete. Saboteur-Fähigkeiten verursachen Flächenschaden. Propagandist-Fähigkeiten manipulieren feindlichen Stress. Infiltrator-Fähigkeiten umgehen Verteidigungen. Assassinen-Fähigkeiten verursachen konzentrierten Schaden. Höhere Agenten-Eignungen schalten stärkere Fähigkeiten innerhalb jeder Schule frei.</target>
-</trans-unit>
-<trans-unit id="s05521a0ba92b8256">
-  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. Loot includes aptitude boosts (capped at +2 per agent to prevent runaway power), memories that shape agent personality, moodlets that affect behavior, and event modifiers that influence future resonances.</source>
-  <target>Nach dem Besiegen des Bosses betrittst du das Abschluss-Terminal – eine Loot-Verteilungsphase, in der du einzelnen Trupp-Mitgliedern Belohnungen zuweist. Loot umfasst Eignungs-Verstärkungen (begrenzt auf +2 pro Agent gegen unkontrollierte Machtsteigerung), Erinnerungen die die Agenten-Persönlichkeit formen, Moodlets die das Verhalten beeinflussen, und Ereignis-Modifikatoren die zukünftige Resonanzen beeinflussen.</target>
 </trans-unit>
 <trans-unit id="s735a9e7cae7d7758">
   <source>The 8 Archetypes</source>
@@ -29291,7 +29277,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="se0084060dab97d48">
   <source>Signal locked // <x id="0" equiv-text="${online}"/> worlds transmitting</source>
-  <target>Signal steht // <x id="0" equiv-text="${online}"/> Welten senden</target>
+  <target>Signal steht // <x id="0" equiv-text="${online}"/> Welten auf Sendung</target>
 </trans-unit>
 <trans-unit id="scd954bb9d7ebb395">
   <source>Signal locked</source>
@@ -29305,13 +29291,9 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Forged from a single sentence. Playing while you sleep. Populated by citizens who remember what you did.</source>
   <target>Aus einem einzigen Satz geschmiedet. Spielt, während du schläfst. Bewohnt von Bürgern, die sich erinnern, was du getan hast.</target>
 </trans-unit>
-<trans-unit id="s3809323fd37b1406">
-  <source>Build your world</source>
-  <target>Bau deine Welt</target>
-</trans-unit>
 <trans-unit id="s6005f4a35a6cc7cd">
   <source>Or just watch one</source>
-  <target>Oder sieh einer einfach zu</target>
+  <target>Oder sieh einer beim Leben zu</target>
 </trans-unit>
 <trans-unit id="s7344eb3ac03a4186">
   <source>The Bureau of Impossible Geography. AI-simulated living worlds, forged from a sentence, populated by citizens who remember, playing while you sleep.</source>
@@ -29407,7 +29389,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s8500c8ec1ad94bc2">
   <source>Send Agents Below</source>
-  <target>Schick Agenten nach unten</target>
+  <target>Schick Agenten in die Tiefe</target>
 </trans-unit>
 <trans-unit id="s7224d2d046b1dae5">
   <source>Eight literary descents where stress is real. Agents return changed – or not at all.</source>
@@ -29435,7 +29417,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s71120db9cf1fd1a3">
   <source>The node-sea between worlds is playable. Dock at a foreign broadcast edge, haul home cargo.</source>
-  <target>Die Knotensee zwischen den Welten ist bespielbar. Leg an einer fremden Sendekante an, hol Fracht nach Hause.</target>
+  <target>Die Knotensee zwischen den Welten ist befahrbar. Leg an einer fremden Sendekante an und bring Fracht heim.</target>
 </trans-unit>
 <trans-unit id="s78f915c3b8f30c1d">
   <source>Between worlds stretches the node-sea: black, patient, crossed by amber signal-lines that hum like held breath. Charter a barge, follow a line to a foreign broadcast edge, and dock where your passport is a rumor. What you haul home has no field on any customs form, which is precisely why it is valuable.</source>
@@ -29479,7 +29461,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s22e64a10620eac0b">
   <source>Play It as Text</source>
-  <target>Spiel es als Text</target>
+  <target>Als Text spielen</target>
 </trans-unit>
 <trans-unit id="s0c83f51773c421d6">
   <source>A command-line window into your world. Local perspective, narrative prose, no mercy.</source>
@@ -29926,6 +29908,66 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1ac3e2635c18da6b">
   <source>Official Bureau assessment. Threat designation, research value, recommended actions. THREAT LEVEL: ████████ | [<x id="0" equiv-text="${geheim}"/>] | Institutional authority. Dry humor. Final word.</source>
 <target>Amtliche Einschätzung des Bureaus. Bedrohungsbezeichnung, Forschungswert, empfohlene Maßnahmen. BEDROHUNGSSTUFE: ████████ | [<x id="0" equiv-text="${geheim}"/>] | Institutionelle Autorität. Trockener Humor. Letztes Wort.</target>
+</trans-unit>
+<trans-unit id="s416196c929eac66e">
+  <source>Minor</source>
+<target>Gering</target>
+</trans-unit>
+<trans-unit id="s94ee0b0b7a48a922">
+  <source>Major</source>
+<target>Bedeutend</target>
+</trans-unit>
+<trans-unit id="s8ff0c34ca920616a">
+  <source>Legendary</source>
+<target>Legendär</target>
+</trans-unit>
+<trans-unit id="sf3c0d51e5422bf37">
+  <source>The catalogue could not be loaded.</source>
+<target>Der Katalog konnte nicht geladen werden.</target>
+</trans-unit>
+<trans-unit id="s02a0a407fe385ca6">
+  <source>Drop weight <x id="0" equiv-text="${item.drop_weight}"/></source>
+<target>Fundgewicht <x id="0" equiv-text="${item.drop_weight}"/></target>
+</trans-unit>
+<trans-unit id="s3116757bdf2c28c0">
+  <source><x id="0" equiv-text="${items.length}"/> pieces</source>
+<target><x id="0" equiv-text="${items.length}"/> Stücke</target>
+</trans-unit>
+<trans-unit id="s9474e9a8029ed7c6">
+  <source>Loot catalogue</source>
+<target>Beutekatalog</target>
+</trans-unit>
+<trans-unit id="se7e41e770f7e0d50">
+  <source>Every piece a dungeon can yield, what it does, and which archetype drops it. Read from the same record the run uses, so it is never out of date.</source>
+<target>Jedes Stück, das ein Dungeon hergeben kann, was es bewirkt und welcher Archetyp es fallen lässt. Aus demselben Verzeichnis gelesen, das auch die Fahrt benutzt – es kann also nicht veralten.</target>
+</trans-unit>
+<trans-unit id="s6b615851ed4e820b">
+  <source>What the effects do</source>
+<target>Was die Wirkungen tun</target>
+</trans-unit>
+<trans-unit id="sd31e67fedafa37f3">
+  <source>Building Readiness drops when saboteurs damage your buildings – one rung down your world’s own condition ladder, and nothing puts it back on its own. The only repair is loot: the Restoration Fragment (The Entropy) and the Restoration Organ (The Devouring Mother), both tier 3, each lifting your most damaged building by one rung. Zone Stability decreases when enemy operatives succeed or cascade events fire. Embassy Effectiveness falls when infiltrators compromise your diplomatic links – and building condition feeds it directly, at 40 % of the score.</source>
+<target>Die Bau-Bereitschaft fällt, wenn Saboteure deine Gebäude beschädigen – eine Sprosse abwärts auf der Zustandsleiter deiner eigenen Welt, und von allein steigt sie nie zurück. Die einzige Reparatur ist Beute: das Wiederherstellungs-Fragment (Die Entropie) und das Wiederherstellungs-Organ (Die Verschlingende Mutter), beide Stufe 3, heben je dein am schwersten beschädigtes Gebäude um eine Sprosse. Die Zonenstabilität sinkt, wenn feindliche Agenten Erfolg haben oder Kaskadenereignisse auslösen. Die Botschaftswirksamkeit fällt, wenn Infiltratoren deine diplomatischen Verbindungen kompromittieren – und der Bauzustand speist sie unmittelbar, mit 40 % des Werts.</target>
+</trans-unit>
+<trans-unit id="s84fa0a4fd5194bd6">
+  <source>Degrades a target building by one rung on its own world’s condition ladder – each world names its own rungs, and the lowest is always a ruin.</source>
+<target>Setzt ein Gebäude eine Sprosse tiefer auf der Zustandsleiter seiner eigenen Welt – jede Welt benennt ihre Sprossen selbst, und die unterste ist immer eine Ruine.</target>
+</trans-unit>
+<trans-unit id="sd3374f60f08540f3">
+  <source>After defeating the boss, you enter the Debrief Terminal – a loot distribution phase where you assign rewards to individual party members. 105 pieces exist across the eight archetypes, in twelve effect types: aptitude boosts (capped at +2 per agent, so no agent becomes untouchable), memories that shape personality, moodlets that fade on their own, event and arc modifiers, permanent and next-run bonuses, and building repair – the only way a ruined building ever recovers. The full catalogue, with what each effect does and which archetype drops it, is at /how-to-play/loot.</source>
+<target>Nach dem Sieg über den Boss betrittst du das Nachbesprechungs-Terminal – dort verteilst du die Beute auf einzelne Mitglieder des Trupps. 105 Stücke gibt es über die acht Archetypen hinweg, in zwölf Wirkungsarten: Eignungsschübe (gedeckelt bei +2 je Agent, damit niemand unantastbar wird), Erinnerungen, die den Charakter formen, Moodlets, die von allein verklingen, Ereignis- und Bogenmodifikatoren, dauerhafte Boni und solche für die nächste Fahrt, sowie Gebäudereparatur – der einzige Weg, auf dem eine Ruine je zurückkommt. Der vollständige Katalog, mit der Wirkung jedes Stücks und dem Archetyp, der es fallen lässt, steht unter /how-to-play/loot.</target>
+</trans-unit>
+<trans-unit id="sa9decb06c2d16ac7">
+  <source>Forge your world</source>
+<target>Schmiede deine Welt</target>
+</trans-unit>
+<trans-unit id="s69dbb17641f13a07">
+  <source>Forge Your World</source>
+<target>Schmiede deine Welt</target>
+</trans-unit>
+<trans-unit id="s7c5de207bc1616ae">
+  <source>Section <x id="0" equiv-text="${position}"/></source>
+<target>Abschnitt <x id="0" equiv-text="${position}"/></target>
 </trans-unit>
 </body>
 </file>

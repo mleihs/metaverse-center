@@ -47,11 +47,28 @@ export class VelgLandingHero extends LitElement {
       --_ground: var(--color-surface);
       --_sunken: var(--color-surface-sunken);
       --_rule: var(--color-border-light);
-      --_veil-strong: color-mix(in srgb, var(--color-surface) 97%, transparent);
-      --_veil-mid: color-mix(in srgb, var(--color-surface) 70%, transparent);
-      --_veil-soft: color-mix(in srgb, var(--color-surface) 22%, transparent);
-      --_veil-top: color-mix(in srgb, var(--color-surface) 70%, transparent);
-      --_veil-bottom: color-mix(in srgb, var(--color-surface) 50%, transparent);
+      /*
+       * VIER Schichten dunkeln dasselbe Bild, und jede wurde allein abgestimmt.
+       * Zusammengerechnet blieb unter der Schlagzeile fast nichts uebrig:
+       *
+       *     Bild            brightness 0.72
+       *     Schleier links  97 % Schwarz   -> vom Bild bleiben 3 %
+       *     senkrecht oben  70 %
+       *     Scanlinien      13 %
+       *                     ------------------------------------------
+       *     sichtbar        rund 2 % des Bildes
+       *
+       * Das ist keine Abdunklung mehr, das ist eine schwarze Flaeche mit einer
+       * Erinnerung an ein Bild darunter. Die Werte sind gesenkt, bis das Motiv
+       * wieder traegt -- und nicht weiter: die Schlagzeile steht links, dort
+       * bleibt der Schleier der staerkste, und die untere Kante bleibt fast
+       * unveraendert, weil sie den Helden gegen den naechsten Abschnitt setzt.
+       */
+      --_veil-strong: color-mix(in srgb, var(--color-surface) 82%, transparent);
+      --_veil-mid: color-mix(in srgb, var(--color-surface) 52%, transparent);
+      --_veil-soft: color-mix(in srgb, var(--color-surface) 12%, transparent);
+      --_veil-top: color-mix(in srgb, var(--color-surface) 55%, transparent);
+      --_veil-bottom: color-mix(in srgb, var(--color-surface) 44%, transparent);
       --_scanline: color-mix(in srgb, var(--color-surface-inverse) 0%, transparent);
 
       display: block;
@@ -180,7 +197,8 @@ export class VelgLandingHero extends LitElement {
       object-fit: cover;
       object-position: center 62%;
       /* Auf dem Bild, nicht auf dem Abschnitt. */
-      filter: brightness(0.72) saturate(0.95);
+      /* 0.72 zusammen mit den Schleiern oben war die eigentliche Ursache. */
+      filter: brightness(0.88) saturate(1);
       animation: ken-burns 34s ease-in-out infinite alternate;
     }
 
@@ -225,8 +243,8 @@ export class VelgLandingHero extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        color-mix(in srgb, var(--color-surface) 13%, transparent) 3px,
-        color-mix(in srgb, var(--color-surface) 13%, transparent) 6px
+        color-mix(in srgb, var(--color-surface) 9%, transparent) 3px,
+        color-mix(in srgb, var(--color-surface) 9%, transparent) 6px
       );
     }
 
@@ -621,7 +639,7 @@ export class VelgLandingHero extends LitElement {
             </p>
             <div class="hero__actions">
               <button class="cta cta--lg" @click=${() => navigate('/forge')}>
-                ${msg('Build your world')} <span aria-hidden="true">&rarr;</span>
+                ${msg('Forge your world')} <span aria-hidden="true">&rarr;</span>
               </button>
               <button class="watch" @click=${() => navigate('/worlds')}>
                 ${msg('Or just watch one')}

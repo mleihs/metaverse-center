@@ -486,7 +486,7 @@ export class VelgChronicleFeed extends LitElement {
                   navigate('/register');
                 }}
               >
-                ${msg('Build Your World')}
+                ${msg('Forge Your World')}
               </a>
             </div>
           `
