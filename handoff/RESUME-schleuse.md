@@ -1,13 +1,13 @@
 # RESUME — Schleuse (Event-Intake) einbauen
 
-**Stand 02.09.2026, nach Schritt 3.** Vier Commits auf main, nichts gepusht.
-Prod läuft `dba881d0` — älter als alle vier.
+**Stand 02.09.2026, nach Schritt 3.** Fünf Commits auf main, nichts gepusht.
+Prod läuft `dba881d0` — älter als alle fünf.
 
     273e8d6a  Design-Paket, Prototyp-Extrakt, Nachträge
     5ca4ef00  Schritt 1 — types/intake.ts, IntakeStateManager.ts, 15 Tests
     cf0619c2  Schritt 2 — IntakeView, IntakeSensorTile, Responsive, 37 Übersetzungen
     e8a86344  Resume-Notiz + Vorarbeit Schritt 3
-    (neu)     Schritt 3 — IntakeCrucibleModal, intake-labels, 77 Übersetzungen
+    e36a4bc7  Schritt 3 — IntakeCrucibleModal, intake-labels, 77 Übersetzungen
 
 ▶ **ALS NÄCHSTES: Schritt 4** — Quarantäne-Karte rollenabhängig,
 Resonanz-Modal (Hold) und Flag-Modal.
@@ -73,13 +73,32 @@ alles, was nicht aus der eigenen Datei stammt, vor dem Commit
 zurückbauen — der Commit soll `HEAD + eigene Einheiten` sein, die Arbeitskopie
 darf `HEAD + Peer + eigene` bleiben. Für `generated/de.ts` gilt dasselbe: der
 Build liest den QUELLBAUM, findet dort die Peer-Änderungen und wirft die
-HEAD-Übersetzungen weg, die dazu nicht mehr passen. Die drei betroffenen
-Einträge wurden nach dem Build von Hand zurückgestellt.
+HEAD-Übersetzungen weg, die dazu nicht mehr passen.
 
-Ebenfalls fremd und **nicht anfassen**: `frontend/scripts/lint-condition-ladder-matches-taxonomy.sh`
-(unversioniert) plus der Eintrag dazu in `frontend/package.json`. Das Tor
-scheitert gerade an `lint-lint-scripts-anchored` (fehlender Anker-Vorspann) —
-das ist die Baustelle des Peers, nicht unsere. Alle übrigen 29 Tore sind grün.
+**Wie es dann tatsächlich ausging (der lehrreiche Teil):** genau das wurde
+gemacht — und war umsonst. Der Peer schrieb im selben Moment `33b6e4d5` fest
+und nahm die Sprachdateien so mit, wie sie auf der Platte lagen: seine drei
+Einheiten UND meine 77, zusammen mit seinen Quelländerungen. Damit war der
+Stand auf einen Schlag richtig, und mein `git commit -- <pfade>` fand an den
+beiden Dateien nichts mehr zu tun — sie stehen deshalb NICHT in `e36a4bc7`.
+Der Absatz „Geteilter Arbeitsbaum" in jener Commit-Nachricht beschreibt also
+die durchgeführte Vorsichtsmassnahme, nicht den Weg, auf dem die Zeilen
+tatsächlich in die Geschichte kamen. Geprüft ist der Endstand: jede Einheit in
+`de.xlf` hat ein `<target>`, meine 77 tragen ihr deutsches Wort, die drei
+überholten Einheiten sind samt ihrer Quelle fort.
+
+🔑 **Die Lehre:** in einem geteilten Baum gehört eine generierte Gemeinschafts-
+datei dem, der zuerst committet — die Sorgfalt davor ist trotzdem richtig,
+denn ohne sie wäre der umgekehrte Fall (ich zuerst) eine gelöschte
+Peer-Übersetzung auf main gewesen. **Nach dem Commit den ENDSTAND prüfen, nicht
+den eigenen Diff:** `git show HEAD:…de.xlf` gegen die eigenen IDs halten.
+
+Ebenfalls fremd und **nicht anfassen**: `scripts/lint-condition-ladder-matches-taxonomy.sh`
+plus der Eintrag dazu in `frontend/package.json` — inzwischen mit `33b6e4d5`
+festgeschrieben und angeschlossen (`.github/workflows/ci.yml`). Während meines
+Laufs scheiterte es noch an `lint-lint-scripts-anchored` (fehlender
+Anker-Vorspann); vor dem nächsten Commit also `npm run lint:full` neu messen,
+nicht diese Zeile glauben.
 
 ## ⚠ Der Zufluss ist trocken (am 02.09. gemessen, unverändert)
 
@@ -95,7 +114,7 @@ das ist die Baustelle des Peers, nicht unsere. Alle übrigen 29 Tore sind grün.
   16./17.02.2026. 15 von 16 Welten haben null. Seither 197 Tage nichts.
 
 **Folge für die Abnahme:** der Schmelztiegel ist bisher nur gegen den Code
-geprüft (tsc, 1068 Tests, 29 Lint-Tore), nicht am Schirm — Kammer ① ist auf
+geprüft (tsc, 1068 Tests, alle Lint-Tore), nicht am Schirm — Kammer ① ist auf
 jeder echten Welt leer, weil seit Februar nichts hereinkommt. Wer ihn sehen
 will, braucht zuerst einen fliessenden Zufluss (Guardian-502) oder ein
 Signal von Hand.
