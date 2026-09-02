@@ -2,6 +2,8 @@
 
 **Code-Referenz:** `handoff/schleuse-prototype-1b.html` — nur Block 1b (Template inkl. aller Modals: Sichtung, Lesesaal, Schmelztiegel, Resonanz, Melden, Echo, Scan-Log, Toast) plus zugehörige Logik und Keyframes, ohne 1a/1c. Nicht lauffähig, reines Nachschlagewerk für Inline-Styles, Copy und Zustandslogik.
 
+**Responsive:** `handoff/schleuse-responsive.md` — Verhalten bei 1280 · 1440 · 1920 · 2560 · 3840, Breakpoints, Container-Queries, Test-Matrix.
+
 **Voll-Prototyp:** `Event Intake.dc.html`, Block `#1b` (`data-screen-label="1b Schleuse"`, Template Z. 301–770, Logik: alle `b*`-Keys in `renderVals()` ab Z. 1148 sowie `openCrucible/setLensB/composeB/typeB/closeB/toastB/stageB`). Der Prototyp läuft im Design-Projekt, nicht im Repo — **nicht kopieren**, sondern die darin gelösten Probleme in Lit-Komponenten übertragen. Rollenschalter oben („Ansicht als Architekt / Admin") und Tweak `role` zeigen beide Sichten.
 
 **Ziel-Repo:** `velgarien-rebuild/frontend/src/`
@@ -21,10 +23,10 @@ Heute existieren zwei Import-Pipelines mit zwei Vokabularen an zwei Orten:
 
 ## Verbindliche Repo-Regeln
 
-- Farben **nur** über Tokens (`var(--color-…)`), nie rohe Hex. Prototyp-Hex → Token-Mapping am Ende dieses Dokuments.
+- Farben **nur** über Tokens (`var(--color-…)`), nie rohe Hex. Prototyp-Hex → Token-Mapping am Ende dieses Dokuments — **nur dort gelistete, in `_colors.css` existierende Namen verwenden**; Amber-Chrome = `--color-accent-amber`, nicht `--color-primary` (Theme-Primary wechselt pro Welt).
 - Headings `--font-brutalist` (Courier), uppercase, `--tracking-brutalist`; Labels Mono; Prosa `Spectral`, Narratives italic.
 - Icons nur aus `utils/icons.ts`; alle Strings über `msg('…')`, En-Dash statt Em-Dash in msg().
-- **Design-Tabus:** keine rotierten Elemente/Stempel, **kein `border-left` als Akzent-/Auswahlstreifen**. Auswahl = kompletter 1px-Rahmen `--color-accent` + Tint `rgba(245,158,11,.10)`. Tabs = `border-bottom`.
+- **Design-Tabus:** keine rotierten Elemente/Stempel, **kein `border-left` als Akzent-/Auswahlstreifen**. Auswahl = kompletter 1px-Rahmen `--color-accent-amber` + Tint `--color-accent-amber-glow`. Tabs = `border-bottom`.
 - Modals über `shared/BaseModal.ts` (Backdrop-Fade + modal-enter existieren dort). Halten-Buttons über `shared/VelgHoldButton.ts`. Toasts über `shared/Toast.ts`.
 - Reduced Motion: kein Startzustand `opacity:0`, der nur per Animation sichtbar wird.
 
@@ -32,7 +34,7 @@ Heute existieren zwei Import-Pipelines mit zwei Vokabularen an zwei Orten:
 
 | Baustein | Neue Datei | Basis / wiederverwenden |
 |---|---|---|
-| Shell, Sensor-Leiste, Quote, Abos, 4-Kammern-Board | `components/intake/IntakeView.ts` (`velg-intake-view`) | Layout-Muster aus `AdminScannerTab.ts` (Sub-Nav entfällt), `shared/grid-layout-styles.ts` |
+| Shell, Sensor-Leiste, Quote, Abos, 4-Kammern-Board | `components/intake/IntakeView.ts` (`velg-intake-view`) | Layout-Muster aus `AdminScannerTab.ts` (Sub-Nav entfällt), `shared/grid-layout-styles.ts`, **`shared/stage-styles.ts`** (Maß/Gutter); jede Kammer `container-type: inline-size` |
 | Sensor-Kachel | `components/intake/IntakeSensorTile.ts` | `AdapterInfo` aus `ScannerApiService.ts` |
 | Signal-Karte (Kammer ①) | `components/intake/IntakeSignalCard.ts` | `shared/card-styles.ts` |
 | Quarantäne-Karte (Kammer ②) | `components/intake/IntakeQuarantineCard.ts` | — |
@@ -65,9 +67,9 @@ Nav: `layout/SimulationNav.ts` — Eintrag `{ label: msg('Intake'), path: 'intak
 
 Ein Architekt kann **nie** eine Resonanz erzeugen — nur melden (`status: 'flagged'` am Candidate, siehe Backend-Lücken).
 
-## Layout der View (1600 px Referenz, fluid ab 1280)
+## Layout der View (1600 px Referenz — Verhalten 1280 → 4K in `schleuse-responsive.md`)
 
-Von oben nach unten, alles `border-bottom: 1px solid --color-border-subtle (#222)`:
+Von oben nach unten, alles `border-bottom: 1px solid var(--color-border-light)` (#222):
 
 1. **Topbar** 42 px: Breadcrumb links, rechts Rollen-Badge (1px Rahmen, Admin amber / Architekt grün), `● Scanner aktiv · Intervall 6 h` (aus `dashboard.config.interval`), DE/EN.
 2. **Sensor-Leiste**: `grid-template-columns: 150px 1fr 150px`. Links Titel „Sensoren" + `12/13 online · 1 LLM-Aufruf/Zyklus`. Mitte `repeat(N, 1fr)` Kacheln (N = Adapter-Anzahl). Rechts Scan-Button/Nächster Scan, „Scan-Log", Funnel-Zeile `02:32 · 431 roh → 17 Geschichten → 5 im Eingang · 3 Resonanzen heute`.
@@ -175,7 +177,7 @@ interface IntakeSignal {
 }
 ```
 
-Kategorie → Archetyp/Farbe (aus `ResonanceSignature`/`ResonanceArchetype`, Farben als Tokens anlegen `--color-arch-*`):
+Kategorie → Archetyp/Farbe (aus `ResonanceSignature`/`ResonanceArchetype`; Hex nur zur Orientierung, Token-Zuordnung siehe Mapping-Tabelle):
 economic_crisis → Der Turm `#f59e0b` · military_conflict → Der Schatten `#ef4444` · pandemic → Die Verschlingende Mutter `#a78bfa` · natural_disaster → Die Sintflut `#3b82f6` · political_upheaval → Der Umsturz `#dc2626` · tech_breakthrough → Der Prometheus `#4ade80` · cultural_shift → Das Erwachen `#e5e5e5` · environmental_disaster → Die Entropie `#22c55e`.
 
 Effektive Magnitude: `eff = min(mag × sus, 1)`, `sus` aus `SubstrateAttunement` der Welt je Signatur; `eff < 0.2` = übersprungen.
@@ -193,7 +195,7 @@ Effektive Magnitude: `eff = min(mag × sus, 1)`, `sus` aus `SubstrateAttunement`
 ## Umsetzungsreihenfolge
 
 1. `IntakeStateManager` + `IntakeSignal`-Adapter über bestehende APIs (Scanner + Browse). Rolle aus appState.
-2. `IntakeView` Shell: Topbar, Sensor-Leiste (aus `getDashboard()`), Board mit 4 Kammern, Toast. Nav-Eintrag + Admin-Tab-Mount.
+2. `IntakeView` Shell: Topbar, Sensor-Leiste (aus `getDashboard()`), Board mit 4 Kammern, Toast — **inkl. der drei Breakpoints und Container-Queries aus `schleuse-responsive.md`** (nachträglich = doppelte Arbeit). Nav-Eintrag + Admin-Tab-Mount.
 3. Schmelztiegel (ersetzt TransformationModal) inkl. Linse, Varianten, Protokoll.
 4. Quarantäne-Karte rollenabhängig, Resonanz-Modal (Hold) und Flag-Modal.
 5. Sichtung mit Story-Bündelung, Filter, Mehrfachauswahl, Tastatur, Rauschen.
@@ -203,19 +205,42 @@ Effektive Magnitude: `eff = min(mag × sus, 1)`, `sus` aus `SubstrateAttunement`
 
 ## Prototyp-Hex → Token-Mapping
 
-| Hex | Token / Bedeutung |
-|---|---|
-| `#0a0a0a` / `#111` / `#060606` / `#0d0d0d` / `#080808` | `--color-surface` / `-raised` / `-sunken` / Karten-Hintergrund (raised-2) |
-| `#333` / `#222` / `#1a1a1a` | `--color-border` / `--color-border-subtle` / Hairline |
-| `#e5e5e5` / `#a0a0a0` / `#888` / `#666` / `#555` | `--color-text` / `-secondary` / `-muted` / Label dim / disabled |
-| `#f59e0b` / `#fbbf24` / `#b45309` | `--color-accent` / hover / Rahmen primary |
-| `#4ade80` / `#22c55e` | `--color-forge` (Ereignis, „nur hier", fertig) |
-| `#3b82f6` | `--color-info` (Echo, Nachhall, Sintflut) |
-| `#ef4444` / `#dc2626` | `--color-danger` |
-| `#a68a2e` / `#3d3200` / `#f5c542` / `#0a0a08` | BureauTerminal-Palette (fix, nie themen) — Depesche, „gemeldet" |
-| `#161410` | Zeitungsausriss-Hintergrund (neu: `--color-paper-dark`) |
-| `#070907` + `rgba(74,222,128,.035)` Scanlines | Terminal-Ausgabefläche |
-| `4px 4px 0 #000` / `6px 6px 0` / `8px 8px 0` | Offset-Schatten Karte / View / Modal |
+**Alle Token-Namen unten sind gegen `src/styles/tokens/_colors.css` und `_shadows.css` geprüft (Zeilen in Klammern).** Nur diese Namen verwenden — ein `var(--…)` mit unbekanntem Namen wird still verworfen und `lint-color-tokens.sh` meldet es nicht.
+
+| Hex im Prototyp | Token (Zeile) | Verwendung in der Schleuse |
+|---|---|---|
+| `#0a0a0a` | `--color-surface` (103) | View-Hintergrund |
+| `#111111` | `--color-surface-raised` (104) / `--color-surface-overlay` (108) | Modal-Körper, Karten-Kopfzeile |
+| `#060606` | `--color-surface-sunken` (107) | Topbar, Sensor-Leiste, Kammer ④, Sichtungs-Zeile |
+| `#0d0d0d`, `#080808` | **kein Token** → `color-mix(in srgb, var(--color-surface) 70%, var(--color-surface-raised))` bzw. `--color-surface` | Karten-Hintergrund; im Zweifel `--color-surface-raised` nehmen |
+| `#333333` | `--color-border` (158) | Rahmen Karten/Buttons/Modals |
+| `#222222` | `--color-border-light` (159) | Trennlinien Board/Kammern |
+| `#1a1a1a`, `#2a2a2a` | **kein Token** → `color-mix(in srgb, var(--color-border-light) 70%, var(--color-surface))` | Hairlines in Listen, Ghost-Button „Verwerfen" |
+| `#e5e5e5` | `--color-text-primary` (113) | Fließtext, Titel, Archetyp „Das Erwachen" |
+| `#a0a0a0` | `--color-text-secondary` (114) | Abstracts, Sensor-Klasse „sozial" |
+| `#888888` | `--color-text-muted` (116) | Labels, Meta-Zeilen |
+| `#666`, `#555`, `#444` | `--color-text-tertiary` (115) bzw. `color-mix(in srgb, var(--color-text-muted) 60%, var(--color-surface))` | Dim-Labels, „übersprungen", disabled |
+| `#f59e0b` | `--color-accent-amber` (165) für Chrome/Auswahl/Quote/Archetyp „Der Turm"; `--color-primary` (9) nur, wo die Theme-Primary gemeint ist | Auswahl-Rahmen, Quarantäne-Karte, primary Buttons |
+| `#fbbf24` | `--color-accent-amber-hover` (166) | Button-Hover |
+| `#b45309` | `--color-accent-amber-dim` (= `#be5e09`, 197) | Rahmen primary Button |
+| `rgba(245,158,11,.10)` | `--color-accent-amber-glow` (198, 15 %) | Auswahl-Tint |
+| Text auf Amber-Füllung | `--color-on-accent-amber` (218) | Button-Beschriftung |
+| Amber als Text auf gethemter Fläche | `--color-accent-amber-readable` (211) | Kicker, „Öffnen →" |
+| `#4ade80` | `--color-accent-green` (234) | Ereignis „▣ nur hier", Kammer ③, Terminal-Ausgabe, Sensor „strukturiert", Archetyp „Der Prometheus" |
+| `#22c55e` | `--color-success` (84) | Rollen-Badge Architekt, Reaktions-Chip, Archetyp „Die Entropie" |
+| `#3b82f6` | `--color-info` (96) | Echo, Kammer ④, Sensor „intern", Archetyp „Die Sintflut" |
+| `#ef4444` | `--color-danger` (78) | Sensor „kein Key", eff ≥ 0.7, Archetyp „Der Schatten" |
+| `#dc2626` | `--color-danger-hover` (79) oder neuer Token `--color-arch-upheaval` | Archetyp „Der Umsturz" |
+| `#a78bfa` | `--color-epoch-influence` (`_features.css` 13) oder neuer Token `--color-arch-mother` | Sensor „semi", Archetyp „Die Verschlingende Mutter" |
+| `#a68a2e` / `#3d3200` / `#f5c542` / `#0a0a08` | **keine globalen Token** — lokal in `terminal/BureauTerminal.ts` Z. 65–67 als `--_text-dim` / `--_border` / `--_text` mit `/* lint-color-ok */`. Für Resonanz-Modal und „◈ gemeldet" dieselben Privat-Variablen im Host definieren, gleiche Kommentar-Marke | Depesche, Melden-Button |
+| `#161410` | **kein Token** → `color-mix(in srgb, var(--color-surface-raised) 90%, var(--color-accent-amber))` | Zeitungsausriss im Schmelztiegel |
+| `#070907` + Scanlines `rgba(74,222,128,.035)` | `--color-surface-sunken` + `color-mix(in srgb, var(--color-accent-green) 4%, transparent)` | Terminal-Ausgabefläche |
+| `3px 3px 0 #000` | `--shadow-sm` (`_shadows.css` 13) | primary Button in Karte |
+| `4px 4px 0 #000` | `--shadow-md` (15) | Karten, Toast, Hold-Button |
+| `6px 6px 0 #000` | `--shadow-lg` (16) | View-Rahmen |
+| `8px 8px 0 #000` | `--shadow-xl` (17) | Modals |
+
+Archetyp-Farben (8 Stück) sinnvoll als **neue** Token `--color-arch-{tower,shadow,mother,deluge,upheaval,prometheus,awakening,entropy}` in `_features.css` anlegen, jeweils auf die obigen bestehenden Token zeigend — dann bleibt `ResonanceArchetype → Farbe` an einer Stelle.
 
 Typo-Größen: Labels 9–10 px Mono, letter-spacing 1.5–2 px, uppercase · Karten-Headline Spectral 13–14.5 px · Titel Courier 700 12–16 px, tracking .08em · Quote-Zahl 36 px.
 
@@ -229,114 +254,56 @@ Typo-Größen: Labels 9–10 px Mono, letter-spacing 1.5–2 px, uppercase · Ka
 
 ---
 
-## Nachtrag (Claude Code, 02.09.2026) — Token-Tabelle korrigiert und vervollständigt
+## Nachtrag (Claude Code, 02.09.2026) — zwei Messungen, die im Plan fehlen
 
-Am Repo nachgemessen, nicht abgeschrieben. Zwei Gründe für diesen Nachtrag:
+Die Token-Tabelle oben ist inzwischen geprüft; mein früherer Nachtrag dazu ist
+damit überholt und entfällt. Zwei Dinge bleiben, weil sie gemessen und nicht
+abgeleitet sind.
 
-**1. Vier Token-Namen der Tabelle oben gibt es im Repo nicht.** Ein `var(--color-accent)`
-ohne Rückfallwert ist kein Fehler, den irgendetwas meldet — die Deklaration wird still
-verworfen und das Element erbt. Und `lint-color-tokens.sh` fängt es NICHT: das Tor prüft
-auf rohe Hex-Werte, nicht auf undefinierte Token-Namen. Der Plan liefe also durch jedes
-Tor und würde trotzdem farblos rendern.
+### 1. Die Farbpalette des Prototyps, ausgezählt
 
-| Im Plan | Existiert nicht | Richtig |
-|---|---|---|
-| `--color-accent` | ✗ | `--color-accent-amber` (165) |
-| `--color-text` | ✗ | `--color-text-primary` |
-| `--color-border-subtle` | ✗ | `--color-border-light` |
-| `--color-forge` | ✗ | **zwei** Token, siehe unten |
+38 verschiedene Hex-Werte. Die Häufigkeit sagt etwas über das Gewicht:
 
-**2. `--color-forge` wirft zwei verschiedene Grüntöne zusammen.** Im Repo sind das zwei
-Token mit zwei Bedeutungen: `--color-accent-green: #4ade80` (`_colors.css:234`,
-Plattform-Akzent, nicht themebar) und `--color-success: #22c55e` (`:84`, Statusfarbe).
-Der Prototyp benutzt `#4ade80` 36-mal und `#22c55e` 4-mal — das ist keine Ungenauigkeit
-des Prototyps, sondern genau die Unterscheidung Akzent gegen Status.
+    #f59e0b  70x   #333  64x   #e5e5e5  58x   #888  53x   #666  51x
+    #222     42x   #a0a0a0 37x  #4ade80 36x   #555  33x   #0d0d0d 18x
+    #000     18x   #3b82f6 14x  #0a0a0a 14x   #1a1a1a 12x  #060606 11x
+    #ef4444   9x   #2a2a2a  9x  #111     9x   #444   7x   #a68a2e  5x
+    #b45309   4x   #a78bfa  4x  #22c55e  4x   #777   3x   #1f3a26  3x
+    #080808   3x   … 13 weitere je 1–2x
 
-### Vollständige Tabelle (alle 38 Hex-Werte des Prototyps)
+Zwei Folgerungen daraus:
 
-| Hex | Anzahl | Token | Bedeutung |
-|---|---|---|---|
-| `#f59e0b` | 70 | `--color-accent-amber` (165) | Amber, Akzent — **nicht** `--color-primary`, siehe Warnung |
-| `#333` | 64 | `--color-border` | Rahmen |
-| `#e5e5e5` | 58 | `--color-text-primary` | Text |
-| `#888` | 53 | `--color-text-muted` | Labels |
-| `#666` | 51 | `--color-text-tertiary` | Label dim |
-| `#222` | 42 | `--color-border-light` | Hairline |
-| `#a0a0a0` | 37 | `--color-text-secondary` | Sekundärtext |
-| `#4ade80` | 36 | `--color-accent-green` | Ereignis, „nur hier", fertig |
-| `#555` | 33 | `--color-text-tertiary` (dimmer) | disabled |
-| `#0d0d0d` | 18 | `--color-surface-raised` | Kartenfläche |
-| `#000` | 18 | — | Offset-Schatten, bleibt roh |
-| `#3b82f6` | 14 | `--color-info` | Echo, Nachhall, Sintflut |
-| `#0a0a0a` | 14 | `--color-surface` | Grundfläche |
-| `#1a1a1a` | 12 | `--color-border-light` (dunkler) | leeres Quote-Segment |
-| `#060606` | 11 | `--color-surface-sunken` | vertiefte Fläche |
-| `#ef4444` | 9 | `--color-danger` | Gefahr, kein Key |
-| `#2a2a2a` | 9 | `--color-border-light` | Trennlinie in Karten |
-| `#111` | 9 | `--color-surface-raised` | Hover-Zeile |
-| `#444` | 7 | `--color-text-tertiary` | sehr dimmer Text |
-| `#a68a2e` | 5 | — | Bureau-Palette, **fix, nie themen** |
-| `#b45309` | 4 | `--color-accent-amber-dim` (196 = `#be5e09`) | Rahmen — Prototyp trägt den ALTEN Wert, am 31.08. für Kontrast angehoben |
-| `#a78bfa` | 4 | `--color-epoch-influence` | Sensorklasse „semi", Pandemie |
-| `#22c55e` | 4 | `--color-success` | Statusgrün |
-| `#777` | 3 | `--color-text-tertiary` | dim |
-| `#1f3a26` | 3 | `--color-success-bg` | Hintergrund grüner Chip |
-| `#080808` | 3 | `--color-surface-sunken` | Fläche |
-| `#fbbf24` | 2 | `--color-accent-amber-hover` (166) | Hover |
-| `#f5c542` | 2 | — | Bureau-Palette, fix |
-| `#3d3200` | 2 | — | Bureau-Palette, fix |
-| `#1f1f1f` | 2 | `--color-border-light` | Hairline |
-| `#161616` | 2 | `--color-surface-raised` | Fläche |
-| `#0a0a08` | 2 | — | Bureau-Palette, fix |
-| `#dc2626` | 1 | `--color-danger-hover` | Umsturz |
-| `#2a4a33` | 1 | `--color-success-border` | Rahmen grüner Chip |
-| `#1e3a5f` | 1 | `--color-info-border` | Rahmen blauer Chip |
-| `#161410` | 1 | neu: `--color-paper-dark` | Zeitungsausriss |
-| `#151515` | 1 | — | nur Prototyp-Seitenhintergrund, entfällt |
-| `#0b1a2e` | 1 | `--color-info-bg` | Hintergrund blauer Chip |
-| `#070907` | 1 | — | Terminal-Ausgabefläche, mit Scanlines |
+- **`#4ade80` (36x) und `#22c55e` (4x) sind nicht dieselbe Farbe.** Der Prototyp
+  trifft die Unterscheidung bereits sauber: Plattform-Akzent gegen Statusfarbe.
+- **Vier getönte Chip-Farben brauchen kein neues Token.** `#1f3a26`, `#2a4a33`,
+  `#1e3a5f`, `#0b1a2e` sind `--color-success-bg` / `-border` und
+  `--color-info-bg` / `-border` — Tier-2, per `color-mix()` aus der Statusfarbe
+  abgeleitet und damit in allen zehn Themes richtig. Ein fester Hex wäre in
+  neun davon falsch.
 
-Die vier Chip-Farben (`#1f3a26`, `#2a4a33`, `#1e3a5f`, `#0b1a2e`) brauchen **kein** neues
-Token: `--color-{success,info}-{bg,border}` sind bereits Tier-2-Token und leiten sich per
-`color-mix()` aus der Statusfarbe ab — sie passen sich damit allen zehn Themes an,
-während ein fester Hex das nicht tut.
+Wirklich neu anzulegen ist genau eines: `--color-paper-dark` (`#161410`).
 
-Neu anzulegen ist genau eines: `--color-paper-dark` (`#161410`).
+### 2. Der Zufluss ist trocken (Prod, 02.09.2026 gemessen)
 
-### Zufluss — vor Schritt 1 zu klären
+Eine Oberfläche mit vier Kammern über einem Fluss, der nicht fliesst, sieht nach
+der Abnahme so leer aus wie heute. Beide Quellen der Schleuse stehen:
 
-Die Schleuse hat zwei Quellen, und beide sind am 02.09.2026 trocken gemessen:
+- **`POST …/social-trends/browse` mit `source: guardian`** → **Cloudflare-502 in
+  580 ms**, `Content-Type: text/html`, nicht FastAPIs JSON. Dieselbe Route mit
+  `source: newsapi` → sauberes JSON 400 „NewsAPI key not configured". Die Route
+  ist also gesund; nur der Guardian-Zweig bringt den Ursprung zum Schweigen.
+  Ursache steht im Backend-Log.
+- **Scanner-Kandidaten**: `ScannerService` steht im Scheduler (Takt 6 h), hängt
+  aber am Riegel `news_scanner_enabled`. Dessen Zustand ist von aussen nicht
+  lesbar (`platform_settings` ist service_role-only).
+- **Bestand auf Prod**: 12 Trends, alle in der Welt „Velgarien", alle `guardian`,
+  alle vom 16./17.02.2026. 15 von 16 Welten haben null. Seither 197 Tage nichts.
 
-- **`browse`** antwortet mit Quelle Guardian in 580 ms mit einem **Cloudflare-502**
-  (`text/html`, nicht die JSON-Antwort von FastAPI). Mit Quelle NewsAPI kommt sauberes
-  JSON 400 „NewsAPI key not configured". Die Route selbst ist also gesund; nur der
-  Guardian-Zweig bringt den Ursprung zum Schweigen. Ursache steht im Backend-Log.
-- **Scanner-Kandidaten**: `ScannerService` steht im Scheduler (Takt 6 h), hängt aber am
-  Riegel `news_scanner_enabled`; dessen Zustand ist von aussen nicht lesbar
-  (`platform_settings` ist service_role-only).
-
-Eine Oberfläche mit vier Kammern über einem Fluss, der nicht fliesst, sieht nach der
-Abnahme so leer aus wie heute. Schritt 1 des Plans (StateManager + Adapter) ist davon
-unabhängig und kann sofort beginnen; Schritt 2 (Board) braucht Daten, um beurteilbar zu sein.
-
-### ⚠ Korrektur meiner eigenen Korrektur (02.09.2026, nach Rückmeldung aus dem Design-Lauf)
-
-Ich hatte `#f59e0b` auf `--color-primary` abgebildet. **Das war falsch, und zwar auf
-dieselbe Weise, vor der ich zwei Absätze weiter oben gewarnt habe.**
-
-`ThemeService.ts:80` bildet das Weltfeld `color_primary` auf `--color-primary` ab.
-Der Token **wechselt also pro Welt**. Die Schleuse ist eine Bureau-Fläche; ihr Amber
-soll in jeder Welt Amber bleiben. Richtig ist deshalb `--color-accent-amber` (165) —
-derselbe Wert `#f59e0b`, aber als Plattform-Akzent nicht themebar.
-
-Dasselbe gilt für die Hover- und Rahmenfarbe: `--color-accent-amber-hover` (166) statt
-`--color-primary-hover`, und `--color-accent-amber-dim` (196) statt
-`--color-primary-active`. Letzteres ist zusätzlich ein stiller Gewinn: der Prototyp
-schreibt `#b45309`, der Token steht auf `#be5e09` — am 31.08.2026 für den Kontrast
-angehoben (Kommentar in `_colors.css:168`). Wer den Token nimmt, bekommt den Fix gratis;
-wer den Hex abschreibt, holt den alten Wert zurück.
-
-**Die Lehre, doppelt belegt:** ein Token-Name kann existieren und trotzdem der falsche
-sein. `--color-primary` hätte in jedem Tor bestanden, in der Standardwelt sogar richtig
-ausgesehen — und wäre in der ersten Welt mit eigener Primärfarbe umgekippt. Ein Tor
-findet das nicht; nur die Frage „gehört diese Farbe der Welt oder der Plattform?".
+**Ein Nebenbefund, der jeden Endpunkt betrifft, nicht nur diesen:**
+`BaseApiService.handleResponse` ruft bei jeder Fehlerantwort `response.json()`.
+Kommt HTML (Cloudflare, Proxy, Gateway), wirft das, der `catch` protokolliert
+nur nach Sentry, und `errorMessage` bleibt auf dem Standardwert. Die Komponente
+zeigt dann ihren generischen Rückfalltext — im Fall der Social-View wörtlich
+„Failed to load articles" statt „502 Bad gateway". Ein Rückfall auf
+`HTTP <status>` plus die ersten Zeichen des Körpers wäre die kleinste
+Reparatur mit der grössten Reichweite.

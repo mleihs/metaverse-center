@@ -24,9 +24,9 @@
  *     davon. Die Linse benutzt deshalb die echte Union.
  */
 
-import type { EchoVector, SourceCategory } from './index.js';
-import type { BrowseArticle } from '../services/api/SocialTrendsApiService.js';
 import type { AdapterInfo, ScanCandidate } from '../services/api/ScannerApiService.js';
+import type { BrowseArticle } from '../services/api/SocialTrendsApiService.js';
+import type { EchoVector, SourceCategory } from './index.js';
 
 /**
  * Die Stufe eines Signals. Jedes Signal hat genau eine — das ist der Punkt der

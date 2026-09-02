@@ -30247,6 +30247,154 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>World key or personal key?</source>
   <target>Weltschlüssel oder eigener Schlüssel?</target>
 </trans-unit>
+<trans-unit id="sf87ed7edabb6fe46">
+  <source>structured</source>
+  <target>strukturiert</target>
+</trans-unit>
+<trans-unit id="s2d15f618d403c6c3">
+  <source>semi</source>
+  <target>semi</target>
+</trans-unit>
+<trans-unit id="se08a40f0f6141500">
+  <source>internal</source>
+  <target>intern</target>
+</trans-unit>
+<trans-unit id="s023986b8399c4f32">
+  <source>social</source>
+  <target>sozial</target>
+</trans-unit>
+<trans-unit id="seb542cb60fbeffd5">
+  <source>no key</source>
+  <target>kein Schlüssel</target>
+</trans-unit>
+<trans-unit id="s9de543933e6e703a">
+  <source>model</source>
+  <target>Modell</target>
+</trans-unit>
+<trans-unit id="scbd8031e3d026dc9">
+  <source>never</source>
+  <target>nie</target>
+</trans-unit>
+<trans-unit id="s65e72c9f4e6c597a">
+  <source><x id="0" equiv-text="${this.name}"/>, off</source>
+  <target><x id="0" equiv-text="${this.name}"/>, aus</target>
+</trans-unit>
+<trans-unit id="s8f1581f6386ff6b5">
+  <source><x id="0" equiv-text="${this.name}"/>, <x id="1" equiv-text="${this._classLabel()}"/>, <x id="2" equiv-text="${this.hits}"/> hits</source>
+  <target><x id="0" equiv-text="${this.name}"/>, <x id="1" equiv-text="${this._classLabel()}"/>, <x id="2" equiv-text="${this.hits}"/> Treffer</target>
+</trans-unit>
+<trans-unit id="sa37f23f5ea57da5a">
+  <source>Substrate monitoring</source>
+  <target>Substrat-Überwachung</target>
+</trans-unit>
+<trans-unit id="scd3ec8f912b0e960">
+  <source>Airlock</source>
+  <target>Schleuse</target>
+</trans-unit>
+<trans-unit id="se84ef5d0e5d161d1">
+  <source>Scanner active · every <x id="0" equiv-text="${hours}"/> h</source>
+  <target>Scanner aktiv · alle <x id="0" equiv-text="${hours}"/> h</target>
+</trans-unit>
+<trans-unit id="se1f7b013b66d9961">
+  <source>Scanner active</source>
+  <target>Scanner aktiv</target>
+</trans-unit>
+<trans-unit id="sa40af6116fb678ed">
+  <source>Scanner idle</source>
+  <target>Scanner ruht</target>
+</trans-unit>
+<trans-unit id="sa20c185606f42958">
+  <source>Sensors</source>
+  <target>Sensoren</target>
+</trans-unit>
+<trans-unit id="s0f60785a3fdbf2ef">
+  <source><x id="0" equiv-text="${online}"/>/<x id="1" equiv-text="${adapters.length}"/> online</source>
+  <target><x id="0" equiv-text="${online}"/>/<x id="1" equiv-text="${adapters.length}"/> online</target>
+</trans-unit>
+<trans-unit id="sbf5eb8f442ea2b0f">
+  <source>No sources reported.</source>
+  <target>Keine Quellen gemeldet.</target>
+</trans-unit>
+<trans-unit id="s9be64c43a67b8460">
+  <source>Scan now</source>
+  <target>Jetzt scannen</target>
+</trans-unit>
+<trans-unit id="scc20ef1b14a89a99">
+  <source>No scan yet</source>
+  <target>Noch kein Scan</target>
+</trans-unit>
+<trans-unit id="se05532c03d4d21b5">
+  <source>Last scan <x id="0" equiv-text="${lastScan}"/> min ago</source>
+  <target>Letzter Scan vor <x id="0" equiv-text="${lastScan}"/> min</target>
+</trans-unit>
+<trans-unit id="s8a4ffa439c72d0ea">
+  <source>Scan log</source>
+  <target>Scan-Protokoll</target>
+</trans-unit>
+<trans-unit id="s290114a3db10994e">
+  <source><x id="0" equiv-text="${metrics.scanned_today}"/> scanned · <x id="1" equiv-text="${metrics.classified_today}"/> classified · <x id="2" equiv-text="${metrics.pending_candidates}"/> waiting · <x id="3" equiv-text="${metrics.resonances_today}"/> resonances today</source>
+  <target><x id="0" equiv-text="${metrics.scanned_today}"/> gescannt · <x id="1" equiv-text="${metrics.classified_today}"/> eingeordnet · <x id="2" equiv-text="${metrics.pending_candidates}"/> warten · <x id="3" equiv-text="${metrics.resonances_today}"/> Resonanzen heute</target>
+</trans-unit>
+<trans-unit id="s05b1767943a77955">
+  <source>No figures yet.</source>
+  <target>Noch keine Zahlen.</target>
+</trans-unit>
+<trans-unit id="s2cd153a2bb1fcc82">
+  <source>Daily quota</source>
+  <target>Tagesquote</target>
+</trans-unit>
+<trans-unit id="s9c914da65da37d4c">
+  <source>Daily quota · admitted to this world</source>
+  <target>Tagesquote · Einlass in diese Welt</target>
+</trans-unit>
+<trans-unit id="sab6a7f57b2303a10">
+  <source><x id="0" equiv-text="${used}"/> of <x id="1" equiv-text="${total}"/> events admitted today</source>
+  <target><x id="0" equiv-text="${used}"/> von <x id="1" equiv-text="${total}"/> Ereignissen heute eingelassen</target>
+</trans-unit>
+<trans-unit id="s5bd6bf34f8e0efee">
+  <source>Resonances do not count towards the quota.</source>
+  <target>Resonanzen zählen nicht auf die Quote.</target>
+</trans-unit>
+<trans-unit id="s19f8e21fef08fb25">
+  <source>Subscriptions</source>
+  <target>Abonnements</target>
+</trans-unit>
+<trans-unit id="s3b1bdb3f55f755d0">
+  <source>Not wired yet – the backend has no subscriptions.</source>
+  <target>Noch nicht angeschlossen – das Backend kennt keine Abonnements.</target>
+</trans-unit>
+<trans-unit id="scd6244f23b7ae8af">
+  <source>1 Entrance · admitted</source>
+  <target>1 Eingang · aufgenommen</target>
+</trans-unit>
+<trans-unit id="sd5da64ab476e3d4d">
+  <source>Nothing admitted yet. Pick from triage, or let a subscription fill it.</source>
+  <target>Noch nichts aufgenommen. Wähle in der Sichtung, oder lass ein Abonnement nachfüllen.</target>
+</trans-unit>
+<trans-unit id="sec8e9771de2e9b6a">
+  <source>2 Quarantine · decide its fate</source>
+  <target>2 Quarantäne · Schicksal entscheiden</target>
+</trans-unit>
+<trans-unit id="s6b0b0f455d6607a0">
+  <source>Quarantine is empty. The next scan cycle will bring more.</source>
+  <target>Die Quarantäne ist leer. Der nächste Scan-Zyklus liefert nach.</target>
+</trans-unit>
+<trans-unit id="s9c2fbf1c11cc7af9">
+  <source>3 Released · resonances and events</source>
+  <target>3 Freigegeben · Resonanzen und Ereignisse</target>
+</trans-unit>
+<trans-unit id="s2463e664577335bb">
+  <source>Nothing released yet.</source>
+  <target>Noch nichts freigegeben.</target>
+</trans-unit>
+<trans-unit id="sd2ddb558b8de63cc">
+  <source>4 Aftermath · what it set off</source>
+  <target>4 Nachhall · was es auslöste</target>
+</trans-unit>
+<trans-unit id="s8e9d2f6b5aa2677c">
+  <source>No aftermath recorded. Echoes and impacts appear here.</source>
+  <target>Kein Nachhall verzeichnet. Echos und Wirkungen erscheinen hier.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

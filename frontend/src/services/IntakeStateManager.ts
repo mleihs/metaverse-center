@@ -18,16 +18,16 @@
  */
 
 import { computed, signal } from '@preact/signals-core';
-import { scannerApi, socialTrendsApi } from './api/index.js';
-import type { AdapterInfo, ScanCandidate, ScannerDashboard } from './api/ScannerApiService.js';
-import { appState } from './AppStateManager.js';
-import { captureError } from './SentryService.js';
 import {
-  type IntakeSignal,
-  type IntakeStage,
   fromBrowseArticle,
   fromScanCandidate,
+  type IntakeSignal,
+  type IntakeStage,
 } from '../types/intake.js';
+import { appState } from './AppStateManager.js';
+import { scannerApi, socialTrendsApi } from './api/index.js';
+import type { AdapterInfo, ScanCandidate, ScannerDashboard } from './api/ScannerApiService.js';
+import { captureError } from './SentryService.js';
 
 /** Wer die Schleuse bedient. Bestimmt, welche Übergänge erlaubt sind. */
 export type IntakeRole = 'architect' | 'admin';
