@@ -46,7 +46,8 @@ class SeoService {
    * des Dispatch-Terminals, nur andersherum.
    */
   private _applyTitle(): void {
-    const parts = typeof this._titleSource === 'function' ? this._titleSource() : (this._titleSource ?? []);
+    const parts =
+      typeof this._titleSource === 'function' ? this._titleSource() : (this._titleSource ?? []);
     document.title = parts.length === 0 ? DEFAULT_TITLE : `${parts.join(' – ')} | ${SITE_NAME}`;
     this._setMetaProperty('og:title', document.title);
     this._setMeta('twitter:title', document.title);
