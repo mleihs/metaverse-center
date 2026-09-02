@@ -51,6 +51,7 @@ import './DungeonMap.js';
 import './DungeonPartyPanel.js';
 import './DungeonAudioSettings.js';
 import './DungeonQuickActions.js';
+import './VelgDungeonDebrief.js';
 
 @localized()
 @customElement('velg-dungeon-terminal-view')
@@ -612,6 +613,7 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
    *  the command pipeline via _handleTerminalCommand. */
   private _renderHUD(simulationId: string) {
     const inCombat = dungeonState.isInCombat.value;
+    const verteilt = dungeonState.clientState.value?.phase === 'distributing';
 
     return html`
       <div class="dungeon-hud" @terminal-command=${this._handleTerminalCommand} @toggle-audio-settings=${this._openAudioDialog}>
@@ -631,10 +633,16 @@ export class VelgDungeonTerminalView extends SignalWatcher(LitElement) {
           <velg-dungeon-map persistent></velg-dungeon-map>
         </div>
         <div class="dungeon-hud__actions" role="toolbar" aria-label=${msg('Actions')}>
+          <!-- Die Verteilung bekommt die Flaeche, nicht eine Knopfreihe darin.
+               Beide Ansichten haengen dieselbe Komponente ein: eine Buehne nur
+               im Terminal waere derselbe Gleichstands-Bruch, den die Sitzung
+               vom 29.08. zwischen den zwei Oberflaechen beseitigt hat. -->
           ${
             inCombat
               ? html`<velg-dungeon-combat-bar></velg-dungeon-combat-bar>`
-              : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
+              : verteilt
+                ? html`<velg-dungeon-debrief></velg-dungeon-debrief>`
+                : html`<velg-dungeon-quick-actions></velg-dungeon-quick-actions>`
           }
         </div>
       </div>
