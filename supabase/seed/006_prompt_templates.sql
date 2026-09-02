@@ -629,6 +629,13 @@ Antworte auf {locale_name}.',
 -- aendert, trifft auf einer frischen Datenbank null Zeilen, und die Saat schreibt
 -- danach den alten Stand. Der Fix waere dort unsichtbar wirkungslos.
 -- Gemessen: mit Linse und cap 400 endet der Aufruf auf finish_reason=length.
+--
+-- ⚠ Der Text muss BYTEWEISE mit der Migration uebereinstimmen, nicht sinngemaess.
+-- Der erste Rueckport liess ZWEI Leerzeilen stehen (nach der Einleitungszeile
+-- und nach dem Inhalt), die die Migration nicht setzt — +2 Zeichen je Sprache.
+-- `lint-seed-carries-migration-effects.sh` vergleicht die Werte, und das zu
+-- Recht: der Prompt geht so ins Modell, wie er dasteht. Keine Leerzeilen hier
+-- hinzufuegen, ohne die Migration mitzuaendern.
 INSERT INTO prompt_templates (
     simulation_id, template_type, prompt_category, locale, template_name,
     prompt_content, system_prompt, variables, default_model,
@@ -636,10 +643,8 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'news_transformation', 'social', 'en', 'News Transformation (EN)',
     'Transform this real-world news article into the narrative of "{simulation_name}":
-
 Title: {news_title}
 Content: {news_content}
-
 Rewrite the article as if it happened in the simulation world.
 Maintain the core facts but adapt names, places, and context.{lens_directives}
 Generate a JSON object with: "title", "description", "event_type", "impact_level" (1-10).
@@ -657,10 +662,8 @@ INSERT INTO prompt_templates (
 ) VALUES (
     NULL, 'news_transformation', 'social', 'de', 'Nachrichten-Transformation (DE)',
     'Transformiere diesen realen Nachrichtenartikel in die Erzählung von "{simulation_name}":
-
 Titel: {news_title}
 Inhalt: {news_content}
-
 Schreibe den Artikel um, als ob er in der Simulationswelt stattgefunden hätte.
 Behalte die Kernfakten bei, passe aber Namen, Orte und Kontext an.{lens_directives}
 Generiere ein JSON-Objekt mit: "title", "description", "event_type", "impact_level" (1-10).
