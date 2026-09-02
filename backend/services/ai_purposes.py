@@ -87,7 +87,9 @@ __all__ = [
 # why each one is not simply `default`. No count is written here on purpose —
 # the sentence used to say "the four, plus forecast" and was wrong twice over
 # by the time anyone read it again.
-ModelKey = Literal["default", "fallback", "forge", "research", "forecast", "classify", "dispatch"]
+ModelKey = Literal[
+    "default", "fallback", "forge", "research", "forecast", "classify", "dispatch", "chat"
+]
 
 # `auto` means "send nothing, the model decides". Deliberately distinct from
 # `off`, which sends {"enabled": false} and suppresses thinking outright.
@@ -135,6 +137,26 @@ def _purpose(
 # default argument put them there; writing that down changes no behaviour and
 # makes the next change a decision instead of an accident.
 _PURPOSES: Final[tuple[AIPurpose, ...]] = (
+    _purpose(
+        "chat_response",
+        "chat",
+        1400,
+        60,
+        reasoning="off",
+        why=(
+            "Der Gespraechszug eines Agenten. 1 400 Token sind rund 1 000 deutsche "
+            "Woerter — lang genug fuer eine ausgefuehrte Antwort, kurz genug, dass "
+            "sie ein Gespraechszug bleibt. 2 500 waeren ein Aufsatz, und sie "
+            "kollidieren mit `_CONTEXT_RESERVE = 5000`, das sich System-Prompt "
+            "UND Antwort teilen: Persona, Erinnerungen, Beziehungen und Stimmung "
+            "tragen dort oft schon 2 000+. "
+            "reasoning=off ist keine Kostenfrage allein — `_sanitize_response` "
+            "entfernt heute `<think>`-Bloecke aus Antworten, durchgesickerte "
+            "Gedankenketten waren also ein TATSAECHLICHES Problem. Abschalten "
+            "beseitigt die Ursache statt das Symptom. Fuer Charakter-Rollenspiel "
+            "traegt Nachdenken ohnehin nichts zur Personentreue bei."
+        ),
+    ),
     _purpose(
         "research",
         "research",

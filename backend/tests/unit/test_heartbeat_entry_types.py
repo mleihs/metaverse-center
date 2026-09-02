@@ -33,12 +33,28 @@ from pathlib import Path
 from backend.services.heartbeat_entry_builder import HEARTBEAT_ENTRY_TYPES
 
 _BACKEND = Path(__file__).resolve().parents[2]
-_MIGRATION = (
-    Path(__file__).resolve().parents[3]
-    / "supabase"
-    / "migrations"
-    / "20260830200000_285_heartbeat_bond_whisper_entry_type.sql"
-)
+def _current_check_migration() -> Path:
+    """Die ZULETZT gültige CHECK-Definition, nicht eine bestimmte.
+
+    ⚠ Hier stand ein fester Pfad auf Migration 285. Das band das Tor an einen
+    ZEITPUNKT statt an einen ZUSTAND: die nächste Migration, die den CHECK
+    erweitert (343, `memory_reflection`), machte den Test rot, obwohl Code,
+    Deklaration und Datenbank übereinstimmten. Ein Tor, das bei jeder korrekten
+    Erweiterung rot wird, wird irgendwann abgeschaltet statt gelesen.
+
+    Maßgeblich ist die JÜNGSTE Migration, die den CHECK setzt — sie ist die,
+    die in der Datenbank steht.
+    """
+    ordner = Path(__file__).resolve().parents[3] / "supabase" / "migrations"
+    kandidaten = sorted(
+        f
+        for f in ordner.glob("*.sql")
+        if "ADD CONSTRAINT heartbeat_entries_entry_type_check" in f.read_text(encoding="utf-8")
+    )
+    assert kandidaten, "keine Migration setzt heartbeat_entries_entry_type_check"
+    return kandidaten[-1]
+
+
 
 # `entry_type` is the FOURTH POSITIONAL parameter of make_heartbeat_entry.
 # The first version of this scan looked for a dict key and a keyword argument,
@@ -131,13 +147,13 @@ def test_every_declared_entry_type_is_emitted() -> None:
 
 def test_the_check_constraint_matches_the_declaration() -> None:
     """The database is the thing that actually refuses a row."""
-    assert _MIGRATION.is_file(), f"migration 285 not found at {_MIGRATION}"
-    sql = _MIGRATION.read_text(encoding="utf-8")
+    migration = _current_check_migration()
+    sql = migration.read_text(encoding="utf-8")
     body = sql[sql.index("ADD CONSTRAINT heartbeat_entries_entry_type_check") :]
     in_check = re.findall(r"'([a-z_]+)'", body)
 
     assert set(in_check) == set(HEARTBEAT_ENTRY_TYPES), (
-        "migration 285's CHECK and HEARTBEAT_ENTRY_TYPES disagree.\n"
+        f"{migration.name}: CHECK und HEARTBEAT_ENTRY_TYPES stimmen nicht überein.\n"
         f"  only in the CHECK:       {sorted(set(in_check) - set(HEARTBEAT_ENTRY_TYPES))}\n"
         f"  only in the declaration: {sorted(set(HEARTBEAT_ENTRY_TYPES) - set(in_check))}"
     )

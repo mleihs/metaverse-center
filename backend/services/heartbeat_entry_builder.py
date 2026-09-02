@@ -53,6 +53,10 @@ HEARTBEAT_ENTRY_TYPES: Final[tuple[str, ...]] = (
     # Added 2026-08-30 (migration 285). Emitted by `HeartbeatService` phase 10
     # since the Agent Bonds work; the CHECK never learned it.
     "bond_whisper",
+    # Added 2026-09-02 (Migration 343). Phase 9.7: ein Agent verdichtet, was er
+    # gesehen hat, zu einer Einsicht. Vorher lief die Verdichtung an keinem
+    # Tick — fuenf Verdichtungen gegen 300 Beobachtungen auf Prod.
+    "memory_reflection",
 )
 
 

@@ -125,6 +125,42 @@ class OpenRouterService:
         self.api_key = api_key or settings.openrouter_api_key
         self.last_usage: dict | None = None  # Set after each generate() call
 
+    @staticmethod
+    def _sampling(
+        *,
+        top_p: float | None,
+        frequency_penalty: float | None,
+        presence_penalty: float | None,
+        reasoning: dict[str, object] | None,
+    ) -> dict[str, object]:
+        """Die Regler, die nur mitgehen, wenn sie gesetzt sind.
+
+        WARUM NICHT MIT VORGABEWERTEN
+        Ein nicht gesendeter Parameter heisst „das Modell entscheidet"; ein
+        gesendeter Vorgabewert heisst „ich habe entschieden, und zwar so".
+        Das ist nicht dasselbe, und OpenRouter reicht beides unterschiedlich an
+        die Anbieter weiter. `None` sendet nichts.
+
+        ⚠ `temperature` UND `top_p` zugleich zu drehen ist gaengige Praxis im
+        Rollenspiel, aber nicht sauber: sie wirken multiplikativ, man weitet
+        erst und verengt dann. Wer beide setzt, sollte wissen, dass er die
+        Wirkung nicht mehr einzeln nachrechnen kann.
+
+        ⚠ `frequency_penalty` bestraft nach HAEUFIGKEIT und trifft damit auch
+        Eigennamen — bei hohen Werten hoert ein Agent auf, seinen eigenen Namen
+        zu sagen. Werte um 0,15 sind unbedenklich.
+        """
+        extra: dict[str, object] = {}
+        if top_p is not None:
+            extra["top_p"] = top_p
+        if frequency_penalty is not None:
+            extra["frequency_penalty"] = frequency_penalty
+        if presence_penalty is not None:
+            extra["presence_penalty"] = presence_penalty
+        if reasoning is not None:
+            extra["reasoning"] = reasoning
+        return extra
+
     async def generate(
         self,
         model: str,
@@ -132,6 +168,10 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        top_p: float | None = None,
+        frequency_penalty: float | None = None,
+        presence_penalty: float | None = None,
+        reasoning: dict[str, object] | None = None,
         budget: BudgetContext | None = None,
     ) -> str:
         """Generate text using the specified model.
@@ -170,6 +210,12 @@ class OpenRouterService:
             "messages": messages,
             "temperature": temperature,
             "max_tokens": max_tokens,
+            **self._sampling(
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                reasoning=reasoning,
+            ),
         }
 
         headers = {
@@ -295,6 +341,10 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        top_p: float | None = None,
+        frequency_penalty: float | None = None,
+        presence_penalty: float | None = None,
+        reasoning: dict[str, object] | None = None,
         budget: BudgetContext | None = None,
     ) -> str:
         """Convenience method: generate with system + user message.
@@ -310,6 +360,10 @@ class OpenRouterService:
             messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            top_p=top_p,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty,
+            reasoning=reasoning,
             budget=budget,
         )
 
@@ -320,6 +374,10 @@ class OpenRouterService:
         *,
         temperature: float = 0.7,
         max_tokens: int = 1024,
+        top_p: float | None = None,
+        frequency_penalty: float | None = None,
+        presence_penalty: float | None = None,
+        reasoning: dict[str, object] | None = None,
         budget: BudgetContext | None = None,
     ) -> AsyncIterator[StreamChunk]:
         """Stream text generation token-by-token via SSE.
@@ -348,6 +406,12 @@ class OpenRouterService:
             "temperature": temperature,
             "max_tokens": max_tokens,
             "stream": True,
+            **self._sampling(
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                reasoning=reasoning,
+            ),
         }
 
         headers = {

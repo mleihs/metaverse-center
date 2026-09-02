@@ -253,7 +253,11 @@ class TestPurposeMapping:
     def test_any_other_purpose_maps_to_model_default(self):
         platform_model_config._cache = {"model_default": "x/default"}
         with _patch_env("production"):
-            for purpose in ("agent_description", "chat_response", "event_generation", "anything"):
+            # `chat_response` stand hier bis 02.09.2026 als Beispiel fuer einen
+            # UNdeklarierten Zweck. Er ist seither deklariert (model_key "chat",
+            # v4-flash) und faellt deshalb nicht mehr auf model_default zurueck —
+            # das Beispiel war veraltet, nicht die Regel.
+            for purpose in ("agent_description", "event_generation", "anything"):
                 assert get_platform_model(purpose) == "x/default"
 
 

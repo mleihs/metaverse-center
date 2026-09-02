@@ -99,6 +99,9 @@ HEARTBEAT_OVERRIDE_KEYS: Final[dict[str, str]] = {
     "autonomy_social_interaction_rate": "heartbeat",
     # BondSettingsPanel (category='bonds')
     "bond_whisper_budget": "bonds",
+    # Phase 9.7 — wie viele Agenten je Tick hoechstens verdichten duerfen.
+    # Ein Modellaufruf je Agent, deshalb gehoert die Grenze zum Herzschlag.
+    "reflection_budget": "heartbeat",
 }
 
 
