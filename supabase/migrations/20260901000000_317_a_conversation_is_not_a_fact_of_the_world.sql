@@ -127,9 +127,24 @@ BEGIN
   SELECT count(*) INTO v_gespraeche  FROM chat_conversations;
   SELECT count(*) INTO v_nachrichten FROM chat_messages;
 
+  -- NACHTRAG 02.09.2026: NOTICE statt EXCEPTION — und der Unterschied ist fein.
+  --
+  -- Der Satz oben ist richtig: auf leeren Tabellen bestuende jede Sperre, eine
+  -- leer bestandene Messung ist keine bestandene. Der Autor kannte die Falle
+  -- also und hat sich gegen das stille Durchwinken entschieden. Nur ist die
+  -- Folge, dass die Migration auf einer FRISCHEN Datenbank nicht laufen kann —
+  -- die Saat kommt nach den Migrationen, `chat_conversations` ist dort leer,
+  -- und der CI-Lauf bricht ab. Sechster Fall dieser Bauart nach 299, 305, 309,
+  -- 311 und 314.
+  --
+  -- Beides ist zu haben. "Ich konnte nicht messen" ist eine andere Aussage als
+  -- "ich habe gemessen und es war gut" — sie muss nur AUSGESPROCHEN werden,
+  -- und dafuer ist NOTICE da. Die Zusicherung darueber (vier
+  -- eigentuemergebundene Richtlinien, keine anonyme) ist strukturell, gilt auf
+  -- jeder Datenbank und traegt die Migration allein.
   IF v_gespraeche = 0 OR v_nachrichten = 0 THEN
-    RAISE EXCEPTION
-      'Nichts zu verbergen (% Gespräche, % Nachrichten) — die Messung wäre leer bestanden',
+    RAISE NOTICE
+      'Migration 317: nichts zu verbergen (% Gespräche, % Nachrichten) — die Wirkprobe ist AUSGESETZT, nicht bestanden (frische Datenbank?)',
       v_gespraeche, v_nachrichten;
   END IF;
 
