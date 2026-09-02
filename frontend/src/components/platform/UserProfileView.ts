@@ -150,6 +150,30 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       min-width: 0;
     }
 
+    /* Adresse und Anzeigename nebeneinander, sobald die Blattfläche es
+       hergibt. Untereinander bekam ein einzeiliges Eingabefeld die volle
+       Breite der Bühne — über tausend Pixel für eine E-Mail-Adresse. */
+    @container (min-width: 720px) {
+      .grid__main .field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .grid__main {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+        gap: 0 var(--space-6);
+        align-items: start;
+      }
+
+      /* Kennwort und die Aktionszeile laufen über beide Spalten — sie
+         gehören zur Akte als Ganzes, nicht zu einem der beiden Felder. */
+      .grid__main > .field:nth-of-type(n + 3),
+      .grid__main > .actions {
+        grid-column: 1 / -1;
+      }
+    }
+
     .single__head {
       display: flex;
       justify-content: flex-end;
@@ -924,13 +948,29 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
    * Eine Aktennummer, die aus der Kennung folgt statt aus einem Zähler.
    *
    * Sie hat keine Bedeutung im Datenbestand — sie ist ein Wiedererkennungs-
-   * zeichen für den Menschen, der zwei Akten nebeneinander hat. Deshalb aus
-   * den ersten Zeichen der UUID abgeleitet und nicht gespeichert: eine
-   * gespeicherte Nummer müsste vergeben, geprüft und migriert werden, und
-   * niemand hätte etwas davon.
+   * zeichen für den Menschen, der zwei Akten nebeneinander hat. Deshalb
+   * abgeleitet und nicht gespeichert: eine gespeicherte Nummer müsste
+   * vergeben, geprüft und migriert werden, und niemand hätte etwas davon.
+   *
+   * ⚠ Die erste Fassung nahm die ersten acht Zeichen der UUID. Auf Produktion
+   * las sie sich als `P-0000-0000` — das Konto des Plattform-Admins trägt eine
+   * von Hand gesetzte Kennung (`00000000-…-0001`), und jede aus einer
+   * Migration stammende Zeile tut das ähnlich. Ein Wiedererkennungszeichen,
+   * das für mehrere Menschen gleich aussieht, erkennt nichts wieder.
+   *
+   * Deshalb über die GANZE Kennung gemischt: jedes Zeichen geht ein, also
+   * unterscheidet die Nummer auch Kennungen, die sich nur am Ende
+   * unterscheiden. Es ist keine Prüfsumme und soll keine sein — sie muss nur
+   * gleichmässig streuen und für dieselbe Person immer gleich ausfallen.
    */
   private _fileNumber(id: string): string {
-    return `P-${id.slice(0, 4).toUpperCase()}-${id.slice(4, 8).toUpperCase()}`;
+    let hash = 0x811c9dc5;
+    for (const ch of id.replace(/-/g, '')) {
+      hash ^= ch.charCodeAt(0);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    const mark = hash.toString(36).toUpperCase().padStart(7, '0').slice(-7);
+    return `P-${mark.slice(0, 3)}-${mark.slice(3)}`;
   }
 
   private _renderIdentity() {
