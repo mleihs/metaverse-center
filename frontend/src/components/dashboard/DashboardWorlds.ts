@@ -73,7 +73,7 @@ export class VelgDashboardWorlds extends LitElement {
          den Schrumpfschutz. */
       .layout {
         display: grid;
-        grid-template-columns: 1fr 620px;
+        grid-template-columns: minmax(0, 1fr) var(--dashboard-aside, 620px);
         gap: var(--space-12);
         align-items: stretch;
       }
@@ -461,12 +461,6 @@ export class VelgDashboardWorlds extends LitElement {
         color: var(--color-accent-amber);
       }
 
-      @media (min-width: 1920px) {
-        .layout {
-          grid-template-columns: 1fr 760px;
-        }
-      }
-
       @media (max-width: 1024px) {
         .layout {
           grid-template-columns: 1fr;
@@ -515,7 +509,19 @@ export class VelgDashboardWorlds extends LitElement {
               <span class="row__titleline">
                 <span class="row__name">${msg('Fracture a New Shard')}</span>
               </span>
-              <p class="row__desc">${msg('One sentence in. A civilization out.')}</p>
+              <!--
+                Hier stand „One sentence in. A civilization out." — auf Deutsch
+                „Ein Satz hinein. Eine Zivilisation heraus." Das ist die
+                Rhythmik eines Werbespruchs und nicht die Stimme dieses Hauses.
+                Der Knopf darueber trifft sie („Eine neue Scherbe brechen"),
+                und die Forge spricht sonst trocken und behoerdlich: „Das
+                Bureau konnte die Bestellung nicht annehmen." Ein Slogan
+                verspricht ein Ergebnis; das Bureau nimmt eine Bestellung an
+                und uebernimmt keine Gewaehr fuer das, was daraus wird.
+              -->
+              <p class="row__desc">
+                ${msg('The Bureau asks for one sentence. What grows from it does not ask you again.')}
+              </p>
             </span>
             <span class="row__meta"></span>
           </button>
