@@ -20,6 +20,22 @@
  * Only backticks are rejected. `${...}` interpolation is legal and used in
  * several components, so it is left alone.
  *
+ * ── 02.09.2026: DASSELBE IN html`…`, UND DAS TOR SAH ES NICHT ───────────────
+ *
+ * Ein Kommentar in einem lit-html-Template hat dieselbe Falle:
+ *
+ *     <!-- die Uebersicht stand in `social/SocialTrendsView.ts` -->
+ *
+ * Der Backtick beendet auch hier das Template. Das Tor prüfte nur `css`, meldete
+ * PASS, und die Datei war trotzdem kaputt — ein Messgerät, das eine ANDERE Frage
+ * beantwortet als die, die man ihm stellt. Es prüft jetzt beide Formen.
+ *
+ * Für HTML ist die Regel einfacher als für CSS: gesucht wird direkt nach
+ * `<!-- … -->`. In einer .ts-Datei steht ein HTML-Kommentar praktisch immer in
+ * einem lit-Template, und die Suche braucht deshalb keine Template-Verfolgung —
+ * was gut ist, denn html-Templates schachteln sich (`${x.map(() => html`…`)}`)
+ * und wären mit demselben Vorwärtslauf wie bei CSS nicht verlässlich zu lesen.
+ *
  * Invoked by lint-no-backtick-in-css.sh (which anchors the working directory).
  */
 
@@ -99,19 +115,53 @@ function findViolations(text) {
   return violations;
 }
 
+/**
+ * Stray backticks inside `<!-- … -->` comments.
+ *
+ * The HTML half of the same trap. No template tracking: an HTML comment inside a
+ * .ts file is a lit template comment, and nested html templates make a
+ * forward scan unreliable anyway.
+ */
+function findHtmlCommentViolations(text) {
+  const violations = [];
+  const lineOf = (index) => text.slice(0, index).split('\n').length;
+
+  let i = 0;
+  while (i < text.length) {
+    const start = text.indexOf('<!--', i);
+    if (start === -1) break;
+    const end = text.indexOf('-->', start + 4);
+    if (end === -1) break;
+
+    const region = text.slice(start, end);
+    let at = region.indexOf('`');
+    while (at !== -1) {
+      const abs = start + at;
+      violations.push({ line: lineOf(abs), text: text.split('\n')[lineOf(abs) - 1].trim() });
+      at = region.indexOf('`', at + 1);
+    }
+    i = end + 3;
+  }
+  return violations;
+}
+
 const files = collect('src');
 const found = [];
 for (const file of files) {
   const text = readFileSync(file, 'utf8');
-  if (!text.includes('css`')) continue;
-  for (const v of findViolations(text)) found.push({ file, ...v });
+  if (text.includes('css`')) {
+    for (const v of findViolations(text)) found.push({ file, ...v });
+  }
+  if (text.includes('<!--')) {
+    for (const v of findHtmlCommentViolations(text)) found.push({ file, ...v });
+  }
 }
 
 // One comment often carries several backticks; the line is the useful unit.
 const unique = [...new Map(found.map((v) => [`${v.file}:${v.line}`, v])).values()];
 
 if (unique.length > 0) {
-  console.error('ERROR: stray backtick inside a css template literal.');
+  console.error('ERROR: stray backtick inside a css`…` template or an <!-- … --> comment.');
   console.error('A backtick ENDS the template; everything after it parses as JavaScript.');
   console.error('');
   for (const v of unique) console.error(`  ${v.file}:${v.line}: ${v.text}`);
@@ -124,4 +174,6 @@ if (unique.length > 0) {
   process.exit(1);
 }
 
-console.log(`PASS: no stray backticks inside css template literals (${files.length} files).`);
+console.log(
+  `PASS: no stray backticks inside css templates or html comments (${files.length} files).`,
+);

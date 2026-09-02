@@ -104,7 +104,12 @@ describe('no display site walks past the dictionary again', () => {
    */
   const ALLOWED: Record<string, number> = {
     'components/buildings/BuildingCard.ts': 1,
-    'components/social/SocialTrendsView.ts': 1,
+    // 02.09.2026 VERSCHOBEN, nicht dazugekommen: die diplomatische Übersicht
+    // zog aus `social/SocialTrendsView.ts` nach `embassies/EmbassiesPanel.ts`
+    // um (Schritt 8 der Schleuse). Derselbe Aufruf, derselbe Grund — er
+    // verschönert `t(partner.building, 'building_type')`, also einen Wert, der
+    // seine Übersetzung selbst mitbringt.
+    'components/embassies/EmbassiesPanel.ts': 1,
     'components/forge/forge-card-data.ts': 3,
     'components/forge/VelgForgeCeremony.ts': 1,
   };
