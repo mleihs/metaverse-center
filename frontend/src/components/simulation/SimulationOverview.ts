@@ -7,7 +7,13 @@ import type { ForgeLoreSection } from '../../services/api/ForgeApiService.js';
 import { agentsApi, buildingsApi } from '../../services/api/index.js';
 import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
-import type { Agent, AgentAptitude, Building, OperativeType } from '../../types/index.js';
+import type {
+  Agent,
+  AgentAptitude,
+  AptitudeSet,
+  Building,
+  OperativeType,
+} from '../../types/index.js';
 import { conditionVariant } from '../../utils/building-condition.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
@@ -26,6 +32,7 @@ import {
 } from '../lore/lore-content.js';
 import { markerSelectionStyles } from '../shared/marker-styles.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import { stripLayout } from './overview-strip.js';
 import '../shared/VelgGameCard.js';
 import '../shared/LoadingState.js';
 import '../shared/ErrorState.js';
@@ -41,10 +48,6 @@ import '../shared/ErrorState.js';
  */
 const FETCH_LIMIT = 60;
 
-/** How many operatives the roster strip deals before it sends the reader on. */
-const ROSTER_LIMIT = 8;
-/** How many buildings the footprint strip shows before it sends the reader on. */
-const FOOTPRINT_LIMIT = 8;
 /** The rail's duty list — three is a shift, not a ranking table. */
 const ON_DUTY_LIMIT = 3;
 
@@ -68,6 +71,16 @@ interface RosterEntry {
   sum: number;
   best: { type: OperativeType; value: number };
   legendary: boolean;
+  /**
+   * Die sechs Eignungen, wie sie auf der Akte stehen.
+   *
+   * Sie wurden hier schon immer aus `_aptitudes` gelesen — 54 Zeilen fuer
+   * neun Agenten auf Velgarien, gemessen — aber nur zu Summe und Bestwert
+   * verrechnet und dann weggeworfen. Die Karte kann sie als Pips zeigen und
+   * bekam sie nie. Der einzige Ort, an dem die Karte sagen koennte, WORIN
+   * jemand gut ist, blieb leer, waehrend die Zahlen daneben lagen.
+   */
+  aptitudes: AptitudeSet;
 }
 
 @localized()
@@ -101,11 +114,41 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
     /* ── Layout ──────────────────────────────────────────────────────── */
 
+    /*
+      Die Streifen stehen NEBEN der Schiene, nicht darunter.
+      
+      Vorher lag das Gitter (Akte links, Schiene rechts) fuer sich, und
+      Kader und Baubestand kamen als eigene Reihen darunter. Die Reihenhoehe
+      des Gitters bestimmt aber die hoehere der beiden Spalten, und Kinder
+      eines Gitters werden per Voreinstellung gedehnt. Auf Velgarien gemessen
+      (31.08.2026 gebaute Welt, ohne philosophischen Anker, also nur EIN Feld
+      in der linken Spalte):
+
+          linke Spalte, Inhalt   240 px
+          linke Spalte, Kasten   468 px
+          Schiene                468 px  (172 + 28 + 268)
+          Gitterluecke            40 px
+          -> 268 px Loch zwischen "Dossier oeffnen" und "Kader"
+
+      Das war kein Abstandsfehler, sondern eine Struktur, in der links nichts
+      mehr kam. Ein "align-items: start" haette die Spalte schrumpfen lassen und
+      das Loch stehen gelassen: die Reihe ist so hoch wie die Schiene, egal
+      wie kurz die Spalte ist. Nur Inhalt, der dort weiterlaeuft, schliesst es.
+
+      Betroffen sind alle Welten ohne Anker; die mit Anker hatten zwei Felder
+      links und damit zufaellig kein Loch. Ein Fehler, der von den Daten der
+      Welt abhing, nicht vom Bauteil.
+    */
     .overview {
       display: grid;
       grid-template-columns: minmax(0, 1fr) var(--_rail-width);
       gap: var(--space-10);
       padding-block: var(--space-10);
+      align-items: start;
+    }
+
+    .main {
+      min-width: 0;
     }
 
     @media (max-width: 1100px) {
@@ -114,8 +157,10 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       }
     }
 
+    /* Kein "stage-container" mehr: der Streifen liegt jetzt INNERHALB eines,
+       und zwei Rinnen uebereinander sind eine zu viel. */
     .strip {
-      padding-block-end: var(--space-12);
+      padding-block-start: var(--space-10);
     }
 
     /* ── Shared card chrome ──────────────────────────────────────────── */
@@ -553,6 +598,24 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
   @property({ type: String }) simulationId = '';
 
+  /**
+   * Die gemessene Breite der Streifenspalte.
+   *
+   * Der Streifen zeigte bisher acht Karten in `sm` (120 px), also in der
+   * Groesse, in der `<velg-game-card>` den Untertitel auf 8 px, das Abzeichen
+   * auf 6 px und die Pip-Beschriftung auf `display: none` setzt — lesbar ist
+   * das nicht. `md` (200 px) zeigt alles in voller Groesse, passt aber nicht
+   * achtmal nebeneinander. Statt eine Zahl zu raten, die nur auf einem
+   * Bildschirm stimmt, misst der Streifen seine Spalte und zeigt genau so
+   * viele Karten, wie in EINE Reihe passen. Eine angebrochene zweite Reihe mit
+   * einer einzelnen Karte ist kein Streifen, sondern ein Rest.
+   *
+   * Wer alle sehen will, hat den Verweis daneben und die Zahl in der
+   * Ueberschrift.
+   */
+  @state() private _stripWidth = 0;
+  private _stripObserver: ResizeObserver | null = null;
+
   @state() private _loading = true;
   @state() private _error: string | null = null;
   @state() private _agents: Agent[] = [];
@@ -567,6 +630,33 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       this._loadedFor = this.simulationId;
       void this._load();
     }
+    this._observeStrip();
+  }
+
+  disconnectedCallback(): void {
+    this._stripObserver?.disconnect();
+    this._stripObserver = null;
+    super.disconnectedCallback();
+  }
+
+  /**
+   * Die Spalte messen, in der die Streifen stehen.
+   *
+   * Beobachtet wird `.main`, nicht `.strip__grid`: das Raster existiert erst,
+   * wenn Agenten geladen sind, die Spalte immer. Ein Beobachter, der an einem
+   * Element haengt, das der naechste Render ersetzt, misst danach nichts mehr.
+   */
+  private _observeStrip(): void {
+    const column = this.shadowRoot?.querySelector('.main');
+    if (!column) return;
+    if (this._stripObserver) return;
+
+    this._stripObserver = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (Math.abs(width - this._stripWidth) >= 1) this._stripWidth = width;
+    });
+    this._stripObserver.observe(column);
+    this._stripWidth = column.getBoundingClientRect().width;
   }
 
   /**
@@ -653,7 +743,10 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
        * strip would like to make gold.
        */
       const legendary = !!agent.is_ambassador || best.value >= 9;
-      return { agent, sum, best, legendary };
+      const aptitudes = Object.fromEntries(
+        OPERATIVE_TYPES.map((type) => [type, set.get(type) ?? 0]),
+      ) as AptitudeSet;
+      return { agent, sum, best, legendary, aptitudes };
     });
   }
 
@@ -724,10 +817,12 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
     return html`
       <div class="overview stage-container">
-        <div>${this._renderAnchor()} ${this._renderDossier()}</div>
+        <div class="main">
+          ${this._renderAnchor()} ${this._renderDossier()}
+          ${this._renderRoster()} ${this._renderFootprint()}
+        </div>
         ${this._renderRail()}
       </div>
-      ${this._renderRoster()} ${this._renderFootprint()}
     `;
   }
 
@@ -902,10 +997,11 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
   private _renderRoster() {
     if (!this._agents.length) return nothing;
-    const shown = this._roster.slice(0, ROSTER_LIMIT);
+    const { size, shown: count } = stripLayout(this._stripWidth, this._roster.length);
+    const shown = this._roster.slice(0, count);
 
     return html`
-      <section class="strip stage-container">
+      <section class="strip">
         <div class="strip__head">
           <div>
             <div class="kicker">${msg('Agents')}</div>
@@ -921,28 +1017,32 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
           ${shown.map(
             (entry, i) => html`
               <!--
-                size="sm" und nicht "xs".
+                Die Groesse kommt aus der gemessenen Spalte, nicht aus einer
+                festen Wahl — siehe overview-strip.ts.
 
-                Bei xs blendet <velg-game-card> SELBST aus: .card__subtitle,
-                .card__pips, .card__badges und .card__capacity stehen dort auf
-                display:none, und .card__name auf 7px. Diesem Streifen wurden
-                also ein Beruf und zwei Werte uebergeben, von denen die Karte
-                drei wegwirft — Angaben, die kein Leser je sieht und die der
-                naechste Entwickler fuer wirksam haelt.
+                Der frühere Kommentar hier stand auf sm statt xs, weil xs den
+                Untertitel, die Pips, die Abzeichen und die Kapazitaet auf
+                display:none setzt: Angaben, die kein Leser je sieht. Dasselbe
+                Argument gilt eine Stufe hoeher weiter. Bei sm steht der
+                Untertitel auf 8px, das Abzeichen auf 6px und die
+                Pip-Beschriftung wieder auf display:none. Der Unterschied ist
+                nur, dass es hier nicht auffiel, weil ueberhaupt kein Beruf
+                ankam.
 
-                Dazu die Frage des Nutzers, warum Agenten anders aussehen als
-                Gebaeude: weil ICH zwei Groessen fuer zwei Streifen derselben
-                Ansicht gewaehlt hatte. Der Spec verlangt „Mini-TCG-Karten" —
-                120px ist mini, und dort erscheint, was uebergeben wird.
+                Die Eignungswerte werden jetzt mitgegeben. Sie lagen die ganze
+                Zeit im Bauteil — 54 Zeilen fuer neun Agenten, gemessen — und
+                wurden zu Summe und Bestwert verrechnet, waehrend die sechs
+                Einzelwerte, die die Karte anzeigen kann, verworfen wurden.
               -->
               <velg-game-card
                 style="--i: ${i}"
                 type="agent"
-                size="sm"
+                size=${size}
                 rarity=${entry.legendary ? 'legendary' : entry.best.value >= 7 ? 'rare' : 'common'}
                 .name=${entry.agent.name}
                 .imageUrl=${entry.agent.portrait_image_url ?? ''}
                 .subtitle=${t(entry.agent, 'primary_profession')}
+                .aptitudes=${entry.aptitudes}
                 .primaryStat=${entry.sum}
                 .secondaryStat=${entry.best.value}
                 @click=${() => this._go('agents')}
@@ -956,10 +1056,11 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
 
   private _renderFootprint() {
     if (!this._buildings.length) return nothing;
-    const shown = this._buildings.slice(0, FOOTPRINT_LIMIT);
+    const { size, shown: count } = stripLayout(this._stripWidth, this._buildings.length);
+    const shown = this._buildings.slice(0, count);
 
     return html`
-      <section class="strip stage-container">
+      <section class="strip">
         <div class="strip__head">
           <div>
             <div class="kicker">${msg('Buildings')}</div>
@@ -1004,7 +1105,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
               <velg-game-card
                 style="--i: ${i}"
                 type="building"
-                size="sm"
+                size=${size}
                 .name=${building.name}
                 .imageUrl=${building.image_url ?? ''}
                 .subtitle=${taxonomyLabel('building_type', building.building_type)}
