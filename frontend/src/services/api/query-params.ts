@@ -28,7 +28,9 @@
 
 export type ApiQueryParam =
   | 'activity_type'
+  | 'admin_notes'
   | 'agent_id'
+  | 'approve'
   | 'arcanum'
   | 'archetype'
   | 'author_id'

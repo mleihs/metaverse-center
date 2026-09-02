@@ -24,6 +24,9 @@ from backend.models.forge import (
     AdminBundleUpdate,
     AdminPurchaseLedgerEntry,
     AdminTokenGrant,
+    BYOKRecheckResult,
+    BYOKRequest,
+    BYOKRequestCreate,
     BYOKSystemSettings,
     BYOKUserOverride,
     DarkroomPassResponse,
@@ -56,6 +59,7 @@ from backend.services.audit_service import AuditService
 from backend.services.codex_export_service import CodexExportService
 from backend.services.dossier_evolution_service import DossierEvolutionService
 from backend.services.forge_draft_service import (
+    DuplicateRequestError,
     ForgeDraftService,
     InvalidProviderError,
     WalletNotFoundError,
@@ -509,6 +513,115 @@ async def test_byok_key(
         {"provider": body.provider, "valid": result.valid},
     )
     return SuccessResponse(data=result)
+
+
+@router.post("/byok/recheck/{provider}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def recheck_stored_key(
+    request: Request,
+    provider: Literal["openrouter", "replicate"],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase=Depends(get_effective_supabase),
+    user_supabase=Depends(get_supabase),
+    admin_supabase=Depends(get_admin_supabase),
+) -> SuccessResponse[BYOKRecheckResult]:
+    """Ask the provider whether the key ON FILE still works.
+
+    Not the same question as ``/wallet/keys/test``, which checks a key someone
+    just typed. "Configured" says nothing about whether a key still carries —
+    a key revoked at the provider three weeks ago looks identical here. This
+    is the only way to find out without re-entering the secret.
+    """
+    await _check_byok_access(supabase, admin_supabase, user)
+
+    try:
+        result = await _draft_service.recheck_stored_key(user_supabase, user.id, provider)
+    except InvalidProviderError as exc:
+        raise HTTPException(status_code=400, detail=exc.detail) from exc
+
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "forge_wallet",
+        str(user.id),
+        "recheck_key",
+        {"provider": provider, "valid": result.valid, "had_key": result.had_key},
+    )
+    return SuccessResponse(data=result)
+
+
+@router.post("/byok/request")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def request_byok_access(
+    request: Request,
+    body: BYOKRequestCreate,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase=Depends(get_effective_supabase),
+) -> SuccessResponse[BYOKRequest]:
+    """Ask to be allowed a personal key.
+
+    Deliberately NOT behind ``_check_byok_access``: the whole point is that the
+    caller is not allowed yet. Under the shipped ``per_user`` policy with
+    nobody granted, this endpoint is the only thing standing between an
+    account and a door with no handle.
+    """
+    try:
+        row = await _draft_service.create_byok_request(supabase, user.id, body.reason)
+    except DuplicateRequestError as exc:
+        raise HTTPException(status_code=409, detail=exc.detail) from exc
+
+    await AuditService.safe_log(
+        supabase,
+        None,
+        user.id,
+        "byok_requests",
+        row.get("id"),
+        "create",
+        {"has_reason": bool(body.reason)},
+    )
+    return SuccessResponse(data=row)
+
+
+@router.get("/admin/byok-requests")
+async def list_byok_requests(
+    _admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase=Depends(get_admin_supabase),
+    status_filter: Annotated[Literal["pending", "approved", "rejected"], Query(alias="status")] = "pending",
+) -> SuccessResponse[list[BYOKRequest]]:
+    """The admin inbox — requests waiting for a decision, oldest first."""
+    rows = await ForgeDraftService.list_byok_requests(admin_supabase, status_filter)
+    return SuccessResponse(data=rows)
+
+
+@router.put("/admin/byok-requests/{request_id}")
+async def resolve_byok_request(
+    request_id: UUID,
+    approve: Annotated[bool, Query()],
+    admin: Annotated[CurrentUser, Depends(require_platform_admin())],
+    admin_supabase=Depends(get_admin_supabase),
+    admin_notes: Annotated[str | None, Query(max_length=1000)] = None,
+) -> SuccessResponse[MessageResponse]:
+    """Approve or reject one request — status and permission in one write."""
+    result = await ForgeDraftService.resolve_byok_request(
+        admin_supabase,
+        request_id,
+        approve=approve,
+        reviewer_id=admin.id,
+        admin_notes=admin_notes,
+    )
+    await AuditService.safe_log(
+        admin_supabase,
+        None,
+        admin.id,
+        "byok_requests",
+        str(request_id),
+        "resolve",
+        {"approve": approve, "user_id": result.get("user_id")},
+    )
+    return SuccessResponse(
+        data={"message": "Request approved." if approve else "Request rejected."}
+    )
 
 
 # --- Feature Purchases ---
