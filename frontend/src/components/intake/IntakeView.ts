@@ -35,6 +35,7 @@ import './IntakeQuarantineCard.js';
 import './IntakeResonanceModal.js';
 import './IntakeSensorTile.js';
 import './IntakeAftermathChamber.js';
+import './IntakeBrowseModal.js';
 import './IntakeReadingRoomModal.js';
 import './IntakeScanLogModal.js';
 import './IntakeTriageModal.js';
@@ -459,6 +460,17 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       cursor: default;
     }
 
+    /* Der zweite Knopf schiebt nicht noch einmal — nur der erste rueckt nach rechts. */
+    .expand--fetch {
+      margin-inline-start: auto;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .expand--fetch + .expand {
+      margin-inline-start: 0;
+    }
+
     /* ── Die Zeile zur Sichtung ──────────────────────────────────────── */
 
     .triage-line {
@@ -703,6 +715,9 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
 
   /** Ob der Lesesaal offen ist. */
   @state() private _readingRoomOpen = false;
+
+  /** Ob der Zufluss von Hand offen ist. */
+  @state() private _browseOpen = false;
 
   /** Ob das Scan-Log offen ist. */
   @state() private _scanLogOpen = false;
@@ -967,6 +982,17 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
           <h2 class="chamber__title">${title}</h2>
           <button
             type="button"
+            class="expand expand--fetch"
+            aria-label=${msg('Fetch by hand')}
+            title=${msg('Fetch by hand')}
+            @click=${() => {
+              this._browseOpen = true;
+            }}
+          >
+            ${icons.download(14)}
+          </button>
+          <button
+            type="button"
             class="expand"
             aria-label=${msg('Open reading room')}
             title=${msg('Open reading room')}
@@ -1098,6 +1124,13 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
         )}
         ${this._renderAftermath()}
       </div>
+      <velg-intake-browse-modal
+        ?open=${this._browseOpen}
+        .simulationId=${this.simulationId}
+        @modal-close=${() => {
+          this._browseOpen = false;
+        }}
+      ></velg-intake-browse-modal>
       <velg-intake-reading-room-modal
         ?open=${this._readingRoomOpen}
         @intake-transform=${(e: CustomEvent<{ signalId: string }>) => {

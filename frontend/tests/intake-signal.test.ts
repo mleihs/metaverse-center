@@ -143,8 +143,17 @@ describe('fromBrowseArticle', () => {
     raw_data: { trail_text: 'Verhandlungen ausgesetzt.' },
   };
 
-  it('landet im Eingang, weil ein Mensch ihn bereits gewählt hat', () => {
-    expect(fromBrowseArticle(article).stage).toBe('in');
+  /*
+   * ⚠ GEÄNDERT 02.09.2026 (Schritt 7). Vorher `'in'`, mit der Begründung „ein
+   * Mensch hat ihn bereits gewählt". Das galt für die alte `SocialTrendsView`:
+   * suchen, EINEN Artikel anklicken, verwandeln. Der Zufluss von Hand holt
+   * fünfzehn auf einmal — davon hat niemand einen gewählt, jemand hat eine
+   * Quelle befragt. Der Bauplan sagt es in seiner eigenen Zustandstabelle: der
+   * Übergang `raw → in` trägt als Auslöser „browse", und ein Übergang AUS `raw`
+   * setzt voraus, dass etwas dort ankommt.
+   */
+  it('beginnt in der Sichtung, nicht im Eingang — gewählt hat ihn noch niemand', () => {
+    expect(fromBrowseArticle(article).stage).toBe('raw');
   });
 
   it('hat keine Magnitude — die entsteht erst im Schmelztiegel', () => {

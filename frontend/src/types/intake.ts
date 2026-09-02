@@ -300,8 +300,23 @@ export function fromScanCandidate(c: ScanCandidate, adapters?: AdapterInfo[]): I
  * Der Artikel ist die ärmere Quelle: keine Kategorie, keine Magnitude, keine
  * Begründung — die entstehen erst im Schmelztiegel. `magnitude: 0` ist deshalb
  * kein Messwert, sondern „noch nicht gemessen", und die Oberfläche muss das
- * unterscheiden können. Er landet direkt im Eingang, weil ihn ein Mensch
- * bereits ausgewählt hat.
+ * unterscheiden können.
+ *
+ * ⚠ ER BEGINNT IN DER SICHTUNG, NICHT IM EINGANG (geändert 02.09.2026).
+ *
+ * Bis Schritt 7 stand hier `stage: 'in'` mit der Begründung „ein Mensch hat ihn
+ * bereits ausgewählt". Das stimmte, solange `loadBrowse` keinen Aufrufer hatte
+ * und man sich den Ablauf dachte wie in der alten `SocialTrendsView`: suchen,
+ * einen Artikel anklicken, verwandeln.
+ *
+ * Der Zufluss von Hand holt aber FÜNFZEHN Artikel auf einmal. Von denen hat ein
+ * Mensch keinen ausgewählt — er hat eine Quelle befragt. Sie alle in den
+ * Eingang zu legen hiesse, die Kammer zu fluten, in der steht, was jemand
+ * bewusst aufgenommen hat.
+ *
+ * Der Bauplan sagt es selbst, in seiner eigenen Zustandstabelle: der Übergang
+ * `raw → in` trägt als Auslöser „Sichtung … | **browse**". Ein Übergang AUS
+ * `raw` heraus setzt voraus, dass etwas dort ankommt.
  *
  * Die ID kommt aus der URL, ersatzweise aus dem Titel: `BrowseArticle` hat
  * keine, und ohne stabilen Schlüssel kann die Zustandsmaschine ein Signal nicht
@@ -313,7 +328,7 @@ export function fromBrowseArticle(a: BrowseArticle): IntakeSignal {
     (raw.trail_text as string | undefined) ?? (raw.description as string | undefined) ?? undefined;
   return {
     id: `browse:${a.url || a.name}`,
-    stage: 'in',
+    stage: 'raw',
     source: a.platform,
     sourceKind: sourceKindOf(a.platform),
     headline: a.name,
