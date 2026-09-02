@@ -1,50 +1,40 @@
 # RESUME — Schleuse (Event-Intake)
 
-**Stand 02.09.2026, Abend. ALLE ACHT SCHRITTE SIND GEBAUT.** Die alte
-`social/SocialTrendsView.ts` ist gelöscht; die Schleuse kann alles, was sie
-konnte, und die Botschaften haben ein eigenes Zuhause.
+**Stand 02.09.2026, Abend. FERTIG: 8 von 8 Schritten, 6 von 6 Backend-Lücken.**
 
-    live auf Prod        2177281c (Peer-Deploy) — meine Backend-Reparaturen
-                         (a3993cef) sind dessen Vorfahr und wirken
-    Migrationen          334·337·338·340·341·343·345 auf Prod · nächste freie 346
-                         (344 ist für den Peer reserviert)
-                         (⚠ 343 kollidierte mit einem Peer — meine hält die
-                          Ledger-Zeile, seine zieht auf 344)
-    Frontend             8/8 Schritte, 30 Lint-Tore grün, 1182 Tests
-    Backend-Lücken       5 von 6 zu (2, 4, 5, 7 + Bündelung); offen 3 und 6
-    news_scanner_enabled ⚠ FALSE — ein Peer hat die ganze autonome KI-Schicht
-                         abgeschaltet (leeres OpenRouter-Konto). Für einen
-                         gezielten Lauf kurz anmachen und ihm Bescheid sagen.
+    Migrationen     334·337·338·340·341·343·345·347 auf Prod
+                    nächste freie: 348
+    Frontend        30 Lint-Tore grün · 1188 Tests · tsc + tsc:tests grün
+    Backend         ruff grün · 5204 Tests
+    ⚠ ungepusht     alles seit `f51b8249`
 
-▶ **ALS NÄCHSTES: es gibt keinen Schritt 9.** Was bleibt, sind die
-Backend-Lücken — und die sind in der Oberfläche jeweils BENANNT statt geraten,
-also nicht dringend, sondern fällig:
+    ✅ 2  Story-Bündelung       Migr. 345 — „Netz-Tempo" sortiert
+    ✅ 3  Passung               kein Migrations­bedarf; die Zahl ist die
+                               Suszeptibilität, mit der der Resonanzlauf rechnet
+    ✅ 4  Linse im Prompt       Migr. 341
+    ✅ 5  Tagesquote            Einzel- UND Stapelweg
+    ✅ 6  Abonnements           Migr. 347
+    ✅ 7  Schlüssel Log↔Kandidat Migr. 343
 
-    ✅ 4  transform-article nimmt eine `lens`   — Migration 341, f0c78f2f
-    ✅ 5  Tagesquote                            — Einzel- UND Stapelweg
-    ✅ 7  Scan-Log zeigt die Schleusen-Stufe    — Migration 343, 218bdf35
+▶ **ALS NÄCHSTES gibt es keinen Punkt in dieser Notiz mehr.** Was bleibt, ist
+Betrieb, und zwei Dinge davon kann nur ein Mensch:
 
-    ✅ 2  Story-Bündelung                       — Migration 345, 83a066ee
-          „Netz-Tempo" sortiert seit dem, und die Regel „eine Sozialquelle
-          wird nie eine eigene Zeile" wird jetzt DURCHGESETZT statt
-          beschrieben (`SourceAdapter.is_supporting`).
-    3  Passungs-Score    fit je Kandidat × Welt
-                         → schaltet „Passung" frei (ein Schalter:
-                           BUREAU_RANKS_THE_SIGNALS)
-                         ⚠ WIE gerechnet wird, ist eine SPIELENTSCHEIDUNG,
-                         keine technische: Kategorie↔Zone, Agentenrollen,
-                         Vektor-Verfügbarkeit sind Vorschläge des Bauplans,
-                         keine gemessenen Grössen. Nicht allein entscheiden.
-    6  intake_subscriptions
-                         → weder Tabelle noch Endpunkt; die einzige
-                           Kammer-Zusage, die noch fehlt
+1. **Einen frischen Guardian-Schlüssel** eintragen (Admin → API-Schlüssel). Der
+   gespeicherte ist tot (401), NewsAPI hat gar keinen. Ohne ihn bleibt der
+   stärkste Zufluss trocken.
+2. **Entscheiden, was mit den 34 beschädigten Depeschen geschieht** (7 leer, 27
+   abgeschnitten). Sie stehen unverändert da; `UPDATE … SET bureau_dispatch =
+   NULL` wäre der ehrliche Weg, dann entstehen sie beim nächsten Berühren neu.
 
-Lücke 5 (Quote) ist an der Oberfläche erledigt: Einzelaufnahme UND Stapel
-deckeln.
+⚠ **`news_scanner_enabled` steht auf `false`** — ein Peer hat die gesamte
+autonome KI-Schicht abgeschaltet, weil das OpenRouter-Konto leer war. Es ist
+wieder aufgeladen; ob und wann die Planer zurückkommen, ist eine Entscheidung
+des Nutzers und keine Nebenwirkung. Für einen gezielten Lauf den Schalter kurz
+anmachen und dem Peer Bescheid sagen.
 
-Zwei Dinge, die ein MENSCH tun muss, stehen weiter unten unverändert: einen
-frischen Guardian-Schlüssel eintragen und entscheiden, was mit den 34
-beschädigten Depeschen geschieht.
+**Was NICHT gebaut ist, und warum:** der Abo-Cron. Ein Zeitgeber, der von selbst
+Modellaufrufe auslöst, kostet Geld ohne Klick — genau das, was heute
+abgeschaltet wurde. Abos entscheiden die Auswahl, nicht die Ausgabe.
 
 ## Was heute dazugekommen ist
 
