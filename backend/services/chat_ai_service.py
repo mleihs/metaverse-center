@@ -75,6 +75,17 @@ _HISTORY_BUDGET_RATIO = 0.6  # use 60% of context for history
 _MAX_MESSAGES_HARD = 200  # prevent huge DB queries
 _MIN_MESSAGES = 20
 
+#: Marke für eine Stimme, deren Namen niemand mehr kennt — ein Agent, der aus
+#: der Unterhaltung entfernt wurde, dessen Sätze aber stehen bleiben. Sie ist
+#: strukturell wie `[Name]:` selbst und gehört deshalb nicht in die
+#: Übersetzung; sie steht im Prompt, nicht auf dem Bildschirm.
+#:
+#: Ohne sie liefe der fremde Satz OHNE Präfix in den Verlauf, und ein Modell
+#: liest eine unbeschriftete `assistant`-Zeile als seine eigene frühere
+#: Äusserung. Eine unbekannte Herkunft zuzugeben ist der billigere Fehler als
+#: eine falsche zu behaupten.
+_DEPARTED_SPEAKER = "former participant"
+
 # ── Zeichen je Token, je Sprache ──────────────────────────────────────────
 #
 # GEMESSEN AM 02.09.2026 an 419 PARALLELEN Textpaaren aus der Produktion
@@ -1148,9 +1159,14 @@ class ChatAIService:
             role = "assistant" if msg["sender_role"] == "assistant" else "user"
             content = msg["content"]
             if role == "assistant" and msg.get("agent_id") and len(agents) > 1:
-                msg_agent_name = self._find_agent_name(agents, msg["agent_id"])
-                if msg_agent_name:
-                    content = f"[{msg_agent_name}]: {content}"
+                # Erst die Nachricht selbst fragen (siehe `_load_history`), dann
+                # die Besetzung. Findet keines von beiden einen Namen, bekommt
+                # die Zeile trotzdem eine Marke: ein fremder Satz ohne Sprecher
+                # wird sonst als der EIGENE gelesen, und das ist der teurere
+                # Fehler als eine unbekannte Herkunft zuzugeben.
+                msg_agent_name = self._message_speaker(msg) or self._find_agent_name(agents, msg["agent_id"])
+                label = msg_agent_name or _DEPARTED_SPEAKER
+                content = f"[{label}]: {content}"
             history_messages.append({"role": role, "content": content})
         history_messages.append({"role": "user", "content": user_message})
 
@@ -1252,12 +1268,34 @@ class ChatAIService:
 
     @staticmethod
     def _find_agent_name(agents: list[dict], agent_id: str | None) -> str | None:
-        """Find agent name by ID in the agents list."""
+        """Find agent name by ID in the CURRENT roster.
+
+        Returns None for anyone who has since been removed from the
+        conversation — use :meth:`_message_speaker` first, which reads the name
+        off the message itself and therefore survives a departure.
+        """
         if not agent_id:
             return None
         for a in agents:
             if str(a["id"]) == str(agent_id):
                 return a.get("name")
+        return None
+
+    @staticmethod
+    def _message_speaker(msg: dict) -> str | None:
+        """The speaker's name as it was embedded with the message row.
+
+        `_load_history` selects `agents(name)`. postgrest returns a to-one
+        embed as an object, but a to-many join as a list — accept both rather
+        than trusting one shape, because getting it wrong here fails silently
+        into "no name", which is exactly the bug this method exists to close.
+        """
+        embedded = msg.get("agents")
+        if isinstance(embedded, list):
+            embedded = embedded[0] if embedded else None
+        if isinstance(embedded, dict):
+            name = embedded.get("name")
+            return str(name) if name else None
         return None
 
     async def _build_event_context(
@@ -1421,9 +1459,16 @@ class ChatAIService:
         Gleicher Weg wie ``ChatService.get_messages``: absteigend holen,
         kappen, umdrehen.
         """
+        # `agents(name)` mitzuholen ist kein Komfort. Die Zuschreibung im
+        # Gruppen-Prompt schlug den Namen bisher in der AKTUELLEN Besetzung
+        # nach — und ein entfernter Agent steht dort nicht mehr. Seine alten
+        # Nachrichten liefen dann ohne `[Name]:` als nackte `assistant`-Zeilen
+        # in den Prompt, und der verbliebene Agent las die Worte des
+        # Abgegangenen als seine EIGENEN. Der Name gehört an die Nachricht,
+        # nicht an die Anwesenheitsliste.
         response = await (
             self._supabase.table("chat_messages")
-            .select("content, sender_role, agent_id, created_at")
+            .select("content, sender_role, agent_id, created_at, agents(name)")
             .eq("conversation_id", str(conversation_id))
             .order("created_at", desc=True)
             .limit(_max_history_messages(model_id))

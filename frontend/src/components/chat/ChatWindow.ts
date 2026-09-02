@@ -543,12 +543,25 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         this.simulationId,
         conversationId,
         appState.currentSimulationMode.value,
-        { limit: '100' },
+        // 30, nicht 100. Die Nachlade-Maschinerie (`loadOlder`, `hasMore`,
+        // `@load-older`) ist vollstaendig gebaut und verdrahtet — sie ist nur
+        // nie gelaufen, weil die erste Seite jede Unterhaltung auf Produktion
+        // (laengste: 58) restlos verschluckt hat. Ein Merkmal ohne Aufrufer.
+        //
+        // Warum 30 und nicht 15: ein hohes Fenster zeigt schon ohne Scrollen
+        // mehr als 15 kurze Blasen. Die erste Seite muss den Bildschirm FUELLEN,
+        // sonst schlaegt `hasMore` sofort beim Oeffnen an und holt eine zweite
+        // Seite nach — zwei Rundreisen statt einer, und ein Sprung im Verlauf,
+        // bevor der Blick zur Ruhe gekommen ist.
+        { limit: '30' },
       );
 
       if (response.success && response.data) {
         const messages = Array.isArray(response.data) ? response.data : [];
-        chatStore.setMessages(conversationId, messages);
+        // Die Gesamtzahl kommt aus der Gespraechszeile — an DIESER Stelle ist
+        // sie richtig (nachgemessen auf Prod: 58 zu 58). Falsch wurde sie erst
+        // dadurch, dass die Kopfzeile sie nie wieder gelesen hat.
+        chatStore.setMessages(conversationId, messages, this.conversation?.message_count);
       } else {
         VelgToast.error(response.error?.message ?? msg('Failed to load messages.'));
       }
@@ -1143,14 +1156,21 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     const eventRefCount = this.conversation.event_references?.length ?? 0;
     const hasEventsBar = this._showEventsBar;
 
-    // Sub info
-    const subInfo =
-      agentCount > 1
-        ? msg(str`${agentCount} agents \u00B7 ${this.conversation.message_count} messages`)
-        : msg(str`${this.conversation.message_count} messages`);
-
     // Streaming state from ChatSessionStore (reactive via SignalWatcher)
     const session = chatStore.getOrCreate(this.conversation.id);
+
+    // Sub info — die LEBENDE Zahl, nicht die Spalte.
+    //
+    // Hier stand `this.conversation.message_count`: eine Momentaufnahme aus dem
+    // Augenblick des Oeffnens. Wer ein Gespraech neu anlegt und darin 58
+    // Nachrichten schreibt, las dauerhaft „0 messages" — die Zeile wurde nie
+    // wieder angefasst. `session.messageCount` ist aus dem echten Array
+    // abgeleitet und kann deshalb nicht driften.
+    const messageTotal = session.messageCount.value;
+    const subInfo =
+      agentCount > 1
+        ? msg(str`${agentCount} agents \u00B7 ${messageTotal} messages`)
+        : msg(str`${messageTotal} messages`);
     const participants = this._buildParticipants();
 
     return html`

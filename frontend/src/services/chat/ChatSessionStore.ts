@@ -15,7 +15,7 @@
  *   // In SignalWatcher component: session.messages.value → auto-rerender
  */
 
-import { batch, type Signal, signal } from '@preact/signals-core';
+import { batch, computed, type ReadonlySignal, type Signal, signal } from '@preact/signals-core';
 import type { ChatMessage, ChatReactionSummary } from '../../types/index.js';
 import { captureError } from '../SentryService.js';
 
@@ -48,6 +48,23 @@ export interface ChatSession {
   readonly draft: Signal<string>;
   readonly typingUsers: Signal<TypingUser[]>;
   readonly error: Signal<string | null>;
+  /**
+   * Ältere Nachrichten, die es gibt, aber noch nicht geladen sind. Nur die
+   * Seitenweise-Nachladung verändert diese Zahl.
+   */
+  readonly hiddenOlder: Signal<number>;
+  /**
+   * Wie lang die Unterhaltung IST — abgeleitet, nicht mitgeführt.
+   *
+   * Die Kopfzeile las bisher `conversation.message_count`, eine Spalte, die im
+   * Augenblick des Öffnens gelesen und nie wieder angefasst wurde: wer ein
+   * Gespräch neu anlegt und darin 58 Nachrichten schreibt, bekam dauerhaft
+   * „0 messages" zu sehen. Eine zweite mitgeführte Zählvariable wäre derselbe
+   * Fehler an einem neuen Ort — deshalb steht hier eine ABLEITUNG aus dem
+   * echten Array. Senden, Bestätigen und Zurücknehmen wirken damit von selbst;
+   * driften kann das nicht.
+   */
+  readonly messageCount: ReadonlySignal<number>;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,10 +131,22 @@ export class ChatSessionStore {
     }
   }
 
-  /** Replace all messages (e.g. after initial load or full refresh). */
-  setMessages(sessionId: string, messages: ChatMessage[]): void {
+  /**
+   * Replace all messages (e.g. after initial load or full refresh).
+   *
+   * `total` ist die Gesamtzahl der Nachrichten in der Unterhaltung, wie der
+   * Server sie kennt — das Geladene ist nur die letzte Seite davon. Aus der
+   * Differenz ergibt sich, wie viel noch hinter dem Nachladen liegt, und daraus
+   * wiederum `messageCount`. Ohne `total` bleibt der Rest, wie er war.
+   */
+  setMessages(sessionId: string, messages: ChatMessage[], total?: number): void {
     const session = this.getOrCreate(sessionId);
-    session.messages.value = messages;
+    batch(() => {
+      session.messages.value = messages;
+      if (total !== undefined) {
+        session.hiddenOlder.value = Math.max(0, total - messages.length);
+      }
+    });
   }
 
   /**
@@ -252,6 +281,9 @@ export class ChatSessionStore {
           session.hasMore.value = false;
         } else {
           session.messages.value = [...older, ...session.messages.value];
+          // Was jetzt geladen ist, liegt nicht mehr dahinter. Ohne diese Zeile
+          // zählte jede nachgeladene Seite doppelt.
+          session.hiddenOlder.value = Math.max(0, session.hiddenOlder.value - older.length);
         }
       });
     } catch (err) {
@@ -299,8 +331,12 @@ export class ChatSessionStore {
   }
 
   private _createSession(): ChatSession {
+    const messages = signal<OptimisticChatMessage[]>([]);
+    const hiddenOlder = signal(0);
     return {
-      messages: signal<OptimisticChatMessage[]>([]),
+      messages,
+      hiddenOlder,
+      messageCount: computed(() => messages.value.length + hiddenOlder.value),
       loading: signal(false),
       sending: signal(false),
       streaming: signal(false),

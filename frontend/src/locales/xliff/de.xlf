@@ -607,7 +607,7 @@
   <target>Wähle eine Konversation aus der Liste oder starte eine neue, indem du einen Agenten auswählst.</target>
 </trans-unit>
 <trans-unit id="sd94e4de48e8973cb">
-  <source><x id="0" equiv-text="${this.conversation.message_count}"/> messages</source>
+  <source><x id="0" equiv-text="${messageTotal}"/> messages</source>
   <target><x id="0" equiv-text="${this.conversation.message_count}"/> Nachrichten</target>
 </trans-unit>
 <trans-unit id="se3b62a22fe3df419">
@@ -2335,7 +2335,7 @@
   <target>Event hinzufügen</target>
 </trans-unit>
 <trans-unit id="s61b59619104804be">
-  <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${this.conversation.message_count}"/> messages</source>
+  <source><x id="0" equiv-text="${agentCount}"/> agents · <x id="1" equiv-text="${messageTotal}"/> messages</source>
   <target><x id="0" equiv-text="${agentCount}"/> Agenten · <x id="1" equiv-text="${this.conversation.message_count}"/> Nachrichten</target></trans-unit>
 <trans-unit id="s2a9a0cbeb976d3f5">
   <source>Add Agent</source>
