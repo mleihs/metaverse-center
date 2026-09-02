@@ -50,14 +50,23 @@ Return JSON array:
 
 #: Wie viele Antwort-Token eine Überschrift kostet.
 #:
-#: Gemessen am geforderten Format (`_SYSTEM_PROMPT`, letzte Zeile): index,
-#: category, significance und ein kurzer `reason` sind rund 40 Token. 64 ist
-#: das mit Luft für einen längeren Grund — lieber ein paar Token zu viel
-#: bezahlen als eine abgeschnittene Antwort, die den ganzen Stapel verwirft.
-_TOKENS_PER_ITEM = 64
+#: GEMESSEN 02.09.2026 gegen `deepseek-chat`, zweimal:
+#:
+#:     7 Überschriften, Budget 2048  →  228 Token  (33 je Stück)
+#:    20 Überschriften, Budget 4096  →  642 Token  (32 je Stück)
+#:
+#: Das ist die KOMPAKTE Form. Auf Produktion kam bei knappem Budget die
+#: gespreizte: ein Objekt statt eines Arrays, mit Einrückung, Zeilenumbrüchen
+#: und Markdown-Zaun — und 82 Token je Stück reichten dort NICHT.
+#:
+#: 96 ist deshalb das Dreifache des Gemessenen. Ein paar Token zu viel kosten
+#: Bruchteile eines Cents; eine abgeschnittene Antwort verwirft den ganzen
+#: Stapel und sieht in der Auswertung aus wie „nichts war relevant".
+_TOKENS_PER_ITEM = 96
 
-#: Grundlast der Antwort (Klammern, Kommata, ein angefangener Satz Vorrede).
-_TOKENS_OVERHEAD = 128
+#: Grundlast der Antwort: Klammern, Kommata, ein Markdown-Zaun und die
+#: gelegentliche Objekt-Umhüllung samt Schlüsselnamen.
+_TOKENS_OVERHEAD = 256
 
 #: Obergrenze für EINE Antwort. Darüber wird gestückelt, nicht erhöht.
 _MAX_COMPLETION_TOKENS = 4096
@@ -109,6 +118,32 @@ def _parse_json_from_text(text: str) -> Any:
         except json.JSONDecodeError:
             pass
 
+    return None
+
+
+def _as_list(parsed: Any) -> list | None:
+    """Die Liste herausholen, egal wie das Modell sie verpackt hat.
+
+    GEMESSEN 02.09.2026: `deepseek-chat` antwortet auf DIESELBE Aufgabe mal mit
+    einem nackten Array, mal mit `{"classifications": [...]}` — beides in einem
+    Markdown-Zaun. Die Form ist nicht verlaesslich, und sie muss es auch nicht
+    sein: der Systemprompt bittet um ein Array, aber ein Modell, das die Liste
+    hoeflich benennt, hat die Aufgabe nicht falsch verstanden.
+
+    Auf Produktion hat genau das alle sieben Ueberschriften eines Zyklus
+    verworfen — `isinstance(parsed, list)` war False, und die Auswertung sah aus
+    wie „nichts war relevant".
+
+    Ein Objekt mit GENAU EINEM Schluessel, dessen Wert eine Liste ist, wird
+    ausgepackt. Mehrere Listen waeren mehrdeutig; dann lieber nichts, als die
+    falsche zu nehmen.
+    """
+    if isinstance(parsed, list):
+        return parsed
+    if isinstance(parsed, dict):
+        lists = [v for v in parsed.values() if isinstance(v, list)]
+        if len(lists) == 1:
+            return lists[0]
     return None
 
 
@@ -201,8 +236,8 @@ async def classify_batch(
             budget=budget,
         )
 
-        classifications = _parse_json_from_text(raw)
-        if not isinstance(classifications, list):
+        classifications = _as_list(_parse_json_from_text(raw))
+        if classifications is None:
             # Name the likely cause instead of only the symptom: an answer that
             # does not close its array was almost certainly cut off, and that
             # is a different repair than "the model returned nonsense".
