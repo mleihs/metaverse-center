@@ -27,6 +27,7 @@ import {
   type IntakeStage,
 } from '../types/intake.js';
 import { appState } from './AppStateManager.js';
+import type { IntakeSubscription } from './api/IntakeApiService.js';
 import { intakeApi, locationsApi, scannerApi, socialTrendsApi } from './api/index.js';
 import type { AdapterInfo, ScanCandidate, ScannerDashboard } from './api/ScannerApiService.js';
 import { captureError } from './SentryService.js';
@@ -113,6 +114,9 @@ class IntakeStateManager {
    * Oberfläche zeigt dann keine Passung, statt 0 zu behaupten.
    */
   readonly fitBySignature = signal<Map<string, number>>(new Map());
+
+  /** Die Abonnements dieser Welt. Leer heisst „keine" ODER „nicht geladen". */
+  readonly subscriptions = signal<IntakeSubscription[]>([]);
 
   /**
    * Wie viele Kandidaten der Server insgesamt hat — nicht, wie viele geladen
@@ -294,6 +298,34 @@ class IntakeStateManager {
     return this.fitBySignature.value.get(signature);
   }
 
+  /** Die Abonnements holen. Ohne sie fällt nur das automatische Aufnehmen aus. */
+  async loadSubscriptions(simulationId: string): Promise<void> {
+    if (!simulationId) return;
+    try {
+      const resp = await intakeApi.listSubscriptions(simulationId);
+      if (resp.success && resp.data) this.subscriptions.value = resp.data;
+    } catch (err) {
+      captureError(err, { source: 'IntakeStateManager.loadSubscriptions' });
+    }
+  }
+
+  /**
+   * Das erste aktive Abo, auf das ein Signal passt — oder `undefined`.
+   *
+   * „Das erste" und nicht „das beste": Abos sind eine Liste, die ein Mensch
+   * angelegt hat, und die Reihenfolge darin ist seine. Eine Rangfolge zu
+   * erfinden hiesse, ihm eine Entscheidung abzunehmen, die er nie getroffen
+   * hat.
+   */
+  private _matchingSubscription(signal: IntakeSignal): IntakeSubscription | undefined {
+    return this.subscriptions.value.find(
+      (sub) =>
+        sub.is_active &&
+        (!sub.source_category || sub.source_category === signal.category) &&
+        signal.magnitude >= sub.min_magnitude,
+    );
+  }
+
   /** Der Name einer Zone, oder Leerstring, wenn die Liste sie nicht kennt. */
   zoneName(zoneId: string): string {
     return this.zones.value.find((z) => z.id === zoneId)?.name ?? '';
@@ -311,7 +343,36 @@ class IntakeStateManager {
     const next = new Map(this.signals.value);
     for (const s of incoming) {
       const known = next.get(s.id);
-      next.set(s.id, known ? { ...s, stage: known.stage, lens: known.lens ?? s.lens } : s);
+      if (known) {
+        next.set(s.id, {
+          ...s,
+          stage: known.stage,
+          lens: known.lens ?? s.lens,
+          viaSubscription: known.viaSubscription,
+        });
+        continue;
+      }
+
+      /*
+       * NUR NEUE Signale. Ein Abo darf nichts zurueckholen, was ein Mensch
+       * schon weitergeschoben oder verworfen hat — sonst kaeme Verworfenes bei
+       * jedem Laden wieder in den Eingang.
+       */
+      const sub = this._matchingSubscription(s);
+      next.set(
+        s.id,
+        sub
+          ? {
+              ...s,
+              stage: 'in',
+              viaSubscription: {
+                label: sub.label,
+                zone: sub.zone_id ?? undefined,
+                vector: sub.vector ?? undefined,
+              },
+            }
+          : s,
+      );
     }
     this.signals.value = next;
   }
@@ -396,6 +457,7 @@ class IntakeStateManager {
     this.recommendedThreshold.value = DEFAULT_RECOMMENDED_THRESHOLD;
     this.totalCandidates.value = 0;
     this.fitBySignature.value = new Map();
+    this.subscriptions.value = [];
   }
 }
 

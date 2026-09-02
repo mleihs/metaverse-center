@@ -2192,7 +2192,6 @@ The risotto was not exceptional. The rice was overcooked. The mushrooms were gri
 I visited the courtyard garden. Tomatoes. Growing underground, under UV lamps, in soil made from composted refuse and crushed limestone. They are small and imperfect and taste like sunlight, which is impossible, because no sunlight reaches them. A botanist would say the flavour comes from the UV spectrum. A Cartographer would say it comes from the fact that someone planted them. Someone believed they would grow.
 
 The Bureau's Bleed sensors show a constant hum throughout Speranza. Not spikes – a frequency. I am calling it the Hope Frequency. I am aware this is not a scientific designation. I do not care. Celeste says the Canteen is serving honey on bread on Tuesday. I need to know if it's real honey.`,
-'s3b1bdb3f55f755d0': `Noch nicht angeschlossen – das Backend kennt keine Abonnements.`,
 's3b1dde7bb7971617': `Güter, im Einsturz zurückgelassen.`,
 's3b299e73b47a8b3f': `This section has been [CONSUMED] seventeen times. Each time, a Cartographer rewrites it. Each time, the document eats it. We persist.
 
@@ -3747,6 +3746,7 @@ What stays with me – what I will report to the Bureau and what the Bureau will
 's68c7035320ae96a9': `Chronik-Filter`,
 's68d92f8d2b8428f8': `Automatische Resonanzwirkungsverarbeitung, wenn der impacts_at-Zeitstempel eintritt`,
 's68dec9a4717322b0': `– Carl von Clausewitz, Vom Kriege (1832)`,
+'s68e8b770522b68a2': `Ein Abonnement entscheidet, was hereinkommt – es verwandelt nichts. Der Schmelztiegel läuft weiterhin, wenn du ihn öffnest.`,
 's68ee6b0f79eb92a4': `API-SCHLÜSSEL AKTIV – KEINE TOKEN-ABZÜGE`,
 's6916c73f6ed14f2b': `Substratresonanzen sind Erscheinungen, die entstehen, wenn das Substrat einer Simulation – ihr zugrundeliegendes rechnerisches Gewebe – auf das Geschehen im Spiel zu schwingen beginnt. Denk sie dir als das Immunsystem der Welt: Häufen sich Ereignisse zu dicht oder geraten die Wertungsdimensionen aus dem Gleichgewicht, fängt das Substrat an mitzuschwingen.`,
 's6917715148f48822': `Simulation erstellen - Taxonomien`,
@@ -4056,6 +4056,7 @@ What stays with me – what I will report to the Bureau and what the Bureau will
 's7208e631d82f3a34': `Zone konnte nicht befestigt werden.`,
 's720c4d0f30ef914e': `Arbeitet...`,
 's721eaa964e39ad4b': `Die Tradition der prozeduralen Generierung`,
+'s722184dd16398ae0': `Das Abonnement liess sich nicht ändern.`,
 's7224d2d046b1dae5': `Acht literarische Abstiege, in denen Stress wirklich ist. Agenten kehren verändert zurück – oder gar nicht.`,
 's722b248a2eca414e': `ZÜNDUNG...`,
 's723d72a6c88b1cba': `Eignungsanzeige: Gut (≥7), Mittel (≥5), Schlecht (<5)`,
@@ -7578,6 +7579,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 'sdb2bf46270cfda6c': `Brotkrümelnavigation`,
 'sdb3c07ba61221099': `HTTP Cache-Control max-age für den öffentlichen Kampf-Feed-Endpunkt. Niedrigere Werte liefern aktuellere Epoche-Kampfdaten.`,
 'sdb3f506e30cb5941': `Kampfformat`,
+'sdb410b5fdebd5124': `Dieses Abonnement anhalten`,
 'sdb610f657d5d5ed7': `Besonderer Agentenstatus – Ziel von Assassinen`,
 'sdb6391acc9741479': `Einmal pro Tag pro Simulation`,
 'sdb6e02a6b80ccf5f': `ZONENAKTION`,
@@ -8175,6 +8177,7 @@ DIRECTOR'S NOTE: The recommended action section has been consumed by the documen
 'sed0bbb8cffe03ccd': `Schnellspiel`,
 'sed17c6baaee9d3da': `Wächter gefallen`,
 'sed296960025ee82a': `Fehlschlag`,
+'sed36af8bfc5a40df': `Keine Abonnements. Alles wartet in der Sichtung, bis jemand es aufnimmt.`,
 'sed3d595059959c08': `Anfrage wird vorbereitet...`,
 'sed3f30c31474ca65': `Tiefer`,
 'sed4191f51a738abd': `Bereinigung fehlgeschlagen.`,
@@ -8239,6 +8242,7 @@ DIRECTOR'S NOTE: The recommended action section has been consumed by the documen
 'seeb66b4f532ed5fb': `Befestigung fehlgeschlagen. Punkte erstattet.`,
 'seebefb5a6f688d11': `Driftkarte wird abgestimmt…`,
 'seec0b045f27c49bd': `Ungültige URL.`,
+'seec4a01d9427eebf': `ein Ort`,
 'seec722cb18582914': `32 auf 4 Stufen`,
 'seecb200236c83e68': `Der Souverän`,
 'seecb6541f98c8d83': `Maximal unterstützte Bevölkerung. Das Verhältnis von zugewiesenen Agenten zur Kapazität bestimmt die Personalstärke. Unterbesetzte kritische Gebäude verringern die Zonensicherheit.`,
@@ -8819,6 +8823,7 @@ CARTOGRAPHIC NOTE: Cartographers assigned to Speranza report elevated morale and
 'sff1e1dfdeccdc8b4': `Stufe 2 öffnet sich nach einer frei gewählten Anzahl an Befehlen.`,
 'sff2b10570a88581e': `Autopoiesis`,
 'sff35872eeaf3d06c': `Impression`,
+'sff3af459e2700fa7': `Dieses Abonnement wieder anlaufen lassen`,
 'sff402cd27bd2ae1b': `Alleintraining gegen 2 bis 4 KI-Bots im Kurzformat. Akademie-Epochen laufen auf gestauchter Zeitachse (3 Tage Dauer, 4-Stunden-Zyklen), du erlebst eine ganze Wettbewerbssaison also an einem Nachmittag. Start über dein Dashboard, mit einem Klick.`,
 'sff5785c4f2e4f70e': `Ergebnisse der Mission`,
 'sff5bb7742c2896c8': `Ziel`,

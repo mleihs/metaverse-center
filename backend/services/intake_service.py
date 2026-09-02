@@ -21,6 +21,7 @@ from uuid import UUID
 from backend.models.resonance import CATEGORY_ARCHETYPE_MAP, SOURCE_CATEGORIES
 from backend.services.resonance_service import ResonanceService
 from backend.utils.errors import bad_request
+from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -152,3 +153,91 @@ class IntakeService:
             value = await ResonanceService.susceptibility_of(supabase, simulation_id, signature)
             out.append({"signature": signature, "fit": min(100, max(0, round(value * 100)))})
         return out
+
+    # ── Abonnements ───────────────────────────────────────────────────────────
+    #
+    # Ein Abo entscheidet, WAS ohne Nachfrage in den Eingang einer Welt gehoert
+    # und mit welcher Linse. Es verwandelt NICHTS: ein Zeitgeber, der von selbst
+    # Modellaufrufe ausloest, kostet Geld ohne Klick, und genau das wurde am
+    # 02.09.2026 auf Prod fuer alle anderen Planer abgestellt.
+
+    @staticmethod
+    async def list_subscriptions(supabase: Client, simulation_id: UUID) -> list[dict]:
+        """Alle Abos einer Welt, das juengste zuerst."""
+        resp = await (
+            supabase.table("intake_subscriptions")
+            .select("*")
+            .eq("simulation_id", str(simulation_id))
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return extract_list(resp)
+
+    @staticmethod
+    async def create_subscription(
+        supabase: Client,
+        *,
+        simulation_id: UUID,
+        user_id: UUID | str | None,
+        data: dict,
+    ) -> dict:
+        """Ein Abo anlegen. Der Schreibweg laeuft ueber RLS, nicht ueber den
+        Admin-Client: ein Abo gehoert der Welt, und wer sie bearbeiten darf,
+        darf es anlegen."""
+        row = {
+            **data,
+            "simulation_id": str(simulation_id),
+            "created_by_id": str(user_id) if user_id else None,
+        }
+        if row.get("zone_id"):
+            row["zone_id"] = str(row["zone_id"])
+        resp = await supabase.table("intake_subscriptions").insert(row).execute()
+        created = extract_list(resp)
+        if not created:
+            raise bad_request("Das Abonnement liess sich nicht anlegen.")
+        return created[0]
+
+    @staticmethod
+    async def update_subscription(
+        supabase: Client,
+        *,
+        subscription_id: UUID,
+        simulation_id: UUID,
+        data: dict,
+    ) -> dict | None:
+        """Ein Abo aendern.
+
+        `simulation_id` steht ZUSAETZLICH im Filter, obwohl die Kennung schon
+        eindeutig ist: ohne sie wuerde eine fremde Kennung im Pfad zwar an RLS
+        scheitern, aber mit einer Meldung, die nach einem Serverfehler aussieht
+        statt nach „gehoert nicht hierher".
+        """
+        update = {**data, "updated_at": datetime.now(UTC).isoformat()}
+        if update.get("zone_id"):
+            update["zone_id"] = str(update["zone_id"])
+        resp = await (
+            supabase.table("intake_subscriptions")
+            .update(update)
+            .eq("id", str(subscription_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        rows = extract_list(resp)
+        return rows[0] if rows else None
+
+    @staticmethod
+    async def delete_subscription(
+        supabase: Client,
+        *,
+        subscription_id: UUID,
+        simulation_id: UUID,
+    ) -> bool:
+        """Ein Abo loeschen. Gibt zurueck, ob wirklich eines wegging."""
+        resp = await (
+            supabase.table("intake_subscriptions")
+            .delete()
+            .eq("id", str(subscription_id))
+            .eq("simulation_id", str(simulation_id))
+            .execute()
+        )
+        return bool(extract_list(resp))

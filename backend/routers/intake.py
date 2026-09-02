@@ -31,10 +31,13 @@ from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.intake import (
     FlaggedSignalResponse,
     FlagSignalRequest,
+    IntakeSubscriptionRequest,
+    IntakeSubscriptionResponse,
     SignatureFitResponse,
 )
 from backend.services.audit_service import AuditService
 from backend.services.intake_service import IntakeService
+from backend.utils.errors import not_found
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -107,3 +110,117 @@ async def signature_fit(
     Welt, keine Handlung an ihr.
     """
     return SuccessResponse(data=await IntakeService.signature_fit(supabase, simulation_id))
+
+
+# ── Abonnements (Luecke 6) ───────────────────────────────────────────────────
+#
+# Ein Abo entscheidet, WAS ohne Nachfrage in den Eingang gehoert und mit welcher
+# Linse. Es verwandelt nichts und loest keinen Zeitgeber aus — die Begruendung
+# steht in Migration 347.
+#
+# Alle vier Wege laufen ueber `get_effective_supabase`, also ueber RLS: ein Abo
+# gehoert der Welt, und die Regeln der Tabelle sagen bereits, wer lesen und wer
+# schreiben darf. Der Admin-Client waere hier eine Umgehung ohne Not — anders
+# als bei `/flag`, wo `news_scan_candidates` seit Migration 215 service-role-only
+# ist.
+
+
+@router.get("/subscriptions")
+async def list_subscriptions(
+    simulation_id: UUID,
+    _user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[list[IntakeSubscriptionResponse]]:
+    """Die Abonnements dieser Welt."""
+    return SuccessResponse(data=await IntakeService.list_subscriptions(supabase, simulation_id))
+
+
+@router.post("/subscriptions", status_code=201)
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def create_subscription(
+    request: Request,
+    simulation_id: UUID,
+    body: IntakeSubscriptionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[IntakeSubscriptionResponse]:
+    """Ein Abonnement anlegen."""
+    created = await IntakeService.create_subscription(
+        supabase,
+        simulation_id=simulation_id,
+        user_id=user.id,
+        data=body.model_dump(exclude_none=False),
+    )
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user_id=user.id,
+        action="create",
+        entity_type="intake_subscription",
+        entity_id=created.get("id"),
+        details={"label": body.label, "source_category": body.source_category},
+    )
+    return SuccessResponse(data=created)
+
+
+@router.patch("/subscriptions/{subscription_id}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def update_subscription(
+    request: Request,
+    simulation_id: UUID,
+    subscription_id: UUID,
+    body: IntakeSubscriptionRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[IntakeSubscriptionResponse]:
+    """Ein Abonnement aendern — auch das blosse An- und Abschalten."""
+    updated = await IntakeService.update_subscription(
+        supabase,
+        subscription_id=subscription_id,
+        simulation_id=simulation_id,
+        data=body.model_dump(exclude_none=False),
+    )
+    if updated is None:
+        raise not_found("Subscription", subscription_id)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user_id=user.id,
+        action="update",
+        entity_type="intake_subscription",
+        entity_id=str(subscription_id),
+        details={"is_active": body.is_active},
+    )
+    return SuccessResponse(data=updated)
+
+
+@router.delete("/subscriptions/{subscription_id}")
+@limiter.limit(RATE_LIMIT_STANDARD)
+async def delete_subscription(
+    request: Request,
+    simulation_id: UUID,
+    subscription_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("editor"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[dict]:
+    """Ein Abonnement loeschen."""
+    removed = await IntakeService.delete_subscription(
+        supabase,
+        subscription_id=subscription_id,
+        simulation_id=simulation_id,
+    )
+    if not removed:
+        raise not_found("Subscription", subscription_id)
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user_id=user.id,
+        action="delete",
+        entity_type="intake_subscription",
+        entity_id=str(subscription_id),
+    )
+    return SuccessResponse(data={"deleted": True})

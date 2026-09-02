@@ -29960,10 +29960,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Subscriptions</source>
   <target>Abonnements</target>
 </trans-unit>
-<trans-unit id="s3b1bdb3f55f755d0">
-  <source>Not wired yet – the backend has no subscriptions.</source>
-  <target>Noch nicht angeschlossen – das Backend kennt keine Abonnements.</target>
-</trans-unit>
 <trans-unit id="scd6244f23b7ae8af">
   <source>1 Entrance · admitted</source>
   <target>1 Eingang · aufgenommen</target>
@@ -31243,6 +31239,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s7d450c71b1b9d649">
   <source>Fit is how susceptible this world is to that kind of signature – the same number the resonance run uses. It belongs to the world and the kind, not to the single signal: two storm warnings share it.</source>
   <target>Die Passung ist die Empfänglichkeit dieser Welt für eine Signatur – dieselbe Zahl, mit der der Resonanzlauf rechnet. Sie gehört der Welt und der Art, nicht dem einzelnen Signal: zwei Unwetterwarnungen teilen sie.</target>
+</trans-unit>
+<trans-unit id="sed36af8bfc5a40df">
+  <source>No subscriptions. Everything waits in triage until someone picks it.</source>
+  <target>Keine Abonnements. Alles wartet in der Sichtung, bis jemand es aufnimmt.</target>
+</trans-unit>
+<trans-unit id="seec4a01d9427eebf">
+  <source>a place</source>
+  <target>ein Ort</target>
+</trans-unit>
+<trans-unit id="sdb410b5fdebd5124">
+  <source>Pause this subscription</source>
+  <target>Dieses Abonnement anhalten</target>
+</trans-unit>
+<trans-unit id="sff3af459e2700fa7">
+  <source>Resume this subscription</source>
+  <target>Dieses Abonnement wieder anlaufen lassen</target>
+</trans-unit>
+<trans-unit id="s68e8b770522b68a2">
+  <source>A subscription decides what comes in – it transforms nothing. The crucible still runs when you open it.</source>
+  <target>Ein Abonnement entscheidet, was hereinkommt – es verwandelt nichts. Der Schmelztiegel läuft weiterhin, wenn du ihn öffnest.</target>
+</trans-unit>
+<trans-unit id="s722184dd16398ae0">
+  <source>The subscription could not be changed.</source>
+  <target>Das Abonnement liess sich nicht ändern.</target>
 </trans-unit>
 </body>
 </file>

@@ -235,3 +235,78 @@ describe('Die Stapel-Aufnahme', () => {
     expect(intakeState.inQuarantine.value).toHaveLength(1);
   });
 });
+
+describe('Abonnements holen herein, was ein Mensch einmal entschieden hat', () => {
+  /*
+   * Geprüft wird das VERHALTEN von `_merge`, nicht die Bedingung darin — über
+   * den einzigen öffentlichen Weg dorthin, `loadBrowse`. Ein Test, der die
+   * Bedingung nachbaut, bestätigt nur, dass ich sie zweimal gleich abschreiben
+   * kann. (Erster Anlauf tat genau das; er ist ersetzt.)
+   */
+  const sub = {
+    id: 's1',
+    simulation_id: 'sim-1',
+    label: 'Beben im Hafen',
+    source_category: null,
+    min_magnitude: 0,
+    zone_id: 'zone-1',
+    vector: 'commerce',
+    is_active: true,
+    created_at: '2026-09-02T06:00:00Z',
+  };
+
+  function browseReturns(names: string[]): void {
+    vi.spyOn(socialTrendsApi, 'browse').mockResolvedValue({
+      success: true,
+      data: names.map((n, i) => ({ name: n, platform: 'guardian', url: `https://x/${i}` })),
+    });
+  }
+
+  it('nimmt ein passendes NEUES Signal in den Eingang, mit der Linse des Abos', async () => {
+    intakeState.subscriptions.value = [sub];
+    browseReturns(['Hafenstreik']);
+
+    await intakeState.loadBrowse('sim-1', {});
+
+    const signal = [...intakeState.signals.value.values()][0];
+    expect(signal.stage).toBe('in');
+    expect(signal.viaSubscription?.label).toBe('Beben im Hafen');
+    expect(signal.viaSubscription?.zone).toBe('zone-1');
+  });
+
+  it('lässt liegen, worauf kein Abo passt', async () => {
+    // Ein gebrowster Artikel hat Magnitude 0 — „noch nicht gemessen".
+    intakeState.subscriptions.value = [{ ...sub, min_magnitude: 0.4 }];
+    browseReturns(['Hafenstreik']);
+
+    await intakeState.loadBrowse('sim-1', {});
+    expect([...intakeState.signals.value.values()][0].stage).toBe('raw');
+  });
+
+  /*
+   * DIE Zusage: ein Abo darf nichts zurueckholen. Ohne sie kaeme Verworfenes
+   * bei jedem Laden wieder in den Eingang, und eine Entscheidung waere
+   * widerrufen, ohne dass jemand sie widerrufen hat.
+   */
+  it('holt NICHTS zurück, was ein Mensch schon behandelt hat', async () => {
+    intakeState.subscriptions.value = [sub];
+    browseReturns(['Hafenstreik']);
+
+    await intakeState.loadBrowse('sim-1', {});
+    const id = [...intakeState.signals.value.keys()][0];
+    intakeState.discard(id);
+    expect(intakeState.get(id)?.stage).toBe('out');
+
+    // Dieselbe Antwort ein zweites Mal — der Server weiss von nichts.
+    await intakeState.loadBrowse('sim-1', {});
+    expect(intakeState.get(id)?.stage).toBe('out');
+  });
+
+  it('greift nicht, wenn das Abo abgeschaltet ist', async () => {
+    intakeState.subscriptions.value = [{ ...sub, is_active: false }];
+    browseReturns(['Hafenstreik']);
+
+    await intakeState.loadBrowse('sim-1', {});
+    expect([...intakeState.signals.value.values()][0].stage).toBe('raw');
+  });
+});

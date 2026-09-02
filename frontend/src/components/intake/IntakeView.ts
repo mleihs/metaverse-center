@@ -26,10 +26,17 @@ import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
+import type { IntakeSubscription } from '../../services/api/IntakeApiService.js';
+import { intakeApi } from '../../services/api/index.js';
 import { intakeState } from '../../services/IntakeStateManager.js';
-import { type IntakeSignal, sourceKindOf } from '../../types/intake.js';
+import { captureError } from '../../services/SentryService.js';
+import type { SourceCategory } from '../../types/index.js';
+import { CATEGORY_RESONANCE, type IntakeSignal, sourceKindOf } from '../../types/intake.js';
 import { icons } from '../../utils/icons.js';
+import { VelgToast } from '../shared/Toast.js';
 import { batchIntegrateQuarantine, batchTransformEntrance } from './intake-batch.js';
+import { archetypeLabel } from './intake-labels.js';
 import './IntakeCrucibleModal.js';
 import './IntakeFlagModal.js';
 import './IntakeQuarantineCard.js';
@@ -192,6 +199,47 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
 
     .sensors__title,
     .quota__label,
+    .subs {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .sub {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      padding: var(--space-1) var(--space-2);
+      border: var(--border-width-thin) solid var(--color-border-light);
+    }
+
+    .sub--off {
+      opacity: 0.45;
+    }
+
+    .sub__label {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--_label);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+    }
+
+    .sub__toggle {
+      margin-inline-start: auto;
+      background: transparent;
+      border: none;
+      color: var(--color-accent-amber);
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+
+    .sub__toggle:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
     .subs__label {
       font-family: var(--font-brutalist);
       font-size: var(--_title);
@@ -774,6 +822,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
     // Die Passung gehoert der WELT, nicht dem Scanner: sie laedt auch fuer
     // einen Architekten, der die Kandidatenliste gar nicht sehen darf.
     void intakeState.loadFit(this.simulationId);
+    void intakeState.loadSubscriptions(this.simulationId);
   }
 
   protected override willUpdate(changed: Map<PropertyKey, unknown>): void {
@@ -955,10 +1004,93 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
         </div>
         <div>
           <h2 class="subs__label">${msg('Subscriptions')}</h2>
-          <p class="sensors__note">${msg('Not wired yet – the backend has no subscriptions.')}</p>
+          ${this._renderSubscriptions()}
         </div>
       </section>
     `;
+  }
+
+  /**
+   * Die Abonnements dieser Welt (Lücke 6).
+   *
+   * Ein Abo entscheidet, WAS ohne Nachfrage in den Eingang kommt — und trägt
+   * die Linse, die ein Mensch EINMAL entschieden hat. Es verwandelt NICHTS:
+   * ein Zeitgeber, der von selbst Modellaufrufe auslöst, kostet Geld ohne
+   * Klick, und genau das steht auf Prod für alle anderen Planer gerade still.
+   */
+  private _renderSubscriptions() {
+    const subs = intakeState.subscriptions.value;
+    const canEdit = appState.canEdit.value;
+
+    return html`
+      <div class="subs">
+        ${
+          subs.length === 0
+            ? html`<p class="sensors__note">
+                ${msg('No subscriptions. Everything waits in triage until someone picks it.')}
+              </p>`
+            : subs.map(
+                (sub) => html`
+                  <div class="sub ${sub.is_active ? '' : 'sub--off'}">
+                    <span class="sub__label">${sub.label}</span>
+                    <span class="note">
+                      ${
+                        sub.source_category
+                          ? archetypeLabel(
+                              CATEGORY_RESONANCE[sub.source_category as SourceCategory]
+                                ?.archetype ?? sub.source_category,
+                            )
+                          : msg('everything')
+                      }
+                      ${sub.min_magnitude > 0 ? html` · ≥ ${sub.min_magnitude.toFixed(2)}` : nothing}
+                      ${
+                        sub.zone_id
+                          ? html` · ${intakeState.zoneName(sub.zone_id) || msg('a place')}`
+                          : nothing
+                      }
+                    </span>
+                    ${
+                      canEdit
+                        ? html`<button
+                            type="button"
+                            class="sub__toggle"
+                            aria-pressed=${String(sub.is_active)}
+                            title=${sub.is_active ? msg('Pause this subscription') : msg('Resume this subscription')}
+                            @click=${() => this._toggleSubscription(sub)}
+                          >
+                            ${sub.is_active ? '■' : '□'}
+                          </button>`
+                        : nothing
+                    }
+                  </div>
+                `,
+              )
+        }
+        <p class="sensors__note">
+          ${msg('A subscription decides what comes in – it transforms nothing. The crucible still runs when you open it.')}
+        </p>
+      </div>
+    `;
+  }
+
+  /** Ein Abo an- oder abschalten. Der einzige Schreibweg, den das Brett hat. */
+  private async _toggleSubscription(sub: IntakeSubscription): Promise<void> {
+    const resp = await intakeApi.updateSubscription(this.simulationId, sub.id, {
+      label: sub.label,
+      source_category: sub.source_category,
+      min_magnitude: sub.min_magnitude,
+      zone_id: sub.zone_id,
+      vector: sub.vector,
+      is_active: !sub.is_active,
+    });
+    if (!resp.success) {
+      captureError(new Error(resp.error?.message ?? 'toggle failed'), {
+        source: 'VelgIntakeView._toggleSubscription',
+      });
+      VelgToast.error(msg('The subscription could not be changed.'));
+      return;
+    }
+    await intakeState.loadSubscriptions(this.simulationId);
   }
 
   // ── Board ─────────────────────────────────────────────────────────────────
