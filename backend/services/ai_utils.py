@@ -148,8 +148,8 @@ def get_openrouter_model(
 _RATE_LIMIT_BACKOFFS = (5, 10)  # seconds to wait on 429 before retry
 
 
-async def _record_usage(
-    result: Any,
+async def _record_attempt(
+    result: Any | None,
     *,
     purpose: str,
     model_id: str,
@@ -158,8 +158,34 @@ async def _record_usage(
     simulation_id: UUID | None,
     user_id: UUID | None,
     key_source: str,
+    outcome: str = "ok",
+    error_kind: str | None = None,
+    error_detail: str | None = None,
 ) -> None:
-    """Write one ``ai_usage_log`` row for a completed model call.
+    """Write one ``ai_usage_log`` row for one ATTEMPT at a model call.
+
+    **Am 03.09.2026.** Eine Chatnachricht blieb ohne Antwort, und der Grund war
+    nirgends nachzulesen. Diese Funktion hiess ``_record_usage`` und wurde an
+    genau zwei Stellen gerufen — beide unmittelbar NACH einem gelungenen
+    ``agent.run``. Die vier Abbruchbahnen daneben endeten in ``logger.error``
+    und ``raise``, also in einem Strom, den der naechste Deploy mit dem
+    Behaelter wegraeumt. Gemessen an dem Tag:
+
+        ai_usage_log        letzte Zeile 18:56 UTC, ausschliesslich Erfolge
+        ai_circuit_state    leer
+        Behaelterprotokoll  um 01:58 UTC mit dem Behaelter geloescht
+
+    Von aussen sah „es lief nichts" genauso aus wie „es scheiterte alles":
+    eine Tabelle ohne neue Zeilen. Ein Buch, das nur die gelungenen Faelle
+    kennt, beantwortet die einzige Frage nicht, die man ihm stellt.
+
+    Seither ist die Zeile ein VERSUCH, kein Erfolg. ``outcome`` sagt, wie er
+    endete; ``result`` darf ``None`` sein, dann stehen null Token und null
+    Kosten da. Die Summen bleiben deshalb, was sie waren — nur ZAEHLUNGEN
+    muessen ``outcome = 'ok'`` sagen, wo sie „beantwortet" meinen.
+
+    Der Inhalt der Uebermittlung bleibt draussen. Protokolliert wird, DASS und
+    WIE ein Anlauf endete, nie WAS gesagt wurde.
 
     **Finding 34.** Every ``run_ai`` call site passed ``admin_supabase`` so that
     ``BudgetEnforcementService.pre_check`` could weigh the call against
@@ -193,13 +219,18 @@ async def _record_usage(
     ``platform``, including every call a user had paid for out of their own
     account.
     """
-    try:
-        usage = result.usage()
-        input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
-        output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
-    except Exception:  # noqa: BLE001 — usage accounting must never fail a served call
-        logger.debug("Could not read usage from AI result", exc_info=True, extra={"purpose": purpose})
-        return
+    input_tokens = 0
+    output_tokens = 0
+    if result is not None:
+        try:
+            usage = result.usage()
+            input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
+            output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
+        except Exception:  # noqa: BLE001 — usage accounting must never fail a served call
+            # Frueher stand hier ein `return`. Ein unlesbarer Zaehler ist aber
+            # kein Grund, den ANLAUF zu verschweigen — die Zeile ohne Token
+            # sagt immer noch, dass und wann gerufen wurde.
+            logger.debug("Could not read usage from AI result", exc_info=True, extra={"purpose": purpose})
 
     client = admin_supabase
     if client is None:
@@ -221,7 +252,57 @@ async def _record_usage(
             "duration_ms": int(elapsed_s * 1000),
         },
         key_source=key_source,
+        outcome=outcome,
+        error_kind=error_kind,
+        error_detail=error_detail,
     )
+
+
+async def _record_failure(
+    exc: BaseException,
+    *,
+    purpose: str,
+    model_id: str,
+    elapsed_s: float,
+    admin_supabase: Client | None,
+    simulation_id: UUID | None,
+    user_id: UUID | None,
+    key_source: str,
+) -> None:
+    """Book a failed attempt. Never raises -- a ledger must not break a call.
+
+    Die Einordnung ist absichtlich grob: gesucht wird spaeter nach GRUPPEN
+    („alle Zeitueberschreitungen der letzten Stunde"), nicht nach einzelnen
+    Meldungen. ``error_kind`` traegt darum den Anbietercode oder den Namen der
+    Ausnahmeklasse, und ``error_detail`` die Meldung — gekuerzt, und nie die
+    Eingabe.
+    """
+    try:
+        status = getattr(exc, "status_code", None)
+        if status is not None:
+            outcome, kind = "http_error", f"HTTP {status}"
+        elif isinstance(exc, asyncio.CancelledError):
+            outcome, kind = "cancelled", "CancelledError"
+        elif isinstance(exc, TimeoutError):
+            outcome, kind = "timeout", type(exc).__name__
+        else:
+            outcome, kind = "failed", type(exc).__name__
+
+        await _record_attempt(
+            None,
+            purpose=purpose,
+            model_id=model_id,
+            elapsed_s=elapsed_s,
+            admin_supabase=admin_supabase,
+            simulation_id=simulation_id,
+            user_id=user_id,
+            key_source=key_source,
+            outcome=outcome,
+            error_kind=kind,
+            error_detail=str(exc)[:500] or None,
+        )
+    except Exception:  # noqa: BLE001 — the ledger is never worth the call
+        logger.debug("Could not book a failed AI attempt", exc_info=True, extra={"purpose": purpose})
 
 
 def key_source_for(api_key: str | None) -> str:
@@ -262,7 +343,7 @@ async def run_ai(
     # Where the OpenRouter key behind ``agent`` came from, for the cost ledger.
     # ``run_ai`` cannot see this itself — the agent is already built by the time
     # it arrives — so a caller that knows it used a simulation or BYOK key says
-    # so here. See ``_record_usage``.
+    # so here. See ``_record_attempt``.
     key_source: str = "platform",
 ) -> Any:
     """Central wrapper for every agent.run() call.
@@ -339,7 +420,7 @@ async def run_ai(
             result = await agent.run(prompt, **kwargs)
             elapsed = time.monotonic() - t0
             logger.info("AI call completed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)})
-            await _record_usage(
+            await _record_attempt(
                 result,
                 purpose=purpose,
                 model_id=getattr(agent.model, "model_name", "unknown"),
@@ -366,11 +447,31 @@ async def run_ai(
                     },
                     exc_info=True,
                 )
+                await _record_failure(
+                    exc,
+                    purpose=purpose,
+                    model_id=getattr(agent.model, "model_name", "unknown"),
+                    elapsed_s=elapsed,
+                    admin_supabase=admin_supabase,
+                    simulation_id=simulation_id,
+                    user_id=user_id,
+                    key_source=key_source,
+                )
                 raise
             last_exc = exc
-        except Exception:
+        except Exception as exc:
             elapsed = time.monotonic() - t0
             logger.error("AI call failed", extra={"purpose": purpose, "elapsed_s": round(elapsed, 1)}, exc_info=True)
+            await _record_failure(
+                exc,
+                purpose=purpose,
+                model_id=getattr(agent.model, "model_name", "unknown"),
+                elapsed_s=elapsed,
+                admin_supabase=admin_supabase,
+                simulation_id=simulation_id,
+                user_id=user_id,
+                key_source=key_source,
+            )
             raise
 
     # ── Layer 2: automatic model fallback ───────────────────────────
@@ -402,7 +503,7 @@ async def run_ai(
         )
         # The fallback model is the one that answered and the one that is
         # billed — logging the caller's model here would misattribute the cost.
-        await _record_usage(
+        await _record_attempt(
             result,
             purpose=purpose,
             model_id=fallback_model_id,
@@ -413,7 +514,7 @@ async def run_ai(
             key_source=key_source,
         )
         return result
-    except Exception:
+    except Exception as exc:
         elapsed = time.monotonic() - t0
         logger.error(
             "AI fallback also failed",
@@ -421,6 +522,20 @@ async def run_ai(
             exc_info=True,
         )
         sentry_sdk.capture_exception()
+        # Gebucht wird, WAS scheiterte — der Ausweichlauf mit seinem eigenen
+        # Modell. Geworfen wird die 429 des ersten Modells, weil der Aufrufer
+        # daraus seine Antwort baut. Zwei verschiedene Fragen, zwei
+        # verschiedene Antworten.
+        await _record_failure(
+            exc,
+            purpose=purpose,
+            model_id=fallback_model_id,
+            elapsed_s=elapsed,
+            admin_supabase=admin_supabase,
+            simulation_id=simulation_id,
+            user_id=user_id,
+            key_source=key_source,
+        )
         # Re-raise the original 429 error — the caller's ai_error_to_http
         # will convert it to a user-facing 429 response.
         raise last_exc from None  # type: ignore[misc]

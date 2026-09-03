@@ -81,7 +81,15 @@ class FirehoseEntry(BaseModel):
     simulation_id: UUID | None = None
     user_id: UUID | None = None
     key_source: str = "platform"
+    # Der Ausgang des Anlaufs, aus `ai_usage_log.outcome` (Migration 352).
+    #
+    # Dieses Feld gab es schon vorher — abgeleitet aus `metadata["status"]`,
+    # das kein Schreibweg je gesetzt hat. Es stand darum seit jeher auf "ok",
+    # in jeder Zeile, auch in denen, die es nie gab: gescheiterte Anlaeufe
+    # wurden ueberhaupt nicht gebucht. Ein Melder, der nur einen Wert kennt,
+    # meldet nichts.
     status: str = "ok"
+    error_kind: str | None = None
 
 
 # ── Circuit matrix panel (③) + Quarantine panel (④) ─────────────────────

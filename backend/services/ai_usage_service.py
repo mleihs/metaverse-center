@@ -118,6 +118,9 @@ class AIUsageService:
         usage: dict | None = None,
         key_source: str = "platform",
         metadata: dict | None = None,
+        outcome: str = "ok",
+        error_kind: str | None = None,
+        error_detail: str | None = None,
     ) -> None:
         """Log an AI usage event. Never raises -- failures are swallowed.
 
@@ -131,6 +134,15 @@ class AIUsageService:
             usage: Token usage dict from OpenRouterService.last_usage or similar.
             key_source: Where the API key came from ('platform', 'simulation', 'byok', 'env').
             metadata: Additional context (e.g. agent_id, building_id).
+            outcome: How the attempt ended -- 'ok', 'http_error', 'timeout',
+                'cancelled' or 'failed'. See migration 352: this table is a
+                record of ATTEMPTS, not of successes. A failed attempt carries
+                zero tokens and zero cost, so every sum stays as it was; only
+                counts must say ``outcome = 'ok'`` where they mean answered.
+            error_kind: Short cause, for grouping ('HTTP 402', 'TimeoutError').
+            error_detail: The provider's message, truncated to 500 characters.
+                NEVER the prompt or the response -- the ledger records that and
+                how a transmission ended, never what was said.
         """
         try:
             u = usage or {}
@@ -160,6 +172,13 @@ class AIUsageService:
                         "estimated_cost_usd": estimated_cost,
                         "key_source": key_source,
                         "metadata": metadata or {},
+                        "outcome": outcome,
+                        "error_kind": error_kind,
+                        # Der Riegel steht hier UND als CHECK in Migration 352.
+                        # Hier, damit eine lange Anbietermeldung die Buchung
+                        # nicht verwirft; dort, damit kein zweiter Schreibweg
+                        # daran vorbeikommt.
+                        "error_detail": error_detail[:500] if error_detail else None,
                     }
                 )
                 .execute()
