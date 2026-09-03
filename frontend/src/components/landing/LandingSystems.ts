@@ -64,7 +64,9 @@ const SYSTEMS: readonly SystemEntry[] = [
     tag: () => msg('System 01 // The Forge'),
     title: () => msg('Forge a World'),
     teaser: () =>
-      msg('One sentence becomes a civilization: coastlines, a census, a founding grudge. You write the seed. The world writes everything after it.'),
+      msg(
+        'One sentence becomes a civilization: coastlines, a census, a founding grudge. You write the seed. The world writes everything after it.',
+      ),
     lore: () =>
       msg(
         'The intake desk of the Bureau. You file a single sentence; the Forge answers with coastlines, a census, a founding grudge and a working economy. It names the rivers, seats the parliament, invents the folk songs, and decides – before you can object – which of your words was the important one.',
