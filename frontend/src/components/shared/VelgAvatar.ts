@@ -2,10 +2,13 @@ import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { getInitials } from '../../utils/text.js';
+import { markerCornerStyles } from './marker-styles.js';
 
 @customElement('velg-avatar')
 export class VelgAvatar extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
     }
@@ -67,7 +70,7 @@ export class VelgAvatar extends LitElement {
     /* ── Mood ring ──────────────────────────────────── */
 
     /*
-      Ein Ring, kein Alarm.
+      Eine Registermarke, kein Rahmen.
 
       Bis zum 03.09.2026 trug er 2 px Rand, 6 px Schein UND einen Dauerpuls
       (opacity 0.55 -> 1 -> 0.55, alle 3 s, endlos). Auf Prod gemessen: 15 von
@@ -86,12 +89,21 @@ export class VelgAvatar extends LitElement {
       Bandes. Neutral bekommt gar keinen mehr (siehe moodRingColor), also
       steht ein Ring jetzt fuer eine ABWEICHUNG und nicht fuer den Normalfall.
     */
-    .mood-ring {
+    .mood-mark {
       position: absolute;
+      /* Etwas ausserhalb des Bildes, damit die Arme das Gesicht nicht
+         anschneiden — dieselbe Lage, die der alte Ring hatte. */
       inset: -3px;
-      border: 2px solid var(--_mood-color, transparent);
-      z-index: 0;
+      z-index: 2;
+      --marker-color: var(--_mood-color, transparent);
     }
+
+    /* Die Armlaenge folgt der Bildgroesse. Ein fester Arm, der auf 80 px
+       stimmt, ist auf 24 px ein Rahmen — genau die Grenze, die
+       marker-corners--tight im Modulkopf nennt. */
+    :host([size='xs']) .mood-mark { --marker-arm: 6px; --marker-thickness: 1px; }
+    :host([size='sm']) .mood-mark { --marker-arm: 9px; --marker-thickness: 2px; }
+    :host([size='full']) .mood-mark { --marker-arm: 20px; --marker-thickness: 3px; }
 
     .avatar__img {
       width: 100%;
@@ -124,7 +136,8 @@ export class VelgAvatar extends LitElement {
     :host([size='full']) .avatar__initials {
       font-size: var(--text-3xl);
     }
-  `;
+  `,
+  ];
 
   @property({ type: String }) src = '';
   @property({ type: String }) name = '';
@@ -164,7 +177,7 @@ export class VelgAvatar extends LitElement {
   private _renderMoodRing() {
     if (!this.moodColor) return nothing;
     return html`<div
-      class="mood-ring"
+      class="mood-mark marker-corners"
       style=${styleMap({ '--_mood-color': this.moodColor })}
       aria-hidden="true"
     ></div>`;
