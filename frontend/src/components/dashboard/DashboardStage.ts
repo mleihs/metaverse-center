@@ -36,15 +36,15 @@
 
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import type { ActiveEpochParticipation } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import { CycleCountdown } from './cycle-countdown.js';
 
 /** Wie oft die Uhr nachrechnet. Eine Sekunde ist die feinste Angabe, die der
  *  Entwurf zeigt; feiner wäre Rechenarbeit ohne Aussage. */
-const TICK_MS = 1000;
 
 /** Mehr Segmente als das trägt keine Leiste mehr lesbar. Eine 14-Tage-Epoche mit
  *  Achtstundenzyklen hat 42 — die passen, weil die Segmente mitschrumpfen; bei
@@ -359,61 +359,30 @@ export class VelgDashboardStage extends LitElement {
   /** Die Epoche, die als Nächstes etwas verlangt. `null` heisst: keine. */
   @property({ attribute: false }) participation: ActiveEpochParticipation | null = null;
 
-  @state() private _remainingMs = 0;
-
-  private _timer: number | null = null;
+  /**
+   * Die Zyklusuhr. Sie liegt seit dem 03.09.2026 in `cycle-countdown.ts`, weil
+   * das Atlas-Blatt dieselbe Zahl zeigt — zwei Uhren gehen irgendwann
+   * auseinander, und die eine spraenge eine Sekunde spaeter auf Null als die
+   * andere.
+   */
+  private readonly _cycle = new CycleCountdown(this);
 
   connectedCallback(): void {
     super.connectedCallback();
-    this._startClock();
-  }
-
-  disconnectedCallback(): void {
-    this._stopClock();
-    super.disconnectedCallback();
+    this._cycle.watch(this.participation?.cycle_deadline_at);
   }
 
   protected updated(changed: Map<string, unknown>): void {
-    if (changed.has('participation')) this._startClock();
-  }
-
-  /** Die Uhr laeuft nur, wenn es etwas zu zaehlen gibt. Ein Intervall fuer eine
-   *  Epoche ohne Frist waere Arbeit ohne Gegenstand — und auf Prod der Regelfall. */
-  private _startClock(): void {
-    this._stopClock();
-    const deadline = this.participation?.cycle_deadline_at;
-    if (!deadline) {
-      this._remainingMs = 0;
-      return;
+    if (changed.has('participation')) {
+      this._cycle.watch(this.participation?.cycle_deadline_at);
     }
-    const tick = () => {
-      this._remainingMs = Math.max(0, new Date(deadline).getTime() - Date.now());
-      if (this._remainingMs === 0) this._stopClock();
-    };
-    tick();
-    this._timer = window.setInterval(tick, TICK_MS);
-  }
-
-  private _stopClock(): void {
-    if (this._timer !== null) {
-      window.clearInterval(this._timer);
-      this._timer = null;
-    }
-  }
-
-  private _formatted(): string {
-    const total = Math.floor(this._remainingMs / 1000);
-    const h = String(Math.floor(total / 3600)).padStart(2, '0');
-    const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
-    const s = String(total % 60).padStart(2, '0');
-    return `${h}:${m}:${s}`;
   }
 
   protected render() {
     const p = this.participation;
     if (!p) return this._renderIdle();
 
-    const running = Boolean(p.cycle_deadline_at) && this._remainingMs > 0;
+    const running = this._cycle.running;
     const art = p.simulation_banner_url;
 
     return html`
@@ -436,9 +405,9 @@ export class VelgDashboardStage extends LitElement {
                 class="clock rise rise--1"
                 role="timer"
                 aria-live="off"
-                aria-label=${msg(str`${Math.floor(this._remainingMs / 3600000)} hours left in this cycle`)}
+                aria-label=${msg(str`${this._cycle.hoursLeft} hours left in this cycle`)}
               >
-                ${this._formatted()}
+                ${this._cycle.formatted}
               </p>`
             : html`
                 <p class="clock clock--idle rise rise--1">${msg('No cycle clock running')}</p>
