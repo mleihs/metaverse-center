@@ -1,5 +1,5 @@
 -- ============================================================================
--- 352 — Auch das Erzeugte ist Text, den jemand liest
+-- 354 — Auch das Erzeugte ist Text, den jemand liest
 --
 -- Migration 351 hat den Geviertstrich aus zwoelf Spalten geraeumt. Diese
 -- Zielliste war aus den SAAT-DATEIEN abgeleitet, nicht aus der Datenbank —
@@ -129,7 +129,7 @@ BEGIN
       SELECT 1 FROM information_schema.columns
       WHERE table_schema = 'public' AND table_name = tabelle AND column_name = spalte
     ) THEN
-      RAISE EXCEPTION 'Migration 352: %.% gibt es nicht — die Zielliste ist veraltet', tabelle, spalte;
+      RAISE EXCEPTION 'Migration 354: %.% gibt es nicht — die Zielliste ist veraltet', tabelle, spalte;
     END IF;
 
     IF art = 'jsonb' THEN
@@ -147,7 +147,7 @@ BEGIN
     gesamt := gesamt + betroffen;
 
     IF betroffen > 0 THEN
-      RAISE NOTICE 'Migration 352: %.% — % Zeile(n) bereinigt', tabelle, spalte, betroffen;
+      RAISE NOTICE 'Migration 354: %.% — % Zeile(n) bereinigt', tabelle, spalte, betroffen;
     END IF;
   END LOOP;
 
@@ -160,14 +160,14 @@ BEGIN
       tabelle, spalte, '%' || e'\u2014' || '%'
     ) INTO uebrig;
     IF uebrig > 0 THEN
-      RAISE EXCEPTION 'Migration 352: %.% fuehrt noch % Zeile(n) mit U+2014', tabelle, spalte, uebrig;
+      RAISE EXCEPTION 'Migration 354: %.% fuehrt noch % Zeile(n) mit U+2014', tabelle, spalte, uebrig;
     END IF;
   END LOOP;
 
   IF gesamt = 0 THEN
-    RAISE NOTICE 'Migration 352: nichts zu bereinigen — die Wirkprobe ist damit AUSGESETZT, nicht bestanden (frische Datenbank? dort erzeugt noch niemand Text)';
+    RAISE NOTICE 'Migration 354: nichts zu bereinigen — die Wirkprobe ist damit AUSGESETZT, nicht bestanden (frische Datenbank? dort erzeugt noch niemand Text)';
   ELSE
-    RAISE NOTICE 'Migration 352: % Zeile(n) insgesamt bereinigt, keine Spalte fuehrt mehr U+2014', gesamt;
+    RAISE NOTICE 'Migration 354: % Zeile(n) insgesamt bereinigt, keine Spalte fuehrt mehr U+2014', gesamt;
   END IF;
 END $$;
 
