@@ -47,6 +47,7 @@ import { buildAptitudeIndex } from '../../utils/aptitudes.js';
 import { professionLabel } from '../../utils/profession.js';
 import { VelgToast } from '../shared/Toast.js';
 import { deployOperativeStyles } from './deploy-operative-styles.js';
+import { fanGeometry } from '../../utils/card-fan.js';
 
 // ── Types & Constants ────────────────────────────────
 
@@ -401,15 +402,6 @@ export class VelgDeployOperativeModal extends LitElement {
     if (aptitude >= 7) return { label: msg('Good'), css: 'good' };
     if (aptitude >= 5) return { label: msg('Fair'), css: 'fair' };
     return { label: msg('Poor'), css: 'poor' };
-  }
-
-  private _fanGeometry(index: number, total: number): { rot: number; y: number } {
-    if (total <= 1) return { rot: 0, y: 0 };
-    const center = (total - 1) / 2;
-    const maxRot = Math.min(30, total * 5);
-    const rot = (index - center) * (maxRot / total);
-    const y = Math.abs(index - center) * 8;
-    return { rot, y };
   }
 
   private _getBestAptitude(apt: AptitudeSet): { type: OperativeType; level: number } {
@@ -1157,7 +1149,7 @@ export class VelgDeployOperativeModal extends LitElement {
 				<span class="hand__label">${msg('YOUR ROSTER')}</span>
 				<div class="hand__cards">
 					${agents.map((agent, i) => {
-            const { rot, y } = this._fanGeometry(i, total);
+            const { rot, y } = fanGeometry(i, total);
             const isDeployed = this.deployedAgentIds.includes(agent.id);
             const isSelected = agent.id === this._selectedAgentId;
             const apt = this._aptitudeMap.get(agent.id) ?? null;

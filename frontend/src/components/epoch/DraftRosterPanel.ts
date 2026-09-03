@@ -15,6 +15,7 @@ import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.j
 import { operativeOverlayStyles } from './deploy-operative-styles.js';
 import '../shared/VelgGameCard.js';
 import { professionLabel } from '../../utils/profession.js';
+import { fanGeometry } from '../../utils/card-fan.js';
 
 const OP_TYPES: OperativeType[] = [
   'spy',
@@ -567,15 +568,6 @@ export class VelgDraftRosterPanel extends LitElement {
     return 'common';
   }
 
-  private _fanGeometry(index: number, total: number): { rot: number; y: number } {
-    if (total <= 1) return { rot: 0, y: 0 };
-    const center = (total - 1) / 2;
-    const maxRot = Math.min(30, total * 5);
-    const rot = (index - center) * (maxRot / total);
-    const y = Math.abs(index - center) * 8;
-    return { rot, y };
-  }
-
   // ── Draft actions ──
 
   private _addAgent(agentId: string): void {
@@ -835,7 +827,7 @@ export class VelgDraftRosterPanel extends LitElement {
             const isDrafted = drafted.has(agent.id);
             const apt = this.aptitudeMap.get(agent.id);
             const best = apt ? this._getBestAptitude(apt) : null;
-            const fan = this._fanGeometry(i, total);
+            const fan = fanGeometry(i, total);
 
             const subtitle = [professionLabel(agent.primary_profession), agent.gender]
               .filter(Boolean)

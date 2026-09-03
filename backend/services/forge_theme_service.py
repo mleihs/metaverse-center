@@ -23,6 +23,7 @@ from backend.services.ai_utils import (
 )
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.forge_feature_service import ForgeFeatureService
+from backend.services.forge_prompt_blocks import world_context_header
 from backend.services.prompt_contracts import (
     PromptContract,
     SanitizeResult,
@@ -220,14 +221,7 @@ class ForgeThemeService:
 
         prompt = (
             f"Design a unique visual theme for this simulation world:\n\n"
-            f"SEED: {seed}\n\n"
-            f"PHILOSOPHICAL ANCHOR:\n"
-            f"  Title: {anchor.get('title', 'Unknown')}\n"
-            f"  Core Question: {anchor.get('core_question', '')}\n"
-            f"  Description: {anchor.get('description', '')}\n"
-            f"  Literary Influence: {anchor.get('literary_influence', '')}\n\n"
-            f"GEOGRAPHY:\n"
-            f"  City: {geography.get('city_name', 'Unnamed')}\n"
+            f"{world_context_header(seed, anchor, geography)}"
             f"  Zones: {', '.join(z.get('name', '') for z in geography.get('zones', []))}\n\n"
             f"{agent_lines}"
             f"{building_lines}"

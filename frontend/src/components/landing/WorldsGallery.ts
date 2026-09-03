@@ -22,6 +22,7 @@ import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
 import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
+import { setupScrollReveal } from '../../utils/scroll-reveal.js';
 
 @localized()
 @customElement('velg-worlds-gallery')
@@ -608,20 +609,7 @@ export class VelgWorldsGallery extends LitElement {
   }
 
   private _setupScrollReveal(): void {
-    this._observer?.disconnect();
-    this._observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            this._observer?.unobserve(entry.target);
-          }
-        }
-      },
-      { threshold: 0.1 },
-    );
-    const els = this.renderRoot.querySelectorAll('.scroll-reveal:not(.in-view)');
-    for (const el of els) this._observer.observe(el);
+    this._observer = setupScrollReveal(this.renderRoot, '.scroll-reveal', this._observer);
   }
 
   protected render() {
