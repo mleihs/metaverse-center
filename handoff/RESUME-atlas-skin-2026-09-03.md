@@ -587,6 +587,102 @@ deutlich; der Farbton ist etwas neutraler.
   skaliert (1389), der Sichtbereich war 1728. Wer Kastenmaße gegen die
   Fotobreite prüft, findet Überläufe, die es nicht gibt.
 
+---
+
+## Was am 03.09.2026 abends noch dazukam — und was Prod dazu gesagt hat
+
+Der Skin ist **live auf `https://metaverse.center`**. Coolify baut nicht
+automatisch beim Push; ein Push ist nicht live. Welcher Commit läuft, sagt die
+Seite selbst über `<meta name="velg-release">`.
+
+Der erste Blick auf die laufende Seite hat drei Dinge gefunden, die kein
+grünes Tor und kein Blick auf den Quelltext gefunden hätte. Alle drei sind
+behoben und ausgerollt.
+
+### 1. Die neun Blätter sprachen Deutsch nur im Fließtext
+
+Auf der deutschen Seite las die Überschrift „living worlds, surveyed nightly",
+während der Absatz darunter deutsch war. Kein Fehler im Code: die 133
+`msg()`-Zeichenketten der neuen Blätter waren korrekt gewickelt, nur nie
+extrahiert. **lit-localize fällt still auf die Quellsprache zurück** — kein
+Fehler, keine Warnung, kein roter Test, nur ein englischer Satz. Auf einer
+Seite, deren Eigennamen ohnehin englisch sind (Terminal, Forge, Drift), sieht
+der nicht falsch aus.
+
+Mein eigener Zähler behauptete zuerst „155 von 155 fehlen" und lag falsch —
+ein Regex über die Quelldateien vergleicht eingerückten Template-Text mit
+normalisiertem XLIFF-Inhalt. Die ehrliche Zahl kam von `lit-localize` selbst:
+133 von 8724. Danach: 8724 von 8724 übersetzt.
+
+### 2. Der Gegenblock kehrte Grund und Tinte um, aber nicht seinen Akzent
+
+Blatt 06 nimmt `--color-surface-contrast` / `--color-text-on-contrast` und
+verankert seine Tinte korrekt darin. Sein **Akzent** tat das nicht: sieben
+Stellen standen im Zinnober des Papiers auf Tintengrün, **2,31 : 1**.
+
+Das Tor sah genau das Paar, das es prüfen sollte („names both halves of the
+counter-block or neither") — es gab keine dritte Hälfte, die hätte fehlen
+können. Jetzt gibt es sie: **`--color-accent-on-contrast`**, geschrieben im
+selben Schritt wie seine zwei Geschwister, auf dem Papier das Amber des
+Terminals (6,16 : 1).
+
+Eine siebte Stelle blieb nach dem ersten Fix stehen, weil sie aus dem
+**gemeinsamen** Modul kam (`atlas-sheet-styles.ts`) und nicht aus dem Blatt.
+Zwei der drei Kopfrollen waren beim Bau lokal überschrieben, die dritte nicht —
+und weil alle drei gleich aussehen, ist die Lücke am Bildschirm unsichtbar.
+
+### 3. Die Tinte war gegen EINEN Papiergrund gestimmt und steht auf dreien
+
+Der wichtigste Befund, weil er den ganzen Skin betrifft. Der Papier-Skin hat
+drei Gründe, und die Leiter kostet **0,74 Kontrast**:
+
+|          | Seite `#e9ede9` | erhoben `#dfe5e0` | vertieft `#d5dcd6` |
+|----------|---------------|-----------------|------------------|
+| Zinnober | 4,85          | **4,49**        | **4,11**         |
+| Ocker    | 4,87          | 4,51            | **4,13**         |
+| Gefahr   | 5,53          | 5,11            | 4,68             |
+| Erfolg   | 4,50          | **4,16**        | **3,81**         |
+
+Vier Blattnummern und ein Eingabezeiger standen bei 4,49 — ein Hundertstel
+unter dem Boden. Die vier Tinten sind jetzt gegen **`#d5dcd6`** gestimmt, den
+dunkelsten der drei; nur die Helligkeit bewegt sich, der Farbton um höchstens
+0,2°:
+
+    Zinnober  #b63c24 -> #ab3922      Erfolg  #1f7a4d -> #1c6d45
+    Ocker     #83600f -> #7b5a0e      Gefahr  #b3261e unverändert
+
+Das Tor kreuzte die drei **Text**rollen gegen alle drei Gründe — sauber. Die
+vier **Status**rollen kreuzte es gegen keinen: sie wurden nur als Fläche
+geprüft. Damit blieb die häufigste Verwendung einer Statusfarbe auf diesem Skin
+ungeprüft, nämlich als kleine Schrift AUF dem Papier. Das Kreuz ist ergänzt
+(24 neue Fälle, prüft auch den Dark-Skin).
+
+### Was auf Prod gemessen wurde
+
+217 Textknoten der Landing, geeichtes Messgerät. Alle zwölf Textrollen der
+Seite ≥ 4,5 : 1 (Tinte 14,08 · gedämpft 5,53 · Zinnober · Ocker · Grün).
+
+**Zur Eichung:** `getComputedStyle().color` liefert bei `color-mix()`
+`color(srgb 0.91 … / 0.6)` — Komponenten **0–1**, nicht 0–255. Meine erste
+Messfunktion teilte durch 255 und machte aus jeder solchen Farbe Schwarz; sie
+meldete neun Verstöße statt sieben. Jede Messfunktion braucht einen Selbsttest
+(Schwarz auf Weiß **muss** 21 ergeben), sonst sind ihre Zahlen Behauptungen.
+
+### Punkt 6 der Restliste ist erledigt
+
+`--color-surface-overlay` ist **kein** Fehler: die einzige Stelle, die es liest
+(`DailyBriefingModal.ts`), setzt sich selbst ausdrücklich auf Plattform-Dark.
+Es ist ein Token für einen bewusst dunklen Modal, kein vergessener Dark-Wert.
+
+### Was offen bleibt, weil Werkzeug fehlt
+
+- **Bildmatrix** über 390/768/1024/1440/1920/2560 × dark/atlas — braucht echte
+  Fensterbreiten. Ein Element zu verkleinern prüft Container-Abfragen, **nie**
+  Medienabfragen; das hat in dieser Sitzung zweimal zu einer Fehldiagnose
+  geführt.
+- **Die Dashboard-Blätter mit echten Daten** — braucht ein laufendes Backend
+  und eine angemeldete Sitzung.
+
 ## Kontrolle nach jedem Schritt
 
 ```bash
