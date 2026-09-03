@@ -618,9 +618,22 @@ class ThemeService {
       Das Element haengt am Wirt, damit es dessen Custom Properties erbt, und
       wird sofort wieder entfernt.
     */
+    //     Und die Probe muss in den SCHATTEN, nicht an den Wirt.
+    //
+    //     `velg-app` hat einen Shadow-Root ohne `slot`. Ein Kind, das am Wirt
+    //     haengt, wird keinem Slot zugewiesen, also nie gerendert — und
+    //     `getComputedStyle` gibt fuer ein nicht gerendertes Element den
+    //     leeren String zurueck. Am 03.09.2026 im Browser gegen Prod gemessen:
+    //
+    //         am Wirt              ""                                (unlesbar)
+    //         im Schatten          color(srgb 0.642745 …)            (lesbar)
+    //
+    //     Die Probe im Schatten erbt die Custom Properties des Wirts genauso —
+    //     Vererbung geht ueber die Schattengrenze, Slot-Zuweisung nicht.
+    const scope = hostElement.shadowRoot ?? hostElement;
     const probe = hostElement.ownerDocument.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none';
-    hostElement.appendChild(probe);
+    scope.appendChild(probe);
     const read = (token: string): string => {
       probe.style.color = '';
       probe.style.color = `var(${token})`;
