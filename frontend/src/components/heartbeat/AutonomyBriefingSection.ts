@@ -43,7 +43,7 @@ export class VelgAutonomyBriefing extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-3);
       padding-top: var(--space-4);
@@ -114,7 +114,7 @@ export class VelgAutonomyBriefing extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       margin-top: var(--space-1);
@@ -155,7 +155,7 @@ export class VelgAutonomyBriefing extends LitElement {
 
     .highlight__dot--critical {
       background: var(--color-danger);
-      box-shadow: 0 0 4px color-mix(in srgb, var(--color-danger) 40%, transparent);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 40%, transparent);
     }
 
     .highlight__dot--important {
@@ -176,7 +176,7 @@ export class VelgAutonomyBriefing extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-primary);
     }

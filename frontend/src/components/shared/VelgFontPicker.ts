@@ -124,7 +124,7 @@ export class VelgFontPicker extends LitElement {
     .picker__label {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--color-text-tertiary);
       display: block;
@@ -198,7 +198,7 @@ export class VelgFontPicker extends LitElement {
       max-height: 380px;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-shadow) 50%, transparent);
     }
 
     .picker__search {
@@ -230,7 +230,7 @@ export class VelgFontPicker extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3) var(--space-1);
@@ -272,7 +272,7 @@ export class VelgFontPicker extends LitElement {
     .picker__option-label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-icon);
     }
@@ -296,7 +296,7 @@ export class VelgFontPicker extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
     }
@@ -328,7 +328,7 @@ export class VelgFontPicker extends LitElement {
       color: var(--color-text-secondary);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       padding: var(--space-1-5) var(--space-3);
       cursor: pointer;

@@ -221,7 +221,7 @@ export class VelgEpochCreationWizard extends LitElement {
         padding: var(--space-2) var(--space-2);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         text-align: center;
         color: var(--color-text-quiet);
@@ -281,7 +281,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .field__label {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
       }
@@ -393,7 +393,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
       }
 
@@ -443,7 +443,7 @@ export class VelgEpochCreationWizard extends LitElement {
       .toggle-field__label {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
       }
@@ -510,7 +510,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -555,7 +555,7 @@ export class VelgEpochCreationWizard extends LitElement {
         padding: var(--space-2) 0;
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
       }
 
@@ -576,7 +576,7 @@ export class VelgEpochCreationWizard extends LitElement {
         padding: var(--space-1) var(--space-3);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
         background: var(--color-surface);
@@ -611,7 +611,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
@@ -669,7 +669,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         cursor: pointer;
         transition: all 0.2s;
@@ -715,13 +715,13 @@ export class VelgEpochCreationWizard extends LitElement {
       }
 
       .btn--launch:hover:not(:disabled) {
-        box-shadow: 0 0 16px var(--_success-strong);
+        box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--_success-strong);
         transform: translateY(-1px);
       }
 
       .btn--launch:active:not(:disabled) {
         transform: translateY(0);
-        box-shadow: 0 0 8px var(--color-success-border);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-success-border);
       }
 
       .btn--launch::after {
@@ -758,7 +758,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
       }
@@ -806,7 +806,7 @@ export class VelgEpochCreationWizard extends LitElement {
         background: var(--_primary-subtle);
         box-shadow:
           inset 0 2px 0 0 var(--color-warning),
-          0 0 12px var(--_primary-soft);
+          0 0 calc(12px * var(--glow-strength)) var(--_primary-soft);
         transform: scale(1.02);
       }
 
@@ -840,7 +840,7 @@ export class VelgEpochCreationWizard extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.12em;
         color: var(--color-text-tertiary);
         transition: color 0.15s ease;

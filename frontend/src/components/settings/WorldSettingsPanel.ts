@@ -60,7 +60,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       flex-shrink: 0;
@@ -101,7 +101,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       text-align: left;
@@ -128,7 +128,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -137,7 +137,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: transparent;
       border: var(--border-width-thin) solid var(--color-border);
@@ -159,7 +159,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       border: var(--border-default);
       box-shadow: var(--shadow-md);
@@ -206,7 +206,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -263,7 +263,7 @@ export class VelgWorldSettingsPanel extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       color: var(--color-danger);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 

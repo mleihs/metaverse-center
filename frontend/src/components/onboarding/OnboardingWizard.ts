@@ -146,7 +146,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
 
     .step-dot--nav:hover {
       transform: scale(1.2);
-      box-shadow: 0 0 6px var(--color-accent-amber-glow);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-accent-amber-glow);
     }
 
     .step-dot--nav:focus-visible {
@@ -163,7 +163,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       height: 10px;
       background: var(--color-accent-amber);
       border-color: var(--color-accent-amber);
-      box-shadow: 0 0 8px var(--color-accent-amber-glow);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-accent-amber-glow);
       animation: badge-pop 200ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
     }
 
@@ -269,7 +269,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       color: var(--color-text-inverse);
       background: var(--color-accent-amber);
@@ -315,7 +315,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       color: var(--color-text-secondary);
       background: transparent;
@@ -373,7 +373,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: 24px;
       opacity: 0;
@@ -432,7 +432,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0 0 6px;
     }
@@ -504,7 +504,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 12px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 1px;
       color: var(--color-text-secondary);
       margin: 0 0 2px;
@@ -541,7 +541,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0 0 6px;
     }
@@ -610,7 +610,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 1px;
       color: var(--color-text-secondary);
     }
@@ -637,7 +637,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-weight: 900;
       font-size: 16px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0 0 6px;
     }
@@ -722,7 +722,7 @@ export class VelgOnboardingWizard extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 13px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 1px;
       color: var(--color-text-secondary);
       margin: 0 0 4px;

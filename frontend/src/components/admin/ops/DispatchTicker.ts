@@ -102,7 +102,7 @@ export class VelgOpsDispatchTicker extends LitElement {
       font-size: 8px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       pointer-events: none;
     }

@@ -139,7 +139,7 @@ export class VelgLandingCitizens extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin-bottom: var(--space-4);
     }
@@ -156,7 +156,7 @@ export class VelgLandingCitizens extends LitElement {
       font-weight: var(--font-bold);
       font-size: calc(clamp(var(--text-xl), 3.4vw, 40px) * var(--stage-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       line-height: var(--leading-tight);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-4);
@@ -180,7 +180,7 @@ export class VelgLandingCitizens extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: none;
       border: 0;

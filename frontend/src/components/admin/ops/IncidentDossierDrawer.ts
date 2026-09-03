@@ -87,7 +87,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 0;
       border-left: 1px solid var(--color-border);
       background: var(--color-surface);
@@ -142,14 +142,14 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .entry__action {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-primary);
       font-size: 10px;
       padding: 1px var(--space-1-5);
@@ -198,7 +198,7 @@ export class VelgOpsIncidentDossierDrawer extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       font-size: 9px;
       color: var(--color-text-quiet);
     }

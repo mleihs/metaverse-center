@@ -121,7 +121,7 @@ export class VelgForecastSlider extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       cursor: pointer;
     }

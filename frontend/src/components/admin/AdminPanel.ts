@@ -66,8 +66,8 @@ export class VelgAdminPanel extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255 255 255 / 0.015) 2px,
-        rgba(255 255 255 / 0.015) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
     }
@@ -84,7 +84,7 @@ export class VelgAdminPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-danger);
       border: 2px solid var(--color-danger);
@@ -96,7 +96,7 @@ export class VelgAdminPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(1.5rem, 4vw, var(--text-3xl));
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.12em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2) 0;

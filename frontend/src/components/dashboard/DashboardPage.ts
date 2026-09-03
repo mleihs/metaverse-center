@@ -159,7 +159,7 @@ export class VelgOperativeDashboard extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-secondary);
         transition:
           color var(--transition-fast),

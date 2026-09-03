@@ -41,7 +41,7 @@ export class VelgAdminAIUsageTab extends LitElement {
         font-weight: 500;
         padding: var(--space-2) var(--space-3);
         border-bottom: 1px solid var(--color-border);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         font-size: var(--text-xs);
         letter-spacing: 0.05em;
       }

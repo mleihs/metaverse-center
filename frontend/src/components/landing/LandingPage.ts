@@ -28,15 +28,40 @@
  * Public-First: schlaegt der Schnappschuss fehl, bleibt die Seite stehen und
  * laesst die datengetragenen Abschnitte weg. Ein leeres Raster ist besser als
  * eine Fehlermeldung - und eine erfundene Zahl waere schlimmer als beides.
+ *
+ * ZWEI VORLAGEN, EINE DATENQUELLE
+ * Seit dem Atlas-Skin (03.09.2026) gibt es die Seite zweimal: "editorial" ist
+ * die Fassung vom 31.08., "atlas" die Kartenmappe aus neun Blaettern. Welche
+ * gilt, sagt "appState.landingTemplate" - abgeleitet vom Skin, siehe die
+ * Begruendung dort.
+ *
+ * Der Unterschied ist AUSSCHLIESSLICH die Zusammensetzung. Der Schnappschuss,
+ * sein Laden, die strukturierten Daten und die Fehlerbehandlung sind fuer beide
+ * dieselben, und zwar buchstaeblich: sie stehen einmal hier. Eine zweite
+ * Landing-Komponente mit eigener Ladelogik waere die naechste Datei, in der
+ * eine Zahl anders gerechnet wird als in der ersten.
+ *
+ * Fuenf der neun Blaetter sind die bestehenden Abschnitte - sie tragen den
+ * Skin ueber die Tokens und brauchen dafuer keine zweite Fassung. Vier gibt es
+ * nur in der Kartenmappe: Legende (02), Vermessungsprotokoll (06),
+ * Marginalien (08), Fundstuecke (09).
  */
 
 import { localized } from '@lit/localize';
-import { css, html, LitElement } from 'lit';
+import { SignalWatcher } from '@lit-labs/preact-signals';
+import { css, html, LitElement, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { appState } from '../../services/AppStateManager.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { captureError } from '../../services/SentryService.js';
 import { seoService } from '../../services/SeoService.js';
-import type { LandingSnapshot } from '../../types/index.js';
+import type {
+  LandingCitizen,
+  LandingCounts,
+  LandingPrompt,
+  LandingSnapshot,
+  LandingWorld,
+} from '../../types/index.js';
 import { injectLandingStructuredData } from './landing-structured-data.js';
 import './LandingCitizens.js';
 import './LandingForge.js';
@@ -44,10 +69,19 @@ import './LandingHero.js';
 import './LandingSeoFooter.js';
 import './LandingSystems.js';
 import './LandingWorlds.js';
+import './atlas/AtlasForge.js';
+import './atlas/AtlasHero.js';
+import './atlas/AtlasInformants.js';
+import './atlas/AtlasSystems.js';
+import './atlas/AtlasTerritories.js';
+import './atlas/VelgLandingFindings.js';
+import './atlas/VelgLandingLegend.js';
+import './atlas/VelgLandingMarginalia.js';
+import './atlas/VelgLandingSurveyLog.js';
 
 @localized()
 @customElement('velg-landing-page')
-export class VelgLandingPage extends LitElement {
+export class VelgLandingPage extends SignalWatcher(LitElement) {
   static styles = css`
     /* Die Buehnenmasse ("--stage-measure", "--stage-gutter",
        "--stage-type-scale") stehen in "styles/tokens/_layout.css" und gelten
@@ -118,6 +152,36 @@ export class VelgLandingPage extends LitElement {
     // `main#main-content` und ZWEI Sprungverweise — gemessen am 31.08.2026.
     // Shadow DOM verhindert den Kennungskonflikt, aber nicht die zwei
     // Sprungverweise in der Tabulatorreihenfolge.
+    /*
+     * ZWEI GARNITUREN VON ABSCHNITTEN, EINE DATENQUELLE.
+     *
+     * Die Kartenmappe ist keine umgestellte Frontseite, sondern eine eigene
+     * Vorlage: Blattraster, Blattkoepfe, Vermessungsraster, andere
+     * Spaltenteilung. Deshalb hat sie eigene Bausteine in `landing/atlas/`
+     * statt Verzweigungen in den bestehenden fuenf.
+     *
+     * WARUM NICHT `:host([template='atlas'])` IN DEN BESTEHENDEN
+     *   Der Unterschied ist kein Detail, das man mit ein paar Regeln
+     *   nachschaerft — der Hero wird von einem randlosen Bild mit vier
+     *   Schleiern zu einer Figur in vier Spalten. Beides in einer Datei haette
+     *   zwei Layouts in denselben Selektoren gehalten, und jede spaetere
+     *   Aenderung haette beide anfassen muessen, ob sie wollte oder nicht.
+     *   Und eine Release-Kuerzung waere ein Sweep durch fuenf Dateien statt
+     *   das Loeschen eines Verzeichnisses.
+     *
+     * WAS SIE TEILEN, TEILEN SIE WIRKLICH
+     *   Den Schnappschuss, sein Laden, die strukturierten Daten und die
+     *   Fehlerbehandlung — die stehen einmal hier, oben in dieser Datei. Beide
+     *   Garnituren bekommen dieselben Objekte als Eigenschaften. Eine zweite
+     *   Ladelogik waere die naechste Stelle, an der eine Zahl anders gerechnet
+     *   wird als in der ersten.
+     */
+    const footer = html`<velg-landing-seo-footer .worlds=${worlds}></velg-landing-seo-footer>`;
+
+    if (appState.landingTemplate.value === 'atlas') {
+      return this._renderAtlas({ counts, worlds, citizens, prompts, footer });
+    }
+
     return html`
       <velg-landing-hero .counts=${counts} .worlds=${worlds}></velg-landing-hero>
       <velg-landing-systems .counts=${counts}></velg-landing-systems>
@@ -130,7 +194,44 @@ export class VelgLandingPage extends LitElement {
         .prompts=${prompts}
         @prompt-world=${this._onPromptWorld}
       ></velg-landing-forge>
-      <velg-landing-seo-footer .worlds=${worlds}></velg-landing-seo-footer>
+      ${footer}
+    `;
+  }
+
+  /**
+   * Die Kartenmappe — Blatt 01 bis 09 plus Fussleiste.
+   *
+   * Die Nummern der Blaetter sind keine Dekoration: sie stehen in den
+   * Blattkoepfen der Bausteine und muessen deshalb der Reihenfolge HIER
+   * entsprechen. Wer hier umstellt, stellt dort mit um.
+   */
+  private _renderAtlas(data: {
+    counts: LandingCounts | null;
+    worlds: LandingWorld[];
+    citizens: LandingCitizen[];
+    prompts: LandingPrompt[];
+    footer: TemplateResult;
+  }) {
+    return html`
+      <velg-atlas-hero .counts=${data.counts}></velg-atlas-hero>
+      <velg-landing-legend></velg-landing-legend>
+      <velg-atlas-systems .counts=${data.counts}></velg-atlas-systems>
+      <velg-atlas-territories
+        .worlds=${data.worlds}
+        .counts=${data.counts}
+      ></velg-atlas-territories>
+      <velg-atlas-informants
+        .citizens=${data.citizens}
+        .highlightSimulationId=${this._promptWorld}
+      ></velg-atlas-informants>
+      <velg-landing-survey-log></velg-landing-survey-log>
+      <velg-atlas-forge
+        .prompts=${data.prompts}
+        @prompt-world=${this._onPromptWorld}
+      ></velg-atlas-forge>
+      <velg-landing-marginalia .counts=${data.counts}></velg-landing-marginalia>
+      <velg-landing-findings></velg-landing-findings>
+      ${data.footer}
     `;
   }
 }

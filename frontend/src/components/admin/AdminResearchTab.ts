@@ -133,7 +133,7 @@ export class VelgAdminResearchTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-sm);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
         margin: 0;

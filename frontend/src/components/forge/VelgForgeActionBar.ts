@@ -64,7 +64,7 @@ export class VelgForgeActionBar extends LitElement {
         gap: var(--space-1-5);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wider, 0.05em);
         color: var(--color-text-tertiary);
         white-space: nowrap;

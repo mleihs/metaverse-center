@@ -109,19 +109,19 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
 
     .card[data-state='stored'] .dot {
       background: var(--color-accent-green);
-      box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent-green) 60%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-green) 60%, transparent);
     }
 
     .card[data-state='notice'] .dot {
       background: var(--_gold-bright);
-      box-shadow: 0 0 6px color-mix(in srgb, var(--_gold-bright) 50%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--_gold-bright) 50%, transparent);
     }
 
     .name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
     }
@@ -130,7 +130,7 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
       margin-left: auto;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-muted);
     }
@@ -189,7 +189,7 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
     .notice__kicker {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--_gold);
       margin-right: var(--space-2);
@@ -217,7 +217,7 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
     .kicker {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-accent-amber);
     }
@@ -387,7 +387,7 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
       color: var(--color-text-secondary);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       cursor: pointer;
       white-space: nowrap;

@@ -63,7 +63,7 @@ export class VelgKeyChain extends LitElement {
 
     .link[data-active] .link__dot {
       background: var(--color-accent-green);
-      box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent-green) 60%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-green) 60%, transparent);
     }
 
     .link__state {

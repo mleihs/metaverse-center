@@ -31,7 +31,7 @@ export class VelgEpochPresenceIndicator extends LitElement {
 
     .dot--online {
       background: var(--color-success);
-      box-shadow: 0 0 4px color-mix(in srgb, var(--color-success) 60%, transparent);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 60%, transparent);
       animation: pulse-online 2s ease-in-out infinite;
     }
 
@@ -41,8 +41,8 @@ export class VelgEpochPresenceIndicator extends LitElement {
     }
 
     @keyframes pulse-online {
-      0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--color-success) 60%, transparent); }
-      50% { box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 90%, transparent); }
+      0%, 100% { box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 60%, transparent); }
+      50% { box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 90%, transparent); }
     }
   `;
 

@@ -105,7 +105,7 @@ export class VelgChronicleFeed extends LitElement {
         font-weight: 900;
         font-size: 12px;
         letter-spacing: 3px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
         animation: pulse-text 1.5s ease-in-out infinite;
       }
@@ -125,7 +125,7 @@ export class VelgChronicleFeed extends LitElement {
         font-weight: 900;
         font-size: 14px;
         letter-spacing: 3px;
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: var(--color-text-secondary);
         margin: 0 0 var(--space-2, 8px);
       }
@@ -151,7 +151,7 @@ export class VelgChronicleFeed extends LitElement {
         font-weight: 900;
         font-size: 11px;
         letter-spacing: 2px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-secondary);
         background: transparent;
         border: 1px solid var(--color-border);
@@ -195,7 +195,7 @@ export class VelgChronicleFeed extends LitElement {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-weight: 900;
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 3px;
         color: var(--color-surface);
         background: var(--color-accent-amber);
@@ -207,7 +207,7 @@ export class VelgChronicleFeed extends LitElement {
 
       .feed-cta__btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 0 20px var(--color-primary-glow);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--color-primary-glow);
       }
 
       /* ── Responsive ──────────────────────── */

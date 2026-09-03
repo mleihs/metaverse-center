@@ -33,8 +33,8 @@ export class VelgTerminalPreview extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255 255 255 / 0.012) 2px,
-        rgba(255 255 255 / 0.012) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
     }
@@ -46,7 +46,7 @@ export class VelgTerminalPreview extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold, 700);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: color-mix(in srgb, var(--color-accent-amber, #f59e0b) 60%, transparent);
       margin-bottom: var(--space-2);

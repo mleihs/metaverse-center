@@ -113,8 +113,8 @@ export class VelgBureauStatus extends LitElement {
     }
 
     @keyframes glow-pulse {
-      0%, 100% { opacity: 0.2; box-shadow: 0 0 4px rgba(245, 158, 11, 0.2); }
-      50% { opacity: 0.6; box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); }
+      0%, 100% { opacity: 0.2; box-shadow: 0 0 calc(4px * var(--glow-strength)) rgba(245, 158, 11, 0.2); }
+      50% { opacity: 0.6; box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.3); }
     }
 
     .stamp {
@@ -124,7 +124,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       font-weight: 900;
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       border: 2px solid var(--color-accent-amber);
       margin-bottom: var(--space-4);
@@ -136,7 +136,7 @@ export class VelgBureauStatus extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
@@ -159,7 +159,7 @@ export class VelgBureauStatus extends LitElement {
     .bureau__meta-line {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
     }
@@ -233,7 +233,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       font-weight: 700;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
     }
 
@@ -241,7 +241,7 @@ export class VelgBureauStatus extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       white-space: nowrap;
     }
@@ -270,7 +270,7 @@ export class VelgBureauStatus extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-accent-amber);
       background: transparent;
@@ -330,7 +330,7 @@ export class VelgBureauStatus extends LitElement {
       font-size: var(--text-xs);
       font-weight: 700;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       min-width: 72px;
       flex-shrink: 0;
@@ -365,7 +365,7 @@ export class VelgBureauStatus extends LitElement {
     .evo-form__budget {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
       padding: var(--space-2) 0;
@@ -388,7 +388,7 @@ export class VelgBureauStatus extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-inverse);
       background: var(--color-accent-amber);
@@ -399,7 +399,7 @@ export class VelgBureauStatus extends LitElement {
     }
 
     .evo-form__submit:hover:not(:disabled) {
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
       transform: translateY(-1px);
     }
 

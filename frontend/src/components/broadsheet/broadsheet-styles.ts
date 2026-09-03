@@ -129,7 +129,7 @@ export const broadsheetStyles = css`
     font-size: 8px;
     font-weight: var(--font-black);
     letter-spacing: 0.2em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     background: var(--color-surface);
     padding: 0 var(--space-3);
@@ -157,7 +157,7 @@ export const broadsheetStyles = css`
     font-family: var(--font-mono);
     font-size: 10px;
     letter-spacing: 0.15em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
   }
 
@@ -191,7 +191,7 @@ export const broadsheetStyles = css`
     font-size: 11px;
     font-weight: var(--font-black);
     letter-spacing: 0.2em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     text-align: center;
     padding: var(--space-2) var(--space-4);
     animation: breaking-pulse 2s ease-in-out infinite;
@@ -241,7 +241,7 @@ export const broadsheetStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.18em;
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-3);
@@ -311,7 +311,7 @@ export const broadsheetStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.04em;
     line-height: 1.3;
     min-width: 0;

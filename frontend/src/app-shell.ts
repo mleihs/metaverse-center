@@ -1,5 +1,6 @@
 import { localized, msg } from '@lit/localize';
 import { Router } from '@lit-labs/router';
+import { effect } from '@preact/signals-core';
 import type { TemplateResult } from 'lit';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
@@ -12,6 +13,8 @@ import { captureError } from './services/SentryService.js';
 import { seoService } from './services/SeoService.js';
 import { applySimulationRouteMeta } from './services/seo-patterns.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
+import { themeService } from './services/ThemeService.js';
+import { PLATFORM_SKINS } from './services/theme-presets.js';
 import type { Simulation } from './types/index.js';
 
 import { lazyRoute } from './utils/lazy-route.js';
@@ -64,7 +67,7 @@ export class VelgApp extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       text-decoration: none;
     }
@@ -85,7 +88,7 @@ export class VelgApp extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -104,7 +107,7 @@ export class VelgApp extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -939,6 +942,8 @@ export class VelgApp extends LitElement {
   // Resolves after authService.initialize() completes (session restored or absent).
   private _authReady: Promise<void>;
   private _resolveAuthReady!: () => void;
+  /** Teardown for the platform-skin effect; see `_watchPlatformSkin`. */
+  private _disposeSkinEffect?: () => void;
 
   constructor() {
     super();
@@ -949,6 +954,7 @@ export class VelgApp extends LitElement {
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
+    this._watchPlatformSkin();
     await localeService.initLocale();
     analyticsService.init();
     this.addEventListener('navigate', this._handleNavigate as EventListener);
@@ -958,8 +964,48 @@ export class VelgApp extends LitElement {
     await this._initAuth();
   }
 
+  /**
+   * Keep the platform chrome in the skin the reader picked.
+   *
+   * WHY `document.body` AND NOT THIS ELEMENT
+   *   The obvious host is `velg-app` itself, and it would look right — until
+   *   the page is shorter than the viewport, or a modal locks scrolling, or
+   *   the reader over-scrolls on a trackpad. `body` reads its own
+   *   `background-color: var(--color-surface)` from `_global.css`, and a token
+   *   written on a DESCENDANT cannot reach it: the paper page would sit in a
+   *   near-black frame. Theming `body` fixes the ground and reaches `velg-app`
+   *   by ordinary inheritance, which is how the rest of the theme travels.
+   *
+   *   `document.documentElement` would be one level better still, and is
+   *   wrong for a different reason: `enforceTextContrast` measures through a
+   *   probe element appended to the host, and an element outside `<body>` has
+   *   no box to compute — `getComputedStyle` answers with the empty string.
+   *   The guard would report nothing and lift nothing, silently. `body` is
+   *   the highest node that is actually rendered.
+   *
+   * WHY IT IS INSTALLED BEFORE `initLocale()` IS AWAITED
+   *   Everything after that await happens a network round-trip later. The skin
+   *   is a synchronous read out of localStorage; making the reader watch the
+   *   dark ground until the locale arrives would be a flash of the wrong skin
+   *   on every single load.
+   *
+   * Nested hosts are unaffected: `SimulationShell` themes a world on its own
+   * host, and DRIFT and the dungeon re-assert `PLATFORM_DARK_CONFIG` on theirs.
+   * Both override by proximity, whichever skin is underneath.
+   */
+  private _watchPlatformSkin(): void {
+    this._disposeSkinEffect?.();
+    this._disposeSkinEffect = effect(() => {
+      const skin = appState.platformSkin.value;
+      themeService.applyConfig(PLATFORM_SKINS[skin], document.body);
+      document.documentElement.dataset.skin = skin;
+    });
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._disposeSkinEffect?.();
+    this._disposeSkinEffect = undefined;
     this.removeEventListener('navigate', this._handleNavigate as EventListener);
     this.removeEventListener('login-panel-open', this._handleLoginPanelOpen as EventListener);
     this.removeEventListener('login-panel-close', this._handleLoginPanelClose as EventListener);

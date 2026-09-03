@@ -29,7 +29,7 @@ export const htpHeroStyles = css`
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
     letter-spacing: 0.2em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--_accent, var(--color-primary));
     border: var(--border-width-thick) solid var(--_accent, var(--color-primary));
     padding: var(--space-1) var(--space-3);
@@ -44,7 +44,7 @@ export const htpHeroStyles = css`
     letter-spacing: -0.02em;
     color: var(--color-text-primary);
     margin: 0 0 var(--_hero-title-margin, var(--space-4));
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
   }
 
   .hero__subtitle {
@@ -67,7 +67,7 @@ export const htpBackStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     text-decoration: none;
     padding: var(--space-2) 0;
@@ -111,7 +111,7 @@ export const htpFooterNavStyles = css`
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
     letter-spacing: 0.08em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     text-decoration: none;
     color: var(--color-text-primary);
     padding: var(--space-3) var(--space-5);

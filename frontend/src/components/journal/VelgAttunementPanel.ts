@@ -77,7 +77,7 @@ export class VelgAttunementPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: clamp(var(--text-xl), 2.5vw, var(--text-2xl));
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2);
@@ -174,7 +174,7 @@ export class VelgAttunementPanel extends LitElement {
     .card__hook {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin: 0;
@@ -187,7 +187,7 @@ export class VelgAttunementPanel extends LitElement {
     .card__state {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin: 0;
@@ -201,7 +201,7 @@ export class VelgAttunementPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-md);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       line-height: var(--leading-tight);
       color: var(--color-text-primary);
@@ -236,7 +236,7 @@ export class VelgAttunementPanel extends LitElement {
       border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin: 0;

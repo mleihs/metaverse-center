@@ -130,7 +130,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       height: 8px;
       border-radius: 50%;
       background: var(--panel-accent, var(--color-danger));
-      box-shadow: 0 0 6px var(--panel-accent, var(--color-danger));
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--panel-accent, var(--color-danger));
       animation: lamp-pulse 3s ease-in-out infinite;
     }
 
@@ -138,11 +138,11 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       0%,
       100% {
         opacity: 1;
-        box-shadow: 0 0 6px var(--panel-accent, var(--color-danger));
+        box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--panel-accent, var(--color-danger));
       }
       50% {
         opacity: 0.3;
-        box-shadow: 0 0 2px var(--panel-accent, var(--color-danger));
+        box-shadow: 0 0 calc(2px * var(--glow-strength)) var(--panel-accent, var(--color-danger));
       }
     }
 
@@ -151,7 +151,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-size: var(--text-xs, 12px);
       font-weight: 900;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--panel-accent, var(--color-danger));
     }
 
@@ -171,7 +171,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     .panel__dismiss:hover {
       color: var(--color-text-primary);
       border-color: var(--color-text-primary);
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--color-overlay-ink-strong);
     }
 
     /* ── Action cards grid ────────────────────── */
@@ -202,7 +202,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     .action:focus-visible {
       border-color: var(--action-color);
       background: color-mix(in srgb, var(--action-color) 4%, var(--color-surface-raised));
-      box-shadow: 0 0 12px color-mix(in srgb, var(--action-color) 8%, transparent);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--action-color) 8%, transparent);
     }
 
     .action:focus-visible {
@@ -225,7 +225,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
     .action__icon {
       display: flex;
       color: color-mix(in srgb, var(--action-color) 70%, var(--color-text-muted));
-      filter: drop-shadow(0 0 3px color-mix(in srgb, var(--action-color) 15%, transparent));
+      filter: drop-shadow(0 0 calc(3px * var(--glow-strength)) color-mix(in srgb, var(--action-color) 15%, transparent));
     }
 
     .action__name {
@@ -233,7 +233,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-size: var(--text-sm, 14px);
       font-weight: 900;
       letter-spacing: 0.06em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -250,7 +250,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-weight: 700;
       color: color-mix(in srgb, var(--action-color) 60%, var(--color-text-muted));
       letter-spacing: 0.04em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding-top: var(--space-1, 4px);
       border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
     }
@@ -261,7 +261,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       font-size: 9px;
       color: var(--color-text-quiet);
       letter-spacing: 0.06em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       opacity: 0;
       transition: opacity 0.15s ease;
     }
@@ -275,7 +275,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%); /* lint-color-ok — shimmer, deliberately light */
       background-size: 200% 100%;
       animation: cooldown-sweep 1.5s ease;
     }
@@ -342,7 +342,7 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
 
       .action--cooldown::after {
         animation: none;
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(255, 255, 255, 0.02); /* lint-color-ok — shimmer, deliberately light */
       }
     }
   `;

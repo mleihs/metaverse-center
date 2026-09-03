@@ -13,7 +13,7 @@ export class VelgBadge extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: var(--border-width-default) solid var(--color-border);
       background: var(--color-surface-raised);

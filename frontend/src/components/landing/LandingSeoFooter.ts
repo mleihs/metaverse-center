@@ -29,6 +29,7 @@ import type { LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import '../shared/VelgEditionSwitch.js';
 
 @localized()
 @customElement('velg-landing-seo-footer')
@@ -59,7 +60,7 @@ export class VelgLandingSeoFooter extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin-bottom: var(--space-3-5);
     }
@@ -90,7 +91,7 @@ export class VelgLandingSeoFooter extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin-bottom: var(--space-1);
     }
@@ -123,8 +124,19 @@ export class VelgLandingSeoFooter extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
+    }
+
+    /* Der Umschalter bringt fuer das Aufklappmenue eigenes Innenmass mit; in
+       dieser Zeile sitzt er buendig als vierte Angabe.
+
+       Kein Auto-Rand davor: die Zeile ist justify-content: space-between, sie
+       setzt ihr letztes Element von sich aus an die rechte Kante. Gemessen bei
+       1728 px Sichtbreite: rechte Kante des Umschalters 1665, rechte Kante der
+       Zeile 1713, kein Querlauf. */
+    velg-edition-switch {
+      padding: 0;
     }
 
     .legal b {
@@ -152,7 +164,7 @@ export class VelgLandingSeoFooter extends LitElement {
       font-size: clamp(80px, 15vw, 225px);
       line-height: 0.86;
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: color-mix(in srgb, var(--color-text-primary) 8%, var(--color-surface-sunken));
       white-space: nowrap;
       user-select: none;
@@ -276,6 +288,14 @@ export class VelgLandingSeoFooter extends LitElement {
           <span>&copy; ${new Date().getFullYear()} metaverse.center</span>
           <span>${msg('Bureau of Multiverse Observation')}</span>
           <span>${msg('Signal status:')} <b>${msg('transmitting')}</b></span>
+          <!-- Der zweite Zugang zum Editionsumschalter, und der einzige auf
+               DIESER Seite. Die Frontseite verbirgt fuer Gaeste die
+               Plattform-Kopfleiste (app-shell.ts, hideHeaderForLanding), weil
+               sie ihre eigene Navigation traegt — der Umschalter im SYS-Feld
+               des Kopfes ist hier also nicht da. Ohne diese Zeile koennte ein
+               Erstbesucher die Ausgabe genau auf der Seite nicht wechseln, auf
+               der er zuerst steht. -->
+          <velg-edition-switch no-label></velg-edition-switch>
         </div>
 
         <div class="ghost" aria-hidden="true">

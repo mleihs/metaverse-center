@@ -225,7 +225,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         text-align: start;
         cursor: pointer;
         transition: border-color var(--transition-fast), opacity var(--transition-fast);
@@ -338,7 +338,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber-readable);
       }
 
@@ -346,7 +346,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--_kind);
       }
 
@@ -354,7 +354,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-muted);
         font-variant-numeric: tabular-nums;
       }
@@ -372,7 +372,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-green);
       }
 
@@ -430,7 +430,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: 1px var(--space-1);
         border: var(--border-width-thin) solid var(--color-border-light);
         color: var(--color-text-muted);

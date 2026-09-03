@@ -65,7 +65,7 @@ export class VelgAchievementGrid extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-2xl);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -90,7 +90,7 @@ export class VelgAchievementGrid extends LitElement {
     .filter-btn {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-2-5) var(--space-4);
       min-height: 44px;
@@ -130,7 +130,7 @@ export class VelgAchievementGrid extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-primary);
     }

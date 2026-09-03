@@ -106,7 +106,7 @@ export class VelgEpochBattleLog extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: 900;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-info);
       border: 1px solid var(--color-info-border);
@@ -134,7 +134,7 @@ export class VelgEpochBattleLog extends LitElement {
       color: var(--color-warning);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       margin-bottom: 2px;
     }
@@ -194,7 +194,7 @@ export class VelgEpochBattleLog extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--_entry-accent, var(--color-text-muted));
     }
@@ -215,7 +215,7 @@ export class VelgEpochBattleLog extends LitElement {
     .cycle-divider {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-2);
@@ -267,10 +267,10 @@ export class VelgEpochBattleLog extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.2em;
       color: var(--_phase-color);
-      text-shadow: 0 0 20px var(--_phase-glow), 0 0 40px var(--_phase-glow);
+      text-shadow: 0 0 calc(20px * var(--glow-strength)) var(--_phase-glow), 0 0 calc(40px * var(--glow-strength)) var(--_phase-glow);
       position: relative;
     }
 
@@ -321,7 +321,7 @@ export class VelgEpochBattleLog extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 0 4px;
       margin-right: 4px;

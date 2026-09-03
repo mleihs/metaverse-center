@@ -64,7 +64,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -75,7 +75,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .legend__chip {
@@ -116,7 +116,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-2) 0;
       padding-bottom: var(--space-1);
@@ -152,7 +152,7 @@ export class VelgOpsCircuitMatrixPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;

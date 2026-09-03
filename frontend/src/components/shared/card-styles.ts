@@ -44,7 +44,7 @@ export const cardStyles = css`
     border-color: transparent;
     box-shadow:
       0 0 0 1px var(--color-primary),
-      0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
+      0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 40%, transparent);
     animation:
       card-enter var(--duration-entrance, 350ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1)) both,
       embassy-pulse 3s ease-in-out infinite;
@@ -140,15 +140,15 @@ export const cardStyles = css`
     0%, 100% {
       box-shadow:
         var(--shadow-lg),
-        0 0 15px color-mix(in srgb, var(--color-primary) 50%, transparent),
-        0 0 35px color-mix(in srgb, var(--color-primary) 20%, transparent);
+        0 0 calc(15px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 50%, transparent),
+        0 0 calc(35px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
     50% {
       box-shadow:
         var(--shadow-lg),
-        0 0 25px color-mix(in srgb, var(--color-primary) 90%, transparent),
-        0 0 55px color-mix(in srgb, var(--color-text-secondary) 50%, transparent),
-        0 0 85px color-mix(in srgb, var(--color-primary) 20%, transparent);
+        0 0 calc(25px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 90%, transparent),
+        0 0 calc(55px * var(--glow-strength)) color-mix(in srgb, var(--color-text-secondary) 50%, transparent),
+        0 0 calc(85px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
   }
 
@@ -157,12 +157,12 @@ export const cardStyles = css`
     0%, 100% {
       box-shadow:
         0 0 0 1px var(--color-primary),
-        0 0 6px color-mix(in srgb, var(--color-primary) 30%, transparent);
+        0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
     50% {
       box-shadow:
         0 0 0 5px var(--color-text-secondary),
-        0 0 20px color-mix(in srgb, var(--color-primary) 70%, transparent);
+        0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 70%, transparent);
     }
   }
 `;

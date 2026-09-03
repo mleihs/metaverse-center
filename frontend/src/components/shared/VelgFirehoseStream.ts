@@ -68,7 +68,7 @@ export class VelgFirehoseStream extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       border-bottom: 1px solid var(--color-border);
       white-space: nowrap;
@@ -100,7 +100,7 @@ export class VelgFirehoseStream extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid currentColor;
       color: var(--color-text-quiet);
     }

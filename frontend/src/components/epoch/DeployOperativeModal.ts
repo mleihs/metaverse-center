@@ -862,7 +862,7 @@ export class VelgDeployOperativeModal extends LitElement {
               ? html`
 								<div style="text-align:center;padding:var(--space-2)">
 									<div style="margin-bottom:var(--space-2);color:var(--color-text-tertiary)">${this._isGuardian() ? icons.operativeGuardian(32) : icons.operativeSpy(32)}</div>
-									<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--color-text-tertiary)">
+									<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform: var(--label-transform);letter-spacing:0.1em;color:var(--color-text-tertiary)">
 										${this._isGuardian() ? msg('Your simulation') : msg('ALL SECTORS')}
 									</div>
 								</div>
@@ -871,10 +871,10 @@ export class VelgDeployOperativeModal extends LitElement {
                 ? html`
 									<div style="text-align:center;padding:var(--space-2)">
 										<div style="margin-bottom:var(--space-2);color:var(--color-text-tertiary)">${icons.operativeInfiltrator(32)}</div>
-										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
+										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:10px;text-transform: var(--label-transform);letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform: var(--label-transform)">
 											${targetSimName}
 										</div>
 									</div>
@@ -882,10 +882,10 @@ export class VelgDeployOperativeModal extends LitElement {
                 : targetName
                   ? html`
 									<div style="text-align:center;padding:var(--space-2)">
-										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
+										<div style="font-family:var(--font-brutalist);font-weight:900;font-size:11px;text-transform: var(--label-transform);letter-spacing:0.08em;color:var(--color-text-primary);margin-bottom:4px">
 											${targetName}
 										</div>
-										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform:uppercase">
+										<div style="font-family:var(--font-mono,monospace);font-size:9px;color: var(--color-text-quiet);text-transform: var(--label-transform)">
 											${targetSimName}
 										</div>
 									</div>

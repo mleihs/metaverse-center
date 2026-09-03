@@ -66,7 +66,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0;
       line-height: 1.2;
@@ -85,7 +85,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       margin-top: var(--space-1);
       padding: 2px 6px;
       border: 1px solid currentColor;
@@ -123,7 +123,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transform-origin: top center;
       transition:
@@ -158,7 +158,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       box-shadow: var(--shadow-md);
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -167,7 +167,7 @@ export class VelgKillSwitch extends LitElement {
     .switch__btn:hover,
     .switch__btn:focus-visible {
       transform: translateY(-1px);
-      box-shadow: var(--shadow-lg), 0 0 16px var(--_danger-glow);
+      box-shadow: var(--shadow-lg), 0 0 calc(16px * var(--glow-strength)) var(--_danger-glow);
       outline: none;
     }
 
@@ -195,7 +195,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-1);
     }
@@ -254,7 +254,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       border: 2px solid var(--color-border);
       background: var(--color-surface);
@@ -299,7 +299,7 @@ export class VelgKillSwitch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_danger);
       font-variant-numeric: tabular-nums;
     }

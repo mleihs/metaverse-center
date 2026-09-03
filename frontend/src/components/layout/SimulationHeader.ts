@@ -186,7 +186,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_chip, var(--color-text-quiet));
       white-space: nowrap;
     }
@@ -202,7 +202,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       height: 6px;
       border-radius: var(--border-radius-full);
       background: var(--_chip, var(--color-accent-green));
-      box-shadow: 0 0 8px var(--_chip, var(--color-accent-green));
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--_chip, var(--color-accent-green));
       animation: chip-blink 2.2s ease-in-out infinite;
     }
 
@@ -237,7 +237,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-size: clamp(1.8rem, 4.16vw, 3.7rem);
       line-height: 0.96;
       letter-spacing: 0.01em;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       text-shadow: 0 5px 40px color-mix(in srgb, var(--_ground) 75%, transparent);
       margin: 0 0 var(--space-5);
@@ -304,7 +304,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 3);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       /*
        * Nicht --color-text-inverse: das ist die Umkehrung der THEME-Textfarbe
        * und wird in einem hellen Theme hell — helle Schrift auf der
@@ -325,7 +325,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
     .cta:hover {
       background: var(--color-accent-amber-hover);
       translate: 0 -2px;
-      box-shadow: var(--shadow-md), 0 0 20px var(--color-accent-amber-glow);
+      box-shadow: var(--shadow-md), 0 0 calc(20px * var(--glow-strength)) var(--color-accent-amber-glow);
     }
 
     .cta__arrow {
@@ -341,7 +341,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_dim);
       text-align: end;
     }

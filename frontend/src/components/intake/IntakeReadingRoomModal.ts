@@ -89,7 +89,7 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: var(--space-1) var(--space-2);
         border: var(--border-width-thin) solid var(--color-border-light);
         color: var(--color-text-secondary);
@@ -122,7 +122,7 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-secondary);
       }
 
@@ -184,7 +184,7 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: 1px var(--space-1);
         border: var(--border-width-thin) solid var(--color-border-light);
         color: var(--_kind);
@@ -209,7 +209,7 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber-readable);
       }
 

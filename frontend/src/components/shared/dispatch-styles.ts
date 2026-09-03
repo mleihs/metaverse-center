@@ -87,7 +87,7 @@ export const dispatchStyles = css`
     font-family: var(--font-mono, 'SF Mono', monospace);
     font-size: 9px;
     color: var(--color-separator);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     font-variant-numeric: tabular-nums;
   }
@@ -122,7 +122,7 @@ export const dispatchStyles = css`
     font-weight: 900;
     font-size: 10px;
     letter-spacing: 2px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
   }
 
   .dispatch__source-link {
@@ -195,7 +195,7 @@ export const dispatchStyles = css`
     font-weight: 900;
     font-size: 10px;
     letter-spacing: 2px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     text-decoration: none;
     color: var(--dispatch-accent, var(--color-text-secondary));
     transition: color var(--duration-normal, 200ms);
@@ -220,7 +220,7 @@ export const dispatchStyles = css`
     font-size: 9px;
     font-weight: var(--font-bold, 700);
     letter-spacing: 0.15em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     margin-bottom: var(--space-3);
     padding-bottom: var(--space-1);
@@ -232,7 +232,7 @@ export const dispatchStyles = css`
   .dispatch-bureau {
     font-family: var(--font-bureau, Georgia, 'Times New Roman', serif);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.18em;
     color: var(--color-text-quiet);
     margin: 0;
@@ -280,7 +280,7 @@ export const dispatchStyles = css`
     font-size: 9px;
     letter-spacing: 0.06em;
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
   }
 
   /* ── Strength Dots ────────────────────────────────── */

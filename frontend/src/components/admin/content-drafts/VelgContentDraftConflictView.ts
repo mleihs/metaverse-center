@@ -71,7 +71,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-md);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-widest);
       margin: 0 0 var(--space-1);
       color: var(--_accent);
@@ -91,7 +91,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -157,7 +157,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
     }
 
@@ -181,7 +181,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-md);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
     }
@@ -195,7 +195,7 @@ export class VelgContentDraftConflictView extends LitElement {
     .conflicts__heading {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-3);
@@ -227,7 +227,7 @@ export class VelgContentDraftConflictView extends LitElement {
     .group__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
     }
@@ -237,7 +237,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .group__items {
@@ -310,7 +310,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-size: var(--text-xs);
       padding: var(--space-0-5) var(--space-2);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       color: var(--color-text-secondary);
@@ -321,7 +321,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-size: var(--text-xs);
       padding: var(--space-0-5) var(--space-2);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid transparent;
     }
 
@@ -380,7 +380,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-2);
       padding-bottom: var(--space-1);
@@ -442,7 +442,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       background: transparent;
       border: 1px solid var(--color-border);
       color: var(--color-text-secondary);
@@ -519,7 +519,7 @@ export class VelgContentDraftConflictView extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-2) var(--space-4);
       background: transparent;
       border: 1px solid var(--color-border);

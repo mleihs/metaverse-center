@@ -32,7 +32,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         margin-bottom: var(--space-4);
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -131,7 +131,7 @@ export class VelgEmbassyCreateModal extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
       }
@@ -175,7 +175,7 @@ export class VelgEmbassyCreateModal extends LitElement {
       .confirm-card__label {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
@@ -217,7 +217,7 @@ export class VelgEmbassyCreateModal extends LitElement {
       .confirm-detail__label {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
         margin-bottom: var(--space-1);

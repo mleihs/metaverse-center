@@ -134,7 +134,7 @@ export class VelgAdminCleanupTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.18em;
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-4) 0;
@@ -201,7 +201,7 @@ export class VelgAdminCleanupTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       margin: 0;
@@ -262,7 +262,7 @@ export class VelgAdminCleanupTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-3);
       cursor: pointer;
@@ -302,7 +302,7 @@ export class VelgAdminCleanupTab extends LitElement {
     .btn--purge:hover:not(:disabled) {
       background: var(--color-danger);
       color: var(--color-text-inverse);
-      box-shadow: 0 0 16px color-mix(in srgb, var(--color-danger) 35%, transparent);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 35%, transparent);
     }
 
     .btn--purge:active:not(:disabled) {

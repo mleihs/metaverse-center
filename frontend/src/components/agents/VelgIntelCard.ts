@@ -57,7 +57,7 @@ export class VelgIntelCard extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       opacity: 0.7;
     }
@@ -66,7 +66,7 @@ export class VelgIntelCard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-primary);
       margin: 0;
@@ -77,7 +77,7 @@ export class VelgIntelCard extends LitElement {
       font-size: 8px;
       font-weight: 700;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
       padding: 2px var(--space-1);
@@ -96,7 +96,7 @@ export class VelgIntelCard extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid;
       margin-bottom: var(--space-3);
     }
@@ -137,7 +137,7 @@ export class VelgIntelCard extends LitElement {
 
     @keyframes risk-glow {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 8px var(--color-danger-border); }
+      50% { box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-danger-border); }
     }
 
     @keyframes risk-pulse {
@@ -159,7 +159,7 @@ export class VelgIntelCard extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-1);
     }

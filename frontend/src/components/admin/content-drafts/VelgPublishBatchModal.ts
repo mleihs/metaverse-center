@@ -55,7 +55,7 @@ export class VelgPublishBatchModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-3);
@@ -81,7 +81,7 @@ export class VelgPublishBatchModal extends LitElement {
     .drafts__row:last-child { border-bottom: none; }
     .drafts__pack {
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       min-width: 100px;
@@ -99,7 +99,7 @@ export class VelgPublishBatchModal extends LitElement {
     .field__label {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
     }
@@ -137,7 +137,7 @@ export class VelgPublishBatchModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-5);
       background: transparent;

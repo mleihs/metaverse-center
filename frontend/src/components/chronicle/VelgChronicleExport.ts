@@ -45,7 +45,7 @@ export class VelgChronicleExport extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.18em;
       color: var(--color-text-primary);
       margin: var(--space-2) 0 var(--space-1);
@@ -54,7 +54,7 @@ export class VelgChronicleExport extends LitElement {
     .export__subtitle {
       font-family: var(--font-body);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.3em;
       color: var(--color-text-quiet);
     }
@@ -89,14 +89,14 @@ export class VelgChronicleExport extends LitElement {
 
     @keyframes card-pulse {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 8px var(--color-warning-glow); }
+      50% { box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-warning-glow); }
     }
 
     .card__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0;
@@ -114,7 +114,7 @@ export class VelgChronicleExport extends LitElement {
     .card__cost {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-accent-amber);
     }
@@ -132,7 +132,7 @@ export class VelgChronicleExport extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       cursor: pointer;
       transition: all 0.2s;
@@ -147,7 +147,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .card__btn--authorize:hover:not(:disabled) {
-      box-shadow: 0 0 10px var(--color-warning-glow);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--color-warning-glow);
     }
 
     .card__btn--free {
@@ -198,7 +198,7 @@ export class VelgChronicleExport extends LitElement {
     .card__status {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-accent-amber);
     }
@@ -214,7 +214,7 @@ export class VelgChronicleExport extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
@@ -240,7 +240,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .history__type {
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
       min-width: 100px;
@@ -252,7 +252,7 @@ export class VelgChronicleExport extends LitElement {
     }
 
     .history__status {
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -273,7 +273,7 @@ export class VelgChronicleExport extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       text-decoration: none;
       color: var(--color-success);

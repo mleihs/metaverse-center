@@ -81,7 +81,7 @@ export class VelgIntakeQuarantineCard extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber-readable);
       }
 
@@ -117,7 +117,7 @@ export class VelgIntakeQuarantineCard extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-muted);
         margin: 0 0 var(--space-1-5);
       }
@@ -131,7 +131,7 @@ export class VelgIntakeQuarantineCard extends SignalWatcher(LitElement) {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-primary);
         line-height: var(--leading-snug);
         margin: 0 0 var(--space-1);

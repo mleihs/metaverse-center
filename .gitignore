@@ -110,3 +110,8 @@ spikes/
 #       assets/ui-pictograms/raw assets/ui-pictograms --min-blob-share 0.02
 # Provenance and acceptance measurements: docs/plans/ui-pictogram-prompts.md
 assets/ui-pictograms/raw/
+
+# Download-Zwischenspeicher des Zitat-Werkzeugs (11 MB Gutenberg-Texte).
+# Gehoert nicht in den Bestand: er ist jederzeit neu holbar und aendert sich
+# bei jedem Lauf.
+.quote-source-cache/

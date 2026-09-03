@@ -34,7 +34,7 @@ velg-simulation-world-map .world-map__header {
   border-bottom: 1px solid var(--color-border);
   font-family: var(--font-brutalist);
   font-size: var(--text-xs);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-brutalist);
   flex-wrap: wrap;
 }
@@ -218,7 +218,7 @@ velg-simulation-world-map .world-map__sidebar-head {
 velg-simulation-world-map .world-map__sidebar-kind {
   font-family: var(--font-brutalist);
   font-size: var(--text-xs);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-brutalist);
   color: var(--color-primary);
   font-weight: var(--font-bold);
@@ -227,7 +227,7 @@ velg-simulation-world-map .world-map__sidebar-kind {
 velg-simulation-world-map .world-map__sidebar-name {
   font-family: var(--font-brutalist);
   font-size: var(--text-lg);
-  text-transform: uppercase;
+  text-transform: var(--heading-transform);
   letter-spacing: var(--tracking-wider);
   color: var(--color-text-primary);
   font-weight: var(--font-bold);
@@ -267,7 +267,7 @@ velg-simulation-world-map .world-map__sidebar-row {
 velg-simulation-world-map .world-map__sidebar-label {
   font-family: var(--font-brutalist);
   font-size: 9px;
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-widest);
   color: var(--color-text-muted);
 }
@@ -303,7 +303,7 @@ velg-simulation-world-map .world-map__legend-item {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1-5);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-wider);
 }
 
@@ -344,13 +344,13 @@ velg-simulation-world-map .world-map__legend-swatch--agent-role {
 
 velg-simulation-world-map .world-map__attribution {
   margin-left: auto;
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-widest);
 }
 
 velg-simulation-world-map .velg-map-label {
   font-family: var(--font-brutalist);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-brutalist);
   pointer-events: none;
   user-select: none;
@@ -360,9 +360,9 @@ velg-simulation-world-map .velg-map-label {
      fully legible (markers carry no z-index → default stacking). */
   z-index: var(--z-raised, 10);
   text-shadow:
-    0 0 2px var(--color-surface),
-    0 0 4px var(--color-surface),
-    0 0 6px var(--color-surface);
+    0 0 calc(2px * var(--glow-strength)) var(--color-surface),
+    0 0 calc(4px * var(--glow-strength)) var(--color-surface),
+    0 0 calc(6px * var(--glow-strength)) var(--color-surface);
 }
 
 velg-simulation-world-map .velg-map-label--city {
@@ -403,7 +403,7 @@ velg-simulation-world-map .velg-map-event-marker {
   height: 14px;
   border-radius: 50%;
   background: var(--_event-color, var(--color-danger));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--_event-color, var(--color-danger)) 60%, transparent);
+  box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--_event-color, var(--color-danger)) 60%, transparent);
   position: relative;
   pointer-events: auto;
   cursor: pointer;
@@ -476,7 +476,7 @@ velg-simulation-world-map .velg-map-popup__body {
 velg-simulation-world-map .velg-map-popup__name {
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-brutalist);
   color: var(--color-text-primary);
 }
@@ -484,7 +484,7 @@ velg-simulation-world-map .velg-map-popup__name {
 velg-simulation-world-map .velg-map-popup__meta {
   margin-top: 2px;
   font-size: 9px;
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-widest);
   color: var(--color-text-muted);
 }
@@ -522,7 +522,7 @@ velg-simulation-world-map .world-map__decoding-head {
   font-family: var(--font-brutalist);
   font-size: var(--text-sm);
   letter-spacing: var(--tracking-brutalist);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
 }
 
 velg-simulation-world-map .world-map__decoding-prompt {
@@ -579,7 +579,7 @@ velg-simulation-world-map .world-map__decoding-bar-fill {
   left: 0;
   width: 35%;
   background: var(--color-primary);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary) 45%, transparent);
+  box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 45%, transparent);
   /* linear — an indeterminate sweep should move at constant speed, not
      ease in/out (which reads as "hesitating" at the edges). */
   animation: world-map-decode-scan 1.6s linear infinite;
@@ -595,7 +595,7 @@ velg-simulation-world-map .world-map__decoding-sub {
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wider);
   color: var(--color-text-muted);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -719,7 +719,7 @@ velg-simulation-world-map .velg-map-agent-marker__dot {
   border-radius: 50%;
   background: var(--_agent-color, var(--color-success));
   box-shadow:
-    0 0 4px color-mix(in srgb, var(--_agent-color, var(--color-success)) 50%, transparent),
+    0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--_agent-color, var(--color-success)) 50%, transparent),
     0 0 0 1px var(--color-surface);
   transition: transform var(--transition-fast, 100ms ease);
 }
@@ -826,7 +826,7 @@ velg-simulation-world-map .world-map__sidebar-gauge-track {
 velg-simulation-world-map .world-map__sidebar-gauge-fill {
   height: 100%;
   background: var(--_tier-color);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--_tier-color) 45%, transparent);
+  box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--_tier-color) 45%, transparent);
   transition: width var(--duration-slow, 300ms) var(--ease-dramatic, ease);
 }
 
@@ -846,7 +846,7 @@ velg-simulation-world-map .world-map__sidebar-gauge-row {
 velg-simulation-world-map .world-map__sidebar-gauge-tier {
   font-family: var(--font-brutalist);
   font-size: var(--text-sm);
-  text-transform: uppercase;
+  text-transform: var(--label-transform);
   letter-spacing: var(--tracking-brutalist);
   color: var(--_tier-color);
   font-weight: var(--font-bold);

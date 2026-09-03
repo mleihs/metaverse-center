@@ -47,7 +47,7 @@ export class VelgRegisterView extends LitElement {
         font-size: 10px;
         font-weight: 900;
         letter-spacing: 4px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--amber);
         margin: 0 0 8px;
       }
@@ -56,7 +56,7 @@ export class VelgRegisterView extends LitElement {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-weight: 900;
         font-size: var(--text-xl, 1.563rem);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 2px;
         color: var(--hud-text);
         margin: 0;
@@ -117,7 +117,7 @@ export class VelgRegisterView extends LitElement {
         text-decoration: none;
         font-weight: 700;
         letter-spacing: 1px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         cursor: pointer;
       }
 

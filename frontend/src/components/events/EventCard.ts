@@ -49,7 +49,7 @@ export class VelgEventCard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
       overflow: hidden;
@@ -158,7 +158,7 @@ export class VelgEventCard extends LitElement {
       font-family: var(--font-body);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border-light);

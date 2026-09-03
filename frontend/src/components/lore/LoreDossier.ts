@@ -85,7 +85,7 @@ export class VelgLoreDossier extends LitElement {
       font-size: var(--text-2xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
       margin-block-end: var(--space-1-5);
     }
@@ -96,7 +96,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xl);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
     }
 
@@ -109,7 +109,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
       background: transparent;
       border: var(--border-width-thin) solid var(--color-accent-amber);
@@ -223,7 +223,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       transition:
         color var(--transition-normal),
@@ -240,7 +240,7 @@ export class VelgLoreDossier extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-danger);
     }
 
@@ -251,7 +251,7 @@ export class VelgLoreDossier extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_dim);
       line-height: var(--leading-loose);
     }
@@ -295,7 +295,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xl);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
     }
 
@@ -320,7 +320,7 @@ export class VelgLoreDossier extends LitElement {
       font-style: normal;
       font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_dim);
     }
 
@@ -357,7 +357,7 @@ export class VelgLoreDossier extends LitElement {
      * The figure NUMBER is a label and is set like one; the caption TEXT is
      * prose and is not.
      *
-     * Both used to share text-transform: uppercase, which is right for
+     * Both used to share text-transform: var(--label-transform), which is right for
      * "Fig. 01" and wrong for what follows it: measured on this dossier, the
      * caption is 465 characters, and 465 characters of uppercase mono is a
      * block nobody reads. The generator writes descriptions, not labels.
@@ -399,7 +399,7 @@ export class VelgLoreDossier extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .panel__captext {
@@ -469,7 +469,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
       margin: 0;
     }
@@ -495,7 +495,7 @@ export class VelgLoreDossier extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: none;
       border: none;

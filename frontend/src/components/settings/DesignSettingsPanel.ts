@@ -398,7 +398,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: var(--border-default);
       background: var(--color-surface);
@@ -444,7 +444,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
     }
@@ -482,7 +482,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       color: var(--color-text-primary);
       width: 100%;
       box-sizing: border-box;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .color-field__hex:focus {
@@ -515,7 +515,7 @@ export class VelgDesignSettingsPanel extends BaseSettingsPanel {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
     }

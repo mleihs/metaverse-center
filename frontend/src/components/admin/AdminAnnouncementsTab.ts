@@ -50,7 +50,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         font-weight: var(--font-bold, 700);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         margin: 0 0 var(--space-2, 8px);
       }
 
@@ -82,7 +82,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
         min-width: 96px;
       }
@@ -137,7 +137,7 @@ export class VelgAdminAnnouncementsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
       }
 
       .status-chip {

@@ -154,8 +154,8 @@ export class AgentLifeTimeline extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255, 255, 255, 0.012) 2px,
-        rgba(255, 255, 255, 0.012) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
     }
@@ -164,7 +164,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 11px;
       font-weight: 900;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-text-secondary);
       margin-bottom: var(--space-3);
@@ -182,7 +182,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: var(--space-1-5) var(--space-3);
       border: 1px solid var(--color-border);
@@ -311,7 +311,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 11px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-primary);
       white-space: nowrap;
@@ -361,7 +361,7 @@ export class AgentLifeTimeline extends LitElement {
 
     @keyframes sig-pulse {
       0%, 100% { opacity: 1; box-shadow: none; }
-      50% { opacity: 0.6; box-shadow: 0 0 4px var(--color-danger); }
+      50% { opacity: 0.6; box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--color-danger); }
     }
 
     /* ── Narrative ────────────────────────────────────── */
@@ -413,7 +413,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 12px;
       font-weight: 900;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-text-quiet);
       animation: empty-drift 4s ease-in-out infinite;
@@ -443,7 +443,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: var(--space-2) var(--space-5);
       border: var(--border-default);
@@ -489,7 +489,7 @@ export class AgentLifeTimeline extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 11px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-text-quiet);
       animation: loading-pulse 1.5s ease-in-out infinite;

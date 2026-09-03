@@ -53,8 +53,8 @@ export class VelgForgeScanOverlay extends LitElement {
       height: 100%;
       background: var(--color-success);
       box-shadow:
-        0 0 8px var(--color-success),
-        0 0 30px rgba(74 222 128 / 0.3),
+        0 0 calc(8px * var(--glow-strength)) var(--color-success),
+        0 0 calc(30px * var(--glow-strength)) rgba(74 222 128 / 0.3),
         4px 0 60px rgba(74 222 128 / 0.08);
       animation: sonar-sweep 3s ease-in-out infinite;
     }
@@ -64,8 +64,7 @@ export class VelgForgeScanOverlay extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      background:
-        repeating-linear-gradient(
+      background: repeating-linear-gradient(
           0deg,
           transparent,
           transparent 39px,
@@ -112,7 +111,7 @@ export class VelgForgeScanOverlay extends LitElement {
     .scan-status__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.2em;
       color: rgba(74 222 128 / 0.85);
       margin-bottom: var(--space-3);
@@ -122,16 +121,16 @@ export class VelgForgeScanOverlay extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-lg);
       color: var(--color-success);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
-      text-shadow: 0 0 12px rgba(74 222 128 / 0.5);
+      text-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(74 222 128 / 0.5);
       animation: phase-glow 2s ease-in-out infinite;
       min-height: 1.5em;
     }
 
     @keyframes phase-glow {
-      0%, 100% { opacity: 1; text-shadow: 0 0 12px rgba(74 222 128 / 0.5); }
-      50% { opacity: 0.85; text-shadow: 0 0 20px rgba(74 222 128 / 0.7); }
+      0%, 100% { opacity: 1; text-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(74 222 128 / 0.5); }
+      50% { opacity: 0.85; text-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(74 222 128 / 0.7); }
     }
 
     /* Cursor blink after phase text */
@@ -176,14 +175,14 @@ export class VelgForgeScanOverlay extends LitElement {
     .scan-lock__pip--active {
       background: var(--color-success);
       border-color: var(--color-success);
-      box-shadow: 0 0 8px rgba(74 222 128 / 0.6);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(74 222 128 / 0.6);
     }
 
     .scan-lock__label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: rgba(74 222 128 / 0.85);
       transition: color 0.6s;
     }
@@ -205,7 +204,7 @@ export class VelgForgeScanOverlay extends LitElement {
     .scan-progress__fill {
       height: 100%;
       background: var(--color-success);
-      box-shadow: 0 0 6px var(--color-success);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success);
       transition: width 2s ease-out;
     }
 
@@ -228,7 +227,7 @@ export class VelgForgeScanOverlay extends LitElement {
       gap: var(--space-4);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       position: relative;
       z-index: 2;
@@ -262,15 +261,14 @@ export class VelgForgeScanOverlay extends LitElement {
     :host([recovering]) .scan-overlay::before {
       background: var(--color-warning);
       box-shadow:
-        0 0 8px var(--color-warning),
-        0 0 30px rgba(245 158 11 / 0.3),
+        0 0 calc(8px * var(--glow-strength)) var(--color-warning),
+        0 0 calc(30px * var(--glow-strength)) rgba(245 158 11 / 0.3),
         4px 0 60px rgba(245 158 11 / 0.08);
       animation: sonar-sweep 4.5s ease-in-out infinite;
     }
 
     :host([recovering]) .scan-overlay::after {
-      background:
-        repeating-linear-gradient(
+      background: repeating-linear-gradient(
           0deg,
           transparent,
           transparent 39px,
@@ -293,13 +291,13 @@ export class VelgForgeScanOverlay extends LitElement {
 
     :host([recovering]) .scan-status__phase {
       color: var(--color-warning);
-      text-shadow: 0 0 12px rgba(245 158 11 / 0.5);
+      text-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245 158 11 / 0.5);
       animation: phase-glow-amber 2s ease-in-out infinite;
     }
 
     @keyframes phase-glow-amber {
-      0%, 100% { opacity: 1; text-shadow: 0 0 12px rgba(245 158 11 / 0.5); }
-      50% { opacity: 0.85; text-shadow: 0 0 20px rgba(245 158 11 / 0.7); }
+      0%, 100% { opacity: 1; text-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245 158 11 / 0.5); }
+      50% { opacity: 0.85; text-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245 158 11 / 0.7); }
     }
 
     :host([recovering]) .scan-status__cursor {
@@ -315,7 +313,7 @@ export class VelgForgeScanOverlay extends LitElement {
     :host([recovering]) .scan-lock__pip {
       border-color: rgba(245 158 11 / 0.4);
       background: var(--color-warning);
-      box-shadow: 0 0 8px rgba(245 158 11 / 0.5);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245 158 11 / 0.5);
       animation: pip-flash 1.2s ease-in-out infinite;
     }
 
@@ -335,13 +333,13 @@ export class VelgForgeScanOverlay extends LitElement {
 
     :host([recovering]) .scan-progress__fill {
       background: var(--color-warning);
-      box-shadow: 0 0 6px var(--color-warning);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-warning);
       animation: progress-pulse 2s ease-in-out infinite;
     }
 
     @keyframes progress-pulse {
-      0%, 100% { box-shadow: 0 0 6px var(--color-warning); }
-      50% { box-shadow: 0 0 14px var(--color-warning), 0 0 24px rgba(245 158 11 / 0.3); }
+      0%, 100% { box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-warning); }
+      50% { box-shadow: 0 0 calc(14px * var(--glow-strength)) var(--color-warning), 0 0 calc(24px * var(--glow-strength)) rgba(245 158 11 / 0.3); }
     }
 
     :host([recovering]) .scan-timer__elapsed {
@@ -361,18 +359,18 @@ export class VelgForgeScanOverlay extends LitElement {
       font-size: 32px;
       font-weight: 700;
       color: var(--color-success);
-      text-shadow: 0 0 16px rgba(74 222 128 / 0.6), 0 0 40px rgba(74 222 128 / 0.2);
+      text-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(74 222 128 / 0.6), 0 0 calc(40px * var(--glow-strength)) rgba(74 222 128 / 0.2);
       letter-spacing: 0.15em;
       animation: entity-counter-breathe 2.5s ease-in-out infinite;
     }
 
     @keyframes entity-counter-breathe {
       0%, 100% {
-        text-shadow: 0 0 16px rgba(74 222 128 / 0.6), 0 0 40px rgba(74 222 128 / 0.2);
+        text-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(74 222 128 / 0.6), 0 0 calc(40px * var(--glow-strength)) rgba(74 222 128 / 0.2);
         transform: scale(1);
       }
       50% {
-        text-shadow: 0 0 24px rgba(74 222 128 / 0.8), 0 0 60px rgba(74 222 128 / 0.35);
+        text-shadow: 0 0 calc(24px * var(--glow-strength)) rgba(74 222 128 / 0.8), 0 0 calc(60px * var(--glow-strength)) rgba(74 222 128 / 0.35);
         transform: scale(1.03);
       }
     }

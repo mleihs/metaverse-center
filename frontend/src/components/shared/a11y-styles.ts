@@ -37,7 +37,7 @@ export const a11yStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     background: var(--color-primary);
     color: var(--color-text-inverse);

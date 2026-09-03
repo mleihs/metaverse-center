@@ -71,7 +71,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .seed-box__title {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-success);
       }
@@ -239,7 +239,7 @@ export class VelgForgeAstrolabe extends LitElement {
         overflow: hidden;
         box-shadow:
           0 4px 24px rgba(0 0 0 / 0.6),
-          0 0 1px rgba(74 222 128 / 0.2);
+          0 0 calc(1px * var(--glow-strength)) rgba(74 222 128 / 0.2);
         transition: box-shadow 0.3s, border-color 0.3s;
       }
 
@@ -248,8 +248,8 @@ export class VelgForgeAstrolabe extends LitElement {
         border-color: var(--color-success);
         box-shadow:
           0 8px 40px rgba(0 0 0 / 0.7),
-          0 0 20px rgba(74 222 128 / 0.12),
-          inset 0 0 30px rgba(74 222 128 / 0.03);
+          0 0 calc(20px * var(--glow-strength)) rgba(74 222 128 / 0.12),
+          inset 0 0 calc(30px * var(--glow-strength)) rgba(74 222 128 / 0.03);
       }
 
       /* Corner brackets */
@@ -297,7 +297,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .dossier__class-label {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.2em;
         color: var(--color-success);
       }
@@ -355,7 +355,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .anchor-fan__card:hover .dossier__sigil-shape,
       .anchor-fan__card--selected .dossier__sigil-shape {
         border-color: rgba(74 222 128 / 0.5);
-        box-shadow: 0 0 20px rgba(74 222 128 / 0.1);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(74 222 128 / 0.1);
       }
 
       /* Title section */
@@ -374,7 +374,7 @@ export class VelgForgeAstrolabe extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: 900;
         font-size: 14px;
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.04em;
         line-height: 1.3;
         color: var(--color-text-primary);
@@ -450,7 +450,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .dossier__status {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--color-icon);
       }
@@ -535,7 +535,7 @@ export class VelgForgeAstrolabe extends LitElement {
         border: 1px solid var(--color-border);
         box-shadow:
           0 4px 24px rgb(0 0 0 / 0.6),
-          inset 0 0 40px rgb(0 0 0 / 0.5);
+          inset 0 0 calc(40px * var(--glow-strength)) rgb(0 0 0 / 0.5);
       }
 
       /* Same 45-degree weave and lozenge the deploy slots and the Forge table
@@ -560,7 +560,7 @@ export class VelgForgeAstrolabe extends LitElement {
         transform: rotate(45deg);
         border: 1px solid color-mix(in srgb, var(--color-success) 60%, transparent);
         background: color-mix(in srgb, var(--color-surface-sunken) 70%, var(--color-success));
-        box-shadow: 0 0 18px color-mix(in srgb, var(--color-success) 16%, transparent);
+        box-shadow: 0 0 calc(18px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 16%, transparent);
       }
 
       .anchor-back__sigil::before {
@@ -610,7 +610,7 @@ export class VelgForgeAstrolabe extends LitElement {
         background: var(--color-surface);
         border: 1px solid var(--color-success);
         padding: var(--space-6);
-        box-shadow: 0 0 20px rgba(74 222 128 / 0.1);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(74 222 128 / 0.1);
       }
 
       .anchor-detail__question {
@@ -641,7 +641,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .forge-params__title {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-icon);
         margin: 0;
@@ -688,7 +688,7 @@ export class VelgForgeAstrolabe extends LitElement {
         padding: var(--space-1) var(--space-3);
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest, 0.1em);
         color: var(--color-text-secondary);
         cursor: pointer;
@@ -734,7 +734,7 @@ export class VelgForgeAstrolabe extends LitElement {
       .rescan__left {
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wider, 0.05em);
         color: var(--color-text-tertiary);
       }

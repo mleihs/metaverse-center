@@ -59,7 +59,7 @@ export class VelgQuoteWall extends LitElement {
         max-width: 70ch;
         color: var(--color-text-primary, #e5e5e5);
         text-shadow:
-          0 0 60px var(--_accent-glow),
+          0 0 calc(60px * var(--glow-strength)) var(--_accent-glow),
           0 2px 4px rgba(0, 0, 0, 0.9);
       }
 
@@ -78,7 +78,7 @@ export class VelgQuoteWall extends LitElement {
         font-family: var(--_font-display);
         font-size: var(--_label-size);
         font-style: normal;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--_label-tracking);
         color: var(--_accent-text);
         opacity: 0.5;

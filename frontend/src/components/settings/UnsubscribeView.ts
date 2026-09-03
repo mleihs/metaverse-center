@@ -67,7 +67,7 @@ export class VelgUnsubscribeView extends LitElement {
       .slip__kicker {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         margin: 0 0 var(--space-2);
@@ -77,7 +77,7 @@ export class VelgUnsubscribeView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: clamp(1.35rem, 4vw, var(--text-2xl));
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         line-height: var(--leading-tight);
         color: var(--_ink);
@@ -98,7 +98,7 @@ export class VelgUnsubscribeView extends LitElement {
         display: block;
         font-family: var(--font-mono);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         margin-bottom: var(--space-1-5);
@@ -109,7 +109,7 @@ export class VelgUnsubscribeView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-md);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--_stamp);
         line-height: var(--leading-snug);
@@ -148,7 +148,7 @@ export class VelgUnsubscribeView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         border: var(--border-medium);
         cursor: pointer;
@@ -222,7 +222,7 @@ export class VelgUnsubscribeView extends LitElement {
 
       .receipt__text strong {
         font-family: var(--font-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 

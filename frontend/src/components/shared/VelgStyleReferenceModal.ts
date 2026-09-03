@@ -50,7 +50,7 @@ export class VelgStyleReferenceModal extends LitElement {
       .form__label {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-icon);
       }
@@ -74,7 +74,7 @@ export class VelgStyleReferenceModal extends LitElement {
         font-size: 11px;
         cursor: pointer;
         transition: all 0.15s;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.05em;
       }
 
@@ -85,7 +85,7 @@ export class VelgStyleReferenceModal extends LitElement {
       .chip--active {
         border-color: var(--color-success);
         color: var(--color-success);
-        box-shadow: 0 0 6px var(--color-success-glow);
+        box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success-glow);
       }
 
       /* ── Entity Select ─────────────────────────── */

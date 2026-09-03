@@ -62,7 +62,7 @@ export class VelgDraftPresenceIndicator extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--_accent);
       padding-top: var(--space-0-5);
@@ -103,7 +103,7 @@ export class VelgDraftPresenceIndicator extends SignalWatcher(LitElement) {
       flex-shrink: 0;
       background: var(--_accent);
       border-radius: 50%;
-      box-shadow: 0 0 4px var(--_accent-glow);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--_accent-glow);
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -134,10 +134,10 @@ export class VelgDraftPresenceIndicator extends SignalWatcher(LitElement) {
     @keyframes pulse {
       0%,
       100% {
-        box-shadow: 0 0 4px var(--_accent-glow);
+        box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--_accent-glow);
       }
       50% {
-        box-shadow: 0 0 10px var(--_accent-glow);
+        box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--_accent-glow);
       }
     }
 

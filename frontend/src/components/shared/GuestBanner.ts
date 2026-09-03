@@ -99,7 +99,7 @@ export class VelgGuestBanner extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       color: var(--color-text-inverse);
       background: var(--color-primary);

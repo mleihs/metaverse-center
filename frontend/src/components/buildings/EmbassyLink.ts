@@ -74,7 +74,7 @@ export class VelgEmbassyLink extends LitElement {
     .embassy__sim-name {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -144,7 +144,7 @@ export class VelgEmbassyLink extends LitElement {
     .embassy__vector-label {
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
   `;

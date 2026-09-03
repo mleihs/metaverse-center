@@ -158,7 +158,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -199,7 +199,7 @@ export class VelgOrphanSweeperSettingsModal extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       padding: 2px 6px;
       background: color-mix(in srgb, var(--color-text-muted) 12%, transparent);

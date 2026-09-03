@@ -67,7 +67,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm, 14px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--color-primary);
       background: color-mix(in srgb, var(--color-primary) 4%, transparent);
@@ -85,7 +85,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
     .trigger[aria-expanded='true'] {
       background: color-mix(in srgb, var(--color-primary) 8%, transparent);
       border-color: var(--color-primary);
-      box-shadow: 0 0 12px var(--color-primary-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--color-primary-glow);
     }
 
     .trigger__diamond {
@@ -136,8 +136,8 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       border: 1px solid var(--color-border);
       border-top: 2px solid var(--color-primary);
       box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent);
+        0 12px 40px color-mix(in srgb, var(--color-shadow) 70%, transparent),
+        0 0 calc(1px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 30%, transparent);
       padding: var(--space-3, 12px);
       animation: panel-enter 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
 
@@ -200,7 +200,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
 
     .search__input:focus {
       border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 10%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
 
     .search__icon {
@@ -219,7 +219,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 600;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-muted);
       margin: var(--space-2, 8px) 0 var(--space-1, 4px);
@@ -261,7 +261,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm, 14px);
       color: var(--color-text-tertiary);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -283,7 +283,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 600;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 1px 5px;
       border: 1px solid;
@@ -332,7 +332,7 @@ export class VelgSimulationSwitcher extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-xs, 12px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-primary);
       border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);

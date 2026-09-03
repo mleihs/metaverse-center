@@ -64,7 +64,7 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 2.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.2s;
       display: flex;
@@ -81,7 +81,7 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
     .channel-tab--active {
       color: var(--color-warning);
       border-bottom-color: var(--color-warning);
-      text-shadow: 0 0 8px color-mix(in srgb, var(--color-warning) 15%, transparent);
+      text-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-warning) 15%, transparent);
     }
 
     .unread-pip {
@@ -113,7 +113,7 @@ export class VelgEpochChatPanel extends SignalWatcher(LitElement) {
       font-size: 10px;
       letter-spacing: 2px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       background: var(--color-surface);
       border-top: 1px solid var(--color-border);
       flex-shrink: 0;

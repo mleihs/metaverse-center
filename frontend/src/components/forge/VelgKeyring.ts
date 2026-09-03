@@ -98,7 +98,7 @@ export class VelgKeyring extends SignalWatcher(LitElement) {
     .paste__title {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
     }
@@ -158,7 +158,7 @@ export class VelgKeyring extends SignalWatcher(LitElement) {
     .waiver__title {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-1);

@@ -77,7 +77,7 @@ export class VelgOpsFirehosePanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -99,7 +99,7 @@ export class VelgOpsFirehosePanel extends LitElement {
 
     .status__dot--live {
       background: var(--color-success);
-      box-shadow: 0 0 8px var(--color-success);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-success);
       animation: pulse 1.8s ease-in-out infinite;
     }
 

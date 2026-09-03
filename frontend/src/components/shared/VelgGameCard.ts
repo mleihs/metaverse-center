@@ -162,7 +162,7 @@ export class VelgGameCard extends LitElement {
     .card-back__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-muted);
     }
@@ -182,11 +182,11 @@ export class VelgGameCard extends LitElement {
     }
     .card-back--tell-rare .card-back__aura {
       box-shadow: 0 0 0 1px var(--color-info),
-        0 0 18px color-mix(in srgb, var(--color-info) 55%, transparent);
+        0 0 calc(18px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 55%, transparent);
     }
     .card-back--tell-legendary .card-back__aura {
       box-shadow: 0 0 0 1px var(--color-accent-amber),
-        0 0 26px color-mix(in srgb, var(--color-accent-amber) 65%, transparent);
+        0 0 calc(26px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 65%, transparent);
       animation-duration: 1.8s;
     }
     .card-back--tell-rare {
@@ -224,7 +224,7 @@ export class VelgGameCard extends LitElement {
       /* Default border */
       border: 2px solid var(--card-border-color);
       background: var(--card-bg-deep);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 30%, transparent);
 
       /* Entrance animation */
       opacity: 0;
@@ -246,7 +246,7 @@ export class VelgGameCard extends LitElement {
 
     /* Tilt on hover (JS sets --mx, --my 0..1) */
     .card--interactive:hover {
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 30px color-mix(in srgb, var(--color-shadow) 50%, transparent);
     }
 
     .card--interactive.card--tilting {
@@ -273,7 +273,7 @@ export class VelgGameCard extends LitElement {
 
     .card--highlighted {
       box-shadow: 0 0 0 3px var(--card-frame-primary),
-                  0 0 20px color-mix(in srgb, var(--card-frame-primary) 40%, transparent);
+                  0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--card-frame-primary) 40%, transparent);
     }
 
     /* ── Light reflection overlay (follows mouse) ── */
@@ -284,6 +284,7 @@ export class VelgGameCard extends LitElement {
       z-index: 5;
       opacity: 0;
       transition: opacity 300ms ease;
+      /* lint-color-ok — mouse-follow light reflection, deliberately light */
       background: radial-gradient(
         circle at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%),
         rgba(255,255,255,0.15),
@@ -341,7 +342,7 @@ export class VelgGameCard extends LitElement {
       /* For sims with border-radius > 0, use box-shadow instead of border-image */
       border-image: none;
       border-color: var(--card-frame-primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3),
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 30%, transparent),
                   0 0 0 1px var(--card-frame-primary);
     }
 
@@ -355,12 +356,12 @@ export class VelgGameCard extends LitElement {
 
     @keyframes legendary-glow {
       0%, 100% {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3),
-                    0 0 4px color-mix(in srgb, var(--card-frame-primary) 40%, transparent);
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 30%, transparent),
+                    0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--card-frame-primary) 40%, transparent);
       }
       50% {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3),
-                    0 0 12px color-mix(in srgb, var(--card-frame-primary) 60%, transparent);
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--color-shadow) 30%, transparent),
+                    0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--card-frame-primary) 60%, transparent);
       }
     }
 
@@ -435,7 +436,7 @@ export class VelgGameCard extends LitElement {
 
     .gem--glow {
       border-color: var(--gem-color, var(--card-frame-primary));
-      box-shadow: 0 0 6px color-mix(in srgb, var(--gem-color, var(--card-frame-primary)) 50%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--gem-color, var(--card-frame-primary)) 50%, transparent);
     }
 
     /* Size scaling for gems */
@@ -534,8 +535,8 @@ export class VelgGameCard extends LitElement {
       border: 1px solid color-mix(in srgb, var(--_crest) 55%, transparent);
       background: color-mix(in srgb, var(--card-bg-deep) 82%, var(--_crest));
       box-shadow:
-        inset 0 0 12px color-mix(in srgb, var(--_crest) 22%, transparent),
-        0 0 10px color-mix(in srgb, var(--_crest) 14%, transparent);
+        inset 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--_crest) 22%, transparent),
+        0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--_crest) 14%, transparent);
     }
 
     .card__crest::before {
@@ -560,7 +561,7 @@ export class VelgGameCard extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      box-shadow: inset 0 0 12px rgba(0,0,0,0.25);
+      box-shadow: inset 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-shadow) 25%, transparent);
       pointer-events: none;
     }
 
@@ -577,7 +578,7 @@ export class VelgGameCard extends LitElement {
       font-family: var(--card-font-heading);
       font-weight: 700;
       font-size: 12px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--card-text);
       margin: 0;
@@ -658,13 +659,13 @@ export class VelgGameCard extends LitElement {
     }
 
     .pip__dot--bright {
-      box-shadow: 0 0 6px color-mix(in srgb, var(--pip-color) 50%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--pip-color) 50%, transparent);
     }
 
     .pip__label {
       font-family: var(--card-font-mono);
       font-size: 6px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--card-text-dim);
       line-height: 1;
@@ -879,7 +880,7 @@ export class VelgGameCard extends LitElement {
     .card__badge {
       font-family: var(--card-font-mono);
       font-size: 7px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       padding: 1px 4px;
       border: 1px solid var(--card-border-color);
@@ -1033,7 +1034,7 @@ export class VelgGameCard extends LitElement {
       font-family: var(--card-font-heading);
       font-weight: 900;
       font-size: 18px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--color-epoch-accent);
       opacity: 0.6;
@@ -1198,9 +1199,48 @@ export class VelgGameCard extends LitElement {
       background-position: 7px 7px;
     }
 
-    .card--tex-illumination {
+    /* Buettenpapier: Rippen, Kettlinien, Wolkigkeit.
+     *
+     * Der Grund fuer den Atlas-Skin, und die zurueckhaltendste der Texturen —
+     * sie ist ein PAPIER, kein Motiv. Wer sie bemerkt, bemerkt sie erst beim
+     * zweiten Hinsehen, und genau dann soll sie da sein.
+     *
+     * Drei Lagen, wie echtes geschoepftes Papier sie hat:
+     *   1. Rippen  — die feinen Draehte des Schoepfsiebs, 3 px, quer
+     *   2. Kettlinien — die groben Stege, 64 px, laengs
+     *   3. Wolkigkeit — zwei weiche Verlaeufe gegen die Regelmaessigkeit.
+     *      Ohne sie liest das Gitter als Gitter statt als Faserung; ein
+     *      geschoepfter Bogen ist nirgends gleichmaessig dick.
+     *
+     * Gemischt aus der Kartentinte (--card-text), nicht aus dem Akzent:
+     * Papierstruktur ist Schatten im Blatt, keine Farbe darauf. Die
+     * Nieten-Textur nimmt aus demselben Grund dieselbe Quelle.
+     *
+     * KEINE ANIMATION. Die Scanline-Textur driftet, weil eine Bildroehre
+     * driftet; ein Bogen Papier tut das nicht. Diese Regel setzt deshalb
+     * animation NICHT und laesst die Einzugsbewegung von .card unangetastet —
+     * haette sie die Kurzschreibweise gesetzt, waere card-deal still
+     * verlorengegangen, genau wie es der Kommentar zur legendaeren
+     * Scanline-Karte oben beschreibt.
+     *
+     * DIE ABSTAENDE KOMMEN AUS EINEM ERSTEN VERSUCH, DER FALSCH AUSSAH.
+     * Zuerst standen die Stege bei 25 px und 6 %. Im Browser gesehen, auf
+     * einer 204 px breiten Karte: acht Linien quer ueber das Blatt, und das
+     * liest als Millimeterpapier — genau das, was Lage 3 verhindern soll.
+     * Bei einem geschoepften Bogen liegen die Rippen etwa 1 mm, die Stege
+     * etwa 25 mm auseinander; das Verhaeltnis ist rund 1:25, nicht 1:8.
+     * Jetzt 3 px zu 64 px, und die Stege stehen bei 3 % statt 6 %: auf der
+     * Karte sind es zwei, nicht acht. */
+    .card--tex-paper {
       background-image:
-        repeating-linear-gradient(45deg, transparent 0 7px, color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 7px 8px),
+        radial-gradient(ellipse 80% 50% at 20% 15%, color-mix(in srgb, var(--card-text) 4%, transparent), transparent 70%),
+        radial-gradient(ellipse 70% 55% at 85% 80%, color-mix(in srgb, var(--card-text) 3%, transparent), transparent 72%),
+        repeating-linear-gradient(90deg, transparent 0 63px, color-mix(in srgb, var(--card-text) 3%, transparent) 63px 64px),
+        repeating-linear-gradient(0deg, transparent 0 2px, color-mix(in srgb, var(--card-text) 3%, transparent) 2px 3px);
+    }
+
+    .card--tex-illumination {
+      background-image: repeating-linear-gradient(45deg, transparent 0 7px, color-mix(in srgb, var(--card-frame-primary) 8%, transparent) 7px 8px),
         radial-gradient(ellipse 90% 40% at 50% 0%, color-mix(in srgb, var(--card-frame-primary) 14%, transparent), transparent 65%);
     }
 

@@ -13,6 +13,28 @@ import type {
   AchievementSummary,
   UserAchievement,
 } from './api/AchievementsApiService.js';
+import { captureError } from './SentryService.js';
+import { isPlatformSkin, type LandingTemplate, type PlatformSkin } from './theme-presets.js';
+
+/** Where the reader's skin choice survives a reload. */
+const PLATFORM_SKIN_KEY = 'velg-platform-skin';
+
+/**
+ * The skin this browser last chose, or the platform default.
+ *
+ * Read once at construction rather than on every access: the value changes only
+ * through `setPlatformSkin`, and a signal that re-reads storage would make the
+ * switch depend on a synchronous disk hit inside a render effect.
+ */
+function readStoredSkin(): PlatformSkin {
+  try {
+    const stored = localStorage.getItem(PLATFORM_SKIN_KEY);
+    return isPlatformSkin(stored) ? stored : 'dark';
+  } catch (err) {
+    captureError(err, { source: 'AppStateManager.readStoredSkin' });
+    return 'dark';
+  }
+}
 
 export class AppStateManager {
   // --- Auth ---
@@ -44,6 +66,39 @@ export class AppStateManager {
   // --- UI ---
   readonly loading = signal<boolean>(false);
   readonly mockMode = signal<boolean>(false);
+
+  /**
+   * Which global skin the platform chrome wears — dark phosphor or map paper.
+   *
+   * A reader's choice, not a world's: it survives switching simulations and is
+   * remembered per browser. `app-shell.ts` watches it and re-themes its own
+   * host; DRIFT and the dungeon re-assert the dark config on theirs regardless,
+   * because the Zwischenraum and the CRT are diegetic.
+   */
+  readonly platformSkin = signal<PlatformSkin>(readStoredSkin());
+
+  /**
+   * Welche Layout-Vorlage die Frontseite und das Dashboard tragen.
+   *
+   * WARUM ABGELEITET UND KEIN EIGENES SIGNAL
+   *   Das Design-Paket nennt es ein Merkmalstor
+   *   (`landingTemplate: 'editorial' | 'atlas'`), das dem Skin folgt. Ein
+   *   zweites Signal, das dem ersten folgen SOLL, ist aber genau die Bauart,
+   *   bei der beide irgendwann auseinanderstehen — und ein Papier-Skin mit dem
+   *   redaktionellen Layout waere kein Fehler, der auffaellt, sondern einfach
+   *   eine Seite, die nach 70 Prozent aussieht.
+   *
+   *   Solange die Vorlage dem Skin folgt, IST sie der Skin, nur anders
+   *   benannt. Wer sie spaeter entkoppeln will, macht hier ein Signal daraus
+   *   und hat dann genau eine Stelle zu aendern.
+   *
+   *   Der Name bleibt trotzdem eigen: an der Lesestelle soll stehen, welche
+   *   VORLAGE gemeint ist, nicht welcher Skin. Ein `if (skin === 'atlas')` in
+   *   einer Layout-Entscheidung verschweigt, worum es dort geht.
+   */
+  readonly landingTemplate: ReadonlySignal<LandingTemplate> = computed(() =>
+    this.platformSkin.value === 'atlas' ? 'atlas' : 'editorial',
+  );
 
   // --- Achievements ---
   readonly achievementDefinitions = signal<AchievementDefinition[]>([]);
@@ -161,6 +216,22 @@ export class AppStateManager {
 
   setMockMode(value: boolean): void {
     this.mockMode.value = value;
+  }
+
+  /**
+   * Switch the platform skin and remember it.
+   *
+   * The signal moves first and the write follows: a browser that refuses
+   * storage (private mode, blocked site data) should still get the skin it
+   * asked for in this session rather than a switch that silently does nothing.
+   */
+  setPlatformSkin(skin: PlatformSkin): void {
+    this.platformSkin.value = skin;
+    try {
+      localStorage.setItem(PLATFORM_SKIN_KEY, skin);
+    } catch (err) {
+      captureError(err, { source: 'AppStateManager.setPlatformSkin' });
+    }
   }
 
   setSettings(settings: SimulationSetting[]): void {

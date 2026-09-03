@@ -51,7 +51,7 @@ export class VelgMapBattleFeed extends LitElement {
       align-items: center;
       height: 100%;
       background: rgba(0, 0, 0, 0.8);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--color-overlay-ink-strong);
       overflow: hidden;
       padding: 0 var(--space-4, 16px);
       gap: var(--space-3, 12px);
@@ -61,7 +61,7 @@ export class VelgMapBattleFeed extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-danger);
       flex-shrink: 0;

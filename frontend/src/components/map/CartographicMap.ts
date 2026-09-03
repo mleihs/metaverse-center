@@ -239,7 +239,7 @@ export class CartographicMap extends LitElement {
       font-size: 5px;
       font-weight: 700;
       fill: rgba(220, 38, 38, 0.6);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
     }
 
@@ -251,7 +251,7 @@ export class CartographicMap extends LitElement {
 
     .zone-fill:focus-visible + .zone-border {
       stroke-width: 2.5;
-      filter: drop-shadow(0 0 4px currentColor);
+      filter: drop-shadow(0 0 calc(4px * var(--glow-strength)) currentColor);
     }
 
     /* ── SR only ─────────────────────────────── */

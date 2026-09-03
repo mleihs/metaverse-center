@@ -113,7 +113,7 @@ export class VelgHtpLootCatalogue extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-2xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber-readable, var(--color-accent-amber));
       }
 
@@ -145,7 +145,7 @@ export class VelgHtpLootCatalogue extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-lg);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: var(--color-text-primary);
       }
 
@@ -183,7 +183,7 @@ export class VelgHtpLootCatalogue extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-primary);
       }
 
@@ -192,7 +192,7 @@ export class VelgHtpLootCatalogue extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-2xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         white-space: nowrap;
       }
 
@@ -236,7 +236,7 @@ export class VelgHtpLootCatalogue extends LitElement {
 
       .item__params dt {
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
       }
 
@@ -261,7 +261,7 @@ export class VelgHtpLootCatalogue extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-2xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
       }
 

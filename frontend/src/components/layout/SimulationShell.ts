@@ -145,7 +145,7 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
 
     .breadcrumb__current {
       color: var(--color-text-secondary);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       flex-shrink: 0;
     }
 
@@ -210,8 +210,8 @@ export class VelgSimulationShell extends SignalWatcher(LitElement) {
       border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
       border-top: 2px solid var(--color-primary);
       box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 1px rgba(0, 0, 0, 0.3),
+        0 8px 32px color-mix(in srgb, var(--color-shadow) 40%, transparent),
+        0 0 calc(1px * var(--glow-strength)) color-mix(in srgb, var(--color-shadow) 30%, transparent),
         inset 0 1px 0 color-mix(in srgb, var(--color-primary) 6%, transparent);
       padding: var(--space-1) 0;
 

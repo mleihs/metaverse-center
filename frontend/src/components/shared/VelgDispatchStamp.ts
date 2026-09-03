@@ -41,7 +41,7 @@ export class VelgDispatchStamp extends LitElement {
       font-weight: 900;
       font-size: 9px;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .stamp--inline.tone--default { color: var(--color-text-quiet); }
@@ -57,7 +57,7 @@ export class VelgDispatchStamp extends LitElement {
       font-size: 8px;
       font-weight: 900;
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px 6px;
       border: 1px solid;
     }
@@ -94,7 +94,7 @@ export class VelgDispatchStamp extends LitElement {
       font-size: 42px;
       font-weight: 900;
       letter-spacing: 0.3em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       opacity: 0.04;
       white-space: nowrap;

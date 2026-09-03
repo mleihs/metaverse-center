@@ -46,7 +46,7 @@ export class VelgStyleReferenceUpload extends LitElement {
       border-color: var(--color-success);
       box-shadow:
         inset 0 2px 8px rgba(0 0 0 / 0.4),
-        0 0 12px var(--color-success-glow);
+        0 0 calc(12px * var(--glow-strength)) var(--color-success-glow);
     }
 
     /* Scanline overlay on dragover */
@@ -91,7 +91,7 @@ export class VelgStyleReferenceUpload extends LitElement {
 
     @keyframes success-flash {
       0% { border-color: var(--color-success); box-shadow: 0 0 0 transparent; }
-      50% { box-shadow: 0 0 16px var(--color-success-glow); }
+      50% { box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--color-success-glow); }
       100% { border-color: var(--color-border); box-shadow: 0 0 0 transparent; }
     }
 
@@ -109,7 +109,7 @@ export class VelgStyleReferenceUpload extends LitElement {
     .tray__label {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--color-icon);
       text-align: center;
@@ -206,6 +206,7 @@ export class VelgStyleReferenceUpload extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
+      /* lint-color-ok — shimmer, deliberately light */
       background: linear-gradient(
         90deg,
         transparent,
@@ -260,7 +261,7 @@ export class VelgStyleReferenceUpload extends LitElement {
       color: var(--color-text-tertiary);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.15s;
       white-space: nowrap;

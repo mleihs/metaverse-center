@@ -155,7 +155,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-size: var(--_label);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px var(--space-2);
       border: var(--border-width-thin) solid currentColor;
     }
@@ -222,7 +222,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--_label);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
     }
 
@@ -245,7 +245,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-size: var(--_title);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1) 0;
     }
@@ -303,7 +303,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-size: var(--_label);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       min-block-size: 32px;
       padding: var(--space-1-5) var(--space-2);
       border: var(--border-width-thin) solid var(--color-accent-amber);
@@ -455,7 +455,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-size: var(--_title);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       margin: 0;
       color: var(--color-text-secondary);
       min-inline-size: 0;
@@ -487,7 +487,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--_label);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-0-5) var(--space-1-5);
       background: transparent;
       border: var(--border-width-thin) solid var(--color-border-light);
@@ -577,7 +577,7 @@ export class VelgIntakeView extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--_label);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-align: start;
       cursor: pointer;
       transition: color var(--transition-fast), border-color var(--transition-fast);

@@ -25,12 +25,11 @@
 import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { localeService } from '../../services/i18n/locale-service.js';
-import { captureError } from '../../services/SentryService.js';
 import type { LandingCounts, LandingWorld } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import './LandingNav.js';
 import {
   LANDING_HERO_STEM,
   LANDING_IMAGE_SIZES,
@@ -86,42 +85,15 @@ export class VelgLandingHero extends LitElement {
        der blossen Polsterung, sonst kommt der halbe Ueberhang dazu. "100%" ist
        hier die Breite der Huelle, also exakt — "100vw" waere um die Breite des
        Rollbalkens zu gross. */
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-6);
-      padding-block: var(--space-4);
-      border-bottom: var(--border-width-thin) solid var(--_rule);
-    }
 
-    .wordmark {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
-      color: var(--color-text-primary);
-      background: none;
-      border: 0;
-      padding: 0;
-      cursor: pointer;
-    }
 
-    .wordmark span {
-      color: var(--color-accent-amber);
-    }
 
-    .nav__links {
-      display: flex;
-      gap: var(--space-9);
-    }
 
-    .nav__end {
-      display: flex;
-      align-items: center;
-      gap: var(--space-6);
-    }
+
+
+
+
+
 
     /*
      * Der Sprachumschalter stand nur in der SEO-Fusszeile, am Ende einer sehr
@@ -130,96 +102,34 @@ export class VelgLandingHero extends LitElement {
      * Schalter fuer dieselbe Sache waeren zwei Orte, an denen jemand kuenftig
      * einen davon vergisst.
      */
-    .locale {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-    }
 
-    .locale button {
-      background: none;
-      border: 0;
-      padding: var(--space-1) 0;
-      cursor: pointer;
-      font: inherit;
-      letter-spacing: inherit;
-      color: var(--color-text-quiet);
-      transition: color var(--transition-normal);
-    }
+
+
 
     .locale button[aria-current='true'],
     .locale button:hover,
-    .locale button:focus-visible {
-      color: var(--color-accent-amber);
-    }
 
-    .locale__sep {
-      color: var(--color-border);
-    }
 
-    .nav__link {
-      font-family: var(--font-body);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      color: var(--color-text-quiet);
-      background: none;
-      border: 0;
-      padding: var(--space-1) 0;
-      cursor: pointer;
-      transition: color var(--transition-normal);
-    }
+
+
+
 
     .nav__link:hover,
-    .nav__link:focus-visible {
-      color: var(--color-accent-amber);
-    }
+
 
     /* ── Bernsteinknopf, in drei Groessen ──────────────────────────── */
 
-    .cta {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-2-5);
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      color: var(--color-on-accent-amber);
-      background: var(--color-accent-amber);
-      border: var(--border-width-thin) solid var(--color-accent-amber-dim);
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-      transition: transform var(--transition-normal), box-shadow var(--transition-normal),
-        background var(--transition-normal);
-    }
+
 
     .cta:hover,
-    .cta:focus-visible {
-      background: var(--color-accent-amber-hover);
-      transform: translate(-1px, -1px);
-      box-shadow: var(--shadow-md);
-    }
 
-    .cta--sm {
-      padding: var(--space-2-5) var(--space-6);
-      font-size: var(--text-xs);
-    }
 
-    .cta--lg {
-      padding: var(--space-4) var(--space-10);
-      font-size: var(--text-sm);
-      letter-spacing: var(--tracking-widest);
-      box-shadow: var(--shadow-md);
-    }
+
+
+
 
     .cta--lg:hover,
-    .cta--lg:focus-visible {
-      box-shadow: var(--shadow-xl);
-    }
+
 
     /* ── Held ──────────────────────────────────────────────────────── */
 
@@ -304,7 +214,7 @@ export class VelgLandingHero extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-9);
       animation: rise var(--duration-slower) var(--ease-dramatic) both;
@@ -315,7 +225,7 @@ export class VelgLandingHero extends LitElement {
       height: 7px;
       border-radius: var(--border-radius-full);
       background: var(--color-accent-green);
-      box-shadow: 0 0 9px var(--color-accent-green);
+      box-shadow: 0 0 calc(9px * var(--glow-strength)) var(--color-accent-green);
       animation: pulse-dot 2.2s ease-in-out infinite;
       flex: none;
     }
@@ -352,7 +262,7 @@ export class VelgLandingHero extends LitElement {
       font-size: var(--text-display-lg);
       line-height: 0.94;
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       margin: 0;
       color: var(--color-text-primary);
       text-shadow: 0 6px 50px color-mix(in srgb, var(--color-surface) 70%, transparent);
@@ -407,33 +317,14 @@ export class VelgLandingHero extends LitElement {
       flex: 0 0 auto;
     }
 
-    .watch {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-xs);
-      letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
-      color: var(--color-text-quiet);
-      background: none;
-      border: 0;
-      padding: var(--space-1) 0;
-      cursor: pointer;
-      transition: color var(--transition-normal);
-    }
+
 
     .watch:hover,
-    .watch:focus-visible {
-      color: var(--color-accent-amber);
-    }
 
-    .watch__arrow {
-      display: inline-block;
-      transition: transform var(--transition-normal);
-    }
 
-    .watch:hover .watch__arrow {
-      transform: translateX(4px);
-    }
+
+
+
 
     /* ── Laufband ──────────────────────────────────────────────────── */
 
@@ -453,7 +344,7 @@ export class VelgLandingHero extends LitElement {
       font-family: var(--font-body);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       white-space: nowrap;
       padding-left: var(--space-14);
@@ -488,19 +379,6 @@ export class VelgLandingHero extends LitElement {
        Schleier bleiben randlos — sie haengen an ":host" und wurden nie
        eingefasst, hier ist also nichts zu tun. */
     @media (max-width: 900px) {
-      .nav {
-        padding: var(--space-3) var(--space-5);
-        flex-wrap: wrap;
-        gap: var(--space-3);
-      }
-
-      .nav__links {
-        order: 3;
-        width: 100%;
-        gap: var(--space-5);
-        justify-content: flex-start;
-      }
-
       .hero__body {
         padding: var(--space-12) var(--space-5) var(--space-10);
       }
@@ -548,18 +426,6 @@ export class VelgLandingHero extends LitElement {
   `,
   ];
 
-  /**
-   * Oeffnet die Anmeldung.
-   *
-   * Die Plattform-Kopfleiste wird auf der Frontseite fuer Gaeste ausgeblendet
-   * (app-shell), weil sonst zwei Navigationsleisten uebereinander stuenden.
-   * Damit dabei kein Zugang verlorengeht, traegt diese Navigation den
-   * Anmeldeknopf — ueber dasselbe Ereignis, das die Kopfleiste benutzt.
-   */
-  private _openLogin = (): void => {
-    this.dispatchEvent(new CustomEvent('login-panel-open', { bubbles: true, composed: true }));
-  };
-
   @property({ type: Object, attribute: false }) counts: LandingCounts | null = null;
   @property({ type: Array, attribute: false }) worlds: LandingWorld[] = [];
 
@@ -604,51 +470,11 @@ export class VelgLandingHero extends LitElement {
     `;
   }
 
-  private async _setLocale(locale: string): Promise<void> {
-    try {
-      await localeService.setLocale(locale);
-    } catch (err) {
-      captureError(err, { source: 'LandingHero._setLocale' });
-    }
-  }
-
   protected render() {
     const online = this.counts?.worlds_transmitting ?? 0;
 
     return html`
-      <div class="nav stage-bleed-row">
-        <button class="wordmark" @click=${() => navigate('/')}>
-          Metaverse<span>.Center</span>
-        </button>
-        <nav class="nav__links" aria-label=${msg('Primary')}>
-          <button class="nav__link" @click=${() => navigate('/worlds')}>
-            ${msg('Worlds')}
-          </button>
-          <button class="nav__link" @click=${() => navigate('/how-to-play')}>
-            ${msg('Systems')}
-          </button>
-          <button class="nav__link" @click=${() => navigate('/chronicles')}>
-            ${msg('Chronicle')}
-          </button>
-        </nav>
-        <div class="nav__end">
-          <div class="locale" role="group" aria-label=${msg('Language')}>
-            <button
-              aria-current=${localeService.currentLocale !== 'en'}
-              @click=${() => this._setLocale('de')}
-            >DE</button>
-            <span class="locale__sep" aria-hidden="true">/</span>
-            <button
-              aria-current=${localeService.currentLocale === 'en'}
-              @click=${() => this._setLocale('en')}
-            >EN</button>
-          </div>
-          <button class="nav__link" @click=${this._openLogin}>${msg('Sign in')}</button>
-          <button class="cta cta--sm" @click=${() => navigate('/forge')}>
-            ${msg('Forge a World')}
-          </button>
-        </div>
-      </div>
+      <velg-landing-nav></velg-landing-nav>
 
       <div class="hero">
         <picture>

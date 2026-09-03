@@ -195,7 +195,7 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-tertiary);
     }
 
@@ -259,7 +259,7 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-muted);
     }
 
@@ -310,7 +310,7 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-muted);
     }
 
@@ -359,7 +359,7 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-0-5) var(--space-1-5);
       border: var(--border-width-thin) solid var(--color-border);
       color: var(--color-text-muted);
@@ -474,7 +474,7 @@ export class VelgIntakeCrucibleModal extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       margin-block-end: var(--space-2);
     }
 

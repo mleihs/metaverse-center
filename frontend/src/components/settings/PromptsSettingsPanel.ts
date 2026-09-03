@@ -64,14 +64,14 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
     .panel__title {
       font-family: var(--font-brutalist); font-weight: var(--font-black);
-      font-size: var(--text-lg); text-transform: uppercase;
+      font-size: var(--text-lg); text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist); margin: 0;
     }
 
     .panel__btn {
       display: inline-flex; align-items: center; gap: var(--space-1-5);
       padding: var(--space-2) var(--space-4); font-family: var(--font-brutalist);
-      font-weight: var(--font-black); font-size: var(--text-sm); text-transform: uppercase;
+      font-weight: var(--font-black); font-size: var(--text-sm); text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist); background: var(--color-primary);
       color: var(--color-text-inverse); border: var(--border-default);
       box-shadow: var(--shadow-md); cursor: pointer; transition: all var(--transition-fast);
@@ -101,7 +101,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
     .template__name {
       font-family: var(--font-brutalist); font-weight: var(--font-black);
-      font-size: var(--text-sm); text-transform: uppercase;
+      font-size: var(--text-sm); text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide); overflow: hidden;
       text-overflow: ellipsis; white-space: nowrap;
     }
@@ -114,7 +114,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .template__badge {
       display: inline-flex; padding: var(--space-0-5) var(--space-1-5);
       font-family: var(--font-brutalist); font-weight: var(--font-bold);
-      font-size: 10px; text-transform: uppercase; letter-spacing: var(--tracking-wide);
+      font-size: 10px; text-transform: var(--label-transform); letter-spacing: var(--tracking-wide);
       background: var(--color-surface-header); border: var(--border-width-default) solid var(--color-border);
     }
 
@@ -142,7 +142,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
     .form__label {
       font-family: var(--font-brutalist); font-weight: var(--font-bold);
-      font-size: var(--text-xs); text-transform: uppercase;
+      font-size: var(--text-xs); text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist); color: var(--color-text-secondary);
     }
 
@@ -172,7 +172,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
 
     .form__error {
       font-family: var(--font-brutalist); font-weight: var(--font-bold);
-      font-size: var(--text-xs); text-transform: uppercase;
+      font-size: var(--text-xs); text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide); color: var(--color-danger);
     }
 
@@ -181,7 +181,7 @@ export class VelgPromptsSettingsPanel extends LitElement {
     .footer__btn {
       display: inline-flex; align-items: center; justify-content: center;
       padding: var(--space-2) var(--space-4); font-family: var(--font-brutalist);
-      font-weight: var(--font-black); font-size: var(--text-sm); text-transform: uppercase;
+      font-weight: var(--font-black); font-size: var(--text-sm); text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist); border: var(--border-default);
       box-shadow: var(--shadow-md); cursor: pointer; transition: all var(--transition-fast);
     }

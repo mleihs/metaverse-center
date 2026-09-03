@@ -162,7 +162,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -199,7 +199,7 @@ export class VelgBureauResponsePanel extends LitElement {
       gap: var(--space-2);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -287,7 +287,7 @@ export class VelgBureauResponsePanel extends LitElement {
     .projection__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -358,7 +358,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--_stamp);
     }
@@ -367,7 +367,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .order__status--pending { color: var(--color-warning); }
@@ -408,7 +408,7 @@ export class VelgBureauResponsePanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       box-shadow: var(--shadow-xs);
@@ -447,7 +447,7 @@ export class VelgBureauResponsePanel extends LitElement {
       color: var(--color-text-danger);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       transition: background-color var(--transition-fast);

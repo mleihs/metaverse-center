@@ -157,8 +157,8 @@ export class VelgBureauDispatch extends LitElement {
       background: var(--_terminal-bg);
       overflow: hidden;
       box-shadow:
-        0 0 40px var(--_amber-glow),
-        inset 0 0 60px color-mix(in srgb, var(--color-primary) 3%, transparent);
+        0 0 calc(40px * var(--glow-strength)) var(--_amber-glow),
+        inset 0 0 calc(60px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 3%, transparent);
     }
 
     /* CRT scanline overlay */
@@ -192,7 +192,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_amber-text);
     }
 
@@ -201,18 +201,18 @@ export class VelgBureauDispatch extends LitElement {
       height: 8px;
       border-radius: 50%;
       background: var(--_amber);
-      box-shadow: 0 0 6px var(--_amber);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--_amber);
       animation: pulse-dot 2s ease-in-out infinite;
     }
 
     .terminal__status-dot--error {
       background: var(--color-danger);
-      box-shadow: 0 0 6px var(--color-danger);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-danger);
     }
 
     .terminal__status-dot--success {
       background: var(--color-success);
-      box-shadow: 0 0 6px var(--color-success);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success);
     }
 
     /* ── Terminal body ─────────────────────────────────────────────── */
@@ -233,7 +233,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-2);
     }
@@ -243,7 +243,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xl);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--_amber-text);
       margin: 0 0 var(--space-2);
     }
@@ -267,7 +267,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
     }
 
@@ -282,7 +282,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-lg);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_amber-text);
       background: var(--color-surface);
       border: 1px solid var(--_border-amber);
@@ -294,12 +294,12 @@ export class VelgBureauDispatch extends LitElement {
 
     .decoder__input:focus {
       border-color: var(--_amber);
-      box-shadow: 0 0 12px var(--_amber-glow), inset 0 0 8px var(--_amber-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_amber-glow), inset 0 0 calc(8px * var(--glow-strength)) var(--_amber-glow);
     }
 
     .decoder__input::placeholder {
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -314,7 +314,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-surface);
       background: var(--_amber);
       border: none;
@@ -325,7 +325,7 @@ export class VelgBureauDispatch extends LitElement {
 
     .decoder__submit:hover:not(:disabled) {
       background: var(--color-primary-hover);
-      box-shadow: 0 0 20px var(--_amber-glow);
+      box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--_amber-glow);
     }
 
     .decoder__submit:active:not(:disabled) {
@@ -356,7 +356,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_amber-text);
       animation: blink-text 0.8s step-end infinite;
     }
@@ -372,7 +372,7 @@ export class VelgBureauDispatch extends LitElement {
     .decoding__bar-fill {
       height: 100%;
       background: var(--_amber);
-      box-shadow: 0 0 8px var(--_amber);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--_amber);
       animation: scan-sweep 1.8s ease-in-out;
     }
 
@@ -397,7 +397,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-danger);
     }
 
@@ -426,7 +426,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-danger);
     }
 
@@ -462,12 +462,12 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-success);
       border: 2px solid var(--color-success);
       border-radius: var(--space-1);
       transform: rotate(-3deg);
-      box-shadow: 0 0 12px var(--color-success-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--color-success-glow);
     }
 
     .reward__content {
@@ -483,7 +483,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
       margin: 0 0 var(--space-1);
     }
@@ -513,7 +513,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_classified-red);
       border: 1px solid var(--_classified-red);
       border-radius: var(--space-0-5);
@@ -524,7 +524,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-lg);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--_amber-text);
       margin: 0 0 var(--space-3);
     }
@@ -534,7 +534,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-success);
       margin: 0 0 var(--space-3);
     }
@@ -550,7 +550,7 @@ export class VelgBureauDispatch extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: transparent;
       border: 1px solid var(--color-border);

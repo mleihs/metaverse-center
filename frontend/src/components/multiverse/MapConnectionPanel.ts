@@ -28,7 +28,7 @@ export class VelgMapConnectionPanel extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: var(--font-black, 900);
       font-size: var(--text-base, 16px);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--color-text);
     }
@@ -47,7 +47,7 @@ export class VelgMapConnectionPanel extends LitElement {
     .panel__label {
       font-size: var(--text-xs, 12px);
       font-weight: var(--font-bold, 700);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--color-text-quiet);
     }

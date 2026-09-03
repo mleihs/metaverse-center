@@ -84,8 +84,8 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       border: 1px solid var(--color-border);
       border-top: 2px solid var(--color-primary);
       box-shadow:
-        0 24px 80px rgba(0, 0, 0, 0.8),
-        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent);
+        0 24px 80px color-mix(in srgb, var(--color-shadow) 80%, transparent),
+        0 0 calc(1px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 30%, transparent);
       animation: panel-in 250ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
 
@@ -174,7 +174,7 @@ export class VelgCommandPalette extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 600;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-muted);
       padding: var(--space-2, 8px) var(--space-4, 16px) var(--space-1, 4px);

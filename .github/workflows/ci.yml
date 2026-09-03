@@ -125,6 +125,16 @@ jobs:
         run: bash frontend/scripts/lint-no-accent-edge-bar.sh
         working-directory: .
 
+      # `text-transform: uppercase` hard in a component is a word that shouts in
+      # a room where nothing else does — as soon as a skin lowercases its
+      # headings. Both role tokens default to `uppercase`, so the mistake is
+      # INVISIBLE on the dark chrome; only a gate can see it. The sweep that
+      # introduced the rule moved 1396 declarations; the plan that ordered it
+      # estimated 400.
+      - name: Typography lint (text-transform names its role)
+        run: bash frontend/scripts/lint-no-hard-text-transform.sh
+        working-directory: .
+
       # Binds the class the marker gate could not: a shared style module that is
       # copied by hand instead of imported. See the script header for the
       # measurement that set its thresholds.

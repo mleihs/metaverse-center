@@ -55,7 +55,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist, system-ui);
         font-weight: 900;
         font-size: var(--text-2xl, 24px);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.2em;
         color: var(--color-accent-amber);
         margin: 0;
@@ -157,7 +157,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .bundle:hover {
         transform: translateY(-4px);
         border-color: var(--color-accent-amber);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 8px 24px color-mix(in srgb, var(--color-shadow) 40%, transparent);
       }
 
       .bundle:focus-visible {
@@ -167,7 +167,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .bundle--selected {
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.05);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.2), inset 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.05);
       }
 
       .bundle__tokens {
@@ -182,7 +182,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .bundle__token-label {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs, 12px);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--color-text-quiet);
         margin-bottom: var(--space-4, 16px);
@@ -191,7 +191,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
       .bundle__name {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--color-text-primary);
         margin-bottom: var(--space-3, 12px);
@@ -215,7 +215,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs, 12px);
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
       }
 
@@ -251,7 +251,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .btn--purchase:hover:not(:disabled) {
         background: var(--color-accent-amber-hover);
-        box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
         transform: translateY(-1px);
       }
 
@@ -282,7 +282,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
         color: var(--color-text-secondary);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm, 14px);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         cursor: pointer;
         padding: var(--space-2, 8px) 0;

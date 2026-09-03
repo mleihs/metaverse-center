@@ -22,6 +22,7 @@ import { icons } from '../../utils/icons.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 
+import '../shared/VelgEditionSwitch.js';
 import '../forge/VelgForgeWalletBadge.js';
 import '../forge/VelgForgeMint.js';
 import './UserMenu.js';
@@ -140,7 +141,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--hdr-amber);
       cursor: pointer;
@@ -228,7 +229,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       text-decoration: none;
       color: var(--hdr-text);
@@ -252,7 +253,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       border-radius: 50%;
       background: var(--hdr-amber);
       transform: translateY(-50%);
-      box-shadow: 0 0 4px var(--hdr-amber);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--hdr-amber);
     }
 
     .cluster-link:hover {
@@ -267,7 +268,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .cluster-link--active::before {
       background: var(--hdr-amber);
-      box-shadow: 0 0 6px var(--hdr-amber), 0 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--hdr-amber), 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 40%, transparent);
     }
 
     .cluster-link--admin {
@@ -276,7 +277,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .cluster-link--admin::before {
       background: var(--hdr-danger);
-      box-shadow: 0 0 4px var(--hdr-danger);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--hdr-danger);
     }
 
     .cluster-link--admin:hover {
@@ -315,7 +316,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
     .sys-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--hdr-text-muted);
       padding: var(--space-2) var(--space-3) var(--space-1);
@@ -325,7 +326,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: 2px 6px;
       line-height: 1;
@@ -349,7 +350,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-1-5) var(--space-4);
       background: var(--hdr-amber);
@@ -362,7 +363,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
 
     .btn-sign-in:hover {
       background: var(--color-primary-hover);
-      box-shadow: 0 0 16px var(--hdr-amber-glow);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--hdr-amber-glow);
     }
 
     /* ── Mobile menu panel ── */
@@ -393,7 +394,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       z-index: calc(var(--z-dropdown) + 1);
       padding: var(--space-4) var(--space-4) var(--space-5);
       animation: menu-slide-down 0.25s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-shadow) 50%, transparent);
     }
 
     .header__menu-panel::before,
@@ -419,7 +420,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--hdr-amber);
       padding: 0 var(--space-2) var(--space-3);
@@ -436,7 +437,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       text-decoration: none;
       color: var(--hdr-text);
@@ -462,7 +463,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       border-radius: 50%;
       background: var(--hdr-amber);
       transform: translateY(-50%);
-      box-shadow: 0 0 4px var(--hdr-amber);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--hdr-amber);
       animation: beacon-pulse 2s ease-in-out infinite;
     }
 
@@ -470,11 +471,11 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       color: var(--hdr-amber);
       border-color: var(--hdr-amber);
       background: var(--hdr-amber-ghost);
-      box-shadow: 0 0 12px var(--hdr-amber-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--hdr-amber-glow);
     }
 
     .header__menu-item--admin { color: var(--hdr-danger); }
-    .header__menu-item--admin::before { background: var(--hdr-danger); box-shadow: 0 0 4px var(--hdr-danger); }
+    .header__menu-item--admin::before { background: var(--hdr-danger); box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--hdr-danger); }
     .header__menu-item--admin:hover { color: var(--hdr-danger); border-color: var(--hdr-danger); background: color-mix(in srgb, var(--color-danger) 8%, transparent); }
 
     .header__menu-item--active { background: var(--hdr-amber); color: var(--hdr-bg); border-color: var(--hdr-amber); }
@@ -504,7 +505,7 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--hdr-text-dim);
     }
@@ -539,8 +540,8 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
     /* ── Keyframes ── */
 
     @keyframes beacon-pulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--hdr-amber); }
-      50% { opacity: 0.4; box-shadow: 0 0 8px var(--hdr-amber), 0 0 16px color-mix(in srgb, var(--color-primary) 40%, transparent); }
+      0%, 100% { opacity: 1; box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--hdr-amber); }
+      50% { opacity: 0.4; box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--hdr-amber), 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 40%, transparent); }
     }
 
     @keyframes header-border-flow {
@@ -761,6 +762,14 @@ export class VelgPlatformHeader extends SignalWatcher(LitElement) {
             : msg('Language: DE \u2192 EN')
         }
       </button>
+
+      <!-- Which printing the reader is holding. It sits under Tools, next to
+           the language, because it is the same kind of choice: a property of
+           this browser that anyone can change, signed in or not. The copy in
+           the user menu is the same element — this is the only one an anonymous
+           visitor can reach, and it is on every page rather than only on the
+           landing footer. -->
+      <velg-edition-switch></velg-edition-switch>
 
       <div class="cluster-divider"></div>
       <div class="sys-label">${msg('System')}</div>

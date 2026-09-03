@@ -56,7 +56,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
     .filters__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       padding-right: var(--space-2);
@@ -65,7 +65,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
     .filter-select {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
       color: var(--color-text-primary);
@@ -90,7 +90,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
     .filter-clear {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: transparent;
       border: 1px dashed var(--color-border);
@@ -136,7 +136,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
     .count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -149,7 +149,7 @@ export class VelgFragmentGrid extends SignalWatcher(LitElement) {
     .pager__btn {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: transparent;
       border: 1px dashed var(--color-border);

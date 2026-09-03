@@ -86,7 +86,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       text-align: center;
       margin-bottom: 24px;
@@ -140,7 +140,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 12px;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .tier-upgrade__current {
@@ -178,7 +178,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin-bottom: 8px;
     }
@@ -248,7 +248,7 @@ export class VelgForgeAccessModal extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-weight: 700;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       cursor: pointer;
       transition: background 150ms, transform 150ms, box-shadow 150ms,

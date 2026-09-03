@@ -19,7 +19,7 @@ export const intakeControlStyles = css`
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-muted);
   }
 
@@ -27,7 +27,7 @@ export const intakeControlStyles = css`
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-tertiary);
   }
 
@@ -51,7 +51,7 @@ export const intakeControlStyles = css`
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     padding: var(--space-1-5) var(--space-2-5);
     background: transparent;
     border: var(--border-width-thin) solid var(--color-border);
@@ -105,7 +105,7 @@ export const intakeControlStyles = css`
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
     letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     padding: var(--space-2-5) var(--space-4);
     background: transparent;
     border: var(--border-width-thin) solid var(--color-border);

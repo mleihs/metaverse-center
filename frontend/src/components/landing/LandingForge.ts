@@ -23,18 +23,11 @@
 
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import type { LandingPrompt } from '../../types/index.js';
-import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
-
-/** Ein Zeichen je Schritt. Der Entwurf nennt 34 ms. */
-const TICK_MS = 34;
-/** Wie viele Schritte der volle Text stehen bleibt (110 x 34 ms rund 3,7 s). */
-const HOLD_TICKS = 110;
-/** Zeichen je Schritt beim Loeschen - schneller als das Tippen, wie im Entwurf. */
-const DELETE_CHARS = 5;
+import { ForgeTypewriter, forgeAnchors, forgeEntries } from './landing-forge-engine.js';
 
 @localized()
 @customElement('velg-landing-forge')
@@ -66,7 +59,7 @@ export class VelgLandingForge extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-6);
     }
@@ -77,7 +70,7 @@ export class VelgLandingForge extends LitElement {
       font-size: var(--text-display-md);
       line-height: 0.96;
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0;
     }
@@ -156,7 +149,7 @@ export class VelgLandingForge extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       flex: 0 0 auto;
     }
@@ -167,7 +160,7 @@ export class VelgLandingForge extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       border: var(--border-width-thin) solid var(--color-border-light);
       background: transparent;
@@ -207,7 +200,7 @@ export class VelgLandingForge extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
       border: var(--border-width-thin) solid var(--color-accent-amber-dim);
@@ -228,7 +221,7 @@ export class VelgLandingForge extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -271,14 +264,20 @@ export class VelgLandingForge extends LitElement {
    *  freigegebenen, dann tippt der Abschnitt seine Beispiele. */
   @property({ attribute: false }) prompts: LandingPrompt[] = [];
 
-  @state() private _typed = '';
-  @state() private _anchor = 0;
-
-  private _timer?: ReturnType<typeof setInterval>;
-  private _index = 0;
-  private _chars = 0;
-  private _deleting = false;
-  private _hold = 0;
+  /**
+   * Das Tippwerk.
+   *
+   * Es lebt seit dem 03.09.2026 in `landing-forge-engine.ts`, weil die
+   * Kartenmappe dasselbe Feld zeigt: ein Ausgangssatz laeuft ein, haelt,
+   * loescht sich, der naechste folgt. Zwei Zaehlwerke mit denselben drei
+   * Konstanten haetten irgendwann verschieden schnell getippt, und niemand
+   * haette es bemerkt.
+   *
+   * Dort liegen auch die zwanzig Beispielsaetze — Text, den die Plattform
+   * ueber sich selbst schreibt. Eine Korrektur an einem davon muss beide
+   * Vorlagen erreichen.
+   */
+  private readonly _type = new ForgeTypewriter(this, () => forgeEntries(this.prompts));
 
   /**
    * Zwanzig Weltbeschreibungen aus dem Entwurf.
@@ -299,154 +298,9 @@ export class VelgLandingForge extends LitElement {
    *  aus abgeschlossenen Läufen. Sie sind noch nicht freigegeben, weil sie von
    *  Menschen geschrieben sind und die Frontseite öffentlich ist — siehe
    *  `LandingPrompt` im Rücken. */
-  /**
-   * Ein Eintrag traegt beides: den Satz und die Welt, die aus ihm wurde.
-   *
-   * Vorher lieferte diese Methode nur Zeichenketten, und `_index` zeigte in
-   * die GEFILTERTE Liste. Eine zweite Liste mit den Welt-Kennungen daneben
-   * haette denselben Index gebraucht und waere beim ersten leeren Satz
-   * verrutscht — der Faecher darueber haette dann die Buerger der falschen
-   * Welt gezeigt, und zwar plausibel genug, dass es niemandem auffaellt.
-   * Eine Liste, ein Index, kein Abgleich.
-   */
-  private _entries(): Array<{ text: string; simulationId: string | null }> {
-    if (this.prompts.length) {
-      return this.prompts
-        .map((p) => ({ text: t(p, 'text'), simulationId: p.simulation_id ?? null }))
-        .filter((e) => Boolean(e.text));
-    }
-    // Die Beispielsaetze gehoeren zu keiner Welt — null, nicht geraten.
-    return this._fallbackPrompts().map((text) => ({ text, simulationId: null }));
-  }
-
-  private _fallbackPrompts(): string[] {
-    return [
-      msg(
-        'A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books: one for the living, one for the sea.',
-      ),
-      msg(
-        'A bureaucracy of chitinous insects governing a city of wax and paper. Promotion is by molting, demotion is by candle, and the archive eats one form per night. Nobody files a complaint, because the complaint form is the first thing it ate.',
-      ),
-      msg(
-        'A mining aristocracy that dug too deep and now pays rent to whatever lives below. The lease is renegotiated every winter solstice, in the dark, by a delegation that returns one member short and never discusses it.',
-      ),
-      msg(
-        'A baroque city-state that prints its grudges every morning in a broadsheet of record. Duels are fought over typos, retractions cost more than funerals, and the editor has outlived four governments by misquoting all of them.',
-      ),
-      msg(
-        'An alpine empire run entirely by lighthouse keepers, though there is no sea, only fog with opinions. The lights must never align, for on the one recorded night they did, something in the fog aligned back.',
-      ),
-      msg(
-        'A desert caliphate where cartographers are priests and an inaccurate map is heresy. The border moves when nobody is drawing it, so the frontier monasteries sketch in shifts, around the clock, and still lose a village every decade.',
-      ),
-      msg(
-        'A glacier city that migrates two meters per year, dragging its cathedral by law. Streets are renamed as they drift, marriages are annulled if the couple ends up on opposite moraines, and the founding quarter is now three valleys behind.',
-      ),
-      msg(
-        'A merchant archipelago where every contract must be sung before witnesses. Breach of contract is off-key, insurance fraud is falsetto, and the supreme court is a choir that has not agreed on a verdict, or a key signature, since the drowning of the second fleet.',
-      ),
-      msg(
-        'A velvet dictatorship of retired opera singers who outlawed silence in 1911. Informants hum. The secret police travel as a touring company, and the last man who whispered was given three encores and never seen again.',
-      ),
-      msg(
-        'A river delta ruled by three rival post offices that read everything and forgive nothing. Love letters arrive annotated, ransom notes come back corrected, and once a generation the three postmasters exchange a single unstamped envelope no one has ever opened.',
-      ),
-      msg(
-        'A walled garden-state whose census counts the dead, because they still vote. The graveyard districts lean conservative, the crematorium ward is a swing seat, and every election night the returning officer reads the results aloud twice: once facing the city, once facing the wall.',
-      ),
-      msg(
-        'A smog-choked industrial duchy where the chimney sweeps union secretly owns the sky. Sunlight is leased by the hour, stars are a black-market luxury, and when the duke stopped paying his invoice, his palace stood in private night for eleven years.',
-      ),
-      msg(
-        'A salt-flat theocracy that worships reflections and executes mirror-breakers at dawn. After the rains, when the whole flat becomes one perfect mirror, the priesthood walks out onto the sky and takes confession from the clouds.',
-      ),
-      msg(
-        'A canal republic where the gondoliers are the intelligence service and every song is a report. The melody carries the facts, the harmony carries the doubts, and the state anthem is legally classified.',
-      ),
-      msg(
-        'A mountain kingdom that elects its king by avalanche. Candidates stand on the slope at first thaw; the mountain abstains some years, and the throne stays empty, which the constitution counts as its wisest reign.',
-      ),
-      msg(
-        'A paper federation of libraries at war over a single misfiled book since 1834. Ceasefires are signed in pencil. The book itself has been read by no one still living, and both sides privately fear it is a ledger of what the war has cost.',
-      ),
-      msg(
-        'A coastal margravate where storms are put on trial in absentia and always found guilty. Sentences are carved into the cliff face. The great hurricane of 88 was condemned to four hundred years of community service, and the harbor wall it must rebuild is almost finished.',
-      ),
-      msg(
-        'A subterranean stock exchange that trades in memories, dream futures, and grudge derivatives. Childhood summers are blue-chip, first kisses are volatile, and the crash of the nostalgia bubble left an entire generation unable to remember why it was angry.',
-      ),
-      msg(
-        'A frostbitten port where every departing ship must carry one passenger who never existed. The shipping registry lists them in white ink. Sailors say the invented passengers keep the sea from noticing the real ones.',
-      ),
-      msg(
-        'A vineyard oligarchy whose wars are fought exclusively by sommeliers, to the last drop. Vintages are classified as armaments, decanting is a declaration, and the treaty of the great frost was ratified by everyone spitting at the same time.',
-      ),
-    ];
-  }
-
-  private _anchors(): string[] {
-    return [
-      msg('Stoic order'),
-      msg('The absurd'),
-      msg('Entropy and decay'),
-      msg('Collective memory'),
-      msg('Faustian ambition'),
-      msg('Sacred bureaucracy'),
-    ];
-  }
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    const entries = this._entries();
-
-    // Ein angehaltenes Tippfeld zeigt den vollen Text, nicht eine halbe Zeile.
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-      this._typed = entries[0]?.text ?? '';
-      return;
-    }
-
-    this._timer = setInterval(() => {
-      const prompt = entries[this._index]?.text ?? '';
-      if (!this._deleting) {
-        this._chars += 1;
-        if (this._chars >= prompt.length) {
-          this._chars = prompt.length;
-          this._deleting = true;
-          this._hold = HOLD_TICKS;
-        }
-      } else if (this._hold > 0) {
-        this._hold -= 1;
-      } else {
-        this._chars -= DELETE_CHARS;
-        if (this._chars <= 0) {
-          this._chars = 0;
-          this._deleting = false;
-          this._index = (this._index + 1) % entries.length;
-          this._anchor = this._index % this._anchors().length;
-          // Der Faecher eine Ebene hoeher soll dieselbe Welt zeigen wie der
-          // Satz, der gerade anlaeuft. Ein Ereignis statt eines gemeinsamen
-          // Zustands: die Frontseite ist der Ort, an dem die beiden
-          // Abschnitte sich kennen, nicht die Abschnitte selbst.
-          this.dispatchEvent(
-            new CustomEvent('prompt-world', {
-              bubbles: true,
-              composed: true,
-              detail: { simulationId: entries[this._index]?.simulationId ?? null },
-            }),
-          );
-        }
-      }
-      this._typed = prompt.slice(0, Math.max(0, this._chars));
-    }, TICK_MS);
-  }
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    if (this._timer) clearInterval(this._timer);
-  }
 
   protected render() {
-    const anchors = this._anchors();
+    const anchors = forgeAnchors();
 
     return html`
       <div class="layout stage-container">
@@ -472,7 +326,7 @@ export class VelgLandingForge extends LitElement {
           <div class="prompt">
             <span class="prompt__caret" aria-hidden="true">&gt;</span>
             <p class="prompt__text" aria-live="off">
-              ${this._typed}<span class="prompt__cursor" aria-hidden="true"></span>
+              ${this._type.typed}<span class="prompt__cursor" aria-hidden="true"></span>
             </p>
           </div>
 
@@ -480,7 +334,7 @@ export class VelgLandingForge extends LitElement {
             <span class="anchors__label">${msg('Anchor it in a philosophy')}</span>
             ${anchors.map(
               (anchor, index) => html`
-                <span class="chip ${index === this._anchor ? 'chip--on' : ''}">${anchor}</span>
+                <span class="chip ${index === this._type.anchor ? 'chip--on' : ''}">${anchor}</span>
               `,
             )}
             <span class="anchors__note">

@@ -69,7 +69,7 @@ export class VelgLandingWorlds extends LitElement {
       font-weight: var(--font-bold);
       font-size: calc(clamp(var(--text-2xl), 4vw, 44px) * var(--stage-type-scale, 1));
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0;
     }
@@ -84,7 +84,7 @@ export class VelgLandingWorlds extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-widest);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: none;
       border: 0;
@@ -189,7 +189,7 @@ export class VelgLandingWorlds extends LitElement {
       height: 6px;
       border-radius: var(--border-radius-full);
       background: var(--color-accent-green);
-      box-shadow: 0 0 7px var(--color-accent-green);
+      box-shadow: 0 0 calc(7px * var(--glow-strength)) var(--color-accent-green);
       flex: none;
     }
 
@@ -208,7 +208,7 @@ export class VelgLandingWorlds extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1-5);
       transition: color var(--transition-normal);

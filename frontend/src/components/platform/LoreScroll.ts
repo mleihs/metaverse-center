@@ -675,19 +675,36 @@ export class VelgLoreScroll extends LitElement {
       display: block;
       padding: var(--space-8) var(--space-6);
 
-      /* Lore color tokens — defaults match dashboard (white-on-dark) */
-      --lore-text: rgba(255, 255, 255, 0.75);
+      /* Lore color tokens — mixed from --color-text-primary so a skin that
+       * flips polarity (Atlas: ink on paper) flips these with it instead of
+       * staying frozen white. Percentages preserve today's rgba(255,255,255,X)
+       * alpha exactly.
+       *
+       * --lore-accent/-strong were hard amber, not white — moved to
+       * --color-primary, NOT --color-accent-amber. The amber token is
+       * documented "non-themeable chrome — always amber" (_colors.css); this
+       * component's own doc string says the opposite ("Die Gestaltung folgt
+       * dem Thema der jeweiligen Simulation"), so hard amber was already a
+       * defect relative to its contract, not a deliberate choice. --color-primary
+       * equals the same amber as --color-accent-amber at :root today, so this
+       * is pixel-identical now and only diverges once mounted under an actual
+       * theme — Atlas included.
+       *
+       * Moot in practice: <velg-lore-scroll> is not rendered anywhere in the
+       * app (SimulationLoreView.ts:429-441) — only its LoreSection type is
+       * still imported. Fixed for correctness, not because anyone sees it. */
+      --lore-text: color-mix(in srgb, var(--color-text-primary) 75%, transparent);
       --lore-heading: var(--color-text-primary);
-      --lore-muted: rgba(255, 255, 255, 0.6);
-      --lore-faint: rgba(255, 255, 255, 0.45);
-      --lore-accent: rgba(255, 200, 100, 0.7);
-      --lore-accent-strong: rgba(255, 200, 100, 0.8);
-      --lore-surface: rgba(255, 255, 255, 0.04);
-      --lore-surface-hover: rgba(255, 255, 255, 0.08);
-      --lore-divider: rgba(255, 255, 255, 0.15);
-      --lore-image-border: rgba(255, 255, 255, 0.1);
-      --lore-btn-border: rgba(255, 255, 255, 0.2);
-      --lore-btn-text: rgba(255, 255, 255, 0.6);
+      --lore-muted: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
+      --lore-faint: color-mix(in srgb, var(--color-text-primary) 45%, transparent);
+      --lore-accent: color-mix(in srgb, var(--color-primary) 70%, transparent);
+      --lore-accent-strong: color-mix(in srgb, var(--color-primary) 80%, transparent);
+      --lore-surface: var(--color-overlay-ink);
+      --lore-surface-hover: var(--color-overlay-ink-strong);
+      --lore-divider: color-mix(in srgb, var(--color-text-primary) 15%, transparent);
+      --lore-image-border: color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+      --lore-btn-border: color-mix(in srgb, var(--color-text-primary) 20%, transparent);
+      --lore-btn-text: color-mix(in srgb, var(--color-text-primary) 60%, transparent);
     }
 
     /* ── Chapter Dividers ── */
@@ -724,7 +741,7 @@ export class VelgLoreScroll extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--lore-faint);
       white-space: nowrap;
@@ -828,7 +845,7 @@ export class VelgLoreScroll extends LitElement {
 
     .section__header:hover .section__arcanum {
       transform: scale(1.15);
-      text-shadow: 0 0 8px color-mix(in srgb, var(--lore-accent) 50%, transparent);
+      text-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--lore-accent) 50%, transparent);
     }
 
     .section__title {
@@ -1012,7 +1029,7 @@ export class VelgLoreScroll extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 0.18em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       padding: var(--space-1) var(--space-2);
       margin-bottom: var(--space-1);
@@ -1169,7 +1186,7 @@ export class VelgLoreScroll extends LitElement {
       position: relative;
       font-family: var(--font-mono);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.2em;
       color: var(--lore-accent-strong);
       line-height: 1.8;
@@ -1216,7 +1233,7 @@ export class VelgLoreScroll extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       font-style: normal;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
       color: var(--lore-muted);
     }
@@ -1240,7 +1257,7 @@ export class VelgLoreScroll extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--lore-btn-text);
       background: transparent;

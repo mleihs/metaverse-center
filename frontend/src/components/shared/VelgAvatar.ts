@@ -129,7 +129,7 @@ export class VelgAvatar extends LitElement {
     .avatar__initials {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--_ink);
     }

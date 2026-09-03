@@ -41,7 +41,7 @@ export class VelgLocationsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -96,7 +96,7 @@ export class VelgLocationsView extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 12px);
       font-weight: 600;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       cursor: pointer;
       transition: color 0.15s ease, background 0.15s ease;
@@ -108,7 +108,7 @@ export class VelgLocationsView extends LitElement {
 
     .view__mode-btn:hover {
       color: var(--color-text-primary);
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--color-overlay-ink);
     }
 
     .view__mode-btn--active {

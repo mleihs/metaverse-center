@@ -95,7 +95,7 @@ export const fieldRowStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-text-primary);
     line-height: 1.4;
@@ -213,7 +213,7 @@ export const fieldRowCardStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-2) 0;

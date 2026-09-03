@@ -49,7 +49,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.14em;
         color: var(--color-text-quiet);
         margin: 0 0 var(--space-2);
@@ -59,7 +59,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: clamp(1.5rem, 4vw, 2.5rem);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.04em;
         line-height: 1.1;
         margin: 0 0 var(--space-3);
@@ -113,7 +113,7 @@ export class VelgBroadsheetHeroArticle extends LitElement {
         border-top: 1px solid var(--color-border-light);
         font-family: var(--font-brutalist);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-quiet);
       }

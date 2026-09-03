@@ -117,7 +117,7 @@ export class VelgMapGraph extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       fill: var(--color-text-primary);
       text-anchor: middle;
@@ -188,7 +188,7 @@ export class VelgMapGraph extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       text-anchor: middle;
       pointer-events: none;
@@ -214,7 +214,7 @@ export class VelgMapGraph extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: 12px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       fill: var(--color-text-primary);
       text-anchor: middle;
@@ -250,7 +250,7 @@ export class VelgMapGraph extends LitElement {
       font-family: var(--font-brutalist, monospace);
       font-size: 10px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 6px 12px;
       cursor: pointer;

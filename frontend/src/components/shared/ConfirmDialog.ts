@@ -33,7 +33,7 @@ export class VelgConfirmDialog extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       border: var(--border-default);
       box-shadow: var(--shadow-md);

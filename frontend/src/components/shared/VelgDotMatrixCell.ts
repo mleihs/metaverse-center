@@ -102,7 +102,7 @@ export class VelgDotMatrixCell extends LitElement {
 
     .dot--on {
       background: var(--_dot-active);
-      box-shadow: 0 0 4px var(--_dot-active);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--_dot-active);
     }
 
     /* Probing state pulses so operators notice a flaky breaker.
@@ -125,7 +125,7 @@ export class VelgDotMatrixCell extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_dot-active);
       max-width: 7ch;
       text-align: center;

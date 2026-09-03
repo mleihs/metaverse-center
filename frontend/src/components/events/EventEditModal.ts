@@ -101,7 +101,7 @@ export class VelgEventEditModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-header);
       border: var(--border-width-default) solid var(--color-border);

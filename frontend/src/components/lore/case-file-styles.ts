@@ -38,7 +38,7 @@ export const caseFileStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black, 900);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.15em;
     color: var(--color-accent-amber);
     margin: 0;
@@ -49,7 +49,7 @@ export const caseFileStyles = css`
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.12em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     margin-top: var(--space-1);
   }
@@ -69,7 +69,7 @@ export const caseFileStyles = css`
     font-size: var(--text-xs);
     font-weight: 600;
     letter-spacing: 0.15em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     background: transparent;
     border: none;
@@ -130,7 +130,7 @@ export const caseFileStyles = css`
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.2em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-accent-amber);
     opacity: 0.6;
     margin: 0 0 var(--space-1);
@@ -140,7 +140,7 @@ export const caseFileStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black, 900);
     font-size: var(--text-lg);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: 0.06em;
     color: var(--color-text-primary);
     margin: 0 0 var(--space-3);
@@ -179,7 +179,7 @@ export const caseFileStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     font-weight: var(--font-bold, 700);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.05em;
     color: var(--color-accent-amber);
     background: transparent;
@@ -239,7 +239,7 @@ export const caseFileStyles = css`
     font-size: 8px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-success);
     border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
     background: color-mix(in srgb, var(--color-success) 8%, transparent);

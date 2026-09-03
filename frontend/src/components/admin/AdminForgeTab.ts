@@ -120,7 +120,7 @@ export class VelgAdminForgeTab extends LitElement {
       .byok-input:focus {
         outline: none;
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 12px rgba(245, 158, 11, 0.1);
+        box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.1);
       }
 
       /* ── Tables (shared) ── */
@@ -136,7 +136,7 @@ export class VelgAdminForgeTab extends LitElement {
         text-align: left;
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 2px;
         color: var(--color-accent-amber);
         padding: var(--space-2) var(--space-3);
@@ -156,7 +156,7 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .forge-table tbody tr:nth-child(even) td {
-        background: rgba(255, 255, 255, 0.01);
+        background: var(--color-overlay-ink);
       }
 
       .forge-table tbody tr:nth-child(even):hover td {
@@ -187,7 +187,7 @@ export class VelgAdminForgeTab extends LitElement {
       .bundle-edit-form__label {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 1px;
         color: var(--color-text-quiet);
       }
@@ -231,7 +231,7 @@ export class VelgAdminForgeTab extends LitElement {
         padding: var(--space-1) var(--space-3);
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         border: 1px solid var(--color-border);
         background: transparent;
@@ -250,7 +250,7 @@ export class VelgAdminForgeTab extends LitElement {
         background: var(--color-accent-amber);
         color: var(--color-surface-sunken);
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
       }
 
       /* ── Pagination ── */
@@ -279,7 +279,7 @@ export class VelgAdminForgeTab extends LitElement {
         padding: var(--space-1) var(--space-3);
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         background: var(--color-surface);
         color: var(--color-text-primary);
         border: 1px solid var(--color-border);
@@ -310,7 +310,7 @@ export class VelgAdminForgeTab extends LitElement {
       .grant-form__label {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 1px;
         color: var(--color-text-quiet);
       }
@@ -350,7 +350,7 @@ export class VelgAdminForgeTab extends LitElement {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-weight: 900;
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: var(--color-success);
         color: var(--color-surface-sunken);
@@ -447,7 +447,7 @@ export class VelgAdminForgeTab extends LitElement {
         margin: 0 0 var(--space-2);
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
       }
@@ -519,7 +519,7 @@ export class VelgAdminForgeTab extends LitElement {
         color: var(--color-text-secondary);
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         cursor: pointer;
       }
@@ -548,7 +548,7 @@ export class VelgAdminForgeTab extends LitElement {
         margin: 0 0 var(--space-3);
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
       }

@@ -60,7 +60,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       --_glow-subtle: color-mix(in srgb, var(--color-primary) 1.5%, transparent);
       --_glow-edge: color-mix(in srgb, var(--color-primary) 8%, transparent);
       box-shadow:
-        inset 0 0 60px var(--_glow-subtle),
+        inset 0 0 calc(60px * var(--glow-strength)) var(--_glow-subtle),
         inset 0 1px 0 var(--_glow-edge);
     }
 
@@ -86,7 +86,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, monospace);
       font-weight: 900;
       font-size: var(--text-sm, 14px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
     }
 
@@ -96,7 +96,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       font-weight: 700;
       color: var(--color-stamp-red);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid color-mix(in srgb, var(--color-stamp-red) 36%, transparent);
       padding: 1px 6px;
     }
@@ -117,7 +117,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       color: var(--color-text-quiet);
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       cursor: pointer;
       transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -126,7 +126,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
     .desk__tool-btn:hover {
       color: var(--color-text-primary);
       border-color: var(--color-text-muted);
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--color-overlay-ink);
     }
 
     .desk__tool-btn--active {
@@ -185,7 +185,7 @@ export class CartographersDesk extends SignalWatcher(LitElement) {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      box-shadow: inset 0 0 0 1px var(--color-overlay-ink);
       z-index: 1;
     }
 

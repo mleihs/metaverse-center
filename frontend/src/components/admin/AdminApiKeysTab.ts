@@ -127,7 +127,7 @@ export class VelgAdminApiKeysTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         border-bottom: 1px solid var(--color-border);
@@ -170,7 +170,7 @@ export class VelgAdminApiKeysTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-sm);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
         margin: 0;
@@ -180,7 +180,7 @@ export class VelgAdminApiKeysTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         padding: var(--space-0-5) var(--space-2);
       }
@@ -242,7 +242,7 @@ export class VelgAdminApiKeysTab extends LitElement {
       .key-card__toggle {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: var(--space-2);
         background: none;
         border: 1px solid var(--color-border);

@@ -90,7 +90,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
       }
 
@@ -100,7 +100,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: calc(var(--text-xl) * var(--stage-type-scale, 1));
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: var(--color-text-primary);
       }
 
@@ -170,7 +170,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xl);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: inherit;
       }
 
@@ -178,7 +178,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
       }
 
@@ -339,7 +339,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
         margin-bottom: var(--space-2);
       }
@@ -349,7 +349,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xl);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: var(--color-text-primary);
       }
 
@@ -434,7 +434,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         line-height: var(--leading-snug);
         color: var(--color-text-quiet);
       }
@@ -450,7 +450,7 @@ export class VelgDashboardWorlds extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
         transition: color var(--transition-fast);
       }

@@ -42,7 +42,7 @@ export class VelgEventSeismograph extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -57,7 +57,7 @@ export class VelgEventSeismograph extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-raised);
       border: var(--border-width-thin) solid var(--color-border);
@@ -119,7 +119,7 @@ export class VelgEventSeismograph extends LitElement {
 
     @keyframes spike-resonance {
       0%, 100% { opacity: 1; filter: none; }
-      50% { opacity: 0.7; filter: drop-shadow(0 0 3px var(--color-danger)); }
+      50% { opacity: 0.7; filter: drop-shadow(0 0 calc(3px * var(--glow-strength)) var(--color-danger)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -134,7 +134,7 @@ export class VelgEventSeismograph extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       display: flex;

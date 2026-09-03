@@ -132,14 +132,14 @@ export class VelgAgentDungeonRewards extends LitElement {
     }
 
     .reward--tier-3 .reward__marker {
-      text-shadow: 0 0 6px var(--color-warning-glow);
+      text-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-warning-glow);
     }
 
     .reward__name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
     }
@@ -148,7 +148,7 @@ export class VelgAgentDungeonRewards extends LitElement {
       margin-left: auto;
       font-family: var(--font-brutalist);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       padding: 1px var(--space-1);
@@ -174,7 +174,7 @@ export class VelgAgentDungeonRewards extends LitElement {
       margin-top: var(--space-1);
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
     }

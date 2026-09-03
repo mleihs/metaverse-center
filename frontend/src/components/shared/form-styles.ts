@@ -27,7 +27,7 @@ export const formStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
   }
@@ -76,7 +76,7 @@ export const formStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-danger);
   }
 
@@ -94,7 +94,7 @@ export const formStyles = css`
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
     color: var(--color-danger);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -106,7 +106,7 @@ export const formStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     border: var(--border-width-default) solid var(--color-border);
     background: var(--color-surface-raised);
@@ -158,7 +158,7 @@ export const formStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     border: var(--border-default);
     box-shadow: var(--shadow-md);

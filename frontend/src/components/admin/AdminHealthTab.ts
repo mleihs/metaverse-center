@@ -110,7 +110,7 @@ export class VelgAdminHealthTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
         margin: 0;
@@ -138,7 +138,7 @@ export class VelgAdminHealthTab extends LitElement {
       .health-bar__label {
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
       }
@@ -174,7 +174,7 @@ export class VelgAdminHealthTab extends LitElement {
 
       .health-bar__fill--critical {
         background: var(--color-danger);
-        box-shadow: 0 0 6px color-mix(in srgb, var(--color-danger) 40%, transparent);
+        box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 40%, transparent);
       }
 
       .health-bar__fill--normal {
@@ -201,7 +201,7 @@ export class VelgAdminHealthTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         padding: 2px var(--space-2);
       }

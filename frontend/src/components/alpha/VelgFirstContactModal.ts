@@ -44,7 +44,7 @@ export class VelgFirstContactModal extends SignalWatcher(LitElement) {
       font-weight: var(--font-black, 900);
       font-size: var(--text-xl, 1.5rem);
       letter-spacing: var(--tracking-brutalist, 0.14em);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       text-shadow:
         -1px 0 color-mix(in srgb, var(--color-info) 60%, transparent),
@@ -58,7 +58,7 @@ export class VelgFirstContactModal extends SignalWatcher(LitElement) {
       font-size: 10px;
       letter-spacing: 0.4em;
       color: var(--color-accent-amber);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       margin-bottom: var(--space-2, 8px);
     }
 
@@ -79,7 +79,7 @@ export class VelgFirstContactModal extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       border-top: 1px dashed var(--color-border);
       padding-top: var(--space-3, 12px);
@@ -103,7 +103,7 @@ export class VelgFirstContactModal extends SignalWatcher(LitElement) {
       font-weight: var(--font-black, 900);
       font-size: 11px;
       letter-spacing: 0.16em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-3, 12px) var(--space-5, 20px);
       background: transparent;
       border: 2px solid var(--color-border);

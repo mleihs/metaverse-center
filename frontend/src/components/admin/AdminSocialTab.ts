@@ -28,7 +28,7 @@ export class VelgAdminSocialTab extends LitElement {
 
       .subnav__indicator--live {
         background: var(--color-success);
-        box-shadow: 0 0 4px var(--color-success);
+        box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--color-success);
       }
 
       .subnav__indicator--off {

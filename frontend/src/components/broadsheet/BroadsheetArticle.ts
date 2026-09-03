@@ -39,7 +39,7 @@ export class VelgBroadsheetArticleEl extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.14em;
         color: var(--color-text-quiet);
         display: flex;

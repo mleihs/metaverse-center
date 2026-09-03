@@ -89,7 +89,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
         margin: 0;
       }
@@ -144,7 +144,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-primary);
         margin: 0 0 var(--space-1);
       }
@@ -207,7 +207,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
         white-space: nowrap;
       }
@@ -228,7 +228,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-danger);
         margin: 0 0 var(--space-2);
       }
@@ -277,7 +277,7 @@ export class VelgAdminFeatureGatesTab extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
       }
 

@@ -70,7 +70,7 @@ export class VelgWhisperCard extends LitElement {
     .whisper__type {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       padding: var(--space-0-5) var(--space-2);
@@ -107,7 +107,7 @@ export class VelgWhisperCard extends LitElement {
     .whisper__action {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       background: none;

@@ -98,7 +98,7 @@ export const propheticFragmentStyles = css`
     font-size: 8px;
     font-weight: 900;
     letter-spacing: 0.15em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
@@ -109,7 +109,7 @@ export const propheticFragmentStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-sm);
     font-weight: 700;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.2em;
     color: rgba(180, 180, 175, 0.9);
     background: linear-gradient(170deg, rgba(80, 80, 78, 0.7), rgba(60, 60, 58, 0.8));

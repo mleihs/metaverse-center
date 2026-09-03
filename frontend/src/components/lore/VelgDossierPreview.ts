@@ -54,7 +54,7 @@ export class VelgDossierPreview extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-4);
       padding-bottom: var(--space-2);
@@ -104,7 +104,7 @@ export class VelgDossierPreview extends LitElement {
       font-size: var(--text-xs);
       font-weight: 700;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-1);
     }

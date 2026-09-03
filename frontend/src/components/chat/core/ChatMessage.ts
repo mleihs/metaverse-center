@@ -255,7 +255,7 @@ export class ChatMessage extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       margin-bottom: var(--space-1);
       user-select: none;
@@ -276,7 +276,7 @@ export class ChatMessage extends LitElement {
       font-size: 8px;
       font-weight: 900;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 0 4px;
       margin-left: 4px;
       color: var(--color-warning);

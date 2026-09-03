@@ -67,7 +67,7 @@ export class VelgDashboardQueue extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
       }
 
@@ -121,7 +121,7 @@ export class VelgDashboardQueue extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-primary);
       }
 
@@ -133,7 +133,7 @@ export class VelgDashboardQueue extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         white-space: nowrap;
         color: var(--color-text-quiet);
       }
@@ -203,7 +203,7 @@ export class VelgDashboardQueue extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         white-space: nowrap;
         color: var(--color-text-quiet);
       }

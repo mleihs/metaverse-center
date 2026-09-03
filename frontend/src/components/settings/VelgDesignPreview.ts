@@ -65,7 +65,7 @@ export class VelgDesignPreview extends LitElement {
       padding: 6px 14px;
       font-weight: 700;
       font-size: 12px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       cursor: default;
       width: fit-content;

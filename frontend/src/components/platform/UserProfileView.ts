@@ -203,7 +203,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       padding: var(--space-3) var(--space-4);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
       border-bottom: 1px dashed var(--_rule);
@@ -303,7 +303,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(1.5rem, 4vw, var(--text-2xl));
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
       color: var(--_ink);
@@ -364,7 +364,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
       color: var(--_ink);
@@ -403,7 +403,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     .field__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -473,7 +473,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       box-shadow: var(--shadow-xs);
@@ -581,7 +581,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       overflow-wrap: anywhere;
     }
@@ -598,7 +598,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
 
     .posting__role {
       color: var(--_stamp);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
     }
 
@@ -631,7 +631,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     .record__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }

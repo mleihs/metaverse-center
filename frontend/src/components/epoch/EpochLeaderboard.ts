@@ -49,7 +49,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       text-align: left;
@@ -113,7 +113,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 900;
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-epoch-accent);
       border: 1px solid var(--color-epoch-accent);
@@ -160,7 +160,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
     }
@@ -183,7 +183,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-danger);
       border: 1px solid var(--color-danger);
@@ -207,7 +207,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 0 5px;
       margin-left: 4px;
@@ -231,7 +231,7 @@ export class VelgEpochLeaderboard extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 8px;
       letter-spacing: 0.06em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 0 3px;
       margin-left: 2px;
       vertical-align: middle;

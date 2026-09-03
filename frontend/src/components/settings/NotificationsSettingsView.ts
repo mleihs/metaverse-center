@@ -45,7 +45,7 @@ export class VelgNotificationsSettingsView extends SignalWatcher(LitElement) {
     .head__kicker {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-2);
@@ -55,7 +55,7 @@ export class VelgNotificationsSettingsView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(1.5rem, 4vw, var(--text-2xl));
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0 0 var(--space-3);
       color: var(--_ink);
@@ -100,7 +100,7 @@ export class VelgNotificationsSettingsView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-2);

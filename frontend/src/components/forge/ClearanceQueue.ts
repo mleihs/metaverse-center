@@ -139,7 +139,7 @@ export class VelgClearanceQueue extends LitElement {
     .request-card__notes-label {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-1);
@@ -158,7 +158,7 @@ export class VelgClearanceQueue extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-success);
       color: var(--color-surface-sunken);
@@ -185,7 +185,7 @@ export class VelgClearanceQueue extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: transparent;
       color: var(--color-danger);
@@ -249,7 +249,7 @@ export class VelgClearanceQueue extends LitElement {
     :host([variant="compact"]) .section-header__surtitle {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.4em;
       color: var(--color-text-quiet);
     }
@@ -258,7 +258,7 @@ export class VelgClearanceQueue extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--color-text-primary);
       margin: 0;

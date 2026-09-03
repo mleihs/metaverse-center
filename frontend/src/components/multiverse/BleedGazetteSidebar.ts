@@ -100,7 +100,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
         font-family: Georgia, 'Times New Roman', serif;
         font-weight: 700;
         font-size: var(--text-base);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.12em;
         color: var(--color-text-secondary);
         margin: 0;
@@ -129,6 +129,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       /* ── Sidebar dispatch overrides ────── */
 
       .dispatch {
+        /* lint-color-ok — deliberate warm parchment tint, not neutral ink */
         background-image: linear-gradient(135deg, rgba(255, 248, 230, 0.02), transparent);
       }
 
@@ -179,7 +180,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
 
       .dispatch__vector-tag {
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         padding: 1px 5px;
         border-radius: 1px;
@@ -209,7 +210,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
       .dispatch__seal-text {
         font-family: Georgia, 'Times New Roman', serif;
         font-size: 7px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.14em;
         color: var(--color-text-quiet);
         margin-top: var(--space-1);
@@ -256,7 +257,7 @@ export class VelgBleedGazetteSidebar extends LitElement {
         font-family: var(--font-brutalist, Georgia, serif);
         font-weight: 700;
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-warning);
         white-space: nowrap;

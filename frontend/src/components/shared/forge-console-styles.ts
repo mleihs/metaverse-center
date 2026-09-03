@@ -34,7 +34,7 @@ export const forgeButtonStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold, 700);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide, 0.05em);
     cursor: pointer;
     transition: all 0.2s;
@@ -83,7 +83,7 @@ export const forgeButtonStyles = css`
   }
 
   .btn--launch:hover:not(:disabled) {
-    box-shadow: 0 0 16px rgba(74 222 128 / 0.4);
+    box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(74 222 128 / 0.4);
     transform: translateY(-1px);
   }
 
@@ -91,7 +91,7 @@ export const forgeButtonStyles = css`
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.15), transparent); /* lint-color-ok — shimmer, deliberately light */
     transform: translateX(-100%);
     animation: launch-shimmer 3s ease-in-out infinite;
   }
@@ -107,7 +107,7 @@ export const forgeButtonStyles = css`
   }
 
   .btn--danger:hover:not(:disabled) {
-    box-shadow: 0 0 20px color-mix(in srgb, var(--color-danger) 50%, transparent);
+    box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 50%, transparent);
     transform: translateY(-2px);
   }
 
@@ -115,7 +115,7 @@ export const forgeButtonStyles = css`
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.15), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255 255 255 / 0.15), transparent); /* lint-color-ok — shimmer, deliberately light */
     transform: translateX(-100%);
     animation: launch-shimmer 3s ease-in-out infinite;
   }
@@ -137,7 +137,7 @@ export const forgeFieldStyles = css`
   .field__label {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     color: var(--color-text-quiet);
   }
@@ -212,7 +212,7 @@ export const forgeRangeStyles = css`
   .range-field__label {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     color: var(--color-text-quiet);
     display: flex;
@@ -305,7 +305,7 @@ export const forgeRangeStyles = css`
   .toggle-field__label {
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     color: var(--color-text-tertiary);
   }
@@ -352,7 +352,7 @@ export const forgeResearchHintStyles = css`
        RGBA_ENFORCED_DIRS ("add dirs here as they're cleaned"), and this file is
        not in that set yet. The other eight in this module are the reason it is
        not; this one is fixed because the rule is fixed here. */
-    box-shadow: 0 0 4px color-mix(in srgb, var(--color-success) 40%, transparent);
+    box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 40%, transparent);
   }
 
   /*
@@ -380,7 +380,7 @@ export const forgeResearchHintStyles = css`
   .research-sources__summary {
     padding: var(--space-2) var(--space-3);
     cursor: pointer;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wider, 0.05em);
     list-style: none;
   }
@@ -490,7 +490,7 @@ export const forgeSectionStyles = css`
   .section-title {
     font-family: var(--font-brutalist);
     font-size: var(--text-lg);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-widest);
     margin: var(--space-12) 0 var(--space-6);
     color: var(--color-text-secondary);
@@ -586,7 +586,7 @@ export const forgeBackButtonStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold, 700);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide, 0.05em);
     cursor: pointer;
     transition: all 0.2s;

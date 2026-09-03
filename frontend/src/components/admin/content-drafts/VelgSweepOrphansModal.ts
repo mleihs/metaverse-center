@@ -73,7 +73,7 @@ export class VelgSweepOrphansModal extends LitElement {
       gap: var(--space-4);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3);
@@ -115,7 +115,7 @@ export class VelgSweepOrphansModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       padding: 2px 6px;
       text-align: center;
@@ -191,7 +191,7 @@ export class VelgSweepOrphansModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-4);
       border: 1px solid var(--color-border);

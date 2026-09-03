@@ -58,7 +58,7 @@ export class VelgWorldsGallery extends LitElement {
       font-weight: 900;
       font-size: 10px;
       letter-spacing: 5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-4, 16px);
     }
@@ -67,7 +67,7 @@ export class VelgWorldsGallery extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: clamp(1.5rem, 4vw, 2.5rem);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist, 0.15em);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-4, 16px);
@@ -123,7 +123,7 @@ export class VelgWorldsGallery extends LitElement {
       font-size: 11px;
       color: var(--color-text-quiet);
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     /* ── Grid ───────────────────────────────── */
@@ -211,7 +211,7 @@ export class VelgWorldsGallery extends LitElement {
       font-weight: 900;
       font-size: 9px;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 4px 8px;
       background: color-mix(in srgb, var(--color-surface) 70%, transparent);
       backdrop-filter: blur(4px);
@@ -254,7 +254,7 @@ export class VelgWorldsGallery extends LitElement {
       font-weight: 900;
       font-size: 13px;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0 0 8px;
       line-height: 1.3;
@@ -284,7 +284,7 @@ export class VelgWorldsGallery extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -321,7 +321,7 @@ export class VelgWorldsGallery extends LitElement {
       font-weight: 900;
       font-size: 14px;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-2, 8px);
     }
@@ -345,7 +345,7 @@ export class VelgWorldsGallery extends LitElement {
       font-weight: 900;
       font-size: 12px;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       animation: pulse-text 1.5s ease-in-out infinite;
     }
@@ -377,7 +377,7 @@ export class VelgWorldsGallery extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -408,7 +408,7 @@ export class VelgWorldsGallery extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 3px;
       color: var(--color-surface);
       background: var(--color-accent-amber);
@@ -420,7 +420,7 @@ export class VelgWorldsGallery extends LitElement {
 
     .gallery-cta__btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 20px var(--color-primary-glow);
+      box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--color-primary-glow);
     }
 
     /* ── Responsive ─────────────────────────── */

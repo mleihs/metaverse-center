@@ -7,18 +7,55 @@
  */
 
 :root {
+  /* === SHADOW INK ===
+   * The colour an offset shadow is cast in. Black on the dark chrome; a skin
+   * on paper casts its shadows in ink instead (Atlas: #17201d).
+   *
+   * ⚠ Re-declaring this token on a themed host does NOT recolour the
+   * --shadow-* below. A var() inside a custom property is substituted where the
+   * property is DECLARED, so the --shadow-* here are frozen against :root's
+   * black and inherit as literals. (Measured in this repo on the light "State
+   * Pathography" theme, for --color-text-quiet: it arrived mixed from the dark
+   * defaults at 2.10:1. See ThemeService.applyConfig step 7.)
+   *
+   * What actually themes the scale is ThemeService: computeShadows() writes
+   * every --shadow-* onto the host from `shadow_color`. This token exists for
+   * the OTHER half — the components that spell an offset shadow out by hand
+   * instead of using the scale. They resolve var(--color-shadow) at the point
+   * of use, so for them it works, and it is the correct replacement for a
+   * hard-coded #000000.
+   *
+   * --shadow-inset is covered too since the Atlas skin: computeShadows() emits
+   * it alongside the scale, so on a paper skin it is mixed from ink, not from
+   * :root's black. */
+  --color-shadow: #000000;
+
+  /* === GLOW STRENGTH ===
+   * Multiplier for every CRT glow radius: `0 0 calc(Npx * var(--glow-strength))`.
+   * 1 = phosphor chrome, 0 = paper.
+   *
+   * This one DOES cross the host boundary, for the reason the note above
+   * explains in reverse: the var() sits in a real box-shadow on the component,
+   * not inside another custom property, so it resolves against the value that
+   * element inherits from the themed host.
+   *
+   * Diegetically dark surfaces (terminal, dungeon, drift, the cartographer's
+   * map) are excluded from the sweep and keep hard glow radii — they run on
+   * PLATFORM_DARK_CONFIG whatever skin the user picked. */
+  --glow-strength: 1;
+
   /* === BRUTALIST SHADOWS (Offset-based) === */
   --shadow-none: none;
-  --shadow-xs: 2px 2px 0 #000000;
-  --shadow-sm: 3px 3px 0 #000000;
-  --shadow-md: 4px 4px 0 #000000;
-  --shadow-lg: 6px 6px 0 #000000;
-  --shadow-xl: 8px 8px 0 #000000;
-  --shadow-2xl: 12px 12px 0 #000000;
+  --shadow-xs: 2px 2px 0 var(--color-shadow);
+  --shadow-sm: 3px 3px 0 var(--color-shadow);
+  --shadow-md: 4px 4px 0 var(--color-shadow);
+  --shadow-lg: 6px 6px 0 var(--color-shadow);
+  --shadow-xl: 8px 8px 0 var(--color-shadow);
+  --shadow-2xl: 12px 12px 0 var(--color-shadow);
 
   /* === PRESSED/ACTIVE SHADOW === */
-  --shadow-pressed: 2px 2px 0 #000000;
-  --shadow-inset: inset 2px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-pressed: 2px 2px 0 var(--color-shadow);
+  --shadow-inset: inset 2px 2px 0 color-mix(in srgb, var(--color-shadow) 20%, transparent);
 
   /* === FOCUS RINGS === */
   --ring-focus: 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 40%, transparent);

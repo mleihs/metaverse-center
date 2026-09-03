@@ -50,7 +50,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
         color: var(--color-info);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -68,7 +68,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-xl);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         margin: 0;
@@ -127,7 +127,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
       }
@@ -177,7 +177,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         border: var(--border-width-default) solid var(--color-border);
         background: var(--color-surface-header);
@@ -212,7 +212,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-danger);
@@ -304,7 +304,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         background: var(--color-surface);
         border: var(--border-default);
         cursor: pointer;
@@ -351,7 +351,7 @@ export class VelgAccessSettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-warning);
       }

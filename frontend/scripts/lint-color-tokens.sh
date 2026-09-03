@@ -39,6 +39,16 @@ fi
 RGBA_ENFORCED_DIRS=(
   "$COMPONENTS_DIR/epoch"
   "$COMPONENTS_DIR/forge/VelgForgeCeremony.ts"
+  # Added after the Atlas-skin Sweep B (black shadows) + Sweep C (white
+  # overlays), 2026-09-03: these two were already at zero raw rgba() once
+  # those two sweeps landed. The other Sweep-C target dirs (how-to-play,
+  # platform, shared, settings, multiverse, map, health, heartbeat,
+  # archetypes) still carry COLOURED rgba() — accent glows, warning tints —
+  # that neither sweep touched; enforcing there now would fail the gate on
+  # work nobody has done yet. Extend the list dir-by-dir as each is cleaned,
+  # not in one jump — see handoff/RESUME-atlas-skin-2026-09-03.md.
+  "$COMPONENTS_DIR/content"
+  "$COMPONENTS_DIR/agents"
 )
 for TARGET in "${RGBA_ENFORCED_DIRS[@]}"; do
   RESULT=$(grep -rnE 'rgba?\(' \

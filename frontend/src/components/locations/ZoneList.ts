@@ -79,7 +79,7 @@ export class VelgZoneList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0 0 var(--space-2);
     }
@@ -109,7 +109,7 @@ export class VelgZoneList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-primary-bg);
       border: var(--border-width-default) solid var(--color-primary);
@@ -135,7 +135,7 @@ export class VelgZoneList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       flex-shrink: 0;
@@ -201,7 +201,7 @@ export class VelgZoneList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       flex-shrink: 0;
     }
@@ -275,7 +275,7 @@ export class VelgZoneList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 

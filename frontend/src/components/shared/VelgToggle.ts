@@ -88,7 +88,7 @@ export class VelgToggle extends LitElement {
     :host([checked]:not([variant='scif'])) .track {
       background: var(--color-success, #22c55e);
       border-color: var(--color-success, #22c55e);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-success, #22c55e) 30%, transparent);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--color-success, #22c55e) 30%, transparent);
     }
 
     :host([checked][variant='scif']) .track {
@@ -106,7 +106,7 @@ export class VelgToggle extends LitElement {
     }
     :host([checked][variant='scif']) .track::after {
       background: var(--color-accent, #d4a24e);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent, #d4a24e) 40%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent, #d4a24e) 40%, transparent);
     }
 
     /* ── Hover ───────────────────────────────────────── */
@@ -143,7 +143,7 @@ export class VelgToggle extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs, 11px);
       color: var(--color-text-secondary, #999);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
       user-select: none;
     }

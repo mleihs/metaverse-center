@@ -118,7 +118,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -134,7 +134,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       color: var(--color-primary);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -177,7 +177,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       flex: 1;
@@ -191,7 +191,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-surface-header);
       border: var(--border-width-thin) solid var(--color-border);
@@ -234,7 +234,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       text-align: center;
@@ -266,7 +266,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1-5) var(--space-3);
       border: var(--border-width-thin) solid var(--color-border);
@@ -343,7 +343,7 @@ export class VelgAgentDetailsPanel extends LitElement {
     .panel__embassy-label {
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -368,7 +368,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -410,7 +410,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       flex-shrink: 0;
@@ -441,7 +441,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       line-height: 1.4;
       vertical-align: middle;
     }
@@ -478,7 +478,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-info);
     }
@@ -536,7 +536,7 @@ export class VelgAgentDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-info-bg);

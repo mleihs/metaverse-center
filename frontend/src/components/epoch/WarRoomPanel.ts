@@ -115,7 +115,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
     }
@@ -123,7 +123,7 @@ export class VelgWarRoomPanel extends LitElement {
     .phase-badge {
       font-size: var(--text-xs);
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: 2px 8px;
       border-radius: 2px;
@@ -173,7 +173,7 @@ export class VelgWarRoomPanel extends LitElement {
       color: var(--color-text-quiet);
       min-width: 70px;
       text-align: center;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
     }
 
@@ -213,7 +213,7 @@ export class VelgWarRoomPanel extends LitElement {
     .stat-box__label {
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
     }
 
@@ -250,7 +250,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-danger);
       border: 1px solid var(--color-danger);
@@ -262,7 +262,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-tertiary);
       margin: 0;
@@ -281,7 +281,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-size: var(--text-xs);
       padding: 3px 10px;
       cursor: pointer;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       font-family: var(--font-brutalist);
       transition: background 0.15s;
@@ -313,7 +313,7 @@ export class VelgWarRoomPanel extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
     }
 
@@ -342,7 +342,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
       margin: 0;
@@ -384,7 +384,7 @@ export class VelgWarRoomPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: 900;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-info);
       border: 1px solid var(--color-info-border);
@@ -411,7 +411,7 @@ export class VelgWarRoomPanel extends LitElement {
     .bl-entry__type {
       font-size: 10px;
       color: var(--entry-color, var(--color-text-muted));
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       margin-bottom: 2px;
     }
@@ -425,7 +425,7 @@ export class VelgWarRoomPanel extends LitElement {
     .bl-cycle-divider {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       padding: var(--space-2) 0;

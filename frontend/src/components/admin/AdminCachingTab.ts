@@ -139,7 +139,7 @@ export class VelgAdminCachingTab extends LitElement {
       .cache-card__unit {
         font-size: var(--text-xs);
         color: var(--color-text-quiet);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
       }
 
       .cache-card__default {

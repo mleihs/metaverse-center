@@ -151,7 +151,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       border-color: var(--_card-accent);
       box-shadow:
         4px 4px 0 color-mix(in srgb, var(--_card-accent) 40%, transparent),
-        0 0 20px color-mix(in srgb, var(--_card-accent) 8%, transparent);
+        0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--_card-accent) 8%, transparent);
     }
 
     .door:focus-visible {
@@ -200,7 +200,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xl);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.05em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2);
@@ -234,7 +234,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -308,7 +308,7 @@ export class VelgHowToPlayLanding extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-right: var(--space-2);
     }
