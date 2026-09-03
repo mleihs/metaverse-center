@@ -18,43 +18,104 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
-/** Custom dark theme matching the military-console HTP aesthetic. */
-const TACTICAL_THEME: Record<string, unknown> = {
-  color: [
-    '#d4a24e', // Speranza amber
-    '#6bcb77', // Gaslit Reach green
-    '#e74c3c', // Velgarien red
-    '#a78bfa', // Nova Meridian purple
-    '#67e8f9', // Station Null cyan
-  ],
-  backgroundColor: 'transparent',
-  textStyle: { color: '#a0aec0', fontFamily: '"JetBrains Mono", "Fira Code", monospace' },
-  title: { textStyle: { color: '#cbd5e1' }, subtextStyle: { color: '#64748b' } },
-  legend: { textStyle: { color: '#94a3b8' } },
-  categoryAxis: {
-    axisLine: { lineStyle: { color: '#334155' } },
-    axisTick: { lineStyle: { color: '#334155' } },
-    axisLabel: { color: '#94a3b8' },
-    splitLine: { lineStyle: { color: '#1e293b' } },
-  },
-  valueAxis: {
-    axisLine: { lineStyle: { color: '#334155' } },
-    axisTick: { lineStyle: { color: '#334155' } },
-    axisLabel: { color: '#94a3b8' },
-    splitLine: { lineStyle: { color: '#1e293b' } },
-  },
-  radar: {
-    axisName: { color: '#94a3b8' },
-    splitLine: { lineStyle: { color: '#1e293b' } },
-    splitArea: { areaStyle: { color: ['transparent', 'rgba(30, 41, 59, 0.3)'] } },
-    axisLine: { lineStyle: { color: '#334155' } },
-  },
-  tooltip: {
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-    borderColor: '#334155',
-    textStyle: { color: '#e2e8f0' },
-  },
-};
+/**
+ * Das Diagramm-Chrome kommt aus den lebenden Tokens, nicht aus einer Konstante.
+ *
+ * WARUM DAS NOETIG WURDE
+ *   Bis zum 03.09.2026 war das Theme eine Modulkonstante, einmal registriert
+ *   und fest auf Dunkel: Text #a0aec0, Beschriftungen #94a3b8, Achsen #334155,
+ *   Gitter #1e293b, Tooltip in Schiefer. Auf dem Papiergrund des Atlas-Skins
+ *   misst #94a3b8 **2,17 : 1** — jede Achsenbeschriftung, jede Legende, jeder
+ *   Achsenname unlesbar, und zwar in allen Diagrammen der Plattform auf einmal.
+ *
+ *   Dasselbe galt vorher schon fuer jede HELLE Simulationswelt. Der Skin hat
+ *   den Fehler nicht verursacht, er hat ihn sichtbar gemacht.
+ *
+ * WARUM AUS DEM ELEMENT UND NICHT AUS :root
+ *   Ein Diagramm steht in der Huelle einer Welt, und die Welt setzt ihre Tokens
+ *   auf ihrem eigenen Wirt. `getComputedStyle(el)` liefert genau das, was an
+ *   DIESER Stelle gilt — die Palette der Welt, wenn es in einer steht, sonst
+ *   die der Plattform.
+ *
+ * DIE REIHENFOLGE DER SERIEN BLEIBT FEST
+ *   Die fuenf Serienfarben sind Identitaeten (eine Welt ist immer derselbe
+ *   Ton), keine Chrome-Farben. Sie stehen deshalb weiter als Hexwerte da. Auf
+ *   hellem Grund sind einige davon schwach (das Gruen misst rund 1,8) — das ist
+ *   eine eigene Frage nach einer Serienpalette fuer helle Gruende und in der
+ *   Uebergabe als offener Punkt vermerkt, nicht hier still entschieden.
+ */
+function chartTheme(el: HTMLElement): Record<string, unknown> {
+  const cs = getComputedStyle(el);
+  const t = (name: string, fallback: string): string =>
+    cs.getPropertyValue(name).trim() || fallback;
+
+  const text = t('--color-text-primary', '#e2e8f0');
+  const muted = t('--color-text-muted', '#94a3b8');
+  const line = t('--color-border', '#334155');
+  const grid = t('--color-border-light', '#1e293b');
+  const surface = t('--color-surface-raised', 'rgba(15, 23, 42, 0.95)');
+  const mono = t('--font-mono', '"JetBrains Mono", "Fira Code", monospace');
+
+  return {
+    color: [
+      '#d4a24e', // Speranza amber
+      '#6bcb77', // Gaslit Reach green
+      '#e74c3c', // Velgarien red
+      '#a78bfa', // Nova Meridian purple
+      '#67e8f9', // Station Null cyan
+    ],
+    backgroundColor: 'transparent',
+    textStyle: { color: muted, fontFamily: mono },
+    title: { textStyle: { color: text }, subtextStyle: { color: muted } },
+    legend: { textStyle: { color: muted } },
+    categoryAxis: {
+      axisLine: { lineStyle: { color: line } },
+      axisTick: { lineStyle: { color: line } },
+      axisLabel: { color: muted },
+      splitLine: { lineStyle: { color: grid } },
+    },
+    valueAxis: {
+      axisLine: { lineStyle: { color: line } },
+      axisTick: { lineStyle: { color: line } },
+      axisLabel: { color: muted },
+      splitLine: { lineStyle: { color: grid } },
+    },
+    radar: {
+      axisName: { color: muted },
+      splitLine: { lineStyle: { color: grid } },
+      splitArea: { areaStyle: { color: ['transparent', grid] } },
+      axisLine: { lineStyle: { color: line } },
+    },
+    tooltip: {
+      backgroundColor: surface,
+      borderColor: line,
+      textStyle: { color: text },
+    },
+  };
+}
+
+/**
+ * Der Fingerabdruck des Chrome — woran erkannt wird, dass neu gebaut werden muss.
+ *
+ * ECharts kann das Theme einer laufenden Instanz nicht wechseln; ein Wechsel
+ * heisst dispose und neu aufsetzen. Das darf nicht bei jedem Update passieren,
+ * aber es MUSS passieren, wenn die Palette sich geaendert hat — und das kann
+ * ein Skin-Wechsel sein, ein Wechsel der Welt oder ein Theme, das der Architekt
+ * gerade in der Dunkelkammer umstellt. Statt drei Ursachen zu beobachten,
+ * vergleicht der Fingerabdruck die WIRKUNG.
+ */
+function themeKey(el: HTMLElement): string {
+  const cs = getComputedStyle(el);
+  return [
+    '--color-text-primary',
+    '--color-text-muted',
+    '--color-border',
+    '--color-border-light',
+    '--color-surface-raised',
+  ]
+    .map((n) => cs.getPropertyValue(n).trim())
+    .join('|');
+}
 
 echarts.use([
   BarChart,
@@ -69,8 +130,6 @@ echarts.use([
   RadarComponent,
   CanvasRenderer,
 ]);
-
-echarts.registerTheme('tactical', TACTICAL_THEME);
 
 @customElement('velg-echarts-chart')
 export class EchartsChart extends LitElement {
@@ -97,10 +156,12 @@ export class EchartsChart extends LitElement {
     return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   }
 
+  /** Der Fingerabdruck der Palette, mit der die laufende Instanz gebaut wurde. */
+  private _themeKey = '';
+
   override firstUpdated(): void {
     if (!this._container) return;
-    this._chart = echarts.init(this._container, 'tactical', { renderer: 'canvas' });
-    this._applyOption();
+    this._init();
 
     this._resizeObserver = new ResizeObserver(() => {
       this._chart?.resize();
@@ -109,9 +170,31 @@ export class EchartsChart extends LitElement {
   }
 
   override updated(changed: Map<string, unknown>): void {
+    if (!this._container) return;
+
+    /*
+     * Hat sich die Palette geaendert, wird neu aufgesetzt — ECharts kann das
+     * Theme einer laufenden Instanz nicht wechseln. Der Vergleich steht VOR der
+     * Option-Pruefung, weil _init die Option ohnehin neu anwendet und beides
+     * sonst zweimal liefe.
+     */
+    if (themeKey(this) !== this._themeKey) {
+      this._chart?.dispose();
+      this._chart = null;
+      this._init();
+      return;
+    }
+
     if (changed.has('option')) {
       this._applyOption();
     }
+  }
+
+  private _init(): void {
+    if (!this._container) return;
+    this._themeKey = themeKey(this);
+    this._chart = echarts.init(this._container, chartTheme(this), { renderer: 'canvas' });
+    this._applyOption();
   }
 
   override disconnectedCallback(): void {
