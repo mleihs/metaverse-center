@@ -424,7 +424,10 @@ export class VelgAgentSelector extends LitElement {
         <input
           class="selector__search"
           type="search"
-          name="agent-search"
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
           autocomplete="off"
           placeholder=${msg('Search agents...')}
           .value=${this._searchQuery}

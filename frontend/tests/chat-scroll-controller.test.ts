@@ -182,3 +182,73 @@ describe('ScrollController', () => {
     expect(gerollt).toHaveBeenCalledWith({ top: 1000, behavior: 'smooth' });
   });
 });
+
+describe('das Ende halten, waehrend der Boden noch wandert', () => {
+  /*
+   * Der Nutzer, mehrfach: nach dem Oeffnen eines Gespraechs landet die Ansicht
+   * ein paar Nachrichten UEBER dem Ende.
+   *
+   * Ursache ist nicht der Rollbefehl, sondern sein Ziel. `.message-item` traegt
+   * "content-visibility: auto" mit "contain-intrinsic-size: auto 80px": jede
+   * noch nicht gerenderte Nachricht ist 80 px hoch, die echten sind 150 bis
+   * 300. Beim Oeffnen ist nichts gerendert, also ist "scrollHeight" um die
+   * Summe aller Differenzen zu klein. Auf Prod blieben so 1712 px stehen.
+   *
+   * Der ResizeObserver des Reglers sieht das nicht: er beobachtet den
+   * BEHAELTER, und dessen Kasten aendert sich nicht, wenn der INHALT waechst.
+   *
+   * happy-dom rechnet kein Layout — die wachsende Hoehe wird hier gestellt,
+   * geprueft wird, ob der Regler ihr folgt.
+   */
+  it('folgt dem Boden, der nach dem Rollbefehl noch waechst', async () => {
+    const el = feed(1000, 400, 0);
+    const c = new ScrollController(h);
+    c.attach(el);
+
+    c.snapToBottom();
+    await naechsterFrame();
+
+    // Die Kacheln klappen auf: 1000 -> 1800 -> 2600, je ein Bild spaeter.
+    setzeHoehe(el, 1800);
+    await naechsterFrame();
+    expect(el.scrollTop).toBe(1800);
+
+    setzeHoehe(el, 2600);
+    await naechsterFrame();
+    expect(el.scrollTop).toBe(2600);
+  });
+
+  it('gibt auf, sobald ein Mensch nach oben rollt', async () => {
+    const el = feed(1000, 400, 600);
+    const c = new ScrollController(h);
+    c.attach(el);
+
+    c.snapToBottom();
+    await naechsterFrame();
+
+    // Nach oben — deutlich mehr als die Zitterschwelle.
+    rolleAuf(el, 100);
+    expect(c.userScrolledUp).toBe(true);
+
+    setzeHoehe(el, 3000);
+    await naechsterFrame();
+    await naechsterFrame();
+
+    // Wer Geschichte liest, wird nicht ans Ende gerissen.
+    expect(el.scrollTop).toBe(100);
+  });
+
+  it('hoert auf, wenn die Hoehe steht — die Schleife laeuft nicht ewig', async () => {
+    const el = feed(1000, 400, 0);
+    const c = new ScrollController(h);
+    c.attach(el);
+
+    c.snapToBottom();
+    for (let i = 0; i < 8; i++) await naechsterFrame();
+
+    // Haende weg: nach dem Ruhigwerden fasst der Regler nichts mehr an.
+    Object.defineProperty(el, 'scrollTop', { value: 42, writable: true, configurable: true });
+    for (let i = 0; i < 6; i++) await naechsterFrame();
+    expect(el.scrollTop).toBe(42);
+  });
+});

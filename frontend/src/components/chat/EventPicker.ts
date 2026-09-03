@@ -300,7 +300,10 @@ export class VelgEventPicker extends LitElement {
         <input
           class="picker__search"
           type="search"
-          name="event-search"
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
           autocomplete="off"
           placeholder=${msg('Search events...')}
           .value=${this._searchQuery}
