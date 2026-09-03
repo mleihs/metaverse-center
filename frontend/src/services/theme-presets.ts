@@ -506,7 +506,7 @@ export const PLATFORM_DARK_CONFIG: Record<string, string> = {
  */
 export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
   // Colours — paper, ink, vermilion
-  color_primary: '#b63c24', // vermilion: accent, active states, CTA
+  color_primary: '#ab3922', // vermilion: accent, active states, CTA
   color_secondary: '#2f3f7a', // carbon-paper blue: info, links in prose
   /*
    * Ochre — the third ink, and NOT a copy of the primary.
@@ -519,12 +519,25 @@ export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
    * that survives being printed, dimmed or looked at by someone who reads red
    * poorly. Losing it on paper would have been a regression with no error.
    *
-   * #83600f is a printer's ochre at 42° — 29° off the vermilion, 38° off the
-   * danger red — measured to 4.87 : 1 against the paper ground, which is the
-   * primary's own weight (4.85) so the two inks sit at the same strength on the
-   * page. The value is recomputed in tests/platform-atlas-contrast.test.ts.
+   * #7b5a0e is a printer's ochre at 42° — 29° off the vermilion, 38° off the
+   * danger red — and it sits at the same strength as the primary on the page
+   * (5.36 against 5.32), which is what makes the two read as one hand.
+   *
+   * THE NUMBER IS AGAINST THE DARKEST PAPER, NOT THE PAGE.
+   *   These four inks were first tuned against the page ground alone
+   *   (#e9ede9), where the ochre read 4.87 and the vermilion 4.85. Measured on
+   *   production 2026-09-03, the skin has THREE paper grounds, and the ladder
+   *   down to the sunken tone costs 0.74 of ratio: the same vermilion read
+   *   4.49 on the raised ground under every sheet number, and success fell to
+   *   3.81 on the sunken one. Four inks, tuned against one ground, used on
+   *   three.
+   *
+   *   They are now tuned against #d5dcd6, the darkest of the three, so the
+   *   floor holds wherever the ink actually lands. The hue moved by at most
+   *   0.2°; only the lightness did. The full cross of ink against ground is in
+   *   tests/platform-atlas-contrast.test.ts.
    */
-  color_accent: '#83600f',
+  color_accent: '#7b5a0e',
   color_background: '#e9ede9', // map paper
   color_surface: '#dfe5e0', // raised: active rows, cells, sticky heads
   color_surface_sunken: '#d5dcd6',
@@ -535,7 +548,7 @@ export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
   color_border: '#17201d', // grid lines are ink, 1px
   color_border_light: '#c3cdc6',
   color_danger: '#b3261e',
-  color_success: '#1f7a4d',
+  color_success: '#1c6d45',
   text_inverse: '#e9ede9',
   color_surface_contrast: '#24332d', // the one dark block: session log, footer CTA
   text_on_contrast: '#e9ede9',

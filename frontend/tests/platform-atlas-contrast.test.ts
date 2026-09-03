@@ -118,6 +118,37 @@ describe.each(Object.entries(SKINS))('%s skin holds its contrast floor', (name, 
     }
   }
 
+  /*
+   * THE CROSS THAT WAS MISSING.
+   *
+   * The text roles above were already measured against all three grounds. The
+   * STATUS roles were measured against none of them — only as fills, carrying
+   * their own label. That left the most common use of a status colour on this
+   * skin untested: as small type ON the page. Sheet numbers, terminal commands,
+   * a caret, a link.
+   *
+   * Measured on production 2026-09-03, the gap was real and systematic. The
+   * paper skin declares three grounds, and the step down to the sunken tone
+   * costs 0.74 of ratio; the vermilion, tuned to 4.85 against the page, read
+   * 4.49 on the raised ground under four sheet numbers, and success fell to
+   * 3.81. Nothing was wrong with any component — the ink was tuned against one
+   * ground and used on three.
+   */
+  const statusRoles = [
+    ['primary', config.color_primary],
+    ['accent', config.color_accent],
+    ['danger', config.color_danger],
+    ['success', config.color_success],
+  ] as const;
+
+  for (const [roleName, role] of statusRoles) {
+    for (const [groundName, ground] of grounds) {
+      it(`${roleName} carries small type on the ${groundName} surface`, () => {
+        expect(ratio(role, ground)).toBeGreaterThanOrEqual(floor.text);
+      });
+    }
+  }
+
   it('the primary fill can carry its own label (.btn--primary)', () => {
     expect(ratio(config.text_inverse, config.color_primary)).toBeGreaterThanOrEqual(floor.fill);
   });
