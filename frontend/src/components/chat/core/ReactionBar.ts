@@ -231,6 +231,18 @@ export class ReactionBar extends LitElement {
       border: var(--border-width-thin) solid transparent;
       cursor: pointer;
       font-size: 18px;
+      /* Eine eigene Tinte, weil die Marken jetzt welche brauchen.
+
+         Emoji malen sich selbst; sie haben ihre Farbe im Zeichen. Die
+         typografischen Marken nehmen die Schriftfarbe an — und die stand hier
+         nie, sie wurde geerbt. Auf Prod gemessen, unmittelbar nach dem
+         Wechsel: rgb(255,255,255) auf einem fast weissen Grund, **1,09 : 1**.
+         Acht unsichtbare Knoepfe.
+
+         Der Fehler war vorher da und folgenlos; erst das neue Zeichen hat ihn
+         sichtbar gemacht — beziehungsweise unsichtbar. */
+      color: var(--color-text-primary);
+      line-height: 1;
       transition: all var(--transition-fast);
     }
 
