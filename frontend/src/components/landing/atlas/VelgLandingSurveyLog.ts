@@ -98,6 +98,20 @@ export class VelgLandingSurveyLog extends LitElement {
         background: color-mix(in srgb, var(--color-text-on-contrast) 25%, transparent);
       }
 
+      /* Die dritte Kopfrolle. Sie kommt wie die zwei darueber aus dem
+         gemeinsamen Modul und traegt dort --color-primary — auf dem
+         Gegenblock der Zinnober des Papiers, gemessen 2,31 : 1. Die zwei
+         Nachbarn waren beim Bau ueberschrieben, diese eine nicht, und weil
+         beide Uebersehen dasselbe Aussehen haben (Mono, klein, gedaempft),
+         ist der Unterschied auf dem Bildschirm nicht zu sehen.
+
+         Sie steht hier und nicht im gemeinsamen Modul: auf jedem anderen
+         Blatt ist der Akzent der Seite der richtige. Nur DIESES Blatt kehrt
+         um. */
+      .sheet-head__no {
+        color: var(--color-accent-on-contrast);
+      }
+
       .lede h2 {
         margin: 0 0 var(--space-4);
         font-family: var(--heading-font);
