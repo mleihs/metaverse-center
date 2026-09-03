@@ -74,6 +74,20 @@ const BOTTOM_SLACK = 64;
  */
 const UPWARD_INTENT = 8;
 
+/**
+ * Wie viele ruhige Bilder das Ende gehalten haben muss, bevor das Nachfuehren
+ * aufhoert. Drei, nicht eines: eine Kachel kann in einem Bild wachsen und im
+ * naechsten die darunter mitziehen.
+ */
+const SETTLE_STABLE_FRAMES = 3;
+
+/**
+ * Obergrenze des Nachfuehrens. Ein Boden, der nach anderthalb Sekunden immer
+ * noch wandert, wandert nicht wegen des Layouts, und eine Schleife ohne Ende
+ * waere schlimmer als ein Ende, das ein Stueck zu hoch liegt.
+ */
+const SETTLE_MAX_FRAMES = 90;
+
 /** Honour the platform's reduced-motion setting for every animated scroll. */
 function prefersReducedMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -90,6 +104,7 @@ export class ScrollController implements ReactiveController {
   private _container: HTMLElement | null = null;
   private _lastScrollTop = 0;
   private _resizeObserver: ResizeObserver | null = null;
+  private _settleFrame: number | null = null;
 
   /** Pending auto-scroll — set by requestAutoScroll(), consumed by hostUpdated(). */
   private _pendingBehavior: ScrollBehavior | null = null;
@@ -195,7 +210,62 @@ export class ScrollController implements ReactiveController {
       const target = this._container;
       if (!target) return;
       target.scrollTo({ top: target.scrollHeight, behavior: effective });
+      this._holdBottom();
     });
+  }
+
+  /**
+   * Das Ende halten, solange der Boden noch wandert.
+   *
+   * WARUM DAS NOETIG IST — und warum der ResizeObserver es nicht sah.
+   *
+   * `.message-item` traegt "content-visibility: auto" mit
+   * "contain-intrinsic-size: auto 80px". Jede Nachricht ausserhalb des Bildes
+   * ist damit 80 px hoch, bis sie tatsaechlich gerendert wird. Beim OEFFNEN
+   * ist nichts gerendert, also ist jede Kachel 80 px — und die echten sind
+   * 150 bis 300. Der Rollbefehl trifft eine "scrollHeight", die um die Summe
+   * dieser Differenzen zu klein ist. Auf Prod gemessen blieben so **1712 px**
+   * stehen: ein paar Nachrichten ueber dem Ende, genau wie gemeldet.
+   *
+   * Der vorhandene ResizeObserver konnte das nicht auffangen, weil er den
+   * BEHAELTER beobachtet. Dessen Kasten aendert sich beim Fenstergroessen-
+   * wechsel — dafuer wurde er gebaut, das steht auch so im Kommentar. Waechst
+   * dagegen der INHALT, bleibt der Behaelter exakt gleich gross; nur
+   * "scrollHeight" steigt, und darauf feuert kein ResizeObserver.
+   *
+   * Deshalb hier kein Beobachter, sondern das Einzige, was diese Aenderung
+   * meldet: "scrollHeight" selbst, ueber ein paar Bilder hinweg. Beendet
+   * wird, sobald die Hoehe steht — oder wenn ein Mensch nach oben rollt, denn
+   * dann ist das Ende nicht mehr gewollt.
+   */
+  private _holdBottom(): void {
+    if (this._settleFrame !== null) return;
+
+    let quiet = 0;
+    let total = 0;
+    let lastHeight = -1;
+
+    const step = (): void => {
+      const el = this._container;
+      if (!el || this.userScrolledUp || total++ >= SETTLE_MAX_FRAMES) {
+        this._settleFrame = null;
+        return;
+      }
+      const height = el.scrollHeight;
+      if (height !== lastHeight) {
+        lastHeight = height;
+        quiet = 0;
+        // Ohne Animation: hier wird nichts verfolgt, hier wird eine Position
+        // gehalten. Der Browser begrenzt den Wert selbst auf das Maximum.
+        el.scrollTop = height;
+      } else if (++quiet >= SETTLE_STABLE_FRAMES) {
+        this._settleFrame = null;
+        return;
+      }
+      this._settleFrame = requestAnimationFrame(step);
+    };
+
+    this._settleFrame = requestAnimationFrame(step);
   }
 
   private readonly _onScroll = (): void => {
@@ -238,6 +308,10 @@ export class ScrollController implements ReactiveController {
   };
 
   private _detachContainer(): void {
+    if (this._settleFrame !== null) {
+      cancelAnimationFrame(this._settleFrame);
+      this._settleFrame = null;
+    }
     this._resizeObserver?.disconnect();
     this._resizeObserver = null;
     this._container?.removeEventListener('scroll', this._onScroll);

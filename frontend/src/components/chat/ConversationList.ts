@@ -665,8 +665,36 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
   // Search
   // ---------------------------------------------------------------------------
 
+  /**
+   * Ein Wort, das niemand getippt hat, ist keine Suche.
+   *
+   * Gemeldet am 03.09.2026: nach jeder Anmeldung stand "admin" im Suchfeld,
+   * die Liste zeigte "Keine passenden Konversationen". Im Screenshot war der
+   * getoente Balken BREITER als das Wort — er fuellte das ganze Feld. Eine
+   * Textmarkierung deckt nur die Glyphen ab; eine feldfuellende Toenung ist
+   * Chromes Autofill-Hintergrund.
+   *
+   * Die Anwendung war es nicht: `_searchTerm` beginnt leer und wird nur hier
+   * und in `_clearSearch` gesetzt, nichts speichert ihn, und das Wort "admin"
+   * kommt im Chat-Code nirgends vor. Der Browser hat gefuellt — und weil
+   * Autofill ein echtes `input`-Ereignis ausloest, zog der Zustand mit.
+   * Deshalb erschien sogar das Loeschkreuz.
+   *
+   * `autocomplete="off"` allein reicht nicht: Chrome ignoriert es fuer diesen
+   * Weg. Das Feld traegt jetzt zusaetzlich keinen stabilen `name` mehr (daran
+   * macht Autofill einen gespeicherten Wert fest) und die Ignorier-Marken der
+   * gaengigen Passwortverwalter. Dieser Riegel ist die letzte Sperre: eine
+   * Fuellung, die der Browser selbst als solche kennzeichnet, wird verworfen,
+   * solange das Feld aus Sicht der Anwendung leer war. Was ein Mensch tippt,
+   * traegt diese Kennzeichnung nicht.
+   */
   private _handleSearchInput(e: Event): void {
-    this._searchTerm = (e.target as HTMLInputElement).value;
+    const input = e.target as HTMLInputElement;
+    if (this._searchTerm === '' && isBrowserAutofilled(input)) {
+      input.value = '';
+      return;
+    }
+    this._searchTerm = input.value;
   }
 
   private _clearSearch(): void {
@@ -1117,7 +1145,10 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
         <input
           class="search__input"
           type="search"
-          name="conversation-search"
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore="true"
+          data-form-type="other"
           autocomplete="off"
           placeholder=${msg('Search conversations...')}
           .value=${this._searchTerm}
@@ -1222,4 +1253,24 @@ declare global {
   interface HTMLElementTagNameMap {
     'velg-conversation-list': VelgConversationList;
   }
+}
+
+/**
+ * Ob der Browser dieses Feld selbst gefuellt hat.
+ *
+ * `:autofill` ist der genormte Name, `:-webkit-autofill` der aeltere; welcher
+ * gilt, weiss nur der Browser, und ein unbekannter Selektor in `matches` wirft.
+ * Beide werden darum einzeln versucht, und ein Browser, der keinen von beiden
+ * kennt, antwortet mit "nein" — das ist die sichere Seite: dann verhaelt sich
+ * das Feld wie vorher, statt eine echte Eingabe zu verschlucken.
+ */
+function isBrowserAutofilled(el: HTMLInputElement): boolean {
+  for (const selector of [':autofill', ':-webkit-autofill']) {
+    try {
+      if (el.matches(selector)) return true;
+    } catch (err) {
+      captureError(err, { source: 'ConversationList.isBrowserAutofilled' });
+    }
+  }
+  return false;
 }
