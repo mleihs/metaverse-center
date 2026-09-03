@@ -33,7 +33,8 @@
  */
 
 import { localized, msg } from '@lit/localize';
-import { css, html, LitElement, nothing } from 'lit';
+import { SignalWatcher } from '@lit-labs/preact-signals';
+import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
@@ -41,9 +42,22 @@ import { resonanceApi } from '../../services/api/index.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
 import { usersApi } from '../../services/api/UsersApiService.js';
 import { captureError } from '../../services/SentryService.js';
-import type { Agent, DashboardData, Resonance, Simulation } from '../../types/index.js';
+import type {
+  ActiveEpochParticipation,
+  Agent,
+  DashboardData,
+  DashboardWorld,
+  Resonance,
+  Simulation,
+} from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import './atlas/AtlasCommandStrip.js';
+import './atlas/AtlasQueue.js';
+import './atlas/AtlasRail.js';
+import './atlas/AtlasRegistry.js';
+import './atlas/AtlasStage.js';
+import './atlas/AtlasWorlds.js';
 import './DashboardCommandStrip.js';
 import './DashboardQueue.js';
 import './DashboardRail.js';
@@ -65,7 +79,7 @@ const CLOCK_MS = 1000;
 
 @localized()
 @customElement('velg-operative-dashboard')
-export class VelgOperativeDashboard extends LitElement {
+export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
   static styles = [
     stageStyles,
     css`
@@ -298,6 +312,25 @@ export class VelgOperativeDashboard extends LitElement {
      */
     const hatSchiene = this._agents.length > 0 || this._tremors.length > 0;
 
+    /*
+     * ZWEI GARNITUREN, EINE DATENQUELLE UND DIESELBEN WAHRHEITEN.
+     *
+     * Die Kartenmappe ist eine eigene Vorlage (Blattraster, Blattkoepfe,
+     * andere Spaltenteilung), aber KEINE andere Auskunft. Alle Bedingungen
+     * unten — Warteschlange nur bei laufenden Epochen, Welten nur bei Welten,
+     * Akademie fuer Neulinge, Freigabe nur fuer Verwaltende, Schiene nur wenn
+     * sie etwas traegt — gelten fuer beide, weil sie hier stehen und nicht in
+     * den Bausteinen.
+     *
+     * Das ist die Bedingung, unter der zwei Vorlagen ueberhaupt vertretbar
+     * sind: sie duerfen verschieden AUSSEHEN und muessen dasselbe SAGEN.
+     */
+    const atlas = appState.landingTemplate.value === 'atlas';
+
+    if (atlas) {
+      return this._renderAtlas({ data, worlds, participations, isNewcomer, hatSchiene });
+    }
+
     return html`
       <velg-dashboard-command-strip
         .identity=${appState.user.value?.email ?? ''}
@@ -345,6 +378,89 @@ export class VelgOperativeDashboard extends LitElement {
                 .agents=${this._agents}
                 .resonances=${this._tremors}
               ></velg-dashboard-rail>`
+            : nothing
+        }
+      </div>
+
+      <div class="ops stage-bleed-row">
+        ${
+          appState.isPlatformAdmin.value
+            ? html`<button class="ops__btn" @click=${() => navigate('/admin')}>${msg('Admin Panel')}</button>`
+            : nothing
+        }
+        ${
+          appState.canForge.value
+            ? html`<button class="ops__btn" @click=${() => navigate('/forge')}>${msg('Forge')}</button>`
+            : nothing
+        }
+        <button class="ops__btn" @click=${() => navigate('/epoch')}>${msg('Create Epoch')}</button>
+        <button class="ops__btn" @click=${() => navigate('/worlds')}>${msg('Browse Shards')}</button>
+      </div>
+    `;
+  }
+
+  /**
+   * Die Kartenmappe des Schreibtischs — Blatt 00 bis 05.
+   *
+   * Dieselbe Reihenfolge und dieselben Bedingungen wie oben; nur die Bausteine
+   * sind andere. Die Freigabe-Warteschlange und die Akademie-Karte sind KEINE
+   * eigenen Atlas-Fassungen: die eine ist ein Verwaltungswerkzeug, die andere
+   * ein Einstieg, und beide tragen den Skin ueber die Tokens. Eine Vorlage
+   * muss nicht jedes Teil neu bauen, um eine Vorlage zu sein.
+   */
+  private _renderAtlas(v: {
+    data: DashboardData | null;
+    worlds: DashboardWorld[];
+    participations: ActiveEpochParticipation[];
+    isNewcomer: boolean;
+    hatSchiene: boolean;
+  }): TemplateResult {
+    return html`
+      <velg-atlas-command-strip
+        .shards=${v.worlds.length}
+        .activeOps=${v.participations.length}
+        .substrate=${v.data?.substrate_status ?? 'stable'}
+        .tremors=${v.data?.active_resonance_count ?? 0}
+        .clock=${this._clock}
+      ></velg-atlas-command-strip>
+
+      <velg-atlas-stage .participation=${v.participations[0] ?? null}></velg-atlas-stage>
+
+      ${
+        appState.isPlatformAdmin.value
+          ? html`<div class="clearance stage-container">
+              <velg-clearance-queue variant="compact"></velg-clearance-queue>
+            </div>`
+          : nothing
+      }
+
+      ${
+        v.participations.length
+          ? html`<velg-atlas-queue .participations=${v.participations}></velg-atlas-queue>`
+          : nothing
+      }
+      ${v.worlds.length ? html`<velg-atlas-worlds .worlds=${v.worlds}></velg-atlas-worlds>` : nothing}
+
+      ${
+        v.isNewcomer
+          ? html`<div class="academy stage-container">
+              <velg-academy-epoch-card></velg-academy-epoch-card>
+            </div>`
+          : nothing
+      }
+
+      <div class="lower stage-container ${v.hatSchiene ? '' : 'lower--solo'}">
+        ${
+          this._registry.length
+            ? html`<velg-atlas-registry .worlds=${this._registry}></velg-atlas-registry>`
+            : html`<div></div>`
+        }
+        ${
+          v.hatSchiene
+            ? html`<velg-atlas-rail
+                .agents=${this._agents}
+                .resonances=${this._tremors}
+              ></velg-atlas-rail>`
             : nothing
         }
       </div>
