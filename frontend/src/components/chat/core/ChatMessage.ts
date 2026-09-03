@@ -171,19 +171,23 @@ export class ChatMessage extends LitElement {
 
     velg-message-actions {
       position: absolute;
-      top: -18px;
+      /* Derselbe Wert, den die Kachel in ChatFeed.ts als Polster zuruecklegt.
+         Steht er nur hier, schneidet das Paint-Containment die Oberkante ab. */
+      top: calc(var(--chat-actions-lift, 18px) * -1);
+      /* Buendig mit der AUSSENLINIE der Blase.
+
+         Vorher hing die Leiste an der ZEILE: "right: var(--space-2)" bei der
+         Assistentin (8 px zu kurz, gemessen 858 statt 866) und
+         "left: var(--space-2)" beim Nutzer — dessen Blase rechts steht, die
+         Leiste aber links, 458 px daneben. Die Zeile traegt bei Nutzerzeilen
+         noch das Portrait; ihre Kante ist nicht die Kante der Blase.
+
+         Die Spalte ".content" IST die Blasenspalte, auf beiden Seiten. */
+      right: 0;
       transition:
         opacity var(--transition-fast),
         visibility var(--transition-fast);
       z-index: 2;
-    }
-
-    .row--assistant velg-message-actions {
-      right: var(--space-2);
-    }
-
-    .row--user velg-message-actions {
-      left: var(--space-2);
     }
 
     .row:hover velg-message-actions,
@@ -219,7 +223,12 @@ export class ChatMessage extends LitElement {
     }
 
     .avatar--user velg-avatar {
-      --color-surface-sunken: var(--color-primary);
+      /* Die Plakette traegt den Akzent — und die Tinte, die dazu gehoert.
+         "--color-text-inverse" ist die Paarung, die ".btn--primary" seit
+         jeher benutzt; bricht sie fuer eine Welt, bricht sie dort auch an
+         jedem Knopf, also an EINER Stelle statt an zweien. */
+      --avatar-ground: var(--color-primary);
+      --avatar-ink: var(--color-text-inverse);
     }
 
     /* --- Content column --- */
@@ -227,6 +236,10 @@ export class ChatMessage extends LitElement {
       display: flex;
       flex-direction: column;
       min-width: 0;
+      /* Bezugsrahmen der Aktionsleiste. Kein "contain", kein "filter": beides
+         wuerde hier dasselbe anrichten wie "content-visibility" eine Ebene
+         hoeher. */
+      position: relative;
     }
 
     .content--user {
@@ -393,18 +406,18 @@ export class ChatMessage extends LitElement {
               ? html`<span class="time">${formatRelativeTimeVerbose(m.created_at)}</span>`
               : nothing
           }
+          ${
+            isOptimistic
+              ? nothing
+              : html`
+            <velg-message-actions
+              .messageId=${m.id}
+              .senderRole=${m.sender_role}
+              .content=${m.content}
+            ></velg-message-actions>
+          `
+          }
         </div>
-        ${
-          isOptimistic
-            ? nothing
-            : html`
-          <velg-message-actions
-            .messageId=${m.id}
-            .senderRole=${m.sender_role}
-            .content=${m.content}
-          ></velg-message-actions>
-        `
-        }
       </div>
     `;
   }

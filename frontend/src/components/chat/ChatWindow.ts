@@ -1,6 +1,6 @@
 import { localized, msg, str } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
-import { css, html, LitElement, type TemplateResult } from 'lit';
+import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { appState } from '../../services/AppStateManager.js';
@@ -356,6 +356,69 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
+    }
+
+    /* Ein Vermerk, keine Warnung: das Haus faerbt rot nur, wenn etwas
+       verloren ist. Hier ist nichts verloren — die Nachricht steht, nur die
+       Antwort fehlt. Also die Sprache der Akte: gestrichelte Kante, Marke
+       links, ein Knopf, der genau eine Sache tut. */
+    .unanswered {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin: var(--space-2) var(--space-4) 0;
+      padding: var(--space-2) var(--space-3);
+      border: var(--border-width-thin) dashed var(--color-warning-border);
+      background: var(--color-warning-bg);
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-text-secondary);
+      animation: unanswered-in var(--duration-entrance) var(--ease-dramatic) both;
+    }
+    .unanswered__mark {
+      display: inline-flex;
+      color: var(--color-warning);
+      flex-shrink: 0;
+    }
+    .unanswered__text {
+      flex: 1;
+      min-width: 0;
+    }
+    .unanswered__btn {
+      flex-shrink: 0;
+      padding: var(--space-1) var(--space-3);
+      font-family: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+      border: var(--border-width-thin) solid var(--color-border);
+      box-shadow: var(--shadow-xs);
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .unanswered__btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .unanswered__btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: none;
+    }
+    .unanswered__btn:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+    @keyframes unanswered-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .unanswered { animation-duration: 0.01ms; }
+      .unanswered__btn { transition-duration: 0.01ms; }
     }
 
     .window__sending-indicator {
@@ -819,6 +882,44 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     void this.updateComplete.then(() => {
       this.renderRoot.querySelector('velg-chat-composer')?.focus();
     });
+  }
+
+  /** Say so when a message went out and nothing came back.
+
+   * Am 03.09.2026 blieb eine Nachricht unbeantwortet, weil ein Deploy den
+   * laufenden Strom mitriss. Die Nachricht war gespeichert, die Antwort nicht
+   * — und die Oberflaeche hatte fuer diesen Zustand kein Wort. Es stand nur
+   * eine kurze Meldung da, die verschwand, und danach sah der Verlauf aus wie
+   * einer, in dem die Agentin schweigt.
+   *
+   * Wichtig ist der Unterschied, den der Knopf benennt: die Nachricht ist
+   * ANGEKOMMEN. "Erneut senden" wuerde sie verdoppeln; angefordert wird die
+   * ANTWORT, ueber denselben Weg, den der Wiederholen-Knopf an einer Antwort
+   * schon benutzt.
+   *
+   * Die Bedingung ist absichtlich eng: die letzte Nachricht stammt vom
+   * Nutzer, es laeuft kein Strom, es wird nicht gesendet, das Gespraech ist
+   * nicht archiviert. In jedem anderen Fall ist Warten richtig und ein
+   * Knopf waere eine Einladung, doppelt zu bezahlen.
+   */
+  private _renderUnansweredNotice(session: ReturnType<typeof chatStore.getOrCreate>) {
+    if (!appState.isAuthenticated.value) return nothing;
+    if (this._sending || this._loading || session.streaming.value) return nothing;
+    if (this.conversation?.status === 'archived') return nothing;
+
+    const msgs = session.messages.value;
+    const last = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+    if (!last || last.sender_role !== 'user') return nothing;
+
+    return html`
+      <div class="unanswered" role="status">
+        <span class="unanswered__mark" aria-hidden="true">${icons.alertTriangle(14)}</span>
+        <span class="unanswered__text">${msg('No reply came back. Your message was saved.')}</span>
+        <button class="unanswered__btn" type="button" @click=${this._handleRegenerate}>
+          ${msg('Request a reply')}
+        </button>
+      </div>
+    `;
   }
 
   private async _handleRegenerate(): Promise<void> {
@@ -1463,6 +1564,8 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
         }
 
         ${this._sending && !session.streaming.value ? html`<div class="window__sending-indicator">${msg('Sending...')}</div>` : null}
+
+        ${this._renderUnansweredNotice(session)}
 
         ${
           appState.isAuthenticated.value
