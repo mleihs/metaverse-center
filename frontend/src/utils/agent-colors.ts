@@ -59,30 +59,60 @@ export function agentTypingPhrase(agentId: string): string {
 // Mood ring color — mood_score → oklch hue
 // ---------------------------------------------------------------------------
 
+/** Die drei Bänder, an EINER Stelle — Farbe, Grenze und Wort gehören zusammen. */
+export const MOOD_BANDS = {
+  /** Über diesem Wert gilt eine Stimmung als gut. */
+  positive: 30,
+  /** Unter diesem Wert gilt sie als belastet. */
+  distressed: -30,
+} as const;
+
+export type MoodBand = 'positive' | 'neutral' | 'distressed';
+
+/** In welchem Band liegt dieser Wert? */
+export function moodBand(moodScore: number): MoodBand {
+  if (moodScore > MOOD_BANDS.positive) return 'positive';
+  if (moodScore < MOOD_BANDS.distressed) return 'distressed';
+  return 'neutral';
+}
+
 /**
- * Map a mood_score (-100..+100) to an oklch color for the avatar mood ring.
+ * Die Ringfarbe zu einem `mood_score` (-100..+100) — oder LEER für neutral.
  *
- *   > 30  → green (positive)
- *    -30..30 → amber (neutral)
- *   < -30 → red (distressed)
+ *   >  30   grün (hue 145 → 155, je besser desto smaragdener)
+ *   < -30   rot  (hue  25 →  15, je schlechter desto tiefer)
+ *   sonst   KEIN RING
  *
- * Interpolates within each band for smooth gradients.
+ * ── Warum neutral keinen Ring mehr bekommt ──────────────────────────────
+ *
+ * Bis zum 03.09.2026 gab neutral `oklch(0.75 0.14 75)` zurück — Bernstein.
+ * Auf Prod gemessen: 15 von 35 Portraits im Chatverlauf trugen ihn, alle in
+ * derselben Farbe, mit 2 px Rand, 6 px Schein und Dauerpuls.
+ *
+ * Damit trug der HÄUFIGSTE und am wenigsten aussagekräftige Zustand die
+ * lauteste Behandlung. Der Nutzer las ihn als Fehler („schaut aus wie ein
+ * Bug"), und das war die richtige Lesart: ein pulsierender Ring an fast jedem
+ * zweiten Bild sagt „hier stimmt etwas nicht", nicht „hier ist alles normal".
+ *
+ * Ein Signal markiert die ABWEICHUNG, nicht den Normalfall. Neutral bekommt
+ * deshalb keinen Ring; grün und rot behalten ihren, und sind dadurch zum
+ * ersten Mal auffällig, weil sie nicht mehr in einem Meer von Bernstein
+ * stehen.
  */
 export function moodRingColor(moodScore: number): string {
-  if (moodScore > 30) {
+  if (moodScore > MOOD_BANDS.positive) {
     // Green range: hue 145 (olive green) → 155 (emerald) as score rises
-    const t = Math.min((moodScore - 30) / 70, 1);
+    const t = Math.min((moodScore - MOOD_BANDS.positive) / 70, 1);
     const hue = 145 + t * 10;
     return `oklch(0.70 0.16 ${hue})`;
   }
-  if (moodScore < -30) {
+  if (moodScore < MOOD_BANDS.distressed) {
     // Red range: hue 25 (orange-red) → 15 (deep red) as score drops
-    const t = Math.min((-30 - moodScore) / 70, 1);
+    const t = Math.min((MOOD_BANDS.distressed - moodScore) / 70, 1);
     const hue = 25 - t * 10;
     return `oklch(0.65 0.18 ${hue})`;
   }
-  // Amber range: hue 75 (warm amber)
-  return 'oklch(0.75 0.14 75)';
+  return '';
 }
 
 // ---------------------------------------------------------------------------

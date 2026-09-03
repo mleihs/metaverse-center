@@ -299,7 +299,9 @@ export class VelgEventPicker extends LitElement {
 
         <input
           class="picker__search"
-          type="text"
+          type="search"
+          name="event-search"
+          autocomplete="off"
           placeholder=${msg('Search events...')}
           .value=${this._searchQuery}
           @input=${this._handleSearch}
