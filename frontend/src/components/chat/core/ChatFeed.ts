@@ -229,8 +229,28 @@ export class ChatFeed extends LitElement {
 
     /* --- Message items --- */
     .message-item {
+      /* Die Aktionsleiste haengt um --chat-actions-lift ueber der Blase
+         (ChatMessage.ts). "content-visibility: auto" bringt Paint-Containment
+         mit: was ausserhalb DIESER Box gemalt wird, faellt weg.
+
+         Am 03.09.2026 auf Prod nachgemessen — und es fehlten genau zwei
+         Pixel:
+
+             Kachel oben    491,1
+             Leiste oben    489,1
+
+         Zwei Pixel sind der ganze obere Rahmenstrich. Er war nie unsichtbar,
+         er war abgeschnitten; deshalb half auch keine Farbe. Der Nutzer hat
+         ihn dreimal gemeldet.
+
+         Polster nach innen, Rand nach aussen, derselbe Wert: die Box wird
+         oben groesser, die Kachel bleibt stehen, wo sie stand. Ein Wert, kein
+         Zahlenpaar, das auseinanderlaufen kann. */
+      --chat-actions-lift: 18px;
       content-visibility: auto;
       contain-intrinsic-size: auto 80px;
+      padding-top: var(--chat-actions-lift);
+      margin-top: calc(var(--chat-actions-lift) * -1);
     }
 
     /* --- Scroll anchor sentinel (always at bottom) --- */

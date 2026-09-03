@@ -23,8 +23,31 @@ import { repeat } from 'lit/directives/repeat.js';
 import type { ChatReactionSummary } from '../../../types/index.js';
 import { icons } from '../../../utils/icons.js';
 
-/** Game-themed preset emoji palette. */
-const PRESET_EMOJIS = ['👍', '👎', '❤️', '🔥', '🎯', '💡', '⚔️', '🏰'] as const;
+/** The marks a reader puts in a margin.
+ *
+ * Vorher standen hier acht Emoji (Daumen, Herz, Flamme, Burg). Sie kamen aus
+ * einer anderen Welt als der Rest dieses Hauses: eine Akte traegt keine
+ * Flamme. Und sie waren bunt in einer Oberflaeche, die ihre Farbe sonst
+ * ausschliesslich fuer Bedeutung ausgibt.
+ *
+ * Diese acht sind typografische Marken, keine Bilder — sie nehmen die
+ * Schriftfarbe an, sitzen in der Laufweite der Akte und lesen sich als das,
+ * was sie sind: ein Vermerk am Rand.
+ *
+ * BESTAND: aeltere Reaktionen tragen weiter ihr Emoji. Die Leiste zeigt, was
+ * gespeichert ist; nur die AUSWAHL aendert sich. Kein Datensatz wird
+ * angefasst, kein Zeichen umgedeutet.
+ */
+const PRESET_MARKS = [
+  { mark: '\u2713', label: () => msg('Noted') },
+  { mark: '\u2717', label: () => msg('Objection') },
+  { mark: '\u2691', label: () => msg('Flagged') },
+  { mark: '\u2726', label: () => msg('Of note') },
+  { mark: '\u26A0', label: () => msg('Reservation') },
+  { mark: '?', label: () => msg('Query') },
+  { mark: '\u270E', label: () => msg('Marginal note') },
+  { mark: '\u00A7', label: () => msg('On record') },
+] as const;
 
 @localized()
 @customElement('velg-reaction-bar')
@@ -158,9 +181,14 @@ export class ReactionBar extends LitElement {
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       box-shadow: var(--shadow-sm);
-      inset: unset;
-      position-anchor: --reaction-add;
-      /* Fallback positioning for browsers without anchor positioning */
+      /* Ort kommt aus _placePicker, in Fensterkoordinaten. "position: fixed"
+         ist fuer ein Popover im Top-Layer die richtige Bezugsgroesse und
+         nimmt keinem Vorfahren etwas uebel: der Top-Layer liegt ausserhalb
+         jedes "contain" und jedes "filter", die sonst genau hier zuschlagen
+         wuerden (siehe .message-item in ChatFeed.ts). */
+      inset: auto;
+      position: fixed;
+      margin: 0;
     }
 
     /* Popover open/close transitions */
@@ -241,8 +269,54 @@ export class ReactionBar extends LitElement {
     if (this._addBtn && this._picker) {
       (this._addBtn as HTMLButtonElement).popoverTargetElement = this._picker;
       (this._addBtn as HTMLButtonElement).popoverTargetAction = 'toggle';
+      this._picker.addEventListener('beforetoggle', this._placePicker);
     }
   }
+
+  override disconnectedCallback(): void {
+    this._picker?.removeEventListener('beforetoggle', this._placePicker);
+    super.disconnectedCallback();
+  }
+
+  /** Put the picker beside the button it belongs to.
+   *
+   * Der Waehler stand in der linken oberen Ecke des Fensters, und das war
+   * kein Layoutfehler, sondern eine Regel, die es nicht gab: das CSS sagte
+   * "position-anchor: --reaction-add", aber "anchor-name: --reaction-add"
+   * wurde nirgends vergeben. Ein Popover liegt im Top-Layer; ohne Anker und
+   * mit "inset: unset" hat es keinerlei Ortsangabe und faellt auf 0,0.
+   *
+   * Gerechnet wird darum hier, in einem Weg fuer alle Browser statt in zwei,
+   * von denen einer nur in Chrome greift. Der Waehler oeffnet ueber dem
+   * Knopf und rechtsbuendig zu ihm; findet er dort keinen Platz, klappt er
+   * nach unten, und an den Fensterraendern bleibt er mit einem Rand von
+   * --space-2 stehen.
+   */
+  private readonly _placePicker = (e: Event): void => {
+    if ((e as ToggleEvent).newState !== 'open') return;
+    const btn = this._addBtn?.getBoundingClientRect();
+    if (!btn) return;
+
+    const p = this._picker;
+    // Vor dem Messen sichtbar machen: ein Popover im Zustand `closed` hat
+    // keine Groesse, und ein Ort, der aus 0×0 gerechnet ist, ist kein Ort.
+    p.style.visibility = 'hidden';
+    p.style.left = '0px';
+    p.style.top = '0px';
+    const box = p.getBoundingClientRect();
+    const gap = 6;
+    const edge = 8;
+
+    let top = btn.top - box.height - gap;
+    if (top < edge) top = btn.bottom + gap;
+
+    let left = btn.right - box.width;
+    left = Math.min(Math.max(left, edge), window.innerWidth - box.width - edge);
+
+    p.style.left = `${Math.round(left)}px`;
+    p.style.top = `${Math.round(top)}px`;
+    p.style.visibility = '';
+  };
 
   private _handleToggleReaction(emoji: string): void {
     this.dispatchEvent(
@@ -295,14 +369,15 @@ export class ReactionBar extends LitElement {
 
         <div class="picker" popover>
           <div class="picker__grid" role="group" aria-label=${msg('Choose reaction')}>
-            ${PRESET_EMOJIS.map(
-              (emoji) => html`
+            ${PRESET_MARKS.map(
+              ({ mark, label }) => html`
                 <button
                   class="picker__emoji"
-                  @click=${() => this._handleToggleReaction(emoji)}
-                  aria-label=${emoji}
+                  @click=${() => this._handleToggleReaction(mark)}
+                  title=${label()}
+                  aria-label=${label()}
                 >
-                  ${emoji}
+                  ${mark}
                 </button>
               `,
             )}

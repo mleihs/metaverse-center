@@ -31452,6 +31452,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>A signal that has been admitted does not vanish into the world without trace. The aftermath chamber shows what it actually did once the world had absorbed it, and the reading room keeps the full text the scanner captured, so a decision can still be checked against what was in front of you when you made it.</source>
   <target>Ein eingelassenes Signal verschwindet nicht spurlos in der Welt. Die Nachbesprechung zeigt, was es tatsächlich bewirkt hat, nachdem die Welt es aufgenommen hatte, und der Lesesaal verwahrt den vollen Text, den der Scanner erfasst hat – so lässt sich eine Entscheidung noch daran prüfen, was einem vorlag, als man sie getroffen hat.</target>
 </trans-unit>
+<trans-unit id="s69bc03050d251767">
+  <source>No reply came back. Your message was saved.</source>
+        <target>Keine Antwort eingegangen. Deine Nachricht ist verzeichnet.</target>
+</trans-unit>
+<trans-unit id="sf73a9f1dc3e7f6a9">
+  <source>Request a reply</source>
+        <target>Antwort anfordern</target>
+</trans-unit>
+<trans-unit id="s00505ed82b7140bb">
+  <source>Noted</source>
+        <target>Zur Kenntnis</target>
+</trans-unit>
+<trans-unit id="sf89b4819562b3231">
+  <source>Flagged</source>
+        <target>Vorgemerkt</target>
+</trans-unit>
+<trans-unit id="sa70d75d8e6386db4">
+  <source>Of note</source>
+        <target>Bemerkenswert</target>
+</trans-unit>
+<trans-unit id="s35cfd24961d61239">
+  <source>Reservation</source>
+        <target>Vorbehalt</target>
+</trans-unit>
+<trans-unit id="sc74b7675f65c3e23">
+  <source>Query</source>
+        <target>Rückfrage</target>
+</trans-unit>
+<trans-unit id="s5a481df1f19a315e">
+  <source>Marginal note</source>
+        <target>Randnotiz</target>
+</trans-unit>
+<trans-unit id="s1e6ca89568256ed5">
+  <source>On record</source>
+        <target>Aktenkundig</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
