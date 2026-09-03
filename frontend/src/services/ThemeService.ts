@@ -810,6 +810,80 @@ class ThemeService {
     const polarity = luminance(surface) > luminance(text) ? '1' : '0';
     hostElement.style.setProperty('--theme-polarity', polarity);
     tokensApplied.push('--theme-polarity');
+
+    this.publishPlatformAccent(hostElement, polarity === '1', tokensApplied);
+  }
+
+  /**
+   * Der Plattform-Akzent auf hellem Grund.
+   *
+   * DAS PROBLEM, GEMESSEN
+   *   `--color-accent-amber` (#f59e0b) steht an 708 Stellen in 126 Dateien und
+   *   ist die Signalfarbe der Plattform. Auf dem Papiergrund des Atlas-Skins
+   *   misst es **1,82 : 1**. 318 dieser Stellen sind `color:`, also Text —
+   *   Kicker, Etiketten, Zahlen in der Kopfleiste. Unlesbar, nicht knapp.
+   *   `--color-accent-green` (#4ade80) steht bei 1,47 und hat dasselbe Problem.
+   *
+   *   Als FLAECHE traegt Amber (dunkle Tinte darauf: 7,76). Der Fehler
+   *   entsteht nur dort, wo es selbst die Schrift ist.
+   *
+   * DIE ENTSCHEIDUNG (03.09.2026)
+   *   Auf hellem Grund IST der Plattform-Akzent der Akzent des Themes. Eine
+   *   gedruckte Karte hat einen Akzent; Amber neben dem Zinnober des
+   *   Papier-Skins waeren zwei konkurrierende Signalfarben auf demselben Blatt,
+   *   und die schwaechere davon waere die unlesbare.
+   *
+   *   Der Preis ist benannt und nicht klein: die Zusage "Plattform-Chrome ist
+   *   immer Amber, egal welche Welt" gilt auf hellem Grund nicht mehr. Dort
+   *   sind Plattform- und Welt-Akzent dieselbe Farbe. Auf dunklem Grund — also
+   *   auf dem Dark-Skin und in jeder dunklen Welt — bleibt alles, wie es war.
+   *
+   * WARUM HIER UND NICHT ALS SWEEP
+   *   Eine Regel statt 708 Aenderungen. Und vor allem: der Sweep haette die
+   *   Frage an 708 Orte verteilt, wo sie jedes Mal neu falsch beantwortet
+   *   werden kann. Hier steht sie einmal.
+   *
+   * WARUM DIE DUNKLE SEITE AUSDRUECKLICH GESCHRIEBEN WIRD
+   *   Nicht "auf hell setzen, sonst nichts tun": ein dunkler Wirt INNERHALB
+   *   eines hellen (DriftView, DungeonView) muss den Amber zurueckholen. Wird
+   *   auf der dunklen Seite nichts geschrieben, erbt er den Zinnober des
+   *   Papiers — genau die Klasse Fehler, gegen die
+   *   tests/theme-token-redeclaration.test.ts angelegt wurde.
+   */
+  private publishPlatformAccent(
+    hostElement: HTMLElement,
+    light: boolean,
+    tokensApplied: string[],
+  ): void {
+    const pairs: [string, string][] = light
+      ? [
+          ['--color-accent-amber', 'var(--color-primary)'],
+          ['--color-accent-amber-hover', 'var(--color-primary-hover)'],
+          [
+            '--color-accent-amber-dim',
+            'color-mix(in srgb, var(--color-primary) 70%, var(--color-text-primary))',
+          ],
+          ['--color-accent-amber-glow', 'var(--color-primary-glow)'],
+          // Die Tinte AUF der Flaeche kippt mit: dunkle Tinte auf Amber traegt
+          // (7,76), auf dem Zinnober nicht (3,90).
+          ['--color-on-accent-amber', 'var(--color-text-inverse)'],
+          // Das Lebenszeichen: auf Papier das Gruen des Themes (4,50), nicht
+          // das Neongruen der Plattform (1,47).
+          ['--color-accent-green', 'var(--color-success)'],
+        ]
+      : [
+          ['--color-accent-amber', PLATFORM_AMBER],
+          ['--color-accent-amber-hover', PLATFORM_AMBER_HOVER],
+          ['--color-accent-amber-dim', PLATFORM_AMBER_DIM],
+          ['--color-accent-amber-glow', PLATFORM_AMBER_GLOW],
+          ['--color-on-accent-amber', PLATFORM_ON_AMBER],
+          ['--color-accent-green', PLATFORM_GREEN],
+        ];
+
+    for (const [token, value] of pairs) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
+    }
   }
 
   /**
@@ -1106,6 +1180,22 @@ function extractAllFamilies(cssValue: string): string[] {
  * Dynamically load a single Google Font family.
  * Idempotent — skips system fonts and already-loaded families.
  */
+/*
+ * Der Plattform-Akzent auf DUNKLEM Grund, wortwoertlich aus _colors.css.
+ *
+ * Sie stehen hier ein zweites Mal, weil publishPlatformAccent sie auf jedem
+ * dunklen Wirt AKTIV zurueckschreiben muss — ein var(--color-accent-amber)
+ * wuerde dort den Wert des hellen Elternteils erben. Der Preis ist eine
+ * Doppelung, die auseinanderlaufen kann; tests/platform-accent-polarity.test.ts
+ * bindet sie deshalb an die CSS-Datei.
+ */
+const PLATFORM_AMBER = '#f59e0b';
+const PLATFORM_AMBER_HOVER = '#fbbf24';
+const PLATFORM_AMBER_DIM = '#be5e09';
+const PLATFORM_AMBER_GLOW = 'rgba(245, 158, 11, 0.15)';
+const PLATFORM_ON_AMBER = '#0a0a0a';
+const PLATFORM_GREEN = '#4ade80';
+
 /** The weights every family is requested at. A theme may need one more. */
 const STANDARD_WEIGHTS = new Set(['400', '500', '700', '800']);
 
