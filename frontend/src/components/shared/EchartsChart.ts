@@ -19,6 +19,48 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 
 /**
+ * Die Serienfarben — eine Welt ist immer derselbe Farbton, aber nicht immer
+ * dieselbe Helligkeit.
+ *
+ * DAS PROBLEM, GEMESSEN
+ *   Die fuenf Toene waren fuer einen schwarzen Grund gewaehlt und stehen dort
+ *   zwischen 5,2 und 13,7 : 1. Auf dem Papiergrund messen VIER von fuenf unter
+ *   der 3-:-1-Schwelle fuer nicht-textliche Elemente:
+ *
+ *     Station Null   #67e8f9   13,66 auf dunkel   1,23 auf Papier
+ *     Gaslit Reach   #6bcb77    9,84              1,70
+ *     Speranza       #d4a24e    8,56              1,96
+ *     Nova Meridian  #a78bfa    7,27              2,30
+ *     Velgarien      #e74c3c    5,18              3,23  (haelt als einzige)
+ *
+ *   Ein Balken bei 1,23 ist auf Papier keine schwache Farbe, sondern keine.
+ *
+ * WAS SICH AENDERT UND WAS NICHT
+ *   Der FARBTON bleibt bei allen fuenf exakt gleich (38° · 128° · 6° · 255° ·
+ *   187°) — er ist die Identitaet der Welt und traegt die Wiedererkennung ueber
+ *   Diagramme, Karten und Abzeichen hinweg. Nur die Helligkeit sinkt, und zwar
+ *   auf den HELLSTEN Wert, der noch 3 : 1 haelt: ein Ton, keine neue Farbe.
+ *
+ *   Auf dunklem Grund bleibt alles unveraendert.
+ */
+const SERIES_DARK = [
+  '#d4a24e', // Speranza amber
+  '#6bcb77', // Gaslit Reach green
+  '#e74c3c', // Velgarien red
+  '#a78bfa', // Nova Meridian purple
+  '#67e8f9', // Station Null cyan
+];
+
+/** Dieselben fuenf Farbtoene, abgedunkelt bis 3 : 1 gegen Papier. */
+const SERIES_LIGHT = [
+  '#b07d27', // Speranza    38°  3,06
+  '#339b41', // Gaslit      128° 3,01
+  '#ec5444', // Velgarien     6° 3,00
+  '#7042fa', // Nova        255° 4,61
+  '#0494a7', // Station     187° 3,06
+];
+
+/**
  * Das Diagramm-Chrome kommt aus den lebenden Tokens, nicht aus einer Konstante.
  *
  * WARUM DAS NOETIG WURDE
@@ -46,6 +88,7 @@ import { customElement, property, query } from 'lit/decorators.js';
  */
 function chartTheme(el: HTMLElement): Record<string, unknown> {
   const cs = getComputedStyle(el);
+  const light = cs.getPropertyValue('--theme-polarity').trim() === '1';
   const t = (name: string, fallback: string): string =>
     cs.getPropertyValue(name).trim() || fallback;
 
@@ -57,13 +100,7 @@ function chartTheme(el: HTMLElement): Record<string, unknown> {
   const mono = t('--font-mono', '"JetBrains Mono", "Fira Code", monospace');
 
   return {
-    color: [
-      '#d4a24e', // Speranza amber
-      '#6bcb77', // Gaslit Reach green
-      '#e74c3c', // Velgarien red
-      '#a78bfa', // Nova Meridian purple
-      '#67e8f9', // Station Null cyan
-    ],
+    color: light ? SERIES_LIGHT : SERIES_DARK,
     backgroundColor: 'transparent',
     textStyle: { color: muted, fontFamily: mono },
     title: { textStyle: { color: text }, subtextStyle: { color: muted } },
