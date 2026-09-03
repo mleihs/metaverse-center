@@ -28995,7 +28995,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <target>Still</target>
 </trans-unit>
 <trans-unit id="sac05a9da1dc17316">
-  <source><x id="0" equiv-text="${world.agent_count}"/> citizens</source>
+  <source><x id="0" equiv-text="${world.agent_count ?? 0}"/> citizens</source>
   <target><x id="0" equiv-text="${world.agent_count}"/> Bürger</target>
 </trans-unit>
 <trans-unit id="s862f49b9bee93281">
@@ -29090,7 +29090,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Priority // Cycle <x id="0" equiv-text="${p.current_cycle}"/> of <x id="1" equiv-text="${p.total_cycles}"/></source>
 <target>Vorrang // Zyklus <x id="0" equiv-text="${p.current_cycle}"/> von <x id="1" equiv-text="${p.total_cycles}"/></target></trans-unit>
 <trans-unit id="sab611e755df00e14">
-  <source><x id="0" equiv-text="${Math.floor(this._remainingMs / 3600000)}"/> hours left in this cycle</source>
+  <source><x id="0" equiv-text="${this._cycle.hoursLeft}"/> hours left in this cycle</source>
 <target>Noch <x id="0" equiv-text="${Math.floor(this._remainingMs / 3600000)}"/> Stunden in diesem Zyklus</target></trans-unit>
 <trans-unit id="s46dc76dfb3029a01">
   <source>No cycle clock running</source>
@@ -31488,6 +31488,538 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s6ae324caf2d66f83">
   <source>One sentence becomes a civilization: coastlines, a census, a founding grudge. You write the seed. The world writes everything after it.</source>
         <target>Ein Satz wird zur Zivilisation: Küstenlinien, eine Volkszählung, ein Gründungsgroll. Du schreibst den Keim. Alles danach schreibt die Welt.</target>
+</trans-unit>
+<trans-unit id="s52b153e34c372741">
+  <source>Sheet 00 · Operative desk</source>
+        <target>Blatt 00 · Schreibtisch des Operativen</target>
+</trans-unit>
+<trans-unit id="sf075c482c215fcc8">
+  <source>Shards</source>
+        <target>Splitter</target>
+</trans-unit>
+<trans-unit id="s34e175d9cb842233">
+  <source>Active ops</source>
+        <target>Laufende Einsätze</target>
+</trans-unit>
+<trans-unit id="s1c6add4bcd660340">
+  <source>Substrate</source>
+        <target>Substrat</target>
+</trans-unit>
+<trans-unit id="s3f63b56db2890a16">
+  <source>stable</source>
+        <target>stabil</target>
+</trans-unit>
+<trans-unit id="s4d62a57943b5c3c4">
+  <source>anomalous</source>
+        <target>auffällig</target>
+</trans-unit>
+<trans-unit id="s1f2dedb089c9cfa0">
+  <source>Tremors on file</source>
+        <target>Erschütterungen aktenkundig</target>
+</trans-unit>
+<trans-unit id="s40334173153cfade">
+  <source>Sheet 02</source>
+        <target>Blatt 02</target>
+</trans-unit>
+<trans-unit id="sfd38329d56b89606">
+  <source>Requires you</source>
+        <target>Verlangt nach dir</target>
+</trans-unit>
+<trans-unit id="s1d126a76a65960ca">
+  <source><x id="0" equiv-text="${open}"/> of <x id="1" equiv-text="${rows.length}"/> awaiting your move</source>
+        <target><x id="0" equiv-text="${open}"/> von <x id="1" equiv-text="${rows.length}"/> warten auf deinen Zug</target>
+</trans-unit>
+<trans-unit id="s71f7231086789770">
+  <source>nothing awaiting your move</source>
+        <target>nichts wartet auf deinen Zug</target>
+</trans-unit>
+<trans-unit id="sd6156f00010eb329">
+  <source>One row per running epoch. What still wants a decision stands first.</source>
+        <target>Eine Zeile je laufender Epoche. Was noch eine Entscheidung will, steht oben.</target>
+</trans-unit>
+<trans-unit id="sb65be36dd7a6b3a7">
+  <source><x id="0" equiv-text="${epochStatusLabel(p.epoch_status)}"/> · Cycle <x id="1" equiv-text="${p.current_cycle}"/> of <x id="2" equiv-text="${p.total_cycles}"/></source>
+        <target><x id="0" equiv-text="${epochStatusLabel(p.epoch_status)}"/> · Zyklus <x id="1" equiv-text="${p.current_cycle}"/> von <x id="2" equiv-text="${p.total_cycles}"/></target>
+</trans-unit>
+<trans-unit id="s40334473153cfff7">
+  <source>Sheet 05</source>
+        <target>Blatt 05</target>
+</trans-unit>
+<trans-unit id="s8f2345238c8c19eb">
+  <source>· Dossier</source>
+        <target>· Dossier</target>
+</trans-unit>
+<trans-unit id="sb3ffde2d5e120476">
+  <source>Substrate monitor</source>
+        <target>Substratwache</target>
+</trans-unit>
+<trans-unit id="s5005a0d153cae45a">
+  <source>magnitude 1–10</source>
+        <target>Stärke 1–10</target>
+</trans-unit>
+<trans-unit id="s40334373153cfe44">
+  <source>Sheet 04</source>
+        <target>Blatt 04</target>
+</trans-unit>
+<trans-unit id="sfed79eea86c2ba22">
+  <source>Shard registry</source>
+        <target>Splitterverzeichnis</target>
+</trans-unit>
+<trans-unit id="sb29f406712b1d566">
+  <source>surveyed by others</source>
+        <target>von anderen vermessen</target>
+</trans-unit>
+<trans-unit id="s063aefb083a18b4a">
+  <source>All <x id="0" equiv-text="${this.worlds.length}"/> sheets</source>
+        <target>Alle <x id="0" equiv-text="${this.worlds.length}"/> Blätter</target>
+</trans-unit>
+<trans-unit id="s4fa9e2ff1c634a33">
+  <source>1 more sheet on file</source>
+        <target>1 weiteres Blatt in der Akte</target>
+</trans-unit>
+<trans-unit id="s912a0035b7c79f83">
+  <source><x id="0" equiv-text="${rest}"/> more sheets on file</source>
+        <target><x id="0" equiv-text="${rest}"/> weitere Blätter in der Akte</target>
+</trans-unit>
+<trans-unit id="se7fd19f7ee573b43">
+  <source>Browse the registry</source>
+        <target>Verzeichnis durchsehen</target>
+</trans-unit>
+<trans-unit id="s2606453085a3f192">
+  <source>Sheet <x id="0" equiv-text="${sheet}"/></source>
+        <target>Blatt <x id="0" equiv-text="${sheet}"/></target>
+</trans-unit>
+<trans-unit id="s40334073153cf92b">
+  <source>Sheet 01</source>
+        <target>Blatt 01</target>
+</trans-unit>
+<trans-unit id="sa32bd25083cd1245">
+  <source>Current deployment</source>
+        <target>Laufender Einsatz</target>
+</trans-unit>
+<trans-unit id="s449d58b2bfb17185">
+  <source>nothing requires you</source>
+        <target>nichts verlangt nach dir</target>
+</trans-unit>
+<trans-unit id="s8c6b85bf243c9ba0">
+  <source>Current deployment · <x id="0" equiv-text="${p.epoch_name}"/> · cycle <x id="1" equiv-text="${p.current_cycle}"/> / <x id="2" equiv-text="${p.total_cycles}"/></source>
+        <target>Laufender Einsatz · <x id="0" equiv-text="${p.epoch_name}"/> · Zyklus <x id="1" equiv-text="${p.current_cycle}"/> / <x id="2" equiv-text="${p.total_cycles}"/></target>
+</trans-unit>
+<trans-unit id="sd49958f91655b236">
+  <source>Enter war room</source>
+        <target>In den Kriegsraum</target>
+</trans-unit>
+<trans-unit id="s6f8d945a4eb72089">
+  <source>Fig. 1 · <x id="0" equiv-text="${p.simulation_name}"/></source>
+        <target>Abb. 1 · <x id="0" equiv-text="${p.simulation_name}"/></target>
+</trans-unit>
+<trans-unit id="sefcfb3267b46e781">
+  <source>Rank <x id="0" equiv-text="${p.rank}"/></source>
+        <target>Rang <x id="0" equiv-text="${p.rank}"/></target>
+</trans-unit>
+<trans-unit id="s9841212bd35bac27">
+  <source>Rank</source>
+        <target>Rang</target>
+</trans-unit>
+<trans-unit id="s22db37220940ed88">
+  <source>Rivals</source>
+        <target>Rivalen</target>
+</trans-unit>
+<trans-unit id="s3ed81ba6bf1f691c">
+  <source>Resource points</source>
+        <target>Ressourcenpunkte</target>
+</trans-unit>
+<trans-unit id="s40334273153cfc91">
+  <source>Sheet 03</source>
+        <target>Blatt 03</target>
+</trans-unit>
+<trans-unit id="sf2868cacc9f89fa9">
+  <source>My territories</source>
+        <target>Meine Gebiete</target>
+</trans-unit>
+<trans-unit id="se210c6b8abc9d974">
+  <source>my worlds</source>
+        <target>meine Welten</target>
+</trans-unit>
+<trans-unit id="s902688e018955f03">
+  <source>Forge another</source>
+        <target>Noch eine schmieden</target>
+</trans-unit>
+<trans-unit id="s313dab8b1b977154">
+  <source>My worlds</source>
+        <target>Meine Welten</target>
+</trans-unit>
+<trans-unit id="s048f3308dbac81ab">
+  <source><x id="0" equiv-text="${memberRoleLabel(world.member_role)}"/> · <x id="1" equiv-text="${world.agent_count}"/> citizens</source>
+        <target><x id="0" equiv-text="${memberRoleLabel(world.member_role)}"/> · <x id="1" equiv-text="${world.agent_count}"/> Bürger</target>
+</trans-unit>
+<trans-unit id="s36df0d545ccfec95">
+  <source>Sheet <x id="0" equiv-text="${sheet}"/> · <x id="1" equiv-text="${t(world, 'name')}"/></source>
+        <target>Blatt <x id="0" equiv-text="${sheet}"/> · <x id="1" equiv-text="${t(world, 'name')}"/></target>
+</trans-unit>
+<trans-unit id="s70a92fbe1fdd2e88">
+  <source>Citizens</source>
+        <target>Bürger</target>
+</trans-unit>
+<trans-unit id="sca7fed2bef53cb99">
+  <source>Role</source>
+        <target>Rolle</target>
+</trans-unit>
+<trans-unit id="s71a63219c1881047">
+  <source>Open terminal</source>
+        <target>Terminal öffnen</target>
+</trans-unit>
+<trans-unit id="s40334673153d035d">
+  <source>Sheet 07</source>
+        <target>Blatt 07</target>
+</trans-unit>
+<trans-unit id="sabc5d37c04a1a4e7">
+  <source>Forge a new territory</source>
+        <target>Ein neues Gebiet schmieden</target>
+</trans-unit>
+<trans-unit id="se768e8afb3fb4470">
+  <source>forge</source>
+        <target>schmieden</target>
+</trans-unit>
+<trans-unit id="s8d9ced2965afea3b">
+  <source>yours</source>
+        <target>deine</target>
+</trans-unit>
+<trans-unit id="sfcfd869787298ec5">
+  <source>· Front</source>
+        <target>· Titelblatt</target>
+</trans-unit>
+<trans-unit id="s2e8565d623b984a1">
+  <source>Scale 1 : one sentence</source>
+        <target>Maßstab 1 : ein Satz</target>
+</trans-unit>
+<trans-unit id="s6f339d10f500fcaa">
+  <source><x id="0" equiv-text="${online}"/> worlds transmitting</source>
+        <target><x id="0" equiv-text="${online}"/> Welten senden</target>
+</trans-unit>
+<trans-unit id="sdea476a58ff32403">
+  <source>living worlds,</source>
+        <target>lebende Welten,</target>
+</trans-unit>
+<trans-unit id="s3a523a1c07ffe9b3">
+  <source>surveyed nightly</source>
+        <target>nächtlich vermessen</target>
+</trans-unit>
+<trans-unit id="sbeb6134541d51174">
+  <source>Just watch one</source>
+        <target>Erst mal nur zusehen</target>
+</trans-unit>
+<trans-unit id="sb14e0b4e4de9aa1c">
+  <source>Fig. 1 · Intake hall</source>
+        <target>Abb. 1 · Annahmehalle</target>
+</trans-unit>
+<trans-unit id="s76c4a3880533d0d0">
+  <source>Informants on record</source>
+        <target>Aktenkundige Zuträger</target>
+</trans-unit>
+<trans-unit id="sa09502f62e0a4b0a">
+  <source>they remember</source>
+        <target>sie erinnern sich</target>
+</trans-unit>
+<trans-unit id="scbad73bfd8e1cf22">
+  <source>File <x id="0" equiv-text="${ref}"/> · <x id="1" equiv-text="${citizen.simulation_name}"/></source>
+        <target>Akte <x id="0" equiv-text="${ref}"/> · <x id="1" equiv-text="${citizen.simulation_name}"/></target>
+</trans-unit>
+<trans-unit id="sb585bd8fa2f46b60">
+  <source>Legend of the six systems</source>
+        <target>Legende der sechs Systeme</target>
+</trans-unit>
+<trans-unit id="sd8be88bbda37e1e9">
+  <source>how a world is played</source>
+        <target>wie eine Welt gespielt wird</target>
+</trans-unit>
+<trans-unit id="sc6efb33eca275ed8">
+  <source>Surveyed territories</source>
+        <target>Vermessene Gebiete</target>
+</trans-unit>
+<trans-unit id="sb4b57dfea97b2503">
+  <source><x id="0" equiv-text="${live}"/> worlds in transmission</source>
+        <target><x id="0" equiv-text="${live}"/> Welten auf Sendung</target>
+</trans-unit>
+<trans-unit id="s5e9b401ff63292ed">
+  <source>worlds in transmission</source>
+        <target>Welten auf Sendung</target>
+</trans-unit>
+<trans-unit id="sac7ccee2a0805164">
+  <source>All sheets</source>
+        <target>Alle Blätter</target>
+</trans-unit>
+<trans-unit id="sb34a2cd2f8eed291">
+  <source>Complaint · unanswered</source>
+        <target>Beschwerde · unbeantwortet</target>
+</trans-unit>
+<trans-unit id="s9b28343f103712c1">
+  <source>Chitinous Mandate · 7-C/221</source>
+        <target>Chitinmandat · 7-C/221</target>
+</trans-unit>
+<trans-unit id="s16568934ead841a6">
+  <source>Census footnote</source>
+        <target>Fußnote der Volkszählung</target>
+</trans-unit>
+<trans-unit id="s936bee243a2e3d40">
+  <source>Velgarien · Vol. XII, p. 4</source>
+        <target>Velgarien · Bd. XII, S. 4</target>
+</trans-unit>
+<trans-unit id="sc53ba8df49a02bcc">
+  <source>Population 58, of whom 3 disputed, 1 fictional by court order, and 1 who insists on being counted twice on account of her twin who never arrived.</source>
+        <target>Einwohner 58, davon 3 strittig, 1 durch Gerichtsbeschluss erfunden und 1, die darauf besteht, doppelt gezählt zu werden, wegen ihrer Zwillingsschwester, die nie eintraf.</target>
+</trans-unit>
+<trans-unit id="s63642309aa9f7c04">
+  <source>Logbook</source>
+        <target>Logbuch</target>
+</trans-unit>
+<trans-unit id="s67a3b91f66c17fee">
+  <source>Barge Second Postscript · Drift 14</source>
+        <target>Nachschrift des Kahn-Zweiten · Drift 14</target>
+</trans-unit>
+<trans-unit id="se388af96fcab44c6">
+  <source>Terminal · 03:41</source>
+        <target>Terminal · 03:41</target>
+</trans-unit>
+<trans-unit id="sec8ba09453a92795">
+  <source>Brine Chancellery · unfiled</source>
+        <target>Solekanzlei · unabgelegt</target>
+</trans-unit>
+<trans-unit id="sd9f128aacec2f610">
+  <source>I asked where my agent was. It wrote: "Grieving. Third bench from the fountain. Bring bread." I brought bread.</source>
+        <target>Ich fragte, wo mein Agent sei. Es schrieb: „Trauert. Dritte Bank vom Brunnen. Bring Brot.“ Ich brachte Brot.</target>
+</trans-unit>
+<trans-unit id="sd0b25f33c19cdc54">
+  <source>Broadsheet · below the fold</source>
+        <target>Blatt · unter dem Falz</target>
+</trans-unit>
+<trans-unit id="se92f19cbd0c8264f">
+  <source>The Brine Ledger · morning ed.</source>
+        <target>Das Sole-Register · Morgenausgabe</target>
+</trans-unit>
+<trans-unit id="s20f6a3b9ef18dfc2">
+  <source>MOON LATE, CHANCELLOR SILENT. Beneath: a poem about the operator. It is not flattering. It scans.</source>
+        <target>MOND VERSPÄTET, KANZLER SCHWEIGT. Darunter: ein Gedicht über den Operator. Es ist nicht schmeichelhaft. Das Versmaß stimmt.</target>
+</trans-unit>
+<trans-unit id="sa4cbcc662b129b3e">
+  <source>Debrief fragment</source>
+        <target>Bruchstück einer Nachbesprechung</target>
+</trans-unit>
+<trans-unit id="saf98c04ef448e629">
+  <source>Descent authorization #88</source>
+        <target>Abstiegsfreigabe Nr. 88</target>
+</trans-unit>
+<trans-unit id="s40333873153ceb93">
+  <source>Sheet 09</source>
+        <target>Blatt 09</target>
+</trans-unit>
+<trans-unit id="s8b75e14e853e796a">
+  <source>Found in the files</source>
+        <target>In den Akten gefunden</target>
+</trans-unit>
+<trans-unit id="s8f3ce24d62845308">
+  <source>nobody wrote these for you</source>
+        <target>niemand hat das für dich geschrieben</target>
+</trans-unit>
+<trans-unit id="scdd59a9b802f0594">
+  <source>Six slips from six systems. None of them explains anything. Together they are the only honest answer to what these worlds sound like.</source>
+        <target>Sechs Zettel aus sechs Systemen. Keiner davon erklärt irgendetwas. Zusammen sind sie die einzige ehrliche Antwort darauf, wie diese Welten klingen.</target>
+</trans-unit>
+<trans-unit id="sc56f7608172640e1">
+  <source>No daily streaks, no energy bars, no loot boxes.</source>
+        <target>Keine Tagesserien, keine Energieleisten, keine Beutekisten.</target>
+</trans-unit>
+<trans-unit id="s24c637a6cceba482">
+  <source>Plays in the browser. Plays as text if you prefer.</source>
+        <target>Läuft im Browser. Läuft als Text, wenn dir das lieber ist.</target>
+</trans-unit>
+<trans-unit id="s7b119c9a12730430">
+  <source>Free to forge. The world decides what happens after.</source>
+        <target>Das Schmieden ist frei. Was danach geschieht, entscheidet die Welt.</target>
+</trans-unit>
+<trans-unit id="scddd3fbc85feba09">
+  <source>Legend · What this is</source>
+        <target>Legende · Was das hier ist</target>
+</trans-unit>
+<trans-unit id="s4b58c01e2578f5e4">
+  <source>Legend</source>
+        <target>Legende</target>
+</trans-unit>
+<trans-unit id="s24664c72256ae57f">
+  <source>What this is</source>
+        <target>Was das hier ist</target>
+</trans-unit>
+<trans-unit id="s35c236972cec2cf3">
+  <source>Not a game you win. A world you keep. You write one sentence; a civilization answers with rivers, a census and a founding grudge, and then</source>
+        <target>Kein Spiel, das man gewinnt. Eine Welt, die man behält. Du schreibst einen Satz; eine Zivilisation antwortet mit Flüssen, einer Volkszählung und einem Groll von Anbeginn, und dann</target>
+</trans-unit>
+<trans-unit id="s2b4354bd3d0816c9">
+  <source>goes on living</source>
+        <target>lebt sie weiter</target>
+</trans-unit>
+<trans-unit id="s53bbb5cca234534f">
+  <source>whether you return or not.</source>
+        <target>ob du zurückkehrst oder nicht.</target>
+</trans-unit>
+<trans-unit id="sc11dece12cf1e48b">
+  <source>Metaverse.Center is built by a very small bureau in Austria, in public, with a changelog nobody asked for and everybody can read. Velgarien was world number one.</source>
+        <target>Metaverse.Center wird von einem sehr kleinen Büro in Österreich gebaut, öffentlich, mit einem Änderungsprotokoll, um das niemand gebeten hat und das jeder lesen kann. Velgarien war Welt Nummer eins.</target>
+</trans-unit>
+<trans-unit id="s58cc47e1a6e0e9cf">
+  <source><x id="0" equiv-text="${live - 1}"/> more have since filed for existence.</source>
+        <target><x id="0" equiv-text="${live - 1}"/> weitere haben seither ihr Dasein beantragt.</target>
+</trans-unit>
+<trans-unit id="s55eb7171e51c0554">
+  <source>Forging a world</source>
+        <target>Eine Welt schmieden</target>
+</trans-unit>
+<trans-unit id="s59d4b9ab20491569">
+  <source>Free. One sentence, one philosophy, about four minutes.</source>
+        <target>Kostenlos. Ein Satz, eine Philosophie, etwa vier Minuten.</target>
+</trans-unit>
+<trans-unit id="s4f46c7bfb692cf6d">
+  <source>Keeping it</source>
+        <target>Sie behalten</target>
+</trans-unit>
+<trans-unit id="s9996594441a08f1f">
+  <source>Free while it transmits. Worlds that no one visits go quiet; they are never deleted behind your back.</source>
+        <target>Kostenlos, solange sie sendet. Welten, die niemand besucht, werden still; gelöscht wird hinter deinem Rücken nichts.</target>
+</trans-unit>
+<trans-unit id="se9777cf65c929092">
+  <source>Playing as text</source>
+        <target>Als Text spielen</target>
+</trans-unit>
+<trans-unit id="s7dcbf7b4ad0ded55">
+  <source>Free, always. The Terminal is the whole game at street level.</source>
+        <target>Immer kostenlos. Das Terminal ist das ganze Spiel auf Straßenhöhe.</target>
+</trans-unit>
+<trans-unit id="s51979cf51e834b71">
+  <source>Epochs and Drift</source>
+        <target>Epochen und Drift</target>
+</trans-unit>
+<trans-unit id="sa5849242adc710d7">
+  <source>Free to enter. Cosmetic frames and card backs are the only thing ever sold.</source>
+        <target>Der Eintritt ist frei. Verkauft werden nur Zierrahmen und Kartenrücken, sonst nichts.</target>
+</trans-unit>
+<trans-unit id="se93335b0bf0218fe">
+  <source>Your data</source>
+        <target>Deine Daten</target>
+</trans-unit>
+<trans-unit id="sd93f91058a5b9e3a">
+  <source>Exportable and deletable from the settings page. No trackers on this front page.</source>
+        <target>Auf der Einstellungsseite ausleitbar und löschbar. Auf dieser Titelseite laufen keine Zähldienste.</target>
+</trans-unit>
+<trans-unit id="s942edbc0a0a6e901">
+  <source>The code</source>
+        <target>Der Quelltext</target>
+</trans-unit>
+<trans-unit id="sce2484210586329b">
+  <source>Public on GitHub. Read the dice before you roll them.</source>
+        <target>Öffentlich auf GitHub. Lies die Würfel, bevor du sie wirfst.</target>
+</trans-unit>
+<trans-unit id="s29cc46a228748151">
+  <source>Is this a game or a toy?</source>
+        <target>Ist das ein Spiel oder ein Spielzeug?</target>
+</trans-unit>
+<trans-unit id="s5728f499fb33d366">
+  <source>Both, on purpose. The Forge and the Terminal are a worldbuilding toy. Epochs, Dungeons and Drift are games with rules, odds and losses that stick.</source>
+        <target>Beides, mit Absicht. Schmiede und Terminal sind ein Spielzeug zum Weltenbau. Epochen, Verliese und Drift sind Spiele mit Regeln, Wahrscheinlichkeiten und Verlusten, die bleiben.</target>
+</trans-unit>
+<trans-unit id="sbce5d6ee85d236ec">
+  <source>Do I have to be there?</source>
+        <target>Muss ich dabei sein?</target>
+</trans-unit>
+<trans-unit id="sade0c4821f4650b2">
+  <source>No. Worlds keep their own hours. You return to a chronicle of what happened, not to a penalty for leaving.</source>
+        <target>Nein. Welten halten ihre eigenen Stunden. Du kehrst zu einer Chronik dessen zurück, was geschehen ist, nicht zu einer Strafe fürs Weggehen.</target>
+</trans-unit>
+<trans-unit id="s2e67340aba35a509">
+  <source>How much is written by a machine?</source>
+        <target>Wie viel schreibt eine Maschine?</target>
+</trans-unit>
+<trans-unit id="s59d838fd2b4a47f4">
+  <source>Everything the world says about itself. Nothing about you is written down that you did not do.</source>
+        <target>Alles, was die Welt über sich selbst sagt. Über dich wird nichts festgehalten, was du nicht getan hast.</target>
+</trans-unit>
+<trans-unit id="s66c23c2ad071f46a">
+  <source>Can I play with friends?</source>
+        <target>Kann ich mit Freunden spielen?</target>
+</trans-unit>
+<trans-unit id="s7b0442f2e6a61629">
+  <source>Yes. Epochs put rival worlds on one map; Drift lets you dock at another operator’s broadcast edge with cargo they did not ask for.</source>
+        <target>Ja. Epochen setzen rivalisierende Welten auf eine Karte; Drift lässt dich am Sendesaum eines anderen Operators anlegen, mit Fracht, um die er nicht gebeten hat.</target>
+</trans-unit>
+<trans-unit id="s2554913ef8336fa6">
+  <source>Phone or desk?</source>
+        <target>Telefon oder Schreibtisch?</target>
+</trans-unit>
+<trans-unit id="s355d5e31af3e724a">
+  <source>Both. The Terminal is happiest on a keyboard; watching a world is happiest anywhere.</source>
+        <target>Beides. Das Terminal ist auf einer Tastatur am glücklichsten; einer Welt zuzusehen ist überall am glücklichsten.</target>
+</trans-unit>
+<trans-unit id="s40333773153ce9e0">
+  <source>Sheet 08</source>
+        <target>Blatt 08</target>
+</trans-unit>
+<trans-unit id="se236450b0e85a35f">
+  <source>Marginalia · Honest terms</source>
+        <target>Randbemerkungen · Ehrliche Bedingungen</target>
+</trans-unit>
+<trans-unit id="saefbf29de30bceda">
+  <source>what it costs, and what it does not.</source>
+        <target>was es kostet und was nicht.</target>
+</trans-unit>
+<trans-unit id="sd698af1124823302">
+  <source>Field questions</source>
+        <target>Fragen aus dem Feld</target>
+</trans-unit>
+<trans-unit id="s1c4bca95a1417c5b">
+  <source>Chancellery Steps, low water. The steps are dry for the first time in nine days and three clerks are counting them, nervously, as if the number might have changed. Present: Marn Tell, Carapace Assessor.</source>
+        <target>Kanzleitreppe, Niedrigwasser. Die Stufen sind zum ersten Mal seit neun Tagen trocken, und drei Schreiber zählen sie, nervös, als könnte sich die Zahl geändert haben. Anwesend: Marn Tell, Panzerprüfer.</target>
+</trans-unit>
+<trans-unit id="s8e06e6118702bc03">
+  <source>Carapace Assessor · Ledger District · Stress 61 · Mood: grieving. Third bench from the fountain. Has not filed his tide-return; the fountain has noticed.</source>
+        <target>Panzerprüfer · Registerviertel · Belastung 61 · Stimmung: trauernd. Dritte Bank vom Brunnen. Hat seine Tidenerklärung nicht eingereicht; der Brunnen hat es bemerkt.</target>
+</trans-unit>
+<trans-unit id="s6632a317d4763a74">
+  <source>He looks up. "You are not from the Chancellery. Good. They send people to ask about the return, never about the bench."</source>
+        <target>Er blickt auf. „Du kommst nicht von der Kanzlei. Gut. Die schicken Leute, die nach der Erklärung fragen, nie nach der Bank.“</target>
+</trans-unit>
+<trans-unit id="s6f1a7496f3057004">
+  <source>you: I brought bread.</source>
+        <target>du: Ich habe Brot mitgebracht.</target>
+</trans-unit>
+<trans-unit id="sec5950650a6fbbd0">
+  <source>He eats without looking at you and says the moon is late. You check. He is right; the moon is eleven minutes late.</source>
+        <target>Er isst, ohne dich anzusehen, und sagt, der Mond sei verspätet. Du prüfst es nach. Er hat recht; der Mond ist elf Minuten zu spät.</target>
+</trans-unit>
+<trans-unit id="s92c8f4b4d08bfef5">
+  <source>Fog with opinions, thinning. Tide expected 04:20 – eleven minutes behind the almanac. The Brine Ledger has already set the headline.</source>
+        <target>Nebel mit Meinungen, lichtet sich. Tide erwartet 04:20 – elf Minuten hinter dem Almanach. Das Sole-Register hat die Schlagzeile bereits gesetzt.</target>
+</trans-unit>
+<trans-unit id="s40334573153d01aa">
+  <source>Sheet 06</source>
+        <target>Blatt 06</target>
+</trans-unit>
+<trans-unit id="s72778c05dbacde97">
+  <source>Survey log, unedited</source>
+        <target>Vermessungsprotokoll, unredigiert</target>
+</trans-unit>
+<trans-unit id="s6f6a9d5f67204dd2">
+  <source>twelve minutes on a Tuesday</source>
+        <target>zwölf Minuten an einem Dienstag</target>
+</trans-unit>
+<trans-unit id="s094a27d44d1c06a0">
+  <source>From the Bureau Terminal of the Brine Chancellery. Nothing here was written for this page; the world wrote it for the operator, who left it unfiled.</source>
+        <target>Aus dem Büro-Terminal der Solekanzlei. Nichts davon wurde für diese Seite geschrieben; die Welt schrieb es für den Operator, der es unabgelegt liegen ließ.</target>
+</trans-unit>
+<trans-unit id="sda489d404eeab0ae">
+  <source>Phosphor</source>
+        <target>Phosphor</target>
+</trans-unit>
+<trans-unit id="sda89d00e1b71df59">
+  <source>Paper</source>
+        <target>Papier</target>
 </trans-unit>
 </body>
 </file>
