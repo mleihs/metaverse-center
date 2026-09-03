@@ -587,8 +587,45 @@ class ThemeService {
    *   from one where a single role does.
    */
   private enforceTextContrast(hostElement: HTMLElement, tokensApplied: string[]): number {
-    const resolved = getComputedStyle(hostElement);
-    const read = (token: string): string => resolved.getPropertyValue(token).trim();
+    /*
+      Der Wert eines Tokens muss AUFGELOEST gelesen werden, nicht roh.
+      
+      `getComputedStyle(el).getPropertyValue('--x')` gibt bei einer Custom
+      Property den SPEZIFIZIERTEN Text zurueck, nicht die berechnete Farbe. Fuer
+      `#a0a0a0` ist das dasselbe; fuer alles andere nicht:
+      
+          --color-text-secondary   #a0a0a0                         lesbar
+          --color-text-muted       #888888                         lesbar
+          --color-text-quiet       color-mix(in srgb, #888 70%, …)  NICHT lesbar
+          --color-text-tertiary    color-mix(in srgb, #a0a0a0 60%, …) NICHT lesbar
+      
+      `parseColor` kennt `#hex`, `rgb()` und `color(srgb …)` — kein `color-mix`.
+      Fuer die zwei gemischten Rollen gab es also `null`, sie wurden als
+      unlesbar gemeldet und uebersprungen. Am 03.09.2026 auf Prod nachgemessen:
+      `velg-app` trug ueberhaupt keinen `data-contrast-lifted`-Marker, die
+      Hebung hatte NULL Token gehoben.
+      
+      Das war nicht folgenlos: `--color-text-quiet` ist mit 967 Verwendungen die
+      meistgenutzte Schriftfarbe der App, `--color-text-tertiary` hat 124. Der
+      Waechter sah 642 Stellen an und uebersprang 1091 — still, denn ein
+      uebersprungener Token sieht aus wie ein Token, der keine Hebung brauchte.
+      
+      Ein Probe-Element loest es: dem Browser `color: var(--x)` geben und die
+      BERECHNETE Farbe zurueckholen. Er rechnet `color-mix`, `oklch` und jede
+      kuenftige Schreibweise selbst aus — gemessen liefert er
+      `color(srgb 0.642745 …)`, und genau das kann `parseColor`.
+      
+      Das Element haengt am Wirt, damit es dessen Custom Properties erbt, und
+      wird sofort wieder entfernt.
+    */
+    const probe = hostElement.ownerDocument.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none';
+    hostElement.appendChild(probe);
+    const read = (token: string): string => {
+      probe.style.color = '';
+      probe.style.color = `var(${token})`;
+      return getComputedStyle(probe).color.trim();
+    };
 
     // Only the three platform surfaces. A role lands on ~45 different grounds
     // across the codebase, but 856 of the ~880 `--color-text-muted` sites sit
@@ -603,7 +640,10 @@ class ThemeService {
     // No measurable ground, or no target: leave the theme exactly as the world
     // saved it. Applying an unmeasured "correction" would be worse than none,
     // and the host is simply not laid out yet in that case.
-    if (grounds.length === 0 || toward === null) return 0;
+    if (grounds.length === 0 || toward === null) {
+      probe.remove();
+      return 0;
+    }
 
     let lifted = 0;
     // `--color-text-quiet` und `--color-text-tertiary` gehoeren dazu, und das
@@ -642,6 +682,9 @@ class ThemeService {
       tokensApplied.push(token);
       lifted++;
     }
+    // Die Probe hat ihren Zweck erfuellt. Sie MUSS weg: sie haengt am Wirt,
+    // und ein vergessenes Element waechst mit jedem Themenwechsel.
+    probe.remove();
     return lifted;
   }
 
