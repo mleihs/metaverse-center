@@ -896,7 +896,7 @@ export class HowToPlayWarRoom extends LitElement {
     const profiles = getSimulationProfiles();
     return {
       tooltip: {},
-      legend: { bottom: 0, textStyle: { color: '#94a3b8', fontSize: 10 } },
+      legend: { bottom: 0, textStyle: { fontSize: 10 } },
       radar: {
         indicator: [
           { name: '2P', max: 80 },
@@ -930,7 +930,7 @@ export class HowToPlayWarRoom extends LitElement {
     const profiles = getSimulationProfiles();
     return {
       tooltip: { trigger: 'axis' },
-      legend: { bottom: 0, textStyle: { color: '#94a3b8', fontSize: 10 } },
+      legend: { bottom: 0, textStyle: { fontSize: 10 } },
       grid: { top: 30, right: 20, bottom: 60, left: 50 },
       xAxis: { type: 'category', data: ['2P', '3P', '4P', '5P'], boundaryGap: false },
       yAxis: {
@@ -938,7 +938,6 @@ export class HowToPlayWarRoom extends LitElement {
         name: 'Win Rate %',
         min: 0,
         max: 70,
-        nameTextStyle: { color: '#94a3b8' },
       },
       series: [
         {
@@ -1016,7 +1015,6 @@ export class HowToPlayWarRoom extends LitElement {
         left: 'center',
         bottom: 0,
         inRange: { color: ['#1a3a5c', '#1e293b', '#5c2a1a'] },
-        textStyle: { color: '#94a3b8' },
       },
       series: [
         {
@@ -1038,6 +1036,19 @@ export class HowToPlayWarRoom extends LitElement {
   }
 
   private _buildStrategyBarOption(): Record<string, unknown> {
+    /*
+     * Die Fehlerbalken werden in einer eigenen Zeichenfunktion gemalt, und die
+     * erreicht das Theme von EchartsChart nicht — es faerbt Achsen, Legende und
+     * Tooltip, nicht die Striche einer custom series. Der Ton kommt deshalb
+     * hier aus demselben Token, das das Theme benutzt.
+     *
+     * Er stand bis zum 03.09.2026 als #94a3b8 da und misst auf Papier
+     * 2,17 : 1 — auf hellem Grund waren die Konfidenzbalken praktisch
+     * unsichtbar, in dieser Welt wie in jeder anderen hellen.
+     */
+    const chromeInk =
+      getComputedStyle(this).getPropertyValue('--color-text-muted').trim() || '#94a3b8';
+
     const tiers = getStrategyTiers();
     const tierHex: Record<string, string> = {
       S: '#d4a24e',
@@ -1074,7 +1085,7 @@ export class HowToPlayWarRoom extends LitElement {
         data: withCI.map((s) => s.name),
         axisLabel: { rotate: 35, fontSize: 9 },
       },
-      yAxis: { type: 'value', name: 'Win %', max: 80, nameTextStyle: { color: '#94a3b8' } },
+      yAxis: { type: 'value', name: 'Win %', max: 80 },
       series: [
         {
           type: 'bar',
@@ -1101,17 +1112,17 @@ export class HowToPlayWarRoom extends LitElement {
                 {
                   type: 'line',
                   shape: { x1: x, y1: highPt[1], x2: x, y2: lowPt[1] },
-                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                  style: { stroke: chromeInk, lineWidth: 1 },
                 },
                 {
                   type: 'line',
                   shape: { x1: x - hw, y1: highPt[1], x2: x + hw, y2: highPt[1] },
-                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                  style: { stroke: chromeInk, lineWidth: 1 },
                 },
                 {
                   type: 'line',
                   shape: { x1: x - hw, y1: lowPt[1], x2: x + hw, y2: lowPt[1] },
-                  style: { stroke: '#94a3b8', lineWidth: 1 },
+                  style: { stroke: chromeInk, lineWidth: 1 },
                 },
               ],
             };
