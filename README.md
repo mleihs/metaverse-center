@@ -338,17 +338,16 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 ## Project Statistics
 
-Repository figures measured 2026-09-03; database figures 2026-08-30. The two
-dates are kept apart on purpose: the schema counts below predate migrations
-330–351, which are in the repository but not yet pushed to production.
+Measured 2026-09-03 against the production database and the repository, with
+migrations up to and including 351 applied.
 
 | Metric | Count |
 |:-------|------:|
-| Database tables | 147 |
-| PostgreSQL functions | 226 (incl. the atomic game RPCs) |
-| Triggers | 133 |
-| Views (regular + materialized) | 11 + 5 |
-| RLS policies | 388 |
+| Database tables | 151 |
+| PostgreSQL functions | 244 (incl. the atomic game RPCs) |
+| Triggers | 129 |
+| Views (regular + materialized) | 15 + 5 |
+| RLS policies | 392 |
 | SQL migrations | 361 |
 | Routers | 63 |
 | Achievement badges | 35 (7 categories, 5 rarity tiers, 13 DB triggers) |
