@@ -70,6 +70,21 @@ const FAN_ANGLES = [-7, 0, 7];
 const FAN_RARITIES = ['common', 'legendary', 'common'] as const;
 
 /**
+ * Welche Karte ihre Zeile zeigt.
+ *
+ * Am 03.09.2026 auf Prod gemessen: die Faecherspalte ist 560 px breit, eine
+ * Karte 200 px. Drei nebeneinander brauchten 600. Die Karten ueberlappen
+ * darum um je 67 px — ein Drittel — und das ist kein Versehen, sondern was
+ * ein Faecher IST.
+ *
+ * Ein Name und eine Zone ueberleben diesen Beschnitt; ein Satz nicht. Auf den
+ * hinteren Karten brach er mitten im Wort ab und sah aus wie ein Fehler.
+ * Die Zeile steht deshalb dort, wo sie ganz zu lesen ist: vorn, bei der
+ * Karte, die auch die Folie traegt. Ein Schaufenster hat einen Blickpunkt.
+ */
+const FAN_TEASERS = [false, true, false] as const;
+
+/**
  * Wie lange eine Karte steht, bevor der Platz weiterblaettert.
  *
  * Neun Sekunden, weil die Karte gelesen werden soll: Name, Beruf und Zone sind
@@ -456,7 +471,7 @@ export class VelgLandingCitizens extends LitElement {
                   .subtitle=${[professionLabel(t(citizen, 'profession')), citizen.zone_name]
                     .filter(Boolean)
                     .join(' · ')}
-                  .description=${citizenTeaser(t(citizen, 'character'), citizen.name)}
+                  .description=${FAN_TEASERS[index] ? citizenTeaser(t(citizen, 'character'), citizen.name) : ''}
                   @click=${() =>
                     navigate(`/simulations/${citizen.simulation_slug}/agents/${citizen.slug}`)}
                 ></velg-game-card>
