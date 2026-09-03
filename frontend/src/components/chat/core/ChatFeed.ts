@@ -72,7 +72,12 @@ export class ChatFeed extends LitElement {
     .feed {
       flex: 1;
       overflow-y: auto;
-      overflow-anchor: auto;
+      /* Der Browser darf hier NICHT selbst ankern. Sein Scroll-Anchoring haelt
+         irgendein sichtbares Element fest, wenn Hoehen darueber sich aendern —
+         das ist der gemeldete Sprung „ein paar Nachrichten nach oben". Safari
+         kennt die Eigenschaft ohnehin nicht; die Heftung macht der
+         ScrollController selbst, auf allen Browsern gleich. */
+      overflow-anchor: none;
       overscroll-behavior-y: contain;
       display: flex;
       flex-direction: column;
@@ -83,6 +88,25 @@ export class ChatFeed extends LitElement {
       padding-block: var(--space-4);
       padding-inline: max(var(--space-6), calc((100% - 1080px) / 2));
       gap: 0;
+    }
+
+    /*
+     * Der Inhalt als eigener Kasten — der einzige Grund dafuer ist messbar:
+     * die Klasse .feed ist flex: 1, ihre Hoehe kommt vom Elternelement und
+     * aendert sich nie, wenn Nachrichten dazukommen. Ein ResizeObserver auf ihr
+     * wartet auf ein Ereignis, das es nicht gibt. Dieser Kasten waechst mit dem
+     * Verlauf, und genau ihn beobachtet der ScrollController.
+     *
+     * flex: 0 0 auto und dieselbe Flex-Achse wie vorher: die Kinder behalten
+     * ihre Flex-Semantik, also auch das negative margin-top von .message-item,
+     * das in normalem Blockfluss kollabieren wuerde.
+     * (Kein Backtick in einem css-Kommentar: er beendet das Template.)
+     */
+    .feed__content {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      flex: 0 0 auto;
     }
 
     /* --- Load-more sentinel --- */
@@ -251,13 +275,6 @@ export class ChatFeed extends LitElement {
       contain-intrinsic-size: auto 80px;
       padding-top: var(--chat-actions-lift);
       margin-top: calc(var(--chat-actions-lift) * -1);
-    }
-
-    /* --- Scroll anchor sentinel (always at bottom) --- */
-    .scroll-anchor {
-      height: 1px;
-      overflow-anchor: auto;
-      flex-shrink: 0;
     }
 
     /* --- Scroll-to-bottom FAB --- */
@@ -629,6 +646,7 @@ export class ChatFeed extends LitElement {
         aria-live="polite"
         aria-label=${msg('Conversation messages')}
       >
+        <div class="feed__content">
         ${
           this.hasMore
             ? html`
@@ -675,13 +693,13 @@ export class ChatFeed extends LitElement {
             : nothing
         }
 
-        <div class="scroll-anchor"></div>
+        </div>
       </div>
 
       <button
         class=${classMap({
           'scroll-fab': true,
-          'scroll-fab--visible': this._scroll.userScrolledUp,
+          'scroll-fab--visible': !this._scroll.isAtBottom,
         })}
         @click=${() => this._scroll.scrollToBottom()}
         aria-label=${msg('Scroll to bottom')}
@@ -720,7 +738,10 @@ export class ChatFeed extends LitElement {
 
   protected firstUpdated(): void {
     const feed = this.renderRoot.querySelector('.feed') as HTMLElement | null;
-    this._scroll.attach(feed);
+    // Beide: der Behaelter rollt, aber nur der Inhalt WAECHST — und nur an
+    // seinem Wachsen laesst sich erkennen, dass das Ende weitergewandert ist.
+    const content = this.renderRoot.querySelector('.feed__content') as HTMLElement | null;
+    this._scroll.attach(feed, content);
   }
 
   // ---------------------------------------------------------------------------
