@@ -195,3 +195,22 @@ describe('die Token werden AUFGELOEST gelesen, nicht roh', () => {
     }
   });
 });
+
+describe('die Probe haengt im Schatten, nicht am Wirt', () => {
+  // Ein Kind am Wirt eines Shadow-Roots ohne `slot` wird keinem Slot
+  // zugewiesen, also nie gerendert — `getComputedStyle` gibt dann den leeren
+  // String zurueck und JEDER Token gilt als unlesbar. Genau so ist die erste
+  // Fassung dieser Reparatur stumm ins Leere gelaufen. happy-dom stellt die
+  // Slot-Zuweisung nicht nach, der Fall ist hier also nicht spielbar; gebunden
+  // wird die Form der Loesung.
+  const src = readFileSync(resolve(process.cwd(), 'src/services/ThemeService.ts'), 'utf-8');
+
+  it('waehlt den Shadow-Root des Wirts als Ort der Probe', () => {
+    expect(src).toContain('const scope = hostElement.shadowRoot ?? hostElement;');
+    expect(src).toContain('scope.appendChild(probe);');
+  });
+
+  it('haengt die Probe NICHT an den Wirt selbst', () => {
+    expect(src).not.toContain('hostElement.appendChild(probe)');
+  });
+});
