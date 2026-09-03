@@ -133,7 +133,7 @@ export class VelgBondPanel extends LitElement {
       border-color: var(--_accent);
       border-style: solid;
       background: var(--_accent-dim);
-      box-shadow: 0 0 12px -4px var(--_accent-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) -4px var(--_accent-glow);
     }
 
     .slot--empty {

@@ -40,7 +40,7 @@ export class VelgGuestBanner extends LitElement {
 
     @keyframes cta-glow {
       0%, 100% { box-shadow: 0 0 0 0 var(--color-warning-glow); }
-      50%      { box-shadow: 0 0 12px 2px var(--color-warning-glow); }
+      50%      { box-shadow: 0 0 calc(12px * var(--glow-strength)) calc(2px * var(--glow-strength)) var(--color-warning-glow); }
     }
 
     .banner {
