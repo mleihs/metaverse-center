@@ -76,9 +76,9 @@ loot:
   effect_type: memory
   effect_params:
     importance: 7
-    content_en: Understands the Mother's vascular architecture — how nutrients flow, how attachment
+    content_en: Understands the Mother's vascular architecture – how nutrients flow, how attachment
       deepens
-    content_de: Versteht die vaskuläre Architektur der Mutter — wie Nährstoffe fließen, wie Bindung
+    content_de: Versteht die vaskuläre Architektur der Mutter – wie Nährstoffe fließen, wie Bindung
       sich vertieft
   description_en: A biological key that reads the Mother's circulatory map. Knowing the architecture
     does not make it less effective.
@@ -147,9 +147,9 @@ loot:
   effect_params:
     importance: 9
     behavior_effect: more_nurturing_less_aggressive
-    content_en: Remembers the nursery — the pods, the warmth, the things that were once people. The
+    content_en: Remembers the nursery – the pods, the warmth, the things that were once people. The
       memory changes how they treat others.
-    content_de: Erinnert sich an die Kinderstube — die Hülsen, die Wärme, die Dinge, die einst Menschen
+    content_de: Erinnert sich an die Kinderstube – die Hülsen, die Wärme, die Dinge, die einst Menschen
       waren. Die Erinnerung verändert, wie sie andere behandeln.
   description_en: 'The memory of the nursery: what it means to be cared for completely, and what that
     care costs. The agent becomes more nurturing, less aggressive.'

@@ -106,7 +106,7 @@ class BlueskyContentService:
                 continue
 
             # Stop at footer markers
-            if stripped.startswith("ADDENDUM:") or stripped.startswith("—"):
+            if stripped.startswith("ADDENDUM:") or stripped.startswith("–"):
                 break
 
             # Skip hashtag-only lines
@@ -315,7 +315,7 @@ class BlueskyContentService:
             return response.data if response.data else {}
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning(
-                "Bluesky analytics RPC failed — returning empty stats",
+                "Bluesky analytics RPC failed – returning empty stats",
                 exc_info=True,
                 extra={"days": days},
             )

@@ -144,7 +144,7 @@ class CycleNotificationService:
             email = email_map.get(user_id)
             if not email:
                 logger.info(
-                    "Epoch participant has no email address — skipped",
+                    "Epoch participant has no email address – skipped",
                     extra={"epoch_id": epoch_id, "user_id": user_id},
                 )
                 continue
@@ -746,7 +746,7 @@ class CycleNotificationService:
             return 0
         if cls._suppressed_for_epoch(epoch, "cycle_resolved"):
             logger.info(
-                "Academy epoch — cycle briefing suppressed",
+                "Academy epoch – cycle briefing suppressed",
                 extra={"epoch_id": epoch_id, "cycle_number": cycle_number},
             )
             return 0
@@ -843,7 +843,7 @@ class CycleNotificationService:
 
         if cls._suppressed_for_epoch(epoch, "phase_changed"):
             logger.info(
-                "Academy epoch — phase change mail suppressed",
+                "Academy epoch – phase change mail suppressed",
                 extra={"epoch_id": epoch_id, "old_status": old_phase, "new_status": new_phase},
             )
             return 0

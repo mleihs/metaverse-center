@@ -306,8 +306,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         "clear": [
             ("clear skies expose every movement", "klarer Himmel entbloesst jede Bewegung"),
             (
-                "not a cloud in sight — perfect conditions for aerial surveillance",
-                "keine Wolke in Sicht — perfekte Bedingungen fuer Luftueberwachung",
+                "not a cloud in sight – perfect conditions for aerial surveillance",
+                "keine Wolke in Sicht – perfekte Bedingungen fuer Luftueberwachung",
             ),
             (
                 "the sky is an unbroken blue, offering no cover",
@@ -355,8 +355,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Nebel rollt vom Fluss herein und verwandelt Laternen in Geister",
             ),
             (
-                "visibility drops to {visibility}m — the city dissolves into shapes",
-                "die Sicht sinkt auf {visibility}m — die Stadt loest sich in Umrisse auf",
+                "visibility drops to {visibility}m – the city dissolves into shapes",
+                "die Sicht sinkt auf {visibility}m – die Stadt loest sich in Umrisse auf",
             ),
             ("a wall of fog erases the skyline", "eine Nebelwand loescht die Silhouette aus"),
         ],
@@ -366,8 +366,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Nebel so dicht, dass Stimmen von ueberall und nirgendwo zu kommen scheinen",
             ),
             (
-                "visibility below {visibility}m — agents navigate by memory alone",
-                "Sicht unter {visibility}m — Agenten navigieren nur noch aus dem Gedaechtnis",
+                "visibility below {visibility}m – agents navigate by memory alone",
+                "Sicht unter {visibility}m – Agenten navigieren nur noch aus dem Gedaechtnis",
             ),
             (
                 "the fog is a living thing, pressing against windows and doors",
@@ -401,8 +401,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "stetiger Regen trommelt auf Daecher, sammelt sich in Rinnen und Eingaengen",
             ),
             (
-                "{precipitation}mm of rain — the streets run like canals",
-                "{precipitation}mm Regen — die Strassen fliessen wie Kanaele",
+                "{precipitation}mm of rain – the streets run like canals",
+                "{precipitation}mm Regen – die Strassen fliessen wie Kanaele",
             ),
             (
                 "rain streaks the windows of government buildings, distorting reflections",
@@ -427,8 +427,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C verwandelt sich Regen beim Aufprall in Eis",
             ),
             (
-                "black ice forms on every surface — the city becomes a trap",
-                "Glatteis bildet sich auf jeder Flaeche — die Stadt wird zur Falle",
+                "black ice forms on every surface – the city becomes a trap",
+                "Glatteis bildet sich auf jeder Flaeche – die Stadt wird zur Falle",
             ),
             (
                 "freezing rain drums against metal, a sound like static",
@@ -453,8 +453,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "peitschender Regen loescht die Sicht und uebertont jedes Gespraech",
             ),
             (
-                "{precipitation}mm in a single hour — the drainage systems overflow",
-                "{precipitation}mm in einer einzigen Stunde — die Abwassersysteme laufen ueber",
+                "{precipitation}mm in a single hour – the drainage systems overflow",
+                "{precipitation}mm in einer einzigen Stunde – die Abwassersysteme laufen ueber",
             ),
             (
                 "the storm turns familiar streets into hostile territory",
@@ -495,8 +495,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C und {wind_speed}km/h Wind ist Exposition toedlich",
             ),
             (
-                "the blizzard erases all landmarks — navigation becomes impossible",
-                "der Schneesturm loescht alle Orientierungspunkte — Navigation wird unmoeglich",
+                "the blizzard erases all landmarks – navigation becomes impossible",
+                "der Schneesturm loescht alle Orientierungspunkte – Navigation wird unmoeglich",
             ),
         ],
         "thunderstorm": [
@@ -525,8 +525,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Hagelkoerner so gross wie Muenzen prasseln gegen Fenster und Autos",
             ),
             (
-                "the storm's fury is almost personal — lightning strikes within metres",
-                "die Wut des Sturms ist fast persoenlich — Blitze schlagen im Meterbereich ein",
+                "the storm's fury is almost personal – lightning strikes within metres",
+                "die Wut des Sturms ist fast persoenlich – Blitze schlagen im Meterbereich ein",
             ),
             (
                 "at {wind_speed}km/h with hail, the city takes shelter underground",
@@ -543,8 +543,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C flirrt der Asphalt vor Hitze",
             ),
             (
-                "the heat is oppressive — even the shadows offer no relief",
-                "die Hitze ist drueckend — selbst die Schatten bieten keine Erleichterung",
+                "the heat is oppressive – even the shadows offer no relief",
+                "die Hitze ist drueckend – selbst die Schatten bieten keine Erleichterung",
             ),
             (
                 "{temperature}°C drives everyone into air-conditioned bunkers",
@@ -567,8 +567,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
             ("at {temperature}°C, breath crystallizes instantly", "bei {temperature}°C kristallisiert der Atem sofort"),
             ("the cold cuts through every layer of clothing", "die Kaelte schneidet durch jede Kleidungsschicht"),
             (
-                "{temperature}°C — exposed pipes burst and puddles freeze solid",
-                "{temperature}°C — freiliegende Rohre platzen und Pfuetzen gefrieren durch",
+                "{temperature}°C – exposed pipes burst and puddles freeze solid",
+                "{temperature}°C – freiliegende Rohre platzen und Pfuetzen gefrieren durch",
             ),
             (
                 "the cold is absolute, turning metal handles into brands",
@@ -585,8 +585,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "{wind_speed}km/h Boeen lassen Fensterlaeden klappern und wirbeln Papiere auf",
             ),
             (
-                "the wind carries voices from blocks away — and drowns out those nearby",
-                "der Wind traegt Stimmen von Bloecken weit weg — und uebertont die nahen",
+                "the wind carries voices from blocks away – and drowns out those nearby",
+                "der Wind traegt Stimmen von Bloecken weit weg – und uebertont die nahen",
             ),
             (
                 "at {wind_speed}km/h, loose objects become projectiles",
@@ -603,8 +603,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "ein Vollmond haengt ueber den Daechern, hell wie ein Suchscheinwerfer",
             ),
             (
-                "the full moon bathes the city in silver — too bright for covert operations",
-                "der Vollmond badet die Stadt in Silber — zu hell fuer verdeckte Operationen",
+                "the full moon bathes the city in silver – too bright for covert operations",
+                "der Vollmond badet die Stadt in Silber – zu hell fuer verdeckte Operationen",
             ),
             (
                 "moonlight casts hard shadows, creating a second city of light and dark",
@@ -621,8 +621,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "new_moon": [
             (
-                "no moon — the darkness is total beyond the reach of streetlights",
-                "kein Mond — die Dunkelheit ist jenseits der Strassenlaternen absolut",
+                "no moon – the darkness is total beyond the reach of streetlights",
+                "kein Mond – die Dunkelheit ist jenseits der Strassenlaternen absolut",
             ),
             (
                 "the moonless night wraps the city in operational darkness",
@@ -633,8 +633,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "ohne Mondlicht verschwimmen die Raender der Stadt im Nichts",
             ),
             (
-                "a new moon night — ideal conditions for those who work in shadows",
-                "eine Neumondnacht — ideale Bedingungen fuer jene, die im Schatten arbeiten",
+                "a new moon night – ideal conditions for those who work in shadows",
+                "eine Neumondnacht – ideale Bedingungen fuer jene, die im Schatten arbeiten",
             ),
             (
                 "the absence of moonlight makes every alley a black corridor",
@@ -646,12 +646,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
     "scifi": {
         "clear": [
             (
-                "external sensors report clear conditions — hull temperature stable at {temperature}°C",
-                "Aussensensoren melden klare Bedingungen — Huellentemperatur stabil bei {temperature}°C",
+                "external sensors report clear conditions – hull temperature stable at {temperature}°C",
+                "Aussensensoren melden klare Bedingungen – Huellentemperatur stabil bei {temperature}°C",
             ),
             (
-                "atmospheric readings nominal — no anomalies detected",
-                "Atmosphaerische Messwerte nominal — keine Anomalien erkannt",
+                "atmospheric readings nominal – no anomalies detected",
+                "Atmosphaerische Messwerte nominal – keine Anomalien erkannt",
             ),
             (
                 "the observation ports show an undisturbed expanse",
@@ -669,8 +669,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "dichte Wolkenformationen registrieren sich auf Aussensensoren",
             ),
             (
-                "atmospheric opacity increases — reduced solar panel efficiency",
-                "atmosphaerische Truebung nimmt zu — reduzierte Solarpanel-Effizienz",
+                "atmospheric opacity increases – reduced solar panel efficiency",
+                "atmosphaerische Truebung nimmt zu – reduzierte Solarpanel-Effizienz",
             ),
             ("cloud layer detected at observation altitude", "Wolkenschicht auf Beobachtungshoehe erkannt"),
             (
@@ -678,26 +678,26 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "diffuse Strahlungswerte deuten auf dichte Bewolekung hin",
             ),
             (
-                "the exterior view shows nothing but grey — all instruments compensate",
-                "die Aussensicht zeigt nur Grau — alle Instrumente kompensieren",
+                "the exterior view shows nothing but grey – all instruments compensate",
+                "die Aussensicht zeigt nur Grau – alle Instrumente kompensieren",
             ),
         ],
         "fog": [
             (
-                "condensation forms on external hull sensors — readings compromised",
-                "Kondensation bildet sich an Aussensensoren — Messwerte beeintraechtigt",
+                "condensation forms on external hull sensors – readings compromised",
+                "Kondensation bildet sich an Aussensensoren – Messwerte beeintraechtigt",
             ),
             (
                 "atmospheric fog interferes with lidar and optical systems",
                 "atmosphaerischer Nebel stoert Lidar- und optische Systeme",
             ),
             (
-                "humidity at {humidity}% — internal condensation protocols activated",
-                "Luftfeuchtigkeit bei {humidity}% — interne Kondensationsprotokolle aktiviert",
+                "humidity at {humidity}% – internal condensation protocols activated",
+                "Luftfeuchtigkeit bei {humidity}% – interne Kondensationsprotokolle aktiviert",
             ),
             (
-                "external visibility drops to {visibility}m — docking operations suspended",
-                "Aussensicht sinkt auf {visibility}m — Andockoperationen ausgesetzt",
+                "external visibility drops to {visibility}m – docking operations suspended",
+                "Aussensicht sinkt auf {visibility}m – Andockoperationen ausgesetzt",
             ),
             (
                 "moisture accumulation on sensor arrays requires manual clearing",
@@ -706,32 +706,32 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "fog_dense": [
             (
-                "sensor arrays report near-zero visibility — emergency protocols standby",
-                "Sensorarrays melden nahezu null Sicht — Notfallprotokolle in Bereitschaft",
+                "sensor arrays report near-zero visibility – emergency protocols standby",
+                "Sensorarrays melden nahezu null Sicht – Notfallprotokolle in Bereitschaft",
             ),
             (
-                "dense atmospheric interference — all external operations halted",
-                "dichte atmosphaerische Stoerung — alle Aussenoperationen gestoppt",
+                "dense atmospheric interference – all external operations halted",
+                "dichte atmosphaerische Stoerung – alle Aussenoperationen gestoppt",
             ),
             (
-                "the station is blind — {visibility}m visibility across all spectra",
-                "die Station ist blind — {visibility}m Sicht ueber alle Spektren",
+                "the station is blind – {visibility}m visibility across all spectra",
+                "die Station ist blind – {visibility}m Sicht ueber alle Spektren",
             ),
             (
-                "corrosive condensation detected on hull — maintenance alert issued",
-                "korrosive Kondensation am Rumpf erkannt — Wartungsalarm ausgeloest",
+                "corrosive condensation detected on hull – maintenance alert issued",
+                "korrosive Kondensation am Rumpf erkannt – Wartungsalarm ausgeloest",
             ),
-            ("environmental hazard level elevated — EVA prohibited", "Umweltgefahrenstufe erhoeht — EVA verboten"),
+            ("environmental hazard level elevated – EVA prohibited", "Umweltgefahrenstufe erhoeht – EVA verboten"),
         ],
         "rain_light": [
             (
-                "trace precipitation detected on hull — {precipitation}mm registered",
-                "Spurenniederschlag am Rumpf erkannt — {precipitation}mm registriert",
+                "trace precipitation detected on hull – {precipitation}mm registered",
+                "Spurenniederschlag am Rumpf erkannt – {precipitation}mm registriert",
             ),
             ("light moisture contact on external surfaces", "leichter Feuchtigkeitskontakt auf Aussenflaechen"),
             (
-                "atmospheric drizzle — hull integrity unaffected",
-                "atmosphaerisches Nieseln — Rumpfintegritaet nicht beeintraechtigt",
+                "atmospheric drizzle – hull integrity unaffected",
+                "atmosphaerisches Nieseln – Rumpfintegritaet nicht beeintraechtigt",
             ),
             (
                 "minor precipitation event logged at {precipitation}mm",
@@ -744,16 +744,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "rain": [
             (
-                "sustained precipitation at {precipitation}mm — drainage systems active",
-                "anhaltender Niederschlag bei {precipitation}mm — Abflusssysteme aktiv",
+                "sustained precipitation at {precipitation}mm – drainage systems active",
+                "anhaltender Niederschlag bei {precipitation}mm – Abflusssysteme aktiv",
             ),
             (
                 "rain impact on hull generates a low-frequency hum through the corridors",
                 "Regenaufprall auf den Rumpf erzeugt ein tieffrequentes Brummen durch die Korridore",
             ),
             (
-                "environmental moisture levels rising — dehumidifiers at 80% capacity",
-                "Umgebungsfeuchtigkeit steigt — Entfeuchter bei 80% Kapazitaet",
+                "environmental moisture levels rising – dehumidifiers at 80% capacity",
+                "Umgebungsfeuchtigkeit steigt – Entfeuchter bei 80% Kapazitaet",
             ),
             ("external camera lenses require constant clearing", "Aussenkameralinsen erfordern staendige Reinigung"),
             (
@@ -763,12 +763,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "rain_freezing": [
             (
-                "ice formation on external surfaces at {temperature}°C — critical",
-                "Eisbildung an Aussenflaechen bei {temperature}°C — kritisch",
+                "ice formation on external surfaces at {temperature}°C – critical",
+                "Eisbildung an Aussenflaechen bei {temperature}°C – kritisch",
             ),
             (
-                "freezing precipitation — antenna arrays at risk of damage",
-                "gefrierender Niederschlag — Antenenarrays von Beschaedigung bedroht",
+                "freezing precipitation – antenna arrays at risk of damage",
+                "gefrierender Niederschlag – Antenenarrays von Beschaedigung bedroht",
             ),
             ("hull de-icing systems engaged at maximum output", "Rumpf-Enteisungssysteme auf maximaler Leistung"),
             (
@@ -776,26 +776,26 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Eisanlagerungsrate ueberschreitet Designparameter bei {temperature}°C",
             ),
             (
-                "sensor calibration compromised by ice — manual verification required",
-                "Sensorkalibrierung durch Eis beeintraechtigt — manuelle Verifizierung erforderlich",
+                "sensor calibration compromised by ice – manual verification required",
+                "Sensorkalibrierung durch Eis beeintraechtigt – manuelle Verifizierung erforderlich",
             ),
         ],
         "storm": [
             (
-                "atmospheric disturbance — external pressure fluctuations logged",
-                "atmosphaerische Stoerung — externe Druckschwankungen protokolliert",
+                "atmospheric disturbance – external pressure fluctuations logged",
+                "atmosphaerische Stoerung – externe Druckschwankungen protokolliert",
             ),
             (
-                "storm-force conditions at {wind_speed}km/h — structural stress monitors active",
-                "Sturmbedingungen bei {wind_speed}km/h — Strukturspannungsmonitore aktiv",
+                "storm-force conditions at {wind_speed}km/h – structural stress monitors active",
+                "Sturmbedingungen bei {wind_speed}km/h – Strukturspannungsmonitore aktiv",
             ),
             (
                 "the station shudders under sustained atmospheric assault",
                 "die Station zittert unter anhaltendem atmosphaerischem Ansturm",
             ),
             (
-                "{precipitation}mm precipitation combined with {wind_speed}km/h winds — red alert threshold approaching",
-                "{precipitation}mm Niederschlag kombiniert mit {wind_speed}km/h Wind — Rotalarmschwelle naht",
+                "{precipitation}mm precipitation combined with {wind_speed}km/h winds – red alert threshold approaching",
+                "{precipitation}mm Niederschlag kombiniert mit {wind_speed}km/h Wind – Rotalarmschwelle naht",
             ),
             (
                 "vibration dampeners compensate for external turbulence",
@@ -804,8 +804,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "snow": [
             (
-                "crystalline precipitation at {temperature}°C — thermal management adjusting",
-                "kristalliner Niederschlag bei {temperature}°C — Thermalmanagement passt an",
+                "crystalline precipitation at {temperature}°C – thermal management adjusting",
+                "kristalliner Niederschlag bei {temperature}°C – Thermalmanagement passt an",
             ),
             (
                 "snow accumulation on solar panels reduces power generation by 12%",
@@ -826,34 +826,34 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "storm_snow": [
             (
-                "blizzard conditions — {wind_speed}km/h with heavy snowfall",
-                "Blizzard-Bedingungen — {wind_speed}km/h mit starkem Schneefall",
+                "blizzard conditions – {wind_speed}km/h with heavy snowfall",
+                "Blizzard-Bedingungen – {wind_speed}km/h mit starkem Schneefall",
             ),
             (
-                "white-out conditions — all external navigation impossible",
-                "Whiteout-Bedingungen — jegliche aeussere Navigation unmoeglich",
+                "white-out conditions – all external navigation impossible",
+                "Whiteout-Bedingungen – jegliche aeussere Navigation unmoeglich",
             ),
             (
-                "snow accumulation rate critical — automated clearing systems at capacity",
-                "Schneeanlagerungsrate kritisch — automatische Raeumungssysteme an Kapazitaetsgrenze",
+                "snow accumulation rate critical – automated clearing systems at capacity",
+                "Schneeanlagerungsrate kritisch – automatische Raeumungssysteme an Kapazitaetsgrenze",
             ),
             (
                 "structural integrity warnings from forward sections at {wind_speed}km/h",
                 "Strukturelle Integritaetswarnungen aus Vorwartssektionen bei {wind_speed}km/h",
             ),
             (
-                "communications antenna buried under ice — switching to backup array",
-                "Kommunikationsantenne unter Eis begraben — Umschaltung auf Backup-Array",
+                "communications antenna buried under ice – switching to backup array",
+                "Kommunikationsantenne unter Eis begraben – Umschaltung auf Backup-Array",
             ),
         ],
         "thunderstorm": [
             (
-                "electromagnetic disturbance — lightning detected within 500m",
-                "elektromagnetische Stoerung — Blitz innerhalb 500m erkannt",
+                "electromagnetic disturbance – lightning detected within 500m",
+                "elektromagnetische Stoerung – Blitz innerhalb 500m erkannt",
             ),
             (
-                "power systems surge as lightning strikes nearby — capacitors absorb excess",
-                "Stromsysteme ueberlasten bei nahegelegenem Blitzeinschlag — Kondensatoren absorbieren Ueberschuss",
+                "power systems surge as lightning strikes nearby – capacitors absorb excess",
+                "Stromsysteme ueberlasten bei nahegelegenem Blitzeinschlag – Kondensatoren absorbieren Ueberschuss",
             ),
             (
                 "atmospheric electrical discharge disrupts shortwave communications",
@@ -864,62 +864,62 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Donner hallt durch den Rumpf wie eine Wasserbombe",
             ),
             (
-                "lightning strike on antenna mast — systems rerouting through backup",
-                "Blitzeinschlag am Antennenmast — Systeme leiten auf Backup um",
+                "lightning strike on antenna mast – systems rerouting through backup",
+                "Blitzeinschlag am Antennenmast – Systeme leiten auf Backup um",
             ),
         ],
         "thunderstorm_severe": [
             (
-                "severe electromagnetic storm — all non-essential systems powered down",
-                "schwerer elektromagnetischer Sturm — alle nicht-essentiellen Systeme heruntergefahren",
+                "severe electromagnetic storm – all non-essential systems powered down",
+                "schwerer elektromagnetischer Sturm – alle nicht-essentiellen Systeme heruntergefahren",
             ),
             (
-                "hail impact on hull exceeds design tolerance — damage report incoming",
-                "Hagelaufprall auf Rumpf ueberschreitet Designtoleranz — Schadensbericht eingehend",
+                "hail impact on hull exceeds design tolerance – damage report incoming",
+                "Hagelaufprall auf Rumpf ueberschreitet Designtoleranz – Schadensbericht eingehend",
             ),
             (
-                "multiple lightning strikes per minute — Faraday cage integrity holding",
-                "mehrere Blitzeinschlaege pro Minute — Faradaykaefig-Integritaet haelt",
+                "multiple lightning strikes per minute – Faraday cage integrity holding",
+                "mehrere Blitzeinschlaege pro Minute – Faradaykaefig-Integritaet haelt",
             ),
             (
-                "the worst atmospheric event in station history — all hands to stations",
-                "das schlimmste atmosphaerische Ereignis in der Stationsgeschichte — alle Mann auf Station",
+                "the worst atmospheric event in station history – all hands to stations",
+                "das schlimmste atmosphaerische Ereignis in der Stationsgeschichte – alle Mann auf Station",
             ),
             (
-                "power grid instability — rolling blackouts across non-critical sections",
-                "Stromnetz-Instabilitaet — rollende Blackouts in nicht-kritischen Sektionen",
+                "power grid instability – rolling blackouts across non-critical sections",
+                "Stromnetz-Instabilitaet – rollende Blackouts in nicht-kritischen Sektionen",
             ),
         ],
         "heat": [
             (
-                "external temperature {temperature}°C — cooling systems at maximum",
-                "Aussentemperatur {temperature}°C — Kuehlsysteme auf Maximum",
+                "external temperature {temperature}°C – cooling systems at maximum",
+                "Aussentemperatur {temperature}°C – Kuehlsysteme auf Maximum",
             ),
             (
-                "thermal load exceeds nominal — crew advised to reduce physical activity",
-                "Thermische Last ueberschreitet Nominalwert — Crew wird zu reduzierter koerperlicher Aktivitaet geraten",
+                "thermal load exceeds nominal – crew advised to reduce physical activity",
+                "Thermische Last ueberschreitet Nominalwert – Crew wird zu reduzierter koerperlicher Aktivitaet geraten",
             ),
             (
                 "heat exchanger efficiency drops as ambient temperature reaches {temperature}°C",
                 "Waermetauschereffizienz sinkt bei Umgebungstemperatur von {temperature}°C",
             ),
             (
-                "the station's thermal mass absorbs heat — interior temperature rising slowly",
-                "die thermische Masse der Station absorbiert Waerme — Innentemperatur steigt langsam",
+                "the station's thermal mass absorbs heat – interior temperature rising slowly",
+                "die thermische Masse der Station absorbiert Waerme – Innentemperatur steigt langsam",
             ),
             (
-                "UV radiation at elevated levels — external exposure limited to 30 minutes",
-                "UV-Strahlung auf erhoehtem Niveau — externe Exposition auf 30 Minuten begrenzt",
+                "UV radiation at elevated levels – external exposure limited to 30 minutes",
+                "UV-Strahlung auf erhoehtem Niveau – externe Exposition auf 30 Minuten begrenzt",
             ),
         ],
         "cold": [
             (
-                "hull temperature drops to {temperature}°C — thermal stress monitors active",
-                "Huellentemperatur sinkt auf {temperature}°C — Thermalstressmonitore aktiv",
+                "hull temperature drops to {temperature}°C – thermal stress monitors active",
+                "Huellentemperatur sinkt auf {temperature}°C – Thermalstressmonitore aktiv",
             ),
             (
-                "extreme cold at {temperature}°C — auxiliary heating engaged",
-                "extreme Kaelte bei {temperature}°C — Zusatzheizung aktiviert",
+                "extreme cold at {temperature}°C – auxiliary heating engaged",
+                "extreme Kaelte bei {temperature}°C – Zusatzheizung aktiviert",
             ),
             (
                 "condensation freezing on interior surfaces near hull junctions",
@@ -930,8 +930,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Lebenserhaltungssysteme erhoehen Heizleistung zum Ausgleich von {temperature}°C aussen",
             ),
             (
-                "crew reports visible breath in peripheral corridors — insulation check ordered",
-                "Crew meldet sichtbaren Atem in peripheren Korridoren — Isolationspruefung angeordnet",
+                "crew reports visible breath in peripheral corridors – insulation check ordered",
+                "Crew meldet sichtbaren Atem in peripheren Korridoren – Isolationspruefung angeordnet",
             ),
         ],
         "wind": [
@@ -944,34 +944,34 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "{wind_speed}km/h Winde erzeugen harmonische Vibrationen in externen Antennenarrays",
             ),
             (
-                "aerodynamic buffeting at {wind_speed}km/h — crew notices subtle deck movement",
-                "aerodynamisches Schlagen bei {wind_speed}km/h — Crew bemerkt subtile Deckbewegung",
+                "aerodynamic buffeting at {wind_speed}km/h – crew notices subtle deck movement",
+                "aerodynamisches Schlagen bei {wind_speed}km/h – Crew bemerkt subtile Deckbewegung",
             ),
             (
                 "wind shear across the station creates differential pressure zones",
                 "Windscherung ueber der Station erzeugt differentielle Druckzonen",
             ),
             (
-                "sustained wind at {wind_speed}km/h — EVA operations suspended",
-                "anhaltender Wind bei {wind_speed}km/h — EVA-Operationen ausgesetzt",
+                "sustained wind at {wind_speed}km/h – EVA operations suspended",
+                "anhaltender Wind bei {wind_speed}km/h – EVA-Operationen ausgesetzt",
             ),
         ],
         "full_moon": [
             (
-                "full moon — external illumination allows visual hull inspection",
-                "Vollmond — externe Beleuchtung ermoeglicht visuelle Rumpfinspektion",
+                "full moon – external illumination allows visual hull inspection",
+                "Vollmond – externe Beleuchtung ermoeglicht visuelle Rumpfinspektion",
             ),
             (
-                "lunar maximum — tidal forces measurable in fluid systems",
-                "Lunarmaximum — Gezeitenkraefte in Fluidsystemen messbar",
+                "lunar maximum – tidal forces measurable in fluid systems",
+                "Lunarmaximum – Gezeitenkraefte in Fluidsystemen messbar",
             ),
             (
                 "the full moon reflects off the station's hull, creating a halo effect",
                 "der Vollmond reflektiert am Stationsrumpf und erzeugt einen Halo-Effekt",
             ),
             (
-                "crew sleep patterns disrupted during full moon cycle — melatonin supplements distributed",
-                "Crew-Schlafmuster waehrend Vollmondzyklus gestoert — Melatonin-Ergaenzungen verteilt",
+                "crew sleep patterns disrupted during full moon cycle – melatonin supplements distributed",
+                "Crew-Schlafmuster waehrend Vollmondzyklus gestoert – Melatonin-Ergaenzungen verteilt",
             ),
             (
                 "full moon illumination intensity exceeds standard night-lighting",
@@ -980,12 +980,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "new_moon": [
             (
-                "new moon — external darkness absolute, star field fully visible",
-                "Neumond — aeussere Dunkelheit absolut, Sternenfeld voll sichtbar",
+                "new moon – external darkness absolute, star field fully visible",
+                "Neumond – aeussere Dunkelheit absolut, Sternenfeld voll sichtbar",
             ),
             (
-                "no lunar illumination — exterior cameras switch to infrared",
-                "keine Mondbeleuchtung — Aussenkameras wechseln auf Infrarot",
+                "no lunar illumination – exterior cameras switch to infrared",
+                "keine Mondbeleuchtung – Aussenkameras wechseln auf Infrarot",
             ),
             (
                 "the new moon leaves the station wrapped in cosmic darkness",
@@ -996,8 +996,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "ohne Mondlicht bietet das Observierungsdeck ein ungehindertes Sternenfeld",
             ),
             (
-                "crew reports improved sleep quality during new moon — circadian benefit",
-                "Crew meldet verbesserte Schlafqualitaet bei Neumond — zirkadianer Vorteil",
+                "crew reports improved sleep quality during new moon – circadian benefit",
+                "Crew meldet verbesserte Schlafqualitaet bei Neumond – zirkadianer Vorteil",
             ),
         ],
     },
@@ -1005,8 +1005,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
     "biopunk": {
         "clear": [
             (
-                "the waters are still — bioluminescent plankton drift in lazy spirals",
-                "die Gewaesser sind still — biolumineszentes Plankton treibt in traegen Spiralen",
+                "the waters are still – bioluminescent plankton drift in lazy spirals",
+                "die Gewaesser sind still – biolumineszentes Plankton treibt in traegen Spiralen",
             ),
             (
                 "calm conditions allow the coral structures to expand their fronds",
@@ -1031,16 +1031,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "gedaempftes Licht loest eine Verschiebung im biolumineszenten Spektrum des Blattdachs aus",
             ),
             (
-                "the overcast sky suppresses upper-level photosynthesis — deeper organisms compensate",
-                "der bewoelkte Himmel unterdrueckt obere Photosynthese — tiefere Organismen kompensieren",
+                "the overcast sky suppresses upper-level photosynthesis – deeper organisms compensate",
+                "der bewoelkte Himmel unterdrueckt obere Photosynthese – tiefere Organismen kompensieren",
             ),
             (
                 "grey light gives the living walls a bruised, purple hue",
                 "graues Licht gibt den lebenden Waenden einen blauschwarzen Farbton",
             ),
             (
-                "cloud cover reduces UV — the protective slime layer on buildings thins",
-                "Wolkendecke reduziert UV — die Schutzschleimschicht an Gebaeuden wird duenner",
+                "cloud cover reduces UV – the protective slime layer on buildings thins",
+                "Wolkendecke reduziert UV – die Schutzschleimschicht an Gebaeuden wird duenner",
             ),
             (
                 "without direct sun, the fungal colonies grow bolder",
@@ -1057,16 +1057,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Nebel traegt den Duft von Verfall und neuem Wachstum",
             ),
             (
-                "visibility drops to {visibility}m — the bioluminescent markers pulse brighter",
-                "Sicht sinkt auf {visibility}m — die biolumineszenten Markierungen pulsieren heller",
+                "visibility drops to {visibility}m – the bioluminescent markers pulse brighter",
+                "Sicht sinkt auf {visibility}m – die biolumineszenten Markierungen pulsieren heller",
             ),
             (
                 "mist condenses on every living surface, feeding the moss",
                 "Nebel kondensiert auf jeder lebenden Flaeche und naehrt das Moos",
             ),
             (
-                "the fog is alive with microscopic organisms — every breath is an ecosystem",
-                "der Nebel ist lebendig mit mikroskopischen Organismen — jeder Atemzug ist ein Oekosystem",
+                "the fog is alive with microscopic organisms – every breath is an ecosystem",
+                "der Nebel ist lebendig mit mikroskopischen Organismen – jeder Atemzug ist ein Oekosystem",
             ),
         ],
         "fog_dense": [
@@ -1075,8 +1075,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Nebel ist so dicht, dass Biolumineszenz die einzige Navigationshilfe wird",
             ),
             (
-                "visibility below {visibility}m — the mycelial network relays spatial data instead",
-                "Sicht unter {visibility}m — das Myzelnetzwerk uebermittelt stattdessen Raumdaten",
+                "visibility below {visibility}m – the mycelial network relays spatial data instead",
+                "Sicht unter {visibility}m – das Myzelnetzwerk uebermittelt stattdessen Raumdaten",
             ),
             (
                 "the dense fog triggers emergency sporulation in the wall organisms",
@@ -1101,34 +1101,34 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "leichter Regen aktiviert die Duftdruesen der Wandblumen",
             ),
             (
-                "{precipitation}mm of gentle rain — the coral structures drink deeply",
-                "{precipitation}mm sanfter Regen — die Korallenstrukturen trinken tief",
+                "{precipitation}mm of gentle rain – the coral structures drink deeply",
+                "{precipitation}mm sanfter Regen – die Korallenstrukturen trinken tief",
             ),
             (
                 "drizzle runs along the living walls in luminous rivulets",
                 "Nieselregen rinnt entlang der lebenden Waende in leuchtenden Rinnsalen",
             ),
             (
-                "the light rain is warm — {temperature}°C — and smells of petrichor and spores",
-                "der leichte Regen ist warm — {temperature}°C — und riecht nach Petrichor und Sporen",
+                "the light rain is warm – {temperature}°C – and smells of petrichor and spores",
+                "der leichte Regen ist warm – {temperature}°C – und riecht nach Petrichor und Sporen",
             ),
         ],
         "rain": [
             (
-                "steady rain overwhelms the canopy's drainage — waterfalls form at every junction",
-                "stetiger Regen ueberlastet die Drainage des Blattdachs — Wasserfaelle bilden sich an jeder Kreuzung",
+                "steady rain overwhelms the canopy's drainage – waterfalls form at every junction",
+                "stetiger Regen ueberlastet die Drainage des Blattdachs – Wasserfaelle bilden sich an jeder Kreuzung",
             ),
             (
-                "{precipitation}mm of rain — the fungal gutters overflow with bioluminescent runoff",
-                "{precipitation}mm Regen — die Pilzrinnen laufen ueber mit biolumineszentem Ablauf",
+                "{precipitation}mm of rain – the fungal gutters overflow with bioluminescent runoff",
+                "{precipitation}mm Regen – die Pilzrinnen laufen ueber mit biolumineszentem Ablauf",
             ),
             (
                 "the rain pounds the outer membranes, sending vibrations through the structure",
                 "der Regen haemmert auf die Aussenmembranen und sendet Vibrationen durch die Struktur",
             ),
             (
-                "torrential rain flushes parasites from the coral — a natural cleansing",
-                "stroemender Regen spuelt Parasiten aus der Koralle — eine natuerliche Reinigung",
+                "torrential rain flushes parasites from the coral – a natural cleansing",
+                "stroemender Regen spuelt Parasiten aus der Koralle – eine natuerliche Reinigung",
             ),
             (
                 "rain drums on the living architecture, each surface responding differently",
@@ -1137,12 +1137,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "rain_freezing": [
             (
-                "freezing rain at {temperature}°C threatens the living structures — anti-freeze secretions activate",
-                "Eisregen bei {temperature}°C bedroht die lebenden Strukturen — Frostschutzsekrete aktivieren sich",
+                "freezing rain at {temperature}°C threatens the living structures – anti-freeze secretions activate",
+                "Eisregen bei {temperature}°C bedroht die lebenden Strukturen – Frostschutzsekrete aktivieren sich",
             ),
             (
-                "ice crystals form on the coral fronds — a rare and dangerous beauty",
-                "Eiskristalle bilden sich auf den Korallenwedeln — eine seltene und gefaehrliche Schoenheit",
+                "ice crystals form on the coral fronds – a rare and dangerous beauty",
+                "Eiskristalle bilden sich auf den Korallenwedeln – eine seltene und gefaehrliche Schoenheit",
             ),
             (
                 "the organisms slow to near-dormancy as temperature drops below freezing",
@@ -1153,158 +1153,158 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "kryogener Stress loest Notfall-Biolumineszenz in der gesamten Kolonie aus",
             ),
             (
-                "ice encases the outer tentacles of the wall organisms — they retract slowly",
-                "Eis umschliesst die aeusseren Tentakel der Wandorganismen — sie ziehen sich langsam zurueck",
+                "ice encases the outer tentacles of the wall organisms – they retract slowly",
+                "Eis umschliesst die aeusseren Tentakel der Wandorganismen – sie ziehen sich langsam zurueck",
             ),
         ],
         "storm": [
             (
-                "the storm batters the outer membrane at {wind_speed}km/h — repair organisms deploy",
-                "der Sturm peitscht auf die Aussenmembran bei {wind_speed}km/h — Reparaturorganismen setzen sich ein",
+                "the storm batters the outer membrane at {wind_speed}km/h – repair organisms deploy",
+                "der Sturm peitscht auf die Aussenmembran bei {wind_speed}km/h – Reparaturorganismen setzen sich ein",
             ),
             (
                 "{precipitation}mm of driving rain tests the living architecture's resilience",
                 "{precipitation}mm peitschender Regen testet die Widerstandsfaehigkeit der lebenden Architektur",
             ),
             (
-                "storm currents redistribute nutrients — the colony enters rapid-growth mode",
-                "Sturmstroemungen verteilen Naehrstoffe um — die Kolonie tritt in den Schnellwachstumsmodus",
+                "storm currents redistribute nutrients – the colony enters rapid-growth mode",
+                "Sturmstroemungen verteilen Naehrstoffe um – die Kolonie tritt in den Schnellwachstumsmodus",
             ),
             (
                 "the outer bioluminescence flares in distress patterns during the storm",
                 "die aeussere Biolumineszenz flammt in Notmustern waehrend des Sturms auf",
             ),
             (
-                "waves crash against the foundations — the structure flexes and holds",
-                "Wellen krachen gegen die Fundamente — die Struktur biegt sich und haelt",
+                "waves crash against the foundations – the structure flexes and holds",
+                "Wellen krachen gegen die Fundamente – die Struktur biegt sich und haelt",
             ),
         ],
         "snow": [
             (
-                "snow settles on the canopy — an alien white layer on living green",
-                "Schnee legt sich auf das Blattdach — eine fremde weisse Schicht auf lebendigem Gruen",
+                "snow settles on the canopy – an alien white layer on living green",
+                "Schnee legt sich auf das Blattdach – eine fremde weisse Schicht auf lebendigem Gruen",
             ),
             (
-                "at {temperature}°C, the organisms slow their metabolism — conservation mode",
-                "bei {temperature}°C verlangsamen die Organismen ihren Stoffwechsel — Konservierungsmodus",
+                "at {temperature}°C, the organisms slow their metabolism – conservation mode",
+                "bei {temperature}°C verlangsamen die Organismen ihren Stoffwechsel – Konservierungsmodus",
             ),
             (
                 "snowflakes dissolve on contact with the warm living walls",
                 "Schneeflocken loesen sich bei Kontakt mit den warmen lebenden Waenden auf",
             ),
             (
-                "the first snow triggers a colour change in the canopy — green shifts to deep blue",
-                "der erste Schnee loest einen Farbwechsel im Blattdach aus — Gruen wechselt zu tiefem Blau",
+                "the first snow triggers a colour change in the canopy – green shifts to deep blue",
+                "der erste Schnee loest einen Farbwechsel im Blattdach aus – Gruen wechselt zu tiefem Blau",
             ),
             (
-                "snow accumulates on dead branches — living ones shed it with gentle shudders",
-                "Schnee sammelt sich auf toten Aesten — lebende schuetteln ihn mit sanftem Zittern ab",
+                "snow accumulates on dead branches – living ones shed it with gentle shudders",
+                "Schnee sammelt sich auf toten Aesten – lebende schuetteln ihn mit sanftem Zittern ab",
             ),
         ],
         "storm_snow": [
             (
-                "a blizzard rages outside — the living walls contract to conserve heat",
-                "ein Schneesturm tobt draussen — die lebenden Waende ziehen sich zusammen, um Waerme zu bewahren",
+                "a blizzard rages outside – the living walls contract to conserve heat",
+                "ein Schneesturm tobt draussen – die lebenden Waende ziehen sich zusammen, um Waerme zu bewahren",
             ),
             (
-                "snow at {wind_speed}km/h — the outer organisms go dormant within minutes",
-                "Schnee bei {wind_speed}km/h — die aeusseren Organismen werden innerhalb von Minuten dormant",
+                "snow at {wind_speed}km/h – the outer organisms go dormant within minutes",
+                "Schnee bei {wind_speed}km/h – die aeusseren Organismen werden innerhalb von Minuten dormant",
             ),
             (
-                "the colony seals its outer pores against the blizzard — a siege response",
-                "die Kolonie versiegelt ihre aeusseren Poren gegen den Schneesturm — eine Belagerungsreaktion",
+                "the colony seals its outer pores against the blizzard – a siege response",
+                "die Kolonie versiegelt ihre aeusseren Poren gegen den Schneesturm – eine Belagerungsreaktion",
             ),
             (
-                "driving snow blocks the light entirely — emergency chemosynthesis activated",
-                "treibender Schnee blockiert das Licht vollstaendig — Notfall-Chemosynthese aktiviert",
+                "driving snow blocks the light entirely – emergency chemosynthesis activated",
+                "treibender Schnee blockiert das Licht vollstaendig – Notfall-Chemosynthese aktiviert",
             ),
             (
-                "the blizzard tests the colony's survival instincts — all resources redirected inward",
-                "der Schneesturm testet die Ueberlebensinstinkte der Kolonie — alle Ressourcen nach innen umgeleitet",
+                "the blizzard tests the colony's survival instincts – all resources redirected inward",
+                "der Schneesturm testet die Ueberlebensinstinkte der Kolonie – alle Ressourcen nach innen umgeleitet",
             ),
         ],
         "thunderstorm": [
             (
-                "lightning strikes the tallest coral spire — bioluminescent shockwave ripples outward",
-                "Blitz trifft die hoechste Korallenspitze — biolumineszente Schockwelle breitet sich aus",
+                "lightning strikes the tallest coral spire – bioluminescent shockwave ripples outward",
+                "Blitz trifft die hoechste Korallenspitze – biolumineszente Schockwelle breitet sich aus",
             ),
             (
-                "thunder vibrates through the living architecture — organisms respond with synchronized pulses",
-                "Donner vibriert durch die lebende Architektur — Organismen antworten mit synchronisierten Pulsen",
+                "thunder vibrates through the living architecture – organisms respond with synchronized pulses",
+                "Donner vibriert durch die lebende Architektur – Organismen antworten mit synchronisierten Pulsen",
             ),
             (
-                "the electrical discharge supercharges the mycelial network — data transmission spikes",
-                "die elektrische Entladung ueberlaet das Myzelnetzwerk — Datenübertragung schnellt hoch",
+                "the electrical discharge supercharges the mycelial network – data transmission spikes",
+                "die elektrische Entladung ueberlaet das Myzelnetzwerk – Datenübertragung schnellt hoch",
             ),
             (
                 "rain and lightning create a spectacular display of competing luminescence",
                 "Regen und Blitze erzeugen ein spektakulaeres Schauspiel konkurrierender Lumineszenz",
             ),
             (
-                "the storm energizes the colony — growth rates increase 300% for hours afterward",
-                "der Sturm energetisiert die Kolonie — Wachstumsraten steigen fuer Stunden danach um 300%",
+                "the storm energizes the colony – growth rates increase 300% for hours afterward",
+                "der Sturm energetisiert die Kolonie – Wachstumsraten steigen fuer Stunden danach um 300%",
             ),
         ],
         "thunderstorm_severe": [
             (
-                "the violent storm tears sections of the outer canopy — regeneration will take days",
-                "der heftige Sturm reisst Sektionen des aeusseren Blattdachs ab — Regeneration wird Tage dauern",
+                "the violent storm tears sections of the outer canopy – regeneration will take days",
+                "der heftige Sturm reisst Sektionen des aeusseren Blattdachs ab – Regeneration wird Tage dauern",
             ),
             (
-                "hail shreds the delicate frond-tips — the colony bleeds luminescent fluid",
-                "Hagel zerfetzt die empfindlichen Wedelspitzen — die Kolonie blutet lumineszente Fluessigkeit",
+                "hail shreds the delicate frond-tips – the colony bleeds luminescent fluid",
+                "Hagel zerfetzt die empfindlichen Wedelspitzen – die Kolonie blutet lumineszente Fluessigkeit",
             ),
             (
-                "multiple lightning strikes overwhelm the colony's bioelectric grid — cascading failures",
-                "mehrfache Blitzeinschlaege ueberlasten das bioelektrische Netz der Kolonie — kaskadierende Ausfaelle",
+                "multiple lightning strikes overwhelm the colony's bioelectric grid – cascading failures",
+                "mehrfache Blitzeinschlaege ueberlasten das bioelektrische Netz der Kolonie – kaskadierende Ausfaelle",
             ),
             (
-                "the worst storm in living memory — elder organisms emit distress pheromones",
-                "der schlimmste Sturm in lebender Erinnerung — aeltere Organismen senden Notpheromone aus",
+                "the worst storm in living memory – elder organisms emit distress pheromones",
+                "der schlimmste Sturm in lebender Erinnerung – aeltere Organismen senden Notpheromone aus",
             ),
             (
-                "structural damage to the outer shell — the colony prioritizes core preservation",
-                "strukturelle Schaeden an der Aussenschale — die Kolonie priorisiert Kernerhaltung",
+                "structural damage to the outer shell – the colony prioritizes core preservation",
+                "strukturelle Schaeden an der Aussenschale – die Kolonie priorisiert Kernerhaltung",
             ),
         ],
         "heat": [
             (
-                "at {temperature}°C, the upper organisms enter heat-stress — pigments shift to reflective white",
-                "bei {temperature}°C treten die oberen Organismen in Hitzestress — Pigmente wechseln zu reflektierendem Weiss",
+                "at {temperature}°C, the upper organisms enter heat-stress – pigments shift to reflective white",
+                "bei {temperature}°C treten die oberen Organismen in Hitzestress – Pigmente wechseln zu reflektierendem Weiss",
             ),
             (
-                "the heat causes rapid evaporation — the living walls weep moisture",
-                "die Hitze verursacht rapide Verdunstung — die lebenden Waende schwitzen Feuchtigkeit",
+                "the heat causes rapid evaporation – the living walls weep moisture",
+                "die Hitze verursacht rapide Verdunstung – die lebenden Waende schwitzen Feuchtigkeit",
             ),
             (
-                "{temperature}°C pushes the coral's thermal tolerance — bleaching begins at the edges",
-                "{temperature}°C uebersteigt die Waermetoleranz der Koralle — Bleichen beginnt an den Raendern",
+                "{temperature}°C pushes the coral's thermal tolerance – bleaching begins at the edges",
+                "{temperature}°C uebersteigt die Waermetoleranz der Koralle – Bleichen beginnt an den Raendern",
             ),
             (
-                "heat-loving parasites emerge from dormancy — the colony's immune response activates",
-                "waermeliebende Parasiten erwachen aus der Dormanz — die Immunantwort der Kolonie aktiviert sich",
+                "heat-loving parasites emerge from dormancy – the colony's immune response activates",
+                "waermeliebende Parasiten erwachen aus der Dormanz – die Immunantwort der Kolonie aktiviert sich",
             ),
             (
-                "the air shimmers with heat and spores — breathing becomes thick",
-                "die Luft flimmert vor Hitze und Sporen — das Atmen wird schwer",
+                "the air shimmers with heat and spores – breathing becomes thick",
+                "die Luft flimmert vor Hitze und Sporen – das Atmen wird schwer",
             ),
         ],
         "cold": [
             (
-                "at {temperature}°C, the living walls contract — insulating air pockets form",
-                "bei {temperature}°C ziehen sich die lebenden Waende zusammen — isolierende Lufttaschen bilden sich",
+                "at {temperature}°C, the living walls contract – insulating air pockets form",
+                "bei {temperature}°C ziehen sich die lebenden Waende zusammen – isolierende Lufttaschen bilden sich",
             ),
             (
                 "cold shock triggers anti-freeze protein production throughout the colony",
                 "Kaelteschock loest Frostschutzprotein-Produktion in der gesamten Kolonie aus",
             ),
             (
-                "the organisms slow to near-stillness — even bioluminescence dims",
-                "die Organismen verlangsamen sich bis zur Beinahe-Stille — selbst die Biolumineszenz verblasst",
+                "the organisms slow to near-stillness – even bioluminescence dims",
+                "die Organismen verlangsamen sich bis zur Beinahe-Stille – selbst die Biolumineszenz verblasst",
             ),
             (
-                "{temperature}°C — the outer membrane hardens to a protective shell",
-                "{temperature}°C — die Aussenmembran haertet zu einer Schutzschale",
+                "{temperature}°C – the outer membrane hardens to a protective shell",
+                "{temperature}°C – die Aussenmembran haertet zu einer Schutzschale",
             ),
             (
                 "bitter cold drives all mobile organisms deep into the warm interior",
@@ -1313,8 +1313,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "wind": [
             (
-                "{wind_speed}km/h winds sway the canopy — the colony adjusts its root grip",
-                "{wind_speed}km/h Winde wiegen das Blattdach — die Kolonie passt ihren Wurzelgriff an",
+                "{wind_speed}km/h winds sway the canopy – the colony adjusts its root grip",
+                "{wind_speed}km/h Winde wiegen das Blattdach – die Kolonie passt ihren Wurzelgriff an",
             ),
             (
                 "strong winds carry spores far beyond the colony's usual range",
@@ -1329,18 +1329,18 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {wind_speed}km/h wiegt sich die flexible Architektur wie Seetang in einer Stroemung",
             ),
             (
-                "wind-borne nutrients enrich the colony — upper organisms unfurl to catch them",
-                "windgetragene Naehrstoffe bereichern die Kolonie — obere Organismen entfalten sich, um sie aufzufangen",
+                "wind-borne nutrients enrich the colony – upper organisms unfurl to catch them",
+                "windgetragene Naehrstoffe bereichern die Kolonie – obere Organismen entfalten sich, um sie aufzufangen",
             ),
         ],
         "full_moon": [
             (
-                "the full moon triggers a mass spawning event — the water glows with gametes",
-                "der Vollmond loest ein Massenlaichevent aus — das Wasser leuchtet von Gameten",
+                "the full moon triggers a mass spawning event – the water glows with gametes",
+                "der Vollmond loest ein Massenlaichevent aus – das Wasser leuchtet von Gameten",
             ),
             (
-                "lunar tides pull at the colony's foundations — the living walls flex",
-                "Mondgezeiten zerren an den Fundamenten der Kolonie — die lebenden Waende biegen sich",
+                "lunar tides pull at the colony's foundations – the living walls flex",
+                "Mondgezeiten zerren an den Fundamenten der Kolonie – die lebenden Waende biegen sich",
             ),
             (
                 "under the full moon, the bioluminescence reaches its most intense spectrum",
@@ -1351,30 +1351,30 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Reproduktionszyklus der Kolonie synchronisiert sich mit dem Lunarmaximum",
             ),
             (
-                "nocturnal predators are most active under the full moon — the colony's defences heighten",
-                "naechtliche Raeuber sind bei Vollmond am aktivsten — die Abwehr der Kolonie verstaerkt sich",
+                "nocturnal predators are most active under the full moon – the colony's defences heighten",
+                "naechtliche Raeuber sind bei Vollmond am aktivsten – die Abwehr der Kolonie verstaerkt sich",
             ),
         ],
         "new_moon": [
             (
-                "without moonlight, the bioluminescence is the only light source — the colony glows",
-                "ohne Mondlicht ist die Biolumineszenz die einzige Lichtquelle — die Kolonie gluehen",
+                "without moonlight, the bioluminescence is the only light source – the colony glows",
+                "ohne Mondlicht ist die Biolumineszenz die einzige Lichtquelle – die Kolonie gluehen",
             ),
             (
-                "the new moon brings the darkest tides — deep-dwelling creatures venture upward",
-                "der Neumond bringt die dunkelsten Gezeiten — Tiefseewesen wagen sich nach oben",
+                "the new moon brings the darkest tides – deep-dwelling creatures venture upward",
+                "der Neumond bringt die dunkelsten Gezeiten – Tiefseewesen wagen sich nach oben",
             ),
             (
                 "in total darkness, the colony's internal communication network blazes with data",
                 "in voelliger Dunkelheit brennt das interne Kommunikationsnetzwerk der Kolonie vor Daten",
             ),
             (
-                "the absence of moonlight calms the surface organisms — the colony enters a meditative state",
-                "das Fehlen von Mondlicht beruhigt die Oberflaechenorganismen — die Kolonie tritt in einen meditativen Zustand",
+                "the absence of moonlight calms the surface organisms – the colony enters a meditative state",
+                "das Fehlen von Mondlicht beruhigt die Oberflaechenorganismen – die Kolonie tritt in einen meditativen Zustand",
             ),
             (
-                "new moon darkness reveals the colony's own light — a constellation of living stars",
-                "Neumond-Dunkelheit enthuellt das eigene Licht der Kolonie — eine Konstellation lebender Sterne",
+                "new moon darkness reveals the colony's own light – a constellation of living stars",
+                "Neumond-Dunkelheit enthuellt das eigene Licht der Kolonie – eine Konstellation lebender Sterne",
             ),
         ],
     },
@@ -1382,8 +1382,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
     "post-apocalyptic": {
         "clear": [
             (
-                "the sun beats down with {temperature}°C — no shade survives in the open",
-                "die Sonne brennt mit {temperature}°C — kein Schatten ueberlebt im Freien",
+                "the sun beats down with {temperature}°C – no shade survives in the open",
+                "die Sonne brennt mit {temperature}°C – kein Schatten ueberlebt im Freien",
             ),
             (
                 "clear skies mean exposed water sources evaporate faster",
@@ -1395,22 +1395,22 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "die Klarheit zeigt, wie weit das Oedland sich in jede Richtung erstreckt",
             ),
             (
-                "clear weather is a mixed blessing — good for salvage, bad for hiding",
-                "klares Wetter ist ein zweischneidiges Schwert — gut fuer Bergung, schlecht zum Verstecken",
+                "clear weather is a mixed blessing – good for salvage, bad for hiding",
+                "klares Wetter ist ein zweischneidiges Schwert – gut fuer Bergung, schlecht zum Verstecken",
             ),
         ],
         "overcast": [
             (
-                "a grey sky presses down like a lid — {temperature}°C and no wind",
-                "ein grauer Himmel drueckt wie ein Deckel — {temperature}°C und kein Wind",
+                "a grey sky presses down like a lid – {temperature}°C and no wind",
+                "ein grauer Himmel drueckt wie ein Deckel – {temperature}°C und kein Wind",
             ),
             (
                 "the overcast conditions make the ruins look even more desolate",
                 "die bewoelkten Bedingungen lassen die Ruinen noch trister aussehen",
             ),
             (
-                "cloud cover traps the heat — the air is thick and stale",
-                "Wolkendecke faengt die Hitze ein — die Luft ist dick und schal",
+                "cloud cover traps the heat – the air is thick and stale",
+                "Wolkendecke faengt die Hitze ein – die Luft ist dick und schal",
             ),
             (
                 "grey light turns the salvage fields into a monochrome photograph",
@@ -1439,22 +1439,22 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Nebel verwandelt vertraute Orientierungspunkte in bedrohliche Formen",
             ),
             (
-                "the mist softens the edges of the ruins — almost beautiful",
-                "der Dunst weicht die Kanten der Ruinen auf — fast schoen",
+                "the mist softens the edges of the ruins – almost beautiful",
+                "der Dunst weicht die Kanten der Ruinen auf – fast schoen",
             ),
         ],
         "fog_dense": [
             (
-                "the fog is impenetrable — {visibility}m visibility at best",
-                "der Nebel ist undurchdringlich — bestenfalls {visibility}m Sicht",
+                "the fog is impenetrable – {visibility}m visibility at best",
+                "der Nebel ist undurchdringlich – bestenfalls {visibility}m Sicht",
             ),
             (
                 "in this fog, raider parties could approach undetected",
                 "in diesem Nebel koennten Raeubergruppen unbemerkt naeher kommen",
             ),
             (
-                "the dense fog traps exhaust fumes — the air becomes toxic",
-                "der dichte Nebel faengt Abgase ein — die Luft wird giftig",
+                "the dense fog traps exhaust fumes – the air becomes toxic",
+                "der dichte Nebel faengt Abgase ein – die Luft wird giftig",
             ),
             (
                 "every sound is amplified and distorted in the thick fog",
@@ -1467,39 +1467,39 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "rain_light": [
             (
-                "a fine rain — the cistern collectors are deployed",
-                "feiner Regen — die Zisternensammler werden eingesetzt",
+                "a fine rain – the cistern collectors are deployed",
+                "feiner Regen – die Zisternensammler werden eingesetzt",
             ),
             ("light rain at {temperature}°C settles the dust", "leichter Regen bei {temperature}°C legt den Staub"),
             (
-                "{precipitation}mm of drizzle — every drop counts for the reservoirs",
-                "{precipitation}mm Nieselregen — jeder Tropfen zaehlt fuer die Reservoirs",
+                "{precipitation}mm of drizzle – every drop counts for the reservoirs",
+                "{precipitation}mm Nieselregen – jeder Tropfen zaehlt fuer die Reservoirs",
             ),
             (
                 "the drizzle brings a rare freshness to the stale air",
                 "der Nieselregen bringt eine seltene Frische in die abgestandene Luft",
             ),
             (
-                "light rain makes the rubble slippery — salvage teams proceed with caution",
-                "leichter Regen macht den Schutt rutschig — Bergungsteams gehen vorsichtig vor",
+                "light rain makes the rubble slippery – salvage teams proceed with caution",
+                "leichter Regen macht den Schutt rutschig – Bergungsteams gehen vorsichtig vor",
             ),
         ],
         "rain": [
             (
-                "rain at {precipitation}mm — the community celebrates every drop",
-                "Regen bei {precipitation}mm — die Gemeinschaft feiert jeden Tropfen",
+                "rain at {precipitation}mm – the community celebrates every drop",
+                "Regen bei {precipitation}mm – die Gemeinschaft feiert jeden Tropfen",
             ),
             (
-                "steady rain fills the cisterns — water rationing suspended for today",
-                "stetiger Regen fuellt die Zisternen — Wasserrationierung fuer heute ausgesetzt",
+                "steady rain fills the cisterns – water rationing suspended for today",
+                "stetiger Regen fuellt die Zisternen – Wasserrationierung fuer heute ausgesetzt",
             ),
             (
                 "the rain turns dust to mud and rubble paths to streams",
                 "der Regen verwandelt Staub in Schlamm und Schuttrouten in Baeche",
             ),
             (
-                "{precipitation}mm of rain — enough to wash the salt from the crops",
-                "{precipitation}mm Regen — genug, um das Salz von den Ernten zu waschen",
+                "{precipitation}mm of rain – enough to wash the salt from the crops",
+                "{precipitation}mm Regen – genug, um das Salz von den Ernten zu waschen",
             ),
             (
                 "rain drums on corrugated roofs, a sound that means life",
@@ -1508,12 +1508,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "rain_freezing": [
             (
-                "freezing rain at {temperature}°C — the crops are in danger",
-                "Eisregen bei {temperature}°C — die Ernten sind in Gefahr",
+                "freezing rain at {temperature}°C – the crops are in danger",
+                "Eisregen bei {temperature}°C – die Ernten sind in Gefahr",
             ),
             (
-                "ice coats every surface — the walkways become death traps",
-                "Eis ueberzieht jede Flaeche — die Gehwege werden zu Todesfallen",
+                "ice coats every surface – the walkways become death traps",
+                "Eis ueberzieht jede Flaeche – die Gehwege werden zu Todesfallen",
             ),
             (
                 "freezing rain destroys the makeshift greenhouses",
@@ -1524,48 +1524,48 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C mit Eisregen wird Ueberleben zur einzigen Prioritaet",
             ),
             (
-                "the ice makes every exposed pipe useless — insulation is critical",
-                "das Eis macht jedes freiliegende Rohr unbrauchbar — Isolierung ist kritisch",
+                "the ice makes every exposed pipe useless – insulation is critical",
+                "das Eis macht jedes freiliegende Rohr unbrauchbar – Isolierung ist kritisch",
             ),
         ],
         "storm": [
             (
-                "the storm tears at shelters — repair crews stand by",
-                "der Sturm reisst an Unterkuenften — Reparaturtrupps stehen bereit",
+                "the storm tears at shelters – repair crews stand by",
+                "der Sturm reisst an Unterkuenften – Reparaturtrupps stehen bereit",
             ),
             (
-                "{wind_speed}km/h winds with {precipitation}mm rain — the compound hunkers down",
-                "{wind_speed}km/h Wind mit {precipitation}mm Regen — die Anlage duckt sich",
+                "{wind_speed}km/h winds with {precipitation}mm rain – the compound hunkers down",
+                "{wind_speed}km/h Wind mit {precipitation}mm Regen – die Anlage duckt sich",
             ),
             (
-                "the storm rips loose sheet metal from rooftops — lethal projectiles",
-                "der Sturm reisst loses Blech von Daechern — toedliche Geschosse",
+                "the storm rips loose sheet metal from rooftops – lethal projectiles",
+                "der Sturm reisst loses Blech von Daechern – toedliche Geschosse",
             ),
             (
-                "driving rain floods the lower quarters — evacuation routes activated",
-                "peitschender Regen flutet die unteren Quartiere — Evakuierungsrouten aktiviert",
+                "driving rain floods the lower quarters – evacuation routes activated",
+                "peitschender Regen flutet die unteren Quartiere – Evakuierungsrouten aktiviert",
             ),
             (
-                "the storm is violent but brief — it leaves behind a changed landscape",
-                "der Sturm ist heftig aber kurz — er hinterlaesst eine veraenderte Landschaft",
+                "the storm is violent but brief – it leaves behind a changed landscape",
+                "der Sturm ist heftig aber kurz – er hinterlaesst eine veraenderte Landschaft",
             ),
         ],
         "snow": [
             (
-                "snow falls on the ruins — a strange, silent beauty",
-                "Schnee faellt auf die Ruinen — eine seltsame, stille Schoenheit",
+                "snow falls on the ruins – a strange, silent beauty",
+                "Schnee faellt auf die Ruinen – eine seltsame, stille Schoenheit",
             ),
             (
                 "at {temperature}°C, the first snow covers the scars of the wasteland",
                 "bei {temperature}°C bedeckt der erste Schnee die Narben des Oedlands",
             ),
             (
-                "snow insulates the shelters — interior temperatures rise slightly",
-                "Schnee isoliert die Unterkuenfte — Innentemperaturen steigen leicht",
+                "snow insulates the shelters – interior temperatures rise slightly",
+                "Schnee isoliert die Unterkuenfte – Innentemperaturen steigen leicht",
             ),
             (
-                "the children have never seen this much snow — wonder mingles with worry",
-                "die Kinder haben noch nie so viel Schnee gesehen — Staunen mischt sich mit Sorge",
+                "the children have never seen this much snow – wonder mingles with worry",
+                "die Kinder haben noch nie so viel Schnee gesehen – Staunen mischt sich mit Sorge",
             ),
             (
                 "snow transforms the compound into something almost pre-war",
@@ -1574,42 +1574,42 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "storm_snow": [
             (
-                "a blizzard at {wind_speed}km/h — all outdoor activities cancelled",
-                "ein Schneesturm bei {wind_speed}km/h — alle Aussenaktivitaeten abgesagt",
+                "a blizzard at {wind_speed}km/h – all outdoor activities cancelled",
+                "ein Schneesturm bei {wind_speed}km/h – alle Aussenaktivitaeten abgesagt",
             ),
             (
-                "the snowstorm buries supply routes — rationing begins immediately",
-                "der Schneesturm begraebt Versorgungsrouten — Rationierung beginnt sofort",
+                "the snowstorm buries supply routes – rationing begins immediately",
+                "der Schneesturm begraebt Versorgungsrouten – Rationierung beginnt sofort",
             ),
             (
-                "white-out conditions — the sentries cannot see the perimeter",
-                "Whiteout-Bedingungen — die Wachen koennen den Perimeter nicht sehen",
+                "white-out conditions – the sentries cannot see the perimeter",
+                "Whiteout-Bedingungen – die Wachen koennen den Perimeter nicht sehen",
             ),
             (
                 "at {temperature}°C with {wind_speed}km/h wind, frostbite sets in within minutes",
                 "bei {temperature}°C mit {wind_speed}km/h Wind setzt Erfrierung innerhalb von Minuten ein",
             ),
             (
-                "the blizzard isolates the community — they are on their own",
-                "der Schneesturm isoliert die Gemeinschaft — sie sind auf sich allein gestellt",
+                "the blizzard isolates the community – they are on their own",
+                "der Schneesturm isoliert die Gemeinschaft – sie sind auf sich allein gestellt",
             ),
         ],
         "thunderstorm": [
             (
-                "thunder echoes off the ruins — the old buildings groan in response",
-                "Donner hallt von den Ruinen wider — die alten Gebaeude aechzen als Antwort",
+                "thunder echoes off the ruins – the old buildings groan in response",
+                "Donner hallt von den Ruinen wider – die alten Gebaeude aechzen als Antwort",
             ),
             (
-                "lightning strikes a collapsed tower — sparks fly across the rubble",
-                "Blitz trifft einen kollabierten Turm — Funken fliegen ueber den Schutt",
+                "lightning strikes a collapsed tower – sparks fly across the rubble",
+                "Blitz trifft einen kollabierten Turm – Funken fliegen ueber den Schutt",
             ),
             (
-                "the thunderstorm shorts out the solar arrays — backup power activated",
-                "das Gewitter schliesst die Solaranlagen kurz — Notstrom aktiviert",
+                "the thunderstorm shorts out the solar arrays – backup power activated",
+                "das Gewitter schliesst die Solaranlagen kurz – Notstrom aktiviert",
             ),
             (
-                "rain and thunder — the community takes shelter in the deepest bunkers",
-                "Regen und Donner — die Gemeinschaft sucht Schutz in den tiefsten Bunkern",
+                "rain and thunder – the community takes shelter in the deepest bunkers",
+                "Regen und Donner – die Gemeinschaft sucht Schutz in den tiefsten Bunkern",
             ),
             (
                 "lightning illuminates the wasteland in stark, terrible beauty",
@@ -1622,24 +1622,24 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der heftige Sturm zerstoert Wochen an Aufbauarbeit in Minuten",
             ),
             (
-                "hail and wind at {wind_speed}km/h — casualties reported from flying debris",
-                "Hagel und Wind bei {wind_speed}km/h — Verletzte durch umherfliegende Truemmer gemeldet",
+                "hail and wind at {wind_speed}km/h – casualties reported from flying debris",
+                "Hagel und Wind bei {wind_speed}km/h – Verletzte durch umherfliegende Truemmer gemeldet",
             ),
             (
-                "the worst storm since the founding — emergency protocols for all sectors",
-                "der schlimmste Sturm seit der Gruendung — Notfallprotokolle fuer alle Sektoren",
+                "the worst storm since the founding – emergency protocols for all sectors",
+                "der schlimmste Sturm seit der Gruendung – Notfallprotokolle fuer alle Sektoren",
             ),
             (
-                "multiple lightning strikes ignite small fires — firefighting crews deployed",
-                "mehrfache Blitzeinschlaege entzuenden kleine Braende — Loeschtrupps eingesetzt",
+                "multiple lightning strikes ignite small fires – firefighting crews deployed",
+                "mehrfache Blitzeinschlaege entzuenden kleine Braende – Loeschtrupps eingesetzt",
             ),
             (
-                "the community endures — they have survived worse than weather",
-                "die Gemeinschaft haelt durch — sie haben Schlimmeres als Wetter ueberlebt",
+                "the community endures – they have survived worse than weather",
+                "die Gemeinschaft haelt durch – sie haben Schlimmeres als Wetter ueberlebt",
             ),
         ],
         "heat": [
-            ("{temperature}°C — the cisterns evaporate visibly", "{temperature}°C — die Zisternen verdunsten sichtbar"),
+            ("{temperature}°C – the cisterns evaporate visibly", "{temperature}°C – die Zisternen verdunsten sichtbar"),
             (
                 "the heat is a physical weight on the shoulders of every worker",
                 "die Hitze ist ein physisches Gewicht auf den Schultern jedes Arbeiters",
@@ -1649,8 +1649,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C ist Arbeit im Freien auf Morgen- und Abenddaemmerung beschraenkt",
             ),
             (
-                "heat mirages make the horizon dance — false hope of water",
-                "Hitzeflimmern laesst den Horizont tanzen — falsche Hoffnung auf Wasser",
+                "heat mirages make the horizon dance – false hope of water",
+                "Hitzeflimmern laesst den Horizont tanzen – falsche Hoffnung auf Wasser",
             ),
             (
                 "the heat cracks the earth and shortens tempers",
@@ -1659,24 +1659,24 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "cold": [
             (
-                "{temperature}°C — the fuel reserves are burning faster than planned",
-                "{temperature}°C — die Treibstoffreserven verbrennen schneller als geplant",
+                "{temperature}°C – the fuel reserves are burning faster than planned",
+                "{temperature}°C – die Treibstoffreserven verbrennen schneller als geplant",
             ),
             (
                 "bitter cold at {temperature}°C drives everyone around the communal fires",
                 "beissende Kaelte bei {temperature}°C treibt alle um die Gemeinschaftsfeuer",
             ),
             (
-                "the cold kills the last of the autumn harvest — winter will be lean",
-                "die Kaelte toetet den Rest der Herbsternte — der Winter wird mager",
+                "the cold kills the last of the autumn harvest – winter will be lean",
+                "die Kaelte toetet den Rest der Herbsternte – der Winter wird mager",
             ),
             (
-                "at {temperature}°C, water pipes freeze — the plumbers work through the night",
-                "bei {temperature}°C frieren Wasserrohre ein — die Klempner arbeiten durch die Nacht",
+                "at {temperature}°C, water pipes freeze – the plumbers work through the night",
+                "bei {temperature}°C frieren Wasserrohre ein – die Klempner arbeiten durch die Nacht",
             ),
             (
-                "cold seeps through every wall — even the bunkers feel it",
-                "Kaelte sickert durch jede Wand — selbst die Bunker spueren sie",
+                "cold seeps through every wall – even the bunkers feel it",
+                "Kaelte sickert durch jede Wand – selbst die Bunker spueren sie",
             ),
         ],
         "wind": [
@@ -1685,16 +1685,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "{wind_speed}km/h Winde peitschen Sand und Staub durch jede Ritze",
             ),
             (
-                "the wind carries the smell of the sea — salt and something chemical",
-                "der Wind traegt den Geruch des Meeres — Salz und etwas Chemisches",
+                "the wind carries the smell of the sea – salt and something chemical",
+                "der Wind traegt den Geruch des Meeres – Salz und etwas Chemisches",
             ),
             (
                 "at {wind_speed}km/h, the makeshift shelters strain against their anchors",
                 "bei {wind_speed}km/h zerren die provisorischen Unterkuenfte an ihren Verankerungen",
             ),
             (
-                "the hot wind from the south — the sirocco — parches everything it touches",
-                "der heisse Wind aus dem Sueden — der Scirocco — doerrt alles aus, was er beruehrt",
+                "the hot wind from the south – the sirocco – parches everything it touches",
+                "der heisse Wind aus dem Sueden – der Scirocco – doerrt alles aus, was er beruehrt",
             ),
             (
                 "wind-blown debris rattles against the compound walls like thrown stones",
@@ -1703,46 +1703,46 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "full_moon": [
             (
-                "the full moon lights the wasteland like a floodlight — raiders will be visible",
-                "der Vollmond beleuchtet das Oedland wie ein Flutlicht — Raeuber werden sichtbar sein",
+                "the full moon lights the wasteland like a floodlight – raiders will be visible",
+                "der Vollmond beleuchtet das Oedland wie ein Flutlicht – Raeuber werden sichtbar sein",
             ),
             (
                 "under the full moon, the ruins take on a haunting, silver beauty",
                 "unter dem Vollmond nehmen die Ruinen eine gespenstische, silberne Schoenheit an",
             ),
             (
-                "the full moon pulls at the tides — the salt marshes flood earlier than expected",
-                "der Vollmond zieht an den Gezeiten — die Salzmarschen fluten frueher als erwartet",
+                "the full moon pulls at the tides – the salt marshes flood earlier than expected",
+                "der Vollmond zieht an den Gezeiten – die Salzmarschen fluten frueher als erwartet",
             ),
             (
-                "moonlight makes the night watch easier — but makes everyone a target",
-                "Mondlicht macht die Nachtwache einfacher — aber macht jeden zur Zielscheibe",
+                "moonlight makes the night watch easier – but makes everyone a target",
+                "Mondlicht macht die Nachtwache einfacher – aber macht jeden zur Zielscheibe",
             ),
             (
-                "the old ones say the full moon makes people restless — tonight they seem right",
-                "die Alten sagen, der Vollmond macht die Menschen ruhelos — heute Nacht scheinen sie recht zu haben",
+                "the old ones say the full moon makes people restless – tonight they seem right",
+                "die Alten sagen, der Vollmond macht die Menschen ruhelos – heute Nacht scheinen sie recht zu haben",
             ),
         ],
         "new_moon": [
             (
-                "no moon — the darkness is total beyond the campfires",
-                "kein Mond — die Dunkelheit ist jenseits der Lagerfeuer absolut",
+                "no moon – the darkness is total beyond the campfires",
+                "kein Mond – die Dunkelheit ist jenseits der Lagerfeuer absolut",
             ),
             (
-                "the moonless night makes the sentries nervous — every sound magnified",
-                "die mondlose Nacht macht die Wachen nervoes — jedes Geraeusch verstaerkt",
+                "the moonless night makes the sentries nervous – every sound magnified",
+                "die mondlose Nacht macht die Wachen nervoes – jedes Geraeusch verstaerkt",
             ),
             (
                 "in the new moon's darkness, the stars blaze with forgotten brilliance",
                 "in der Dunkelheit des Neumondes brennen die Sterne mit vergessener Brillanz",
             ),
             (
-                "without moonlight, the community retreats early — darkness saves fuel",
-                "ohne Mondlicht zieht sich die Gemeinschaft frueh zurueck — Dunkelheit spart Treibstoff",
+                "without moonlight, the community retreats early – darkness saves fuel",
+                "ohne Mondlicht zieht sich die Gemeinschaft frueh zurueck – Dunkelheit spart Treibstoff",
             ),
             (
-                "a moonless night — ideal for those who scavenge in secret",
-                "eine mondlose Nacht — ideal fuer jene, die heimlich Bergung betreiben",
+                "a moonless night – ideal for those who scavenge in secret",
+                "eine mondlose Nacht – ideal fuer jene, die heimlich Bergung betreiben",
             ),
         ],
     },
@@ -1750,8 +1750,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
     "medieval": {
         "clear": [
             (
-                "blue skies arch over the walls — a fine day for letters and learning",
-                "blauer Himmel woelbt sich ueber die Mauern — ein feiner Tag fuer Schrift und Gelehrsamkeit",
+                "blue skies arch over the walls – a fine day for letters and learning",
+                "blauer Himmel woelbt sich ueber die Mauern – ein feiner Tag fuer Schrift und Gelehrsamkeit",
             ),
             (
                 "at {temperature}°C under clear skies, the gardens flourish",
@@ -1780,12 +1780,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der bewoelkte Himmel treibt Gelehrte frueher zu ihren Kerzen",
             ),
             (
-                "a grey day at {temperature}°C — the walls seem to close in slightly",
-                "ein grauer Tag bei {temperature}°C — die Mauern scheinen sich leicht zu schliessen",
+                "a grey day at {temperature}°C – the walls seem to close in slightly",
+                "ein grauer Tag bei {temperature}°C – die Mauern scheinen sich leicht zu schliessen",
             ),
             (
-                "cloud cover softens the light — the illuminators prefer these conditions",
-                "Wolkendecke daempft das Licht — die Buchmalerer bevorzugen diese Bedingungen",
+                "cloud cover softens the light – the illuminators prefer these conditions",
+                "Wolkendecke daempft das Licht – die Buchmalerer bevorzugen diese Bedingungen",
             ),
             (
                 "the overcast sky lends a contemplative mood to the quarter",
@@ -1794,24 +1794,24 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "fog": [
             (
-                "fog wraps the towers in mystery — the bells ring muffled",
-                "Nebel huellt die Tuerme in Mysterium — die Glocken laeuten gedaempft",
+                "fog wraps the towers in mystery – the bells ring muffled",
+                "Nebel huellt die Tuerme in Mysterium – die Glocken laeuten gedaempft",
             ),
             (
                 "the mist clings to the walls like whispered secrets",
                 "der Nebel klammert sich an die Mauern wie gefluersterte Geheimnisse",
             ),
             (
-                "visibility drops to {visibility}m — the market stalls emerge from fog like islands",
-                "die Sicht sinkt auf {visibility}m — die Marktstaende tauchen aus dem Nebel auf wie Inseln",
+                "visibility drops to {visibility}m – the market stalls emerge from fog like islands",
+                "die Sicht sinkt auf {visibility}m – die Marktstaende tauchen aus dem Nebel auf wie Inseln",
             ),
             (
                 "fog drifts through the cloisters, lending an otherworldly quality",
                 "Nebel treibt durch die Kreuzgaenge und verleiht ihnen etwas Jenseitiges",
             ),
             (
-                "the fog makes the city feel ancient — as if time itself has slowed",
-                "der Nebel laesst die Stadt uralt erscheinen — als haette die Zeit selbst sich verlangsamt",
+                "the fog makes the city feel ancient – as if time itself has slowed",
+                "der Nebel laesst die Stadt uralt erscheinen – als haette die Zeit selbst sich verlangsamt",
             ),
         ],
         "fog_dense": [
@@ -1824,16 +1824,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {visibility}m Sicht verlassen sich die Torwaechter allein auf Gehoer",
             ),
             (
-                "the thick fog traps cooking smoke — the air tastes of ash and herbs",
-                "der dichte Nebel faengt Kochrauch ein — die Luft schmeckt nach Asche und Kraeutern",
+                "the thick fog traps cooking smoke – the air tastes of ash and herbs",
+                "der dichte Nebel faengt Kochrauch ein – die Luft schmeckt nach Asche und Kraeutern",
             ),
             (
-                "movement through the city becomes an act of faith — every step uncertain",
-                "Bewegung durch die Stadt wird ein Akt des Glaubens — jeder Schritt unsicher",
+                "movement through the city becomes an act of faith – every step uncertain",
+                "Bewegung durch die Stadt wird ein Akt des Glaubens – jeder Schritt unsicher",
             ),
             (
-                "in this fog, the city could be anywhere — or nowhere at all",
-                "in diesem Nebel koennte die Stadt ueberall sein — oder nirgendwo",
+                "in this fog, the city could be anywhere – or nowhere at all",
+                "in diesem Nebel koennte die Stadt ueberall sein – oder nirgendwo",
             ),
         ],
         "rain_light": [
@@ -1846,12 +1846,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "leichter Regen bei {temperature}°C faerbt das Kopfsteinpflaster schiefergrau",
             ),
             (
-                "{precipitation}mm of fine rain — the herbs in the cloister garden drink",
-                "{precipitation}mm feiner Regen — die Kraeuter im Klostergarten trinken",
+                "{precipitation}mm of fine rain – the herbs in the cloister garden drink",
+                "{precipitation}mm feiner Regen – die Kraeuter im Klostergarten trinken",
             ),
             (
-                "drizzle beads on parchment left out to dry — the scribes rush to collect it",
-                "Nieselregen perlt auf Pergament, das zum Trocknen ausliegt — die Schreiber eilen zum Einsammeln",
+                "drizzle beads on parchment left out to dry – the scribes rush to collect it",
+                "Nieselregen perlt auf Pergament, das zum Trocknen ausliegt – die Schreiber eilen zum Einsammeln",
             ),
             (
                 "the rain is gentle, like a mother's hand on the city's brow",
@@ -1864,16 +1864,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "stetiger Regen trommelt auf Ziegeldaecher und fuellt die Zisternen darunter",
             ),
             (
-                "{precipitation}mm of rain turns the unpaved lanes to mud — scholars carry their hems",
-                "{precipitation}mm Regen verwandelt die ungepflasterten Wege in Schlamm — Gelehrte raffen ihre Saeueme",
+                "{precipitation}mm of rain turns the unpaved lanes to mud – scholars carry their hems",
+                "{precipitation}mm Regen verwandelt die ungepflasterten Wege in Schlamm – Gelehrte raffen ihre Saeueme",
             ),
             (
-                "rain drives the outdoor debates indoors — the halls echo with argument",
-                "Regen treibt die Debatten im Freien nach drinnen — die Hallen hallen wider von Disputen",
+                "rain drives the outdoor debates indoors – the halls echo with argument",
+                "Regen treibt die Debatten im Freien nach drinnen – die Hallen hallen wider von Disputen",
             ),
             (
-                "the rain feeds the vineyards beyond the walls — tomorrow's wine",
-                "der Regen naehrt die Weinberge jenseits der Mauern — den Wein von morgen",
+                "the rain feeds the vineyards beyond the walls – tomorrow's wine",
+                "der Regen naehrt die Weinberge jenseits der Mauern – den Wein von morgen",
             ),
             (
                 "rain streams down the stained glass, fracturing the light into rainbows",
@@ -1886,20 +1886,20 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "Eisregen bei {temperature}°C ueberzieht die Zinnen mit tueckischem Eis",
             ),
             (
-                "ice glazes every stone surface — the city becomes a crystalline trap",
-                "Eis glasiert jede Steinflaeche — die Stadt wird zu einer kristallinen Falle",
+                "ice glazes every stone surface – the city becomes a crystalline trap",
+                "Eis glasiert jede Steinflaeche – die Stadt wird zu einer kristallinen Falle",
             ),
             (
-                "the rain freezes on contact — even the gargoyles wear icy beards",
-                "der Regen gefriert bei Beruehrung — selbst die Wasserspeier tragen eisige Baerte",
+                "the rain freezes on contact – even the gargoyles wear icy beards",
+                "der Regen gefriert bei Beruehrung – selbst die Wasserspeier tragen eisige Baerte",
             ),
             (
-                "at {temperature}°C, the ice makes the walls unclimbable — both defence and prison",
-                "bei {temperature}°C macht das Eis die Mauern unkletterbar — Verteidigung und Gefaengnis zugleich",
+                "at {temperature}°C, the ice makes the walls unclimbable – both defence and prison",
+                "bei {temperature}°C macht das Eis die Mauern unkletterbar – Verteidigung und Gefaengnis zugleich",
             ),
             (
-                "freezing rain silences the bells — ice fills the clappers",
-                "Eisregen laesst die Glocken verstummen — Eis fuellt die Kloeppel",
+                "freezing rain silences the bells – ice fills the clappers",
+                "Eisregen laesst die Glocken verstummen – Eis fuellt die Kloeppel",
             ),
         ],
         "storm": [
@@ -1908,16 +1908,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Sturm ruettelt an den Laeden und biegt die Gartenbaeume",
             ),
             (
-                "{wind_speed}km/h winds with {precipitation}mm rain — the market empties",
-                "{wind_speed}km/h Wind mit {precipitation}mm Regen — der Markt leert sich",
+                "{wind_speed}km/h winds with {precipitation}mm rain – the market empties",
+                "{wind_speed}km/h Wind mit {precipitation}mm Regen – der Markt leert sich",
             ),
             (
-                "the storm tests the ancient walls — they hold, as they always have",
-                "der Sturm prueft die alten Mauern — sie halten, wie sie es immer getan haben",
+                "the storm tests the ancient walls – they hold, as they always have",
+                "der Sturm prueft die alten Mauern – sie halten, wie sie es immer getan haben",
             ),
             (
-                "rain floods the lower courts — scholars rescue manuscripts from cellars",
-                "Regen flutet die unteren Hoefe — Gelehrte retten Manuskripte aus Kellern",
+                "rain floods the lower courts – scholars rescue manuscripts from cellars",
+                "Regen flutet die unteren Hoefe – Gelehrte retten Manuskripte aus Kellern",
             ),
             (
                 "the fury of the storm matches the passion of the latest theological debate",
@@ -1934,8 +1934,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C verwandelt sich die Stadt in ein weisses Juwel",
             ),
             (
-                "snow muffles every sound — the scriptorium has never been so quiet",
-                "Schnee daempft jedes Geraeusch — das Skriptorium war noch nie so still",
+                "snow muffles every sound – the scriptorium has never been so quiet",
+                "Schnee daempft jedes Geraeusch – das Skriptorium war noch nie so still",
             ),
             (
                 "the first snow of the season brings scholars to the windows, pens forgotten",
@@ -1948,20 +1948,20 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "storm_snow": [
             (
-                "a blizzard howls around the walls — the fires burn high in every hall",
-                "ein Schneesturm heult um die Mauern — die Feuer brennen hoch in jeder Halle",
+                "a blizzard howls around the walls – the fires burn high in every hall",
+                "ein Schneesturm heult um die Mauern – die Feuer brennen hoch in jeder Halle",
             ),
             (
                 "at {wind_speed}km/h with heavy snow, the gates are sealed",
                 "bei {wind_speed}km/h mit starkem Schneefall werden die Tore versiegelt",
             ),
             (
-                "the blizzard buries the lower doors — diggers work through the night",
-                "der Schneesturm begraebt die unteren Tueren — Graeber arbeiten durch die Nacht",
+                "the blizzard buries the lower doors – diggers work through the night",
+                "der Schneesturm begraebt die unteren Tueren – Graeber arbeiten durch die Nacht",
             ),
             (
-                "snow and wind isolate the city — messengers cannot depart",
-                "Schnee und Wind isolieren die Stadt — Boten koennen nicht aufbrechen",
+                "snow and wind isolate the city – messengers cannot depart",
+                "Schnee und Wind isolieren die Stadt – Boten koennen nicht aufbrechen",
             ),
             (
                 "the storm rages, but inside the walls, the work of the mind continues",
@@ -1970,24 +1970,24 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "thunderstorm": [
             (
-                "thunder rolls over the walls — the night candles flicker in unison",
-                "Donner rollt ueber die Mauern — die Nachtkerzen flackern im Gleichklang",
+                "thunder rolls over the walls – the night candles flicker in unison",
+                "Donner rollt ueber die Mauern – die Nachtkerzen flackern im Gleichklang",
             ),
             (
-                "lightning splits the sky — for an instant, every tower is a silhouette",
-                "Blitze spalten den Himmel — fuer einen Augenblick ist jeder Turm eine Silhouette",
+                "lightning splits the sky – for an instant, every tower is a silhouette",
+                "Blitze spalten den Himmel – fuer einen Augenblick ist jeder Turm eine Silhouette",
             ),
             (
-                "the storm rattles the windows of the scriptorium — ink jars wobble",
-                "der Sturm laesst die Fenster des Skriptoriums klirren — Tintenglaeser wackeln",
+                "the storm rattles the windows of the scriptorium – ink jars wobble",
+                "der Sturm laesst die Fenster des Skriptoriums klirren – Tintenglaeser wackeln",
             ),
             (
                 "rain and thunder drive even the bravest scholars from the courtyards",
                 "Regen und Donner treiben selbst die mutigsten Gelehrten aus den Innenhoefen",
             ),
             (
-                "thunder vibrates through the stone — the cathedral seems to breathe",
-                "Donner vibriert durch den Stein — die Kathedrale scheint zu atmen",
+                "thunder vibrates through the stone – the cathedral seems to breathe",
+                "Donner vibriert durch den Stein – die Kathedrale scheint zu atmen",
             ),
         ],
         "thunderstorm_severe": [
@@ -1996,16 +1996,16 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der heftige Sturm reisst Ziegel von Daechern und flutet Keller",
             ),
             (
-                "hail cracks against the stained glass — the artisans wince",
-                "Hagel prasselt gegen das Buntglas — die Handwerker zucken zusammen",
+                "hail cracks against the stained glass – the artisans wince",
+                "Hagel prasselt gegen das Buntglas – die Handwerker zucken zusammen",
             ),
             (
-                "the worst storm in memory — prayers are offered in every chapel",
-                "der schlimmste Sturm in Erinnerung — in jeder Kapelle werden Gebete gesprochen",
+                "the worst storm in memory – prayers are offered in every chapel",
+                "der schlimmste Sturm in Erinnerung – in jeder Kapelle werden Gebete gesprochen",
             ),
             (
-                "lightning strikes the bell tower — the great bell rings unbidden",
-                "Blitz trifft den Glockenturm — die grosse Glocke laeutet ungebeten",
+                "lightning strikes the bell tower – the great bell rings unbidden",
+                "Blitz trifft den Glockenturm – die grosse Glocke laeutet ungebeten",
             ),
             (
                 "the storm is so violent that some whisper of divine displeasure",
@@ -2018,48 +2018,48 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "bei {temperature}°C strahlen die Steinmauern gespeicherte Waerme noch nach Sonnenuntergang ab",
             ),
             (
-                "the heat drives scholars to the coolest cellars — the wine is well-guarded",
-                "die Hitze treibt Gelehrte in die kuehlsten Keller — der Wein ist gut bewacht",
+                "the heat drives scholars to the coolest cellars – the wine is well-guarded",
+                "die Hitze treibt Gelehrte in die kuehlsten Keller – der Wein ist gut bewacht",
             ),
             (
-                "{temperature}°C — the herb gardens wilt, the fountains shrink",
-                "{temperature}°C — die Kraeutergaerten welken, die Brunnen schrumpfen",
+                "{temperature}°C – the herb gardens wilt, the fountains shrink",
+                "{temperature}°C – die Kraeutergaerten welken, die Brunnen schrumpfen",
             ),
             (
-                "heat shimmers above the cobblestones — the city feels like a kiln",
-                "Hitzeflimmern ueber dem Kopfsteinpflaster — die Stadt fuehlt sich an wie ein Brennofen",
+                "heat shimmers above the cobblestones – the city feels like a kiln",
+                "Hitzeflimmern ueber dem Kopfsteinpflaster – die Stadt fuehlt sich an wie ein Brennofen",
             ),
             (
-                "the heat makes the ink dry too quickly — the scribes work in frustration",
-                "die Hitze laesst die Tinte zu schnell trocknen — die Schreiber arbeiten frustriert",
+                "the heat makes the ink dry too quickly – the scribes work in frustration",
+                "die Hitze laesst die Tinte zu schnell trocknen – die Schreiber arbeiten frustriert",
             ),
         ],
         "cold": [
             (
-                "at {temperature}°C, the ink freezes in the wells — writing is impossible",
-                "bei {temperature}°C gefriert die Tinte in den Naepfen — Schreiben ist unmoeglich",
+                "at {temperature}°C, the ink freezes in the wells – writing is impossible",
+                "bei {temperature}°C gefriert die Tinte in den Naepfen – Schreiben ist unmoeglich",
             ),
             (
-                "bitter cold grips the city — the fires consume wood faster than it can be gathered",
-                "beissende Kaelte umklammert die Stadt — die Feuer verbrauchen Holz schneller als es gesammelt werden kann",
+                "bitter cold grips the city – the fires consume wood faster than it can be gathered",
+                "beissende Kaelte umklammert die Stadt – die Feuer verbrauchen Holz schneller als es gesammelt werden kann",
             ),
             (
-                "the cold drives scholars to huddle together — body heat and debate sustain them",
-                "die Kaelte treibt Gelehrte zum Zusammenruecken — Koerperwaerme und Debatten erhalten sie",
+                "the cold drives scholars to huddle together – body heat and debate sustain them",
+                "die Kaelte treibt Gelehrte zum Zusammenruecken – Koerperwaerme und Debatten erhalten sie",
             ),
             (
-                "{temperature}°C — the well freezes solid, water must be melted from snow",
-                "{temperature}°C — der Brunnen gefriert fest, Wasser muss aus Schnee geschmolzen werden",
+                "{temperature}°C – the well freezes solid, water must be melted from snow",
+                "{temperature}°C – der Brunnen gefriert fest, Wasser muss aus Schnee geschmolzen werden",
             ),
             (
-                "cold seeps through every wall — only the forge and the kitchen are warm",
-                "Kaelte sickert durch jede Wand — nur die Schmiede und die Kueche sind warm",
+                "cold seeps through every wall – only the forge and the kitchen are warm",
+                "Kaelte sickert durch jede Wand – nur die Schmiede und die Kueche sind warm",
             ),
         ],
         "wind": [
             (
-                "the Tramontane blows at {wind_speed}km/h — a familiar tormentor",
-                "die Tramontane blaest mit {wind_speed}km/h — ein vertrauter Peiniger",
+                "the Tramontane blows at {wind_speed}km/h – a familiar tormentor",
+                "die Tramontane blaest mit {wind_speed}km/h – ein vertrauter Peiniger",
             ),
             (
                 "{wind_speed}km/h winds whip through the streets, snatching at cloaks and manuscripts",
@@ -2070,8 +2070,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Wind heult durch die Zinnen wie ein Chor aus Geistern",
             ),
             (
-                "at {wind_speed}km/h, the market awnings tear — vendors scramble",
-                "bei {wind_speed}km/h reissen die Marktvordaecher — Haendler hasten",
+                "at {wind_speed}km/h, the market awnings tear – vendors scramble",
+                "bei {wind_speed}km/h reissen die Marktvordaecher – Haendler hasten",
             ),
             (
                 "the cold wind from the north carries the smell of pine and distant snow",
@@ -2080,8 +2080,8 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
         ],
         "full_moon": [
             (
-                "the full moon bathes the city in silver light — the night scholars read by it",
-                "der Vollmond badet die Stadt in Silberlicht — die Nachtgelehrten lesen bei ihm",
+                "the full moon bathes the city in silver light – the night scholars read by it",
+                "der Vollmond badet die Stadt in Silberlicht – die Nachtgelehrten lesen bei ihm",
             ),
             (
                 "under the full moon, the gargoyles cast long, expressive shadows",
@@ -2092,18 +2092,18 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "der Vollmond verwandelt das Rosenfenster der Kathedrale in eine Lichtscheibe",
             ),
             (
-                "moonlight floods the courtyards — the city is luminous and dreamlike",
-                "Mondlicht flutet die Innenhoefen — die Stadt ist leuchtend und traumhaft",
+                "moonlight floods the courtyards – the city is luminous and dreamlike",
+                "Mondlicht flutet die Innenhoefen – die Stadt ist leuchtend und traumhaft",
             ),
             (
-                "the full moon — some say it sharpens the mind, others say it scatters it",
-                "der Vollmond — manche sagen, er schaerft den Verstand, andere sagen, er zerstreut ihn",
+                "the full moon – some say it sharpens the mind, others say it scatters it",
+                "der Vollmond – manche sagen, er schaerft den Verstand, andere sagen, er zerstreut ihn",
             ),
         ],
         "new_moon": [
             (
-                "no moon — the city retreats behind closed doors and candlelight",
-                "kein Mond — die Stadt zieht sich hinter geschlossene Tueren und Kerzenlicht zurueck",
+                "no moon – the city retreats behind closed doors and candlelight",
+                "kein Mond – die Stadt zieht sich hinter geschlossene Tueren und Kerzenlicht zurueck",
             ),
             (
                 "the moonless night makes the walls feel higher and the world smaller",
@@ -2114,12 +2114,12 @@ CORE_WEATHER: dict[str, dict[str, list[T]]] = {
                 "ohne Mondlicht kommt der einzige Schein von den Fenstern des Skriptoriums",
             ),
             (
-                "a dark night — the astronomers turn their instruments to the deepest stars",
-                "eine dunkle Nacht — die Astronomen richten ihre Instrumente auf die tiefsten Sterne",
+                "a dark night – the astronomers turn their instruments to the deepest stars",
+                "eine dunkle Nacht – die Astronomen richten ihre Instrumente auf die tiefsten Sterne",
             ),
             (
-                "the new moon brings a hush — even the dogs sleep quietly",
-                "der Neumond bringt eine Stille — selbst die Hunde schlafen ruhig",
+                "the new moon brings a hush – even the dogs sleep quietly",
+                "der Neumond bringt eine Stille – selbst die Hunde schlafen ruhig",
             ),
         ],
     },
@@ -2140,8 +2140,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Luftaufklaerung des Bureaus arbeitet mit voller Kapazitaet.",
             ),
             (
-                "No cover for clandestine operations — dead drops postponed.",
-                "Keine Deckung fuer verdeckte Operationen — tote Briefkaesten verschoben.",
+                "No cover for clandestine operations – dead drops postponed.",
+                "Keine Deckung fuer verdeckte Operationen – tote Briefkaesten verschoben.",
             ),
             ("Every rooftop vantage point is in use.", "Jeder Dachaussichtspunkt ist in Nutzung."),
             ("Field agents report feeling exposed.", "Feldagenten berichten von einem Gefuehl der Entbloessung."),
@@ -2165,8 +2165,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Ueberwachungsteams melden eingeschraenkte Sichtlinien.",
             ),
             (
-                "Dead drops go unchecked — too risky to approach.",
-                "Tote Briefkaesten bleiben unberuehrt — zu riskant, sich zu naehern.",
+                "Dead drops go unchecked – too risky to approach.",
+                "Tote Briefkaesten bleiben unberuehrt – zu riskant, sich zu naehern.",
             ),
             ("The Bureau extends curfew by two hours.", "Das Bureau verlaengert die Ausgangssperre um zwei Stunden."),
             (
@@ -2192,14 +2192,14 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Alle Ueberwachungsoperationen ausgesetzt bis zur Besserung der Bedingungen.",
             ),
             (
-                "The Bureau issues an all-hands alert — visibility is zero.",
-                "Das Bureau gibt Vollalarm — Sicht ist null.",
+                "The Bureau issues an all-hands alert – visibility is zero.",
+                "Das Bureau gibt Vollalarm – Sicht ist null.",
             ),
             ("Emergency communication protocols activated.", "Notfallkommunikationsprotokolle aktiviert."),
             ("Agents navigate by memory and touch alone.", "Agenten navigieren nur noch aus Gedaechtnis und Tastsinn."),
             (
-                "Border checkpoints effectively blind — anyone could pass.",
-                "Grenzcheckpoints praktisch blind — jeder koennte passieren.",
+                "Border checkpoints effectively blind – anyone could pass.",
+                "Grenzcheckpoints praktisch blind – jeder koennte passieren.",
             ),
         ],
         "rain_light": [
@@ -2208,8 +2208,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der Nieselregen bietet nuetzliche Laermabdeckung fuer Gespraeche.",
             ),
             (
-                "Foot traffic thins — surveillance targets are easier to isolate.",
-                "Fussgaengerverkehr nimmt ab — Ueberwachungsziele sind leichter zu isolieren.",
+                "Foot traffic thins – surveillance targets are easier to isolate.",
+                "Fussgaengerverkehr nimmt ab – Ueberwachungsziele sind leichter zu isolieren.",
             ),
             ("Umbrellas make facial identification harder.", "Regenschirme erschweren die Gesichtserkennung."),
             (
@@ -2223,27 +2223,27 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "rain": [
             (
-                "Street-level operations suspended — too few civilians for cover.",
-                "Strassenoperationen ausgesetzt — zu wenige Zivilisten fuer Deckung.",
+                "Street-level operations suspended – too few civilians for cover.",
+                "Strassenoperationen ausgesetzt – zu wenige Zivilisten fuer Deckung.",
             ),
             ("The rain washes evidence from crime scenes.", "Der Regen waescht Beweise von Tatorten."),
             (
-                "Informant meetings cancelled — too conspicuous in empty streets.",
-                "Informantentreffen abgesagt — zu auffaellig in leeren Strassen.",
+                "Informant meetings cancelled – too conspicuous in empty streets.",
+                "Informantentreffen abgesagt – zu auffaellig in leeren Strassen.",
             ),
             (
                 "The Bureau's outdoor listening posts are flooded.",
                 "Die Aussenabhoerposten des Bureaus sind ueberflutet.",
             ),
             (
-                "Rain creates white noise — electronic surveillance compromised.",
-                "Regen erzeugt weisses Rauschen — elektronische Ueberwachung beeintraechtigt.",
+                "Rain creates white noise – electronic surveillance compromised.",
+                "Regen erzeugt weisses Rauschen – elektronische Ueberwachung beeintraechtigt.",
             ),
         ],
         "rain_freezing": [
             (
-                "Vehicle pursuit impossible — every road is a skating rink.",
-                "Fahrzeugverfolgung unmoeglich — jede Strasse ist eine Eisbahn.",
+                "Vehicle pursuit impossible – every road is a skating rink.",
+                "Fahrzeugverfolgung unmoeglich – jede Strasse ist eine Eisbahn.",
             ),
             ("The ice grounds all rooftop observation teams.", "Das Eis legt alle Dachbeobachtungsteams lahm."),
             ("Emergency medical teams on standby for falls.", "Notarztteams in Bereitschaft fuer Sturzverletzte."),
@@ -2265,14 +2265,14 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Notgeneratoren des Bureaus aktivieren sich automatisch.",
             ),
             (
-                "Street cameras offline — the city is temporarily unwatched.",
-                "Strassenkameras offline — die Stadt ist voruebergehend unbeobachtet.",
+                "Street cameras offline – the city is temporarily unwatched.",
+                "Strassenkameras offline – die Stadt ist voruebergehend unbeobachtet.",
             ),
         ],
         "snow": [
             (
-                "Fresh snow reveals every footprint — tracking becomes trivial.",
-                "Frischer Schnee zeigt jeden Fussabdruck — Verfolgung wird trivial.",
+                "Fresh snow reveals every footprint – tracking becomes trivial.",
+                "Frischer Schnee zeigt jeden Fussabdruck – Verfolgung wird trivial.",
             ),
             (
                 "Agents change boots frequently to avoid pattern matching.",
@@ -2283,8 +2283,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die weisse Landschaft macht dunkle Kleidung auffaellig.",
             ),
             (
-                "Snow muffles sound — conversational distance shrinks to whispers.",
-                "Schnee daempft Geraeusche — Gespraechsdistanz schrumpft auf Fluestern.",
+                "Snow muffles sound – conversational distance shrinks to whispers.",
+                "Schnee daempft Geraeusche – Gespraechsdistanz schrumpft auf Fluestern.",
             ),
             (
                 "The beauty of the snowfall belies the danger beneath.",
@@ -2297,13 +2297,13 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der Schneesturm legt den gesamten Ueberwachungsapparat lahm.",
             ),
             (
-                "Emergency shelters opened — population tracking impossible.",
-                "Notunterkuenfte geoeffnet — Bevoelkerungsverfolgung unmoeglich.",
+                "Emergency shelters opened – population tracking impossible.",
+                "Notunterkuenfte geoeffnet – Bevoelkerungsverfolgung unmoeglich.",
             ),
             ("The Bureau declares a weather emergency.", "Das Bureau erklaert einen Wetternotstand."),
             (
-                "All agents recalled — exposure risk too high.",
-                "Alle Agenten zurueckgerufen — Expositionsrisiko zu hoch.",
+                "All agents recalled – exposure risk too high.",
+                "Alle Agenten zurueckgerufen – Expositionsrisiko zu hoch.",
             ),
             ("Communications reduced to hardline only.", "Kommunikation auf Festnetz reduziert."),
         ],
@@ -2318,8 +2318,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Das Chaos des Sturms bietet Deckung fuer Notoperationen.",
             ),
             (
-                "Thunder masks gunshots — the Bureau increases patrols.",
-                "Donner maskiert Schuesse — das Bureau verstaerkt Patrouillen.",
+                "Thunder masks gunshots – the Bureau increases patrols.",
+                "Donner maskiert Schuesse – das Bureau verstaerkt Patrouillen.",
             ),
             ("Emergency protocols activated across all sectors.", "Notfallprotokolle in allen Sektoren aktiviert."),
         ],
@@ -2342,7 +2342,7 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "The Bureau shortens outdoor shifts to prevent collapse.",
                 "Das Bureau verkuerzt Aussenschichten, um Zusammenbrueche zu verhindern.",
             ),
-            ("Tempers flare — incident reports spike.", "Nerven liegen blank — Vorfallsberichte steigen sprunghaft."),
+            ("Tempers flare – incident reports spike.", "Nerven liegen blank – Vorfallsberichte steigen sprunghaft."),
             ("The heat makes everyone irritable and careless.", "Die Hitze macht alle reizbar und unvorsichtig."),
             (
                 "Water distribution points become surveillance opportunities.",
@@ -2355,8 +2355,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Agenten draengen sich in Eingaengen, ihr Atem kristallisiert.",
             ),
             (
-                "The cold drives informants to heated meeting points — predictable.",
-                "Die Kaelte treibt Informanten zu beheizten Treffpunkten — vorhersehbar.",
+                "The cold drives informants to heated meeting points – predictable.",
+                "Die Kaelte treibt Informanten zu beheizten Treffpunkten – vorhersehbar.",
             ),
             (
                 "Heating costs strain the Bureau's operational budget.",
@@ -2364,8 +2364,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Frostbite reports from field agents increase.", "Erfrierungsberichte von Feldagenten nehmen zu."),
             (
-                "The cold makes everyone move faster — less time for observation.",
-                "Die Kaelte laesst alle schneller gehen — weniger Zeit fuer Beobachtung.",
+                "The cold makes everyone move faster – less time for observation.",
+                "Die Kaelte laesst alle schneller gehen – weniger Zeit fuer Beobachtung.",
             ),
         ],
         "wind": [
@@ -2376,8 +2376,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Loose documents become a security risk.", "Lose Dokumente werden zu einem Sicherheitsrisiko."),
             (
-                "Outdoor meetings impossible — wind drowns all speech.",
-                "Aussenstehende Treffen unmoeglich — Wind uebertont jede Rede.",
+                "Outdoor meetings impossible – wind drowns all speech.",
+                "Aussenstehende Treffen unmoeglich – Wind uebertont jede Rede.",
             ),
             (
                 "The wind tests every lock and latch in the district.",
@@ -2408,8 +2408,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "new_moon": [
             (
-                "Optimal conditions for covert movement — the Bureau is on alert.",
-                "Optimale Bedingungen fuer verdeckte Bewegung — das Bureau ist alarmiert.",
+                "Optimal conditions for covert movement – the Bureau is on alert.",
+                "Optimale Bedingungen fuer verdeckte Bewegung – das Bureau ist alarmiert.",
             ),
             (
                 "The darkness provides cover for extraction operations.",
@@ -2420,15 +2420,15 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "The moonless night favours those who know the routes.",
                 "Die mondlose Nacht beguenstigt jene, die die Routen kennen.",
             ),
-            ("A quiet night — almost suspiciously so.", "Eine ruhige Nacht — fast verdaechtig ruhig."),
+            ("A quiet night – almost suspiciously so.", "Eine ruhige Nacht – fast verdaechtig ruhig."),
         ],
     },
     # ── scifi ─────────────────────────────────────────────────────────────────
     "scifi": {
         "clear": [
             (
-                "Sensor calibration window — all external instruments recalibrated.",
-                "Sensorkalibrierungsfenster — alle externen Instrumente rekalibriert.",
+                "Sensor calibration window – all external instruments recalibrated.",
+                "Sensorkalibrierungsfenster – alle externen Instrumente rekalibriert.",
             ),
             (
                 "Research teams request extended observation time.",
@@ -2440,22 +2440,22 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Rumpfinspektionsteams bei optimalen Bedingungen eingesetzt.",
             ),
             (
-                "HAVEN logs conditions as 'baseline nominal' — a rare entry.",
-                "HAVEN protokolliert Bedingungen als 'Basis nominal' — ein seltener Eintrag.",
+                "HAVEN logs conditions as 'baseline nominal' – a rare entry.",
+                "HAVEN protokolliert Bedingungen als 'Basis nominal' – ein seltener Eintrag.",
             ),
         ],
         "overcast": [
             (
-                "Solar generation drops 23% — compensating with reserve.",
-                "Solarerzeugung sinkt um 23% — Ausgleich durch Reserve.",
+                "Solar generation drops 23% – compensating with reserve.",
+                "Solarerzeugung sinkt um 23% – Ausgleich durch Reserve.",
             ),
             (
-                "Crew mood dips slightly — seasonal affective countermeasures activated.",
-                "Crew-Stimmung sinkt leicht — saisonale Gegenmassnahmen aktiviert.",
+                "Crew mood dips slightly – seasonal affective countermeasures activated.",
+                "Crew-Stimmung sinkt leicht – saisonale Gegenmassnahmen aktiviert.",
             ),
             (
-                "Grey conditions logged — no operational impact.",
-                "Graue Bedingungen protokolliert — kein operationeller Einfluss.",
+                "Grey conditions logged – no operational impact.",
+                "Graue Bedingungen protokolliert – kein operationeller Einfluss.",
             ),
             ("The perpetual grey tests crew morale.", "Das dauerhafte Grau testet die Crew-Moral."),
             (
@@ -2474,8 +2474,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Maintenance drones recalled to bays.", "Wartungsdrohnen in die Hangars zurueckgerufen."),
             (
-                "The fog triggers an old protocol — crew speculates about its origin.",
-                "Der Nebel loest ein altes Protokoll aus — die Crew spekuliert ueber seinen Ursprung.",
+                "The fog triggers an old protocol – crew speculates about its origin.",
+                "Der Nebel loest ein altes Protokoll aus – die Crew spekuliert ueber seinen Ursprung.",
             ),
             (
                 "Navigation relies entirely on inertial guidance.",
@@ -2486,8 +2486,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ("Station command elevates alert status to yellow.", "Stationskommando erhoeht Alarmstufe auf Gelb."),
             ("All EVA operations cancelled indefinitely.", "Alle EVA-Operationen auf unbestimmte Zeit abgesagt."),
             (
-                "The crew reports an eerie silence — even hull noises are absorbed.",
-                "Die Crew meldet eine unheimliche Stille — selbst Rumpfgeraeusche werden absorbiert.",
+                "The crew reports an eerie silence – even hull noises are absorbed.",
+                "Die Crew meldet eine unheimliche Stille – selbst Rumpfgeraeusche werden absorbiert.",
             ),
             ("Emergency beacon activated as precaution.", "Notfallbake als Vorsichtsmassnahme aktiviert."),
             (
@@ -2497,8 +2497,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "rain_light": [
             (
-                "Minor moisture event — standard protocols sufficient.",
-                "Geringfuegiges Feuchtigkeitsereignis — Standardprotokolle ausreichend.",
+                "Minor moisture event – standard protocols sufficient.",
+                "Geringfuegiges Feuchtigkeitsereignis – Standardprotokolle ausreichend.",
             ),
             (
                 "External sensor cleaning scheduled during precipitation.",
@@ -2524,8 +2524,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Das rhythmische Trommeln auf dem Rumpf wird zum Herzschlag der Station.",
             ),
             (
-                "Drainage protocols activated — no flooding risk.",
-                "Abflussprotokolle aktiviert — kein Ueberflutungsrisiko.",
+                "Drainage protocols activated – no flooding risk.",
+                "Abflussprotokolle aktiviert – kein Ueberflutungsrisiko.",
             ),
             (
                 "External maintenance postponed until conditions improve.",
@@ -2550,20 +2550,20 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Kritische Systeme von eisbetroffenen Sektionen umgeleitet.",
             ),
             (
-                "Engineering crew on high alert — ice damage is structural.",
-                "Technik-Crew in Alarmbereitschaft — Eisschaeden sind strukturell.",
+                "Engineering crew on high alert – ice damage is structural.",
+                "Technik-Crew in Alarmbereitschaft – Eisschaeden sind strukturell.",
             ),
             ("HAVEN recommends retreat to inner sections.", "HAVEN empfiehlt Rueckzug in innere Sektionen."),
         ],
         "storm": [
             (
-                "Structural dampeners at 78% capacity — station holds steady.",
-                "Strukturdaempfer bei 78% Kapazitaet — Station haelt stabil.",
+                "Structural dampeners at 78% capacity – station holds steady.",
+                "Strukturdaempfer bei 78% Kapazitaet – Station haelt stabil.",
             ),
             ("All loose equipment secured per storm protocol.", "Alle losen Geraete gemaess Sturmprotokoll gesichert."),
             (
-                "Communications intermittent — relay through backup antenna.",
-                "Kommunikation intermittierend — Umleitung ueber Backup-Antenne.",
+                "Communications intermittent – relay through backup antenna.",
+                "Kommunikation intermittierend – Umleitung ueber Backup-Antenne.",
             ),
             (
                 "The storm provides an opportunity to test hull resilience.",
@@ -2585,22 +2585,22 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Crew beantragt Erlaubnis fuer 'Schneefall-Beobachtungspause'.",
             ),
             (
-                "External temperatures stable — no structural concern.",
-                "Aussentemperaturen stabil — kein strukturelles Bedenken.",
+                "External temperatures stable – no structural concern.",
+                "Aussentemperaturen stabil – kein strukturelles Bedenken.",
             ),
             (
-                "The snow deadens all external acoustic data — eerie silence.",
-                "Der Schnee daempft alle externen akustischen Daten — unheimliche Stille.",
+                "The snow deadens all external acoustic data – eerie silence.",
+                "Der Schnee daempft alle externen akustischen Daten – unheimliche Stille.",
             ),
         ],
         "storm_snow": [
             (
-                "Full station lockdown — all external access sealed.",
-                "Volle Stationssperre — jeder externe Zugang versiegelt.",
+                "Full station lockdown – all external access sealed.",
+                "Volle Stationssperre – jeder externe Zugang versiegelt.",
             ),
             (
-                "Power reserves activated — solar generation at 4%.",
-                "Energiereserven aktiviert — Solarerzeugung bei 4%.",
+                "Power reserves activated – solar generation at 4%.",
+                "Energiereserven aktiviert – Solarerzeugung bei 4%.",
             ),
             (
                 "Structural integrity warnings from exposed sections.",
@@ -2611,40 +2611,40 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "thunderstorm": [
             (
-                "Faraday protections hold — internal systems unaffected.",
-                "Faraday-Schutz haelt — interne Systeme nicht betroffen.",
+                "Faraday protections hold – internal systems unaffected.",
+                "Faraday-Schutz haelt – interne Systeme nicht betroffen.",
             ),
             (
                 "Lightning data collected for atmospheric research.",
                 "Blitzdaten fuer atmosphaerische Forschung gesammelt.",
             ),
             (
-                "Power grid fluctuations — non-essential systems cycle.",
-                "Stromnetz-Schwankungen — nicht-essentielle Systeme schalten zyklisch.",
+                "Power grid fluctuations – non-essential systems cycle.",
+                "Stromnetz-Schwankungen – nicht-essentielle Systeme schalten zyklisch.",
             ),
             (
                 "The electromagnetic energy excites the quantum sensors.",
                 "Die elektromagnetische Energie erregt die Quantensensoren.",
             ),
             (
-                "Engineering reports nominal — all systems within tolerance.",
-                "Technik meldet nominal — alle Systeme innerhalb der Toleranz.",
+                "Engineering reports nominal – all systems within tolerance.",
+                "Technik meldet nominal – alle Systeme innerhalb der Toleranz.",
             ),
         ],
         "thunderstorm_severe": [
             ("Station command declares condition red.", "Stationskommando erklaert Zustand Rot."),
             ("All non-essential crew to secure positions.", "Alle nicht-essentielle Crew auf sichere Positionen."),
             (
-                "Hull breach risk elevated — damage control teams standby.",
-                "Rumpfbruchrisiko erhoeht — Schadensbegrenzungsteams in Bereitschaft.",
+                "Hull breach risk elevated – damage control teams standby.",
+                "Rumpfbruchrisiko erhoeht – Schadensbegrenzungsteams in Bereitschaft.",
             ),
             (
-                "Communications lost — station on internal protocols only.",
-                "Kommunikation verloren — Station nur auf internen Protokollen.",
+                "Communications lost – station on internal protocols only.",
+                "Kommunikation verloren – Station nur auf internen Protokollen.",
             ),
             (
-                "The crew endures — as they have endured everything.",
-                "Die Crew haelt durch — wie sie alles durchgehalten hat.",
+                "The crew endures – as they have endured everything.",
+                "Die Crew haelt durch – wie sie alles durchgehalten hat.",
             ),
         ],
         "heat": [
@@ -2662,12 +2662,12 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "cold": [
             (
-                "Heating systems compensate — interior temperature maintained.",
-                "Heizsysteme kompensieren — Innentemperatur gehalten.",
+                "Heating systems compensate – interior temperature maintained.",
+                "Heizsysteme kompensieren – Innentemperatur gehalten.",
             ),
             (
-                "Peripheral corridors lose 2°C — crew avoids them.",
-                "Periphere Korridore verlieren 2°C — Crew meidet sie.",
+                "Peripheral corridors lose 2°C – crew avoids them.",
+                "Periphere Korridore verlieren 2°C – Crew meidet sie.",
             ),
             ("Hot beverage dispensers report record usage.", "Heissgetraenkeautomaten melden Rekordnutzung."),
             (
@@ -2694,8 +2694,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Strukturmonitore protokollieren erhoehte Vibrationswerte.",
             ),
             (
-                "Wind load analysis completed — within design parameters.",
-                "Windlastanalyse abgeschlossen — innerhalb der Designparameter.",
+                "Wind load analysis completed – within design parameters.",
+                "Windlastanalyse abgeschlossen – innerhalb der Designparameter.",
             ),
         ],
         "full_moon": [
@@ -2715,18 +2715,18 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
         ],
         "new_moon": [
-            ("Star observation window — telescopes deployed.", "Sternbeobachtungsfenster — Teleskope eingesetzt."),
+            ("Star observation window – telescopes deployed.", "Sternbeobachtungsfenster – Teleskope eingesetzt."),
             (
-                "Darkness protocols activated — all exterior lights dimmed.",
-                "Dunkelheitsprotokolle aktiviert — alle Aussenlichter gedimmt.",
+                "Darkness protocols activated – all exterior lights dimmed.",
+                "Dunkelheitsprotokolle aktiviert – alle Aussenlichter gedimmt.",
             ),
             (
-                "The absence of moonlight calms the crew — sleep quality improves.",
-                "Das Fehlen von Mondlicht beruhigt die Crew — Schlafqualitaet verbessert sich.",
+                "The absence of moonlight calms the crew – sleep quality improves.",
+                "Das Fehlen von Mondlicht beruhigt die Crew – Schlafqualitaet verbessert sich.",
             ),
             (
-                "Navigation fully on instruments — baseline conditions.",
-                "Navigation vollstaendig auf Instrumenten — Basisbedingungen.",
+                "Navigation fully on instruments – baseline conditions.",
+                "Navigation vollstaendig auf Instrumenten – Basisbedingungen.",
             ),
             (
                 "The dark sky reveals Earth's aurora in vivid detail.",
@@ -2799,8 +2799,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Notfall-Biolumineszenz-Baken aktivieren sich kolonieweit.",
             ),
             (
-                "The colony's immune response heightens — pathogen risk in dense fog.",
-                "Die Immunantwort der Kolonie steigt — Pathogenrisiko im dichten Nebel.",
+                "The colony's immune response heightens – pathogen risk in dense fog.",
+                "Die Immunantwort der Kolonie steigt – Pathogenrisiko im dichten Nebel.",
             ),
             ("All external expeditions recalled.", "Alle externen Expeditionen zurueckgerufen."),
             (
@@ -2870,8 +2870,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Reparaturorganismen setzen sich in sturmgeschaedigten Sektionen ein.",
             ),
             (
-                "The storm strengthens the colony — what doesn't break it, feeds it.",
-                "Der Sturm staerkt die Kolonie — was sie nicht bricht, naehrt sie.",
+                "The storm strengthens the colony – what doesn't break it, feeds it.",
+                "Der Sturm staerkt die Kolonie – was sie nicht bricht, naehrt sie.",
             ),
             (
                 "Nutrient redistribution prioritizes core structures.",
@@ -2888,8 +2888,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der Stoffwechsel der Kolonie wechselt in den kaelteangepassten Modus.",
             ),
             (
-                "Snow insulates the outer shell — interior temperatures stabilize.",
-                "Schnee isoliert die Aussenschale — Innentemperaturen stabilisieren sich.",
+                "Snow insulates the outer shell – interior temperatures stabilize.",
+                "Schnee isoliert die Aussenschale – Innentemperaturen stabilisieren sich.",
             ),
             (
                 "The white blanket triggers a colour shift in the canopy.",
@@ -2900,14 +2900,14 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Schlafende Winterorganismen beginnen ihren kurzen Zyklus.",
             ),
             (
-                "The colony has seen snow before — adaptation is swift.",
-                "Die Kolonie hat schon Schnee gesehen — Anpassung ist schnell.",
+                "The colony has seen snow before – adaptation is swift.",
+                "Die Kolonie hat schon Schnee gesehen – Anpassung ist schnell.",
             ),
         ],
         "storm_snow": [
             (
-                "Full siege response — the colony seals all external pores.",
-                "Volle Belagerungsreaktion — die Kolonie versiegelt alle aeusseren Poren.",
+                "Full siege response – the colony seals all external pores.",
+                "Volle Belagerungsreaktion – die Kolonie versiegelt alle aeusseren Poren.",
             ),
             (
                 "Emergency heating from metabolic activity of core organisms.",
@@ -2922,8 +2922,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Kommunikation wechselt vollstaendig auf chemische Signalgebung.",
             ),
             (
-                "The colony endures — as it has endured for millennia.",
-                "Die Kolonie haelt durch — wie sie es seit Jahrtausenden getan hat.",
+                "The colony endures – as it has endured for millennia.",
+                "Die Kolonie haelt durch – wie sie es seit Jahrtausenden getan hat.",
             ),
         ],
         "thunderstorm": [
@@ -2932,8 +2932,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Bioelektrische Schuebe energetisieren das Neuronennetzwerk.",
             ),
             (
-                "The colony absorbs lightning energy — growth accelerates.",
-                "Die Kolonie absorbiert Blitzenergie — Wachstum beschleunigt sich.",
+                "The colony absorbs lightning energy – growth accelerates.",
+                "Die Kolonie absorbiert Blitzenergie – Wachstum beschleunigt sich.",
             ),
             (
                 "Thunder triggers synchronized bioluminescent pulses.",
@@ -2950,8 +2950,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "thunderstorm_severe": [
             (
-                "Structural damage to the outer canopy — healing prioritized.",
-                "Strukturschaeden am aeusseren Blattdach — Heilung priorisiert.",
+                "Structural damage to the outer canopy – healing prioritized.",
+                "Strukturschaeden am aeusseren Blattdach – Heilung priorisiert.",
             ),
             (
                 "The colony bleeds luminescent fluid from torn membranes.",
@@ -2959,12 +2959,12 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Emergency distress pheromones detected colony-wide.", "Notfall-Notpheromone kolonieweit erkannt."),
             (
-                "The worst storm the colony has weathered — but it adapts.",
-                "Der schlimmste Sturm, den die Kolonie ueberstanden hat — aber sie passt sich an.",
+                "The worst storm the colony has weathered – but it adapts.",
+                "Der schlimmste Sturm, den die Kolonie ueberstanden hat – aber sie passt sich an.",
             ),
             (
-                "Core preservation mode — all peripheral organisms sacrificed.",
-                "Kernerhaltungsmodus — alle peripheren Organismen geopfert.",
+                "Core preservation mode – all peripheral organisms sacrificed.",
+                "Kernerhaltungsmodus – alle peripheren Organismen geopfert.",
             ),
         ],
         "heat": [
@@ -2977,23 +2977,23 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Kolonie erhoet die Wasserzirkulation, um ihren Kern zu kuehlen.",
             ),
             (
-                "Heat stress triggers early sporulation — survival instinct.",
-                "Hitzestress loest fruehe Sporulation aus — Ueberlebensinstinkt.",
+                "Heat stress triggers early sporulation – survival instinct.",
+                "Hitzestress loest fruehe Sporulation aus – Ueberlebensinstinkt.",
             ),
             ("Bleaching begins at the uppermost fronds.", "Bleichen beginnt an den obersten Wedeln."),
             (
-                "The colony sweats — releasing moisture to cool itself.",
-                "Die Kolonie schwitzt — gibt Feuchtigkeit ab, um sich zu kuehlen.",
+                "The colony sweats – releasing moisture to cool itself.",
+                "Die Kolonie schwitzt – gibt Feuchtigkeit ab, um sich zu kuehlen.",
             ),
         ],
         "cold": [
             (
-                "The colony contracts — insulating air pockets form.",
-                "Die Kolonie zieht sich zusammen — isolierende Lufttaschen bilden sich.",
+                "The colony contracts – insulating air pockets form.",
+                "Die Kolonie zieht sich zusammen – isolierende Lufttaschen bilden sich.",
             ),
             (
-                "Metabolism drops to 30% — the colony enters torpor.",
-                "Stoffwechsel sinkt auf 30% — die Kolonie tritt in Erstarrung.",
+                "Metabolism drops to 30% – the colony enters torpor.",
+                "Stoffwechsel sinkt auf 30% – die Kolonie tritt in Erstarrung.",
             ),
             ("Only the deepest organisms remain fully active.", "Nur die tiefsten Organismen bleiben voll aktiv."),
             (
@@ -3004,8 +3004,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "wind": [
             (
-                "The canopy sways — shedding weak branches naturally.",
-                "Das Blattdach wiegt sich — schwache Aeste werden natuerlich abgeworfen.",
+                "The canopy sways – shedding weak branches naturally.",
+                "Das Blattdach wiegt sich – schwache Aeste werden natuerlich abgeworfen.",
             ),
             ("Wind carries spores to new colonization sites.", "Wind traegt Sporen zu neuen Besiedlungsstandorten."),
             (
@@ -3023,8 +3023,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "full_moon": [
             (
-                "Lunar tides trigger mass spawning — the colony reproduces.",
-                "Mondgezeiten loesen Massenlaichen aus — die Kolonie reproduziert sich.",
+                "Lunar tides trigger mass spawning – the colony reproduces.",
+                "Mondgezeiten loesen Massenlaichen aus – die Kolonie reproduziert sich.",
             ),
             ("Bioluminescence reaches its brightest cycle.", "Biolumineszenz erreicht ihren hellsten Zyklus."),
             (
@@ -3032,8 +3032,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Reproduktionsorgane der Kolonie entfalten sich im Mondlicht.",
             ),
             (
-                "Nocturnal predators are at peak activity — the colony's defences activate.",
-                "Naechtliche Raeuber sind auf Spitzenaktivitaet — die Abwehr der Kolonie aktiviert sich.",
+                "Nocturnal predators are at peak activity – the colony's defences activate.",
+                "Naechtliche Raeuber sind auf Spitzenaktivitaet – die Abwehr der Kolonie aktiviert sich.",
             ),
             (
                 "The full moon synchronizes the colony's circadian rhythm.",
@@ -3046,8 +3046,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Das eigene Licht der Kolonie wird zur dominanten Beleuchtung.",
             ),
             (
-                "Deep-dwelling creatures emerge — the colony monitors with caution.",
-                "Tiefseewesen tauchen auf — die Kolonie beobachtet mit Vorsicht.",
+                "Deep-dwelling creatures emerge – the colony monitors with caution.",
+                "Tiefseewesen tauchen auf – die Kolonie beobachtet mit Vorsicht.",
             ),
             (
                 "Internal bioluminescence creates a meditative atmosphere.",
@@ -3068,20 +3068,20 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         "clear": [
             ("Salvage teams deployed to the outer zones.", "Bergungstrupps in die Aussenzonen entsandt."),
             (
-                "Solar collectors reach full output — batteries charge.",
-                "Solarkollektoren erreichen volle Leistung — Batterien laden.",
+                "Solar collectors reach full output – batteries charge.",
+                "Solarkollektoren erreichen volle Leistung – Batterien laden.",
             ),
             (
                 "Clear weather makes the wasteland feel almost hopeful.",
                 "Klares Wetter laesst das Oedland fast hoffnungsvoll erscheinen.",
             ),
             (
-                "The lookouts can see for kilometres — no raiders in sight.",
-                "Die Ausguck koennen kilometerweit sehen — keine Raeuber in Sicht.",
+                "The lookouts can see for kilometres – no raiders in sight.",
+                "Die Ausguck koennen kilometerweit sehen – keine Raeuber in Sicht.",
             ),
             (
-                "Water evaporation accelerates — conservation measures enforced.",
-                "Wasserverdunstung beschleunigt sich — Konservierungsmassnahmen durchgesetzt.",
+                "Water evaporation accelerates – conservation measures enforced.",
+                "Wasserverdunstung beschleunigt sich – Konservierungsmassnahmen durchgesetzt.",
             ),
         ],
         "overcast": [
@@ -3090,8 +3090,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der graue Himmel entspricht der Stimmung der Gemeinschaft.",
             ),
             (
-                "Reduced solar output — non-essential systems rationed.",
-                "Reduzierte Solarleistung — nicht-essentielle Systeme rationiert.",
+                "Reduced solar output – non-essential systems rationed.",
+                "Reduzierte Solarleistung – nicht-essentielle Systeme rationiert.",
             ),
             (
                 "The overcast sky provides relief from the relentless sun.",
@@ -3099,78 +3099,78 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Salvage operations continue under grey skies.", "Bergungsoperationen gehen unter grauem Himmel weiter."),
             (
-                "The children ask if it will rain — hope is fragile.",
-                "Die Kinder fragen, ob es regnen wird — Hoffnung ist zerbrechlich.",
+                "The children ask if it will rain – hope is fragile.",
+                "Die Kinder fragen, ob es regnen wird – Hoffnung ist zerbrechlich.",
             ),
         ],
         "fog": [
             (
-                "Patrols shortened — too dangerous in reduced visibility.",
-                "Patrouillen verkuerzt — zu gefaehrlich bei eingeschraenkter Sicht.",
+                "Patrols shortened – too dangerous in reduced visibility.",
+                "Patrouillen verkuerzt – zu gefaehrlich bei eingeschraenkter Sicht.",
             ),
             (
                 "The fog carries strange sounds from the wasteland.",
                 "Der Nebel traegt seltsame Geraeusche aus dem Oedland.",
             ),
             (
-                "Sentries on high alert — fog is a raider's friend.",
-                "Wachen in Alarmbereitschaft — Nebel ist ein Freund der Raeuber.",
+                "Sentries on high alert – fog is a raider's friend.",
+                "Wachen in Alarmbereitschaft – Nebel ist ein Freund der Raeuber.",
             ),
             (
-                "The community pulls inward — waiting for the fog to lift.",
-                "Die Gemeinschaft zieht sich nach innen zurueck — wartet, dass der Nebel sich hebt.",
+                "The community pulls inward – waiting for the fog to lift.",
+                "Die Gemeinschaft zieht sich nach innen zurueck – wartet, dass der Nebel sich hebt.",
             ),
             (
-                "Fog complicates water collection — drip traps work overtime.",
-                "Nebel erschwert Wassersammlung — Tropffallen arbeiten auf Hochtouren.",
+                "Fog complicates water collection – drip traps work overtime.",
+                "Nebel erschwert Wassersammlung – Tropffallen arbeiten auf Hochtouren.",
             ),
         ],
         "fog_dense": [
             (
-                "The compound is sealed — no movement in or out.",
-                "Die Anlage ist versiegelt — keine Bewegung hinein oder heraus.",
+                "The compound is sealed – no movement in or out.",
+                "Die Anlage ist versiegelt – keine Bewegung hinein oder heraus.",
             ),
             ("Acoustic sentries replace visual watches.", "Akustische Wachen ersetzen visuelle Beobachtung."),
             (
-                "The dense fog triggers old fears — the before-times had fog like this.",
-                "Der dichte Nebel loest alte Aengste aus — die Zeit davor hatte Nebel wie diesen.",
+                "The dense fog triggers old fears – the before-times had fog like this.",
+                "Der dichte Nebel loest alte Aengste aus – die Zeit davor hatte Nebel wie diesen.",
             ),
             (
-                "Radio silence ordered — sound carries too far in this fog.",
-                "Funkstille angeordnet — Geraeusche tragen zu weit in diesem Nebel.",
+                "Radio silence ordered – sound carries too far in this fog.",
+                "Funkstille angeordnet – Geraeusche tragen zu weit in diesem Nebel.",
             ),
             ("Everyone waits. There is nothing else to do.", "Alle warten. Es gibt nichts anderes zu tun."),
         ],
         "rain_light": [
-            ("Rain collectors deployed — every drop matters.", "Regensammler aufgestellt — jeder Tropfen zaehlt."),
-            ("The drizzle settles the dust — a small mercy.", "Der Nieselregen legt den Staub — eine kleine Gnade."),
+            ("Rain collectors deployed – every drop matters.", "Regensammler aufgestellt – jeder Tropfen zaehlt."),
+            ("The drizzle settles the dust – a small mercy.", "Der Nieselregen legt den Staub – eine kleine Gnade."),
             ("Children catch raindrops on their tongues.", "Kinder fangen Regentropfen auf ihren Zungen."),
             (
-                "The crops perk up — even this little moisture helps.",
-                "Die Ernten richten sich auf — selbst diese geringe Feuchtigkeit hilft.",
+                "The crops perk up – even this little moisture helps.",
+                "Die Ernten richten sich auf – selbst diese geringe Feuchtigkeit hilft.",
             ),
             ("Morale improves with every raindrop.", "Die Moral verbessert sich mit jedem Regentropfen."),
         ],
         "rain": [
-            ("Celebration in the compound — the cisterns fill!", "Feier in der Anlage — die Zisternen fuellen sich!"),
+            ("Celebration in the compound – the cisterns fill!", "Feier in der Anlage – die Zisternen fuellen sich!"),
             (
-                "Water rationing suspended — a rare day of abundance.",
-                "Wasserrationierung ausgesetzt — ein seltener Tag des Ueberflusses.",
+                "Water rationing suspended – a rare day of abundance.",
+                "Wasserrationierung ausgesetzt – ein seltener Tag des Ueberflusses.",
             ),
             (
-                "The rain means survival — the community gives thanks.",
-                "Der Regen bedeutet Ueberleben — die Gemeinschaft gibt Dank.",
+                "The rain means survival – the community gives thanks.",
+                "Der Regen bedeutet Ueberleben – die Gemeinschaft gibt Dank.",
             ),
             ("Mud becomes a problem, but nobody complains.", "Schlamm wird zum Problem, aber niemand beschwert sich."),
             (
-                "The crops drink — next harvest may actually succeed.",
-                "Die Ernten trinken — die naechste Ernte koennte tatsaechlich gelingen.",
+                "The crops drink – next harvest may actually succeed.",
+                "Die Ernten trinken – die naechste Ernte koennte tatsaechlich gelingen.",
             ),
         ],
         "rain_freezing": [
             (
-                "Crop covers deployed — the harvest is at risk.",
-                "Ernteabdeckungen aufgestellt — die Ernte ist gefaehrdet.",
+                "Crop covers deployed – the harvest is at risk.",
+                "Ernteabdeckungen aufgestellt – die Ernte ist gefaehrdet.",
             ),
             (
                 "Injuries from falls on icy surfaces increase.",
@@ -3181,8 +3181,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Wasserrohre muessen isoliert werden oder sie platzen.",
             ),
             (
-                "Freezing rain is worse than no rain — it destroys more than it gives.",
-                "Eisregen ist schlimmer als kein Regen — er zerstoert mehr als er gibt.",
+                "Freezing rain is worse than no rain – it destroys more than it gives.",
+                "Eisregen ist schlimmer als kein Regen – er zerstoert mehr als er gibt.",
             ),
             (
                 "The medic treats frostbite and broken bones simultaneously.",
@@ -3191,20 +3191,20 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "storm": [
             (
-                "Emergency shelters opened — above-ground structures at risk.",
-                "Notunterkuenfte geoeffnet — oberirdische Strukturen gefaehrdet.",
+                "Emergency shelters opened – above-ground structures at risk.",
+                "Notunterkuenfte geoeffnet – oberirdische Strukturen gefaehrdet.",
             ),
             (
-                "Repair crews on standby — the storm will leave damage.",
-                "Reparaturtrupps in Bereitschaft — der Sturm wird Schaeden hinterlassen.",
+                "Repair crews on standby – the storm will leave damage.",
+                "Reparaturtrupps in Bereitschaft – der Sturm wird Schaeden hinterlassen.",
             ),
             (
-                "The storm tests the community's resilience — again.",
-                "Der Sturm testet die Widerstandsfaehigkeit der Gemeinschaft — wieder.",
+                "The storm tests the community's resilience – again.",
+                "Der Sturm testet die Widerstandsfaehigkeit der Gemeinschaft – wieder.",
             ),
             (
-                "Loose sheet metal becomes lethal — everyone stays low.",
-                "Loses Blech wird toedlich — alle bleiben niedrig.",
+                "Loose sheet metal becomes lethal – everyone stays low.",
+                "Loses Blech wird toedlich – alle bleiben niedrig.",
             ),
             (
                 "The storm is fierce but the community has endured worse.",
@@ -3214,24 +3214,24 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         "snow": [
             ("The children make snow angels in the ruins.", "Die Kinder machen Schneeengel in den Ruinen."),
             (
-                "Snow insulates the shelters — a rare comfort.",
-                "Schnee isoliert die Unterkuenfte — ein seltener Komfort.",
+                "Snow insulates the shelters – a rare comfort.",
+                "Schnee isoliert die Unterkuenfte – ein seltener Komfort.",
             ),
             (
-                "Meltwater will fill the cisterns in spring — hope banks.",
-                "Schmelzwasser wird die Zisternen im Fruehling fuellen — Hoffnung angespart.",
+                "Meltwater will fill the cisterns in spring – hope banks.",
+                "Schmelzwasser wird die Zisternen im Fruehling fuellen – Hoffnung angespart.",
             ),
             (
                 "The beauty of snow on ruins catches even hardened hearts.",
                 "Die Schoenheit von Schnee auf Ruinen beruehrt selbst abgehaertete Herzen.",
             ),
             (
-                "Snow covers the worst scars — a temporary mercy.",
-                "Schnee bedeckt die schlimmsten Narben — eine voruebergehende Gnade.",
+                "Snow covers the worst scars – a temporary mercy.",
+                "Schnee bedeckt die schlimmsten Narben – eine voruebergehende Gnade.",
             ),
         ],
         "storm_snow": [
-            ("Full lockdown — no one leaves the compound.", "Volle Sperre — niemand verlaesst die Anlage."),
+            ("Full lockdown – no one leaves the compound.", "Volle Sperre – niemand verlaesst die Anlage."),
             (
                 "Fuel reserves depleting faster than planned.",
                 "Treibstoffreserven erschoepfen sich schneller als geplant.",
@@ -3241,45 +3241,45 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der Schneesturm ist im Moment der gefaehrlichste Feind.",
             ),
             (
-                "Food rationing begins — the storm may last days.",
-                "Nahrungsmittelrationierung beginnt — der Sturm kann Tage dauern.",
+                "Food rationing begins – the storm may last days.",
+                "Nahrungsmittelrationierung beginnt – der Sturm kann Tage dauern.",
             ),
             (
-                "The community huddles together — warmth comes from bodies and will.",
-                "Die Gemeinschaft draengt sich zusammen — Waerme kommt von Koerpern und Willen.",
+                "The community huddles together – warmth comes from bodies and will.",
+                "Die Gemeinschaft draengt sich zusammen – Waerme kommt von Koerpern und Willen.",
             ),
         ],
         "thunderstorm": [
             (
-                "Lightning ignites a fire in the salvage yard — crews respond.",
-                "Blitz entzuendet ein Feuer im Bergungshof — Trupps reagieren.",
+                "Lightning ignites a fire in the salvage yard – crews respond.",
+                "Blitz entzuendet ein Feuer im Bergungshof – Trupps reagieren.",
             ),
             (
-                "The solar array shorts out — backup battery holds.",
-                "Die Solaranlage schliesst kurz — Backup-Batterie haelt.",
+                "The solar array shorts out – backup battery holds.",
+                "Die Solaranlage schliesst kurz – Backup-Batterie haelt.",
             ),
             (
-                "The children are frightened — the elders tell stories to calm them.",
-                "Die Kinder haben Angst — die Aelteren erzaehlen Geschichten, um sie zu beruhigen.",
+                "The children are frightened – the elders tell stories to calm them.",
+                "Die Kinder haben Angst – die Aelteren erzaehlen Geschichten, um sie zu beruhigen.",
             ),
             ("Thunder echoes off the ruins like artillery fire.", "Donner hallt von den Ruinen wie Artilleriefeuer."),
             (
-                "The storm passes — damage assessment begins at first light.",
-                "Der Sturm zieht vorbei — Schadensbewertung beginnt bei erstem Licht.",
+                "The storm passes – damage assessment begins at first light.",
+                "Der Sturm zieht vorbei – Schadensbewertung beginnt bei erstem Licht.",
             ),
         ],
         "thunderstorm_severe": [
             (
-                "Multiple fires reported — all hands to firefighting.",
-                "Mehrere Braende gemeldet — alle Haende zum Feuerloesch.",
+                "Multiple fires reported – all hands to firefighting.",
+                "Mehrere Braende gemeldet – alle Haende zum Feuerloesch.",
             ),
             (
-                "The most severe storm since the founding — prayer and action.",
-                "Der schwerste Sturm seit der Gruendung — Gebet und Aktion.",
+                "The most severe storm since the founding – prayer and action.",
+                "Der schwerste Sturm seit der Gruendung – Gebet und Aktion.",
             ),
             (
-                "Casualties from flying debris — the medic is overwhelmed.",
-                "Verletzte durch umherfliegende Truemmer — der Sanitaeter ist ueberlastet.",
+                "Casualties from flying debris – the medic is overwhelmed.",
+                "Verletzte durch umherfliegende Truemmer – der Sanitaeter ist ueberlastet.",
             ),
             (
                 "When it ends, the community will rebuild. They always do.",
@@ -3292,20 +3292,20 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "heat": [
             (
-                "Water rationing strictened — survival arithmetic.",
-                "Wasserrationierung verschaerft — Ueberlebensarithmetik.",
+                "Water rationing strictened – survival arithmetic.",
+                "Wasserrationierung verschaerft – Ueberlebensarithmetik.",
             ),
             (
                 "Outdoor work limited to dawn and dusk shifts.",
                 "Arbeit im Freien auf Morgen- und Abenddaemmerungsschichten beschraenkt.",
             ),
             (
-                "The heat wilts the crops — irrigation increased.",
-                "Die Hitze laesst die Ernten welken — Bewaesserung erhoeht.",
+                "The heat wilts the crops – irrigation increased.",
+                "Die Hitze laesst die Ernten welken – Bewaesserung erhoeht.",
             ),
             (
-                "Tempers run hot — disputes settled before they escalate.",
-                "Gemüter erhitzen sich — Streitigkeiten werden geschlichtet, bevor sie eskalieren.",
+                "Tempers run hot – disputes settled before they escalate.",
+                "Gemüter erhitzen sich – Streitigkeiten werden geschlichtet, bevor sie eskalieren.",
             ),
             ("The community seeks shade and patience.", "Die Gemeinschaft sucht Schatten und Geduld."),
         ],
@@ -3316,22 +3316,22 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("The cold claims the last of the autumn stores.", "Die Kaelte beansprucht die letzten Herbstvorraete."),
             (
-                "Communal sleeping arrangements — body heat is a resource.",
-                "Gemeinschaftliche Schlafanordnungen — Koerperwaerme ist eine Ressource.",
+                "Communal sleeping arrangements – body heat is a resource.",
+                "Gemeinschaftliche Schlafanordnungen – Koerperwaerme ist eine Ressource.",
             ),
             (
                 "The plumber is the most valuable person in the compound.",
                 "Der Klempner ist die wertvollste Person in der Anlage.",
             ),
             (
-                "Cold steels the community's resolve — they will not break.",
-                "Kaelte staehlt den Willen der Gemeinschaft — sie werden nicht brechen.",
+                "Cold steels the community's resolve – they will not break.",
+                "Kaelte staehlt den Willen der Gemeinschaft – sie werden nicht brechen.",
             ),
         ],
         "wind": [
             (
-                "The wind strips topsoil from the gardens — cover crops deployed.",
-                "Der Wind traegt Mutterboden von den Gaerten ab — Deckfruechte eingesetzt.",
+                "The wind strips topsoil from the gardens – cover crops deployed.",
+                "Der Wind traegt Mutterboden von den Gaerten ab – Deckfruechte eingesetzt.",
             ),
             ("Sand infiltrates every seal and gasket.", "Sand dringt in jede Dichtung ein."),
             (
@@ -3340,45 +3340,45 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Eye protection required for all outdoor work.", "Augenschutz fuer alle Aussenarbeiten erforderlich."),
             (
-                "The wind is a constant companion — hated but respected.",
-                "Der Wind ist ein staendiger Begleiter — gehasst aber respektiert.",
+                "The wind is a constant companion – hated but respected.",
+                "Der Wind ist ein staendiger Begleiter – gehasst aber respektiert.",
             ),
         ],
         "full_moon": [
-            ("Full moon watch — doubled sentries on the walls.", "Vollmondwache — verdoppelte Wachen auf den Mauern."),
+            ("Full moon watch – doubled sentries on the walls.", "Vollmondwache – verdoppelte Wachen auf den Mauern."),
             (
-                "The moonlight reveals movement on the horizon — scouts dispatched.",
-                "Das Mondlicht enthuellt Bewegung am Horizont — Spaeer entsandt.",
+                "The moonlight reveals movement on the horizon – scouts dispatched.",
+                "Das Mondlicht enthuellt Bewegung am Horizont – Spaeer entsandt.",
             ),
             (
-                "The old stories say full moons bring raiders — the gates are barred.",
-                "Die alten Geschichten sagen, Vollmonde bringen Raeuber — die Tore sind verriegelt.",
+                "The old stories say full moons bring raiders – the gates are barred.",
+                "Die alten Geschichten sagen, Vollmonde bringen Raeuber – die Tore sind verriegelt.",
             ),
             (
                 "The full moon reminds everyone of what the world looked like before.",
                 "Der Vollmond erinnert alle daran, wie die Welt vorher aussah.",
             ),
             (
-                "Moonlight makes the ruins beautiful — a cruel joke.",
-                "Mondlicht macht die Ruinen schoen — ein grausamer Scherz.",
+                "Moonlight makes the ruins beautiful – a cruel joke.",
+                "Mondlicht macht die Ruinen schoen – ein grausamer Scherz.",
             ),
         ],
         "new_moon": [
             (
-                "Darkness means fuel savings — no exterior lighting tonight.",
-                "Dunkelheit bedeutet Treibstoffersparnis — keine Aussenbeleuchtung heute Nacht.",
+                "Darkness means fuel savings – no exterior lighting tonight.",
+                "Dunkelheit bedeutet Treibstoffersparnis – keine Aussenbeleuchtung heute Nacht.",
             ),
             (
-                "The sentries strain their ears — darkness sharpens hearing.",
-                "Die Wachen spitzen ihre Ohren — Dunkelheit schaerft das Gehoer.",
+                "The sentries strain their ears – darkness sharpens hearing.",
+                "Die Wachen spitzen ihre Ohren – Dunkelheit schaerft das Gehoer.",
             ),
             (
-                "A moonless night is a thief's night — extra patrols.",
-                "Eine mondlose Nacht ist eine Diebesnacht — extra Patrouillen.",
+                "A moonless night is a thief's night – extra patrols.",
+                "Eine mondlose Nacht ist eine Diebesnacht – extra Patrouillen.",
             ),
             (
-                "The stars are brilliant tonight — the astronomer shares the telescope.",
-                "Die Sterne sind brillant heute Nacht — der Astronom teilt das Teleskop.",
+                "The stars are brilliant tonight – the astronomer shares the telescope.",
+                "Die Sterne sind brillant heute Nacht – der Astronom teilt das Teleskop.",
             ),
             (
                 "In the darkness, the community's fires burn brighter.",
@@ -3395,8 +3395,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
             ),
             ("Market day proceeds with good cheer.", "Markttag verlaeuft mit guter Laune."),
             (
-                "The scribes work by natural light — ink flows freely.",
-                "Die Schreiber arbeiten bei natuerlichem Licht — Tinte fliesst frei.",
+                "The scribes work by natural light – ink flows freely.",
+                "Die Schreiber arbeiten bei natuerlichem Licht – Tinte fliesst frei.",
             ),
             ("Clear weather brings visitors to the gates.", "Klares Wetter bringt Besucher an die Tore."),
             ("The gardens produce abundantly under the sun.", "Die Gaerten produzieren reichlich unter der Sonne."),
@@ -3419,8 +3419,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Vorlesungen drinnen sind an grauen Tagen besser besucht.",
             ),
             (
-                "The herbalists check their drying racks — humidity rises.",
-                "Die Kraeuterkundler pruefen ihre Trockengestelle — Feuchtigkeit steigt.",
+                "The herbalists check their drying racks – humidity rises.",
+                "Die Kraeuterkundler pruefen ihre Trockengestelle – Feuchtigkeit steigt.",
             ),
         ],
         "fog": [
@@ -3447,12 +3447,12 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "fog_dense": [
             (
-                "The city gates remain closed — no one enters or leaves.",
-                "Die Stadttore bleiben geschlossen — niemand betritt oder verlaesst die Stadt.",
+                "The city gates remain closed – no one enters or leaves.",
+                "Die Stadttore bleiben geschlossen – niemand betritt oder verlaesst die Stadt.",
             ),
             (
-                "Torches burn at midday — the fog defeats the sun.",
-                "Fackeln brennen am Mittag — der Nebel besiegt die Sonne.",
+                "Torches burn at midday – the fog defeats the sun.",
+                "Fackeln brennen am Mittag – der Nebel besiegt die Sonne.",
             ),
             (
                 "The fog triggers superstitious murmurs among the less educated.",
@@ -3488,8 +3488,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "rain": [
             (
-                "The lower courts flood — scholars carry their hems.",
-                "Die unteren Hoefe fluten — Gelehrte raffen ihre Saeueme.",
+                "The lower courts flood – scholars carry their hems.",
+                "Die unteren Hoefe fluten – Gelehrte raffen ihre Saeueme.",
             ),
             ("Indoor debate replaces outdoor discourse.", "Debatte drinnen ersetzt Diskurs draussen."),
             ("The rain feeds the vineyards beyond the walls.", "Der Regen naehrt die Weinberge jenseits der Mauern."),
@@ -3498,22 +3498,22 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Waesche haengt in den Hallen statt in den Innenhoefen.",
             ),
             (
-                "The rain is God's irrigation — the gardeners give thanks.",
-                "Der Regen ist Gottes Bewaesserung — die Gaertner danken.",
+                "The rain is God's irrigation – the gardeners give thanks.",
+                "Der Regen ist Gottes Bewaesserung – die Gaertner danken.",
             ),
         ],
         "rain_freezing": [
             (
-                "The cobblestones become treacherous — sand is spread.",
-                "Das Kopfsteinpflaster wird tueckisch — Sand wird gestreut.",
+                "The cobblestones become treacherous – sand is spread.",
+                "Das Kopfsteinpflaster wird tueckisch – Sand wird gestreut.",
             ),
             (
-                "The water carriers slip and spill — rationing begins.",
-                "Die Wassertraeger rutschen und verschuetten — Rationierung beginnt.",
+                "The water carriers slip and spill – rationing begins.",
+                "Die Wassertraeger rutschen und verschuetten – Rationierung beginnt.",
             ),
             (
-                "Ice glazes the battlements — the walls become unclimbable.",
-                "Eis glasiert die Zinnen — die Mauern werden unkletterbar.",
+                "Ice glazes the battlements – the walls become unclimbable.",
+                "Eis glasiert die Zinnen – die Mauern werden unkletterbar.",
             ),
             (
                 "The herbalists prepare poultices for bruises and fractures.",
@@ -3526,8 +3526,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "storm": [
             (
-                "The wind tests the shutters — the carpenter is busy.",
-                "Der Wind prueft die Laeden — der Zimmermann ist beschaeftigt.",
+                "The wind tests the shutters – the carpenter is busy.",
+                "Der Wind prueft die Laeden – der Zimmermann ist beschaeftigt.",
             ),
             (
                 "Manuscripts are moved to inner chambers for protection.",
@@ -3538,34 +3538,34 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Der Sturm verzoegert die Post aus den suedlichen Staedten.",
             ),
             (
-                "Market stalls are disassembled — merchants seek shelter.",
-                "Marktstaende werden abgebaut — Haendler suchen Schutz.",
+                "Market stalls are disassembled – merchants seek shelter.",
+                "Marktstaende werden abgebaut – Haendler suchen Schutz.",
             ),
-            ("The walls hold — as they were built to do.", "Die Mauern halten — wie sie gebaut wurden."),
+            ("The walls hold – as they were built to do.", "Die Mauern halten – wie sie gebaut wurden."),
         ],
         "snow": [
             ("The children of the quarter play in the snow.", "Die Kinder des Viertels spielen im Schnee."),
             (
-                "Snow insulates the rooms — the fires burn lower.",
-                "Schnee isoliert die Raeume — die Feuer brennen niedriger.",
+                "Snow insulates the rooms – the fires burn lower.",
+                "Schnee isoliert die Raeume – die Feuer brennen niedriger.",
             ),
             ("The white blanket makes the city look new.", "Die weisse Decke laesst die Stadt neu aussehen."),
-            ("Ink freezes — the scribes work by the fire.", "Tinte gefriert — die Schreiber arbeiten am Feuer."),
+            ("Ink freezes – the scribes work by the fire.", "Tinte gefriert – die Schreiber arbeiten am Feuer."),
             (
                 "The silence of snowfall brings unexpected peace.",
                 "Die Stille des Schneefalls bringt unerwarteten Frieden.",
             ),
         ],
         "storm_snow": [
-            ("The gates are sealed — the city is an island.", "Die Tore sind versiegelt — die Stadt ist eine Insel."),
-            ("Wood supplies dwindle — the cold is the enemy.", "Holzvorraete schwinden — die Kaelte ist der Feind."),
+            ("The gates are sealed – the city is an island.", "Die Tore sind versiegelt – die Stadt ist eine Insel."),
+            ("Wood supplies dwindle – the cold is the enemy.", "Holzvorraete schwinden – die Kaelte ist der Feind."),
             (
-                "The blizzard forces communal living — warmth is shared.",
-                "Der Schneesturm erzwingt gemeinschaftliches Leben — Waerme wird geteilt.",
+                "The blizzard forces communal living – warmth is shared.",
+                "Der Schneesturm erzwingt gemeinschaftliches Leben – Waerme wird geteilt.",
             ),
             (
-                "Messengers cannot depart — the city is isolated.",
-                "Boten koennen nicht aufbrechen — die Stadt ist isoliert.",
+                "Messengers cannot depart – the city is isolated.",
+                "Boten koennen nicht aufbrechen – die Stadt ist isoliert.",
             ),
             (
                 "Inside the walls, the work of the mind continues undaunted.",
@@ -3578,16 +3578,16 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Blitze beleuchten das Buntglas in unmoeglichen Farben.",
             ),
             (
-                "The storm interrupts the evening service — prayers become shouts.",
-                "Der Sturm unterbricht den Abendgottesdienst — Gebete werden zu Rufen.",
+                "The storm interrupts the evening service – prayers become shouts.",
+                "Der Sturm unterbricht den Abendgottesdienst – Gebete werden zu Rufen.",
             ),
             (
                 "The bellringer waits for the storm to pass before tolling vespers.",
                 "Der Gloeckner wartet, bis der Sturm vorbeizieht, bevor er die Vesper laeutet.",
             ),
             (
-                "Thunder rattles the inkwells — several manuscripts are spotted.",
-                "Donner laesst die Tintenglaeser klirren — mehrere Manuskripte werden bekleckst.",
+                "Thunder rattles the inkwells – several manuscripts are spotted.",
+                "Donner laesst die Tintenglaeser klirren – mehrere Manuskripte werden bekleckst.",
             ),
             (
                 "The storm is fierce but the faith of the city is fiercer.",
@@ -3596,36 +3596,36 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "thunderstorm_severe": [
             (
-                "The great bell rings unbidden — lightning has struck the tower.",
-                "Die grosse Glocke laeutet ungebeten — Blitz hat den Turm getroffen.",
+                "The great bell rings unbidden – lightning has struck the tower.",
+                "Die grosse Glocke laeutet ungebeten – Blitz hat den Turm getroffen.",
             ),
             (
-                "Roof tiles shatter in the hail — the artisans despair.",
-                "Dachziegel zerbrechen im Hagel — die Handwerker verzweifeln.",
+                "Roof tiles shatter in the hail – the artisans despair.",
+                "Dachziegel zerbrechen im Hagel – die Handwerker verzweifeln.",
             ),
             (
-                "The worst storm in living memory — prayers in every chapel.",
-                "Der schlimmste Sturm in lebender Erinnerung — Gebete in jeder Kapelle.",
+                "The worst storm in living memory – prayers in every chapel.",
+                "Der schlimmste Sturm in lebender Erinnerung – Gebete in jeder Kapelle.",
             ),
             (
-                "The storm damages the rose window — a generation's work at risk.",
-                "Der Sturm beschaedigt das Rosenfenster — die Arbeit einer Generation in Gefahr.",
+                "The storm damages the rose window – a generation's work at risk.",
+                "Der Sturm beschaedigt das Rosenfenster – die Arbeit einer Generation in Gefahr.",
             ),
             (
-                "Some whisper of divine test — others simply rebuild.",
-                "Manche fluesstern von goettlicher Pruefung — andere bauen einfach wieder auf.",
+                "Some whisper of divine test – others simply rebuild.",
+                "Manche fluesstern von goettlicher Pruefung – andere bauen einfach wieder auf.",
             ),
         ],
         "heat": [
             ("The scholars retreat to the cool cellars.", "Die Gelehrten ziehen sich in die kuehlen Keller zurueck."),
             (
-                "Heat wilts the gardens — the gardeners work before dawn.",
-                "Hitze laesst die Gaerten welken — die Gaertner arbeiten vor Morgengrauen.",
+                "Heat wilts the gardens – the gardeners work before dawn.",
+                "Hitze laesst die Gaerten welken – die Gaertner arbeiten vor Morgengrauen.",
             ),
-            ("The well level drops — water is precious.", "Der Brunnenspiegel sinkt — Wasser ist kostbar."),
+            ("The well level drops – water is precious.", "Der Brunnenspiegel sinkt – Wasser ist kostbar."),
             (
-                "Ink dries too fast — the scribes work in frustration.",
-                "Tinte trocknet zu schnell — die Schreiber arbeiten frustriert.",
+                "Ink dries too fast – the scribes work in frustration.",
+                "Tinte trocknet zu schnell – die Schreiber arbeiten frustriert.",
             ),
             (
                 "The heat makes the stone walls radiate warmth even at night.",
@@ -3638,17 +3638,17 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Feuer verbrauchen mehr Holz, als die Foerster liefern koennen.",
             ),
             (
-                "The well freezes — snow must be melted for water.",
-                "Der Brunnen gefriert — Schnee muss fuer Wasser geschmolzen werden.",
+                "The well freezes – snow must be melted for water.",
+                "Der Brunnen gefriert – Schnee muss fuer Wasser geschmolzen werden.",
             ),
             (
-                "Scholars huddle together for warmth — philosophy and body heat.",
-                "Gelehrte draengen sich fuer Waerme zusammen — Philosophie und Koerperwaerme.",
+                "Scholars huddle together for warmth – philosophy and body heat.",
+                "Gelehrte draengen sich fuer Waerme zusammen – Philosophie und Koerperwaerme.",
             ),
             ("The cold drives everyone to the forge and kitchen.", "Die Kaelte treibt alle zur Schmiede und Kueche."),
             (
-                "Ink freezes in the wells — writing is impossible.",
-                "Tinte gefriert in den Naepfen — Schreiben ist unmoeglich.",
+                "Ink freezes in the wells – writing is impossible.",
+                "Tinte gefriert in den Naepfen – Schreiben ist unmoeglich.",
             ),
         ],
         "wind": [
@@ -3675,8 +3675,8 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
         ],
         "full_moon": [
             (
-                "The night scholars read by moonlight — saving candles.",
-                "Die Nachtgelehrten lesen bei Mondlicht — sparen Kerzen.",
+                "The night scholars read by moonlight – saving candles.",
+                "Die Nachtgelehrten lesen bei Mondlicht – sparen Kerzen.",
             ),
             (
                 "The full moon illuminates the rose window from outside.",
@@ -3687,18 +3687,18 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Die Astronomen verzeichnen ihre Beobachtungen im Mondlicht.",
             ),
             (
-                "Some say the full moon sharpens wit — tonight the debates are fierce.",
-                "Manche sagen, der Vollmond schaerft den Verstand — heute Nacht sind die Debatten heftig.",
+                "Some say the full moon sharpens wit – tonight the debates are fierce.",
+                "Manche sagen, der Vollmond schaerft den Verstand – heute Nacht sind die Debatten heftig.",
             ),
             (
-                "Moonlight bathes the courtyards in silver — a gift for the sleepless.",
-                "Mondlicht badet die Innenhoefen in Silber — ein Geschenk fuer die Schlaflosen.",
+                "Moonlight bathes the courtyards in silver – a gift for the sleepless.",
+                "Mondlicht badet die Innenhoefen in Silber – ein Geschenk fuer die Schlaflosen.",
             ),
         ],
         "new_moon": [
             (
-                "The scriptorium windows glow like amber — the only light.",
-                "Die Fenster des Skriptoriums gluehen wie Bernstein — das einzige Licht.",
+                "The scriptorium windows glow like amber – the only light.",
+                "Die Fenster des Skriptoriums gluehen wie Bernstein – das einzige Licht.",
             ),
             (
                 "The astronomers point their instruments at the deepest stars.",
@@ -3709,12 +3709,12 @@ CONSEQUENCES: dict[str, dict[str, list[T]]] = {
                 "Kerzenverbrauch verdoppelt sich in mondlosen Naechten.",
             ),
             (
-                "The new moon brings early sleep — and vivid dreams.",
-                "Der Neumond bringt fruehen Schlaf — und lebhafte Traeume.",
+                "The new moon brings early sleep – and vivid dreams.",
+                "Der Neumond bringt fruehen Schlaf – und lebhafte Traeume.",
             ),
             (
-                "Without moonlight, the city turns inward — and finds itself.",
-                "Ohne Mondlicht wendet sich die Stadt nach innen — und findet sich selbst.",
+                "Without moonlight, the city turns inward – and finds itself.",
+                "Ohne Mondlicht wendet sich die Stadt nach innen – und findet sich selbst.",
             ),
         ],
     },
@@ -3730,8 +3730,8 @@ AGENT_REACTIONS: dict[str, list[T]] = {
         ("Despite the conditions, spirits remain high.", "Trotz der Bedingungen bleibt die Stimmung gut."),
         ("The agents adapt with quiet professionalism.", "Die Agenten passen sich mit ruhiger Professionalitaet an."),
         (
-            "Morale holds steady — the community draws strength from within.",
-            "Die Moral haelt — die Gemeinschaft schoepft Kraft aus sich selbst.",
+            "Morale holds steady – the community draws strength from within.",
+            "Die Moral haelt – die Gemeinschaft schoepft Kraft aus sich selbst.",
         ),
         (
             "A sense of shared purpose outweighs the discomfort.",
@@ -3749,8 +3749,8 @@ AGENT_REACTIONS: dict[str, list[T]] = {
             "Die Nerven liegen blank, waehrend sich die Bedingungen verschlechtern.",
         ),
         (
-            "The mood darkens further — complaints increase.",
-            "Die Stimmung verduestert sich weiter — Beschwerden nehmen zu.",
+            "The mood darkens further – complaints increase.",
+            "Die Stimmung verduestert sich weiter – Beschwerden nehmen zu.",
         ),
         (
             "Patience wears thin. The conditions are the last straw.",
@@ -3784,16 +3784,16 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Der kalte Nebel schneidet durch jede Schicht. Selbst abgehaertete Agenten ziehen sich zurueck.",
         ),
         (
-            "Ice crystals form in the fog — breathing becomes painful.",
-            "Eiskristalle bilden sich im Nebel — Atmen wird schmerzhaft.",
+            "Ice crystals form in the fog – breathing becomes painful.",
+            "Eiskristalle bilden sich im Nebel – Atmen wird schmerzhaft.",
         ),
         (
             "The combination of fog and cold creates a deadly stillness.",
             "Die Kombination aus Nebel und Kaelte erzeugt eine toedliche Stille.",
         ),
         (
-            "Visibility is nil and the cold is biting — the worst of both worlds.",
-            "Sicht ist null und die Kaelte beisst — das Schlimmste aus beiden Welten.",
+            "Visibility is nil and the cold is biting – the worst of both worlds.",
+            "Sicht ist null und die Kaelte beisst – das Schlimmste aus beiden Welten.",
         ),
         (
             "The cold fog clings to skin and seeps into bones.",
@@ -3822,16 +3822,16 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Blitze erhellen die Stadt in Stakkato-Blitzen. Zwischen den Einschlaegen absolute Dunkelheit.",
         ),
         (
-            "The night storm is a spectacle of primal force — fear and awe in equal measure.",
-            "Der Nachtsturm ist ein Schauspiel urtümlicher Kraft — Furcht und Ehrfurcht zu gleichen Teilen.",
+            "The night storm is a spectacle of primal force – fear and awe in equal measure.",
+            "Der Nachtsturm ist ein Schauspiel urtümlicher Kraft – Furcht und Ehrfurcht zu gleichen Teilen.",
         ),
         (
-            "Thunder and darkness amplify each other — the night feels alive.",
-            "Donner und Dunkelheit verstaerken sich gegenseitig — die Nacht fuehlt sich lebendig an.",
+            "Thunder and darkness amplify each other – the night feels alive.",
+            "Donner und Dunkelheit verstaerken sich gegenseitig – die Nacht fuehlt sich lebendig an.",
         ),
         (
-            "Each lightning flash freezes the world for a heartbeat — then blackness returns.",
-            "Jeder Blitz friert die Welt fuer einen Herzschlag ein — dann kehrt Schwarz zurueck.",
+            "Each lightning flash freezes the world for a heartbeat – then blackness returns.",
+            "Jeder Blitz friert die Welt fuer einen Herzschlag ein – dann kehrt Schwarz zurueck.",
         ),
         (
             "The storm owns the night. Everyone else is just enduring it.",
@@ -3840,12 +3840,12 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
     ],
     ("snow", "wind"): [
         (
-            "Whiteout conditions — {wind_speed}km/h winds drive snow horizontally.",
-            "Whiteout-Bedingungen — {wind_speed}km/h Wind treiben Schnee horizontal.",
+            "Whiteout conditions – {wind_speed}km/h winds drive snow horizontally.",
+            "Whiteout-Bedingungen – {wind_speed}km/h Wind treiben Schnee horizontal.",
         ),
         (
-            "The blowing snow erases all landmarks — direction becomes meaningless.",
-            "Der treibende Schnee loescht alle Orientierungspunkte — Richtung wird bedeutungslos.",
+            "The blowing snow erases all landmarks – direction becomes meaningless.",
+            "Der treibende Schnee loescht alle Orientierungspunkte – Richtung wird bedeutungslos.",
         ),
         (
             "Snow and wind create drifts that bury pathways within hours.",
@@ -3856,18 +3856,18 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Die Windkaelte bei {temperature}°C mit {wind_speed}km/h ist toedlich.",
         ),
         (
-            "Visibility zero, temperature lethal — no one moves.",
-            "Sicht null, Temperatur toedlich — niemand bewegt sich.",
+            "Visibility zero, temperature lethal – no one moves.",
+            "Sicht null, Temperatur toedlich – niemand bewegt sich.",
         ),
     ],
     ("heat", "wind"): [
         (
-            "Hot wind at {wind_speed}km/h — the sirocco desiccates everything.",
-            "Heisser Wind bei {wind_speed}km/h — der Scirocco doerrt alles aus.",
+            "Hot wind at {wind_speed}km/h – the sirocco desiccates everything.",
+            "Heisser Wind bei {wind_speed}km/h – der Scirocco doerrt alles aus.",
         ),
         (
-            "The wind brings no relief — only more heat from the interior.",
-            "Der Wind bringt keine Erleichterung — nur mehr Hitze aus dem Landesinneren.",
+            "The wind brings no relief – only more heat from the interior.",
+            "Der Wind bringt keine Erleichterung – nur mehr Hitze aus dem Landesinneren.",
         ),
         (
             "At {temperature}°C with {wind_speed}km/h hot wind, dehydration is rapid.",
@@ -3885,20 +3885,20 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Der Vollmond verwandelt den Nebel in eine leuchtende Silberdecke.",
         ),
         (
-            "Moonlit fog — the most disorienting condition possible.",
-            "Mondbeleuchteter Nebel — die desorientiereendste Bedingung ueberhaupt.",
+            "Moonlit fog – the most disorienting condition possible.",
+            "Mondbeleuchteter Nebel – die desorientiereendste Bedingung ueberhaupt.",
         ),
         (
             "The combination creates an eerie, dreamlike atmosphere.",
             "Die Kombination erzeugt eine unheimliche, traumhafte Atmosphaere.",
         ),
         (
-            "Light without source, direction without reference — fog under the full moon.",
-            "Licht ohne Quelle, Richtung ohne Bezug — Nebel unter dem Vollmond.",
+            "Light without source, direction without reference – fog under the full moon.",
+            "Licht ohne Quelle, Richtung ohne Bezug – Nebel unter dem Vollmond.",
         ),
         (
-            "The fog glows from within — the full moon turns mist into magic.",
-            "Der Nebel leuchtet von innen — der Vollmond verwandelt Dunst in Magie.",
+            "The fog glows from within – the full moon turns mist into magic.",
+            "Der Nebel leuchtet von innen – der Vollmond verwandelt Dunst in Magie.",
         ),
     ],
     ("rain", "cold"): [
@@ -3915,8 +3915,8 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Unterkuehlungsrisiko steigt mit jeder Minute der Exposition.",
         ),
         (
-            "The cold rain runs down necks and into boots — misery incarnate.",
-            "Der kalte Regen laeuft in Nacken und Stiefel — Elend in Person.",
+            "The cold rain runs down necks and into boots – misery incarnate.",
+            "Der kalte Regen laeuft in Nacken und Stiefel – Elend in Person.",
         ),
         (
             "At {temperature}°C with steady rain, the body's reserves deplete fast.",
@@ -3925,8 +3925,8 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
     ],
     ("clear", "cold"): [
         (
-            "Crystal-clear skies but {temperature}°C — beautiful and brutal.",
-            "Kristallklarer Himmel aber {temperature}°C — schoen und brutal.",
+            "Crystal-clear skies but {temperature}°C – beautiful and brutal.",
+            "Kristallklarer Himmel aber {temperature}°C – schoen und brutal.",
         ),
         (
             "The clarity of the air makes the cold feel even sharper.",
@@ -3937,52 +3937,52 @@ COMPOSITE_CONSEQUENCES: dict[tuple[str, str], list[T]] = {
             "Unter blauem Himmel und beissender Kaelte ist die Welt ein gefrorenes Juwel.",
         ),
         (
-            "The sun shines but gives no warmth — a winter's deception.",
-            "Die Sonne scheint, gibt aber keine Waerme — ein Winterbetrug.",
+            "The sun shines but gives no warmth – a winter's deception.",
+            "Die Sonne scheint, gibt aber keine Waerme – ein Winterbetrug.",
         ),
         (
-            "Cold clarity — everything is visible, nothing is comfortable.",
-            "Kalte Klarheit — alles ist sichtbar, nichts ist behaglich.",
+            "Cold clarity – everything is visible, nothing is comfortable.",
+            "Kalte Klarheit – alles ist sichtbar, nichts ist behaglich.",
         ),
     ],
     ("clear", "heat"): [
         (
-            "Unrelenting sun at {temperature}°C — no cloud to offer mercy.",
-            "Unerbittliche Sonne bei {temperature}°C — keine Wolke, die Gnade bietet.",
+            "Unrelenting sun at {temperature}°C – no cloud to offer mercy.",
+            "Unerbittliche Sonne bei {temperature}°C – keine Wolke, die Gnade bietet.",
         ),
         (
-            "The clear sky is an oven lid — {temperature}°C and climbing.",
-            "Der klare Himmel ist ein Ofendeckel — {temperature}°C und steigend.",
+            "The clear sky is an oven lid – {temperature}°C and climbing.",
+            "Der klare Himmel ist ein Ofendeckel – {temperature}°C und steigend.",
         ),
         (
-            "Blue sky and scorching heat — the cruelest combination.",
-            "Blauer Himmel und sengene Hitze — die grausamste Kombination.",
+            "Blue sky and scorching heat – the cruelest combination.",
+            "Blauer Himmel und sengene Hitze – die grausamste Kombination.",
         ),
         (
             "Not a single cloud between the sun and the suffering below.",
             "Nicht eine einzige Wolke zwischen der Sonne und dem Leiden darunter.",
         ),
         (
-            "The sun dominates — shade is the only currency that matters.",
-            "Die Sonne dominiert — Schatten ist die einzige Waehrung, die zaehlt.",
+            "The sun dominates – shade is the only currency that matters.",
+            "Die Sonne dominiert – Schatten ist die einzige Waehrung, die zaehlt.",
         ),
     ],
     ("overcast", "cold"): [
         (
-            "Grey skies and {temperature}°C — a combination that erodes will.",
-            "Grauer Himmel und {temperature}°C — eine Kombination, die den Willen erodiert.",
+            "Grey skies and {temperature}°C – a combination that erodes will.",
+            "Grauer Himmel und {temperature}°C – eine Kombination, die den Willen erodiert.",
         ),
         (
-            "The cold is worse under grey skies — no sun to offer even token warmth.",
-            "Die Kaelte ist unter grauem Himmel schlimmer — keine Sonne bietet auch nur symbolische Waerme.",
+            "The cold is worse under grey skies – no sun to offer even token warmth.",
+            "Die Kaelte ist unter grauem Himmel schlimmer – keine Sonne bietet auch nur symbolische Waerme.",
         ),
         (
             "The leaden sky presses down while the cold presses in.",
             "Der bleierne Himmel drueckt von oben, waehrend die Kaelte von den Seiten drueckt.",
         ),
         (
-            "Grey and cold — the most demoralizing weather pattern.",
-            "Grau und kalt — das demoralisierendste Wettermuster.",
+            "Grey and cold – the most demoralizing weather pattern.",
+            "Grau und kalt – das demoralisierendste Wettermuster.",
         ),
         (
             "The overcast cold saps energy and optimism alike.",

@@ -248,12 +248,12 @@ class GameMechanicsService:
         if zone_stability is not None:
             if zone_stability < 0.3:
                 parts.append(
-                    "This zone is failing — infrastructure crumbling, security collapsing, cascading crises likely."
+                    "This zone is failing – infrastructure crumbling, security collapsing, cascading crises likely."
                 )
             elif zone_stability < 0.5:
-                parts.append("This zone is unstable — one more shock could tip it.")
+                parts.append("This zone is unstable – one more shock could tip it.")
             elif zone_stability > 0.8:
-                parts.append("This zone is exemplary — a model district, but stability breeds complacency.")
+                parts.append("This zone is exemplary – a model district, but stability breeds complacency.")
 
         critical = ctx.get("critical_buildings", 0)
         if critical >= 3:

@@ -166,7 +166,7 @@ _BILINGUAL_BLOCK: tuple[str, ...] = (
     "BILINGUAL OUTPUT: For every descriptive text field, also produce a German "
     "equivalent in the corresponding _de field (e.g. description → description_de, "
     "character → character_de). The German text should read as if originally written "
-    "in German — not a literal translation. Keep ALL proper nouns (names, places) "
+    "in German – not a literal translation. Keep ALL proper nouns (names, places) "
     "identical across both languages.",
 )
 
@@ -199,7 +199,7 @@ def _build_chunk_prompt(
             "- Each street should belong to a zone and have a name that evokes atmosphere.",
             "- Vary zone types (residential, industrial, cultural, commercial, government, etc.).",
             "- Streets should have different types (alley, boulevard, lane, avenue, stairway, etc.).",
-            "- The geography should feel interconnected — zones and streets should hint at relationships.",
+            "- The geography should feel interconnected – zones and streets should hint at relationships.",
         ]
 
     elif chunk_type == "agents":
@@ -222,7 +222,7 @@ def _build_chunk_prompt(
             *_AGENT_PROSE_REQUIREMENTS,
             "- Vary genders across the set (mix of male, female, non-binary).",
             "- Each agent should belong to a different faction/system tied to the world's geography.",
-            "- Professions should be unique and thematically resonant — avoid generic titles.",
+            "- Professions should be unique and thematically resonant – avoid generic titles.",
         ]
 
     elif chunk_type == "buildings":
@@ -294,14 +294,14 @@ def _build_entity_prompt(
                 "Already recruited operatives (DO NOT duplicate names, professions, or personality archetypes):",
             ]
             for e in existing_entities:
-                lines.append(f'- "{e.get("name")}" — {e.get("primary_profession", "?")} ({e.get("gender", "?")})')
+                lines.append(f'- "{e.get("name")}" – {e.get("primary_profession", "?")} ({e.get("gender", "?")})')
         else:
             lines += [
                 "",
                 "Already designed structures (DO NOT duplicate names or building types):",
             ]
             for e in existing_entities:
-                lines.append(f'- "{e.get("name")}" — {e.get("building_type", "?")}')
+                lines.append(f'- "{e.get("name")}" – {e.get("building_type", "?")}')
 
     # Entity-type-specific requirements
     if entity_type == "agents":
@@ -313,10 +313,10 @@ def _build_entity_prompt(
             "Requirements:",
             *_AGENT_PROSE_REQUIREMENTS,
             "- Vary gender from already-recruited operatives where possible.",
-            "- 'system' is the agent's faction or organization — a SHORT name (1-5 words, max 80 chars). "
+            "- 'system' is the agent's faction or organization – a SHORT name (1-5 words, max 80 chars). "
             "Examples: 'Gildenrat', 'Kanalgrund Widerstand', 'Observatorium'. "
             "Do NOT put descriptions, parenthetical explanations, or full sentences in this field.",
-            "- Profession should be unique and thematically resonant — avoid generic titles.",
+            "- Profession should be unique and thematically resonant – avoid generic titles.",
         ]
     else:
         lines += [
@@ -1329,7 +1329,7 @@ class ForgeOrchestratorService:
                     scope.set_context("forge", {"simulation_id": str(simulation_id), "seed": seed[:80]})
                     sentry_sdk.capture_exception()
                 logger.exception(
-                    "Deep research failed — using Astrolabe context only",
+                    "Deep research failed – using Astrolabe context only",
                     extra={"simulation_id": str(simulation_id)},
                 )
 
@@ -1420,7 +1420,7 @@ class ForgeOrchestratorService:
             agents_have_de = all(a.get("character_de") for a in mat_agents)
             if agents_have_de:
                 logger.info(
-                    "Bilingual draft — skipping entity translation",
+                    "Bilingual draft – skipping entity translation",
                     extra={"simulation_id": str(simulation_id)},
                 )
             else:
@@ -1561,7 +1561,7 @@ class ForgeOrchestratorService:
         try:
             or_key, rep_key = await ForgeDraftService.get_user_keys(user_id)
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError, OSError):
-            logger.exception("Failed to fetch BYOK keys — using platform keys")
+            logger.exception("Failed to fetch BYOK keys – using platform keys")
             or_key, rep_key = None, None
 
         # ── Phase A: Lore + translations (must complete before images) ──
@@ -1592,7 +1592,7 @@ class ForgeOrchestratorService:
                 )
             except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
-                    "Style prompt refinement failed — using original prompts",
+                    "Style prompt refinement failed – using original prompts",
                     exc_info=True,
                 )
 
@@ -1606,7 +1606,7 @@ class ForgeOrchestratorService:
                 )
             except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.warning(
-                    "Prompt template generation failed — using platform defaults",
+                    "Prompt template generation failed – using platform defaults",
                     exc_info=True,
                 )
 
@@ -1685,7 +1685,7 @@ class ForgeOrchestratorService:
                     sentry_sdk.capture_exception(exc)
 
                 logger.warning(
-                    "World map generation failed — simulation will come online without a map "
+                    "World map generation failed – simulation will come online without a map "
                     "(admin can regenerate via /api/v1/admin/simulations/{id}/map/regenerate)",
                     extra={"simulation_id": str(simulation_id), "error": str(exc)},
                     exc_info=True,
@@ -1981,7 +1981,7 @@ class ForgeOrchestratorService:
 
         except ReplicateBillingError:
             logger.error(
-                "Replicate billing error — aborting all image generation. "
+                "Replicate billing error – aborting all image generation. "
                 "Check credits at replicate.com/account/billing."
             )
             with sentry_sdk.push_scope() as scope:
@@ -2534,7 +2534,7 @@ Generate exactly {_RECRUIT_COUNT} new agents. Requirements:
         for section in lore_sections:
             body = section.get("body", "")
             # First ~600 chars of each section — enough for visual identity
-            parts.append(f"LORE — {section.get('title', '')}:\n{body[:600]}")
+            parts.append(f"LORE – {section.get('title', '')}:\n{body[:600]}")
 
         context = "\n\n".join(parts)
         logger.debug(

@@ -36,7 +36,7 @@ def convert_to_avif(
     try:
         from PIL import Image
     except ImportError:
-        logger.warning("Pillow not installed — returning raw image bytes")
+        logger.warning("Pillow not installed – returning raw image bytes")
         return image_bytes
 
     img = Image.open(io.BytesIO(image_bytes))

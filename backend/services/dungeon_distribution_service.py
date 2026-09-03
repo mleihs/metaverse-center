@@ -510,7 +510,7 @@ class DungeonDistributionService:
                 inst.auto_assigned = cls._weise_offene_beute_zu(inst)
 
                 logger.info(
-                    "Distribution timer expired — auto-assigned loot",
+                    "Distribution timer expired – auto-assigned loot",
                     extra=log_extra(
                         inst,
                         assigned=len(inst.loot_assignments),

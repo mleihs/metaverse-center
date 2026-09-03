@@ -225,7 +225,7 @@ class EpochChatService:
                     result["auto_resolve_pending"] = True
                     result["resolves_at"] = earliest.isoformat()
                     logger.info(
-                        "All ready before the cycle floor — deadline pulled forward",
+                        "All ready before the cycle floor – deadline pulled forward",
                         extra={"epoch_id": str(epoch_id), "resolves_at": earliest.isoformat()},
                     )
                     return result

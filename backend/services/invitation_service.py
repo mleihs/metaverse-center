@@ -123,7 +123,7 @@ class InvitationService:
             )
         except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, TypeError, ValueError):
             logger.warning(
-                "Invitation email failed — the invitation itself stands",
+                "Invitation email failed – the invitation itself stands",
                 extra={"simulation_id": invitation.get("simulation_id")},
                 exc_info=True,
             )

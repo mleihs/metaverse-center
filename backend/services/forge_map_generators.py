@@ -173,7 +173,7 @@ def generate_medieval_walled(
 
     if invariant_failures:
         raise ValueError(
-            "ForgeMapService invariant violation — "
+            "ForgeMapService invariant violation – "
             f"{len(invariant_failures)} building(s) outside their zone polygon: " + "; ".join(invariant_failures[:5])
         )
 

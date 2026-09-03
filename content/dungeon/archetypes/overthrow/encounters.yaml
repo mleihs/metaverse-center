@@ -5,9 +5,9 @@ encounters:
   min_depth: 1
   max_depth: 3
   min_difficulty: 1
-  description_en: Two figures in the corridor, checking papers. They are not soldiers — they are informers.
+  description_en: Two figures in the corridor, checking papers. They are not soldiers – they are informers.
     The clipboard is more dangerous than a weapon.
-  description_de: Zwei Gestalten im Korridor, Papiere prüfend. Sie sind keine Soldaten — sie sind
+  description_de: Zwei Gestalten im Korridor, Papiere prüfend. Sie sind keine Soldaten – sie sind
     Spitzel. Die Zwischenablage ist gefährlicher als eine Waffe.
   choices: []
   combat_encounter_id: overthrow_informer_patrol_spawn
@@ -31,9 +31,9 @@ encounters:
   min_depth: 2
   max_depth: 5
   min_difficulty: 1
-  description_en: A checkpoint. The enforcer does not ask for papers — the enforcer asks for allegiance.
+  description_en: A checkpoint. The enforcer does not ask for papers – the enforcer asks for allegiance.
     The question is not 'who are you' but 'who are you for.'
-  description_de: Ein Kontrollpunkt. Der Vollstrecker fragt nicht nach Papieren — der Vollstrecker
+  description_de: Ein Kontrollpunkt. Der Vollstrecker fragt nicht nach Papieren – der Vollstrecker
     fragt nach Treue. Die Frage ist nicht 'Wer seid ihr' sondern 'Für wen seid ihr.'
   choices: []
   combat_encounter_id: overthrow_enforcer_squad_spawn
@@ -44,9 +44,9 @@ encounters:
   min_depth: 3
   max_depth: 6
   min_difficulty: 1
-  description_en: Two faction operatives — a propagandist and an enforcer — from different factions,
+  description_en: Two faction operatives – a propagandist and an enforcer – from different factions,
     mid-argument. The argument has become kinetic. The party walks into the crossfire.
-  description_de: Zwei Fraktionsagenten — ein Propagandist und ein Vollstrecker — aus verschiedenen
+  description_de: Zwei Fraktionsagenten – ein Propagandist und ein Vollstrecker – aus verschiedenen
     Fraktionen, mitten im Streit. Der Streit ist kinetisch geworden. Die Gruppe gerät ins Kreuzfeuer.
   choices: []
   combat_encounter_id: overthrow_political_crisis_spawn
@@ -57,9 +57,9 @@ encounters:
   min_depth: 4
   max_depth: 7
   min_difficulty: 2
-  description_en: The Grand Inquisitor waits. An informer takes notes. This is not an ambush — it
+  description_en: The Grand Inquisitor waits. An informer takes notes. This is not an ambush – it
     is a tribunal. The party has already been found guilty. The sentence is an invitation to confess.
-  description_de: Der Großinquisitor wartet. Ein Spitzel macht Notizen. Dies ist kein Hinterhalt —
+  description_de: Der Großinquisitor wartet. Ein Spitzel macht Notizen. Dies ist kein Hinterhalt –
     es ist ein Tribunal. Die Gruppe wurde bereits schuldig gesprochen. Das Urteil ist eine Einladung
     zum Geständnis.
   choices: []
@@ -109,15 +109,15 @@ encounters:
     fail_effects:
       fracture: 8
       stress: 10
-    success_narrative_en: '{agent} negotiates terms. The terms are favorable — or appear to be. The
+    success_narrative_en: '{agent} negotiates terms. The terms are favorable – or appear to be. The
       representative nods. The alliance is entered into the record. Records can be revised.'
-    success_narrative_de: '{agent} verhandelt die Bedingungen. Die Bedingungen sind günstig — oder
+    success_narrative_de: '{agent} verhandelt die Bedingungen. Die Bedingungen sind günstig – oder
       scheinen es zu sein. Der Vertreter nickt. Das Bündnis wird aktenkundig. Akten können überarbeitet
       werden.'
-    partial_narrative_en: '{agent} negotiates. The terms are accepted — but the representative adds
+    partial_narrative_en: '{agent} negotiates. The terms are accepted – but the representative adds
       a clause at the end, spoken too quickly to parse. Machiavelli''s fox: the contract is signed.
       The footnote is not.'
-    partial_narrative_de: '{agent} verhandelt. Die Bedingungen werden akzeptiert — aber der Vertreter
+    partial_narrative_de: '{agent} verhandelt. Die Bedingungen werden akzeptiert – aber der Vertreter
       fügt am Ende eine Klausel hinzu, zu schnell gesprochen um sie zu erfassen. Machiavellis Fuchs:
       der Vertrag ist unterschrieben. Die Fußnote nicht.'
     fail_narrative_en: The negotiation collapses. The representative's smile does not change. The
@@ -140,9 +140,9 @@ encounters:
       The Spy sees both.'
     success_narrative_de: '{agent} liest das Angebot unter dem Angebot. Jede Fraktion hat eine zweite
       Agenda. Der Spion sieht beide.'
-    partial_narrative_en: '{agent} sees the second agenda. But a third remains hidden — Kadare''s
+    partial_narrative_en: '{agent} sees the second agenda. But a third remains hidden – Kadare''s
       Palace has sub-basements. Partial intelligence is the most dangerous kind.'
-    partial_narrative_de: '{agent} sieht die zweite Agenda. Aber eine dritte bleibt verborgen — Kadares
+    partial_narrative_de: '{agent} sieht die zweite Agenda. Aber eine dritte bleibt verborgen – Kadares
       Palast hat Untergeschosse. Teilwissen ist die gefährlichste Art.'
     fail_narrative_en: The intelligence is incomplete. What {agent} does not know is being reported
       to someone else.
@@ -172,10 +172,10 @@ encounters:
   max_depth: 5
   min_difficulty: 1
   description_en: 'A trial is in progress. The accused is a former faction leader. The evidence is
-    their own biography — rewritten. Kiš''s archival voice: clinical, footnoted, devastating. The
+    their own biography – rewritten. Kiš''s archival voice: clinical, footnoted, devastating. The
     verdict was decided before the trial began.'
   description_de: 'Ein Prozess ist im Gange. Der Angeklagte ist ein ehemaliger Fraktionsführer. Der
-    Beweis ist die eigene Biographie — umgeschrieben. Kišs Archivstimme: klinisch, fußnotiert, verheerend.
+    Beweis ist die eigene Biographie – umgeschrieben. Kišs Archivstimme: klinisch, fußnotiert, verheerend.
     Das Urteil stand vor Prozessbeginn fest.'
   choices:
   - id: trial_defend
@@ -192,20 +192,20 @@ encounters:
       fracture: 10
       stress: 15
     success_narrative_en: '{agent} speaks. Antony''s rhetoric: never say the accusers are liars. Let
-      the crowd arrive there themselves. The tribunal hesitates. The accused is not freed — but the
+      the crowd arrive there themselves. The tribunal hesitates. The accused is not freed – but the
       sentence is deferred.'
     success_narrative_de: '{agent} spricht. Antonius'' Rhetorik: sag nie, dass die Ankläger lügen.
       Lass die Menge selbst dorthin kommen. Das Tribunal zögert. Der Angeklagte wird nicht befreit
-      — aber das Urteil wird aufgeschoben.'
-    partial_narrative_en: '{agent} speaks. The tribunal listens — but the way Koestler''s Gletkin
+      – aber das Urteil wird aufgeschoben.'
+    partial_narrative_en: '{agent} speaks. The tribunal listens – but the way Koestler''s Gletkin
       listens: recording, not hearing. The defense enters the record. The record is another kind of
       evidence.'
-    partial_narrative_de: '{agent} spricht. Das Tribunal hört zu — aber so wie Koestlers Gletkin zuhört:
+    partial_narrative_de: '{agent} spricht. Das Tribunal hört zu – aber so wie Koestlers Gletkin zuhört:
       aufzeichnend, nicht hörend. Die Verteidigung geht in die Akten ein. Die Akten sind eine andere
       Art von Beweis.'
-    fail_narrative_en: The defense fails. {agent}'s words are entered into evidence — as proof of
+    fail_narrative_en: The defense fails. {agent}'s words are entered into evidence – as proof of
       complicity.
-    fail_narrative_de: Die Verteidigung scheitert. {agent}s Worte werden als Beweis aufgenommen —
+    fail_narrative_de: Die Verteidigung scheitert. {agent}s Worte werden als Beweis aufgenommen –
       als Beweis der Mittäterschaft.
   - id: trial_observe
     label_en: Observe the trial's mechanism (Spy)
@@ -219,15 +219,15 @@ encounters:
     fail_effects:
       fracture: 8
       stress: 5
-    success_narrative_en: '{agent} watches. The trial is not about guilt — it is about demonstration.
+    success_narrative_en: '{agent} watches. The trial is not about guilt – it is about demonstration.
       Brecht''s Verfremdung: once you see the mechanism, you cannot un-see it.'
-    success_narrative_de: '{agent} beobachtet. Der Prozess handelt nicht von Schuld — er handelt von
+    success_narrative_de: '{agent} beobachtet. Der Prozess handelt nicht von Schuld – er handelt von
       Demonstration. Brechts Verfremdung: hat man den Mechanismus einmal gesehen, kann man es nicht
       rückgängig machen.'
-    partial_narrative_en: '{agent} sees the mechanism — partially. Kiš''s archive: some footnotes
+    partial_narrative_en: '{agent} sees the mechanism – partially. Kiš''s archive: some footnotes
       are legible, others redacted. The trial is a text. {agent} has read enough to know the ending
       is already written.'
-    partial_narrative_de: '{agent} sieht den Mechanismus — teilweise. Kišs Archiv: manche Fußnoten
+    partial_narrative_de: '{agent} sieht den Mechanismus – teilweise. Kišs Archiv: manche Fußnoten
       sind lesbar, andere geschwärzt. Der Prozess ist ein Text. {agent} hat genug gelesen um zu wissen,
       dass das Ende bereits geschrieben ist.'
     fail_narrative_en: The mechanism is visible. But visibility is not protection.
@@ -278,15 +278,15 @@ encounters:
       never the point. Performance is the currency of the Spiegelpalast.
     success_narrative_de: Das Schild wird gezeigt. Niemand prüft, ob die Gruppe daran glaubt. Glaube
       war nie der Punkt. Aufführung ist die Währung des Spiegelpalasts.
-    partial_narrative_en: 'The sign is displayed. Someone pauses — reads it a moment too long. Havel''s
+    partial_narrative_en: 'The sign is displayed. Someone pauses – reads it a moment too long. Havel''s
       greengrocer, observed: the performance passes, but it has been noted. Not the sign. The hesitation
       before it.'
-    partial_narrative_de: 'Das Schild wird gezeigt. Jemand hält inne — liest es einen Moment zu lang.
+    partial_narrative_de: 'Das Schild wird gezeigt. Jemand hält inne – liest es einen Moment zu lang.
       Havels Gemüsehändler, beobachtet: die Aufführung geht durch, aber sie wurde notiert. Nicht das
       Schild. Das Zögern davor.'
-    fail_narrative_en: The performance is unconvincing. Not the words — the posture. The body knows
+    fail_narrative_en: The performance is unconvincing. Not the words – the posture. The body knows
       what the mouth denies.
-    fail_narrative_de: Die Aufführung ist nicht überzeugend. Nicht die Worte — die Haltung. Der Körper
+    fail_narrative_de: Die Aufführung ist nicht überzeugend. Nicht die Worte – die Haltung. Der Körper
       weiß, was der Mund leugnet.
   - id: greengrocer_refuse
     label_en: Refuse to display any sign. Live in truth. (Guardian)
@@ -307,10 +307,10 @@ encounters:
     success_narrative_de: In der Wahrheit leben. {agent} verweigert sich. Eine Person, die sich weigert
       aufzuführen, entlarvt die Aufführung aller anderen als Wahl. Der Raum verändert sich. Die Schilder
       sind noch da. Aber etwas hat sich verschoben.
-    partial_narrative_en: '{agent} refuses. The room notices — but the silence that follows is ambiguous.
+    partial_narrative_en: '{agent} refuses. The room notices – but the silence that follows is ambiguous.
       Arendt''s distinction: liberation, not yet freedom. The signs remain. One person''s refusal
       is not yet contagious.'
-    partial_narrative_de: '{agent} verweigert sich. Der Raum bemerkt es — aber die Stille danach ist
+    partial_narrative_de: '{agent} verweigert sich. Der Raum bemerkt es – aber die Stille danach ist
       mehrdeutig. Arendts Unterscheidung: Befreiung, noch nicht Freiheit. Die Schilder bleiben. Die
       Verweigerung einer Person ist noch nicht ansteckend.'
     fail_narrative_en: The refusal costs. Living in truth is the most expensive option in the Spiegelpalast.
@@ -331,10 +331,10 @@ encounters:
       sign says what it always said. The meaning has been reversed.'
     success_narrative_de: 'Détournement. Debords Waffe: das Spektakel gegen sich selbst wenden. Das
       Schild sagt, was es immer sagte. Die Bedeutung wurde umgekehrt.'
-    partial_narrative_en: 'The alteration holds — for now. Debord''s détournement, half-executed:
+    partial_narrative_en: 'The alteration holds – for now. Debord''s détournement, half-executed:
       the sign reads differently but {agent} cannot be sure who reads it which way. Ambiguity is a
       weapon that cuts both directions.'
-    partial_narrative_de: 'Die Veränderung hält — vorerst. Debords Détournement, halb ausgeführt:
+    partial_narrative_de: 'Die Veränderung hält – vorerst. Debords Détournement, halb ausgeführt:
       das Schild liest sich anders, aber {agent} kann nicht sicher sein, wer es wie liest. Mehrdeutigkeit
       ist eine Waffe, die in beide Richtungen schneidet.'
     fail_narrative_en: The subversion is detected. The sign is confiscated. So is {agent}'s anonymity.
@@ -367,18 +367,18 @@ encounters:
       fracture: 8
       stress: 10
     success_narrative_en: The struggle against power is the struggle of memory against forgetting.
-      {agent} remembers. The portraits do not reappear — but the party knows what was there.
+      {agent} remembers. The portraits do not reappear – but the party knows what was there.
     success_narrative_de: Der Kampf gegen die Macht ist der Kampf der Erinnerung gegen das Vergessen.
-      {agent} erinnert sich. Die Porträts erscheinen nicht wieder — aber die Gruppe weiß, was dort
+      {agent} erinnert sich. Die Porträts erscheinen nicht wieder – aber die Gruppe weiß, was dort
       war.
-    partial_narrative_en: '{agent} remembers some faces. Others dissolve — Kundera''s Clementis: the
+    partial_narrative_en: '{agent} remembers some faces. Others dissolve – Kundera''s Clementis: the
       hat remains on Gottwald''s head, but whose hat was it? Memory reconstructs. Reconstruction edits.'
-    partial_narrative_de: '{agent} erinnert sich an einige Gesichter. Andere lösen sich auf — Kunderas
+    partial_narrative_de: '{agent} erinnert sich an einige Gesichter. Andere lösen sich auf – Kunderas
       Clementis: die Mütze bleibt auf Gottwalds Kopf, aber wessen Mütze war es? Erinnerung rekonstruiert.
       Rekonstruktion redigiert.'
-    fail_narrative_en: Memory fails. Not naturally — actively. Something in the Spiegelpalast assists
+    fail_narrative_en: Memory fails. Not naturally – actively. Something in the Spiegelpalast assists
       forgetting.
-    fail_narrative_de: Die Erinnerung versagt. Nicht natürlich — aktiv. Etwas im Spiegelpalast unterstützt
+    fail_narrative_de: Die Erinnerung versagt. Nicht natürlich – aktiv. Etwas im Spiegelpalast unterstützt
       das Vergessen.
   - id: portrait_erase_more
     label_en: Add current leaders to the erasure (Saboteur)
@@ -396,10 +396,10 @@ encounters:
       erased the old order is now being erased itself. The cycle continues.
     success_narrative_de: Umkehr. {agent} kratzt die aktuellen Anführer aus. Die Revolution, die die
       alte Ordnung löschte, wird nun selbst gelöscht. Der Kreislauf geht weiter.
-    partial_narrative_en: '{agent} scratches. Some faces are erased. Others resist — the paint is
+    partial_narrative_en: '{agent} scratches. Some faces are erased. Others resist – the paint is
       newer, the varnish thicker. Camus: every revolutionary ends as oppressor or heretic. The erasure
       is incomplete. So is the revolution.'
-    partial_narrative_de: '{agent} kratzt. Manche Gesichter werden gelöscht. Andere widerstehen —
+    partial_narrative_de: '{agent} kratzt. Manche Gesichter werden gelöscht. Andere widerstehen –
       die Farbe ist neuer, der Lack dicker. Camus: jeder Revolutionär endet als Unterdrücker oder
       Ketzer. Die Löschung ist unvollständig. Die Revolution auch.'
     fail_narrative_en: The scratching is noticed. Someone is always watching the watchers.
@@ -451,10 +451,10 @@ encounters:
     success_narrative_de: Wolands Experiment, reproduziert. {agent} beobachtet. Wenn sie bekommen,
       was sie begehren, offenbart jede Fraktion, was sie wirklich ist. Die Aufklärung ist unbezahlbar.
     partial_narrative_en: '{agent} watches. Some factions reveal themselves. Others perform even while
-      scrambling — Bulgakov''s observation: greed has its own theater. The picture is incomplete but
+      scrambling – Bulgakov''s observation: greed has its own theater. The picture is incomplete but
       telling.'
     partial_narrative_de: '{agent} beobachtet. Manche Fraktionen offenbaren sich. Andere spielen auch
-      beim Gerangel Theater — Bulgakows Beobachtung: Gier hat ihr eigenes Theater. Das Bild ist unvollständig,
+      beim Gerangel Theater – Bulgakows Beobachtung: Gier hat ihr eigenes Theater. Das Bild ist unvollständig,
       aber aufschlussreich.'
     fail_narrative_en: '{agent} watches. But watching is also a position. The one who does not scramble
       is noticed.'
@@ -477,10 +477,10 @@ encounters:
       The money may turn to paper. But the alliances formed during the scramble are real.
     success_narrative_de: Erst kommt das Fressen, dann kommt die Moral. {agent} sichert Ressourcen.
       Das Geld mag zu Papier werden. Aber die Bündnisse, die beim Gerangel entstehen, sind echt.
-    partial_narrative_en: '{agent} secures something — but the scramble is already sorting winners
+    partial_narrative_en: '{agent} secures something – but the scramble is already sorting winners
       from losers. Brecht''s observation: the Fressen was real. Whether the Moral follows remains
       to be seen.'
-    partial_narrative_de: '{agent} sichert etwas — aber das Gerangel sortiert bereits Gewinner von
+    partial_narrative_de: '{agent} sichert etwas – aber das Gerangel sortiert bereits Gewinner von
       Verlierern. Brechts Beobachtung: das Fressen war echt. Ob die Moral folgt, bleibt abzuwarten.'
     fail_narrative_en: The scramble turns ugly. Material interest stripped of ideology. Brecht was
       right.
@@ -530,10 +530,10 @@ encounters:
       fracture: 10
       stress: 20
     success_narrative_en: Koestler's two ethics, wielded against the Inquisitor. {agent} does not
-      win the debate — {agent} makes the Inquisitor's logic visible. The mechanism, once exposed,
+      win the debate – {agent} makes the Inquisitor's logic visible. The mechanism, once exposed,
       loses its hold.
     success_narrative_de: Koestlers zwei Ethiken, gegen den Inquisitor gewandt. {agent} gewinnt die
-      Debatte nicht — {agent} macht die Logik des Inquisitors sichtbar. Der Mechanismus, einmal entlarvt,
+      Debatte nicht – {agent} macht die Logik des Inquisitors sichtbar. Der Mechanismus, einmal entlarvt,
       verliert seinen Griff.
     partial_narrative_en: '{agent} lifts one edge of the Inquisitor''s logic and shows the frame underneath. Only one edge. The other three remain lacquered. The mechanism is partially visible. Partial visibility is not confession. But it is also not the sealed silence the Inquisitor prefers.'
     partial_narrative_de: '{agent} hebt einen Rand der Inquisitorslogik und zeigt den Rahmen darunter. Nur einen Rand. Die anderen drei bleiben lackiert. Der Mechanismus ist teilweise sichtbar. Teilweise Sichtbarkeit ist kein Geständnis. Aber sie ist auch nicht das versiegelte Schweigen, das der Inquisitor bevorzugt.'
@@ -631,10 +631,10 @@ encounters:
   min_depth: 3
   max_depth: 7
   min_difficulty: 1
-  description_en: 'Neutral ground. All factions have agreed — temporarily — that this room is outside
+  description_en: 'Neutral ground. All factions have agreed – temporarily – that this room is outside
     the game. The agreement holds because all sides are exhausted. Camus: one must imagine Sisyphus
     happy. The boulder rests here.'
-  description_de: 'Neutrales Gelände. Alle Fraktionen haben sich — vorübergehend — darauf geeinigt,
+  description_de: 'Neutrales Gelände. Alle Fraktionen haben sich – vorübergehend – darauf geeinigt,
     dass dieser Raum außerhalb des Spiels liegt. Die Vereinbarung hält, weil alle Seiten erschöpft
     sind. Camus: man muss sich Sisyphos als glücklichen Menschen vorstellen. Der Felsbrocken ruht
     hier.'
@@ -664,9 +664,9 @@ encounters:
   max_depth: 5
   min_difficulty: 1
   description_en: An archive. Dossiers on every faction, every leader, every operative. Kadare's Palace
-    of Dreams — except these are waking reports, not sleeping ones.
+    of Dreams – except these are waking reports, not sleeping ones.
   description_de: Ein Archiv. Dossiers über jede Fraktion, jeden Anführer, jeden Agenten. Kadares
-    Palast der Träume — nur dass dies Wachberichte sind, keine Schlafberichte.
+    Palast der Träume – nur dass dies Wachberichte sind, keine Schlafberichte.
   choices:
   - id: archive_study
     label_en: Study the dossiers carefully (Spy)
@@ -686,9 +686,9 @@ encounters:
       The rest will be here for whoever comes next.
     success_narrative_de: Aufklärung. Namen, Bündnisse, Schulden. {agent} nimmt, was getragen werden
       kann. Der Rest wird hier sein für den, der als Nächster kommt.
-    partial_narrative_en: 'Names, alliances — but the debts are encoded. Kadare''s dream interpreters:
+    partial_narrative_en: 'Names, alliances – but the debts are encoded. Kadare''s dream interpreters:
       the raw material is here. The interpretation requires context {agent} does not yet possess.'
-    partial_narrative_de: 'Namen, Bündnisse — aber die Schulden sind verschlüsselt. Kadares Traumdeuter:
+    partial_narrative_de: 'Namen, Bündnisse – aber die Schulden sind verschlüsselt. Kadares Traumdeuter:
       das Rohmaterial ist da. Die Interpretation erfordert Kontext, den {agent} noch nicht besitzt.'
     fail_narrative_en: The dossiers are incomplete. Or they have been pre-edited for whoever found
       them.
@@ -745,9 +745,9 @@ encounters:
     partial_narrative_de: '{agent} birgt. Manche Etiketten sind lesbar, andere absichtlich verwischt.
       Ngũgĩs Beobachtung: was das Regime beschlagnahmt, verrät, wovor es sich fürchtet. Der Katalog
       ist unvollständig. Die Furcht nicht.'
-    fail_narrative_en: The assets are trapped — not physically, but politically. Taking them signals
+    fail_narrative_en: The assets are trapped – not physically, but politically. Taking them signals
       allegiance to the faction that confiscated them.
-    fail_narrative_de: Die Güter sind eine Falle — nicht physisch, sondern politisch. Sie zu nehmen
+    fail_narrative_de: Die Güter sind eine Falle – nicht physisch, sondern politisch. Sie zu nehmen
       signalisiert Treue zur Fraktion, die sie beschlagnahmte.
   - id: assets_leave
     label_en: Leave the dead their possessions.

@@ -272,7 +272,7 @@ class ForgeMapService:
         # Sanity guard: refuse to run on Game-Instances per Decision A.
         if sim.get("simulation_type") == "game_instance":
             raise RuntimeError(
-                f"Simulation {simulation_id} is a game_instance — generate against "
+                f"Simulation {simulation_id} is a game_instance – generate against "
                 f"source_template_id={sim.get('source_template_id')} instead."
             )
         return sim

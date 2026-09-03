@@ -112,7 +112,7 @@ class LandingCitizen(BaseModel):
 
     #: Welt, in der der Bürger lebt — die Karte verlinkt dorthin.
     simulation_id: str | None = None
-    """Die Welt dieses Bürgers — der Schlüssel, über den der Fächer zum
+    """Die Welt dieses Bürgers – der Schlüssel, über den der Fächer zum
     durchlaufenden Ausgangssatz passt (Migration 328)."""
     simulation_slug: str
     simulation_name: str
@@ -149,7 +149,7 @@ class LandingPrompt(BaseModel):
     text: str
     text_de: str | None = None
     simulation_id: str | None = None
-    """Die Welt, die aus diesem Satz wurde — oder None.
+    """Die Welt, die aus diesem Satz wurde – oder None.
 
     Erst seit Migration 328 gibt es diese Verbindung überhaupt; davor war der
     Weg vom Entwurf zur Welt in keiner Richtung gespeichert. Für den Bestand

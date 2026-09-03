@@ -112,7 +112,7 @@ class ContentPacksConflictService:
         draft = await ContentDraftsService.get(supabase, draft_id)
         if draft.status != ContentDraftStatus.CONFLICT:
             raise conflict(
-                f"Draft is in status '{draft.status.value}' — conflict "
+                f"Draft is in status '{draft.status.value}' – conflict "
                 f"preview is only available for drafts in 'conflict' status.",
             )
 
@@ -177,7 +177,7 @@ async def _fetch_main_content(
     except GitHubAPIError as exc:
         if exc.status == 404:
             logger.info(
-                "Resource %s not on %s@%s — treating as empty (new-resource add)",
+                "Resource %s not on %s@%s – treating as empty (new-resource add)",
                 file_path, repo, ref,
             )
             return {}

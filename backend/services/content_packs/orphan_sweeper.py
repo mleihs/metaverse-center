@@ -192,7 +192,7 @@ async def _classify_branch(
             pr_state="merged" if merged else "closed",
             status="delete",
             reason=(
-                "PR merged — GC (GitHub auto-delete disabled or skipped)"
+                "PR merged – GC (GitHub auto-delete disabled or skipped)"
                 if merged
                 else "PR closed without merge"
             ),

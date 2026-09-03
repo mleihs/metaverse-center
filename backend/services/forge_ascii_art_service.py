@@ -218,7 +218,7 @@ class ForgeAsciiArtService:
         valid, reason = ForgeAsciiArtService.validate_ascii_art(combined)
         if not valid:
             logger.warning(
-                "Combined boot art validation failed: %s — using title only",
+                "Combined boot art validation failed: %s – using title only",
                 reason,
             )
             return title

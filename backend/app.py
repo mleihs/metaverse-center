@@ -248,7 +248,7 @@ async def lifespan(app: FastAPI):
             task.add_done_callback(_on_scheduler_done)
     else:
         logging.getLogger(__name__).warning(
-            "RUN_SCHEDULERS is disabled — background schedulers not started. "
+            "RUN_SCHEDULERS is disabled – background schedulers not started. "
             "This instance is passive; another deployment owns the tick.",
         )
     yield

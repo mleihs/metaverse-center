@@ -903,7 +903,7 @@ class EnemyTemplate(BaseModel):
     image_path: str | None = None
     """Bucket-relative object path of the creature's scene art inside
     ``simulation.assets`` (e.g. ``dungeon-enemies/shadow_wisp-384.avif``), or
-    None for a creature that has no art yet — the graphical view then falls back
+    None for a creature that has no art yet – the graphical view then falls back
     to its clip-path silhouette.
 
     A *path*, not a URL: this value travels through a checked-in seed migration

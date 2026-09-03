@@ -73,7 +73,7 @@ def mint_token(user_id: str, category: str) -> str | None:
 
     key = _signing_key()
     if key is None:
-        logger.warning("No secret available to sign unsubscribe tokens — link omitted")
+        logger.warning("No secret available to sign unsubscribe tokens – link omitted")
         return None
 
     payload = _b64(json.dumps({"u": user_id, "c": category, "t": int(time.time())}).encode("utf-8"))

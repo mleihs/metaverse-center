@@ -134,7 +134,7 @@ class TestEnrichHtmlForCrawler:
         index = tmp_path / "index.html"
         index.write_text(
             '<html><head>'
-            '<title>metaverse.center — a worldbuilding framework</title>'
+            '<title>metaverse.center – a worldbuilding framework</title>'
             '<meta name="description" content="default desc">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -159,7 +159,7 @@ class TestEnrichHtmlForCrawler:
             )
 
         assert result is not None
-        assert "<title>Agents — Test Sim | metaverse.center</title>" in result
+        assert "<title>Agents – Test Sim | metaverse.center</title>" in result
         assert 'content="A test simulation"' in result
         assert "simulations/10000000-0000-0000-0000-000000000001/agents" in result
 
@@ -405,10 +405,10 @@ class TestEntityMetaOverride:
             html="<h2>Alice Smith</h2>",
             jsonld='{"@type":"Person"}',
             meta=EntityMeta(
-                title="Alice Smith — Station Null | metaverse.center",
+                title="Alice Smith – Station Null | metaverse.center",
                 description="A brilliant inventor driven by cosmic curiosity.",
                 og_image="https://example.com/alice.jpg",
-                og_image_alt="Alice Smith — portrait",
+                og_image_alt="Alice Smith – portrait",
                 og_type="profile",
             ),
         )
@@ -426,10 +426,10 @@ class TestEntityMetaOverride:
             )
 
         assert result is not None
-        assert "<title>Alice Smith — Station Null | metaverse.center</title>" in result
+        assert "<title>Alice Smith – Station Null | metaverse.center</title>" in result
         assert 'content="A brilliant inventor driven by cosmic curiosity."' in result
         assert 'content="https://example.com/alice.jpg"' in result
-        assert 'content="Alice Smith — portrait"' in result
+        assert 'content="Alice Smith – portrait"' in result
         assert '<meta property="og:type" content="profile"' in result
         # Entity content + JSON-LD are also injected
         assert "Alice Smith" in result
@@ -477,7 +477,7 @@ class TestEntityMetaOverride:
             )
 
         assert result is not None
-        assert "<title>Agents — Station Null | metaverse.center</title>" in result
+        assert "<title>Agents – Station Null | metaverse.center</title>" in result
         # og:type remains 'website' (no entity override)
         assert '<meta property="og:type" content="website"' in result
 

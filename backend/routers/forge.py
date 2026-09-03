@@ -101,7 +101,7 @@ async def _check_byok_access(supabase, admin_supabase, user: CurrentUser) -> Non
     except HTTPException:
         raise
     except Exception:
-        logger.exception("BYOK allowance check failed — denying access")
+        logger.exception("BYOK allowance check failed – denying access")
         raise HTTPException(status_code=500, detail="Unable to verify BYOK access.") from None
 
 

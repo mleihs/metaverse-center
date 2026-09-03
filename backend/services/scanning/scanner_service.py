@@ -460,7 +460,7 @@ class ScannerService(BaseSchedulerMixin):
 
     # Inline fallback prompts — used when DB templates are unavailable
     _DISPATCH_SYSTEM_PROMPT = (
-        "You write bureau dispatches — official reports from the Bureau of Substrate Monitoring, "
+        "You write bureau dispatches – official reports from the Bureau of Substrate Monitoring, "
         "as if real-world events were tremors detected in the fabric between realities. "
         "Tone: Clinical yet ominous. Like a seismological report written by someone who "
         "suspects the instruments are detecting something alive."
@@ -470,7 +470,7 @@ class ScannerService(BaseSchedulerMixin):
         "Source event: {article_title}\n"
         "{article_description}\n\n"
         "Category: {source_category}\n"
-        "Archetype: {archetype_name} — {archetype_description}\n"
+        "Archetype: {archetype_name} – {archetype_description}\n"
         "Magnitude: {magnitude_scaled}/10\n\n"
         "Write a bureau dispatch (100-200 words). "
         "Reference the real event obliquely (never name real places or people directly). "

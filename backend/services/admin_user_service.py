@@ -189,7 +189,7 @@ class AdminUserService:
         """Best-effort: the account is already gone, the mail must not undo that."""
         if not contact:
             logger.warning(
-                "Account deleted without a confirmation — no address on file",
+                "Account deleted without a confirmation – no address on file",
                 extra={"user_id": str(user_id)},
             )
             return

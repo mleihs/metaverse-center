@@ -39,7 +39,7 @@ def _stamp(html: str) -> str:
     head = "<head>"
     if head not in html:
         # Not fatal: the SPA still works, it just reports an unknown release.
-        logger.warning("index.html has no <head> — build identity not stamped")
+        logger.warning("index.html has no <head> – build identity not stamped")
         return html
     return html.replace(head, head + tags, 1)
 

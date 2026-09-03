@@ -9,7 +9,7 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 MOCK_SITREP = (
-    "SITREP — CYCLE {cycle}\n\n"
+    "SITREP – CYCLE {cycle}\n\n"
     "Operational tempo remains elevated. Multiple operatives deployed across "
     "contested sectors. Detection rates within acceptable parameters.\n\n"
     "Intelligence suggests escalating tensions between rival simulations. "

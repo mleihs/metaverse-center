@@ -105,7 +105,7 @@ async def receive_github_webhook(
     )
     if not is_new:
         logger.info(
-            "Duplicate GitHub webhook delivery %s — ignored",
+            "Duplicate GitHub webhook delivery %s – ignored",
             x_github_delivery,
         )
         return Response(status_code=200, content="duplicate, ignored")
@@ -198,7 +198,7 @@ async def _process_event(
     )
     if not drafts:
         logger.info(
-            "No content drafts attached to PR #%d — ignored", pr_number,
+            "No content drafts attached to PR #%d – ignored", pr_number,
         )
         return _PROCESSING_RESULT_IGNORED
 

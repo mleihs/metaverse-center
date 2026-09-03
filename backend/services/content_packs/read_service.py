@@ -114,7 +114,7 @@ def _walk_archetype_rows() -> list[dict[str, Any]]:
     """Emit one manifest row per archetype-pack YAML (archetypes/<slug>/*.yaml)."""
     if not _ARCHETYPES_ROOT.is_dir():
         logger.warning(
-            "Archetypes root missing at %s — returning empty manifest.",
+            "Archetypes root missing at %s – returning empty manifest.",
             _ARCHETYPES_ROOT,
         )
         return []
@@ -136,7 +136,7 @@ def _walk_ability_rows() -> list[dict[str, Any]]:
     """
     if not _ABILITIES_ROOT.is_dir():
         logger.debug(
-            "Abilities root missing at %s — no ability-pack manifest rows.",
+            "Abilities root missing at %s – no ability-pack manifest rows.",
             _ABILITIES_ROOT,
         )
         return []

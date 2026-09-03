@@ -32,7 +32,7 @@ from supabase import AsyncClient as Client
 logger = logging.getLogger(__name__)
 
 # Bureau dispatch counter — persisted via MAX(dispatch_number) pattern
-_AI_DISCLOSURE_FOOTER = "\n\n—\nAI-generated content from metaverse.center"
+_AI_DISCLOSURE_FOOTER = "\n\n–\nAI-generated content from metaverse.center"
 
 # Caption templates (hardcoded fallbacks — prompt_templates DB entries take priority)
 CAPTION_TEMPLATES = {
@@ -40,9 +40,9 @@ CAPTION_TEMPLATES = {
         "BUREAU OF IMPOSSIBLE GEOGRAPHY\n"
         "DISPATCH [{dispatch_number:04d}] | {date}\n"
         "CLASSIFICATION: {classification}\n"
-        "RE: {simulation_name} — Personnel File\n\n"
+        "RE: {simulation_name} – Personnel File\n\n"
         "{body}\n\n"
-        "ADDENDUM: Filing Clerk's Note — "
+        "ADDENDUM: Filing Clerk's Note – "
         "This operative's dossier was flagged during routine archival review. "
         "External observers are advised to note the details carefully."
     ),
@@ -50,9 +50,9 @@ CAPTION_TEMPLATES = {
         "BUREAU OF IMPOSSIBLE GEOGRAPHY\n"
         "DISPATCH [{dispatch_number:04d}] | {date}\n"
         "CLASSIFICATION: {classification}\n"
-        "RE: {simulation_name} — Shard Surveillance\n\n"
+        "RE: {simulation_name} – Shard Surveillance\n\n"
         "{body}\n\n"
-        "ADDENDUM: Filing Clerk's Note — "
+        "ADDENDUM: Filing Clerk's Note – "
         "This structure has been under continuous Bureau observation. "
         "Structural anomalies are being monitored."
     ),
@@ -60,9 +60,9 @@ CAPTION_TEMPLATES = {
         "BUREAU OF IMPOSSIBLE GEOGRAPHY\n"
         "DISPATCH [{dispatch_number:04d}] | {date}\n"
         "CLASSIFICATION: AMBER\n"
-        "RE: {simulation_name} — Chronicle Edition #{edition_number}\n\n"
+        "RE: {simulation_name} – Chronicle Edition #{edition_number}\n\n"
         "{body}\n\n"
-        "ADDENDUM: Filing Clerk's Note — "
+        "ADDENDUM: Filing Clerk's Note – "
         "This chronicle was intercepted during routine substrate monitoring. "
         "Read the full dispatch at metaverse.center."
     ),
@@ -70,9 +70,9 @@ CAPTION_TEMPLATES = {
         "BUREAU OF IMPOSSIBLE GEOGRAPHY\n"
         "DISPATCH [{dispatch_number:04d}] | {date}\n"
         "CLASSIFICATION: RESTRICTED\n"
-        "RE: {simulation_name} — Declassified Archive\n\n"
+        "RE: {simulation_name} – Declassified Archive\n\n"
         "{body}\n\n"
-        "ADDENDUM: Filing Clerk's Note — "
+        "ADDENDUM: Filing Clerk's Note – "
         "This archive was unsealed following review by the Bureau's "
         "Substrate Cartography Division. Handle with care."
     ),
@@ -685,7 +685,7 @@ class InstagramContentService:
             return response.data if response.data else {}
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             logger.warning(
-                "Instagram analytics RPC failed — returning empty stats",
+                "Instagram analytics RPC failed – returning empty stats",
                 exc_info=True,
                 extra={"days": days},
             )
@@ -1050,7 +1050,7 @@ class InstagramContentService:
 
         emoji_count = sum(1 for ch in caption if unicodedata.category(ch).startswith("So"))
         if emoji_count > 3:
-            return {"blocked": True, "reason": f"Too many emojis ({emoji_count}) — not Bureau voice"}
+            return {"blocked": True, "reason": f"Too many emojis ({emoji_count}) – not Bureau voice"}
 
         return {"blocked": False, "reason": ""}
 

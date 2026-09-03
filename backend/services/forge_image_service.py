@@ -528,7 +528,7 @@ class ForgeImageService:
 
         if not embassy_id:
             logger.warning(
-                "Embassy building '%s' has no embassy_id — falling back to standard",
+                "Embassy building '%s' has no embassy_id – falling back to standard",
                 building_name,
             )
             return await self._generation.generate_building_image_description(
@@ -540,7 +540,7 @@ class ForgeImageService:
         # Fetch embassy record
         embassy_resp = await self._supabase.table("embassies").select("*").eq("id", str(embassy_id)).limit(1).execute()
         if not embassy_resp.data:
-            logger.warning("Embassy %s not found — falling back to standard", embassy_id)
+            logger.warning("Embassy %s not found – falling back to standard", embassy_id)
             return await self._generation.generate_building_image_description(
                 building_name=building_name,
                 building_type=building_data.get("building_type", ""),
@@ -619,7 +619,7 @@ class ForgeImageService:
 
         if not embassy_resp.data:
             logger.warning(
-                "No embassy found for ambassador '%s' — falling back to standard",
+                "No embassy found for ambassador '%s' – falling back to standard",
                 agent_name,
             )
             return await self._generation.generate_portrait_description(

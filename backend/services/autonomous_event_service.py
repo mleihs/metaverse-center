@@ -80,7 +80,7 @@ TRIGGERS: dict[str, dict] = {
         },
     },
     "relationship_breakthrough": {
-        "description": "Opinion crosses +60 threshold — strong bond forms",
+        "description": "Opinion crosses +60 threshold – strong bond forms",
         "impact_level": 2,
         "event_type": "social",
         "significance": 5,
@@ -89,7 +89,7 @@ TRIGGERS: dict[str, dict] = {
         "relationship_intensity": 6,
     },
     "relationship_breakdown": {
-        "description": "Opinion crosses -60 threshold — hostility erupts",
+        "description": "Opinion crosses -60 threshold – hostility erupts",
         "impact_level": 4,
         "event_type": "social",
         "significance": 7,
@@ -156,7 +156,7 @@ _EVENT_NARRATIVE_SYSTEM = (
 _EVENT_NARRATIVE_USER = """Generate a narrative for this autonomous event:
 
 Simulation: {simulation_name}
-Event type: {trigger_type} — {trigger_description}
+Event type: {trigger_type} – {trigger_description}
 Involved agents: {agent_names}
 Zone: {zone_name}
 Context: {context}

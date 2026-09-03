@@ -53,7 +53,7 @@ class CircuitOpenError(Exception):
         self.opens_until = opens_until
         remaining_s = max(0.0, opens_until - time.monotonic())
         super().__init__(
-            f"Circuit open for {scope}:{scope_key} — retry in {remaining_s:.0f}s",
+            f"Circuit open for {scope}:{scope_key} – retry in {remaining_s:.0f}s",
         )
 
 

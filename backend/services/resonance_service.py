@@ -251,7 +251,7 @@ class ResonanceService(BaseService):
         signature = resonance.get("resonance_signature")
         if not signature:
             raise bad_request(
-                "Resonance has no signature — the derive trigger may not have fired. Check source_category is valid.",
+                "Resonance has no signature – the derive trigger may not have fired. Check source_category is valid.",
             )
 
         # Transition to impacting
@@ -564,7 +564,7 @@ class ResonanceService(BaseService):
         raw_mag = impact.get("effective_magnitude")
         if raw_mag is None:
             logger.warning(
-                "effective_magnitude is NULL for impact %s — trigger may not have fired. "
+                "effective_magnitude is NULL for impact %s – trigger may not have fired. "
                 "Falling back to resonance magnitude * susceptibility.",
                 impact["id"],
             )
@@ -903,7 +903,7 @@ class ResonanceService(BaseService):
                     magnitude=effective_magnitude,
                     locale="en",
                 )
-                title = generated_en.get("title", f"{archetype} — {event_type}")
+                title = generated_en.get("title", f"{archetype} – {event_type}")
                 description = generated_en.get("description")
                 if generated_en.get("impact_level"):
                     impact_level = min(10, max(1, int(generated_en["impact_level"])))
@@ -931,10 +931,10 @@ class ResonanceService(BaseService):
                     "AI generation failed for resonance event, using template",
                     exc_info=True,
                 )
-                title = f"{archetype} — {event_type.replace('_', ' ').title()}"
+                title = f"{archetype} – {event_type.replace('_', ' ').title()}"
                 description = resonance.get("description")
         else:
-            title = f"{archetype} — {event_type.replace('_', ' ').title()}"
+            title = f"{archetype} – {event_type.replace('_', ' ').title()}"
             description = resonance.get("description")
 
         event_data = {

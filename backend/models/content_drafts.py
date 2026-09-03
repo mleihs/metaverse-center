@@ -272,7 +272,7 @@ class ConflictPreview(BaseModel):
     auto_resolved_count: int
     main_base_sha: str | None = Field(
         default=None,
-        description="Current main HEAD SHA (commit) — what `theirs` was fetched against.",
+        description="Current main HEAD SHA (commit) – what `theirs` was fetched against.",
     )
 
 

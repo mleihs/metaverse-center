@@ -150,7 +150,7 @@ BEGIN
     VALUES (
         v_epoch_id,
         'The Convergence Protocol',
-        'The boundaries between worlds grow thin. Four civilizations compete for dominance as the fabric of the multiverse trembles. Resource points flow to those who dare — and to those who endure.',
+        'The boundaries between worlds grow thin. Four civilizations compete for dominance as the fabric of the multiverse trembles. Resource points flow to those who dare – and to those who endure.',
         v_dev_user,
         v_starts_at,
         v_ends_at,
@@ -421,7 +421,7 @@ BEGIN
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 1, 'phase_change',
-         'The foundation phase ends. Competition begins — all operatives are now cleared for deployment.',
+         'The foundation phase ends. Competition begins – all operatives are now cleared for deployment.',
          true, '{"old_phase": "foundation", "new_phase": "competition"}'::jsonb, v_starts_at + INTERVAL '2 days 16 hours');
 
     -- Cycle 2: First probes, guardian deployments, RP allocation
@@ -458,7 +458,7 @@ BEGIN
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 3, 'operative_deployed', v_gi_velgarien, v_gi_station_null, v_m4,
-         'Viktor Harken begins broadcasting propaganda toward Station Null. The Northern Pact''s own ally becomes a target — politics makes strange enemies.',
+         'Viktor Harken begins broadcasting propaganda toward Station Null. The Northern Pact''s own ally becomes a target – politics makes strange enemies.',
          false, '{"operative_type": "propagandist", "target": "Station Null"}'::jsonb, v_starts_at + INTERVAL '20 hours');
 
     -- Cycle 4: Escalation — captures, propaganda success, spy returns
@@ -516,7 +516,7 @@ BEGIN
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 6, 'sabotage', v_gi_gaslit_reach, v_gi_speranza, v_m11,
-         'Power conduits in Speranza''s Workshops sever and spark — Obediah Crook strikes again. Repair operations disrupted for hours.',
+         'Power conduits in Speranza''s Workshops sever and spark – Obediah Crook strikes again. Repair operations disrupted for hours.',
          true, '{"operative_type": "saboteur", "outcome": "success"}'::jsonb, v_starts_at + INTERVAL '46 hours');
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
@@ -537,12 +537,12 @@ BEGIN
     -- Cycle 7: Final deployments — assassins and saboteurs, tension peaks
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 7, 'operative_deployed', v_gi_velgarien, v_gi_gaslit_reach, v_m6,
-         'Elena Voss transitions to saboteur operations. A second Velgarien strike against the Gaslit Reach — this time targeting the Fungal Warrens.',
+         'Elena Voss transitions to saboteur operations. A second Velgarien strike against the Gaslit Reach – this time targeting the Fungal Warrens.',
          false, '{"operative_type": "saboteur", "target": "The Gaslit Reach"}'::jsonb, now() - INTERVAL '3 hours');
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 7, 'operative_deployed', v_gi_gaslit_reach, v_gi_station_null, v_m8,
-         'The Gaslit Reach dispatches a saboteur to Station Null. Obediah Crook slips through the bureaucracy with a cheerful wave — and into the Command Deck.',
+         'The Gaslit Reach dispatches a saboteur to Station Null. Obediah Crook slips through the bureaucracy with a cheerful wave – and into the Command Deck.',
          false, '{"operative_type": "saboteur", "target": "Station Null"}'::jsonb, now() - INTERVAL '2 hours');
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
@@ -557,7 +557,7 @@ BEGIN
 
     INSERT INTO battle_log (epoch_id, cycle_number, event_type, source_simulation_id, target_simulation_id, mission_id, narrative, is_public, metadata, created_at) VALUES
         (v_epoch_id, 7, 'operative_deployed', v_gi_gaslit_reach, v_gi_velgarien, v_m12,
-         'Commodore Harrowgate begins a second infiltration operation — this time targeting Velgarien''s Regierungsviertel. The Commodore''s appetite for secrets grows.',
+         'Commodore Harrowgate begins a second infiltration operation – this time targeting Velgarien''s Regierungsviertel. The Commodore''s appetite for secrets grows.',
          false, '{"operative_type": "infiltrator", "target": "Velgarien"}'::jsonb, now() - INTERVAL '10 hours');
 
     -- =========================================================================

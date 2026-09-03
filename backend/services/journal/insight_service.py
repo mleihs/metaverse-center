@@ -80,10 +80,10 @@ INSIGHT_SYSTEM_PROMPT = (
     "multifaceted, bustling, game-changer, cutting-edge.\n"
     "- German is independently authored, not translated. Rich, idiomatic.\n\n"
     "The resonance type tells you what the fragments share:\n"
-    "  archetype      — they all turn on the same archetype\n"
-    "  emotional      — they share a valence the player keeps meeting\n"
-    "  temporal       — they happened close enough to speak to each other\n"
-    "  contradiction  — they oppose each other and both are true\n\n"
+    "  archetype      – they all turn on the same archetype\n"
+    "  emotional      – they share a valence the player keeps meeting\n"
+    "  temporal       – they happened close enough to speak to each other\n"
+    "  contradiction  – they oppose each other and both are true\n\n"
     "Return JSON only:\n"
     '{"content_de": "...", "content_en": "..."}'
 )
@@ -122,7 +122,7 @@ def build_insight_user_prompt(
     fragments: list[FragmentResponse],
     match: ResonanceMatch,
 ) -> str:
-    evidence = ", ".join(match.evidence_tags) if match.evidence_tags else "—"
+    evidence = ", ".join(match.evidence_tags) if match.evidence_tags else "–"
     body = _format_fragments_for_prompt(fragments)
     return (
         f"Write the Insight for a {match.resonance_type.value} resonance "

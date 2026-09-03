@@ -75,7 +75,7 @@ _RUN = "dungeon_run_buffs.apply_run_buff (Python, run-scoped)"
 # These are design decisions, not defects: each needs a mechanism the game does
 # not have yet. They are listed here so the gate stays green *and* the gap stays
 # visible. `scripts/audit_loot_effects.py` prints them with their item counts.
-_OPEN = "OFFEN — Mechanik fehlt, Entscheidung des Eigentümers"
+_OPEN = "OFFEN – Mechanik fehlt, Entscheidung des Eigentümers"
 
 
 LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
@@ -101,12 +101,12 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
         optional_params=frozenset({"aptitude", "aptitude_choices", "bonus", "boost", "amount"}),
         summary_en=(
             "Raises one operative aptitude permanently. Capped at +2 per agent across all runs, so no "
-            "agent becomes untouchable — the cap is the reason aptitude loot stays interesting after "
+            "agent becomes untouchable – the cap is the reason aptitude loot stays interesting after "
             "the third dungeon."
         ),
         summary_de=(
             "Hebt eine Operativ-Eignung dauerhaft. Über alle Läufe hinweg bei +2 je Agent gedeckelt, "
-            "damit kein Agent unantastbar wird — dieser Deckel ist der Grund, warum Eignungsbeute "
+            "damit kein Agent unantastbar wird – dieser Deckel ist der Grund, warum Eignungsbeute "
             "auch nach dem dritten Dungeon noch etwas bedeutet."
         ),
     ),
@@ -142,11 +142,11 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
         ),
         summary_en=(
             "Attaches a temporary mood to the agent. Moods shift behaviour while they last and expire "
-            "on their own — the only loot class that is deliberately impermanent."
+            "on their own – the only loot class that is deliberately impermanent."
         ),
         summary_de=(
             "Heftet dem Agenten eine zeitweilige Stimmung an. Stimmungen verschieben das Verhalten, "
-            "solange sie halten, und laufen von selbst aus — die einzige Beuteklasse, die mit Absicht "
+            "solange sie halten, und laufen von selbst aus – die einzige Beuteklasse, die mit Absicht "
             "vergänglich ist."
         ),
     ),
@@ -197,9 +197,9 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
         consumer=_SQL,
         params=frozenset(),
         optional_params=frozenset({"aptitude", "bonus", "archetype", "check_bonus"}),
-        summary_en=("A bonus for the next run only. Spend it or lose it — it does not stack and it does not wait."),
+        summary_en=("A bonus for the next run only. Spend it or lose it – it does not stack and it does not wait."),
         summary_de=(
-            "Ein Bonus nur für den nächsten Lauf. Einlösen oder verlieren — er stapelt sich nicht und wartet nicht."
+            "Ein Bonus nur für den nächsten Lauf. Einlösen oder verlieren – er stapelt sich nicht und wartet nicht."
         ),
     ),
     "simulation_modifier": LootEffectContract(
@@ -233,11 +233,11 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
         optional_params=frozenset({"trait", "dimension", "delta", "big_five_delta", "player_choice"}),
         summary_en=(
             "Shifts a personality trait. An agent whose conscientiousness moves does not merely score "
-            "differently — it wants different things, and its needs decay at a different pace."
+            "differently – it wants different things, and its needs decay at a different pace."
         ),
         summary_de=(
             "Verschiebt einen Persönlichkeitszug. Ein Agent, dessen Gewissenhaftigkeit sich bewegt, "
-            "rechnet nicht bloß anders — er will anderes, und seine Bedürfnisse verfallen in anderem "
+            "rechnet nicht bloß anders – er will anderes, und seine Bedürfnisse verfallen in anderem "
             "Takt."
         ),
     ),
@@ -255,7 +255,7 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
             "Hebt den am stärksten beschädigten Bau der Welt um eine Sprosse seiner eigenen "
             "Zustandsleiter. Das ist der EINZIGE Weg, auf dem ein Bau sich erholt: nichts heilt mit "
             "der Zeit, und ein Reparaturmenü gibt es nicht. Der Zustand speist die Botschafts- "
-            "Wirksamkeit mit 40 % — eine Ruine ist also nicht kosmetisch."
+            "Wirksamkeit mit 40 % – eine Ruine ist also nicht kosmetisch."
         ),
     ),
     "dungeon_buff": LootEffectContract(
@@ -279,12 +279,12 @@ LOOT_EFFECT_CONTRACTS: dict[str, LootEffectContract] = {
         ),
         summary_en=(
             "Helps inside the running dungeon and ends with it. Which help depends on the parameter "
-            "it carries — see BUFF_SHAPES below; it is the one type whose consumer is decided by its "
+            "it carries – see BUFF_SHAPES below; it is the one type whose consumer is decided by its "
             "shape."
         ),
         summary_de=(
             "Hilft innerhalb des laufenden Dungeons und endet mit ihm. Welche Hilfe, entscheidet der "
-            "mitgeführte Parameter — siehe BUFF_SHAPES weiter unten; es ist die einzige Art, deren "
+            "mitgeführte Parameter – siehe BUFF_SHAPES weiter unten; es ist die einzige Art, deren "
             "Verbraucher von ihrer Form abhängt."
         ),
     ),
@@ -333,7 +333,7 @@ BUFF_SHAPES: dict[str, BuffShape] = {
         key="bonus_pct",
         consumer=_OPEN,
         reason="Einheit unklar: Prozent worauf? `check_bonus` ist ein flacher "
-        "Zuschlag auf denselben Wurf — beides zugleich wäre zweideutig",
+        "Zuschlag auf denselben Wurf – beides zugleich wäre zweideutig",
     ),
     "aptitude_boost": BuffShape(
         key="aptitude_boost",

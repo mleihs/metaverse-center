@@ -46,7 +46,7 @@ import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import { archetypeLabel } from './intake-labels.js';
-import { intakeControlStyles, intakeKindColorStyles } from './intake-styles.js';
+import { intakeControlStyles, intakeKindColorStyles, intakeToolbarStyles } from './intake-styles.js';
 
 /** Wonach der Lesesaal gliedern kann. Siehe Kopfkommentar: `zone` fehlt. */
 type ReadingGrouping = 'archetype' | 'source';
@@ -57,20 +57,12 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
   static styles = [
     intakeControlStyles,
     intakeKindColorStyles,
+    intakeToolbarStyles,
     css`
       :host {
         display: block;
         --modal-max-width: min(1500px, calc(100vw - 2 * var(--stage-gutter)));
         --modal-body-padding: 0;
-      }
-
-      .head {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        padding: var(--space-3) var(--space-5);
-        border-block-end: var(--border-width-thin) solid var(--color-border-light);
       }
 
       .group-by {
@@ -470,7 +462,7 @@ export class VelgIntakeReadingRoomModal extends SignalWatcher(LitElement) {
                 message=${msg('The entrance is empty. Admit something from triage first.')}
               ></velg-empty-state>`
             : html`
-                <div class="head">
+                <div class="tools">
                   <div class="group-by" role="group" aria-label=${msg('Group by')}>
                     <span class="label">${msg('Group by')}</span>
                     <button

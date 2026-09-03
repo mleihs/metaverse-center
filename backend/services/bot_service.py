@@ -328,7 +328,7 @@ class BotService:
                     )
                     if not unaligned_resp.count or unaligned_resp.count < 1:
                         logger.debug(
-                            "Bot %s skipping alliance formation — no unaligned partners available",
+                            "Bot %s skipping alliance formation – no unaligned partners available",
                             sim_id,
                         )
                         continue

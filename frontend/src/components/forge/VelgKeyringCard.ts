@@ -37,6 +37,7 @@ import { captureError } from '../../services/SentryService.js';
 import { formatDate } from '../../utils/date-format.js';
 import { icons } from '../../utils/icons.js';
 import { detectProvider, type KeyProviderId, providerById } from '../../utils/key-providers.js';
+import { bureauPaletteStyles } from '../shared/bureau-palette-styles.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 
@@ -46,13 +47,16 @@ type CheckState = 'idle' | 'testing' | 'confirmed' | 'rejected' | 'unreachable';
 @localized()
 @customElement('velg-keyring-card')
 export class VelgKeyringCard extends SignalWatcher(LitElement) {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       display: block;
-      --_gold: #a68a2e; /* lint-color-ok — Bureau-Gold wie terminal/BureauTerminal.ts */
-      --_gold-bright: #f5c542; /* lint-color-ok */
-      --_gold-border: #3d3200; /* lint-color-ok */
-      --_gold-bg: #0a0a08; /* lint-color-ok */
+      /* Die vier Werte stehen in shared/bureau-palette-styles.ts; hier nur
+         die Namen, unter denen dieser Baustein sie kennt. */
+      --_gold: var(--_bureau-dim);
+      --_gold-bright: var(--_bureau-text);
+      --_gold-border: var(--_bureau-border);
+      --_gold-bg: var(--_bureau-screen);
     }
 
     .card {
@@ -468,7 +472,9 @@ export class VelgKeyringCard extends SignalWatcher(LitElement) {
         display: none;
       }
     }
-  `;
+  `,
+    bureauPaletteStyles,
+  ];
 
   @property({ type: String }) providerId: KeyProviderId = 'openrouter';
   /** Ein aus der Einfüge-Karte gereichter Entwurf öffnet die Karte direkt. */

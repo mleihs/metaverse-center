@@ -49,7 +49,7 @@ class ZoneGeometryPatch(BaseModel):
 
     id: UUID
     geojson: dict[str, Any] = Field(
-        description="GeoJSON Polygon — {'type': 'Polygon', 'coordinates': [[[lng, lat], ...]]}",
+        description="GeoJSON Polygon – {'type': 'Polygon', 'coordinates': [[[lng, lat], ...]]}",
     )
 
 
@@ -69,7 +69,7 @@ class StreetGeometryInsert(BaseModel):
     street_type: Literal["arterial", "secondary", "tertiary", "alley"]
     length_km: float
     geojson: dict[str, Any] = Field(
-        description="GeoJSON LineString — {'type': 'LineString', 'coordinates': [[lng, lat], [lng, lat], ...]}",
+        description="GeoJSON LineString – {'type': 'LineString', 'coordinates': [[lng, lat], [lng, lat], ...]}",
     )
 
 
@@ -78,7 +78,7 @@ class BuildingGeometryPatch(BaseModel):
 
     id: UUID
     geojson: dict[str, Any] = Field(
-        description="GeoJSON Point — {'type': 'Point', 'coordinates': [lng, lat]}",
+        description="GeoJSON Point – {'type': 'Point', 'coordinates': [lng, lat]}",
     )
     street_id: UUID | None = None
 

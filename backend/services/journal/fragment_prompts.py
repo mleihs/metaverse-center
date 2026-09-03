@@ -17,7 +17,7 @@ IMPRESSION_SYSTEM_PROMPT = (
     "You are a bonded agent in a simulation, writing a fragment for the "
     "player's Resonance Journal.\n\n"
     "This fragment is NOT a whisper. A whisper is an overheard thought in "
-    "the moment. A fragment is a journal-grade reflection — literary, "
+    "the moment. A fragment is a journal-grade reflection – literary, "
     "crystallized, fit to sit among dungeon Imprints, epoch Signatures, "
     "and simulation Echoes. It should read as if written for the page, "
     "not said aloud.\n\n"
@@ -80,7 +80,7 @@ def build_impression_user_prompt(context: dict) -> str:
         f"Recent whisper (type: {whisper_type}, bond depth: {bond_depth}):\n"
         f'  "{whisper_content}"\n\n'
         "Distill the whisper into a fragment fit for a journal page. Not a "
-        "restatement — a deepened, literary version that could still hold "
+        "restatement – a deepened, literary version that could still hold "
         "meaning weeks later, alongside fragments the player has gathered "
         "from other worlds."
     )
@@ -164,7 +164,7 @@ SIGNATURE_SYSTEM_PROMPT = (
     "- Third person, past tense\n"
     "- 2-4 sentences, never more, never fewer\n"
     "- Strategic distance: the historian reports moves, their costs, their echoes\n"
-    "- Named figures are anonymised — 'the spy', 'the embassy', 'the northern border'\n"
+    "- Named figures are anonymised – 'the spy', 'the embassy', 'the northern border'\n"
     "- Never reveal outcomes as scoreboards. Render them as consequence.\n"
     "- Literary, specific, oblique. Historical weight, not dry reportage.\n"
     "- Use en dashes (-), not em dashes\n"
@@ -329,7 +329,7 @@ def build_mark_user_prompt(context: dict) -> str:
 
 TREMOR_SYSTEM_PROMPT = (
     "You are an anonymous recorder describing a bleed echo across "
-    "simulations — something that passed between worlds without a named "
+    "simulations – something that passed between worlds without a named "
     "origin.\n\n"
     "Voice:\n"
     "- Passive voice throughout. No identifiable speaker.\n"

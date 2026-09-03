@@ -181,7 +181,7 @@ FIXTURES: tuple[EmailFixture, ...] = (
     EmailFixture(
         key="cycle-briefing",
         label="Zyklus-Lagebericht",
-        subject=lambda lang: "Zyklus 3 aufgelöst — Operation Crimson Tide",
+        subject=lambda lang: "Zyklus 3 aufgelöst – Operation Crimson Tide",
         render=lambda lang: render_cycle_briefing(
             data=_cycle_briefing_data(), email_locale=lang, unsubscribe_url=_UNSUB
         ),
@@ -189,7 +189,7 @@ FIXTURES: tuple[EmailFixture, ...] = (
     EmailFixture(
         key="phase-change",
         label="Phasenwechsel",
-        subject=lambda lang: "Phasenwechsel — Abrechnung",
+        subject=lambda lang: "Phasenwechsel – Abrechnung",
         render=lambda lang: render_phase_change(
             epoch_name="Operation Crimson Tide",
             old_phase="competition",
@@ -205,7 +205,7 @@ FIXTURES: tuple[EmailFixture, ...] = (
     EmailFixture(
         key="deadline-reminder",
         label="Fristerinnerung",
-        subject=lambda lang: "Zwei Stunden bis zur Auflösung — Zyklus 3",
+        subject=lambda lang: "Zwei Stunden bis zur Auflösung – Zyklus 3",
         render=lambda lang: render_deadline_reminder(
             email_locale=lang,
             epoch_name="Operation Crimson Tide",

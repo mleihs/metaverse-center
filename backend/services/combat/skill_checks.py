@@ -243,12 +243,12 @@ def format_check_for_terminal(
     lines_en = [
         f"Agent {agent_name} {action_description}.",
         "",
-        f"[{aptitude} CHECK — Aptitude {level}: Base {base}% + ({level}×3%) = {base + apt_bonus}%",
+        f"[{aptitude} CHECK – Aptitude {level}: Base {base}% + ({level}×3%) = {base + apt_bonus}%",
     ]
     lines_de = [
         f"Agent {agent_name} {action_description}.",
         "",
-        f"[{aptitude}-PRÜFUNG — Eignung {level}: Basis {base}% + ({level}×3%) = {base + apt_bonus}%",
+        f"[{aptitude}-PRÜFUNG – Eignung {level}: Basis {base}% + ({level}×3%) = {base + apt_bonus}%",
     ]
 
     if "personality_modifier" in b:
@@ -280,7 +280,7 @@ def format_check_for_terminal(
     else:
         adj_str = ""
 
-    lines_en.append(f"\nRolling... {outcome.roll}{adj_str} — {result_label_en[outcome.result]}")
-    lines_de.append(f"\nWürfeln... {outcome.roll}{adj_str} — {result_label_de[outcome.result]}")
+    lines_en.append(f"\nRolling... {outcome.roll}{adj_str} – {result_label_en[outcome.result]}")
+    lines_de.append(f"\nWürfeln... {outcome.roll}{adj_str} – {result_label_de[outcome.result]}")
 
     return "\n".join(lines_en), "\n".join(lines_de)

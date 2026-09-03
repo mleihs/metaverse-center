@@ -68,7 +68,7 @@ INSERT INTO prompt_templates (
 Character traits: {agent_character}
 Background: {agent_background}
 
-AESTHETIC: Dark, moody, brutalist atmosphere. Desaturated color palette — grays,
+AESTHETIC: Dark, moody, brutalist atmosphere. Desaturated color palette – grays,
 muted earth tones, cold blues. Harsh directional lighting with deep shadows.
 Concrete or industrial background. The mood should feel dystopian and imposing.
 Think film noir meets brutalist architecture photography.
@@ -77,7 +77,7 @@ COMPOSITION: Close-up head-and-shoulders portrait, single subject centered,
 shallow depth of field, dramatic side lighting with deep shadows.
 Describe: age, ethnicity, facial features, expression, hairstyle,
 clothing visible at shoulders, lighting, mood.
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 IMPORTANT: Describe only ONE person.
 IMPORTANT: Always include: desaturated, harsh lighting, dark mood, concrete, high contrast, cinematic.',
     'You are a portrait description specialist for AI image generation. Write concise, visual descriptors for a single person portrait in a dark, brutalist, dystopian aesthetic.',
@@ -98,7 +98,7 @@ INSERT INTO prompt_templates (
 Charaktereigenschaften: {agent_character}
 Hintergrund: {agent_background}
 
-ÄSTHETIK: Dunkle, düstere, brutalistische Atmosphäre. Entsättigte Farbpalette — Grautöne,
+ÄSTHETIK: Dunkle, düstere, brutalistische Atmosphäre. Entsättigte Farbpalette – Grautöne,
 gedämpfte Erdtöne, kalte Blautöne. Hartes gerichtetes Licht mit tiefen Schatten.
 Beton- oder Industriehintergrund. Die Stimmung soll dystopisch und imposant wirken.
 Denke an Film Noir trifft brutalistische Architekturfotografie.
@@ -107,7 +107,7 @@ KOMPOSITION: Nahaufnahme Kopf-und-Schulter-Portrait, einzelne Person zentriert,
 geringe Tiefenschärfe, dramatische Seitenbeleuchtung mit tiefen Schatten.
 Beschreibe: Alter, Ethnie, Gesichtszüge, Ausdruck, Frisur,
 sichtbare Kleidung an den Schultern, Beleuchtung, Stimmung.
-Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+Schreibe als Bildgenerierungs-Prompt – kommagetrennte Deskriptoren, keine Sätze.
 WICHTIG: Beschreibe nur EINE Person.
 WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).
 WICHTIG: Immer einschließen: entsättigt, hartes Licht, dunkle Stimmung, Beton, hoher Kontrast, filmisch.',
@@ -136,19 +136,19 @@ Description: {building_description}
 Zone: {zone_name}
 
 AESTHETIC: Dark, moody, brutalist atmosphere. Raw concrete, weathered steel.
-Desaturated palette — grays, cold blues, industrial browns. Harsh directional lighting.
+Desaturated palette – grays, cold blues, industrial browns. Harsh directional lighting.
 Dystopian and imposing. Think Soviet-era brutalism meets film noir cinematography.
 
 Based on these properties, describe the building visually.
-The CONDITION is critical — a "ruined" building should show structural damage, crumbling walls,
+The CONDITION is critical – a "ruined" building should show structural damage, crumbling walls,
 broken windows. A "poor" building shows neglect and decay. "Fair" is functional but worn.
 "Good" is well-maintained. "Excellent" is pristine.
 
-The BUILDING TYPE affects architecture — government buildings are imposing and authoritarian,
+The BUILDING TYPE affects architecture – government buildings are imposing and authoritarian,
 military buildings are fortified and stark, industrial buildings are functional and massive,
 residential buildings vary by condition.
 
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 Include: architectural style, materials, condition indicators, lighting, atmosphere, scale.
 IMPORTANT: Always include: brutalist, concrete, desaturated, harsh lighting, dystopian, cinematic.',
     'You are an architectural description specialist for AI image generation. Write concise, visual descriptors for building photographs in a dark, brutalist, dystopian aesthetic.',
@@ -176,19 +176,19 @@ Beschreibung: {building_description}
 Zone: {zone_name}
 
 ÄSTHETIK: Dunkle, düstere, brutalistische Atmosphäre. Roher Beton, verwitterter Stahl.
-Entsättigte Palette — Grautöne, kalte Blautöne, Industriebraun. Hartes gerichtetes Licht.
+Entsättigte Palette – Grautöne, kalte Blautöne, Industriebraun. Hartes gerichtetes Licht.
 Dystopisch und imposant. Denke an sowjetischen Brutalismus trifft Film-Noir-Kinematografie.
 
 Beschreibe das Gebäude visuell basierend auf diesen Eigenschaften.
-Der ZUSTAND ist entscheidend — ein "ruiniertes" Gebäude zeigt strukturelle Schäden, bröckelnde Mauern,
+Der ZUSTAND ist entscheidend – ein "ruiniertes" Gebäude zeigt strukturelle Schäden, bröckelnde Mauern,
 zerbrochene Fenster. "Schlecht" zeigt Vernachlässigung und Verfall. "Mittel" ist funktional aber abgenutzt.
 "Gut" ist gepflegt. "Ausgezeichnet" ist makellos.
 
-Der GEBÄUDETYP beeinflusst die Architektur — Regierungsgebäude sind imposant und autoritär,
+Der GEBÄUDETYP beeinflusst die Architektur – Regierungsgebäude sind imposant und autoritär,
 Militärgebäude sind befestigt und karg, Industriegebäude sind funktional und massiv,
 Wohngebäude variieren je nach Zustand.
 
-Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+Schreibe als Bildgenerierungs-Prompt – kommagetrennte Deskriptoren, keine Sätze.
 WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).
 WICHTIG: Immer einschließen: brutalistisch, Beton, entsättigt, hartes Licht, dystopisch, filmisch.',
     'Du bist ein Architektur-Beschreibungs-Spezialist für KI-Bildgenerierung. Schreibe prägnante, visuelle Deskriptoren auf Englisch für Gebäudefotografien in einer dunklen, brutalistischen, dystopischen Ästhetik.',

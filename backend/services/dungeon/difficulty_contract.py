@@ -81,7 +81,7 @@ DIFFICULTY_FACTORS: dict[str, DifficultyFactor] = {
             "Skaliert die Angriffsstärke, bevor die bestehende Schwelle >= 7 "
             "greift. Keine zweite Formel: gemessen enden 49 % der Kämpfe ohne "
             "einen einzigen Gegnertreffer, also muss der seltene Treffer "
-            "wehtun — nicht der häufige."
+            "wehtun – nicht der häufige."
         ),
     ),
     "stress_mult": DifficultyFactor(
@@ -93,7 +93,7 @@ DIFFICULTY_FACTORS: dict[str, DifficultyFactor] = {
             "Stress ist der Kanal mit Auflösung (10..150 je Treffer) und der "
             "einzige, der auch dann ankommt, wenn kein Zustandsschaden fällt. "
             "Beim Spawn, weil der Wert zur Begegnung gehört und ein Checkpoint "
-            "ihn tragen muss — dieselbe Begründung wie bei `enemy_power`."
+            "ihn tragen muss – dieselbe Begründung wie bei `enemy_power`."
         ),
     ),
     "loot_quality": DifficultyFactor(
@@ -101,7 +101,7 @@ DIFFICULTY_FACTORS: dict[str, DifficultyFactor] = {
         consumer="roll_loot",
         reads_in="backend/services/dungeon/dungeon_loot.py",
         why_here=(
-            "Wahrscheinlichkeit einer Stufenanhebung — dieselbe Mechanik, die "
+            "Wahrscheinlichkeit einer Stufenanhebung – dieselbe Mechanik, die "
             "die Archetypen schon für ihre eigenen Boni benutzen."
         ),
     ),

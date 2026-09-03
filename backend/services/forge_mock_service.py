@@ -47,9 +47,9 @@ def mock_research_context(seed: str) -> str:
     return (
         f"[MOCK RESEARCH] Seed: '{seed}'.\n"
         "Philosophical lens: Borges' Library of Babel as information entropy.\n"
-        "Sociological lens: Zygmunt Bauman's liquid modernity — identity as "
+        "Sociological lens: Zygmunt Bauman's liquid modernity – identity as "
         "perpetual negotiation in a world without solid institutions.\n"
-        "Aesthetic lens: Piranesi's Carceri — impossible architecture as "
+        "Aesthetic lens: Piranesi's Carceri – impossible architecture as "
         "psychological landscape."
     )
 
@@ -85,7 +85,7 @@ def mock_anchors(seed: str) -> list[dict]:
             "core_question_de": "Was geschieht, wenn jede Stimme gleichzeitig geh\u00f6rt wird?",
             "bleed_signature_suggestion": "Overlapping radio frequencies",
             "description": (
-                "A society where decisions are made by acoustic consensus — literally, "
+                "A society where decisions are made by acoustic consensus – literally, "
                 "the loudest resonance wins. Architecture is designed for its acoustic "
                 "properties. Silence is the most radical form of dissent."
             ),
@@ -311,13 +311,13 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession_de": "Archivarin",
             "character": (
                 "Meticulous, sardonic, and quietly furious. Vesper catalogues what others forget, which means "
-                "she remembers everything — a condition she considers a disability. She keeps a second index of "
+                "she remembers everything – a condition she considers a disability. She keeps a second index of "
                 "her own errors, seventeen entries long, updated in a different hand. Her desk holds four lamps "
                 "and no chair."
             ),
             "character_de": (
                 "Akribisch, sarkastisch und leise wütend. Vesper katalogisiert, was andere vergessen, was "
-                "bedeutet, dass sie sich an alles erinnert — ein Zustand, den sie als Behinderung betrachtet. "
+                "bedeutet, dass sie sich an alles erinnert – ein Zustand, den sie als Behinderung betrachtet. "
                 "Sie führt ein zweites Verzeichnis der eigenen Fehler, siebzehn Einträge lang, in anderer "
                 "Handschrift nachgetragen. Auf ihrem Schreibtisch stehen vier Lampen und kein Stuhl."
             ),
@@ -372,13 +372,13 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession": "Resonance Broker",
             "primary_profession_de": "Resonanzmakler",
             "character": (
-                "Silver-tongued and ethically flexible. Sable trades in echoes — recorded conversations, "
+                "Silver-tongued and ethically flexible. Sable trades in echoes – recorded conversations, "
                 "ambient emotions, the acoustic fingerprints of rooms where important things happened. They "
                 "price a recording by the number of people who were in the room and never mention it again. "
                 "Their ledger is kept in a shorthand two other brokers can read."
             ),
             "character_de": (
-                "Redegewandt und ethisch flexibel. Sable handelt mit Echos — aufgezeichneten Gesprächen, "
+                "Redegewandt und ethisch flexibel. Sable handelt mit Echos – aufgezeichneten Gesprächen, "
                 "Umgebungsemotionen, den akustischen Fingerabdrücken von Räumen, in denen Wichtiges geschah. "
                 "Sie berechnen eine Aufnahme nach der Zahl der Anwesenden und erwähnen sie danach nie wieder. "
                 "Ihr Hauptbuch führen sie in einer Kurzschrift, die zwei andere Makler lesen können."
@@ -415,14 +415,14 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
                 "täglich um elf am selben Tisch am Kanal."
             ),
             "background": (
-                "Applied to the Bureau of Hydrology seven times before being accepted. His thesis — 'On the "
-                "Emotional Viscosity of Municipal Water' — remains the department's most borrowed text. He has "
+                "Applied to the Bureau of Hydrology seven times before being accepted. His thesis – 'On the "
+                "Emotional Viscosity of Municipal Water' – remains the department's most borrowed text. He has "
                 "filed a correction to every report he has ever submitted, including the corrections. His "
                 "office is a converted lock-keeper's hut."
             ),
             "background_de": (
-                "Bewarb sich sieben Mal beim Büro für Hydrologie, bevor er angenommen wurde. Seine Abhandlung — "
-                "„Über die emotionale Viskosität städtischen Wassers“ — bleibt der meistentliehene Text der "
+                "Bewarb sich sieben Mal beim Büro für Hydrologie, bevor er angenommen wurde. Seine Abhandlung – "
+                "„Über die emotionale Viskosität städtischen Wassers“ – bleibt der meistentliehene Text der "
                 "Abteilung. Zu jedem Bericht, den er je einreichte, hat er eine Berichtigung nachgereicht, auch "
                 "zu den Berichtigungen. Sein Büro ist eine umgebaute Schleusenwärterhütte."
             ),
@@ -527,13 +527,13 @@ def mock_agents(seed: str, count: int = 6) -> list[dict]:
             "primary_profession_de": "Spiegelungsinspektorin",
             "character": (
                 "Calm, observant, and deeply unsettling. Maren ensures that shopfront reflections maintain "
-                "their mandated deviation from reality — no more, no less. She carries a folding rule and a "
+                "their mandated deviation from reality – no more, no less. She carries a folding rule and a "
                 "sealed comparison plate on every round, and signs each entry twice. She has issued four "
                 "hundred citations and withdrawn none."
             ),
             "character_de": (
                 "Ruhig, aufmerksam und zutiefst beunruhigend. Maren stellt sicher, dass Schaufensterreflexionen "
-                "ihre vorgeschriebene Abweichung von der Realität einhalten — nicht mehr und nicht weniger. Auf "
+                "ihre vorgeschriebene Abweichung von der Realität einhalten – nicht mehr und nicht weniger. Auf "
                 "jedem Rundgang trägt sie einen Klappmaßstab und eine versiegelte Vergleichsplatte und zeichnet "
                 "jeden Eintrag zweimal. Sie hat vierhundert Beanstandungen ausgestellt und keine "
                 "zurückgenommen."
@@ -897,7 +897,7 @@ def mock_lore_sections(seed: str) -> list[dict]:
             "body": (
                 "The city's districts were not planned. They accreted, like geological strata, "
                 "each layer deposited by a different era's anxieties. The Inkwell formed around "
-                "a spilled narrative — quite literally; a cart of liquid stories overturned in "
+                "a spilled narrative – quite literally; a cart of liquid stories overturned in "
                 "the main square, and the resulting puddle attracted storytellers the way lamp-"
                 "light attracts moths.\n\n"
                 "Thornwalk grew when a single ornamental hedge, planted by a homesick immigrant, "
@@ -906,7 +906,7 @@ def mock_lore_sections(seed: str) -> list[dict]:
                 "considerable amount of local identity."
             ),
             "image_slug": "districts_overview",
-            "image_caption": "The city from above — each district bleeds into the next",
+            "image_caption": "The city from above – each district bleeds into the next",
         },
         {
             "chapter": "The Districts",
@@ -915,9 +915,9 @@ def mock_lore_sections(seed: str) -> list[dict]:
             "epigraph": "",
             "body": (
                 "In the Hollows, the underground district, the conventional economy never took "
-                "hold. Money is considered gauche — a surface affectation, like sunlight or "
+                "hold. Money is considered gauche – a surface affectation, like sunlight or "
                 "optimism. Instead, commerce runs on secrets.\n\n"
-                "A secret's value is determined by its weight — not metaphorically, but literally. "
+                "A secret's value is determined by its weight – not metaphorically, but literally. "
                 "The Bureau of Underground Commerce maintains a set of brass scales that can "
                 "weigh a whispered confidence to three decimal places. The mechanism is a "
                 "closely guarded trade secret, which creates an interesting recursive problem "
@@ -933,7 +933,7 @@ def mock_lore_sections(seed: str) -> list[dict]:
             "epigraph": "Every city is at war with itself. The honest ones admit it.",
             "body": (
                 "The current administration faces a crisis that, characteristically, no one "
-                "can quite define. The canal has begun flowing in a direction — something it "
+                "can quite define. The canal has begun flowing in a direction – something it "
                 "has never done before, and which violates several municipal bylaws. The "
                 "Furnace Quarter's output has changed color. The echoes in the Echoplex are "
                 "arriving before the conversations that cause them.\n\n"
@@ -944,7 +944,7 @@ def mock_lore_sections(seed: str) -> list[dict]:
                 "herself to read it."
             ),
             "image_slug": "canal_anomaly",
-            "image_caption": "The canal, now stubbornly flowing east — or possibly west",
+            "image_caption": "The canal, now stubbornly flowing east – or possibly west",
         },
     ]
 
@@ -963,7 +963,7 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
                 "Was bekannt ist: Der Name erschien gleichzeitig auf drei verschiedenen Karten, "
                 "gezeichnet von Kartographen, die sich nie begegnet waren. Jeder buchstabierte "
                 "ihn anders. Das Amt wählte die Schreibweise, die die wenigsten Menschen "
-                "beleidigte — das heißt, alle."
+                "beleidigte – das heißt, alle."
             ),
             "image_caption": "Die Stadttore, die die Stadt um mehrere Jahrhunderte vorausgehen",
         },
@@ -988,7 +988,7 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
             "body": (
                 "Die Stadtviertel wurden nicht geplant. Sie akkumulierten sich wie geologische "
                 "Schichten, jede Lage abgelagert durch die Ängste einer anderen Epoche. Das "
-                "Tintenfass formte sich um eine verschüttete Erzählung — ganz wörtlich; ein "
+                "Tintenfass formte sich um eine verschüttete Erzählung – ganz wörtlich; ein "
                 "Karren mit flüssigen Geschichten kippte auf dem Hauptplatz um, und die "
                 "resultierende Pfütze zog Geschichtenerzähler an wie Lampenlicht die Motten.\n\n"
                 "Thornwalk entstand, als eine einzelne Zierhecke, gepflanzt von einem "
@@ -996,16 +996,16 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
                 "tragend. Als jemand daran dachte, sie zu stutzen, trugen sie bereits drei "
                 "Stockwerke Wohnraum und ein beträchtliches Maß an lokaler Identität."
             ),
-            "image_caption": "Die Stadt von oben — jedes Viertel blutet in das nächste über",
+            "image_caption": "Die Stadt von oben – jedes Viertel blutet in das nächste über",
         },
         {
             "title": "Die Ökonomie der Geheimnisse",
             "epigraph": "",
             "body": (
                 "Im Untergrund-Viertel, den Hollows, hat sich die konventionelle Wirtschaft "
-                "nie durchgesetzt. Geld gilt als geschmacklos — eine Oberflächenaffektation, "
+                "nie durchgesetzt. Geld gilt als geschmacklos – eine Oberflächenaffektation, "
                 "wie Sonnenlicht oder Optimismus. Stattdessen läuft der Handel über Geheimnisse.\n\n"
-                "Der Wert eines Geheimnisses wird durch sein Gewicht bestimmt — nicht "
+                "Der Wert eines Geheimnisses wird durch sein Gewicht bestimmt – nicht "
                 "metaphorisch, sondern buchstäblich. Das Amt für Unterirdischen Handel unterhält "
                 "einen Satz Messingwaagen, die ein geflüstertes Vertrauen auf drei Dezimalstellen "
                 "genau wiegen können. Der Mechanismus ist ein streng gehütetes Betriebsgeheimnis, "
@@ -1020,7 +1020,7 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
             "body": (
                 "Die aktuelle Verwaltung steht vor einer Krise, die charakteristischerweise "
                 "niemand genau definieren kann. Der Kanal hat begonnen, in eine Richtung zu "
-                "fließen — etwas, das er noch nie zuvor getan hat und das gegen mehrere "
+                "fließen – etwas, das er noch nie zuvor getan hat und das gegen mehrere "
                 "städtische Verordnungen verstößt. Die Produktion des Furnace Quarter hat ihre "
                 "Farbe verändert. Die Echos im Echoplex treffen ein, bevor die Gespräche "
                 "stattfinden, die sie verursachen.\n\n"
@@ -1030,7 +1030,7 @@ def mock_lore_translations(sections: list[dict]) -> list[dict]:
                 "folgerungen bestritten und das Dokument auf einer Stufe klassifiziert, die "
                 "es sogar Vesper selbst illegal macht, es zu lesen."
             ),
-            "image_caption": "Der Kanal, der nun stur nach Osten fließt — oder möglicherweise nach Westen",
+            "image_caption": "Der Kanal, der nun stur nach Osten fließt – oder möglicherweise nach Westen",
         },
     ]
 
@@ -1061,7 +1061,7 @@ def mock_recruits(
             "primary_profession_de": "Schwellenvermesserin",
             "character": (
                 "Watchful, deliberate, and unsettlingly precise. Isolde speaks in "
-                "measurements — distances, angles, the exact number of paces between "
+                "measurements – distances, angles, the exact number of paces between "
                 "one lamppost and the next. Her colleagues find this endearing for "
                 "approximately forty minutes, after which it becomes unbearable. She "
                 "has a habit of pausing mid-sentence to recalibrate some internal "
@@ -1076,7 +1076,7 @@ def mock_recruits(
             ),
             "character_de": (
                 "Wachsam, bedächtig und beunruhigend präzise. Isolde spricht in "
-                "Maßeinheiten — Entfernungen, Winkel, die exakte Anzahl von Schritten "
+                "Maßeinheiten – Entfernungen, Winkel, die exakte Anzahl von Schritten "
                 "zwischen einem Laternenpfahl und dem nächsten. Ihre Kollegen finden "
                 "das etwa vierzig Minuten lang charmant, danach wird es unerträglich. "
                 "Sie hat die Angewohnheit, mitten im Satz innezuhalten, um einen "
@@ -1091,8 +1091,8 @@ def mock_recruits(
                 "out to chart territories that do not exist on any official record. "
                 "She presented these to the gate clerk with the calm insistence of "
                 "someone who has been right before and was punished for it. Her "
-                "previous posting — a cartographic bureau in a city she refuses to "
-                "name — ended when she discovered that certain districts were being "
+                "previous posting – a cartographic bureau in a city she refuses to "
+                "name – ended when she discovered that certain districts were being "
                 "systematically removed from census data. She filed a report. The "
                 "report was filed in return, into a locked cabinet. She left shortly "
                 "after. "
@@ -1109,8 +1109,8 @@ def mock_recruits(
                 "verzeichneten, die in keinem offiziellen Register existieren. Sie "
                 "legte diese dem Torschreiber mit der ruhigen Bestimmtheit vor, die "
                 "jemand ausstrahlt, der schon einmal Recht hatte und dafür bestraft "
-                "wurde. Ihre vorherige Stelle — ein kartographisches Büro in einer "
-                "Stadt, deren Namen sie sich weigert zu nennen — endete, als sie "
+                "wurde. Ihre vorherige Stelle – ein kartographisches Büro in einer "
+                "Stadt, deren Namen sie sich weigert zu nennen – endete, als sie "
                 "entdeckte, dass bestimmte Bezirke systematisch aus den Zensusdaten "
                 "entfernt wurden. Sie reichte einen Bericht ein. Der Bericht wurde "
                 "seinerseits eingereicht, in einen verschlossenen Schrank."
@@ -1123,7 +1123,7 @@ def mock_recruits(
             "primary_profession": "Residue Analyst",
             "primary_profession_de": "Rückstandsanalytiker",
             "character": (
-                "Quiet in the way that large, careful men sometimes are — not shy but "
+                "Quiet in the way that large, careful men sometimes are – not shy but "
                 "selective, as though words are a finite resource and he has decided "
                 "to ration them. Calder's hands are enormous, scarred with chemical "
                 "burns arranged in patterns that suggest either extreme carelessness "
@@ -1137,7 +1137,7 @@ def mock_recruits(
                 "exactly as many times as he has ignored them."
             ),
             "character_de": (
-                "Still auf die Art, die großen, bedächtigen Männern eigen ist — nicht "
+                "Still auf die Art, die großen, bedächtigen Männern eigen ist – nicht "
                 "schüchtern, sondern selektiv, als wären Worte eine endliche Ressource, "
                 "die er zu rationieren beschlossen hat. Calders Hände sind riesig, "
                 "vernarbt von Verätzungen in Mustern, die entweder auf extreme "
@@ -1151,8 +1151,8 @@ def mock_recruits(
                 "the freight depot, which is either a sign of resourcefulness or a "
                 "sign that no one told him where the front door was. He carried a "
                 "crate of glass sample jars, each labelled in a shorthand alphabet "
-                "of his own invention. His previous employer — a refinery in the "
-                "industrial hinterlands — collapsed when its primary furnace began "
+                "of his own invention. His previous employer – a refinery in the "
+                "industrial hinterlands – collapsed when its primary furnace began "
                 "producing material that no one could identify and everyone was afraid "
                 "to touch. Calder was the only analyst willing to examine it. His "
                 "findings were inconclusive but fascinating, filling three notebooks "
@@ -1170,7 +1170,7 @@ def mock_recruits(
                 "ein Zeichen dafür, dass ihm niemand gesagt hat, wo die Vordertür "
                 "ist. Er trug eine Kiste mit Glasproben, jede beschriftet in einem "
                 "Kurzschrift-Alphabet seiner eigenen Erfindung. Sein vorheriger "
-                "Arbeitgeber — eine Raffinerie im industriellen Hinterland — brach "
+                "Arbeitgeber – eine Raffinerie im industriellen Hinterland – brach "
                 "zusammen, als sein Hauptofen begann, Material zu produzieren, das "
                 "niemand identifizieren konnte und das anzufassen sich alle fürchteten."
             ),
@@ -1183,7 +1183,7 @@ def mock_recruits(
             "primary_profession_de": "Flüsterprüfer\u00b7in",
             "character": (
                 "Precise, amused, and morally unreadable. Senna has the unsettling "
-                "habit of finishing other people's sentences — not with the wrong "
+                "habit of finishing other people's sentences – not with the wrong "
                 "words, but with the words the speaker was trying to avoid. They "
                 "dress in muted layers that seem to absorb light, making them "
                 "difficult to track in peripheral vision. Their voice is soft and "
@@ -1197,7 +1197,7 @@ def mock_recruits(
             ),
             "character_de": (
                 "Präzise, amüsiert und moralisch unlesbar. Senna hat die "
-                "beunruhigende Angewohnheit, die Sätze anderer zu beenden — nicht "
+                "beunruhigende Angewohnheit, die Sätze anderer zu beenden – nicht "
                 "mit den falschen Worten, sondern mit jenen, die der Sprecher zu "
                 "vermeiden versuchte. Sie kleiden sich in gedämpfte Schichten, die "
                 "Licht zu absorbieren scheinen, was sie im peripheren Blickfeld "
@@ -1212,8 +1212,8 @@ def mock_recruits(
                 "that perhaps the records are correct and everyone else's memory is "
                 "wrong. They claim to have served as an auditor in a subterranean "
                 "market two cities east, where the economy ran on whispered confidences "
-                "weighed on brass scales. The market collapsed — not financially but "
-                "literally, into a sinkhole — and Senna emerged from the rubble with "
+                "weighed on brass scales. The market collapsed – not financially but "
+                "literally, into a sinkhole – and Senna emerged from the rubble with "
                 "their ledger intact and their composure undisturbed. "
                 f"{mentions[2].title() if not mentions[2][0].isupper() else mentions[2]}"
                 " has expressed both admiration and unease"

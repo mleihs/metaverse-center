@@ -181,7 +181,7 @@ class AmbientWeatherService:
                 )
 
             # Plan C: deterministic climate fallback
-            logger.info("No cached weather — using climate fallback for lat=%.2f", lat)
+            logger.info("No cached weather – using climate fallback for lat=%.2f", lat)
             return cls._climate_fallback(lat)
 
     @classmethod
@@ -772,7 +772,7 @@ class AmbientWeatherService:
                 moods[zid] = sum(scores) / len(scores) if scores else 0.0
 
         except Exception:
-            logger.debug("Failed to fetch zone moods — using neutral")
+            logger.debug("Failed to fetch zone moods – using neutral")
 
         return moods
 

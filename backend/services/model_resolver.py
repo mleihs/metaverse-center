@@ -333,7 +333,7 @@ class ModelResolver:
             sd_default = float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5))
             if stored_guidance == sd_default and "image_guidance_scale" in ai_settings:
                 logger.warning(
-                    "Simulation %s resolves a flux model with guidance %.1f — that is the "
+                    "Simulation %s resolves a flux model with guidance %.1f – that is the "
                     "Stable-Diffusion-era platform default, not a flux value (flux default %.1f). "
                     "Most likely an un-migrated row from before the image model family switch.",
                     self._simulation_id,

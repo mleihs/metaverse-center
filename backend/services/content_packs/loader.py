@@ -218,7 +218,7 @@ def _load_archetype_trees(
     consumed: set[tuple[str, str]],
 ) -> None:
     if not archetypes_root.is_dir():
-        logger.debug("no archetypes directory at %s — skipping", archetypes_root)
+        logger.debug("no archetypes directory at %s – skipping", archetypes_root)
         return
 
     for child in sorted(archetypes_root.iterdir()):
@@ -227,7 +227,7 @@ def _load_archetype_trees(
         slug = child.name
         archetype = ARCHETYPE_SLUG_TO_NAME.get(slug)
         if archetype is None:
-            logger.warning("unknown archetype slug '%s' under %s — skipping", slug, archetypes_root)
+            logger.warning("unknown archetype slug '%s' under %s – skipping", slug, archetypes_root)
             continue
         _load_one_archetype(
             child, slug, archetype, result, overlay=overlay, consumed=consumed,
@@ -249,7 +249,7 @@ def _load_one_archetype(
         stem = file.stem
         pack_cls = PACK_KIND_FOR_FILENAME.get(stem)
         if pack_cls is None:
-            logger.warning("unknown pack file '%s' in %s — skipping", file.name, folder)
+            logger.warning("unknown pack file '%s' in %s – skipping", file.name, folder)
             continue
         ingest = _INGEST_DISPATCH.get(pack_cls)
         if ingest is None:
@@ -415,7 +415,7 @@ def _load_abilities_tree(
     up by `_ingest_overlay_orphans` after this pass.
     """
     if not abilities_root.is_dir():
-        logger.debug("no abilities directory at %s — skipping", abilities_root)
+        logger.debug("no abilities directory at %s – skipping", abilities_root)
         # Overlay entries targeting abilities can still be ingested as orphans
         # even if the directory doesn't exist yet (first-time author scenario).
         return

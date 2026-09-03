@@ -94,7 +94,7 @@ VALUES (
     '10000000-0000-0000-0000-000000000001',
     'Velgarien',
     'velgarien',
-    'Eine dystopische Welt unter totaler Kontrolle. Das Regime durchdringt jeden Aspekt des Lebens — von der Wissenschaft bis zur Straße.',
+    'Eine dystopische Welt unter totaler Kontrolle. Das Regime durchdringt jeden Aspekt des Lebens – von der Wissenschaft bis zur Straße.',
     'dystopian',
     'active',
     'de',

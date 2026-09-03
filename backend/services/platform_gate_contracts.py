@@ -116,7 +116,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         group="world",
         label="Agenten-Autonomie (global)",
         turns_on="Phase 9 des Ticks: Agenten handeln aus eigenen Bedürfnissen.",
-        absence_costs="Nichts — dieses Tor steht bei fehlender Zeile auf AN. "
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AN. "
         "Zum Abschalten braucht es eine Zeile mit 'false'.",
         default_when_missing=True,
         reader="backend/services/heartbeat_service.py",
@@ -145,7 +145,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         group="narrative",
         label="Resonanzen automatisch verarbeiten",
         turns_on="Fällige Resonanzen werden ohne Zutun in Wirkungen übersetzt.",
-        absence_costs="Nichts — dieses Tor steht bei fehlender Zeile auf AN "
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AN "
         "(_DEFAULT_ENABLED = True). Zum Abschalten braucht es eine Zeile mit 'false'.",
         default_when_missing=True,
         reader="backend/services/resonance_scheduler.py",
@@ -163,7 +163,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     PlatformGate(
         key="drift_p0_enabled",
         group="drift",
-        label="DRIFT P0 — Reise",
+        label="DRIFT P0 – Reise",
         turns_on="Die Reise zwischen den Welten: neue Läufe, Knotensee, Andocken.",
         absence_costs="Keine neuen Läufe. Laufende bleiben bedienbar.",
         default_when_missing=False,
@@ -173,7 +173,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         key="drift_fun_core_enabled",
         group="drift",
         label="DRIFT Spielkern",
-        turns_on="Wirtschaft, Havarie, Signale, Sondierung — das, was die Reise zum Spiel macht.",
+        turns_on="Wirtschaft, Havarie, Signale, Sondierung – das, was die Reise zum Spiel macht.",
         absence_costs="Die Reise geht, der Spielkern nicht. Auf Prod ist genau das der Fall.",
         default_when_missing=False,
         reader="supabase/migrations/20260712100000_264_travel_economy_activation.sql",
@@ -187,7 +187,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
             "⚠ Heute fragt das keine Erzeugungsstelle ab: DRIFT ruft überhaupt keine KI."
         ),
         absence_costs=(
-            "Derzeit nichts — es gibt keinen erzeugten Text, der wegfiele. Sobald die "
+            "Derzeit nichts – es gibt keinen erzeugten Text, der wegfiele. Sobald die "
             "erste DRIFT-Texterzeugung kommt, bleibt sie stumm."
         ),
         default_when_missing=False,
@@ -196,9 +196,9 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     PlatformGate(
         key="drift_p1_enabled",
         group="drift",
-        label="DRIFT P1 — Welten & Präsenz",
+        label="DRIFT P1 – Welten & Präsenz",
         turns_on=(
-            "Meldet P1 als offen — kumulativ, also nur wenn P0 offen ist. Hinter der "
+            "Meldet P1 als offen – kumulativ, also nur wenn P0 offen ist. Hinter der "
             "Phase steht noch kein Merkmal; das Tor geht der Sache voraus."
         ),
         absence_costs=(
@@ -211,9 +211,9 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     PlatformGate(
         key="drift_p2_enabled",
         group="drift",
-        label="DRIFT P2 — Gefährten",
+        label="DRIFT P2 – Gefährten",
         turns_on=(
-            "Meldet P2 als offen — kumulativ, also nur wenn P1 und P0 offen sind. "
+            "Meldet P2 als offen – kumulativ, also nur wenn P1 und P0 offen sind. "
             "Hinter der Phase steht noch kein Merkmal."
         ),
         absence_costs=("Die Phase gilt als geschlossen, ebenso P3 und P4, was immer in deren Zeilen steht."),
@@ -223,9 +223,9 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     PlatformGate(
         key="drift_p3_enabled",
         group="drift",
-        label="DRIFT P3 — Wetter & Grenzland",
+        label="DRIFT P3 – Wetter & Grenzland",
         turns_on=(
-            "Meldet P3 als offen — kumulativ, also nur wenn P2, P1 und P0 offen sind. "
+            "Meldet P3 als offen – kumulativ, also nur wenn P2, P1 und P0 offen sind. "
             "Hinter der Phase steht noch kein Merkmal."
         ),
         absence_costs=("Die Phase gilt als geschlossen, ebenso P4, was immer in dessen Zeile steht."),
@@ -235,13 +235,13 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     PlatformGate(
         key="drift_p4_enabled",
         group="drift",
-        label="DRIFT P4 — Gesellschaft",
+        label="DRIFT P4 – Gesellschaft",
         turns_on=(
-            "Meldet P4 als offen — die letzte Sprosse, kumulativ über alle vorherigen. "
+            "Meldet P4 als offen – die letzte Sprosse, kumulativ über alle vorherigen. "
             "Hinter der Phase steht noch kein Merkmal."
         ),
         absence_costs=(
-            "Die Phase gilt als geschlossen. Auf die anderen wirkt das nicht zurück — P4 ist das Ende der Leiter."
+            "Die Phase gilt als geschlossen. Auf die anderen wirkt das nicht zurück – P4 ist das Ende der Leiter."
         ),
         default_when_missing=False,
         reader="backend/services/drift_service.py",
@@ -354,7 +354,7 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         turns_on="Eine unbrauchbare Modellantwort geht samt Zielform ein ZWEITES Mal "
         "ans Modell, statt verworfen zu werden.",
         absence_costs="Nichts Laufendes. Eine misslungene Antwort wird verworfen und "
-        "über _observe_json_failure gezählt — der Zustand, in dem die Plattform "
+        "über _observe_json_failure gezählt – der Zustand, in dem die Plattform "
         "seit jeher war, jetzt nur sichtbar. Anschalten kostet je Reparatur einen "
         "weiteren bezahlten Aufruf.",
         default_when_missing=False,

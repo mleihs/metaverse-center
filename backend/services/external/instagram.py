@@ -655,7 +655,7 @@ class InstagramService:
             is_ip_block = subcode is None and "Cannot parse" in message
             if is_ip_block:
                 raise InstagramTokenExpiredError(
-                    f"Instagram IP block suspected — 'Cannot parse access token' with no "
+                    f"Instagram IP block suspected – 'Cannot parse access token' with no "
                     f"subcode usually means Meta is blocking this server's IP after "
                     f"repeated failed attempts. The token itself may be valid. "
                     f"Wait 1-24h or publish from a different IP. "
@@ -665,7 +665,7 @@ class InstagramService:
                 )
             subcode_hint = {
                 463: "token has expired (60-day lifetime exceeded)",
-                460: "password was changed — token invalidated",
+                460: "password was changed – token invalidated",
                 467: "token is invalid or was revoked",
             }.get(subcode, "unknown cause")
             raise InstagramTokenExpiredError(

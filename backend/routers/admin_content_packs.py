@@ -75,7 +75,7 @@ async def read_content_pack_resource(
             pattern=r"^[a-z][a-z0-9_]{0,127}$",
             description=(
                 "YAML stem under content/dungeon/archetypes/{pack_slug}/. "
-                "Restricted to lowercase [a-z0-9_] — bracket-notation "
+                "Restricted to lowercase [a-z0-9_] – bracket-notation "
                 "resource_paths (e.g. banter[ab_01]) are NOT accepted here "
                 "because the read is file-scoped."
             ),

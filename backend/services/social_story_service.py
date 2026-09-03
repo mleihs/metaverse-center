@@ -320,7 +320,7 @@ class SocialStoryService:
         config = await cls._load_config(admin)
         if not config["enabled"]:
             logger.debug(
-                "Resonance stories disabled — skipping",
+                "Resonance stories disabled – skipping",
                 extra={
                     "resonance_id": str(resonance_id),
                 },
@@ -354,7 +354,7 @@ class SocialStoryService:
         # Layer 1: Magnitude gate
         if magnitude < config["auto_magnitude"] and not is_catastrophic:
             logger.info(
-                "Resonance magnitude below auto threshold — skipping stories",
+                "Resonance magnitude below auto threshold – skipping stories",
                 extra={
                     "resonance_id": str(resonance_id),
                     "magnitude": magnitude,
@@ -389,7 +389,7 @@ class SocialStoryService:
             in_cooldown = await cls._check_cooldown(admin, config["cooldown_hours"])
             if in_cooldown:
                 logger.info(
-                    "Story cooldown active — skipping",
+                    "Story cooldown active – skipping",
                     extra={
                         "resonance_id": str(resonance_id),
                         "cooldown_hours": config["cooldown_hours"],
@@ -744,7 +744,7 @@ class SocialStoryService:
                 jpeg_bytes = await cls._compose_subsiding(composer, admin, story, accent_hex)
             else:
                 logger.warning(
-                    "Unknown story type — cannot compose",
+                    "Unknown story type – cannot compose",
                     extra={
                         "story_id": str(story_id),
                         "story_type": story_type,
@@ -1244,7 +1244,7 @@ class SocialStoryService:
                     pass
 
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-            logger.warning("Failed to load resonance story config — using defaults")
+            logger.warning("Failed to load resonance story config – using defaults")
 
         return config
 

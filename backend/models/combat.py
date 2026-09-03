@@ -81,11 +81,11 @@ class EnemyInstance(BaseModel):
     encounter, and a checkpoint has to carry it.
     """
     stress_attack_power: int = 3
-    """Stress attack power after difficulty scaling — see `attack_power`."""
+    """Stress attack power after difficulty scaling – see `attack_power`."""
     is_alive: bool = True
     active_effects: list[str] = Field(default_factory=list)
     image_path: str | None = None
-    """Scene-art path copied from the template at spawn — see
+    """Scene-art path copied from the template at spawn – see
     ``EnemyTemplate.image_path``.
 
     Denormalized like ``name_en`` / ``threat_level`` above rather than looked up

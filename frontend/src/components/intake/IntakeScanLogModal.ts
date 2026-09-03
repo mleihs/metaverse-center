@@ -58,7 +58,7 @@ import '../shared/EmptyState.js';
 import '../shared/ErrorState.js';
 import '../shared/LoadingState.js';
 import { archetypeLabel } from './intake-labels.js';
-import { intakeControlStyles } from './intake-styles.js';
+import { intakeControlStyles, intakeToolbarStyles } from './intake-styles.js';
 
 /** Das Maximum des Endpunkts (`Query(ge=1, le=200)`). */
 const PAGE_SIZE = 200;
@@ -102,20 +102,12 @@ type LogFilter = 'all' | 'kept' | 'dropped';
 export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
   static styles = [
     intakeControlStyles,
+    intakeToolbarStyles,
     css`
       :host {
         display: block;
         --modal-max-width: min(1200px, calc(100vw - 2 * var(--stage-gutter)));
         --modal-body-padding: 0;
-      }
-
-      .head {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        padding: var(--space-3) var(--space-5);
-        border-block-end: var(--border-width-thin) solid var(--color-border-light);
       }
 
       .funnels {
@@ -368,7 +360,7 @@ export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
     const rows = this._visible();
 
     return html`
-      <div class="head">
+      <div class="tools">
         <div class="group" role="group" aria-label=${msg('Outcome')}>
           <span class="label">${msg('Show')}</span>
           ${(

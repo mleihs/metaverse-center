@@ -145,12 +145,12 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         reasoning="off",
         why=(
             "Der Gespraechszug eines Agenten. 1 400 Token sind rund 1 000 deutsche "
-            "Woerter — lang genug fuer eine ausgefuehrte Antwort, kurz genug, dass "
+            "Woerter – lang genug fuer eine ausgefuehrte Antwort, kurz genug, dass "
             "sie ein Gespraechszug bleibt. 2 500 waeren ein Aufsatz, und sie "
             "kollidieren mit `_CONTEXT_RESERVE = 5000`, das sich System-Prompt "
             "UND Antwort teilen: Persona, Erinnerungen, Beziehungen und Stimmung "
             "tragen dort oft schon 2 000+. "
-            "reasoning=off ist keine Kostenfrage allein — `_sanitize_response` "
+            "reasoning=off ist keine Kostenfrage allein – `_sanitize_response` "
             "entfernt heute `<think>`-Bloecke aus Antworten, durchgesickerte "
             "Gedankenketten waren also ein TATSAECHLICHES Problem. Abschalten "
             "beseitigt die Ursache statt das Symptom. Fuer Charakter-Rollenspiel "
@@ -178,7 +178,7 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "3 compact structured objects, bilingual EN+DE. Thinking stays on: "
             "the run that produced correctly dated, checkable citations (Scott, "
             "Seeing Like a State, 1998) was a thinking run. Change only with a "
-            "measurement — see migration 279."
+            "measurement – see migration 279."
         ),
     ),
     _purpose(
@@ -189,7 +189,7 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         reasoning="off",
         why=(
             "Geography / agents / buildings as one structured batch, bilingual. "
-            "Thinking off: long structured output leaves no room to think — the "
+            "Thinking off: long structured output leaves no room to think – the "
             "same budget arithmetic that broke `entity` at 3072."
         ),
     ),
@@ -231,7 +231,7 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         300,
         reasoning="auto",
         why=(
-            "~9000 words across 6 sections — the largest single answer the "
+            "~9000 words across 6 sections – the largest single answer the "
             "platform asks for. Reasoning left on auto: the measurement was "
             "inconclusive, 3 of 4 runs hit an unrelated upstream provider error."
         ),
@@ -263,12 +263,12 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         2048,
         90,
         why=(
-            "NEW BUDGET — this purpose had neither, and ran as "
+            "NEW BUDGET – this purpose had neither, and ran as "
             "`timeout=None max_tokens=None` in production. One answer is four "
             "style prompts (PORTRAIT / BUILDING / LORE / BANNER). Measured over "
             "the 41 worlds on production 2026-08-30, as stored in "
             "simulation_settings: median 947 characters for all four together, "
-            "p95 1936, max 2155 — roughly 616 tokens at the worst. 2048 is "
+            "p95 1936, max 2155 – roughly 616 tokens at the worst. 2048 is "
             "3.3x the observed maximum, and equals `theme`, which is the same "
             "service producing the same kind of answer. Timeout 90s against a "
             "single observed duration of 21s in the 2026-08-29 ignition log."
@@ -280,10 +280,10 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         8192,
         180,
         why=(
-            "NEW BUDGET — as with style_refine, this ran uncapped and untimed. "
+            "NEW BUDGET – as with style_refine, this ran uncapped and untimed. "
             "One answer is every prompt template for a world, as JSON. Measured "
             "across the 12 worlds on production that own templates, 2026-08-30: "
-            "median 3015 characters, p95 and max both 12369 — about 3500 tokens "
+            "median 3015 characters, p95 and max both 12369 – about 3500 tokens "
             "before JSON escaping. 8192 is a little over 2x the observed "
             "maximum, and equals `lore`, the nearest comparable answer. Those "
             "12 outputs were produced with NO cap at all, so the maximum is a "
@@ -301,11 +301,11 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "never unbounded: `ops_forecast_service` passed "
             "`model_settings={'timeout': 10, 'max_tokens': 200}` at the call "
             "site, and `run_ai` uses `setdefault`, so those won. The numbers are "
-            "carried here unchanged — 200 tokens caps the 1-2 sentence summary "
-            "at ~$0.0001/call — so that all thirteen budgets are in one place "
+            "carried here unchanged – 200 tokens caps the 1-2 sentence summary "
+            "at ~$0.0001/call – so that all thirteen budgets are in one place "
             "and an operator can see this one. The outer `asyncio.wait_for` "
             "(`_DRIVER_TEXT_TIMEOUT_S`) stays what it was: a backstop, not the "
-            "primary deadline. The model id moves too — `_FORECAST_MODEL` held "
+            "primary deadline. The model id moves too – `_FORECAST_MODEL` held "
             "`anthropic/claude-haiku-4.5` as a `Final` constant, which is the "
             "one place an operator cannot reach it; `model_forecast` is seeded "
             "with that exact id. Budget-exempt by design (AD-6): it passes no "
