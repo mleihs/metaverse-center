@@ -491,6 +491,44 @@ nicht greift, ist sie das falsche Werkzeug.**
 
 ---
 
+## Phase 3 — die beiden Befunde, die wirklich übrig waren
+
+Die vier Sweeps hatten das meiste der Phase-3-Liste schon erledigt. Gemessen
+statt abgearbeitet blieben genau zwei — und beide waren größer als der Skin.
+
+### Der Plattform-Akzent (708 Stellen, 126 Dateien)
+
+`--color-accent-amber` misst auf Papier **1,82 : 1**; 318 der Stellen sind
+`color:`, also Text. `--color-accent-green` steht bei 1,47.
+
+**Entschieden:** auf hellem Grund IST der Plattform-Akzent der Akzent des
+Themes. Eine Regel in `publishPlatformAccent`, sechs Tokens, alle 708 Stellen
+ohne Sweep. Der Preis ist benannt: die Zusage „Plattform-Chrome ist immer
+Amber" gilt auf hellem Grund nicht mehr.
+
+Es betrifft **nicht nur den Atlas-Skin** — jede helle Simulationswelt bekommt
+dasselbe, und dort war das Amber schon vorher unlesbar (auf Prod gemessen:
+1,89 : 1). Der Skin hat den Fehler nicht verursacht, er hat ihn sichtbar
+gemacht.
+
+`tests/platform-accent-polarity.test.ts` bindet die sechs Konstanten der dunklen
+Seite an `_colors.css` — sie stehen doppelt, weil ein dunkler Wirt in einer
+hellen Hülle (Drift, Dungeon) sie aktiv zurückschreiben muss.
+
+### Das Chart-Chrome (alle Diagramme der Plattform)
+
+`EchartsChart` registrierte sein Theme als **Modulkonstante**, fest auf Dunkel.
+`#94a3b8` misst auf Papier 2,17 : 1 — Achsen, Legenden, Achsennamen überall
+unlesbar. Es kommt jetzt aus den lebenden Tokens des ELEMENTS (nicht `:root` —
+ein Diagramm steht in der Hülle einer Welt), und ein Fingerabdruck der fünf
+Tokens setzt die Instanz neu auf, wenn die Palette wechselt.
+
+Bewusster Nebeneffekt auf Dark: die Beschriftung kommt aus
+`--color-text-muted` (#888888) statt dem festen Schiefer. Beide bestehen
+deutlich; der Farbton ist etwas neutraler.
+
+---
+
 ## Offen — nächste Schritte
 
 0. **Phase 2 Rest:**
@@ -498,7 +536,13 @@ nicht greift, ist sie das falsche Werkzeug.**
      eingesetzten Daten, weil das Backend nicht lief. Layout und Rückfallpfade
      stimmen; die echten Bilder (`banner_url`) hat noch niemand gesehen.
    - **Bild-Matrix** `frontend/screenshots/atlas/`: 390 · 768 · 1024 · 1440 ·
-     1920 · 2560, je Dark und Atlas.
+     1920 · 2560, je Dark und Atlas. **Braucht echte Fensterbreiten** — in
+     dieser Umgebung ließ sich das Fenster nicht verkleinern (`outerWidth: 0`),
+     und ein verkleinertes ELEMENT prüft nur Container-Abfragen.
+   - **Eine Serienpalette für helle Gründe.** Die fünf Serienfarben der
+     Diagramme sind Identitäten und stehen weiter als Hexwerte da; auf Papier
+     sind einige schwach (das Grün misst rund 1,8). Eigene Frage, absichtlich
+     nicht still entschieden.
 1. **Phase 2 Templates: Landing + Dashboard.** Das Paket sagt dazu (README §28):
    ein Skin bringt dort „nur 70 % der Wirkung", beide brauchen eigene
    Sheet-Raster-Layouts. Vorlagen liegen als `.dc.html` im Paket
