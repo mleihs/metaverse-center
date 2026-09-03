@@ -14,8 +14,8 @@ import { icons } from '../../utils/icons.js';
 import { OPERATIVE_COLORS as OP_COLORS } from '../../utils/operative-constants.js';
 import { operativeOverlayStyles } from './deploy-operative-styles.js';
 import '../shared/VelgGameCard.js';
-import { professionLabel } from '../../utils/profession.js';
 import { fanGeometry } from '../../utils/card-fan.js';
+import { professionLabel } from '../../utils/profession.js';
 
 const OP_TYPES: OperativeType[] = [
   'spy',

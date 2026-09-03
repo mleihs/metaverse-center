@@ -21,8 +21,8 @@ import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { getThemeColor } from '../../utils/theme-colors.js';
 import '../shared/PlatformFooter.js';
-import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 import { setupScrollReveal } from '../../utils/scroll-reveal.js';
+import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 
 @localized()
 @customElement('velg-worlds-gallery')

@@ -72,7 +72,11 @@ import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import '../shared/LoadingState.js';
 import { archetypeLabel } from './intake-labels.js';
-import { intakeControlStyles, intakeKindColorStyles, intakeToolbarStyles } from './intake-styles.js';
+import {
+  intakeControlStyles,
+  intakeKindColorStyles,
+  intakeToolbarStyles,
+} from './intake-styles.js';
 
 /**
  * Liefert das Bureau eine PASSUNG je Kandidat und Welt? (Lücke 3)

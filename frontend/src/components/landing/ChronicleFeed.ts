@@ -24,10 +24,10 @@ import '../shared/PlatformFooter.js';
 import '../shared/VelgDispatchMasthead.js';
 import '../shared/VelgDispatchStamp.js';
 import '../shared/VelgDispatchTicker.js';
+import { setupScrollReveal } from '../../utils/scroll-reveal.js';
 import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
 import type { TickerItem } from '../shared/VelgDispatchTicker.js';
-import { setupScrollReveal } from '../../utils/scroll-reveal.js';
 
 /** Extended chronicle with simulation metadata from the cross-sim endpoint. */
 interface FeedChronicle extends Chronicle {
