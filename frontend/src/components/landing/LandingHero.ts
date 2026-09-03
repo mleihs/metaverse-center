@@ -692,7 +692,7 @@ export class VelgLandingHero extends LitElement {
           <div class="hero__bottom">
             <p class="subline">
               ${msg(
-                'Forged from a single sentence. Playing while you sleep. Populated by citizens who remember what you did.',
+                'A single sentence is enough to begin. What grows from it keeps its own hours, argues with itself, and remembers you longer than you would like.',
               )}
             </p>
             <div class="hero__actions">

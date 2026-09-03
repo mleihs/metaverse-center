@@ -80,7 +80,7 @@ export function injectLandingStructuredData(): void {
             '@type': 'HowToStep',
             position: 1,
             name: 'Create Your World',
-            text: 'Type a premise. The Forge generates a complete civilization with dozens of characters, cities with architecture, and thousands of words of original lore. Minutes, not months.',
+            text: 'You file a premise. The Forge answers with a complete civilization: dozens of characters carrying their own histories, cities with architecture, thousands of words of original lore, and a founding grudge nobody asked for.',
           },
           {
             '@type': 'HowToStep',
