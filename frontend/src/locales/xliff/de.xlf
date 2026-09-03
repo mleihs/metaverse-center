@@ -31372,6 +31372,86 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Mood: strained</source>
   <target>Stimmung: belastet</target>
 </trans-unit>
+<trans-unit id="sc01bd90f35c2ff1b">
+  <source>Signal Intake</source>
+  <target>Die Schleuse</target>
+</trans-unit>
+<trans-unit id="s21bc4a0315494eed">
+  <source>The one door a real-world signal passes through on its way into a world.</source>
+  <target>Der eine Weg, den ein Signal der Wirklichkeit nimmt, wenn es in eine Welt will.</target>
+</trans-unit>
+<trans-unit id="sdf73ef691f120f54">
+  <source>One door: every signal takes the same seven stages, whatever its source</source>
+  <target>Eine Tür: jedes Signal durchläuft dieselben sieben Stufen, gleich woher es kommt</target>
+</trans-unit>
+<trans-unit id="sa15229b9798e3f48">
+  <source>Sighting, intake, quarantine – then released as an event, raised as a resonance, reported, or discarded</source>
+  <target>Sichtung, Eingang, Quarantäne – und dann als Ereignis freigegeben, als Resonanz ausgelöst, dem Bureau gemeldet oder verworfen</target>
+</trans-unit>
+<trans-unit id="s2354c937e68594c8">
+  <source>The lens decides how the signal becomes THIS world’s event: place, vector, tone, kind, impact</source>
+  <target>Die Linse entscheidet, wie aus dem Signal ein Ereignis DIESER Welt wird: Ort, Vektor, Tonlage, Art, Wucht</target>
+</trans-unit>
+<trans-unit id="s67eeafe15a164fe4">
+  <source>The freedom dial IS the sampling temperature – there is no second table to drift</source>
+  <target>Der Regler für die Freiheit IST die Temperatur – es gibt keine zweite Tabelle, die auseinanderlaufen könnte</target>
+</trans-unit>
+<trans-unit id="s36148e9706d5d06e">
+  <source>Social sources add pace to a story that already exists; they never bring one of their own</source>
+  <target>Soziale Quellen geben einer bestehenden Geschichte Tempo; eine eigene bringen sie nie mit</target>
+</trans-unit>
+<trans-unit id="s1dbb4cd15ea2df79">
+  <source>Architects and platform admins only – the door is not a player surface</source>
+  <target>Nur Architekten und Plattform-Admins – die Tür ist keine Spielfläche</target>
+</trans-unit>
+<trans-unit id="s10d38646f2325f9c">
+  <source>Before the intake, the same piece of news could sit in two different lists under two different words for its status, depending on where it had come from. That is what the intake removes. A signal now has exactly one stage at any moment, and it only ever moves forward: nothing quietly reappears one step behind where you left it.</source>
+  <target>Vor der Schleuse konnte dieselbe Nachricht in zwei verschiedenen Listen liegen, unter zwei verschiedenen Wörtern für ihren Zustand, je nachdem, woher sie gekommen war. Genau das nimmt die Schleuse weg. Ein Signal hat jetzt zu jedem Zeitpunkt genau eine Stufe, und es geht immer nur vorwärts: nichts taucht stillschweigend eine Stufe hinter dem wieder auf, wo man es verlassen hat.</target>
+</trans-unit>
+<trans-unit id="s5d7eabbb27f60e34">
+  <source>The seven stages</source>
+  <target>Die sieben Stufen</target>
+</trans-unit>
+<trans-unit id="s910c79adfba03ffe">
+  <source>Sighting is what the scanner found. Intake is what an architect has accepted. Quarantine holds what is doubtful. From there a signal leaves in one of four ways: released as an event, raised as a resonance, reported to the Bureau, or discarded. Discarded is a stage like any other – a signal that was thrown away is still on the record as having been seen.</source>
+  <target>Sichtung ist, was der Scanner gefunden hat. Eingang ist, was ein Architekt angenommen hat. Quarantäne hält, was zweifelhaft ist. Von dort verlässt ein Signal die Schleuse auf einem von vier Wegen: als Ereignis freigegeben, als Resonanz ausgelöst, dem Bureau gemeldet oder verworfen. Verworfen ist eine Stufe wie jede andere – auch ein weggeworfenes Signal bleibt aktenkundig als eines, das gesehen wurde.</target>
+</trans-unit>
+<trans-unit id="s88219bcb6a33fbd8">
+  <source>The lens</source>
+  <target>Die Linse</target>
+</trans-unit>
+<trans-unit id="sfdf6223146839db0">
+  <source>A scanned signal is not yet an event of any particular world. The lens is what makes it one: which place it touches, along which vector it travels, in which tone the world hears of it, what kind of thing it is, how hard it lands, and whether agents react. Two worlds can admit the same signal and end up with two different events – that is the point of it.</source>
+  <target>Ein gescanntes Signal ist noch kein Ereignis irgendeiner bestimmten Welt. Die Linse macht es dazu: welchen Ort es berührt, auf welchem Vektor es läuft, in welcher Tonlage die Welt davon erfährt, welcher Art es ist, wie hart es aufschlägt und ob Agenten darauf reagieren. Zwei Welten können dasselbe Signal einlassen und mit zwei verschiedenen Ereignissen dastehen – das ist der Sinn der Sache.</target>
+</trans-unit>
+<trans-unit id="safc8bd975773befd">
+  <source>The freedom dial is the temperature</source>
+  <target>Der Regler für die Freiheit ist die Temperatur</target>
+</trans-unit>
+<trans-unit id="s3f31979eca5190bf">
+  <source>Three degrees of freedom, and the value you pick is passed to the model as the sampling temperature itself. There is deliberately no second table mapping a word like "balanced" onto a number – a table like that is right on the day it is written and wrong the first time somebody edits one side of it.</source>
+  <target>Drei Freiheitsgrade, und der Wert, den Sie wählen, geht als Sampling-Temperatur selbst an das Modell. Es gibt bewusst keine zweite Tabelle, die ein Wort wie „ausgewogen“ auf eine Zahl abbildet – so eine Tabelle stimmt an dem Tag, an dem sie geschrieben wird, und ist falsch, sobald jemand eine ihrer beiden Seiten anfasst.</target>
+</trans-unit>
+<trans-unit id="s936eaa7b95968fae">
+  <source>What a source can and cannot say</source>
+  <target>Was eine Quelle sagen kann und was nicht</target>
+</trans-unit>
+<trans-unit id="s2628dbf5bf75d264">
+  <source>Sources are not equal and the intake does not pretend they are. Measured sources such as earthquakes or severe weather arrive as numbers and need no model at all. Others need a classification before anyone can act on them. Social sources are the narrow case: they contribute pace and reach to a story that already exists, never a story of their own – and a source that is connected but has no key is shown as unusable rather than as quiet.</source>
+  <target>Quellen sind nicht gleich, und die Schleuse tut nicht so, als wären sie es. Gemessene Quellen wie Erdbeben oder Unwetter kommen als Zahlen und brauchen überhaupt kein Modell. Andere brauchen erst eine Einordnung, bevor jemand danach handeln kann. Soziale Quellen sind der enge Fall: sie steuern Tempo und Reichweite zu einer Geschichte bei, die es schon gibt, nie eine eigene – und eine Quelle, die zwar angeschlossen ist, aber keinen Schlüssel hat, wird als unbrauchbar angezeigt und nicht als still.</target>
+</trans-unit>
+<trans-unit id="s7cfc441403f94e1f">
+  <source>Who may open the door</source>
+  <target>Wer die Tür öffnen darf</target>
+</trans-unit>
+<trans-unit id="s40c40fee0071b722">
+  <source>The intake belongs to the architect of a world and to platform admins. It is not a player surface: admitting a signal writes an event into a world, and that is an authoring act, not a move in a game.</source>
+  <target>Die Schleuse gehört dem Architekten einer Welt und den Plattform-Admins. Sie ist keine Spielfläche: ein Signal einzulassen schreibt ein Ereignis in eine Welt, und das ist ein Akt des Verfassens, kein Spielzug.</target>
+</trans-unit>
+<trans-unit id="se0e5ce16f8c45e91">
+  <source>A signal that has been admitted does not vanish into the world without trace. The aftermath chamber shows what it actually did once the world had absorbed it, and the reading room keeps the full text the scanner captured, so a decision can still be checked against what was in front of you when you made it.</source>
+  <target>Ein eingelassenes Signal verschwindet nicht spurlos in der Welt. Die Nachbesprechung zeigt, was es tatsächlich bewirkt hat, nachdem die Welt es aufgenommen hatte, und der Lesesaal verwahrt den vollen Text, den der Scanner erfasst hat – so lässt sich eine Entscheidung noch daran prüfen, was einem vorlag, als man sie getroffen hat.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
