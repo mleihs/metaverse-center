@@ -11,6 +11,15 @@ export class VelgAvatar extends LitElement {
     css`
     :host {
       display: block;
+
+      /* Grund und Tinte des Chips sind EIN Paar.
+
+         Wer die Plakette umfaerbt, faerbt beides oder nichts: der Grund
+         allein war, wie die Nutzer-Initiale in Velgarien schwarz auf
+         schwarz stand (gemessen 2,06 : 1). Die Vorgaben bleiben die
+         Rollen der Seite; wer sie verlaesst, nennt sie hier zu zweit. */
+      --_ground: var(--avatar-ground, var(--color-surface-sunken));
+      --_ink: var(--avatar-ink, var(--color-text-quiet));
     }
 
     .avatar-wrap {
@@ -23,7 +32,7 @@ export class VelgAvatar extends LitElement {
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background: var(--color-surface-sunken);
+      background: var(--_ground);
       position: relative;
       z-index: 1;
       box-sizing: border-box;
@@ -122,7 +131,7 @@ export class VelgAvatar extends LitElement {
       font-weight: var(--font-black);
       text-transform: uppercase;
       letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-quiet);
+      color: var(--_ink);
     }
 
     :host([size='xs']) .avatar__initials {

@@ -99,6 +99,9 @@ jobs:
       - name: CSS template lint (no stray backticks in css blocks)
         run: bash frontend/scripts/lint-no-backtick-in-css.sh
         working-directory: .
+      - name: Lint - Avatar-Plakette setzt Grund und Tinte gemeinsam
+        run: bash frontend/scripts/lint-avatar-ground-ink-pair.sh
+        working-directory: .
 
       # A comment whose end lands in the wrong place turns the paragraph after
       # it into bare CSS. Nothing else here parses .css: tsc does not read it,
