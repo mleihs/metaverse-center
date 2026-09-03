@@ -1446,7 +1446,7 @@ export const deployOperativeStyles = [
 
 		@keyframes deploy-pulse {
 			0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 40%, transparent); }
-			50% { box-shadow: 0 0 20px 4px var(--color-primary-border); }
+			50% { box-shadow: 0 0 calc(20px * var(--glow-strength)) calc(4px * var(--glow-strength)) var(--color-primary-border); }
 		}
 
 		/* ══════════════════════════════════════════════════

@@ -266,7 +266,8 @@ export class VelgInsightReveal extends LitElement {
         box-shadow: 0 0 0 0 color-mix(in srgb, var(--_accent) 60%, transparent);
       }
       60% {
-        box-shadow: 0 0 12px 2px color-mix(in srgb, var(--_accent) 55%, transparent);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) calc(2px * var(--glow-strength))
+          color-mix(in srgb, var(--_accent) 55%, transparent);
       }
       100% {
         box-shadow: 0 0 0 0 color-mix(in srgb, var(--_accent) 0%, transparent);
