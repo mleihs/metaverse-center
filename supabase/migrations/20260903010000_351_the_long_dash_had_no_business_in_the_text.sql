@@ -28,14 +28,65 @@
 
 BEGIN;
 
+-- ── prompt_templates: bewusst STATISCH und nach Reichweite getrennt ──────────
+--
+-- Diese vier Spalten könnten in der Schleife unten mitlaufen. Sie stehen
+-- trotzdem ausgeschrieben hier, und zwar wegen eines zweiten Tores:
+-- `scripts/lint-seed-carries-migration-effects.sh` spielt JEDE Anweisung der
+-- Form `UPDATE … prompt_templates … WHERE simulation_id IS NULL` gegen die
+-- frisch gesäte Datenbank nach und verlangt, dass danach kein Wert mehr
+-- abweicht — die Saat ist der Endzustand, nicht der Anfang.
+--
+-- Dieses Tor sammelt per Textsuche über die Migrationsdateien. Eine
+-- Normalisierung in dynamischem SQL (`EXECUTE format(...)`) sieht es NICHT.
+-- Genau daran ist es beim ersten Anlauf zerbrochen: die Saat trug schon den
+-- Halbgeviertstrich, die älteren Vorlagen-UPDATEs weiter den Geviertstrich,
+-- und das Nachspielen hätte sechs Vorlagen wieder zurückgedreht
+-- (building_generation ×2, building_generation_named ×2, portrait_description
+-- ×2). Ausgeschrieben steht diese Migration in derselben Reihe wie jene — als
+-- letzte — und das Nachspielen endet dort, wo die Saat steht.
+--
+-- Die Historie bleibt dabei unangetastet: keine bereits angewandte Migration
+-- wird umgeschrieben. Die Versöhnung passiert am Ende der Kette, nicht am
+-- Anfang.
+--
+-- Die zweite Hälfte (`IS NOT NULL`) trifft die welt-eigenen Vorlagen. Sie ist
+-- absichtlich getrennt, damit das Tor die Plattform-Hälfte eindeutig erkennt.
+
+-- Der Stand VOR den Anweisungen, damit die Schlussmeldung eine gemessene Zahl
+-- nennt und keine geschaetzte: die statischen UPDATEs stehen ausserhalb des
+-- DO-Blocks und koennen ihre Trefferzahl nicht selbst dorthin melden. Muster
+-- wie in Migration 305.
+CREATE TEMP TABLE _vorlagen_vorher ON COMMIT DROP AS
+SELECT count(*) AS zeilen
+  FROM public.prompt_templates
+ WHERE prompt_content   LIKE '%' || e'—' || '%'
+    OR system_prompt    LIKE '%' || e'—' || '%'
+    OR description      LIKE '%' || e'—' || '%'
+    OR negative_prompt  LIKE '%' || e'—' || '%';
+
+UPDATE public.prompt_templates SET prompt_content = replace(prompt_content, e'—', e'–')
+ WHERE simulation_id IS NULL AND prompt_content LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET system_prompt = replace(system_prompt, e'—', e'–')
+ WHERE simulation_id IS NULL AND system_prompt LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET description = replace(description, e'—', e'–')
+ WHERE simulation_id IS NULL AND description LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET negative_prompt = replace(negative_prompt, e'—', e'–')
+ WHERE simulation_id IS NULL AND negative_prompt LIKE '%' || e'—' || '%';
+
+UPDATE public.prompt_templates SET prompt_content = replace(prompt_content, e'—', e'–')
+ WHERE simulation_id IS NOT NULL AND prompt_content LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET system_prompt = replace(system_prompt, e'—', e'–')
+ WHERE simulation_id IS NOT NULL AND system_prompt LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET description = replace(description, e'—', e'–')
+ WHERE simulation_id IS NOT NULL AND description LIKE '%' || e'—' || '%';
+UPDATE public.prompt_templates SET negative_prompt = replace(negative_prompt, e'—', e'–')
+ WHERE simulation_id IS NOT NULL AND negative_prompt LIKE '%' || e'—' || '%';
+
 DO $$
 DECLARE
   -- (Tabelle, Spalte) — jede Spalte trägt Text, den ein Mensch liest.
   ziele CONSTANT text[][] := ARRAY[
-    ['prompt_templates', 'prompt_content'],
-    ['prompt_templates', 'system_prompt'],
-    ['prompt_templates', 'description'],
-    ['prompt_templates', 'negative_prompt'],
     ['agents',           'character'],
     ['agents',           'background'],
     ['buildings',        'description'],
@@ -45,6 +96,8 @@ DECLARE
     ['battle_log',       'narrative'],
     ['game_epochs',      'description']
   ];
+  vorlagen_spalten CONSTANT text[] :=
+    ARRAY['prompt_content', 'system_prompt', 'description', 'negative_prompt'];
   tabelle text;
   spalte  text;
   betroffen bigint;
@@ -73,6 +126,25 @@ BEGIN
 
     IF betroffen > 0 THEN
       RAISE NOTICE 'Migration 351: %.% — % Zeile(n) bereinigt', tabelle, spalte, betroffen;
+    END IF;
+  END LOOP;
+
+  SELECT zeilen INTO betroffen FROM _vorlagen_vorher;
+  gesamt := gesamt + betroffen;
+  IF betroffen > 0 THEN
+    RAISE NOTICE 'Migration 351: prompt_templates — % Zeile(n) bereinigt (Plattform und Welten)', betroffen;
+  END IF;
+
+  -- Wirkprobe: in keiner benannten Spalte darf noch ein U+2014 stehen —
+  -- prompt_templates eingeschlossen, obwohl es oben statisch behandelt wurde.
+  FOR i IN 1 .. array_length(vorlagen_spalten, 1) LOOP
+    EXECUTE format(
+      'SELECT count(*) FROM public.prompt_templates WHERE %I LIKE %L',
+      vorlagen_spalten[i], '%' || e'—' || '%'
+    ) INTO uebrig;
+    IF uebrig > 0 THEN
+      RAISE EXCEPTION 'Migration 351: prompt_templates.% fuehrt noch % Zeile(n) mit U+2014',
+        vorlagen_spalten[i], uebrig;
     END IF;
   END LOOP;
 

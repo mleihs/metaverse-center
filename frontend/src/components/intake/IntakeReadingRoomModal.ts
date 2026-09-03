@@ -46,7 +46,11 @@ import { icons } from '../../utils/icons.js';
 import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import { archetypeLabel } from './intake-labels.js';
-import { intakeControlStyles, intakeKindColorStyles, intakeToolbarStyles } from './intake-styles.js';
+import {
+  intakeControlStyles,
+  intakeKindColorStyles,
+  intakeToolbarStyles,
+} from './intake-styles.js';
 
 /** Wonach der Lesesaal gliedern kann. Siehe Kopfkommentar: `zone` fehlt. */
 type ReadingGrouping = 'archetype' | 'source';

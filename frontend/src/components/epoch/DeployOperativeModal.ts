@@ -44,10 +44,10 @@ import './MissionCard.js';
 import '../shared/VelgAvatar.js';
 import '../shared/VelgAptitudeBars.js';
 import { buildAptitudeIndex } from '../../utils/aptitudes.js';
+import { fanGeometry } from '../../utils/card-fan.js';
 import { professionLabel } from '../../utils/profession.js';
 import { VelgToast } from '../shared/Toast.js';
 import { deployOperativeStyles } from './deploy-operative-styles.js';
-import { fanGeometry } from '../../utils/card-fan.js';
 
 // ── Types & Constants ────────────────────────────────
 

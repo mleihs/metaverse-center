@@ -30,8 +30,8 @@ import {
 } from '../../utils/terminal-commands.js';
 import { formatFeedEntry } from '../../utils/terminal-formatters.js';
 import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
-import { terminalAnimations, terminalTokens } from '../shared/terminal-theme-styles.js';
 import { bureauPaletteStyles } from '../shared/bureau-palette-styles.js';
+import { terminalAnimations, terminalTokens } from '../shared/terminal-theme-styles.js';
 import './TerminalQuickActions.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
