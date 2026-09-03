@@ -33,12 +33,26 @@ export class VelgAtlasQueue extends LitElement {
     css`
       :host {
         display: block;
+        /*
+         * DER CONTAINER SITZT AUF DEM WIRT, NICHT AUF .sheet.
+         *
+         * Eine Container-Abfrage kann nicht auf das Element passen, das den
+         * Container AUFSPANNT — sie fragt immer den naechsten Vorfahren. Stand
+         * container-type auf .sheet und eine @container-Regel richtete sich
+         * ebenfalls an .sheet, traf sie nie.
+         *
+         * Gemessen am 03.09.2026: das Blatt stand bei 390 px Breite weiter
+         * zweispaltig (113 px und 133 px nebeneinander), obwohl die Regel
+         * ausdruecklich eine Spalte verlangte. Kein Fehler, keine Warnung — die
+         * Regel war syntaktisch tadellos und ohne Wirkung. Neun Bausteine
+         * trugen denselben Bau.
+         */
+        container-type: inline-size;
         background: var(--color-surface);
         border-bottom: var(--border-width-thin) solid var(--color-border);
       }
 
       .sheet {
-        container-type: inline-size;
         padding-block: var(--space-12);
         display: grid;
         grid-template-columns: 3fr 9fr;

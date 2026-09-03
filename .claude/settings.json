@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r \".tool_input.file_path // .tool_response.filePath // empty\" | { read -r f; case \"$f\" in *\"/frontend/src/\"*.ts) root=\"${f%%/frontend/src/*}/frontend\"; out=$(cd \"$root\" && node scripts/lint-backtick-in-css.mjs 2>&1) || printf \"%s\" \"$out\" | jq -Rs \"{decision:\\\"block\\\", reason:(\\\"Backtick im css/html-Template — die Datei ist ab dieser Zeile kaputt. Sofort reparieren, nicht weiterschreiben:\\n\\\" + .)}\" ;; esac; }",
+            "timeout": 30,
+            "statusMessage": "Backtick-Tor"
+          }
+        ]
+      }
+    ]
+  }
+}
