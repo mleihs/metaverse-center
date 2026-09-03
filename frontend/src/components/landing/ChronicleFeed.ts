@@ -27,6 +27,7 @@ import '../shared/VelgDispatchTicker.js';
 import { DEFAULT_TAB } from '../../utils/sim-view-imports.js';
 import { dispatchStyles } from '../shared/dispatch-styles.js';
 import type { TickerItem } from '../shared/VelgDispatchTicker.js';
+import { setupScrollReveal } from '../../utils/scroll-reveal.js';
 
 /** Extended chronicle with simulation metadata from the cross-sim endpoint. */
 interface FeedChronicle extends Chronicle {
@@ -301,20 +302,7 @@ export class VelgChronicleFeed extends LitElement {
   }
 
   private _setupScrollReveal(): void {
-    this._observer?.disconnect();
-    this._observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            this._observer?.unobserve(entry.target);
-          }
-        }
-      },
-      { threshold: 0.1 },
-    );
-    const els = this.renderRoot.querySelectorAll('.dispatch-scroll-reveal:not(.in-view)');
-    for (const el of els) this._observer.observe(el);
+    this._observer = setupScrollReveal(this.renderRoot, '.dispatch-scroll-reveal', this._observer);
   }
 
   /** Extract first paragraph or first N characters as excerpt. */

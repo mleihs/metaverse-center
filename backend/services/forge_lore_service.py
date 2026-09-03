@@ -23,6 +23,7 @@ from backend.services.ai_utils import (
 )
 from backend.services.forge_feature_service import ForgeFeatureService
 from backend.services.forge_image_service import ForgeImageService
+from backend.services.forge_prompt_blocks import world_context_header
 from backend.services.simulation_service import SimulationService
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -220,14 +221,7 @@ class ForgeLoreService:
         prompt = (
             f"{research_block}"
             f"Write the founding lore for this simulation world:\n\n"
-            f"SEED: {seed}\n\n"
-            f"PHILOSOPHICAL ANCHOR:\n"
-            f"  Title: {anchor.get('title', 'Unknown')}\n"
-            f"  Core Question: {anchor.get('core_question', '')}\n"
-            f"  Description: {anchor.get('description', '')}\n"
-            f"  Literary Influence: {anchor.get('literary_influence', '')}\n\n"
-            f"GEOGRAPHY:\n"
-            f"  City: {geography.get('city_name', 'Unnamed')}\n"
+            f"{world_context_header(seed, anchor, geography)}"
             f"  Districts: {zone_names}\n\n"
             f"INHABITANTS:\n{agent_block}\n\n"
             f"STRUCTURES:\n{building_block}\n\n"
