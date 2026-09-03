@@ -269,12 +269,14 @@ export class ReactionBar extends LitElement {
     if (this._addBtn && this._picker) {
       (this._addBtn as HTMLButtonElement).popoverTargetElement = this._picker;
       (this._addBtn as HTMLButtonElement).popoverTargetAction = 'toggle';
-      this._picker.addEventListener('beforetoggle', this._placePicker);
+      this._picker.addEventListener('beforetoggle', this._hidePicker);
+      this._picker.addEventListener('toggle', this._placePicker);
     }
   }
 
   override disconnectedCallback(): void {
-    this._picker?.removeEventListener('beforetoggle', this._placePicker);
+    this._picker?.removeEventListener('beforetoggle', this._hidePicker);
+    this._picker?.removeEventListener('toggle', this._placePicker);
     super.disconnectedCallback();
   }
 
@@ -292,15 +294,30 @@ export class ReactionBar extends LitElement {
    * nach unten, und an den Fensterraendern bleibt er mit einem Rand von
    * --space-2 stehen.
    */
+  private readonly _hidePicker = (e: Event): void => {
+    // VOR dem Oeffnen unsichtbar schalten, damit der eine Bildlauf zwischen
+    // Oeffnen und Platzieren nicht als Sprung zu sehen ist.
+    if ((e as ToggleEvent).newState === 'open') this._picker.style.visibility = 'hidden';
+  };
+
   private readonly _placePicker = (e: Event): void => {
     if ((e as ToggleEvent).newState !== 'open') return;
     const btn = this._addBtn?.getBoundingClientRect();
     if (!btn) return;
 
     const p = this._picker;
-    // Vor dem Messen sichtbar machen: ein Popover im Zustand `closed` hat
-    // keine Groesse, und ein Ort, der aus 0×0 gerechnet ist, ist kein Ort.
-    p.style.visibility = 'hidden';
+    // NACH dem Oeffnen messen, nicht davor.
+    //
+    // Die erste Fassung hing an `beforetoggle` — und ein Popover ist da noch
+    // `display: none`, hat also die Groesse 0×0. Auf Prod nachgemessen, bevor
+    // es jemand melden konnte:
+    //
+    //     Knopf     links 991, oben 412, rechts 1015
+    //     Waehler   links 1015 (= Knopfkante), oben 406 (= 412 − 6)
+    //
+    // Beide Zahlen sind aus einer Breite und einer Hoehe von null gerechnet.
+    // Der Ort war nicht falsch berechnet, er war aus nichts berechnet — und
+    // sah trotzdem plausibel aus. `toggle` feuert, wenn das Popover steht.
     p.style.left = '0px';
     p.style.top = '0px';
     const box = p.getBoundingClientRect();
