@@ -22,6 +22,9 @@
  *   that no gate was responsible for.
  */
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('../src/services/api/index.js', () => ({ settingsApi: {} }));
@@ -122,5 +125,73 @@ describe('ThemeService 1b — Lesbarkeit der Textrollen', () => {
     // der urspruengliche 81-Dateien-Vorschlag gescheitert waere.
     themeService.applyConfig({ ...HELLE_WELT, color_primary: '#1a1a2e' }, el);
     expect(el.style.getPropertyValue('--color-primary')).toBe('#1a1a2e');
+  });
+});
+
+/**
+ * Der Fall, den dieses Testfeld nicht ausfuehren, aber festhalten kann.
+ *
+ * Am 03.09.2026 auf Prod gemessen: `velg-app` trug KEINEN
+ * `data-contrast-lifted`-Marker — die Hebung hatte null Token gehoben, in
+ * jedem Theme, seit es sie gibt. Der Grund war nicht die Auswahl der Token,
+ * sondern das LESEN:
+ *
+ *     getComputedStyle(el).getPropertyValue('--x')
+ *
+ * gibt bei einer Custom Property den SPEZIFIZIERTEN Text zurueck. Fuer
+ * `#a0a0a0` ist das dasselbe wie die Farbe, fuer `color-mix(...)` nicht — und
+ * `parseColor` kennt kein `color-mix`. Genau die zwei meistgenutzten Rollen
+ * sind so definiert:
+ *
+ *     --color-text-quiet      967 Verwendungen   color-mix(...)   uebersprungen
+ *     --color-text-tertiary   124 Verwendungen   color-mix(...)   uebersprungen
+ *     --color-text-secondary  457               #a0a0a0          gehoben
+ *     --color-text-muted      185               #888888          gehoben
+ *
+ * Der Waechter sah 642 Stellen an und uebersprang 1091 — still, denn ein
+ * uebersprungener Token sieht aus wie einer, der keine Hebung brauchte.
+ *
+ * happy-dom rechnet `color-mix` nicht aus, der Lauf laesst sich hier also
+ * nicht nachstellen. Was hier steht, bindet stattdessen die FORM der Loesung:
+ * gelesen wird ueber ein Probe-Element, dem der Browser `color: var(--x)`
+ * ausrechnet, und nicht mehr ueber `getPropertyValue`. Im echten Browser
+ * gegen Prod gemessen:
+ *
+ *     roh          color-mix(in srgb, #888 70%, #e5e5e5)
+ *     aufgeloest   color(srgb 0.642745 0.642745 0.642745)   <- parseColor kann das
+ */
+describe('die Token werden AUFGELOEST gelesen, nicht roh', () => {
+  const quelle = readFileSync(
+    resolve(process.cwd(), 'src/services/ThemeService.ts'),
+    'utf-8',
+  );
+  const block = quelle.slice(
+    quelle.indexOf('private enforceTextContrast'),
+    quelle.indexOf('private reportUnparseable'),
+  );
+
+  it('liest ueber ein Probe-Element statt ueber getPropertyValue', () => {
+    expect(block).toContain("probe.style.color = `var(${token})`");
+    expect(block).toContain('getComputedStyle(probe).color');
+    expect(
+      /const read = \(token: string\): string =>\s*resolved\.getPropertyValue/.test(block),
+      'getPropertyValue kann color-mix nicht aufloesen — dann wird still uebersprungen',
+    ).toBe(false);
+  });
+
+  it('raeumt die Probe auf jedem Ausgang wieder ab', () => {
+    // Sie haengt am Wirt; eine vergessene waechst mit jedem Themenwechsel.
+    expect((block.match(/probe\.remove\(\)/g) ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('hebt auch die zwei meistgenutzten Rollen', () => {
+    for (const token of [
+      '--color-text-secondary',
+      '--color-text-muted',
+      '--color-text-quiet',
+      '--color-text-tertiary',
+    ]) {
+      expect(block).toContain(`'${token}'`);
+    }
   });
 });
