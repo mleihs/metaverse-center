@@ -19,7 +19,8 @@
 
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 
-/** Sekundentakt. Feiner waere Arbeit, die niemand sieht. */
+/** Sekundentakt. Feiner waere Arbeit, die niemand sieht — die Anzeige zeigt
+ *  ohnehin nur ganze Sekunden. */
 const TICK_MS = 1000;
 
 export class CycleCountdown implements ReactiveController {

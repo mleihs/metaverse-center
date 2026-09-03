@@ -186,13 +186,28 @@ export class VelgAtlasRegistry extends LitElement {
         color: var(--color-text-muted);
       }
 
-      @container (max-width: 1279px) {
+      /*
+       * HIER MEDIEN- STATT CONTAINER-ABFRAGEN, UND ZWAR AUSNAHMSWEISE.
+       *
+       * Die Breite dieses Abschnitts entsteht nicht aus seinem Inhalt, sondern
+       * aus der Spaltenteilung von .lower in DashboardPage — und die haengt
+       * selbst an einer Medienabfrage: ab 1024 px abwaerts stapelt sie, sonst
+       * teilt sie 1fr und die 620 px der Schiene.
+       *
+       * Damit springt die Spalte des Registers am Fenster: gemessen 696 px bei
+       * einem 1440er Fenster, 1176 px bei 1920, und bei 1024 abwaerts die volle
+       * Breite. Eine Container-Abfrage koennte die 976 px eines gestapelten
+       * Tablets nicht von den 1176 px einer Desktop-Spalte unterscheiden und
+       * gaebe dem Tablet drei Spalten. Die ehrliche Frage ist hier also
+       * tatsaechlich die Fensterbreite — dieselbe, die der Elternteil stellt.
+       */
+      @media (max-width: 1279px) {
         .grid {
           grid-template-columns: repeat(2, 1fr);
         }
       }
 
-      @container (max-width: 767px) {
+      @media (max-width: 767px) {
         .grid {
           grid-template-columns: 1fr;
         }
@@ -236,7 +251,16 @@ export class VelgAtlasRegistry extends LitElement {
       ${
         rest > 0
           ? html`<button class="rest atlas-arrow" @click=${() => navigate('/worlds')}>
-              <span>${msg(str`${rest} more sheets on file`)}</span>
+              <!--
+                Die Einzahl steht ausserhalb der Zeichenkette, nicht als
+                Fragezeichen darin: eine Vorlage mit einer Verzweigung laesst
+                sich nicht sinnvoll uebersetzen, weil die Uebersetzerin nicht
+                sieht, welcher Zweig gemeint ist. Dafuer gibt es in diesem Werk
+                ein eigenes Tor (lint-no-ternary-in-msg.sh).
+              -->
+              <span>
+                ${rest === 1 ? msg('1 more sheet on file') : msg(str`${rest} more sheets on file`)}
+              </span>
               <span>${msg('Browse the registry')} <span aria-hidden="true">→</span></span>
             </button>`
           : nothing

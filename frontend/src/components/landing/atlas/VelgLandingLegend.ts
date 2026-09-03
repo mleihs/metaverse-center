@@ -39,13 +39,27 @@ export class VelgLandingLegend extends LitElement {
          und relative allein legt keinen an. */
       :host {
         display: block;
+        /*
+         * DER CONTAINER SITZT AUF DEM WIRT, NICHT AUF .sheet.
+         *
+         * Eine Container-Abfrage kann nicht auf das Element passen, das den
+         * Container AUFSPANNT — sie fragt immer den naechsten Vorfahren. Stand
+         * container-type auf .sheet und eine @container-Regel richtete sich
+         * ebenfalls an .sheet, traf sie nie.
+         *
+         * Gemessen am 03.09.2026: das Blatt stand bei 390 px Breite weiter
+         * zweispaltig (113 px und 133 px nebeneinander), obwohl die Regel
+         * ausdruecklich eine Spalte verlangte. Kein Fehler, keine Warnung — die
+         * Regel war syntaktisch tadellos und ohne Wirkung. Neun Bausteine
+         * trugen denselben Bau.
+         */
+        container-type: inline-size;
         position: relative;
         border-bottom: var(--border-width-thin) solid var(--color-border);
         background: var(--color-surface);
       }
 
       .sheet {
-        container-type: inline-size;
         padding-block: var(--space-16);
         /* Ueber dem Raster, ohne z-index-Wettlauf: das Raster steht auf 0. */
         position: relative;

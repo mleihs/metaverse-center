@@ -66,6 +66,20 @@ export class VelgAtlasHero extends LitElement {
     css`
       :host {
         display: block;
+        /*
+         * ZWEI CONTAINER, INEINANDER, UND SIE BEANTWORTEN VERSCHIEDENE FRAGEN.
+         *
+         * Der Wirt spannt den Container fuer das BLATT auf: ob Text und Figur
+         * neben- oder untereinander stehen, haengt an der Breite des Blattes.
+         * .text spannt weiter unten einen zweiten auf, aus dem die Schlagzeile
+         * ihre Groesse zieht — dort ist die Frage die Breite der SPALTE.
+         *
+         * Deshalb loest eine @container-Regel je nach Ziel gegen einen anderen
+         * Container auf: .sheet und die Figur gegen den Wirt, .headline gegen
+         * .text. Das ist Absicht und der Grund, warum die Regeln fuer die
+         * Schlagzeile nicht im selben Block stehen wie die fuer das Blatt.
+         */
+        container-type: inline-size;
         position: relative;
         background: var(--color-surface);
         border-bottom: var(--border-width-thin) solid var(--color-border);
@@ -281,8 +295,10 @@ export class VelgAtlasHero extends LitElement {
 
       /* Tablet hochkant: gestapelt, die Figur beschnitten auf 16:9 — hochkant
          unter dem Text waere ein halber Bildschirm Foto vor dem naechsten
-         Blatt. */
-      @media (max-width: 1023px) {
+         Blatt. Gegen den WIRT, nicht das Fenster: eine Medienabfrage hier hat
+         am 03.09.2026 dazu gefuehrt, dass das Blatt bei 390 px Blattbreite
+         zweispaltig stehenblieb, weil das Fenster 1728 breit war. */
+      @container (max-width: 1023px) {
         .sheet {
           grid-template-columns: 1fr;
           gap: var(--space-8);
@@ -293,7 +309,9 @@ export class VelgAtlasHero extends LitElement {
         }
       }
 
-      @media (max-width: 639px) {
+      /* Diese hier loest gegen .text auf, nicht gegen den Wirt — die
+         Schlagzeile richtet sich nach ihrer Spalte. */
+      @container (max-width: 639px) {
         .headline {
           font-size: clamp(44px, 14vw, 72px);
           line-height: 1;

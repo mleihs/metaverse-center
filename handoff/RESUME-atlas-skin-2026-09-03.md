@@ -421,15 +421,80 @@ Rückgängig.**
 
 ---
 
+## Das Dashboard als Kartenmappe — Blatt 00 bis 05
+
+`components/dashboard/atlas/`: `AtlasCommandStrip` (00 Schreibtisch),
+`AtlasStage` (01 Einsatz), `AtlasQueue` (02 Verlangt Sie), `AtlasWorlds`
+(03 Meine Gebiete), `AtlasRegistry` (04 Register), `AtlasRail` (05 Dossier,
+Substratmonitor, Auszeichnungen).
+
+**Alle Wahrheiten stehen in `DashboardPage`, nicht in den Bausteinen** — damit
+gelten sie zwangsläufig für beide Garnituren: Warteschlange nur bei laufenden
+Epochen, Weltenblatt nur bei eigenen Welten, Akademie für Neulinge, Freigabe nur
+für Verwaltende, **Schiene entfällt ganz**, wenn sie weder Agenten noch Beben
+trägt. Dazu: kein Countdown ohne `cycle_deadline_at`, kein erfundener Nenner,
+das Register zählt was ankommt.
+
+Die Zyklusuhr liegt geteilt in `cycle-countdown.ts` (Reactive Controller) — zwei
+Uhren gehen irgendwann auseinander.
+
+---
+
+## Der systematische Fehler, den die Breitenprüfung fand
+
+**Eine Container-Abfrage kann nicht auf das Element passen, das den Container
+aufspannt.** Ich hatte `container-type` auf `.sheet` gesetzt und `@container`-
+Regeln auf `.sheet` gerichtet — sie fragen damit den nächsten VORFAHREN und
+trafen nie. **Zehn Bausteine** trugen denselben Bau.
+
+Gemessen bei 390 px Blattbreite: das Blatt stand weiter zweispaltig
+(113 px neben 133 px), obwohl die Regel eine Spalte verlangte. Syntaktisch
+tadellos, ohne Wirkung, ohne Fehlermeldung. Behoben, indem der Container auf den
+Wirt wandert; die Begründung steht in jeder der zehn Dateien.
+
+**Und zweimal war mein Messgerät der Fehler.** Ich kann das Fenster in dieser
+Umgebung nicht verkleinern (`outerWidth: 0`), also habe ich das Element
+verkleinert. Das prüft **nur Container-Abfragen** — Medienabfragen feuern dabei
+nie. Zweimal habe ich daraufhin einen Fehler diagnostiziert, den es nicht gab
+(einmal beim Hero, einmal bei `.lower` im Dashboard, das eine völlig korrekte
+`@media (max-width: 1024px)` hat).
+
+Daraus folgt die Regel, nach der die Abfragen jetzt gewählt sind:
+
+| Was entscheidet die Breite? | Werkzeug |
+|---|---|
+| der eigene Platz im Blatt | `@container` (alle Blattflächen) |
+| ein Elternteil, der selbst am Fenster hängt | `@media` (`AtlasRegistry`: seine Spalte kommt aus `.lower`, das bei ≤1024 stapelt) |
+
+Nachgemessen über 390 · 768 · 1024 · 1440: Hero 1/1/2/2, Legende 1/1/3/3,
+Systeme 1/2/2/2, Gebiete 1/2/4/4, Protokoll · Schmiede · Marginalien ·
+Gewährsleute je 1/1/2/2, Dashboard-Bühne · Warteschlange · Welten je 1/1/2/2.
+Register bei echter Fensterbreite 1728: Spalte 969 px, drei Kartenspalten.
+
+---
+
+## Die Backtick-Falle ist jetzt verankert, nicht mehr nur notiert
+
+Ich bin in dieser Sitzung **fünfmal** hineingelaufen, obwohl die Erinnerung
+`css-backtick-template-trap` existierte. Eine Erinnerung ist ein Rat und greift
+nur, wenn man in dem Moment an sie denkt — beim Schreiben eines Kommentars tut
+man das nicht.
+
+`.claude/settings.json` trägt jetzt einen **PostToolUse-Hook** (`Write|Edit`):
+nach jedem Schreiben in eine `frontend/src/**/*.ts` läuft
+`lint-backtick-in-css.mjs`, und ein Verstoß kommt sofort als `decision: block`
+mit Datei und Zeile zurück. Beides nachgewiesen — mit einer Markierung, dass er
+feuert, und mit einer echten Verletzung, dass er blockt.
+
+Die allgemeine Lehre steht in der Erinnerung: **wenn dieselbe Notiz mehrfach
+nicht greift, ist sie das falsche Werkzeug.**
+
+---
+
 ## Offen — nächste Schritte
 
 0. **Phase 2 Rest:**
-   - **Dashboard-Template** (`reference/Dashboard Atlas.dc.html`) — komplett
-     offen, und der saubere Schnitt für einen Context-Clear. Reihenfolge und
-     Wahrheiten aus `DashboardPage.ts` bleiben unverändert, sagt das Paket
-     ausdrücklich. Bausteine gehören nach `components/dashboard/atlas/`, das
-     Vokabular liegt schon in `shared/atlas-sheet-styles.ts`.
-   - **Blätter 04–07 mit echten Daten ansehen.** Geprüft wurden sie mit von Hand
+   - **Blätter 04–07 und das ganze Dashboard mit echten Daten ansehen.** Geprüft wurden sie mit von Hand
      eingesetzten Daten, weil das Backend nicht lief. Layout und Rückfallpfade
      stimmen; die echten Bilder (`banner_url`) hat noch niemand gesehen.
    - **Bild-Matrix** `frontend/screenshots/atlas/`: 390 · 768 · 1024 · 1440 ·
