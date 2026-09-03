@@ -20,14 +20,14 @@ export class VelgMapTooltip extends LitElement {
       border: 1px solid var(--color-border);
       padding: var(--space-3, 12px) var(--space-4, 16px);
       max-width: 280px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--color-shadow) 60%, transparent);
     }
 
     .tooltip__name {
       font-family: var(--font-brutalist, monospace);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm, 14px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2, 8px);
@@ -72,7 +72,7 @@ export class VelgMapTooltip extends LitElement {
 
     .tooltip__score-label {
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       font-size: 9px;
       letter-spacing: 0.06em;
     }
@@ -128,7 +128,7 @@ export class VelgMapTooltip extends LitElement {
             ? html`
           <p class="tooltip__desc" style="color: var(--color-text-secondary); font-weight: 700;">
             ${msg('Game Instance')}
-            ${this.node.epochStatus ? html` – <span style="text-transform: uppercase">${this.node.epochStatus}</span>` : nothing}
+            ${this.node.epochStatus ? html` – <span style="text-transform: var(--label-transform)">${this.node.epochStatus}</span>` : nothing}
           </p>
         `
             : nothing

@@ -106,7 +106,7 @@ export class AdminDungeonContentTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         background: transparent;
         color: var(--color-text-quiet);
@@ -152,7 +152,7 @@ export class AdminDungeonContentTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
       }

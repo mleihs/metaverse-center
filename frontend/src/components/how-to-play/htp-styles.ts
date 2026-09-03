@@ -41,8 +41,8 @@ export const htpStyles = css`
       0deg,
       transparent,
       transparent 2px,
-      rgba(255 255 255 / 0.015) 2px,
-      rgba(255 255 255 / 0.015) 4px
+      var(--color-scanline) 2px,
+      var(--color-scanline) 4px
     );
     pointer-events: none;
   }
@@ -60,7 +60,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-danger);
     border: 2px solid var(--color-danger);
@@ -74,7 +74,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: clamp(2rem, 6vw, var(--text-4xl));
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: 0.15em;
     color: var(--color-text-primary);
     margin: 0 0 var(--space-3);
@@ -87,7 +87,7 @@ export const htpStyles = css`
     font-size: var(--text-base);
     color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     margin: 0;
     opacity: 0;
     animation: fade-down 0.6s var(--ease-dramatic) 0.4s forwards;
@@ -143,7 +143,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-text-quiet);
     margin: 0 0 var(--space-4);
@@ -233,7 +233,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-xl);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-4);
@@ -296,7 +296,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     margin-top: var(--space-2);
     text-align: center;
@@ -378,7 +378,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-md);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
   }
@@ -393,7 +393,7 @@ export const htpStyles = css`
   .op-card__cost-label {
     font-size: var(--text-xs);
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     margin-left: 2px;
   }
 
@@ -411,7 +411,7 @@ export const htpStyles = css`
   .op-card__stat-label {
     font-size: 9px;
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -431,7 +431,7 @@ export const htpStyles = css`
     font-size: 11px;
     color: var(--color-text-tertiary);
     padding: var(--space-2);
-    background: rgba(255 255 255 / 0.03);
+    background: var(--color-overlay-ink);
     border-left: 2px solid var(--color-border);
   }
 
@@ -471,7 +471,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
   }
@@ -480,7 +480,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 8px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     padding: 1px 6px;
     flex-shrink: 0;
@@ -519,7 +519,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -555,7 +555,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     text-align: center;
@@ -601,7 +601,7 @@ export const htpStyles = css`
   .callout {
     padding: var(--space-4);
     margin: var(--space-4) 0;
-    background: rgba(255 255 255 / 0.02);
+    background: var(--color-overlay-ink);
   }
 
 
@@ -609,7 +609,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     margin-bottom: var(--space-2);
   }
@@ -652,7 +652,7 @@ export const htpStyles = css`
   }
 
   .match__header:hover {
-    background: rgba(255 255 255 / 0.02);
+    background: var(--color-overlay-ink);
   }
 
   .match__header:focus-visible {
@@ -670,7 +670,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-md);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
     margin: 0;
@@ -679,7 +679,7 @@ export const htpStyles = css`
   .match__subtitle {
     font-size: 10px;
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -729,7 +729,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     padding: var(--space-0-5) var(--space-2);
     border: 1px solid var(--color-border);
@@ -742,7 +742,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
@@ -763,7 +763,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     text-align: left;
@@ -780,14 +780,14 @@ export const htpStyles = css`
   }
 
   .cycles-table tr:nth-child(even) td {
-    background: rgba(255 255 255 / 0.01);
+    background: var(--color-overlay-ink);
   }
 
   .cycle-phase {
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     padding: 1px 4px;
   }
 
@@ -811,7 +811,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
@@ -826,7 +826,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     text-align: center;
@@ -873,7 +873,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-quiet);
     margin-bottom: var(--space-2);
@@ -928,7 +928,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
   }
@@ -973,7 +973,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
   }
@@ -1026,7 +1026,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -1046,7 +1046,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-md);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-2);
@@ -1079,7 +1079,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 11px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     white-space: nowrap;
     overflow: hidden;
@@ -1109,7 +1109,9 @@ export const htpStyles = css`
     top: 0;
     bottom: 0;
     width: 3px;
-    background: rgba(255 255 255 / 0.4);
+    /* The cap that says where the bar ends. Full strength — this is the site
+       --color-overlay-ink-bright is anchored to. */
+    background: var(--color-overlay-ink-bright);
   }
 
   .elo-row__value {
@@ -1170,7 +1172,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
     flex: 1;
@@ -1203,7 +1205,7 @@ export const htpStyles = css`
   .profile-card__rate-label {
     font-size: 9px;
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     display: block;
     margin-bottom: 2px;
@@ -1230,7 +1232,7 @@ export const htpStyles = css`
 
   .profile-card__ci-label {
     color: var(--color-text-quiet);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
@@ -1268,7 +1270,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     margin-right: var(--space-1);
   }
@@ -1327,7 +1329,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 11px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
   }
@@ -1382,7 +1384,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 10px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -1413,7 +1415,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 8px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     padding: 1px 5px;
     border: 1px solid;
@@ -1445,7 +1447,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-text-quiet);
   }
@@ -1612,8 +1614,8 @@ export const htpStyles = css`
       0deg,
       transparent 0px,
       transparent 3px,
-      rgba(255, 255, 255, 0.012) 3px,
-      rgba(255, 255, 255, 0.012) 4px
+      var(--color-scanline) 3px,
+      var(--color-scanline) 4px
     );
     z-index: 1;
   }
@@ -1634,7 +1636,7 @@ export const htpStyles = css`
     font-weight: var(--font-black);
     font-size: 8px;
     letter-spacing: var(--tracking-widest);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-warning);
     padding: 2px 6px;
     border: 1px solid var(--color-warning);
@@ -1646,7 +1648,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 11px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-tertiary);
     flex: 1;
@@ -1763,7 +1765,7 @@ export const htpStyles = css`
   .demo-timeline__label {
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     color: var(--color-text-quiet);
     white-space: nowrap;
@@ -1799,7 +1801,7 @@ export const htpStyles = css`
   }
 
   .demo-step:hover {
-    background: rgba(255 255 255 / 0.015);
+    background: var(--color-overlay-ink);
   }
 
   .demo-step__gutter {
@@ -1822,7 +1824,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-size: 9px;
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.12em;
     padding: 2px 6px;
     border: 1px solid;
@@ -1845,7 +1847,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-base);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: 0.06em;
     color: var(--color-text-primary);
     margin: 0 0 var(--space-2);
@@ -1888,7 +1890,7 @@ export const htpStyles = css`
   .demo-readout__label {
     font-family: var(--font-brutalist);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.1em;
     color: var(--color-text-quiet);
   }
@@ -1908,9 +1910,8 @@ export const htpStyles = css`
     padding: 6px;
     background: var(--color-border-light);
     border: 1px solid var(--color-border);
-    box-shadow:
-      0 2px 8px rgba(0 0 0 / 0.4),
-      inset 0 0 0 1px rgba(255 255 255 / 0.03);
+    box-shadow: 0 2px 8px rgba(0 0 0 / 0.4),
+      inset 0 0 0 1px var(--color-overlay-ink);
     cursor: pointer;
     position: relative;
     transform: rotate(-1.5deg);
@@ -1969,7 +1970,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-size: 7px;
     font-weight: var(--font-black);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.15em;
     color: var(--color-danger);
     background: rgba(0 0 0 / 0.7);
@@ -1989,7 +1990,7 @@ export const htpStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.2em;
     color: var(--color-text-primary);
     background: rgba(0 0 0 / 0.55);
@@ -2012,8 +2013,8 @@ export const htpStyles = css`
       0deg,
       transparent,
       transparent 2px,
-      rgba(255 255 255 / 0.04) 2px,
-      rgba(255 255 255 / 0.04) 4px
+      var(--color-scanline) 2px,
+      var(--color-scanline) 4px
     );
     opacity: 0;
     transition: opacity 0.25s;

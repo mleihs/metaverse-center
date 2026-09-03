@@ -15,6 +15,7 @@ import { css, html, LitElement, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { driftApi } from '../../services/api/index.js';
+import { restorePlatformCardFrame } from '../../services/card-frame.js';
 import { driftStatus } from '../../services/DriftStatusService.js';
 import { captureError } from '../../services/SentryService.js';
 import { themeService } from '../../services/ThemeService.js';
@@ -601,6 +602,15 @@ export class VelgDriftView extends LitElement {
 
   disconnectedCallback(): void {
     this._disposeAuthEffect?.();
+    /*
+     * Die Inline-Tokens gehen mit dem Element — der Kartenrahmen nicht. Er ist
+     * ein globales Signal, das connectedCallback auf den dunklen Wert gesetzt
+     * hat; ohne diese Zeile behielte die ganze Anwendung ihn, auch nachdem der
+     * Zwischenraum verlassen ist. Auf dem Papier-Skin gemessen: die Karten
+     * verloren ihr Papier und trugen bis zum naechsten Skin-Wechsel ein
+     * Terminal-Schild. Siehe restorePlatformCardFrame in card-frame.ts.
+     */
+    restorePlatformCardFrame();
     super.disconnectedCallback();
   }
 

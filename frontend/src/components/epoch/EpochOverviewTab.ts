@@ -95,7 +95,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-tertiary);
       margin: 0;
@@ -122,7 +122,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       background:
@@ -171,7 +171,7 @@ export class VelgEpochOverviewTab extends LitElement {
       border-color: var(--_accent);
       box-shadow:
         0 4px 12px var(--_sh-light),
-        0 0 20px color-mix(in srgb, var(--_accent) 12%, transparent),
+        0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--_accent) 12%, transparent),
         inset 0 1px 0 var(--_hi-soft);
       background:
         linear-gradient(90deg, color-mix(in srgb, var(--_accent) 6%, transparent) 0%, transparent 50%),
@@ -217,7 +217,7 @@ export class VelgEpochOverviewTab extends LitElement {
 
     .action-btn:hover .action-btn__icon {
       border-color: color-mix(in srgb, var(--_accent) 50%, var(--color-border));
-      box-shadow: 0 0 8px color-mix(in srgb, var(--_accent) 20%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--_accent) 20%, transparent);
     }
 
     .action-btn__label {
@@ -295,7 +295,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -341,7 +341,7 @@ export class VelgEpochOverviewTab extends LitElement {
       padding: 2px 6px;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-warning);
       border: 1px solid var(--color-warning);
       background: transparent;
@@ -402,7 +402,7 @@ export class VelgEpochOverviewTab extends LitElement {
     .fortify-zone-btn__security {
       font-size: 10px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .fortify-zone-btn__cost {
@@ -414,7 +414,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-warning);
       margin-top: var(--space-2);
@@ -465,7 +465,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-warning);
     }
@@ -515,7 +515,7 @@ export class VelgEpochOverviewTab extends LitElement {
       border-radius: 50%;
       flex-shrink: 0;
       background: var(--color-warning);
-      box-shadow: 0 0 4px var(--_primary-pulse);
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--_primary-pulse);
       animation: fort-pulse 2.5s ease-in-out infinite;
     }
 
@@ -536,7 +536,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-size: var(--text-xs);
       font-weight: bold;
       color: var(--color-warning);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -551,7 +551,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       flex-shrink: 0;
     }
 
@@ -567,7 +567,7 @@ export class VelgEpochOverviewTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       padding: 2px 5px;
       border: 1px solid;

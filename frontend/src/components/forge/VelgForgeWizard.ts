@@ -51,8 +51,8 @@ export class VelgForgeWizard extends LitElement {
           0deg,
           transparent,
           transparent 2px,
-          rgba(255 255 255 / 0.012) 2px,
-          rgba(255 255 255 / 0.012) 4px
+          var(--color-scanline) 2px,
+          var(--color-scanline) 4px
         );
         pointer-events: none;
         z-index: var(--z-top);
@@ -90,8 +90,8 @@ export class VelgForgeWizard extends LitElement {
           0deg,
           transparent,
           transparent 2px,
-          rgba(255 255 255 / 0.015) 2px,
-          rgba(255 255 255 / 0.015) 4px
+          var(--color-scanline) 2px,
+          var(--color-scanline) 4px
         );
         pointer-events: none;
       }
@@ -101,7 +101,7 @@ export class VelgForgeWizard extends LitElement {
         padding: var(--space-1) var(--space-3);
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--color-danger);
         border: 1px solid var(--color-danger);
@@ -113,7 +113,7 @@ export class VelgForgeWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black, 900);
         font-size: var(--text-3xl, 1.875rem);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist, 0.08em);
         color: var(--color-text-primary);
         margin: 0 0 var(--space-2);
@@ -176,7 +176,7 @@ export class VelgForgeWizard extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold, 700);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist, 0.08em);
         color: var(--color-text-primary);
       }
@@ -190,7 +190,7 @@ export class VelgForgeWizard extends LitElement {
       .context-bar__params {
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wider, 0.05em);
         color: var(--color-text-tertiary);
       }
@@ -201,7 +201,7 @@ export class VelgForgeWizard extends LitElement {
         padding: 0;
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wider, 0.05em);
         color: var(--color-text-link);
         text-decoration: underline;
@@ -221,7 +221,7 @@ export class VelgForgeWizard extends LitElement {
         gap: var(--space-1-5);
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-quiet);
         white-space: nowrap;
@@ -244,7 +244,7 @@ export class VelgForgeWizard extends LitElement {
         padding: var(--space-1) var(--space-2);
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-secondary);
         cursor: pointer;
@@ -271,7 +271,7 @@ export class VelgForgeWizard extends LitElement {
         padding: var(--space-2-5, 10px) var(--space-3);
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         text-align: center;
         color: var(--color-text-quiet);
@@ -302,7 +302,7 @@ export class VelgForgeWizard extends LitElement {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(90deg, transparent 0%, rgba(255 255 255 / 0.2) 50%, transparent 100%);
+        background: linear-gradient(90deg, transparent 0%, rgba(255 255 255 / 0.2) 50%, transparent 100%); /* lint-color-ok — shimmer, deliberately light */
         animation: phase-sweep 2s ease-in-out infinite;
       }
 

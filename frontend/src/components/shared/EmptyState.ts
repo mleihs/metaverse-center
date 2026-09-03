@@ -49,7 +49,7 @@ export class VelgEmptyState extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       max-width: 480px;
@@ -71,7 +71,7 @@ export class VelgEmptyState extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-primary);
       color: var(--color-text-inverse);

@@ -43,7 +43,7 @@ export class VelgBondFormation extends LitElement {
       .formation__label {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-primary);
         margin-bottom: var(--space-3);

@@ -70,7 +70,7 @@ export class VelgEpochOperationsTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-tertiary);
       margin: 0;
@@ -131,7 +131,7 @@ export class VelgEpochOperationsTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -177,7 +177,7 @@ export class VelgEpochOperationsTab extends LitElement {
       padding: 2px 6px;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-warning);
       border: 1px solid var(--color-warning);
       background: transparent;
@@ -233,7 +233,7 @@ export class VelgEpochOperationsTab extends LitElement {
 
     @keyframes panel-pulse {
       0% { border-color: var(--color-border-light); box-shadow: none; }
-      30% { border-color: var(--color-warning); box-shadow: 0 0 12px var(--_pulse-glow); }
+      30% { border-color: var(--color-warning); box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_pulse-glow); }
       100% { border-color: var(--color-border-light); box-shadow: none; }
     }
 

@@ -36,7 +36,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
@@ -61,7 +61,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .recruit__cost {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-4);
@@ -79,7 +79,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-surface-sunken);
       background: var(--color-accent-amber);
@@ -90,7 +90,7 @@ export class VelgRecruitmentOffice extends LitElement {
     }
 
     .recruit__btn:hover:not(:disabled) {
-      box-shadow: 0 0 16px var(--color-warning-glow);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--color-warning-glow);
       transform: translateY(-1px);
     }
 
@@ -135,7 +135,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0;
@@ -151,7 +151,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
     }
@@ -192,7 +192,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .config__cost {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-accent-amber);
     }
@@ -226,7 +226,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.12em;
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-4);
@@ -281,7 +281,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .recruit-card__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
     }
@@ -302,7 +302,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--color-text-primary);
       text-align: center;
@@ -312,7 +312,7 @@ export class VelgRecruitmentOffice extends LitElement {
     .recruit-card__status {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-success);
     }
@@ -332,7 +332,7 @@ export class VelgRecruitmentOffice extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-success);
       margin: 0;

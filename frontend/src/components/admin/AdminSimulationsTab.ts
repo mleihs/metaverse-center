@@ -59,7 +59,7 @@ export class VelgAdminSimulationsTab extends LitElement {
     .sim-count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -77,7 +77,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
       color: var(--color-text-quiet);
@@ -176,7 +176,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 1px var(--space-2);
       border: 1px solid;
@@ -219,7 +219,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 1px solid var(--color-border);
       background: var(--color-surface);
@@ -278,7 +278,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -289,7 +289,7 @@ export class VelgAdminSimulationsTab extends LitElement {
       color: var(--color-danger);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       margin-bottom: var(--space-4);
     }

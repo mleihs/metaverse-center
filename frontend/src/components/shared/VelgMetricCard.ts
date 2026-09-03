@@ -86,7 +86,7 @@ export class VelgMetricCard extends LitElement {
       font-family: var(--font-brutalist, var(--font-mono, monospace));
       font-size: 8px;
       font-weight: var(--font-bold, 700);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-text-muted, #777);
       margin-bottom: 2px;
@@ -114,7 +114,7 @@ export class VelgMetricCard extends LitElement {
       font-size: 9px;
       color: var(--color-text-muted, #777);
       margin-top: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
     }
   `;

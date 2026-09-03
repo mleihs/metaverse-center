@@ -107,7 +107,7 @@ export class VelgIntakeSensorTile extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -126,7 +126,7 @@ export class VelgIntakeSensorTile extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_class-color);
       overflow: hidden;
       text-overflow: ellipsis;

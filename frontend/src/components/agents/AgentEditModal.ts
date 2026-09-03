@@ -46,7 +46,7 @@ export class VelgAgentEditModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -68,7 +68,7 @@ export class VelgAgentEditModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-2xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-quiet);
     }
 

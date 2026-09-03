@@ -63,7 +63,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -76,7 +76,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: background var(--transition-fast);
     }
@@ -102,7 +102,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-2) 0;
       padding-bottom: var(--space-1);
@@ -145,7 +145,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px 6px;
       border: 1px solid currentColor;
     }
@@ -168,7 +168,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-primary);
@@ -194,7 +194,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_danger);
       display: block;
       margin-bottom: var(--space-1);
@@ -223,7 +223,7 @@ export class VelgOpsQuarantinePanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 2px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-primary);

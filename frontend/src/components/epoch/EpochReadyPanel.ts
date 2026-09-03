@@ -55,17 +55,17 @@ export class VelgEpochReadyPanel extends LitElement {
 
     .countdown--danger {
       border-color: var(--_danger);
-      box-shadow: inset 0 0 12px var(--_danger-glow);
+      box-shadow: inset 0 0 calc(12px * var(--glow-strength)) var(--_danger-glow);
       animation: danger-pulse 1.5s ease-in-out infinite;
     }
 
     @keyframes danger-pulse {
       0%,
       100% {
-        box-shadow: inset 0 0 8px var(--_danger-glow);
+        box-shadow: inset 0 0 calc(8px * var(--glow-strength)) var(--_danger-glow);
       }
       50% {
-        box-shadow: inset 0 0 20px var(--_danger-glow);
+        box-shadow: inset 0 0 calc(20px * var(--glow-strength)) var(--_danger-glow);
       }
     }
 
@@ -83,7 +83,7 @@ export class VelgEpochReadyPanel extends LitElement {
       font-size: var(--text-xs, 10px);
       font-weight: 900;
       letter-spacing: 1.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_text-mid);
       flex: 1;
     }
@@ -125,7 +125,7 @@ export class VelgEpochReadyPanel extends LitElement {
       font-size: var(--text-xs, 10px);
       font-weight: 900;
       letter-spacing: 2.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_text-dim);
     }
 
@@ -152,7 +152,7 @@ export class VelgEpochReadyPanel extends LitElement {
 
     .bar__seg--ready {
       background: var(--_amber);
-      box-shadow: 0 0 6px var(--_amber-glow);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--_amber-glow);
     }
 
     .bar__seg--waiting {
@@ -167,7 +167,7 @@ export class VelgEpochReadyPanel extends LitElement {
     @keyframes seg-sweep {
       0% {
         background: var(--_amber);
-        box-shadow: 0 0 12px var(--_amber);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_amber);
       }
       100% {
         background: var(--_border-dim);
@@ -232,7 +232,7 @@ export class VelgEpochReadyPanel extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 1.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 1px 6px;
     }
 
@@ -260,7 +260,7 @@ export class VelgEpochReadyPanel extends LitElement {
       font-size: 8px;
       font-weight: 900;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 0 4px;
       color: var(--_amber);
       border: 1px solid color-mix(in srgb, var(--_amber) 30%, transparent);
@@ -286,7 +286,7 @@ export class VelgEpochReadyPanel extends LitElement {
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 2.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.2s;
       background: transparent;
@@ -319,7 +319,7 @@ export class VelgEpochReadyPanel extends LitElement {
 
     .action-btn--signal:hover:not(:disabled) {
       background: color-mix(in srgb, var(--_amber) 10%, transparent);
-      box-shadow: 0 0 16px var(--_amber-glow);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--_amber-glow);
     }
 
     .action-btn--revoke {

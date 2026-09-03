@@ -128,7 +128,7 @@ export class VelgIntakeResonanceModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--_bureau-dim);
         margin-block-end: var(--space-2);
       }
@@ -213,7 +213,7 @@ export class VelgIntakeResonanceModal extends SignalWatcher(LitElement) {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-primary);
         margin: 0;
       }

@@ -47,7 +47,7 @@ export class VelgKeyringRequest extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       margin: 0;
@@ -99,7 +99,7 @@ export class VelgKeyringRequest extends LitElement {
       color: var(--_gold-bright);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       transition: background var(--transition-fast), color var(--transition-fast);

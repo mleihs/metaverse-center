@@ -280,7 +280,7 @@ export class VelgAdminModelsTab extends LitElement {
         font-family: var(--font-brutalist, 'Courier New', monospace);
         font-weight: 900;
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 2px;
         color: var(--color-text-quiet);
       }
@@ -294,7 +294,7 @@ export class VelgAdminModelsTab extends LitElement {
         font-size: 9px;
         font-weight: 700;
         letter-spacing: 1px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         border-radius: 2px;
         background: var(--color-accent-amber);
         color: var(--color-surface-sunken);
@@ -356,7 +356,7 @@ export class VelgAdminModelsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-sm);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
         margin: 0 0 var(--space-2) 0;
@@ -411,7 +411,7 @@ export class VelgAdminModelsTab extends LitElement {
       .model-card__custom-toggle {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: var(--space-2);
         background: none;
         border: 1px solid var(--color-border);

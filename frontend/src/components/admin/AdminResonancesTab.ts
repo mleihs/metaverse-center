@@ -51,7 +51,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
     }
@@ -68,7 +68,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
       color: var(--color-info);
@@ -96,7 +96,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
       color: var(--color-text-quiet);
@@ -170,7 +170,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface);
       color: var(--color-text-quiet);
@@ -207,7 +207,7 @@ export class VelgAdminResonancesTab extends LitElement {
     .result-count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin-left: auto;
@@ -286,7 +286,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       padding: 0 var(--space-1);
       border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
@@ -347,7 +347,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 1px var(--space-2);
       border: 1px solid;
@@ -415,7 +415,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 1px solid var(--color-border);
       background: var(--color-surface);
@@ -494,7 +494,7 @@ export class VelgAdminResonancesTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-info);
       margin-bottom: var(--space-2);
@@ -549,7 +549,7 @@ export class VelgAdminResonancesTab extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -560,7 +560,7 @@ export class VelgAdminResonancesTab extends LitElement {
       color: var(--color-danger);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       margin-bottom: var(--space-4);
     }

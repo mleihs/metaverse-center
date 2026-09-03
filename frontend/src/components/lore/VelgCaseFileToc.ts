@@ -20,7 +20,7 @@ export class VelgCaseFileToc extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--color-border);
@@ -81,7 +81,7 @@ export class VelgCaseFileToc extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       opacity: 0.7;
     }

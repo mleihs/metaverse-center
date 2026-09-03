@@ -67,7 +67,7 @@ export class VelgLoreEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -161,7 +161,7 @@ export class VelgLoreEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-md);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-primary);
       padding-bottom: var(--space-3);
@@ -194,7 +194,7 @@ export class VelgLoreEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -243,7 +243,7 @@ export class VelgLoreEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       border: 1px solid var(--color-border);
       background: transparent;
@@ -280,7 +280,7 @@ export class VelgLoreEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       transition: all var(--transition-fast);

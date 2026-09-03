@@ -48,7 +48,7 @@ export class VelgHoldButton extends LitElement {
         background: var(--hold-btn-bg, transparent);
         font: inherit;
         color: var(--hold-btn-color, inherit);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: inherit;
         cursor: pointer;
         user-select: none;

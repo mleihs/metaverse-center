@@ -39,7 +39,7 @@ export class VelgEventPicker extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -84,7 +84,7 @@ export class VelgEventPicker extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       flex: 1;
@@ -113,7 +113,7 @@ export class VelgEventPicker extends LitElement {
       padding: var(--space-0-5) var(--space-1-5);
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       border: var(--border-width-thin) solid var(--color-border);
@@ -168,7 +168,7 @@ export class VelgEventPicker extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }

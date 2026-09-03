@@ -64,7 +64,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(2rem, 6vw, 3.5rem);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.22em;
       line-height: 1;
       margin: var(--space-2) 0;
@@ -74,7 +74,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
     .masthead__subtitle {
       font-family: var(--font-body);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.35em;
       color: var(--color-text-quiet);
       margin: var(--space-1) 0 var(--space-2);
@@ -102,7 +102,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       border-bottom: var(--chron-rule-thin) solid var(--color-border);
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-text-quiet);
     }
@@ -133,7 +133,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
     }
@@ -161,7 +161,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       background: var(--color-text-primary);
       color: var(--color-surface);
@@ -223,7 +223,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-text-primary);
     }
@@ -279,7 +279,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
@@ -289,7 +289,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(1.5rem, 4vw, 2.5rem);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.04em;
       line-height: 1.1;
       margin: 0 0 var(--space-2);
@@ -351,7 +351,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       border-top: var(--chron-rule-thin) solid var(--color-border-light);
       font-family: var(--font-brutalist);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       flex-wrap: wrap;
@@ -379,7 +379,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.18em;
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-3);
@@ -445,7 +445,7 @@ export class VelgChronicleView extends PaginatedLoaderMixin(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
       line-height: 1.3;
       min-width: 0;

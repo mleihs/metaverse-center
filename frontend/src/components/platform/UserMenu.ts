@@ -4,6 +4,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
+import '../shared/VelgEditionSwitch.js';
 import { navigate } from '../../utils/navigation.js';
 
 @localized()
@@ -23,7 +24,7 @@ export class VelgUserMenu extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 1px solid var(--color-border);
       color: var(--color-text-tertiary);
@@ -79,6 +80,13 @@ export class VelgUserMenu extends SignalWatcher(LitElement) {
     .dropdown__divider {
       border-top: 1px solid var(--color-separator);
       margin: var(--space-1) 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   `;
 
@@ -148,6 +156,8 @@ export class VelgUserMenu extends SignalWatcher(LitElement) {
         <button class="dropdown__item" role="menuitem" @click=${this._handleProfile}>
           ${msg('Personnel File')}
         </button>
+        <div class="dropdown__divider"></div>
+        <velg-edition-switch context="menu"></velg-edition-switch>
         <div class="dropdown__divider"></div>
         <button class="dropdown__item" role="menuitem" @click=${this._handleSignOut}>
           ${msg('Sign Out')}

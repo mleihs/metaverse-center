@@ -109,6 +109,19 @@
   --color-surface-header: #0a0a0a;
   --color-surface-inverse: #ffffff;
 
+  /* === COUNTER-BLOCK ===
+   * The one panel that reverses the page's polarity to draw a hard edge — the
+   * Atlas session log, a footer CTA. On the dark chrome there is nothing to
+   * reverse against, so it is the raised surface under ordinary ink; the paper
+   * skin fills it with #24332d and flips the ink.
+   *
+   * Distinct from --color-surface-inverse above, which is a platform constant
+   * used as a white camera flash and must stay one. ThemeService writes this
+   * pair on every themed host (applyConfig step 2b) and never writes one half
+   * without the other. */
+  --color-surface-contrast: var(--color-surface-raised);
+  --color-text-on-contrast: var(--color-text-primary);
+
   /* === TEXT COLORS === */
   --color-text-primary: #e5e5e5;
   --color-text-secondary: #a0a0a0;
@@ -160,6 +173,57 @@
   --color-border-focus: var(--color-primary);
   --color-border-danger: var(--color-danger);
   --color-separator: color-mix(in srgb, var(--color-border) 50%, transparent);
+
+  /* === INK OVERLAYS ===
+   * Replace a hard `rgba(255, 255, 255, X)` panel tint/scanline with one
+   * derived from --color-text-primary. On the dark chrome white text ON a
+   * dark surface IS the ink, so this is pixel-identical to the rgba it
+   * replaces; on a skin with dark ink on a light ground (Atlas) the same
+   * three tokens correctly darken instead of lighten.
+   *
+   * Same lazy-substitution caveat as --color-shadow: a var() inside a custom
+   * property resolves where the property is DECLARED. ThemeService.applyConfig
+   * step 7 (granularityPairs) re-declares these on every themed host for that
+   * reason — see ThemeService.ts and --color-text-quiet above for the
+   * measurement that proved it. */
+  --color-overlay-ink: color-mix(in srgb, var(--color-text-primary) 4%, transparent);
+  --color-overlay-ink-strong: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  --color-scanline: color-mix(in srgb, var(--color-text-primary) 1.5%, transparent);
+
+  /* A MARK, NOT A VEIL — the fourth step, and the only one you are meant to see.
+   *
+   * The three above are atmosphere: a wash at 1.5–8% that tints a surface
+   * without ever being looked at directly. This one is the opposite. It is the
+   * glint along the top of a filled bar, the cap at the end of a progress
+   * track, the outline of the viewport on the minimap: a deliberate mark on top
+   * of a FILL, and if you cannot see it, it has failed.
+   *
+   * Why it is a token at all: all three were `rgba(255,255,255,0.15…0.4)`, and
+   * white is only the right answer while the ground is black. On the paper skin
+   * a white mark on a coloured bar washes out; the mark has to be ink there.
+   * Mixing from `--color-text-primary`, exactly as the three above do, flips it
+   * with the skin and nobody has to remember to.
+   *
+   * WHY 40% AND NOT 30%: `color-mix(… X%, transparent)` can only ever dilute,
+   * so the token has to sit at the STRONGEST of its uses and the weaker ones
+   * step down from it. Anchoring at the middle value would have left the 40%
+   * cap with no way to reach its own strength except by rebuilding the token by
+   * hand at the call site — which is the duplication the token exists to
+   * prevent. The dilution factors are written at each of the three sites. */
+  --color-overlay-ink-bright: color-mix(in srgb, var(--color-text-primary) 40%, transparent);
+
+  /* DAS VERMESSUNGSRASTER.
+   *
+   * Nicht Atmosphäre und keine Markierung, sondern die Linien, auf denen eine
+   * Karte gezeichnet ist: ein Gitter über dem Seitengrund,
+   * `linear-gradient(var(--color-grid) 1px, transparent 1px)` in beiden
+   * Richtungen, 96 px am Schreibtisch / 64 px am Tablet / 48 px am Telefon.
+   *
+   * 12 % steht bewusst über den 8 % von -ink-strong: ein Flächenton darf man
+   * nicht sehen, ein Raster soll man sehen — nur nicht lesen. Wie die drei
+   * darüber aus `--color-text-primary` gemischt, also hell auf Phosphor und
+   * Tinte auf Papier. */
+  --color-grid: color-mix(in srgb, var(--color-text-primary) 12%, transparent);
 
   /* === PLATFORM ACCENT (non-themeable chrome — always amber) === */
   --color-accent-amber: #f59e0b;

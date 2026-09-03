@@ -123,7 +123,7 @@ export class VelgMapGraph3D extends LitElement {
 			font-family: var(--font-brutalist, monospace);
 			font-size: 10px;
 			font-weight: 700;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			padding: 6px 12px;
 			cursor: pointer;
@@ -146,7 +146,7 @@ export class VelgMapGraph3D extends LitElement {
 			z-index: var(--z-raised);
 			display: none;
 			background: rgba(10, 10, 10, 0.92);
-			border: 1px solid rgba(255, 255, 255, 0.12);
+			border: 1px solid var(--color-separator);
 			padding: 10px 14px;
 			font-family: var(--font-mono, monospace);
 			font-size: 11px;
@@ -162,7 +162,7 @@ export class VelgMapGraph3D extends LitElement {
 		.tooltip__name {
 			font-weight: 900;
 			font-size: 12px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			margin-bottom: 6px;
 		}
@@ -176,7 +176,7 @@ export class VelgMapGraph3D extends LitElement {
 		.tooltip__phase {
 			font-weight: 700;
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.1em;
 			margin-top: 6px;
 		}
@@ -191,7 +191,7 @@ export class VelgMapGraph3D extends LitElement {
 
 		.tooltip__dim-label {
 			width: 56px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.05em;
 			color: var(--color-text-quiet);
 		}
@@ -199,7 +199,7 @@ export class VelgMapGraph3D extends LitElement {
 		.tooltip__dim-track {
 			flex: 1;
 			height: 3px;
-			background: rgba(255, 255, 255, 0.08);
+			background: var(--color-overlay-ink-strong);
 		}
 
 		.tooltip__dim-fill {

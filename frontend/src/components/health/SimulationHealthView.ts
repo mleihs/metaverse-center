@@ -148,7 +148,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-2xl);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         margin: 0 0 var(--space-2);
       }
@@ -157,7 +157,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-lg);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -220,7 +220,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-base);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         margin: 0;
       }
@@ -273,7 +273,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         min-width: 60px;
         text-align: right;
@@ -332,7 +332,7 @@ export class VelgSimulationHealthView extends LitElement {
         color: var(--color-success);
         border-color: var(--color-success);
         background: color-mix(in srgb, var(--color-success) 12%, transparent);
-        box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 30%, transparent);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 30%, transparent);
         animation: shield-glow 2s ease-in-out infinite;
       }
 
@@ -343,8 +343,8 @@ export class VelgSimulationHealthView extends LitElement {
       }
 
       @keyframes shield-glow {
-        0%, 100% { box-shadow: 0 0 6px color-mix(in srgb, var(--color-success) 25%, transparent); }
-        50% { box-shadow: 0 0 14px color-mix(in srgb, var(--color-success) 50%, transparent); }
+        0%, 100% { box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 25%, transparent); }
+        50% { box-shadow: 0 0 calc(14px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 50%, transparent); }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -367,7 +367,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         white-space: nowrap;
       }
@@ -473,7 +473,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -501,7 +501,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-danger);
@@ -561,7 +561,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         min-width: 50px;
         text-align: right;
@@ -636,7 +636,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-body);
         font-size: var(--text-xs);
         color: var(--color-text-secondary);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -720,7 +720,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--color-text-quiet);
         margin-bottom: var(--space-1);
@@ -806,7 +806,7 @@ export class VelgSimulationHealthView extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-text-secondary);

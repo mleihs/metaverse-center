@@ -89,7 +89,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       cursor: pointer;
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       transition: color var(--transition-fast), background var(--transition-fast);
     }
@@ -152,7 +152,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-inverse);
       background: var(--color-primary);
@@ -222,7 +222,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -263,7 +263,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--_group-label-color);
       user-select: none;
@@ -330,7 +330,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       width: 8px;
       height: 8px;
       background: var(--color-primary);
-      box-shadow: 0 0 6px var(--color-primary-glow, rgba(245, 158, 11, 0.4));
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-primary-glow, rgba(245, 158, 11, 0.4));
       flex-shrink: 0;
     }
 
@@ -385,7 +385,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       overflow: hidden;
@@ -479,7 +479,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-0-5) var(--space-1-5);
       background: var(--color-warning-bg);
@@ -505,7 +505,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
       color: var(--color-text-quiet);
@@ -531,7 +531,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       background: var(--_rename-bg);

@@ -70,6 +70,26 @@ function findViolations(text) {
     const start = text.indexOf('css`', i);
     if (start === -1) break;
 
+    /*
+     * "css" has to BE the tag, not the end of a longer word.
+     *
+     * A doc comment that names a stylesheet — `_borders.css` — writes the same
+     * four characters, and the scan then read the whole rest of the file as if
+     * it were inside a styles block. Measured on 03.09.2026: one such line at
+     * the top of `theme-presets.ts` made the gate report eight violations in
+     * ordinary prose comments, none of them real, in a file with no css
+     * template at all. A gate that fires on prose gets read as noise, and the
+     * day it fires on a real one it is read as noise too.
+     *
+     * A tagged template's tag is a whole identifier, so the character before
+     * it is never a word character, a dot or a hyphen.
+     */
+    const before = start === 0 ? '' : text[start - 1];
+    if (/[\w.$-]/.test(before)) {
+      i = start + 4;
+      continue;
+    }
+
     let j = start + 4;
     let inBlockComment = false;
     let inLineComment = false;

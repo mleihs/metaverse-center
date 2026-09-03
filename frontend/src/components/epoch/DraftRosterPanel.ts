@@ -109,7 +109,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .slot__label {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-surface-raised);
       user-select: none;
@@ -120,7 +120,7 @@ export class VelgDraftRosterPanel extends LitElement {
       border-style: solid;
       border-color: var(--color-epoch-accent);
       background: color-mix(in srgb, var(--color-epoch-accent) 6%, var(--color-surface));
-      box-shadow: 0 0 20px var(--color-primary-glow);
+      box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--color-primary-glow);
       transform: scale(1.03);
     }
 
@@ -210,7 +210,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .team-bar__label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--card-text-dim, var(--color-text-muted));
       width: 24px;
@@ -256,7 +256,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .meta-stat__label {
       font-family: var(--font-mono, monospace);
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -265,7 +265,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .meta-stat__value--strong { color: var(--color-success); }
@@ -305,7 +305,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .counter-pip--filled {
       background: var(--color-epoch-accent);
       border-color: var(--color-epoch-accent);
-      box-shadow: 0 0 6px var(--color-primary-border);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-primary-border);
       animation: pip-flip 300ms var(--ease-spring);
     }
 
@@ -318,7 +318,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .counter-text {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -414,7 +414,7 @@ export class VelgDraftRosterPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 2px solid;
       cursor: pointer;
@@ -430,7 +430,7 @@ export class VelgDraftRosterPanel extends LitElement {
     .footer__btn--lock:hover:not(:disabled) {
       transform: translate(-2px, -2px);
       box-shadow: 4px 4px 0 var(--color-surface-raised),
-        0 0 20px color-mix(in srgb, var(--color-epoch-accent) 30%, transparent);
+        0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-epoch-accent) 30%, transparent);
     }
 
     .footer__btn--lock:active:not(:disabled) {

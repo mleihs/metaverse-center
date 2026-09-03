@@ -39,8 +39,8 @@ export class AscendancyAura extends LitElement {
       position: absolute;
       inset: 0;
       box-shadow:
-        inset 0 0 120px rgba(245, 158, 11, 0.04),
-        inset 0 0 40px rgba(245, 158, 11, 0.02);
+        inset 0 0 calc(120px * var(--glow-strength)) rgba(245, 158, 11, 0.04),
+        inset 0 0 calc(40px * var(--glow-strength)) rgba(245, 158, 11, 0.02);
       border-top: 2px solid var(--color-accent-amber);
       border-bottom: 1px solid rgba(245, 158, 11, 0.15);
     }
@@ -148,11 +148,11 @@ export class AscendancyAura extends LitElement {
       font-size: var(--text-xs, 12px);
       font-weight: 900;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       background: linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(20, 15, 5, 0.95));
       border: 1px solid var(--color-accent-amber);
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25), inset 0 0 12px rgba(245, 158, 11, 0.05);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.25), inset 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.05);
       animation: badge-breathe 4s ease-in-out infinite;
       transform: translateY(-4px);
       opacity: 0;
@@ -166,7 +166,7 @@ export class AscendancyAura extends LitElement {
       height: 14px;
       border-radius: 50%;
       background: var(--color-accent-amber);
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.5);
       animation: core-pulse 3s ease-in-out infinite;
     }
 
@@ -180,10 +180,10 @@ export class AscendancyAura extends LitElement {
     @keyframes badge-breathe {
       0%,
       100% {
-        box-shadow: 0 0 8px rgba(245, 158, 11, 0.2), inset 0 0 8px rgba(245, 158, 11, 0.03);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.2), inset 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.03);
       }
       50% {
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.35), inset 0 0 16px rgba(245, 158, 11, 0.06);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.35), inset 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.06);
       }
     }
 
@@ -225,7 +225,7 @@ export class AscendancyAura extends LitElement {
         opacity: 1;
         transform: translateY(0);
         animation: none;
-        box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
       }
 
       .badge__icon {

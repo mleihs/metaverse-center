@@ -78,7 +78,7 @@ export class DungeonContentTable extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         border: 1px solid var(--color-border);
         background: transparent;
@@ -126,7 +126,7 @@ export class DungeonContentTable extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
         text-align: left;
@@ -185,7 +185,7 @@ export class DungeonContentTable extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.04em;
         padding: 1px var(--space-2);
         white-space: nowrap;
@@ -214,7 +214,7 @@ export class DungeonContentTable extends LitElement {
         padding: var(--space-8);
         color: var(--color-text-quiet);
         font-family: var(--font-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
       }
 
@@ -562,7 +562,7 @@ export class DungeonContentTable extends LitElement {
     }
 
     if (key === 'threat_level') {
-      return html`<span class="cell-meta" style="text-transform: uppercase">${String(value ?? '')}</span>`;
+      return html`<span class="cell-meta" style="text-transform: var(--label-transform)">${String(value ?? '')}</span>`;
     }
 
     return html`<span class="cell-meta">${String(value ?? '')}</span>`;

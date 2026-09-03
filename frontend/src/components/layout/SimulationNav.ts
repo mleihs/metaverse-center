@@ -159,7 +159,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       color: var(--color-text-inverse);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -230,7 +230,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
       line-height: var(--leading-normal);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--_register-tracking);
       color: var(--color-text-quiet);
       background: transparent;
@@ -338,7 +338,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: var(--_register-tracking);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_context-text);
       white-space: nowrap;
     }
@@ -461,7 +461,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-accent-amber-readable);
       }
@@ -485,7 +485,7 @@ export class VelgSimulationNav extends SignalWatcher(LitElement) {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-quiet);
         text-decoration: none;

@@ -44,14 +44,14 @@ export class VelgEnemyCard extends LitElement {
       @media (prefers-reduced-motion: no-preference) {
         .frame:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 8px 32px color-mix(in srgb, var(--color-shadow) 40%, transparent);
         }
       }
 
       :host([tier="boss"]) .frame {
         border-width: 2px;
         border-color: var(--_accent);
-        box-shadow: 0 0 24px var(--_accent-glow);
+        box-shadow: 0 0 calc(24px * var(--glow-strength)) var(--_accent-glow);
       }
 
       :host([tier="elite"]) .frame {

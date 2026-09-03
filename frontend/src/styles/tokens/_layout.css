@@ -54,6 +54,18 @@
   --stage-measure: 1920px;
   --stage-gutter: var(--space-12); /* 48px */
   --stage-type-scale: 1;
+
+  /* === VERMESSUNGSRASTER ==================================================
+     Die Teilung des Gitters, das der Atlas-Skin hinter seine Blaetter legt
+     (Farbe: --color-grid in _colors.css). Es ist ein LAENGENMASS und gehoert
+     deshalb hierher, nicht zu den Farben: derselbe Wert traegt die
+     Rasterlinien der Landing, die Overlays auf den Bannern des Dashboards und
+     die Blattkanten.
+
+     Die Stufen kommen aus responsive-spec.md und sind nicht frei gewaehlt:
+     bei 96 px liegen auf einem Telefon zu wenige Felder, um als Raster zu
+     lesen, und auf 4K zu viele, um als Papier zu lesen. */
+  --grid-size: 96px;
 }
 
 @media (min-width: 1920px) {
@@ -65,6 +77,25 @@
 @media (min-width: 2560px) {
   :root {
     --stage-type-scale: 1.15;
+    /* Das Mass waechst mit, aber nicht unbegrenzt: eine Zeile Fliesstext ueber
+       2560 px liest niemand. 2240 laesst den Rand wachsen statt der Zeile. */
+    --stage-measure: 2240px;
+    --grid-size: 128px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --grid-size: 64px;
+  }
+}
+
+/* Zwei Zwischenstufen, die es vorher nicht gab: Tablet-Hochformat und
+   darunter. Ohne sie stand der 48-px-Rand der Buehne auch auf einem
+   768-px-Bildschirm, wo er ein Achtel der Breite frisst. */
+@media (max-width: 768px) {
+  :root {
+    --stage-gutter: var(--space-6); /* 24px */
   }
 }
 
@@ -73,11 +104,13 @@
   :root {
     --content-padding: var(--space-4);   /* 16px, was 24px */
     --header-height: 52px;               /* 52px, was 60px */
+    --grid-size: 48px;
   }
 }
 
 @media (max-width: 400px) {
   :root {
     --content-padding: var(--space-3);   /* 12px */
+    --stage-gutter: var(--space-4);      /* 16px */
   }
 }

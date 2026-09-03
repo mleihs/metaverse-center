@@ -61,7 +61,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       padding: 3px 7px;
       color: var(--color-surface);
@@ -117,10 +117,9 @@ export class VelgDevAccountSwitcher extends LitElement {
       background: var(--color-surface-sunken);
       border: 1px solid var(--color-border);
       border-top: 2px solid var(--color-primary);
-      box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 1px color-mix(in srgb, var(--color-primary) 30%, transparent),
-        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      box-shadow: 0 12px 40px color-mix(in srgb, var(--color-shadow) 70%, transparent),
+        0 0 calc(1px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 30%, transparent),
+        inset 0 1px 0 var(--color-overlay-ink);
 
       display: flex;
       flex-direction: column;
@@ -161,7 +160,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       font-weight: 600;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-muted);
     }
@@ -199,7 +198,7 @@ export class VelgDevAccountSwitcher extends LitElement {
 
     .search__input:focus {
       border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 10%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 10%, transparent);
     }
 
     .search__icon {
@@ -316,7 +315,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 7px;
       font-weight: 700;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: 1px 4px;
       line-height: 1.3;
@@ -337,7 +336,7 @@ export class VelgDevAccountSwitcher extends LitElement {
 
     .user__role--user {
       color: var(--color-text-muted);
-      background: rgba(255, 255, 255, 0.03);
+      background: var(--color-overlay-ink);
       border: 1px solid var(--color-border);
     }
 
@@ -352,7 +351,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       font-size: 10px;
       color: var(--color-text-muted);
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .loading::after {
@@ -405,7 +404,7 @@ export class VelgDevAccountSwitcher extends LitElement {
       display: flex;
       gap: 6px;
       align-items: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--color-shadow) 60%, transparent);
       animation: panel-enter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
       transform-origin: top right;
     }
@@ -433,7 +432,7 @@ export class VelgDevAccountSwitcher extends LitElement {
     .gate__btn {
       font-family: var(--font-brutalist);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 4px 10px;
       border: 1px solid var(--color-primary);

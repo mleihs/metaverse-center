@@ -74,7 +74,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-text-quiet);
@@ -124,7 +124,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         margin: 0 0 var(--space-2) 0;
@@ -278,7 +278,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         white-space: nowrap;
@@ -383,7 +383,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
         margin: 0;
@@ -404,7 +404,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 9px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         padding: 2px var(--space-2);
         white-space: nowrap;
@@ -453,7 +453,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: color-mix(in srgb, var(--_admin-accent) 15%, transparent);
         color: var(--_admin-accent);
@@ -467,7 +467,7 @@ export class VelgAdminDungeonsTab extends LitElement {
 
       .btn-save:hover:not(:disabled) {
         background: color-mix(in srgb, var(--_admin-accent) 25%, transparent);
-        box-shadow: 0 0 8px color-mix(in srgb, var(--_admin-accent) 20%, transparent);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--_admin-accent) 20%, transparent);
       }
 
       .btn-save:disabled {
@@ -480,7 +480,7 @@ export class VelgAdminDungeonsTab extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: transparent;
         color: var(--color-text-quiet);

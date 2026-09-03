@@ -47,13 +47,13 @@ export class VelgMissionCard extends LitElement {
 		.card:hover:not(.card--disabled) {
 			transform: translateY(-4px);
 			box-shadow: 0 8px 24px var(--_sh-heavy),
-				0 0 16px color-mix(in srgb, var(--mc-color) 25%, transparent);
+				0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--mc-color) 25%, transparent);
 		}
 
 		.card--selected {
 			border-color: var(--color-epoch-accent);
-			box-shadow: 0 0 20px var(--color-primary-border),
-				inset 0 0 20px var(--_select-inset);
+			box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--color-primary-border),
+				inset 0 0 calc(20px * var(--glow-strength)) var(--_select-inset);
 		}
 
 		.card--disabled {
@@ -148,7 +148,7 @@ export class VelgMissionCard extends LitElement {
 			font-family: var(--font-brutalist, 'Oswald', sans-serif);
 			font-weight: 900;
 			font-size: 11px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.1em;
 			color: var(--color-text-primary);
 			line-height: 1;
@@ -179,7 +179,7 @@ export class VelgMissionCard extends LitElement {
 			margin-top: 2px;
 			font-size: 7px;
 			color: var(--color-text-quiet);
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.05em;
 		}
 
@@ -192,7 +192,7 @@ export class VelgMissionCard extends LitElement {
 			font-family: var(--font-brutalist, 'Oswald', sans-serif);
 			font-weight: 900;
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.12em;
 			color: var(--color-danger);
 			border: 2px solid var(--color-danger);
@@ -209,10 +209,10 @@ export class VelgMissionCard extends LitElement {
 
 		@keyframes card-glow {
 			from {
-				box-shadow: 0 0 4px color-mix(in srgb, var(--mc-color) 15%, transparent);
+				box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--mc-color) 15%, transparent);
 			}
 			to {
-				box-shadow: 0 0 12px color-mix(in srgb, var(--mc-color) 30%, transparent);
+				box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--mc-color) 30%, transparent);
 			}
 		}
 

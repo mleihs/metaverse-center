@@ -39,7 +39,7 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
     .wallet-badge:hover {
       background: rgba(245, 158, 11, 0.14);
       border-color: var(--color-accent-amber);
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.15);
     }
 
     .wallet-badge:focus-visible {

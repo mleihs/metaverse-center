@@ -66,7 +66,7 @@ export class VelgAlphaStamp extends LitElement {
       font-weight: 900;
       font-size: 11px;
       letter-spacing: 0.18em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       white-space: nowrap;
       opacity: 0;
       transform: rotate(-4deg);

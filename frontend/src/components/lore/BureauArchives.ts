@@ -38,7 +38,7 @@ export class VelgBureauArchives extends LitElement {
       padding: 0 var(--space-6);
       font-family: var(--font-mono);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       gap: var(--space-4);
@@ -105,7 +105,7 @@ export class VelgBureauArchives extends LitElement {
     .chapter-nav__item {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       cursor: pointer;
@@ -155,7 +155,7 @@ export class VelgBureauArchives extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-lg);
       font-weight: var(--font-black);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
     }
@@ -201,7 +201,7 @@ export class VelgBureauArchives extends LitElement {
       display: inline-block;
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-primary);
       border: 1px solid var(--color-warning-glow);
@@ -261,7 +261,7 @@ export class VelgBureauArchives extends LitElement {
     .dossier__evidence-meta {
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-top: var(--space-2);
       letter-spacing: var(--tracking-wider);
@@ -273,7 +273,7 @@ export class VelgBureauArchives extends LitElement {
       border-top: 1px solid var(--color-border-light);
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
       color: var(--color-text-quiet);
       display: flex;
@@ -323,7 +323,7 @@ export class VelgBureauArchives extends LitElement {
     .transmission__label {
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-primary);
       margin-bottom: var(--space-3);
@@ -340,7 +340,7 @@ export class VelgBureauArchives extends LitElement {
     .transmission__attribution {
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
       color: var(--color-text-quiet);
       margin-top: var(--space-3);
@@ -376,7 +376,7 @@ export class VelgBureauArchives extends LitElement {
       font-size: var(--text-xs);
       color: color-mix(in srgb, var(--color-text-muted) 70%, var(--color-text-primary));
       letter-spacing: var(--tracking-wider);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       transition: color var(--transition-normal);
     }
 

@@ -22,10 +22,10 @@ export class VelgObjektankerCard extends LitElement {
 
       .vitrine {
         padding: var(--space-5, 20px);
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--color-overlay-ink);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--color-overlay-ink-strong);
         border-radius: 8px;
         cursor: pointer;
         transition: border-color 0.3s var(--_ease-dramatic);
@@ -93,7 +93,7 @@ export class VelgObjektankerCard extends LitElement {
       .phase--active::before {
         background: var(--_accent);
         border-color: var(--_accent);
-        box-shadow: 0 0 8px var(--_accent-glow);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--_accent-glow);
       }
 
       .phase__label {

@@ -23,7 +23,7 @@ export const viewHeaderStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-2xl);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     margin: 0;
   }
@@ -37,7 +37,7 @@ export const viewHeaderStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     background: var(--color-primary);
     color: var(--color-text-inverse);
@@ -71,7 +71,7 @@ export const viewHeaderStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-secondary);
   }

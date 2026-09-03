@@ -35,8 +35,8 @@ export class VelgAuthorCard extends LitElement {
 
       .card {
         padding: var(--space-4, 16px) var(--space-5, 20px);
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink);
+        border: 1px solid var(--color-overlay-ink-strong);
         border-radius: 6px;
         transition: transform 0.3s var(--_ease-dramatic),
           border-color 0.3s var(--_ease-dramatic);
@@ -75,7 +75,7 @@ export class VelgAuthorCard extends LitElement {
 
       .divider {
         height: 1px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink-strong);
         margin-bottom: 8px;
       }
 

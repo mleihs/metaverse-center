@@ -134,7 +134,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-sunken);
       border: var(--border-width-thin) solid var(--color-border-light);
@@ -161,7 +161,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       flex-shrink: 0;
@@ -185,7 +185,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       text-align: center;
@@ -197,7 +197,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       padding: var(--space-3);
@@ -208,7 +208,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-1);
@@ -241,7 +241,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-inverse);
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -304,7 +304,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       text-shadow: none;
@@ -333,7 +333,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       text-align: center;
@@ -369,7 +369,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       flex: 1;
       min-width: 0;
@@ -416,7 +416,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       transition: color var(--duration-fast, 100ms),
@@ -457,7 +457,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       flex-shrink: 0;
     }
@@ -570,7 +570,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       overflow: hidden;
@@ -584,7 +584,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       text-align: center;
@@ -612,7 +612,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       flex: 1;
       min-width: 0;
@@ -624,7 +624,7 @@ export class VelgEventDetailsPanel extends LitElement {
     .panel__zone-link-type {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       padding: var(--space-0-5) var(--space-1-5);
@@ -662,7 +662,7 @@ export class VelgEventDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-danger);
     }

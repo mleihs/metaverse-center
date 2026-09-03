@@ -29,7 +29,7 @@ export class VelgErrorState extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-danger);
       max-width: 480px;
@@ -43,7 +43,7 @@ export class VelgErrorState extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-surface-raised);
       color: var(--color-text-primary);

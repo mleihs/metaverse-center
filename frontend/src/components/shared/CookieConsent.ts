@@ -43,7 +43,7 @@ export class VelgCookieConsent extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1-5) var(--space-4);
       border: var(--border-default);

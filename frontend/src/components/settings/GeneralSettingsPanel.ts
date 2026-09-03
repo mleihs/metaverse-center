@@ -53,7 +53,7 @@ export class VelgGeneralSettingsPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-base);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-danger);
         margin: 0;

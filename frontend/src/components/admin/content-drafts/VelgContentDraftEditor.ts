@@ -93,7 +93,7 @@ export class VelgContentDraftEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-md);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-widest);
       margin: 0 0 var(--space-1);
     }
@@ -117,7 +117,7 @@ export class VelgContentDraftEditor extends LitElement {
       margin-top: var(--space-1-5);
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 4px 10px;
       background: transparent;
@@ -148,7 +148,7 @@ export class VelgContentDraftEditor extends LitElement {
       border-bottom: 1px solid var(--color-border);
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       display: flex;
@@ -160,7 +160,7 @@ export class VelgContentDraftEditor extends LitElement {
     .add-btn {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 2px 6px;
       background: transparent;
@@ -220,7 +220,7 @@ export class VelgContentDraftEditor extends LitElement {
     .editor__label {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
     }
@@ -279,7 +279,7 @@ export class VelgContentDraftEditor extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-4);
       background: transparent;
@@ -310,7 +310,7 @@ export class VelgContentDraftEditor extends LitElement {
     .field__label {
       font-family: var(--font-brutalist);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
     }

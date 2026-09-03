@@ -164,8 +164,8 @@ export class AgentMoodPanel extends LitElement {
           0deg,
           transparent,
           transparent 2px,
-          rgba(255, 255, 255, 0.015) 2px,
-          rgba(255, 255, 255, 0.015) 4px
+          var(--color-scanline) 2px,
+          var(--color-scanline) 4px
         );
         pointer-events: none;
         z-index: 1;
@@ -179,7 +179,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-primary);
         opacity: 0.6;
@@ -209,7 +209,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         text-align: center;
@@ -221,7 +221,7 @@ export class AgentMoodPanel extends LitElement {
       .gauge__svg {
         width: ${GAUGE_SIZE}px;
         height: ${GAUGE_SIZE}px;
-        filter: drop-shadow(0 0 8px color-mix(in srgb, var(--_gauge-color) 25%, transparent));
+        filter: drop-shadow(0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--_gauge-color) 25%, transparent));
       }
 
       .gauge__track {
@@ -259,7 +259,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--_text-micro);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         fill: var(--color-text-secondary);
         text-anchor: middle;
@@ -269,7 +269,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--_gauge-color);
         text-align: center;
@@ -279,7 +279,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--_text-micro);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-quiet);
         text-align: center;
@@ -307,7 +307,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
       }
@@ -342,7 +342,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--_text-micro);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         color: var(--color-text-quiet);
         margin-top: var(--space-1);
@@ -355,8 +355,8 @@ export class AgentMoodPanel extends LitElement {
       }
 
       @keyframes stress-pulse {
-        0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--color-danger) 30%, transparent); }
-        50% { box-shadow: 0 0 12px color-mix(in srgb, var(--color-danger) 50%, transparent); }
+        0%, 100% { box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 30%, transparent); }
+        50% { box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 50%, transparent); }
       }
 
       /* ── Needs Radar (SVG) ────────────────────────────── */
@@ -372,7 +372,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         text-align: center;
@@ -418,7 +418,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest);
         fill: var(--color-text-primary);
         text-anchor: middle;
@@ -456,7 +456,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--_text-micro);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-secondary);
         line-height: 1;
@@ -486,7 +486,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-black);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         border-bottom: var(--border-width-thin) solid var(--color-border-light);
@@ -537,7 +537,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-primary);
         white-space: nowrap;
@@ -613,7 +613,7 @@ export class AgentMoodPanel extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-text-quiet);
         animation: loading-pulse 1.5s ease-in-out infinite;

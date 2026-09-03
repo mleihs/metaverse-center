@@ -200,7 +200,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         align-items: center;
         font-family: var(--font-brutalist);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         color: var(--color-text-quiet);
       }
@@ -272,7 +272,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.04em;
         padding: var(--space-2) var(--space-4);
         background: transparent;
@@ -345,7 +345,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.04em;
         color: var(--color-text-primary);
       }
@@ -401,7 +401,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.04em;
         padding: var(--space-2) var(--space-4);
         background: transparent;
@@ -452,7 +452,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       .override-card__field-label {
         font-family: var(--font-brutalist);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         color: var(--color-text-quiet);
       }
@@ -508,7 +508,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
       .override-toggle-label {
         font-family: var(--font-brutalist);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         color: var(--color-text-quiet);
       }
@@ -531,7 +531,7 @@ export class VelgAdminHeartbeatTab extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         color: var(--color-text-quiet);
         text-align: left;

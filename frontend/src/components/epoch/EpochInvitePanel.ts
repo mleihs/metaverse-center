@@ -86,7 +86,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--text-dim);
     }
 
@@ -135,7 +135,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s;
@@ -143,7 +143,7 @@ export class VelgEpochInvitePanel extends LitElement {
 
     .send-btn:hover:not(:disabled) {
       background: var(--color-warning-border);
-      box-shadow: 0 0 12px var(--amber-glow);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--amber-glow);
     }
 
     .send-btn:active:not(:disabled) {
@@ -172,7 +172,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-weight: 900;
       letter-spacing: 2px;
       color: var(--amber-dim);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       opacity: 0.6;
     }
 
@@ -205,7 +205,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -275,7 +275,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       white-space: nowrap;
     }
 
@@ -316,7 +316,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -334,7 +334,7 @@ export class VelgEpochInvitePanel extends LitElement {
       font-size: 11px;
       letter-spacing: 2px;
       color: var(--text-dim);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
   `;
 

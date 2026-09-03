@@ -61,7 +61,7 @@ export class VelgForgeDarkroom extends LitElement {
       .darkroom__section-header {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-icon);
         padding-bottom: var(--space-3);
@@ -84,7 +84,7 @@ export class VelgForgeDarkroom extends LitElement {
       .controls__title {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-success);
         margin: 0;
@@ -110,7 +110,7 @@ export class VelgForgeDarkroom extends LitElement {
         display: flex;
         align-items: baseline;
         gap: var(--space-1);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.05em;
         color: var(--color-text-tertiary);
       }
@@ -141,7 +141,7 @@ export class VelgForgeDarkroom extends LitElement {
       .color-field input[type='color']:hover {
         transform: scale(1.15);
         border-color: var(--color-icon);
-        box-shadow: 0 0 8px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-text-primary) 10%, transparent);
       }
 
       .color-field input[type='color']:focus {
@@ -171,7 +171,7 @@ export class VelgForgeDarkroom extends LitElement {
       .chip-group__label {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.05em;
         color: var(--color-text-tertiary);
       }
@@ -206,7 +206,7 @@ export class VelgForgeDarkroom extends LitElement {
       .chip[aria-pressed='true'] {
         border-color: var(--color-success);
         color: var(--color-success);
-        box-shadow: 0 0 6px var(--color-success-glow);
+        box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success-glow);
       }
 
       .chip__glyph {
@@ -237,7 +237,7 @@ export class VelgForgeDarkroom extends LitElement {
       .advanced__summary {
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-readout);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-tertiary);
         cursor: pointer;
@@ -278,7 +278,7 @@ export class VelgForgeDarkroom extends LitElement {
       .preview-pane__title {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-icon);
       }
@@ -312,7 +312,7 @@ export class VelgForgeDarkroom extends LitElement {
       .preview-heading {
         font-weight: 700;
         font-size: var(--text-xl);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.08em;
         margin: var(--space-4) 0 0;
       }
@@ -323,7 +323,7 @@ export class VelgForgeDarkroom extends LitElement {
         padding: var(--space-2) var(--space-4);
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         cursor: default;
         margin-top: var(--space-2);
@@ -354,7 +354,7 @@ export class VelgForgeDarkroom extends LitElement {
         font-size: 11px;
         color: var(--color-text-tertiary);
         letter-spacing: 0.08em;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-sunken);
         border: 1px solid var(--color-border-light);
@@ -803,11 +803,11 @@ export class VelgForgeDarkroom extends LitElement {
 
           <div class="chip-grid">
             ${this._renderChipSelector('shadow_style', msg('Shadow'), ['offset', 'blur', 'glow', 'none'])}
-            ${this._renderChipSelector('hover_effect', msg('Hover'), ['translate', 'scale', 'glow'])}
+            ${this._renderChipSelector('hover_effect', msg('Hover'), ['translate', 'scale', 'glow', 'lift'])}
             ${this._renderChipSelector('card_frame_texture', msg('Card Texture'), ['none', 'filigree', 'circuits', 'scanlines', 'rivets', 'illumination'])}
-            ${this._renderChipSelector('card_frame_nameplate', msg('Nameplate'), ['terminal', 'banner', 'readout', 'plate', 'cartouche'])}
+            ${this._renderChipSelector('card_frame_nameplate', msg('Nameplate'), ['plain', 'terminal', 'banner', 'readout', 'plate', 'cartouche'])}
             ${this._renderChipSelector('card_frame_corners', msg('Corners'), ['none', 'tentacles', 'brackets', 'crosshairs', 'bolts', 'floral'])}
-            ${this._renderChipSelector('card_frame_foil', msg('Foil'), ['holographic', 'aquatic', 'phosphor', 'patina', 'gilded'])}
+            ${this._renderChipSelector('card_frame_foil', msg('Foil'), ['none', 'holographic', 'aquatic', 'phosphor', 'patina', 'gilded'])}
           </div>
 
           <button class="btn btn--ghost" @click=${this._generateTheme}>

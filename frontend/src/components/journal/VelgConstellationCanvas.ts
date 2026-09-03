@@ -172,7 +172,7 @@ export class VelgConstellationCanvas extends LitElement {
     .back-link {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       background: transparent;
@@ -195,7 +195,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-family: var(--font-brutalist);
       font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       background: transparent;
@@ -220,7 +220,7 @@ export class VelgConstellationCanvas extends LitElement {
       font-family: var(--font-brutalist);
       font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       background: var(--color-surface-sunken);
@@ -238,7 +238,7 @@ export class VelgConstellationCanvas extends LitElement {
     .status-badge {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       border: 1px dashed var(--color-border);
@@ -260,7 +260,7 @@ export class VelgConstellationCanvas extends LitElement {
     .action {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       background: transparent;
@@ -378,7 +378,7 @@ export class VelgConstellationCanvas extends LitElement {
     .line__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       fill: var(--color-text-muted);
       /* Mid-line verb label (Kinopio pattern, design-direction §3.3).
@@ -490,7 +490,7 @@ export class VelgConstellationCanvas extends LitElement {
 
     .card--mark .card__body {
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: color-mix(in srgb, var(--_ink) 70%, transparent);
     }
@@ -512,7 +512,7 @@ export class VelgConstellationCanvas extends LitElement {
     .card__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -590,7 +590,7 @@ export class VelgConstellationCanvas extends LitElement {
     .picker-row__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       white-space: nowrap;
@@ -617,7 +617,7 @@ export class VelgConstellationCanvas extends LitElement {
     .move-btn {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       background: var(--color-surface-sunken);
@@ -669,7 +669,7 @@ export class VelgConstellationCanvas extends LitElement {
     .insight-display__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);

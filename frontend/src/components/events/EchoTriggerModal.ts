@@ -94,7 +94,7 @@ export class VelgEchoTriggerModal extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-secondary);
       }
@@ -126,7 +126,7 @@ export class VelgEchoTriggerModal extends LitElement {
         font-family: var(--font-body);
         font-size: 10px;
         font-weight: var(--font-bold);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         background: var(--color-primary-bg);
         border: var(--border-width-thin) solid var(--color-primary);

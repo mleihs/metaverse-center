@@ -107,7 +107,7 @@ export class VelgEntityLightbox extends LitElement {
       gap: 0;
       background: var(--color-surface-raised);
       border: var(--border-medium);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 24px 80px color-mix(in srgb, var(--color-shadow) 60%, transparent);
       overflow: hidden;
 
       /* At-rest (open) state */
@@ -152,7 +152,7 @@ export class VelgEntityLightbox extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -236,8 +236,8 @@ export class VelgEntityLightbox extends LitElement {
       top: -2px;
       background: var(--color-primary);
       box-shadow:
-        0 0 8px var(--color-primary),
-        0 0 20px color-mix(in srgb, var(--color-primary) 40%, transparent);
+        0 0 calc(8px * var(--glow-strength)) var(--color-primary),
+        0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 40%, transparent);
       opacity: 0;
       pointer-events: none;
     }

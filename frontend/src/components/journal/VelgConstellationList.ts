@@ -66,7 +66,7 @@ export class VelgConstellationList extends LitElement {
     .filter-tab {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
       color: var(--color-text-quiet);
@@ -97,7 +97,7 @@ export class VelgConstellationList extends LitElement {
     .create-btn {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       background: transparent;
@@ -178,7 +178,7 @@ export class VelgConstellationList extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-md);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -197,7 +197,7 @@ export class VelgConstellationList extends LitElement {
     .row__status {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       white-space: nowrap;
@@ -237,7 +237,7 @@ export class VelgConstellationList extends LitElement {
     .row__count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }

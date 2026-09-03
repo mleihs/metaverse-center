@@ -199,7 +199,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--text-dim);
     }
 
@@ -286,7 +286,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 9px;
       letter-spacing: 2px;
       color: var(--card-accent, var(--text-dim));
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .diff-badge {
@@ -393,7 +393,7 @@ export class VelgBotConfigPanel extends LitElement {
     .pcard--selected {
       border-color: var(--pcard-color);
       background: color-mix(in srgb, var(--pcard-color) 12%, var(--surface));
-      box-shadow: 0 0 12px color-mix(in srgb, var(--pcard-color) 25%, transparent);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--pcard-color) 25%, transparent);
       transform: scale(1.02);
     }
 
@@ -431,7 +431,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--text-dim);
       cursor: pointer;
       transition: color 0.2s, background 0.2s;
@@ -539,7 +539,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: color 0.15s;
     }
@@ -601,7 +601,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
@@ -614,7 +614,7 @@ export class VelgBotConfigPanel extends LitElement {
     }
 
     .action-btn--forge:hover:not(:disabled) {
-      box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 30%, transparent);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--accent) 30%, transparent);
       transform: translateY(-1px);
     }
 
@@ -624,7 +624,7 @@ export class VelgBotConfigPanel extends LitElement {
     }
 
     .action-btn--deploy:hover:not(:disabled) {
-      box-shadow: 0 0 16px var(--color-success-border);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--color-success-border);
       transform: translateY(-1px);
     }
 
@@ -646,7 +646,7 @@ export class VelgBotConfigPanel extends LitElement {
         box-shadow: none;
       }
       50% {
-        box-shadow: 0 0 24px var(--color-success-border);
+        box-shadow: 0 0 calc(24px * var(--glow-strength)) var(--color-success-border);
       }
     }
 
@@ -658,7 +658,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-size: 11px;
       letter-spacing: 2px;
       color: var(--text-dim);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       line-height: 1.8;
     }
 
@@ -670,7 +670,7 @@ export class VelgBotConfigPanel extends LitElement {
       font-weight: 700;
       letter-spacing: 2px;
       color: var(--text-dim);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .form-gap {

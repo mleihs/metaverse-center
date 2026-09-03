@@ -471,8 +471,7 @@ export const dungeonGraphicalStyles = css`
         inset: 0;
         z-index: 0;
         pointer-events: none;
-        background:
-          radial-gradient(
+        background: radial-gradient(
             74% 58% at 50% -10%,
             color-mix(in srgb, var(--_fx-accent) calc(16% + var(--_p) * 22%), transparent),
             transparent 60%

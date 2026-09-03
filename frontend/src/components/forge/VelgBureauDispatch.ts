@@ -170,8 +170,8 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     @keyframes dispatch-glow {
-      0%, 100% { opacity: 0.15; box-shadow: 0 0 8px rgba(245, 158, 11, 0.15); }
-      50% { opacity: 0.4; box-shadow: 0 0 20px rgba(245, 158, 11, 0.25); }
+      0%, 100% { opacity: 0.15; box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.15); }
+      50% { opacity: 0.4; box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.25); }
     }
 
     /* ── Header Block ── */
@@ -187,7 +187,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       letter-spacing: 0.25em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-2);
     }
@@ -196,7 +196,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-2xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
@@ -209,7 +209,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       border: 1px solid var(--color-accent-amber);
     }
@@ -269,7 +269,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-dim);
       border: 1px solid var(--color-accent-amber-dim);
       margin-bottom: var(--space-2);
@@ -287,7 +287,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
       margin: 0;
@@ -299,7 +299,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px var(--space-2);
     }
 
@@ -347,7 +347,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-accent-amber);
       background: transparent;
@@ -413,7 +413,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-surface-sunken);
       background: var(--color-accent-amber);
@@ -424,7 +424,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     .dispatch__ack-btn:hover {
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
       transform: translateY(-1px);
     }
 

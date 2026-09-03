@@ -436,7 +436,214 @@ export const PLATFORM_DARK_CONFIG: Record<string, string> = {
   hover_effect: 'translate',
   animation_speed: '1',
   animation_easing: 'ease',
+
+  /*
+   * Spelled out rather than left to ThemeService's defaults.
+   *
+   * These six are the keys the two platform skins disagree on, and this config
+   * exists precisely to be re-asserted on a host INSIDE another themed host —
+   * a DriftView inside an Atlas shell. Relying on a default would mean the dark
+   * chrome is defined by what ThemeService happens to fall back to rather than
+   * by what this file says; the day someone changes a default, the Zwischenraum
+   * changes with it and nothing points here. A skin should state its own values.
+   */
+  glow_strength: '1',
+  label_transform: 'uppercase',
+  label_tracking: '0.05em',
+  color_surface_contrast: '#111111',
+  text_on_contrast: '#e5e5e5',
 };
+
+/**
+ * Platform-Atlas config — the second global skin: map paper, ink, vermilion.
+ *
+ * The counterpart to PLATFORM_DARK_CONFIG and, like it, not a selectable
+ * simulation theme (absent from PRESET_NAMES). Both are applied to the app
+ * shell by `app-shell.ts` from `appState.platformSkin`; DriftView and
+ * DungeonView keep re-asserting PLATFORM_DARK_CONFIG on their own hosts
+ * whatever the user picked, because the Zwischenraum and the CRT are diegetic,
+ * not decorative.
+ *
+ * MEASURED CONTRAST (this file's own numbers, not the handoff's — recomputed
+ * against every surface the role actually lands on; AA = 4.5):
+ *
+ *                        on #e9ede9   on #dfe5e0   on #d5dcd6
+ *   text     #17201d       14.08        13.03        11.93
+ *   secondary #3a463f       8.34         7.72         7.07
+ *   muted    #55605b        5.53         5.12         4.68
+ *   info     #2f3f7a        8.40         7.77         7.12
+ *   danger   #b3261e        5.53         5.11         4.68
+ *   success  #1f7a4d        4.50         4.16         3.81   (status colour —
+ *            text use goes through --color-success-readable, see _colors.css)
+ *   primary  #b63c24        4.85         4.49         4.11
+ *   #e9ede9 on the primary fill                       4.85
+ *   #e9ede9 on the counter-block #24332d             11.19
+ *
+ * TWO VALUES DEVIATE FROM THE DESIGN HANDOFF, both because its stated
+ * contrasts did not survive measurement:
+ *
+ *   color_primary  #d9482b -> #b63c24. The handoff reads "4.6 : 1"; measured
+ *     it is 3.61, and no ink passes AA on #d9482b from either side (paper
+ *     3.61, ink 3.90) — its own maximum is below the threshold. That matters
+ *     beyond the token itself: `--color-text-inverse` on a `--color-primary`
+ *     fill is the pairing `.btn--primary` uses, 114 sites. #b63c24 is the same
+ *     vermilion one step down, the lightest value at which both directions
+ *     clear 4.5.
+ *
+ *   color_text_muted  #5f6b66 -> #55605b. The handoff reads "4.9 : 1" against
+ *     the page ground and calls the raised surface "4.5 – Grenze"; measured,
+ *     the ground gives 4.70, raised 4.34 and sunken 3.98. ThemeService's
+ *     enforceTextContrast would have lifted it automatically — which is the
+ *     point: a PLATFORM skin that trips the platform's own emergency guard is
+ *     a palette that was never checked against itself. #55605b clears the
+ *     darkest of the three grounds on its own.
+ *
+ * DECIDED 2026-09-03: `color_accent` maps to --color-warning, and the handoff
+ * set it equal to the primary. Warning and danger then read as the same red and
+ * a warning badge stops being distinguishable from a danger one — the dark skin
+ * separates them by hue (amber vs. red). The accent now carries its own ochre;
+ * see the note on the key itself.
+ */
+export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
+  // Colours — paper, ink, vermilion
+  color_primary: '#b63c24', // vermilion: accent, active states, CTA
+  color_secondary: '#2f3f7a', // carbon-paper blue: info, links in prose
+  /*
+   * Ochre — the third ink, and NOT a copy of the primary.
+   *
+   * `color_accent` is what ThemeService writes into --color-warning (119 files
+   * read it). The handoff set it to the vermilion, which would have put warning
+   * (#b63c24) and danger (#b3261e) within a hair of each other: two reds that
+   * differ by 9 degrees of hue and nothing else. On the dark skin the same two
+   * roles are amber and red — a distinction you can see across a room, and one
+   * that survives being printed, dimmed or looked at by someone who reads red
+   * poorly. Losing it on paper would have been a regression with no error.
+   *
+   * #83600f is a printer's ochre at 42° — 29° off the vermilion, 38° off the
+   * danger red — measured to 4.87 : 1 against the paper ground, which is the
+   * primary's own weight (4.85) so the two inks sit at the same strength on the
+   * page. The value is recomputed in tests/platform-atlas-contrast.test.ts.
+   */
+  color_accent: '#83600f',
+  color_background: '#e9ede9', // map paper
+  color_surface: '#dfe5e0', // raised: active rows, cells, sticky heads
+  color_surface_sunken: '#d5dcd6',
+  color_surface_header: '#e9ede9',
+  color_text: '#17201d', // ink
+  color_text_secondary: '#3a463f',
+  color_text_muted: '#55605b',
+  color_border: '#17201d', // grid lines are ink, 1px
+  color_border_light: '#c3cdc6',
+  color_danger: '#b3261e',
+  color_success: '#1f7a4d',
+  text_inverse: '#e9ede9',
+  color_surface_contrast: '#24332d', // the one dark block: session log, footer CTA
+  text_on_contrast: '#e9ede9',
+
+  // Typography
+  font_heading: "'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif",
+  font_body: "'Spectral', Georgia, 'Times New Roman', serif",
+  font_mono: "'Geist Mono', 'SF Mono', Menlo, monospace",
+  heading_weight: '300',
+  heading_transform: 'none', // lowercase headings — the core of the skin
+  heading_tracking: '-0.035em',
+  label_transform: 'uppercase', // kickers stay versal mono
+  label_tracking: '0.04em',
+  font_base_size: '17px', // Spectral runs small; 17px ≈ 16px sans
+
+  // Character
+  border_radius: '0',
+  border_width: '1px', // "thick" is 1px: the atlas has no heavy rules
+  border_width_default: '1px',
+  shadow_style: 'offset',
+  shadow_color: '#17201d', // offset shadows in ink, not black
+  glow_strength: '0', // no CRT glow on paper
+  hover_effect: 'lift', // translateY(-4px), see ThemeService hoverTransforms
+  animation_speed: '1',
+  animation_easing: 'cubic-bezier(.2,.7,.2,1)',
+
+  /*
+   * Card frame — laid paper, and otherwise nothing.
+   *
+   * The handoff asked for `card_frame_texture: 'paper'`, and until 03.09.2026
+   * this key said 'none' for an honest reason: VelgGameCard renders these as
+   * `card--tex-*` / `card--plate-*` class names, so a value with no matching
+   * rule is silently the same as no treatment at all. 'paper' would have been
+   * a name that looks like a design and resolves to nothing — the failure
+   * `DEFAULT_CARD_FRAME` in card-frame.ts is documented for.
+   *
+   * `.card--tex-paper` now exists (VelgGameCard, next to the other five), so
+   * the name is a decision again. The other three stay off: paper wears no
+   * foil, and the plate is plain.
+   */
+  card_frame_texture: 'paper',
+  card_frame_nameplate: 'plain',
+  card_frame_corners: 'none',
+  card_frame_foil: 'none',
+};
+
+/**
+ * The two global skins the platform chrome can wear.
+ *
+ * Not the same axis as `ThemePresetName`: a preset dresses ONE simulation and
+ * is chosen by its architect; a skin dresses the platform around every
+ * simulation and is chosen by the reader. A world's own theme still wins inside
+ * its shell — the skin is what the reader sees on the way there, and what a
+ * world with no theme of its own inherits.
+ */
+export type PlatformSkin = 'dark' | 'atlas';
+
+/**
+ * Welche Layout-Vorlage Frontseite und Dashboard tragen.
+ *
+ * Steht hier neben dem Skin, weil sie heute von ihm abgeleitet ist
+ * (`appState.landingTemplate`) — und weil der Name dann an EINER Stelle
+ * definiert ist statt in jeder der Komponenten, die ihn als Attribut annimmt.
+ */
+export type LandingTemplate = 'editorial' | 'atlas';
+
+/**
+ * WHICH SKIN CARRIES THE ACCESSIBILITY PROMISE
+ *
+ * `dark` is the accessible skin. It is what an account gets before it has ever
+ * chosen anything, what an anonymous visitor is shown, and the one the platform
+ * warrants: every text role clears WCAG AA against every surface, and so does
+ * every fill that carries a label. A change that drops a number there is a bug.
+ *
+ * `atlas` is an EDITION — an alternative a reader opts into. It is held to the
+ * same rule for text and to the non-text floor (3 : 1, WCAG 1.4.11) for the
+ * coloured fills, so a status stays perceivable without the palette having to
+ * behave like the baseline.
+ *
+ * The split for text is not a matter of taste, it is mechanical:
+ * `ThemeService.enforceTextContrast` lifts ANY text role below 4.5 : 1 at
+ * runtime, for every skin. A skin whose text sits below AA does not render as
+ * designed — the platform quietly rewrites it. So the AA line on text roles
+ * holds for atlas too, not because atlas promises AA but because falling under
+ * it means the design never reaches the screen. (As it happens atlas clears AA
+ * on its fills as well today; the floor below is the room it is allowed, not a
+ * description of where it stands.)
+ *
+ * tests/platform-atlas-contrast.test.ts recomputes both floors on every run.
+ */
+export const PLATFORM_SKIN_CONTRAST: Record<
+  PlatformSkin,
+  { readonly text: number; readonly fill: number }
+> = {
+  dark: { text: 4.5, fill: 4.5 },
+  atlas: { text: 4.5, fill: 3 },
+};
+
+/** Skin name → config, so a call site can look one up instead of branching. */
+export const PLATFORM_SKINS: Record<PlatformSkin, Record<string, string>> = {
+  dark: PLATFORM_DARK_CONFIG,
+  atlas: PLATFORM_ATLAS_CONFIG,
+};
+
+/** Narrow an arbitrary stored string to a skin, or nothing. */
+export function isPlatformSkin(value: string | null): value is PlatformSkin {
+  return value !== null && value in PLATFORM_SKINS;
+}
 
 /** Maps SimulationTheme types to suggested preset names. */
 export function getPresetForTheme(theme: SimulationTheme, slug?: string): ThemePresetName {

@@ -8,6 +8,13 @@ body {
   background-color: var(--color-surface);
   line-height: var(--leading-normal);
   accent-color: var(--color-primary);
+  /* Bricolage Grotesque (Atlas-Überschriften) und Spectral sind variable
+     Schriften mit einer opsz-Achse. Ohne diese Zeile bleibt sie stehen: die
+     Schrift wird gesetzt, aber in der optischen Größe, die im Font als Vorgabe
+     steht, statt in der des tatsächlichen Grades. Eine Überschrift bei 49 px
+     bekommt dann die Zeichnung, die für Lesegröße gedacht war — engere Punzen,
+     dickere Haarstriche. Kein Fehler, nur eine schlechtere Schrift. */
+  font-optical-sizing: auto;
 }
 
 /* === HEADINGS === */

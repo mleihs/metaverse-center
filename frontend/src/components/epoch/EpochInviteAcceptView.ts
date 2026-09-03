@@ -99,7 +99,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--hud-text-dim);
       animation: flicker-in 0.6s ease-out;
     }
@@ -120,7 +120,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: clamp(28px, 4vw, 44px);
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--amber);
       line-height: 1.1;
       animation: slide-up 0.5s ease-out 0.2s both;
@@ -143,7 +143,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--hud-text-dim);
     }
 
@@ -165,7 +165,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--hud-text-dim);
       animation: slide-up 0.5s ease-out 0.5s both;
     }
@@ -175,7 +175,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       height: 5px;
       border-radius: 50%;
       background: var(--amber);
-      box-shadow: 0 0 6px var(--amber);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--amber);
     }
 
     /* ── Right: Auth Terminal ── */
@@ -192,7 +192,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 4px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--hud-text-dim);
     }
 
@@ -215,7 +215,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -246,7 +246,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 9px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--hud-text-dim);
     }
 
@@ -281,14 +281,14 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .auth-btn:hover:not(:disabled) {
       background: var(--amber-light);
-      box-shadow: 0 0 20px color-mix(in srgb, var(--amber) 20%, transparent);
+      box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--amber) 20%, transparent);
     }
 
     .auth-btn:active:not(:disabled) {
@@ -327,7 +327,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 11px;
       font-weight: 900;
       letter-spacing: 4px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-success);
     }
 
@@ -348,7 +348,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-decoration: none;
       cursor: pointer;
       transition: all 0.15s;
@@ -356,7 +356,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
 
     .enter-btn:hover {
       background: var(--amber-light);
-      box-shadow: 0 0 24px color-mix(in srgb, var(--amber) 25%, transparent);
+      box-shadow: 0 0 calc(24px * var(--glow-strength)) color-mix(in srgb, var(--amber) 25%, transparent);
     }
 
     /* ── Loading / Error / Expired states ── */
@@ -381,7 +381,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 4px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .state-card__title--error {
@@ -413,7 +413,7 @@ export class VelgEpochInviteAcceptView extends LitElement {
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-decoration: none;
       cursor: pointer;
       transition: all 0.2s;

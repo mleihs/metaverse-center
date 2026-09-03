@@ -81,7 +81,7 @@ export class VelgDashboardRail extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
       }
 

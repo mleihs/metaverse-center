@@ -40,7 +40,7 @@ export class VelgHeaderCluster extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-xs, 12px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--cluster-color, var(--color-text-tertiary));
       background: transparent;
@@ -65,7 +65,7 @@ export class VelgHeaderCluster extends LitElement {
       border-radius: 50%;
       background: var(--cluster-accent, var(--color-primary));
       transform: translateY(-50%);
-      box-shadow: 0 0 4px var(--cluster-accent, var(--color-primary));
+      box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--cluster-accent, var(--color-primary));
       animation: beacon-pulse 2s ease-in-out infinite;
     }
 
@@ -74,7 +74,7 @@ export class VelgHeaderCluster extends LitElement {
       color: var(--cluster-accent, var(--color-primary));
       border-color: var(--cluster-accent, var(--color-primary));
       background: var(--cluster-glow-bg, color-mix(in srgb, var(--color-primary) 6%, transparent));
-      box-shadow: 0 0 12px var(--cluster-glow, var(--color-primary-glow));
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--cluster-glow, var(--color-primary-glow));
     }
 
     .trigger[aria-expanded='true']::before {
@@ -123,8 +123,8 @@ export class VelgHeaderCluster extends LitElement {
       border: 1px solid var(--color-border);
       border-top: 2px solid var(--cluster-accent, var(--color-primary));
       box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 1px var(--cluster-glow, color-mix(in srgb, var(--color-primary) 30%, transparent));
+        0 12px 40px color-mix(in srgb, var(--color-shadow) 70%, transparent),
+        0 0 calc(1px * var(--glow-strength)) var(--cluster-glow, color-mix(in srgb, var(--color-primary) 30%, transparent));
       padding: var(--space-3, 12px);
       animation: panel-enter 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
     }
@@ -178,12 +178,12 @@ export class VelgHeaderCluster extends LitElement {
     @keyframes beacon-pulse {
       0%, 100% {
         opacity: 1;
-        box-shadow: 0 0 4px var(--cluster-accent, var(--color-primary));
+        box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--cluster-accent, var(--color-primary));
       }
       50% {
         opacity: 0.4;
-        box-shadow: 0 0 8px var(--cluster-accent, var(--color-primary)),
-          0 0 16px color-mix(in srgb, var(--cluster-accent, var(--color-primary)) 40%, transparent);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--cluster-accent, var(--color-primary)),
+          0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--cluster-accent, var(--color-primary)) 40%, transparent);
       }
     }
 
@@ -191,13 +191,13 @@ export class VelgHeaderCluster extends LitElement {
       0%, 100% {
         opacity: 1;
         transform: translateY(-50%) scale(1);
-        box-shadow: 0 0 6px var(--cluster-accent, var(--color-primary));
+        box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--cluster-accent, var(--color-primary));
       }
       50% {
         opacity: 0.6;
         transform: translateY(-50%) scale(1.5);
-        box-shadow: 0 0 10px var(--cluster-accent, var(--color-primary)),
-          0 0 20px color-mix(in srgb, var(--cluster-accent, var(--color-primary)) 50%, transparent);
+        box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--cluster-accent, var(--color-primary)),
+          0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--cluster-accent, var(--color-primary)) 50%, transparent);
       }
     }
 

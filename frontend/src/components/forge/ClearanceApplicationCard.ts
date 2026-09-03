@@ -48,8 +48,8 @@ export class VelgClearanceCard extends LitElement {
     }
 
     @keyframes dot-pulse {
-      0%, 100% { box-shadow: 0 0 4px var(--color-accent-amber); opacity: 1; }
-      50% { box-shadow: 0 0 10px var(--color-accent-amber); opacity: 0.6; }
+      0%, 100% { box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--color-accent-amber); opacity: 1; }
+      50% { box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--color-accent-amber); opacity: 0.6; }
     }
 
     .card {
@@ -72,8 +72,8 @@ export class VelgClearanceCard extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(255, 255, 255, 0.01) 3px,
-        rgba(255, 255, 255, 0.01) 4px
+        var(--color-scanline) 3px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
     }
@@ -91,7 +91,7 @@ export class VelgClearanceCard extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
     }
 
@@ -114,7 +114,7 @@ export class VelgClearanceCard extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: 4px;
     }
@@ -160,7 +160,7 @@ export class VelgClearanceCard extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       color: var(--color-on-accent-amber);
       background: var(--color-accent-amber);
@@ -230,7 +230,7 @@ export class VelgClearanceCard extends LitElement {
       display: block;
       font-size: 10px;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin-bottom: 2px;
     }

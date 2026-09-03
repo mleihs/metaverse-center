@@ -102,7 +102,7 @@ export class VelgEmbassiesPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-text-primary);
       margin: 0;
@@ -111,7 +111,7 @@ export class VelgEmbassiesPanel extends LitElement {
     .embassy-overview__subtitle {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
       margin-left: auto;
@@ -138,7 +138,7 @@ export class VelgEmbassiesPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
     }
@@ -181,7 +181,7 @@ export class VelgEmbassiesPanel extends LitElement {
 
     .embassy-card:hover {
       border-color: var(--color-secondary);
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-secondary) 12%, transparent);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-secondary) 12%, transparent);
     }
 
     /* Shimmer border accent */
@@ -218,14 +218,14 @@ export class VelgEmbassiesPanel extends LitElement {
       height: 10px;
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 6px var(--embassy-theme-color, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--embassy-theme-color, transparent);
     }
 
     .embassy-card__sim-name {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-quiet);
       flex: 1;
@@ -321,7 +321,7 @@ export class VelgEmbassiesPanel extends LitElement {
     .embassy-card__amb-label {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-quiet);
     }
@@ -346,7 +346,7 @@ export class VelgEmbassiesPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
     }

@@ -25,13 +25,19 @@ export class VelgMapMinimap extends LitElement {
     }
 
     .minimap {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      /* Was rgba(0,0,0,0.7): a scrim that is only "a panel" while the page is
+         black. It is a panel, so it is the panel surface — same 70% veil, but
+         it follows the skin instead of assuming one. */
+      background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+      border: 1px solid var(--color-separator);
     }
 
     .minimap__viewport {
-      fill: rgba(255, 255, 255, 0.08);
-      stroke: rgba(255, 255, 255, 0.3);
+      /* The one of the three where losing the mark loses a function: this
+         outline is how you know which part of the multiverse you are looking
+         at. Ink-bright diluted to 30%, a shade under the cap in htp-styles. */
+      fill: var(--color-overlay-ink-strong);
+      stroke: color-mix(in srgb, var(--color-overlay-ink-bright) 75%, transparent);
       stroke-width: 1;
     }
 

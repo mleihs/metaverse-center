@@ -91,7 +91,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-primary);
     }
 
@@ -135,7 +135,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-border);
       writing-mode: vertical-lr;
       text-orientation: mixed;
@@ -179,7 +179,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 8px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-border);
     }
 
@@ -206,7 +206,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 10px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -231,7 +231,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-mono, 'SF Mono', monospace);
       font-size: 9px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px 8px;
       border: 1px solid var(--color-border);
       color: var(--color-text-quiet);
@@ -247,7 +247,7 @@ export class VelgAcademyEpochCard extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 2px;
       color: var(--color-surface-sunken);
       background: var(--color-primary);

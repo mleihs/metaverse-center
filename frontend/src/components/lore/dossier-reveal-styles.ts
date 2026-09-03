@@ -104,7 +104,7 @@ export const dossierRevealStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black, 900);
     font-size: var(--text-lg);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: 0.15em;
     color: var(--color-accent-amber);
     margin: 0;
@@ -117,7 +117,7 @@ export const dossierRevealStyles = css`
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.2em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-quiet);
     margin-top: var(--space-2);
   }
@@ -138,7 +138,7 @@ export const dossierRevealStyles = css`
     font-family: var(--font-mono, monospace);
     font-size: 11px;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-secondary);
     line-height: 1.8;
     white-space: pre-wrap;
@@ -197,7 +197,7 @@ export const dossierRevealStyles = css`
     font-size: var(--text-xs);
     font-weight: 600;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-text-primary);
     flex: 1;
   }
@@ -207,7 +207,7 @@ export const dossierRevealStyles = css`
     font-weight: var(--font-black, 900);
     font-size: 9px;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--color-danger);
     transform: rotate(-3deg);
     opacity: 0;
@@ -241,7 +241,7 @@ export const dossierRevealStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black, 900);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.12em;
     color: var(--color-text-inverse);
     background: var(--color-accent-amber);
@@ -253,12 +253,12 @@ export const dossierRevealStyles = css`
   }
 
   @keyframes btn-glow {
-    0%, 100% { box-shadow: 0 0 8px var(--color-primary-border); }
-    50% { box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 50%, transparent); }
+    0%, 100% { box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-primary-border); }
+    50% { box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 50%, transparent); }
   }
 
   .action__btn:hover {
-    box-shadow: 0 0 24px color-mix(in srgb, var(--color-primary) 60%, transparent);
+    box-shadow: 0 0 calc(24px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 60%, transparent);
     transform: translateY(-1px);
   }
 
@@ -318,7 +318,7 @@ export const dossierRevealStyles = css`
 
     .action__btn {
       animation: none;
-      box-shadow: 0 0 8px var(--color-primary-border);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-primary-border);
     }
 
     .reveal__backdrop::after {

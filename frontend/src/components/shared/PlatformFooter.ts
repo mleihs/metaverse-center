@@ -31,7 +31,7 @@ export class VelgPlatformFooter extends LitElement {
       gap: var(--space-4);
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       flex-wrap: wrap;
@@ -65,7 +65,7 @@ export class VelgPlatformFooter extends LitElement {
       margin-bottom: var(--space-4);
       font-family: var(--font-mono);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
     }
 
@@ -85,7 +85,7 @@ export class VelgPlatformFooter extends LitElement {
     .footer__bureau {
       font-family: var(--font-mono);
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.4em;
       color: var(--color-text-quiet);
       margin-top: var(--space-3);

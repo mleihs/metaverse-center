@@ -132,8 +132,8 @@ export class VelgToast extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255, 255, 255, 0.015) 2px,
-        rgba(255, 255, 255, 0.015) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
       z-index: 1;
@@ -150,19 +150,19 @@ export class VelgToast extends LitElement {
 
     .dispatch__accent--success {
       background: var(--color-success);
-      box-shadow: 0 0 8px var(--color-success-glow);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-success-glow);
     }
     .dispatch__accent--error {
       background: var(--color-danger);
-      box-shadow: 0 0 10px var(--color-danger-glow);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--color-danger-glow);
     }
     .dispatch__accent--warning {
       background: var(--color-warning);
-      box-shadow: 0 0 8px var(--color-warning-glow);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-warning-glow);
     }
     .dispatch__accent--info {
       background: var(--color-info);
-      box-shadow: 0 0 8px var(--color-info-glow);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-info-glow);
     }
 
     .dispatch__accent--error::after {
@@ -197,7 +197,7 @@ export class VelgToast extends LitElement {
       font-size: 10px;
       font-weight: var(--font-black);
       letter-spacing: 0.14em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       line-height: 1;
       padding: 2px 0;
     }

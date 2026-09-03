@@ -54,7 +54,7 @@ export class MapLayerToggle extends LitElement {
       font-size: var(--text-xs, 12px);
       font-weight: 600;
       letter-spacing: var(--tracking-wider, 0.05em);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: color 0.2s ease, background 0.2s ease;
       overflow: hidden;
@@ -79,7 +79,7 @@ export class MapLayerToggle extends LitElement {
 
     .toggle__tab:hover {
       color: var(--color-text-secondary);
-      background: rgba(255, 255, 255, 0.015);
+      background: var(--color-overlay-ink);
     }
 
     .toggle__tab:hover::before {
@@ -117,7 +117,7 @@ export class MapLayerToggle extends LitElement {
 
     .toggle__tab[aria-selected='true'] .toggle__roundel {
       background: currentColor;
-      box-shadow: 0 0 6px color-mix(in srgb, var(--tab-color) 30%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--tab-color) 30%, transparent);
     }
 
     .toggle__tab[aria-selected='true'] .toggle__roundel svg {

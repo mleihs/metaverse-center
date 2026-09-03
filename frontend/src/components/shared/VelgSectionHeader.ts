@@ -12,7 +12,7 @@ export class VelgSectionHeader extends LitElement {
     h2 {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
     }

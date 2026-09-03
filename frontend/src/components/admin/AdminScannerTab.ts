@@ -46,8 +46,8 @@ export class VelgAdminScannerTab extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255 255 255 / 0.008) 2px,
-        rgba(255 255 255 / 0.008) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
       z-index: 1;
@@ -88,27 +88,27 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: clamp(1rem, 3vw, var(--text-xl));
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.12em;
       color: var(--color-text-primary);
     }
 
     .scanner-header__icon {
       color: var(--color-info);
-      filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-info) 40%, transparent));
+      filter: drop-shadow(0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 40%, transparent));
       animation: icon-glow 3s ease-in-out infinite alternate;
     }
 
     @keyframes icon-glow {
-      0% { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-info) 30%, transparent)); }
-      100% { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-info) 60%, transparent)); }
+      0% { filter: drop-shadow(0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 30%, transparent)); }
+      100% { filter: drop-shadow(0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 60%, transparent)); }
     }
 
     .scanner-header__subtitle {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       margin-top: var(--space-1);
@@ -122,7 +122,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-3);
       border: 1px solid;
@@ -155,7 +155,7 @@ export class VelgAdminScannerTab extends LitElement {
     }
 
     @keyframes status-blink {
-      0% { opacity: 1; box-shadow: 0 0 4px var(--color-success); }
+      0% { opacity: 1; box-shadow: 0 0 calc(4px * var(--glow-strength)) var(--color-success); }
       100% { opacity: 0.3; box-shadow: none; }
     }
 
@@ -172,7 +172,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-4);
       background: none;
@@ -185,7 +185,7 @@ export class VelgAdminScannerTab extends LitElement {
 
     .sub-nav__btn:hover {
       color: var(--color-text-primary);
-      background: rgba(255 255 255 / 0.02);
+      background: var(--color-overlay-ink);
     }
 
     .sub-nav__btn--active {
@@ -200,7 +200,7 @@ export class VelgAdminScannerTab extends LitElement {
       right: 0;
       height: 2px;
       background: var(--color-info);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-info) 40%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 40%, transparent);
     }
 
     .sub-nav__badge {
@@ -230,7 +230,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-3);
@@ -317,7 +317,7 @@ export class VelgAdminScannerTab extends LitElement {
 
     .adapter-card:hover {
       border-color: var(--color-text-muted);
-      box-shadow: 0 0 16px color-mix(in srgb, var(--color-info) 8%, transparent);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 8%, transparent);
     }
 
     .adapter-card:hover::before,
@@ -339,7 +339,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       display: flex;
@@ -356,7 +356,7 @@ export class VelgAdminScannerTab extends LitElement {
 
     .adapter-card__dot--online {
       background: var(--color-success);
-      box-shadow: 0 0 6px var(--color-success);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success);
       animation: dot-pulse 1.5s ease-in-out infinite alternate;
     }
 
@@ -366,8 +366,8 @@ export class VelgAdminScannerTab extends LitElement {
     }
 
     @keyframes dot-pulse {
-      0% { opacity: 1; box-shadow: 0 0 6px var(--color-success); }
-      100% { opacity: 0.4; box-shadow: 0 0 2px var(--color-success); }
+      0% { opacity: 1; box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success); }
+      100% { opacity: 0.4; box-shadow: 0 0 calc(2px * var(--glow-strength)) var(--color-success); }
     }
 
     .adapter-card__categories {
@@ -380,7 +380,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 1px var(--space-1);
       border: 1px solid color-mix(in srgb, var(--color-info) 40%, transparent);
@@ -392,7 +392,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -471,7 +471,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
       color: var(--color-text-quiet);
       text-align: center;
@@ -491,7 +491,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
       color: var(--color-info);
@@ -529,8 +529,8 @@ export class VelgAdminScannerTab extends LitElement {
       background: color-mix(in srgb, var(--color-info) 20%, var(--color-surface));
       transform: translateY(-1px);
       box-shadow:
-        0 0 12px color-mix(in srgb, var(--color-info) 25%, transparent),
-        inset 0 0 20px color-mix(in srgb, var(--color-info) 5%, transparent);
+        0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 25%, transparent),
+        inset 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 5%, transparent);
     }
 
     .trigger-scan-btn:active {
@@ -548,12 +548,12 @@ export class VelgAdminScannerTab extends LitElement {
 
     @keyframes scan-active {
       0%, 100% {
-        box-shadow: 0 0 8px color-mix(in srgb, var(--color-info) 20%, transparent);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 20%, transparent);
       }
       50% {
         box-shadow:
-          0 0 20px color-mix(in srgb, var(--color-info) 40%, transparent),
-          inset 0 0 30px color-mix(in srgb, var(--color-info) 8%, transparent);
+          0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 40%, transparent),
+          inset 0 0 calc(30px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 8%, transparent);
       }
     }
 
@@ -566,7 +566,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
     }
@@ -584,7 +584,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-3);
       background: var(--color-surface);
@@ -603,7 +603,7 @@ export class VelgAdminScannerTab extends LitElement {
       color: var(--color-info);
       border-color: var(--color-info);
       background: color-mix(in srgb, var(--color-info) 8%, var(--color-surface));
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-info) 10%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 10%, transparent);
     }
 
     .recommended-summary {
@@ -658,7 +658,7 @@ export class VelgAdminScannerTab extends LitElement {
       border-color: var(--color-text-muted);
       box-shadow:
         0 4px 20px color-mix(in srgb, var(--color-info) 6%, transparent),
-        0 0 1px color-mix(in srgb, var(--color-info) 15%, transparent);
+        0 0 calc(1px * var(--glow-strength)) color-mix(in srgb, var(--color-info) 15%, transparent);
       transform: translateY(-2px);
     }
 
@@ -674,14 +674,14 @@ export class VelgAdminScannerTab extends LitElement {
     /* Recommended card glow */
     .candidate-card--recommended {
       border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
-      box-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 8%, transparent);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-warning) 8%, transparent);
     }
 
     .candidate-card--recommended:hover {
       border-color: var(--color-warning);
       box-shadow:
         0 4px 24px color-mix(in srgb, var(--color-warning) 12%, transparent),
-        0 0 1px var(--color-warning);
+        0 0 calc(1px * var(--glow-strength)) var(--color-warning);
     }
 
     /* Card header — category + magnitude readout */
@@ -708,7 +708,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 8px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-warning);
       border: 1px solid var(--color-warning);
@@ -723,8 +723,8 @@ export class VelgAdminScannerTab extends LitElement {
     }
 
     @keyframes badge-glow {
-      0% { box-shadow: 0 0 2px color-mix(in srgb, var(--color-warning) 10%, transparent); }
-      100% { box-shadow: 0 0 8px color-mix(in srgb, var(--color-warning) 25%, transparent); }
+      0% { box-shadow: 0 0 calc(2px * var(--glow-strength)) color-mix(in srgb, var(--color-warning) 10%, transparent); }
+      100% { box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-warning) 25%, transparent); }
     }
 
     .magnitude-readout {
@@ -750,7 +750,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
     }
@@ -863,7 +863,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 1px solid var(--color-border);
       background: var(--color-surface);
@@ -891,7 +891,7 @@ export class VelgAdminScannerTab extends LitElement {
     .action-btn--approve:hover {
       background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
       border-color: var(--color-success);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 15%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 15%, transparent);
     }
 
     .action-btn--reject {
@@ -902,7 +902,7 @@ export class VelgAdminScannerTab extends LitElement {
     .action-btn--reject:hover {
       background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
       border-color: var(--color-danger);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-danger) 15%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 15%, transparent);
     }
 
     /* ── Expanded Detail ─────────────────────────────────── */
@@ -953,7 +953,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-black);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: color-mix(in srgb, var(--color-danger) 30%, transparent);
       border: 1px solid color-mix(in srgb, var(--color-danger) 20%, transparent);
@@ -964,7 +964,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
@@ -1023,7 +1023,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       padding: var(--space-2) var(--space-3);
@@ -1071,7 +1071,7 @@ export class VelgAdminScannerTab extends LitElement {
       color: var(--color-danger);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       margin-bottom: var(--space-4);
       display: flex;
@@ -1085,7 +1085,7 @@ export class VelgAdminScannerTab extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       position: relative;
     }
@@ -1112,7 +1112,7 @@ export class VelgAdminScannerTab extends LitElement {
       color: var(--color-text-quiet);
       font-size: var(--text-sm);
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -1120,7 +1120,7 @@ export class VelgAdminScannerTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 1px var(--space-2);
       border: 1px solid;

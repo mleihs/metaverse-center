@@ -96,7 +96,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -116,7 +116,7 @@ export class VelgSimulationLoreView extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       background: transparent;

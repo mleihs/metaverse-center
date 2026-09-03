@@ -48,7 +48,7 @@ export class VelgResonanceJournal extends LitElement {
     .hero__eyebrow {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
@@ -58,7 +58,7 @@ export class VelgResonanceJournal extends LitElement {
       font-family: var(--font-brutalist);
       font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-3);
@@ -86,7 +86,7 @@ export class VelgResonanceJournal extends LitElement {
     .tab {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
       border: none;

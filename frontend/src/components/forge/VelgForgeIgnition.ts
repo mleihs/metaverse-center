@@ -67,7 +67,7 @@ export class VelgForgeIgnition extends LitElement {
       .summary__title {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-quiet);
         margin: 0 0 var(--space-4);
@@ -91,7 +91,7 @@ export class VelgForgeIgnition extends LitElement {
       .summary__key {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-tertiary);
       }
@@ -118,7 +118,7 @@ export class VelgForgeIgnition extends LitElement {
       .contact-sheet__title {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
@@ -170,13 +170,13 @@ export class VelgForgeIgnition extends LitElement {
 
       @keyframes danger-pulse {
         0%, 100% { box-shadow: none; }
-        50% { box-shadow: 0 0 20px var(--color-danger-border); }
+        50% { box-shadow: 0 0 calc(20px * var(--glow-strength)) var(--color-danger-border); }
       }
 
       @media (prefers-reduced-motion: reduce) {
         .danger-zone {
           animation: none;
-          box-shadow: 0 0 10px var(--color-danger-glow);
+          box-shadow: 0 0 calc(10px * var(--glow-strength)) var(--color-danger-glow);
         }
       }
 
@@ -184,7 +184,7 @@ export class VelgForgeIgnition extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black, 900);
         font-size: var(--text-xl);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-wide, 0.05em);
         color: var(--color-danger);
         margin: 0 0 var(--space-4);

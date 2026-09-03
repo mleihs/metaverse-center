@@ -14,7 +14,7 @@
 
 import { formatRgb, liftForContrast, luminance, parseColor } from '../utils/contrast-lift.js';
 import { settingsApi } from './api/index.js';
-import { activeCardFrame, cardFrameFromConfig } from './card-frame.js';
+import { activeCardFrame, cardFrameFromConfig, setPlatformCardFrame } from './card-frame.js';
 import { captureError } from './SentryService.js';
 import type { ThemePresetName } from './theme-presets.js';
 import { THEME_PRESETS } from './theme-presets.js';
@@ -51,6 +51,20 @@ const SYSTEM_FONTS = new Set([
   'georgia',
   'times new roman',
   'courier new',
+  /*
+   * The mono stacks. Every preset's `font_mono` names these before falling back
+   * to `monospace`, and none of them exists on Google Fonts — measured in the
+   * browser on 03.09.2026, the app was firing two doomed stylesheet requests
+   * (`velg-gf-sf-mono`, `velg-gf-menlo`) on every theme application. They are
+   * system faces; asking a font service for them was always wrong.
+   * ('Inconsolata' and 'Roboto Mono' are NOT listed — those really are on
+   * Google Fonts and are meant to load.)
+   */
+  'sf mono',
+  'menlo',
+  'monaco',
+  'lucida console',
+  'consolas',
   'comic sans ms',
   'inherit',
   'sans-serif',
@@ -109,6 +123,20 @@ const THEME_TOKEN_MAP: Record<string, string> = {
   animation_easing: '--ease-default',
 };
 
+/*
+ * Six further setting keys are NOT in the map above and are handled in
+ * `applyConfig` step 2b instead: `shadow_color`, `glow_strength`,
+ * `label_transform`, `label_tracking`, `color_surface_contrast`,
+ * `text_on_contrast`.
+ *
+ * The map writes a token only when the config names it. That is correct while
+ * :root is the only thing above a host, and wrong as soon as one themed host
+ * can sit inside another — an unwritten token is not the platform default,
+ * it is whatever the enclosing skin happens to say. These six are the ones a
+ * skin actually diverges on, so they are written on every host, defaulted.
+ * Step 2b carries the full argument.
+ */
+
 // ---------------------------------------------------------------------------
 // Shadow computation
 // ---------------------------------------------------------------------------
@@ -132,6 +160,7 @@ function computeShadows(style: ShadowStyle, color: string): Record<string, strin
       result[`--shadow-${size}`] = 'none';
     }
     result['--shadow-pressed'] = 'none';
+    result['--shadow-inset'] = 'none';
     return result;
   }
 
@@ -153,14 +182,56 @@ function computeShadows(style: ShadowStyle, color: string): Record<string, strin
 
   // Pressed state
   switch (style) {
+    /*
+     * Cast in the shadow ink, not in the border colour.
+     *
+     * The old value here was `2px 2px 0 var(--color-border)`, which disagreed
+     * with the token's own default in `_shadows.css`
+     * (`2px 2px 0 var(--color-shadow)`) — and the disagreement only ever showed
+     * on the two presets that cast offset shadows in something other than
+     * black ("illuminated-literary" #8B7D6B, "deep-fried-horror" #FF0000),
+     * because those were the only ones for which this function used to run at
+     * all. Their whole --shadow-* scale is already in that ink; the pressed
+     * state was the one step that jumped to the border. Now that the shadows
+     * are computed for EVERY host (see applyConfig step 2), the two values had
+     * to be reconciled, and the scale is the one that is right: pressed is a
+     * shorter version of the same shadow, not a different one.
+     *
+     * Platform-dark and every #000000 preset are unaffected — for them this
+     * evaluates to exactly the `_shadows.css` default.
+     */
     case 'offset':
-      result['--shadow-pressed'] = '2px 2px 0 var(--color-border)';
+      result['--shadow-pressed'] = `2px 2px 0 ${color}`;
       break;
     case 'blur':
       result['--shadow-pressed'] = `0 1px 3px ${color}30`;
       break;
     case 'glow':
       result['--shadow-pressed'] = `0 0 4px ${color}40`;
+      break;
+  }
+
+  /*
+   * The recessed counterpart. `_shadows.css` declares it as a color-mix over
+   * `--color-shadow`, but a var() inside a custom property is substituted where
+   * it is DECLARED — on :root, against black — so the :root value inherits into
+   * a themed subtree frozen against the platform ink. Emitting it here is what
+   * actually themes it, exactly as for the rest of the scale.
+   *
+   * color-mix() rather than an appended `33` because `color` may arrive as any
+   * CSS colour syntax; the hex-suffix idiom above predates this and is kept
+   * only where it already ran.
+   */
+  const inset = `color-mix(in srgb, ${color} 20%, transparent)`;
+  switch (style) {
+    case 'offset':
+      result['--shadow-inset'] = `inset 2px 2px 0 ${inset}`;
+      break;
+    case 'blur':
+      result['--shadow-inset'] = `inset 0 2px 6px ${inset}`;
+      break;
+    case 'glow':
+      result['--shadow-inset'] = `inset 0 0 12px ${inset}`;
       break;
   }
 
@@ -281,41 +352,81 @@ class ThemeService {
       }
     }
 
-    // 1b. Guarantee that the text roles are legible on this world's own
-    //     surfaces. See `enforceTextContrast` for why this layer exists.
-    //
-    //     The count is published on the host rather than dropped. A correction
-    //     nobody can see is a correction nobody can check, and the number
-    //     separates the two cases that look identical from the outside: a
-    //     world with one role lifted has a colour that drifted, a world with
-    //     both lifted has a palette that was never checked against itself.
-    // 1c. Publish the theme's POLARITY. See `publishPolarity`.
+    // 1b. Publish the theme's POLARITY. See `publishPolarity`. It needs only
+    //     the two tokens step 1 just wrote, so it can run here; the contrast
+    //     lift cannot, and now runs as step 7b.
     this.publishPolarity(hostElement, tokensApplied);
 
-    const lifted = this.enforceTextContrast(hostElement, tokensApplied);
-    if (lifted > 0) {
-      hostElement.dataset.contrastLifted = String(lifted);
-    } else {
-      delete hostElement.dataset.contrastLifted;
+    /*
+     * 2. Shadow tokens — computed for EVERY host, unconditionally.
+     *
+     * This used to skip the default case (`offset` in `#000000`) on the
+     * reasoning that :root already says the same thing. That reasoning holds
+     * only while :root is the sole thing above the host. It stopped holding
+     * the moment a second platform skin existed: with Atlas on the app shell,
+     * the shell carries --shadow-* cast in ink (#17201d), and a DriftView or
+     * DungeonView nested inside it re-asserting PLATFORM_DARK_CONFIG would
+     * take the default branch, write nothing, and INHERIT the ink shadows it
+     * was re-asserting dark specifically to avoid.
+     *
+     * A skipped write is not a neutral write. Every token a skin can set has
+     * to be set on every host, or the nested host reads its parent's skin.
+     * The same rule governs 2b below.
+     */
+    const shadowStyle = (config.shadow_style as ShadowStyle | undefined) ?? 'offset';
+    const shadowColor = config.shadow_color ?? '#000000';
+    const shadows = computeShadows(shadowStyle, shadowColor);
+    for (const [token, value] of Object.entries(shadows)) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
     }
 
-    // 2. Compute and apply shadow tokens
-    const shadowStyle = config.shadow_style as ShadowStyle | undefined;
-    const shadowColor = config.shadow_color ?? '#000000';
-    if (shadowStyle && shadowStyle !== 'offset') {
-      // Only override if not the default brutalist offset style
-      const shadows = computeShadows(shadowStyle, shadowColor);
-      for (const [token, value] of Object.entries(shadows)) {
-        hostElement.style.setProperty(token, value);
-        tokensApplied.push(token);
-      }
-    } else if (shadowStyle === 'offset' && shadowColor !== '#000000') {
-      // Offset style with non-default color
-      const shadows = computeShadows('offset', shadowColor);
-      for (const [token, value] of Object.entries(shadows)) {
-        hostElement.style.setProperty(token, value);
-        tokensApplied.push(token);
-      }
+    /*
+     * 2b. Tokens that a skin may leave unspecified — written anyway, with the
+     *     platform default, for the inheritance reason spelled out in step 2.
+     *
+     *     --color-shadow  the ink that hand-spelled offset shadows resolve at
+     *                     the point of use (Sweep B, 19 sites). computeShadows
+     *                     covers the scale; this covers the rest.
+     *     --glow-strength multiplier on every CRT glow radius (Sweep D, 445
+     *                     sites). Atlas sets 0. If it were merely absent from
+     *                     PLATFORM_DARK_CONFIG, the Zwischenraum inside an
+     *                     Atlas shell would inherit 0 and lose every glow —
+     *                     the exact failure this block prevents, and one that
+     *                     no test and no lint gate can see.
+     *     --label-*       the label typography role (see THEME_TOKEN_MAP).
+     */
+    const inheritanceSafeDefaults: [string, string][] = [
+      ['--color-shadow', shadowColor],
+      ['--glow-strength', config.glow_strength ?? '1'],
+      ['--label-transform', config.label_transform ?? 'uppercase'],
+      ['--label-tracking', config.label_tracking ?? 'var(--tracking-wider)'],
+      /*
+       * The counter-block: one panel that reverses the page's polarity to draw
+       * a hard edge (the Atlas session log, a footer CTA). On the dark chrome
+       * there is nothing to reverse against, so the default is not an inversion
+       * at all — the block is the raised surface and its ink the ordinary text
+       * colour.
+       *
+       * Deliberately NOT `--color-surface-inverse`. That token is a platform
+       * CONSTANT (#ffffff) whose ink `--color-on-surface-inverse` is documented
+       * in `_colors.css` as un-themeable on purpose, and all three of its
+       * consumers use it as a white CAMERA FLASH rather than as a surface:
+       * `deploy-operative-styles .flash`, `dossier-reveal-styles .stamp__flash`,
+       * `VelgDungeonDebrief` (amber 30% over it). Pointing a skin's dark block
+       * at that name would turn every flash into a dark veil, silently — no
+       * test reads a colour. Two names because there are two roles.
+       *
+       * Ground and ink are written as a pair and never half-set: a themeable
+       * surface under un-themeable ink is precisely the failure
+       * `--color-on-surface-inverse` exists to document.
+       */
+      ['--color-surface-contrast', config.color_surface_contrast ?? 'var(--color-surface-raised)'],
+      ['--color-text-on-contrast', config.text_on_contrast ?? 'var(--color-text-primary)'],
+    ];
+    for (const [token, value] of inheritanceSafeDefaults) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
     }
 
     // 3. Compute and apply animation duration tokens
@@ -331,6 +442,15 @@ class ThemeService {
     // 3b. Publish the card frame treatment. Not a token mapping: each value
     // names a construction the card assembles, not a value it interpolates.
     activeCardFrame.value = cardFrameFromConfig(config);
+    /*
+     * `document.body` is the platform-skin host by construction — app-shell.ts
+     * writes there and documents why. Remembering its frame is what lets a
+     * pinned-dark subtree (DriftView, DungeonView) hand the page back its own
+     * frame when it leaves; see restorePlatformCardFrame in card-frame.ts.
+     */
+    if (hostElement === document.body) {
+      setPlatformCardFrame(activeCardFrame.value);
+    }
 
     // 4. Bridge hover_effect setting to CSS custom properties
     const hoverEffect = config.hover_effect ?? 'translate';
@@ -341,6 +461,13 @@ class ThemeService {
       translate: 'translate(-2px, -2px)',
       scale: 'scale(1.03)',
       glow: 'translate(0)',
+      /*
+       * Atlas. A brutalist card slides diagonally out from under its own offset
+       * shadow; a sheet of paper does not slide, it lifts — straight up, and
+       * further (4px) because there is no shadow displacement to read the
+       * movement against.
+       */
+      lift: 'translateY(-4px)',
     };
     hostElement.style.setProperty(
       '--hover-transform',
@@ -444,10 +571,136 @@ class ThemeService {
         '--color-text-quiet',
         'color-mix(in srgb, var(--color-text-muted) 70%, var(--color-text-primary))',
       ],
+      /*
+       * Panel-tint overlays, re-derived here for the same reason as
+       * --color-text-quiet above: declared on :root they would resolve
+       * against the platform-dark text-primary and stay a near-white tint on
+       * every themed subtree, including a paper skin where white-on-white is
+       * invisible.
+       */
+      ['--color-overlay-ink', 'color-mix(in srgb, var(--color-text-primary) 4%, transparent)'],
+      [
+        '--color-overlay-ink-strong',
+        'color-mix(in srgb, var(--color-text-primary) 8%, transparent)',
+      ],
+      ['--color-scanline', 'color-mix(in srgb, var(--color-text-primary) 1.5%, transparent)'],
+      /*
+       * Die vierte Ink-Stufe, und der Beweis, dass diese Liste kein Ritual ist.
+       *
+       * Sie kam am 03.09.2026 zu den drei darüber und wurde NUR in `:root`
+       * deklariert. Im Browser gemessen, Atlas-Skin: die drei Nachbarn lösten
+       * zu `#17201d` auf, die neue zu `#e5e5e5` — der Tinte des DUNKLEN Skins,
+       * auf jedem Skin, für immer. Eine weiße Markierung auf Papier.
+       *
+       * Kein Fehler, kein roter Test, nichts: das Token EXISTIERTE und hatte
+       * einen gültigen Wert. Nur den falschen. Wer hier eine Stufe ergänzt,
+       * ergänzt sie an zwei Orten.
+       */
+      [
+        '--color-overlay-ink-bright',
+        'color-mix(in srgb, var(--color-text-primary) 40%, transparent)',
+      ],
+      ['--color-grid', 'color-mix(in srgb, var(--color-text-primary) 12%, transparent)'],
+      /*
+       * VIER ALIASSE, DIE NIE EINEM THEME GEFOLGT SIND.
+       *
+       * `_colors.css` deklariert sie in `:root` als reine Weiterleitungen:
+       * `--color-text-link: var(--color-info)` und so weiter. Eine
+       * Weiterleitung sieht aus wie eine, die immer stimmt — sie nennt ja
+       * gerade KEINEN Wert. Aber ein `var()` in einer Custom Property löst beim
+       * deklarierenden Knoten auf, und der ist hier `:root`. Also stand in
+       * allen vier seit immer der Plattform-Wert, festgeschrieben, und jedes
+       * Theme erbte ihn.
+       *
+       * Am 03.09.2026 im Browser gemessen, Atlas-Skin: `--color-text-link`
+       * stand auf `#3b82f6` statt auf dem Kohlepapier-Blau `#2f3f7a`,
+       * `--color-text-danger` und `--color-border-danger` auf `#ef4444` statt
+       * `#b3261e`, `--color-border-focus` auf Amber statt auf dem Zinnober.
+       *
+       * Das ist NICHT nur eine Sache des neuen Skins. Es galt für jede
+       * Simulation mit eigenem Theme: eine Cyberpunk-Welt zeigte ihren
+       * Gefahren-Text im Plattform-Rot, nicht im eigenen. Gefunden beim
+       * Nachmessen der Ink-Stufe darüber, an derselben Falle.
+       */
+      ['--color-text-link', 'var(--color-info)'],
+      ['--color-text-danger', 'var(--color-danger)'],
+      ['--color-border-focus', 'var(--color-primary)'],
+      ['--color-border-danger', 'var(--color-danger)'],
+      /*
+       * NICHT NUR FARBEN. Diese fünf hat das Tor gefunden, nachdem es von
+       * `_colors.css` auf `styles/tokens/*.css` erweitert wurde — dieselbe
+       * Falle, andere Datei. Die erste Fassung des Tores hätte genau das
+       * gefangen, was man ihr gesagt hatte, und nichts darüber hinaus.
+       *
+       * `--heading-font: var(--font-brutalist)` ist der schwerste der fünf:
+       * `_global.css` setzt damit die Schrift von h1–h6, und `--font-brutalist`
+       * IST vom Theme gesetzt (`font_heading`). Also stand in jeder Welt das
+       * Courier der Plattform in den Überschriften, egal welche Schrift ihr
+       * Theme nannte. Im Browser nachgemessen, Atlas-Skin: `--font-body` war
+       * Spectral (richtig), `--heading-font` Courier (falsch) — im selben
+       * berechneten Stil, nebeneinander.
+       *
+       * Die drei `--transition-*` sind aus BEIDEN Hälften abgeleitet
+       * (`--duration-*` skaliert applyConfig über `animation_speed`,
+       * `--ease-default` kommt aus `animation_easing`) und froren trotzdem auf
+       * `100ms ease` ein. Eine Welt mit animation_speed 1,5 hatte damit
+       * `--duration-fast: 150ms` UND `--transition-fast: 100ms` — sich selbst
+       * widersprechend, innerhalb eines Themes.
+       *
+       * `--h6-size` hängt an `--text-base`, dem einzigen Grad, den ein Theme
+       * setzt (`font_base_size`). Atlas nennt 17px; h6 blieb bei 16. Die
+       * anderen fünf Überschriftengrade hängen an Stufen, die kein Theme
+       * anfasst, und stehen deshalb nicht hier — h1/h2 haben zudem eine
+       * mobile Fassung in einer Medienabfrage, die ein Inline-Wert auf dem
+       * Wirt schlagen würde.
+       */
+      ['--heading-font', 'var(--font-brutalist)'],
+      ['--transition-fast', 'var(--duration-fast) var(--ease-default)'],
+      ['--transition-normal', 'var(--duration-normal) var(--ease-default)'],
+      ['--transition-slow', 'var(--duration-slow) var(--ease-default)'],
+      ['--h6-size', 'var(--text-base)'],
     ];
     for (const [token, value] of granularityPairs) {
       hostElement.style.setProperty(token, value);
       tokensApplied.push(token);
+    }
+
+    /*
+     * 7b. Guarantee that the text roles are legible on this world's own
+     *     surfaces. See `enforceTextContrast` for why this layer exists.
+     *
+     *     WHY HERE AND NOT AFTER STEP 1
+     *       It used to run right after the direct token mappings, and it was
+     *       measuring two roles that did not exist yet. `--color-text-quiet`
+     *       and `--color-text-tertiary` are DERIVED — step 7 above writes them
+     *       — so before that the probe read the values inherited from :root,
+     *       which are mixed from the platform-dark palette. On a light skin
+     *       those are near-white on paper, the guard duly "lifted" them, and
+     *       step 7 then overwrote the correction two lines later.
+     *
+     *       Measured in the browser on 03.09.2026 with the Atlas skin: the
+     *       shell reported `data-contrast-lifted="2"` while all four roles
+     *       measured 4.68 : 1 or better on every ground. Two corrections that
+     *       were neither needed nor kept — and the marker they left is the one
+     *       signal that says "this palette was never checked against itself".
+     *       A guard that cries wolf is read as noise on the day it is right.
+     *
+     *     WHY THE LATER POSITION IS ALSO STRONGER
+     *       `--color-text-quiet` and `-tertiary` are declared as color-mix()
+     *       over `var(--color-text-muted)`. Lifting muted here therefore moves
+     *       both of them with it, instead of freezing them at a literal.
+     *
+     *     The count is published on the host rather than dropped. A correction
+     *     nobody can see is a correction nobody can check, and the number
+     *     separates the two cases that look identical from the outside: a
+     *     world with one role lifted has a colour that drifted, a world with
+     *     all of them lifted has a palette that was never checked at all.
+     */
+    const lifted = this.enforceTextContrast(hostElement, tokensApplied);
+    if (lifted > 0) {
+      hostElement.dataset.contrastLifted = String(lifted);
+    } else {
+      delete hostElement.dataset.contrastLifted;
     }
 
     // 8. Auto-derive focus rings so they adapt to themed status colors
@@ -466,10 +719,22 @@ class ThemeService {
     //    Resonance) inherits the simulation's body font inside the shell.
     //    Skip if the body font is the default system stack — let --font-prose
     //    inherit from :root (Spectral) so prose stays readable in serif.
-    if (config.font_body && !config.font_body.startsWith('system-ui')) {
-      hostElement.style.setProperty('--font-prose', config.font_body);
-      tokensApplied.push('--font-prose');
-    }
+    /*
+     * Written on every host, like step 2b and for the same reason. The
+     * skip-when-system-ui branch was correct while :root was the only thing
+     * above a host — an unwritten --font-prose meant Spectral. It stopped being
+     * correct with a second platform skin: Atlas sets Spectral as its BODY
+     * font, so it writes --font-prose, and a DriftView re-asserting the dark
+     * config underneath it took the system-ui branch, wrote nothing, and kept
+     * the Atlas value. Caught by platform-skin-switch.test.ts, which compares
+     * the two skins' written token sets rather than any one value.
+     */
+    const bodyFont = config.font_body ?? '';
+    hostElement.style.setProperty(
+      '--font-prose',
+      bodyFont && !bodyFont.startsWith('system-ui') ? bodyFont : 'var(--font-bureau)',
+    );
+    tokensApplied.push('--font-prose');
 
     this.appliedTokensByHost.set(hostElement, tokensApplied);
 
@@ -478,6 +743,11 @@ class ThemeService {
     for (const key of fontKeys) {
       const family = config[key];
       if (family) loadGoogleFont(family);
+    }
+    // The heading weight is the one a theme routinely sets outside the standard
+    // four; see loadGoogleFontWeight for why it travels in its own request.
+    if (config.font_heading && config.heading_weight) {
+      loadGoogleFontWeight(config.font_heading, config.heading_weight.trim());
     }
   }
 
@@ -836,6 +1106,40 @@ function extractAllFamilies(cssValue: string): string[] {
  * Dynamically load a single Google Font family.
  * Idempotent — skips system fonts and already-loaded families.
  */
+/** The weights every family is requested at. A theme may need one more. */
+const STANDARD_WEIGHTS = new Set(['400', '500', '700', '800']);
+
+/**
+ * Families that carry an `opsz` axis, with its range.
+ *
+ * WHY A NAMED LIST AND NOT A BLANKET REQUEST
+ *   `css2` answers **400 Bad Request** for a family that lacks a requested
+ *   axis — measured on 03.09.2026 against Lora, Oswald, Playfair Display,
+ *   Spectral, Geist Mono and Rajdhani, all six. Asking every family for `opsz`
+ *   would strip the heading font from six themes to give one theme a nicer
+ *   `g`. So the axis is claimed per family, the same way the extra weight is.
+ *
+ * WHY IT MATTERS AT ALL
+ *   `font-optical-sizing: auto` in `_global.css` only does something if the
+ *   FILE has the axis, and pinning a weight takes it away. Measured, same day,
+ *   via the served woff2's `fvar` table:
+ *
+ *     :wght@300               → no fvar table at all, a static instance
+ *     :opsz,wght@12..96,300   → fvar: opsz 12–96, weight pinned
+ *
+ *   So the CSS line alone was dead: Atlas asked for weight 300, received a
+ *   static cut, and optical sizing had nothing to act on. Nothing reported it
+ *   — the font loaded and the headings rendered, drawn for the wrong size.
+ *
+ *   Note the axis DEFAULT is 96 (display). Even with the variable file, a
+ *   16 px label would be drawn at display proportions without the `auto`.
+ *   Neither half works alone.
+ */
+const OPSZ_AXIS = new Map<string, [number, number]>([
+  // Verified against the served fvar table, not read off a spec sheet.
+  ['bricolage grotesque', [12, 96]],
+]);
+
 function loadSingleGoogleFont(family: string): void {
   const key = family.toLowerCase();
   if (!family || SYSTEM_FONTS.has(key) || loadedFonts.has(key)) return;
@@ -850,6 +1154,54 @@ function loadSingleGoogleFont(family: string): void {
   link.id = `${GOOGLE_FONTS_PREFIX}${key.replace(/\s+/g, '-')}`;
   link.rel = 'stylesheet';
   link.href = url;
+  document.head.appendChild(link);
+}
+
+/**
+ * Fetch ONE additional weight for a family, in its own <link>.
+ *
+ * WHY A SECOND REQUEST AND NOT A LONGER LIST
+ *   The list above asks for 400/500/700/800. A theme that sets
+ *   `heading_weight` outside it gets no such face and the browser renders the
+ *   nearest one — Atlas asks Bricolage Grotesque for 300 and would silently
+ *   receive 400, which is the whole difference between the skin's thin
+ *   headings and ordinary ones. Nothing reports this: the font loads, the
+ *   headings render, they are just wrong.
+ *
+ *   Appending 300 to the shared list is not the fix. `css2` answers
+ *   400 Bad Request when ANY requested weight is missing from the family, and
+ *   it answers it for the whole stylesheet — Lora (400–700) and Playfair
+ *   Display (400–900) have no 300, so one extra entry would strip the body
+ *   font from the themes that use them. A separate link fails alone: if the
+ *   weight does not exist, that one request 400s and the base faces are
+ *   already in the document.
+ */
+function loadGoogleFontWeight(cssFamily: string, weight: string): void {
+  const [family] = extractAllFamilies(cssFamily);
+  const key = family?.toLowerCase();
+  if (!family || !key || SYSTEM_FONTS.has(key)) return;
+
+  const opsz = OPSZ_AXIS.get(key);
+  /*
+   * A standard weight is already in the shared request, so normally there is
+   * nothing to fetch. An opsz family is the exception: the shared request
+   * pins its weights and hands back a static cut, so even a 400-weight
+   * heading needs this second link to get the axis at all.
+   */
+  if (STANDARD_WEIGHTS.has(weight) && !opsz) return;
+
+  const id = `${GOOGLE_FONTS_PREFIX}${key.replace(/\s+/g, '-')}-${weight}`;
+  if (document.getElementById(id)) return;
+
+  ensurePreconnect();
+
+  // Axes go in alphabetical order, then one value or range each, same order.
+  const axes = opsz ? `opsz,wght@${opsz[0]}..${opsz[1]},${weight}` : `wght@${weight}`;
+
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/\s+/g, '+')}:${axes}&display=swap`;
   document.head.appendChild(link);
 }
 

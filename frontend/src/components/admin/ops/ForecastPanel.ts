@@ -91,7 +91,7 @@ export class VelgOpsForecastPanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -103,7 +103,7 @@ export class VelgOpsForecastPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: transparent;
       border: 1px solid var(--color-border);
@@ -153,7 +153,7 @@ export class VelgOpsForecastPanel extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -168,7 +168,7 @@ export class VelgOpsForecastPanel extends LitElement {
 
     .projection__value--adjusted {
       color: var(--_accent);
-      text-shadow: 0 0 12px var(--_glow);
+      text-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_glow);
     }
 
     .projection__band {
@@ -217,7 +217,7 @@ export class VelgOpsForecastPanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
     }
 
@@ -225,7 +225,7 @@ export class VelgOpsForecastPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: transparent;
       border: none;

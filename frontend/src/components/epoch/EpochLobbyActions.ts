@@ -60,7 +60,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 2px solid;
       cursor: pointer;
@@ -96,7 +96,7 @@ export class VelgEpochLobbyActions extends LitElement {
 
     .lobby-btn--bots:hover:not(:disabled) {
       background: color-mix(in srgb, var(--color-warning) 15%, transparent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-warning) 20%, transparent);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--color-warning) 20%, transparent);
     }
 
     .lobby-btn--invite {
@@ -117,7 +117,7 @@ export class VelgEpochLobbyActions extends LitElement {
 
     .lobby-btn--delete:hover:not(:disabled) {
       background: color-mix(in srgb, var(--color-danger) 15%, transparent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-danger) 20%, transparent);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 20%, transparent);
     }
 
     .lobby-btn--draft {
@@ -128,13 +128,13 @@ export class VelgEpochLobbyActions extends LitElement {
 
     .lobby-btn--draft:hover:not(:disabled) {
       background: color-mix(in srgb, var(--color-epoch-accent) 15%, transparent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--color-epoch-accent) 20%, transparent);
+      box-shadow: 0 0 calc(10px * var(--glow-strength)) color-mix(in srgb, var(--color-epoch-accent) 20%, transparent);
     }
 
     .draft-status {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-4);
       border: 2px solid var(--color-success);
@@ -163,7 +163,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       letter-spacing: 2px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-1);
     }
@@ -181,7 +181,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 2px solid var(--color-border);
       color: var(--color-text-tertiary);
@@ -262,14 +262,14 @@ export class VelgEpochLobbyActions extends LitElement {
       border: 2px solid var(--color-success);
       background: color-mix(in srgb, var(--color-success) 6%, transparent);
       box-shadow:
-        0 0 12px color-mix(in srgb, var(--color-success) 15%, transparent),
-        inset 0 0 20px color-mix(in srgb, var(--color-success) 4%, transparent);
+        0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 15%, transparent),
+        inset 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 4%, transparent);
       animation: deployed-glow 3s ease-in-out infinite;
     }
 
     @keyframes deployed-glow {
-      0%, 100% { box-shadow: 0 0 12px color-mix(in srgb, var(--color-success) 15%, transparent), inset 0 0 20px color-mix(in srgb, var(--color-success) 4%, transparent); }
-      50% { box-shadow: 0 0 20px color-mix(in srgb, var(--color-success) 25%, transparent), inset 0 0 30px color-mix(in srgb, var(--color-success) 8%, transparent); }
+      0%, 100% { box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 15%, transparent), inset 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 4%, transparent); }
+      50% { box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 25%, transparent), inset 0 0 calc(30px * var(--glow-strength)) color-mix(in srgb, var(--color-success) 8%, transparent); }
     }
 
     /* Corner brackets on deployed card */
@@ -300,7 +300,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 8px;
       letter-spacing: 2.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-success);
       padding: 2px 6px;
       border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
@@ -311,7 +311,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
     }
@@ -338,7 +338,7 @@ export class VelgEpochLobbyActions extends LitElement {
       border-color: var(--color-danger);
       color: var(--color-danger);
       background: color-mix(in srgb, var(--color-danger) 15%, transparent);
-      box-shadow: 0 0 8px color-mix(in srgb, var(--color-danger) 25%, transparent);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-danger) 25%, transparent);
     }
 
     .deployed__dismiss:focus-visible {
@@ -381,7 +381,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-weight: var(--font-bold);
       font-size: 10px;
       letter-spacing: 3px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin: 0;
     }
@@ -488,7 +488,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       letter-spacing: 1.5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--slot-accent, var(--color-success));
     }
 
@@ -496,7 +496,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
       letter-spacing: 1px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px 6px;
       border: 1px solid;
       white-space: nowrap;
@@ -568,7 +568,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-warning);
       background: var(--color-surface);
@@ -607,7 +607,7 @@ export class VelgEpochLobbyActions extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       border: 1px solid;
       cursor: pointer;
@@ -656,7 +656,7 @@ export class VelgEpochLobbyActions extends LitElement {
       margin: var(--space-1) 0 0;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 1.5px;
       color: var(--color-epoch-accent);
     }

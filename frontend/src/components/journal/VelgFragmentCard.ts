@@ -105,7 +105,7 @@ export class VelgFragmentCard extends LitElement {
 
     .fragment--mark .body {
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       font-size: var(--text-sm);
       line-height: var(--leading-normal);
@@ -169,7 +169,7 @@ export class VelgFragmentCard extends LitElement {
     .meta__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -177,7 +177,7 @@ export class VelgFragmentCard extends LitElement {
     .meta__rarity {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--_rule);
       opacity: 0.8;

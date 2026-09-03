@@ -71,7 +71,7 @@ export class VelgBondPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xl);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -151,7 +151,7 @@ export class VelgBondPanel extends LitElement {
     .slot__name {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
       text-align: center;
@@ -165,7 +165,7 @@ export class VelgBondPanel extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .slot__badge {
@@ -270,7 +270,7 @@ export class VelgBondPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-lg);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
     }
@@ -291,7 +291,7 @@ export class VelgBondPanel extends LitElement {
     .dossier__status {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-0-5) var(--space-2);
       border: 1px solid var(--color-border);
     }
@@ -332,7 +332,7 @@ export class VelgBondPanel extends LitElement {
     .empty__title {
       font-family: var(--font-brutalist);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       margin-bottom: var(--space-4);

@@ -68,7 +68,7 @@ export class VelgFilterBar extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-3);
       border: var(--border-medium);
@@ -98,7 +98,7 @@ export class VelgFilterBar extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: var(--color-surface-header);
       border: var(--border-width-thin) solid var(--color-border);
@@ -138,7 +138,7 @@ export class VelgFilterBar extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-2);
       background: transparent;

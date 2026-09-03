@@ -102,7 +102,7 @@ export class VelgContentDraftsList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-primary);
       margin: 0;
@@ -128,7 +128,7 @@ export class VelgContentDraftsList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-4);
       background: transparent;
@@ -169,7 +169,7 @@ export class VelgContentDraftsList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-2) var(--space-3);
       background: transparent;
@@ -201,7 +201,7 @@ export class VelgContentDraftsList extends LitElement {
     .scope-switch__label {
       font-family: var(--font-brutalist);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-widest);
       color: var(--color-text-quiet);
     }
@@ -213,7 +213,7 @@ export class VelgContentDraftsList extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 4px 10px;
       background: transparent;
@@ -244,7 +244,7 @@ export class VelgContentDraftsList extends LitElement {
       background: color-mix(in srgb, var(--_accent) 6%, transparent);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-secondary);
     }
@@ -299,7 +299,7 @@ export class VelgContentDraftsList extends LitElement {
     .row__pack {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
     }
@@ -384,7 +384,7 @@ export class VelgContentDraftsList extends LitElement {
     .batch-bar__count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--_accent);
     }

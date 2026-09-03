@@ -174,7 +174,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.14em;
       color: var(--color-primary);
     }
@@ -199,7 +199,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
     }
@@ -226,7 +226,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
       color: var(--color-primary);
@@ -309,7 +309,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 7px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.18em;
       color: var(--color-text-quiet);
     }
@@ -391,7 +391,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
     }
@@ -432,7 +432,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
     }
@@ -513,7 +513,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--_seq-accent, var(--color-primary));
     }
@@ -546,7 +546,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-quiet);
     }
@@ -615,7 +615,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       padding: 1px var(--space-1-5);
       background: color-mix(in srgb, var(--_seq-accent, var(--color-primary)) 15%, transparent);
@@ -728,7 +728,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
     }
@@ -741,7 +741,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       padding: 2px var(--space-2);
     }
@@ -779,7 +779,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-primary);
     }
@@ -807,7 +807,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-quiet);
       background: none;
@@ -857,7 +857,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-primary);
     }
@@ -957,7 +957,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       color: var(--color-text-quiet);
       background: color-mix(in srgb, var(--color-border) 30%, transparent);
@@ -1031,7 +1031,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       border-bottom: 1px solid var(--color-border);
@@ -1110,7 +1110,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.06em;
       margin-bottom: var(--space-2);
     }
@@ -1156,7 +1156,7 @@ export class VelgAdminInstagramTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 8px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-warning);
       animation: save-pulse 1s ease-in-out infinite;

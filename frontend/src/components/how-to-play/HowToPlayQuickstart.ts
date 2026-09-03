@@ -163,7 +163,7 @@ export class VelgHowToPlayQuickstart extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xl);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.04em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-3);
@@ -189,7 +189,7 @@ export class VelgHowToPlayQuickstart extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-semibold);
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-decoration: none;
       color: var(--color-primary);
       cursor: pointer;

@@ -76,7 +76,7 @@ export const infoBubbleStyles = css`
   .info-bubble:hover .info-bubble__icon,
   .info-bubble:focus-within .info-bubble__icon {
     background: var(--color-accent-amber);
-    box-shadow: 0 0 6px
+    box-shadow: 0 0 calc(6px * var(--glow-strength))
       color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
   }
 `;

@@ -147,7 +147,7 @@ export class VelgAttunementConsole extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -203,7 +203,7 @@ export class VelgAttunementConsole extends SignalWatcher(LitElement) {
       color: var(--color-text-danger);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       cursor: pointer;
       transition: background-color var(--transition-fast);

@@ -72,13 +72,13 @@ export class VelgAptitudeBars extends LitElement {
 
     .bar-row.highlighted {
       opacity: 1;
-      filter: drop-shadow(0 0 4px var(--bar-color, transparent));
+      filter: drop-shadow(0 0 calc(4px * var(--glow-strength)) var(--bar-color, transparent));
     }
 
     .label {
       width: var(--apt-label-width);
       font-size: var(--apt-font-size);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--color-text-quiet);
       overflow: hidden;
@@ -104,12 +104,19 @@ export class VelgAptitudeBars extends LitElement {
       height: 100%;
       transition: width var(--duration-normal, 300ms) var(--ease-dramatic, cubic-bezier(0.22, 1, 0.36, 1));
       animation: bar-fill-in var(--duration-entrance, 350ms) var(--ease-dramatic) both;
+      /* The tip lightens and the top edge catches a glint. Both used to be
+         literal white, which is only "away from the ground" while the ground is
+         black — on the paper skin a white-tipped bar fades into the page. Both
+         now run off --color-text-primary, so the gesture is the same and the
+         direction follows the skin. The glint is the ink-bright mark diluted to
+         15%: it is a highlight along one pixel, not an outline. */
       background-image: linear-gradient(
         90deg,
         var(--bar-color) 0%,
-        color-mix(in srgb, var(--bar-color) 70%, white) 100%
+        color-mix(in srgb, var(--bar-color) 70%, var(--color-text-primary)) 100%
       );
-      box-shadow: inset 0 1px 0 rgba(255 255 255 / 0.15);
+      box-shadow: inset 0 1px 0
+        color-mix(in srgb, var(--color-overlay-ink-bright) 37.5%, transparent);
     }
 
     @keyframes bar-fill-in {
@@ -178,7 +185,7 @@ export class VelgAptitudeBars extends LitElement {
       background: var(--slider-color, var(--color-text-muted));
       border: 1px solid var(--slider-color, var(--color-text-muted));
       cursor: grab;
-      box-shadow: 0 0 6px color-mix(in srgb, var(--slider-color, transparent) 40%, transparent);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--slider-color, transparent) 40%, transparent);
     }
 
     input[type='range']::-moz-range-track {

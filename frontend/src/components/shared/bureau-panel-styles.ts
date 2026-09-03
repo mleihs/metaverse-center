@@ -48,7 +48,7 @@ export const bureauPanelFrameStyles = css`
 
     /* Corner brackets + scanline overlay, layered over the existing
      * surface-raised background. The per-panel 3px amber top-bar rendered
-     * via :host::before paints OVER these background layers, so the
+     * via: host::before paints OVER these background layers, so the
      * top-left/top-right bracket corners visually tuck under the accent
      * bar (which is exactly what we want for the dossier look). */
     background:

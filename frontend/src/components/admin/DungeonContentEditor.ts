@@ -88,7 +88,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 8px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.12em;
         color: var(--color-accent-gold, var(--color-accent-amber));
         border: 1px solid var(--color-accent-gold, var(--color-accent-amber));
@@ -99,7 +99,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black, 900);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-primary);
         margin: 0;
@@ -138,7 +138,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-warning);
         flex-shrink: 0;
@@ -176,7 +176,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 9px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
         margin-bottom: var(--space-2);
@@ -200,7 +200,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 8px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.12em;
         color: var(--color-text-quiet);
       }
@@ -261,7 +261,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: 8px;
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-quiet);
       }
@@ -325,7 +325,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         background: var(--color-accent-gold, var(--color-accent-amber));
         color: var(--color-surface-sunken, #000);
@@ -335,7 +335,7 @@ export class DungeonContentEditor extends LitElement {
       }
 
       .btn-save:hover:not(:disabled) {
-        box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-gold, var(--color-accent-amber)) 40%, transparent);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-gold, var(--color-accent-amber)) 40%, transparent);
       }
 
       .btn-save:disabled {
@@ -348,7 +348,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         background: transparent;
         color: var(--color-text-secondary);
@@ -375,7 +375,7 @@ export class DungeonContentEditor extends LitElement {
         font-family: var(--font-brutalist);
         font-size: var(--text-xs);
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.06em;
         background: transparent;
         color: var(--color-danger);

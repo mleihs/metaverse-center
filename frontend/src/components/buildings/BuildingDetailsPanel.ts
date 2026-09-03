@@ -108,7 +108,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -145,7 +145,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -237,7 +237,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-2);
     }
@@ -291,7 +291,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       line-height: 1;
@@ -325,7 +325,7 @@ export class VelgBuildingDetailsPanel extends LitElement {
       font-size: 8px;
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       line-height: 1.4;
     }
 

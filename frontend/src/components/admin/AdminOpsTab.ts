@@ -98,7 +98,7 @@ export class VelgAdminOpsTab extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-danger);
       border: 2px solid var(--color-danger);
       padding: var(--space-0-5) var(--space-3);
@@ -111,7 +111,7 @@ export class VelgAdminOpsTab extends LitElement {
       font-size: var(--text-2xl);
       font-weight: var(--font-black);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1) 0;
     }
@@ -128,7 +128,7 @@ export class VelgAdminOpsTab extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 2px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-primary);

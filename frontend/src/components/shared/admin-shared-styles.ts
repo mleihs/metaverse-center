@@ -84,7 +84,7 @@ export const adminSectionHeaderStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-text-primary);
     margin: 0;
@@ -175,7 +175,7 @@ export const adminGlobalCardStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-1) 0;
@@ -195,7 +195,7 @@ export const adminGlobalCardStyles = css`
     font-family: var(--font-brutalist);
     font-size: 10px;
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     padding: var(--space-1) var(--space-2);
     margin-top: var(--space-2);
@@ -245,7 +245,7 @@ export const adminButtonStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-sm);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     padding: var(--space-2) var(--space-5);
     cursor: pointer;
@@ -277,7 +277,7 @@ export const adminButtonStyles = css`
   }
 
   .btn--save:hover:not(:disabled) {
-    box-shadow: 0 0 12px
+    box-shadow: 0 0 calc(12px * var(--glow-strength))
       color-mix(in srgb, var(--_admin-accent, var(--color-danger)) 30%, transparent);
   }
 
@@ -354,7 +354,7 @@ export const adminForgeSectionStyles = [
     font-family: var(--font-brutalist, 'Courier New', monospace);
     font-weight: 900;
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-primary);
     margin: 0;
@@ -393,7 +393,7 @@ export const adminLoadingStyles = css`
     padding: var(--space-8);
     color: var(--color-text-quiet);
     font-family: var(--font-brutalist);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -413,7 +413,7 @@ export const adminBadgeStyles = css`
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.04em;
     padding: 1px 6px;
   }
@@ -447,7 +447,7 @@ export const adminActionStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.04em;
     padding: var(--space-1) var(--space-2);
     border: 1px solid var(--color-border);
@@ -537,7 +537,7 @@ export const adminTabNavStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.06em;
     padding: var(--space-2) var(--space-4);
     background: none;
@@ -608,7 +608,7 @@ export const adminStatusFilterStyles = css`
     font-family: var(--font-brutalist);
     font-size: 9px;
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     padding: var(--space-1) var(--space-3);
     border: 1px solid transparent;
@@ -665,12 +665,12 @@ export const adminConnectionCardStyles = css`
 
   .connection-card__indicator--ok {
     background: var(--color-success);
-    box-shadow: 0 0 6px var(--color-success);
+    box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-success);
   }
 
   .connection-card__indicator--error {
     background: var(--color-danger);
-    box-shadow: 0 0 6px var(--color-danger);
+    box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-danger);
   }
 
   .connection-card__indicator--unconfigured {
@@ -693,7 +693,7 @@ export const adminConnectionCardStyles = css`
   .connection-card__status {
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.05em;
   }
 
@@ -705,7 +705,7 @@ export const adminConnectionCardStyles = css`
     font-family: var(--font-brutalist);
     font-size: var(--text-xs);
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.06em;
     padding: var(--space-1-5) var(--space-3);
     border: 1px solid var(--color-border);
@@ -798,7 +798,7 @@ export const adminDispatchStyles = css`
     font-family: var(--font-brutalist);
     font-size: 8px;
     font-weight: var(--font-bold);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     padding: 1px var(--space-2);
     background: color-mix(in srgb, var(--color-primary) 12%, transparent);
@@ -910,7 +910,7 @@ export const adminSubNavStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: 0.08em;
     background: none;
     border: none;

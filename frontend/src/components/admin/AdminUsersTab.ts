@@ -58,7 +58,7 @@ export class VelgAdminUsersTab extends LitElement {
     .user-count {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
     }
@@ -120,7 +120,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: 1px var(--space-2);
       border: 1px solid;
@@ -176,7 +176,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3) 0;
@@ -218,7 +218,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       padding: var(--space-1) var(--space-3);
       border: 1px solid var(--color-border);
@@ -307,7 +307,7 @@ export class VelgAdminUsersTab extends LitElement {
 
     .forge-access__label {
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       font-weight: bold;
       color: var(--color-text-quiet);
       min-width: 120px;
@@ -332,7 +332,7 @@ export class VelgAdminUsersTab extends LitElement {
       padding: var(--space-8);
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -350,7 +350,7 @@ export class VelgAdminUsersTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-1) var(--space-3);
       border: 1px solid var(--color-border);
       background: var(--color-surface);

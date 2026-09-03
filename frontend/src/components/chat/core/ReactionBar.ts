@@ -97,7 +97,7 @@ export class ReactionBar extends LitElement {
     .pill--active {
       background: var(--_pill-active-bg);
       border-color: var(--_pill-active-border);
-      box-shadow: 0 0 6px var(--_pill-active-glow);
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--_pill-active-glow);
     }
 
     .pill--active:hover {
@@ -110,8 +110,8 @@ export class ReactionBar extends LitElement {
     }
 
     @keyframes pill-flash {
-      0% { box-shadow: 0 0 12px var(--_pill-active-glow); }
-      100% { box-shadow: 0 0 6px var(--_pill-active-glow); }
+      0% { box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_pill-active-glow); }
+      100% { box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--_pill-active-glow); }
     }
 
     .pill__emoji {

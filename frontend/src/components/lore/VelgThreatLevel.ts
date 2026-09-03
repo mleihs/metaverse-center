@@ -25,7 +25,7 @@ export class VelgThreatLevel extends LitElement {
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid;
       cursor: pointer;
       transition: all 0.2s;
@@ -89,7 +89,7 @@ export class VelgThreatLevel extends LitElement {
 
     @keyframes threat-glow {
       0%, 100% { box-shadow: none; }
-      50% { box-shadow: 0 0 6px var(--color-danger-border); }
+      50% { box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-danger-border); }
     }
 
     @media (prefers-reduced-motion: reduce) {

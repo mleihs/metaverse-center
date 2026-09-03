@@ -116,7 +116,7 @@ export class VelgAchievementBadge extends LitElement {
     .label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
       text-align: center;

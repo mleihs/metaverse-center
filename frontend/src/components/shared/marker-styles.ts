@@ -146,7 +146,7 @@ export const markerStatusStyles = css`
     font-weight: var(--font-bold);
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-brutalist);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     color: var(--marker-color, var(--color-text-secondary));
   }
 

@@ -107,7 +107,7 @@ export class ChatComposer extends LitElement {
       padding-inline: max(var(--space-6), calc((100% - 1080px) / 2));
       border-top: var(--border-medium);
       background: var(--_composer-bg);
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 -4px 12px color-mix(in srgb, var(--color-shadow) 15%, transparent);
     }
 
     /* --- Input row --- */
@@ -170,7 +170,7 @@ export class ChatComposer extends LitElement {
       color: var(--color-text-quiet);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -267,7 +267,7 @@ export class ChatComposer extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-primary);
       color: var(--color-text-inverse);
@@ -371,7 +371,7 @@ export class ChatComposer extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--_composer-live);
       flex-shrink: 0;

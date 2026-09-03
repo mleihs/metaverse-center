@@ -44,7 +44,7 @@ export class ChatLockModal extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-muted);
     }
@@ -90,7 +90,7 @@ export class ChatLockModal extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       border: var(--border-width-default) solid var(--color-border);
       cursor: pointer;

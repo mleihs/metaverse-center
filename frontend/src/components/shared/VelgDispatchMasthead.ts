@@ -51,7 +51,7 @@ export class VelgDispatchMasthead extends LitElement {
       font-weight: 900;
       font-size: 10px;
       letter-spacing: 5px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber);
       margin: 0 0 var(--space-4, 16px);
     }
@@ -60,7 +60,7 @@ export class VelgDispatchMasthead extends LitElement {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: 900;
       font-size: clamp(1.5rem, 4vw, 2.5rem);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist, 0.15em);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-3, 12px);

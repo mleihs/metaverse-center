@@ -102,7 +102,7 @@ export class VelgForgeTable extends LitElement {
         width: 2px;
         height: 100%;
         background: var(--color-success);
-        box-shadow: 0 0 8px var(--color-success), 4px 0 30px rgba(74 222 128 / 0.15);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--color-success), 4px 0 30px rgba(74 222 128 / 0.15);
         animation: sonar-sweep 3s ease-in-out infinite;
       }
 
@@ -131,7 +131,7 @@ export class VelgForgeTable extends LitElement {
       .command-panel__division {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.12em;
         color: var(--color-text-tertiary);
       }
@@ -159,7 +159,7 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold, 700);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide, 0.05em);
         color: var(--color-text-primary);
         background: var(--color-surface);
@@ -170,7 +170,7 @@ export class VelgForgeTable extends LitElement {
 
       .command-panel__action:hover:not(:disabled) {
         background: var(--color-border);
-        box-shadow: 0 0 12px rgba(74 222 128 / 0.15);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(74 222 128 / 0.15);
         border-color: var(--color-success);
       }
 
@@ -193,7 +193,7 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold, 700);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest, 0.1em);
         color: var(--color-success);
         padding-top: var(--space-2);
@@ -250,7 +250,7 @@ export class VelgForgeTable extends LitElement {
         padding: 0;
         font-family: var(--font-mono, monospace);
         font-size: var(--_forge-label);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-widest, 0.1em);
         color: var(--color-text-tertiary);
         text-decoration: underline;
@@ -333,11 +333,11 @@ export class VelgForgeTable extends LitElement {
         }
         25% {
           border-color: var(--color-success);
-          box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
+          box-shadow: inset 0 0 calc(30px * var(--glow-strength)) rgba(74 222 128 / 0.06), 0 0 calc(16px * var(--glow-strength)) rgba(74 222 128 / 0.12);
         }
         65% {
           border-color: var(--color-success);
-          box-shadow: inset 0 0 30px rgba(74 222 128 / 0.06), 0 0 16px rgba(74 222 128 / 0.12);
+          box-shadow: inset 0 0 calc(30px * var(--glow-strength)) rgba(74 222 128 / 0.06), 0 0 calc(16px * var(--glow-strength)) rgba(74 222 128 / 0.12);
         }
         100% {
           border-color: var(--color-text-muted);
@@ -393,7 +393,7 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-sm);
         color: var(--color-text-quiet);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         padding: var(--space-8) var(--space-4);
         text-align: center;
@@ -460,7 +460,7 @@ export class VelgForgeTable extends LitElement {
       .deploy-slot--drag-over {
         border-color: var(--color-success);
         background: rgba(74 222 128 / 0.05);
-        box-shadow: 0 0 12px rgba(74 222 128 / 0.2);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(74 222 128 / 0.2);
         transform: scale(1.02);
       }
 
@@ -618,7 +618,7 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: var(--text-base);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: var(--tracking-brutalist);
         color: var(--color-warning);
       }
@@ -642,7 +642,7 @@ export class VelgForgeTable extends LitElement {
         font-family: var(--font-mono, monospace);
         font-size: 11px;
         color: var(--color-icon);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.08em;
         margin-left: var(--space-2);
       }
@@ -667,7 +667,7 @@ export class VelgForgeTable extends LitElement {
       .staging-label {
         font-family: var(--font-mono, monospace);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-text-tertiary);
         margin-bottom: var(--space-4);
@@ -827,7 +827,7 @@ export class VelgForgeTable extends LitElement {
       .geo-card__name {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold, 700);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide, 0.05em);
         color: var(--color-text-primary);
         font-size: var(--text-sm);
@@ -883,7 +883,7 @@ export class VelgForgeTable extends LitElement {
       .dossier-panel__section-label {
         font-family: var(--font-mono, monospace);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--color-success);
         margin-top: var(--space-2);

@@ -225,7 +225,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: 0.03em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1);
     }
@@ -326,7 +326,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       border-color: color-mix(in srgb, var(--_card-accent) 50%, transparent);
       box-shadow:
         3px 3px 0 color-mix(in srgb, var(--_card-accent) 30%, transparent),
-        0 0 24px color-mix(in srgb, var(--_card-accent) 6%, transparent);
+        0 0 calc(24px * var(--glow-strength)) color-mix(in srgb, var(--_card-accent) 6%, transparent);
     }
 
     .card:hover::before,
@@ -380,7 +380,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-base);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.04em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2);
@@ -411,7 +411,7 @@ export class VelgHowToPlayGuideHub extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 

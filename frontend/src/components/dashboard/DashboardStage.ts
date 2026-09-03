@@ -162,7 +162,7 @@ export class VelgDashboardStage extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-accent-amber);
       }
 
@@ -186,12 +186,20 @@ export class VelgDashboardStage extends LitElement {
       }
 
       /* Ohne laufende Uhr steht hier eine Aussage statt einer Zahl. Sie ist
-         ruhiger gesetzt, damit die Bühne nicht so tut, als sei etwas dringend. */
+         ruhiger gesetzt, damit die Bühne nicht so tut, als sei etwas dringend.
+
+         Und weil es ein SATZ ist, folgt er --heading-transform, nicht
+         --label-transform. Ein Etikett ist ein Wort über einem Wert; hier steht
+         kein Wert, sondern die Auskunft, dass keiner läuft. Auf dem Phosphor-
+         Skin ändert das nichts (beide Tokens stehen dort auf uppercase), auf
+         Papier hätte dieser eine Satz sonst versal in einer Ansicht gestanden,
+         in der jede Überschrift klein gesetzt ist — der einzige geschriene Satz
+         der Seite, und ausgerechnet der ruhigste. */
       .clock--idle {
         color: var(--color-text-secondary);
         font-size: var(--text-2xl);
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
       }
 
       .clock__note {
@@ -233,7 +241,7 @@ export class VelgDashboardStage extends LitElement {
         font-weight: var(--font-bold);
         font-size: calc(var(--text-xl) * var(--stage-type-scale, 1));
         letter-spacing: var(--tracking-brutalist);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         color: var(--color-text-primary);
       }
 
@@ -311,7 +319,7 @@ export class VelgDashboardStage extends LitElement {
         font-weight: var(--font-bold);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wider);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-quiet);
         transition: color var(--transition-fast);
       }

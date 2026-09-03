@@ -38,7 +38,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         color: var(--color-text-primary);
       }
@@ -63,7 +63,7 @@ export class VelgAutonomySettingsPanel extends BaseSettingsPanel {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: var(--tracking-wide);
         cursor: pointer;
         transition: background var(--transition-fast), color var(--transition-fast);

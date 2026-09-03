@@ -82,7 +82,7 @@ export class VelgOpsHeatmapPanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -103,7 +103,7 @@ export class VelgOpsHeatmapPanel extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 0;
       border-left: 1px solid var(--color-border);
       background: var(--color-surface);

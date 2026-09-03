@@ -56,7 +56,7 @@ export class VelgLoginPanel extends LitElement {
         font-size: 10px;
         font-weight: 900;
         letter-spacing: 4px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--amber);
         margin: 0 0 8px;
         display: flex;
@@ -112,7 +112,7 @@ export class VelgLoginPanel extends LitElement {
         text-decoration: none;
         font-weight: 700;
         letter-spacing: 1px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         cursor: pointer;
       }
 

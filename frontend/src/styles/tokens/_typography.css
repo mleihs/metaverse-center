@@ -108,6 +108,16 @@
   --heading-transform: uppercase;
   --heading-tracking: var(--tracking-brutalist);
 
+  /* === LABEL TOKENS ===
+   * Labels are a role of their own, separate from headings: kickers, badges,
+   * button captions, tab strips, mono meta-lines. A skin may set headings to
+   * lowercase while labels stay uppercase mono (Atlas does exactly that).
+   * Default is identical to the heading role, so splitting the two is
+   * invisible in the platform's dark chrome.
+   * Themed per skin via ThemeService (label_transform / label_tracking). */
+  --label-transform: uppercase;
+  --label-tracking: var(--tracking-wider);
+
   --h1-size: var(--text-3xl);
   --h2-size: var(--text-2xl);
   --h3-size: var(--text-xl);

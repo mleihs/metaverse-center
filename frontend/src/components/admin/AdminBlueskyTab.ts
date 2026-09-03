@@ -86,7 +86,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.08em;
       margin: 0;
     }
@@ -165,7 +165,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
     }
 
@@ -173,7 +173,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
     }
 
@@ -226,7 +226,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
       padding: var(--space-1) var(--space-2);
       border: 1px solid var(--color-primary);
@@ -988,7 +988,7 @@ export class VelgAdminBlueskyTab extends LitElement {
       ${
         a.engagement_by_type.length > 0
           ? html`
-        <h3 style="font-family: var(--font-brutalist); text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--text-sm); margin-bottom: var(--space-3);">
+        <h3 style="font-family: var(--font-brutalist); text-transform: var(--label-transform); letter-spacing: 0.06em; font-size: var(--text-sm); margin-bottom: var(--space-3);">
           ${msg('By Content Type')}
         </h3>
         <div class="intel-grid">

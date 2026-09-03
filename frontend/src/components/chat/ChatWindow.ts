@@ -73,7 +73,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -91,7 +91,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-inverse);
       background: var(--color-primary);
@@ -171,7 +171,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       overflow: hidden;
@@ -200,7 +200,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: transparent;
       color: var(--color-text-secondary);
@@ -275,7 +275,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       overflow: hidden;
@@ -333,7 +333,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -353,7 +353,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -373,7 +373,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       animation: unanswered-in var(--duration-entrance) var(--ease-dramatic) both;
     }
@@ -462,7 +462,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
       background: transparent;
@@ -909,7 +909,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     const msgs = session.messages.value;
     const last = msgs.length > 0 ? msgs[msgs.length - 1] : null;
-    if (!last || last.sender_role !== 'user') return nothing;
+    if (last?.sender_role !== 'user') return nothing;
 
     return html`
       <div class="unanswered" role="status">

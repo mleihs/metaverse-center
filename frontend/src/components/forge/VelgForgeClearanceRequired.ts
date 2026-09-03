@@ -77,7 +77,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       font-weight: var(--font-black, 900);
       font-size: var(--text-xl, 25px);
       letter-spacing: var(--tracking-brutalist, 0.08em);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0;
       padding-bottom: var(--space-3, 12px);
@@ -111,7 +111,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-size: var(--text-xs, 10px);
       letter-spacing: var(--tracking-brutalist, 0.08em);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -178,7 +178,7 @@ export class VelgForgeClearanceRequired extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist, 'Courier New', monospace);
       font-weight: var(--font-black, 900);
       font-size: var(--text-sm, 13px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist, 0.08em);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-1, 4px);

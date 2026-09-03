@@ -28,7 +28,7 @@ export class VelgNotFound extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       letter-spacing: 0.3em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-muted);
     }
 
@@ -37,7 +37,7 @@ export class VelgNotFound extends LitElement {
       font-size: clamp(2.5rem, 8vw, 5rem);
       font-weight: 900;
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       color: var(--color-text-primary);
       margin: 0;
       line-height: 1;
@@ -60,7 +60,7 @@ export class VelgNotFound extends LitElement {
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-decoration: none;
       color: var(--color-surface);
       background: var(--color-primary);

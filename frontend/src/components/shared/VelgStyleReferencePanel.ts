@@ -35,7 +35,7 @@ export class VelgStyleReferencePanel extends LitElement {
     .panel__title {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-success);
       margin: 0;
@@ -51,7 +51,7 @@ export class VelgStyleReferencePanel extends LitElement {
       color: var(--color-success);
       font-family: var(--font-mono, monospace);
       font-size: 11px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -70,7 +70,7 @@ export class VelgStyleReferencePanel extends LitElement {
     .section__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       padding-bottom: var(--space-2);
@@ -94,7 +94,7 @@ export class VelgStyleReferencePanel extends LitElement {
     }
 
     .ref-row:hover {
-      background: rgba(255 255 255 / 0.02);
+      background: var(--color-overlay-ink);
     }
 
     .ref-row__thumb {
@@ -118,7 +118,7 @@ export class VelgStyleReferencePanel extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       color: var(--color-text-secondary);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -129,7 +129,7 @@ export class VelgStyleReferencePanel extends LitElement {
 
     .ref-row__scope--global {
       color: var(--color-success);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
     }
 
@@ -200,7 +200,7 @@ export class VelgStyleReferencePanel extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: 11px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
   `;

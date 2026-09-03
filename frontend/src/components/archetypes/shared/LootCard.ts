@@ -22,8 +22,8 @@ export class VelgLootCard extends LitElement {
 
       .card {
         padding: var(--space-4, 16px);
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink);
+        border: 1px solid var(--color-overlay-ink-strong);
         border-radius: 6px;
         transition: transform 0.3s var(--_ease-dramatic), border-color 0.3s var(--_ease-dramatic);
       }
@@ -50,7 +50,7 @@ export class VelgLootCard extends LitElement {
          einer echten Hebung, die die Identitaet kosten wuerde. */
       --_accent-text: color-mix(in srgb, var(--_accent) 82%, var(--color-text-primary));
         border-color: var(--_accent);
-        box-shadow: 0 0 16px var(--_accent-glow);
+        box-shadow: 0 0 calc(16px * var(--glow-strength)) var(--_accent-glow);
       }
 
       .header {
@@ -75,7 +75,7 @@ export class VelgLootCard extends LitElement {
         font-style: italic;
         padding: 1px 6px;
         border-radius: 3px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink-strong);
         color: var(--color-text-muted, #888);
       }
 

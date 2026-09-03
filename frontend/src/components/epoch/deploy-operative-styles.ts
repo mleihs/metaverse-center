@@ -77,7 +77,7 @@ export const operativeOverlayStyles = css`
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: var(--text-lg);
-			text-transform: uppercase;
+			text-transform: var(--heading-transform);
 			letter-spacing: var(--tracking-wide);
 			color: var(--color-text-primary);
 		}
@@ -187,7 +187,7 @@ export const deployOperativeStyles = [
 		.header__subtitle {
 			font-family: var(--font-mono, monospace);
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			color: var(--color-text-quiet);
 		}
@@ -264,7 +264,7 @@ export const deployOperativeStyles = [
 			border: 1px solid var(--color-border);
 			box-shadow:
 				inset 0 2px 8px var(--_sh-deep),
-				inset 0 0 1px var(--_hi-faint),
+				inset 0 0 calc(1px * var(--glow-strength)) var(--_hi-faint),
 				0 1px 0 var(--_hi-dim);
 		}
 
@@ -316,7 +316,7 @@ export const deployOperativeStyles = [
 			z-index: 15;
 			transform: scale(1.2) translateY(-12px) !important;
 			filter:
-				drop-shadow(0 0 16px var(--color-primary-border))
+				drop-shadow(0 0 calc(16px * var(--glow-strength)) var(--color-primary-border))
 				drop-shadow(0 20px 40px var(--_sh-intense));
 		}
 
@@ -328,8 +328,7 @@ export const deployOperativeStyles = [
 		/* Locked: powered-down bay */
 		.zone--locked {
 			border-color: var(--color-surface);
-			background:
-				repeating-linear-gradient(-45deg, transparent, transparent 4px, var(--_hatch-line) 4px, var(--_hatch-line) 5px),
+			background: repeating-linear-gradient(-45deg, transparent, transparent 4px, var(--_hatch-line) 4px, var(--_hatch-line) 5px),
 				linear-gradient(180deg, var(--_sh-heavy), var(--_sh-light)),
 				var(--color-surface-sunken);
 			box-shadow: inset 0 2px 12px var(--_sh-intense);
@@ -357,7 +356,7 @@ export const deployOperativeStyles = [
 		.zone--dragover {
 			border-color: var(--color-epoch-accent);
 			border-style: solid;
-			box-shadow: 0 0 16px color-mix(in srgb, var(--color-primary) 20%, transparent), inset 0 0 12px color-mix(in srgb, var(--color-primary) 6%, transparent);
+			box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 20%, transparent), inset 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 6%, transparent);
 			transform: scale(1.03);
 			transition: all 150ms ease;
 		}
@@ -397,15 +396,15 @@ export const deployOperativeStyles = [
 				border-color: var(--color-border);
 				box-shadow:
 					inset 0 2px 8px var(--_sh-deep),
-					inset 0 0 1px var(--_hi-faint),
+					inset 0 0 calc(1px * var(--glow-strength)) var(--_hi-faint),
 					0 1px 0 var(--_hi-dim);
 			}
 			to {
 				border-color: color-mix(in srgb, var(--color-epoch-accent) 25%, var(--color-surface-raised));
 				box-shadow:
 					inset 0 2px 8px var(--_sh-deep),
-					inset 0 0 12px color-mix(in srgb, var(--color-primary) 4%, transparent),
-					0 0 8px color-mix(in srgb, var(--color-primary) 6%, transparent),
+					inset 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 4%, transparent),
+					0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 6%, transparent),
 					0 1px 0 var(--_hi-dim);
 			}
 		}
@@ -421,13 +420,13 @@ export const deployOperativeStyles = [
 			0%, 100% {
 				box-shadow:
 					inset 0 2px 8px var(--_sh-deep),
-					inset 0 0 20px color-mix(in srgb, var(--color-primary) 6%, transparent),
+					inset 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 6%, transparent),
 					0 0 0 0 var(--color-primary-border);
 			}
 			50% {
 				box-shadow:
 					inset 0 2px 8px var(--_sh-deep),
-					inset 0 0 30px color-mix(in srgb, var(--color-primary) 10%, transparent),
+					inset 0 0 calc(30px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 10%, transparent),
 					0 0 24px 4px color-mix(in srgb, var(--color-primary) 12%, transparent);
 			}
 		}
@@ -437,7 +436,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.2em;
 			color: var(--color-text-quiet);
 			margin-bottom: var(--space-1);
@@ -551,7 +550,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-mono, monospace);
 			font-size: 9px;
 			font-weight: 700;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.06em;
 			padding: 2px 8px;
 			border: 1px solid;
@@ -614,7 +613,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.15em;
 			color: var(--color-icon);
 			white-space: nowrap;
@@ -671,7 +670,7 @@ export const deployOperativeStyles = [
 			/* !important beats animation: forwards fill */
 			transform: translateY(-16px) scale(1.35) !important;
 			filter:
-				drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary) 35%, transparent))
+				drop-shadow(0 0 calc(18px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 35%, transparent))
 				drop-shadow(0 16px 36px var(--_sh-intense));
 		}
 
@@ -792,7 +791,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 800;
 			font-size: 11px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.12em;
 			color: var(--color-text-secondary);
 			line-height: 1.3;
@@ -803,7 +802,7 @@ export const deployOperativeStyles = [
 		.target-card__type {
 			font-family: var(--font-mono, monospace);
 			font-size: 8px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.1em;
 			color: var(--_accent);
 			padding: 2px 8px;
@@ -811,7 +810,7 @@ export const deployOperativeStyles = [
 			border-radius: 2px;
 			background: color-mix(in srgb, var(--_accent) 8%, transparent);
 			width: fit-content;
-			text-shadow: 0 0 6px color-mix(in srgb, var(--_accent) 30%, transparent);
+			text-shadow: 0 0 calc(6px * var(--glow-strength)) color-mix(in srgb, var(--_accent) 30%, transparent);
 		}
 
 		/* ─── Hover: lift + glow + scale ─── */
@@ -821,7 +820,7 @@ export const deployOperativeStyles = [
 			box-shadow:
 				inset 0 1px 0 var(--_hi-medium),
 				inset 0 -1px 4px var(--_sh-heavy),
-				0 0 20px color-mix(in srgb, var(--_accent) 20%, transparent),
+				0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--_accent) 20%, transparent),
 				0 16px 32px var(--_sh-deep),
 				0 0 0 1px color-mix(in srgb, var(--_accent) 15%, transparent);
 		}
@@ -854,9 +853,9 @@ export const deployOperativeStyles = [
 				linear-gradient(175deg, color-mix(in srgb, var(--color-primary) 6%, transparent) 0%, transparent 40%),
 				linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%);
 			box-shadow:
-				inset 0 0 24px var(--color-primary-bg),
+				inset 0 0 calc(24px * var(--glow-strength)) var(--color-primary-bg),
 				inset 0 1px 0 var(--_hi-soft),
-				0 0 12px var(--color-primary-glow),
+				0 0 calc(12px * var(--glow-strength)) var(--color-primary-glow),
 				0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent);
 		}
 
@@ -944,7 +943,7 @@ export const deployOperativeStyles = [
 		.target-section__header-badge {
 			font-family: var(--font-mono, monospace);
 			font-size: 8px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.15em;
 			color: var(--color-epoch-accent);
 			padding: 2px 8px;
@@ -958,7 +957,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: 13px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.15em;
 			color: var(--color-text-primary);
 		}
@@ -994,7 +993,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 800;
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.1em;
 			color: var(--color-text-tertiary);
 		}
@@ -1002,7 +1001,7 @@ export const deployOperativeStyles = [
 		.target-zone-col__header-sec {
 			font-family: var(--font-mono, monospace);
 			font-size: 8px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			color: var(--zone-accent, var(--color-text-muted));
 		}
@@ -1049,7 +1048,7 @@ export const deployOperativeStyles = [
 		.embassy-bar__label {
 			font-family: var(--font-mono, monospace);
 			font-size: 9px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			color: var(--color-text-quiet);
 			white-space: nowrap;
@@ -1165,7 +1164,7 @@ export const deployOperativeStyles = [
 			right: var(--space-5);
 			font-family: var(--font-mono, monospace);
 			font-size: 9px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.1em;
 			color: var(--color-icon);
 		}
@@ -1208,8 +1207,8 @@ export const deployOperativeStyles = [
 			transform: translateY(-30px) rotateZ(0deg) scale(1.4);
 			transition-delay: 0ms;
 			filter:
-				drop-shadow(0 0 16px color-mix(in srgb, var(--color-primary) 35%, transparent))
-				drop-shadow(0 0 36px var(--color-primary-glow))
+				drop-shadow(0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 35%, transparent))
+				drop-shadow(0 0 calc(36px * var(--glow-strength)) var(--color-primary-glow))
 				drop-shadow(0 20px 40px var(--_sh-intense));
 		}
 
@@ -1247,7 +1246,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: 9px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.12em;
 			color: var(--color-danger);
 			border: 2px solid var(--color-danger);
@@ -1278,7 +1277,7 @@ export const deployOperativeStyles = [
 			height: 42px;
 			font-family: var(--font-mono, monospace);
 			font-size: 10px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			color: var(--color-icon);
 			border: 1px dashed var(--color-border);
@@ -1313,7 +1312,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: 11px;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.08em;
 			color: var(--color-text-primary);
 			white-space: nowrap;
@@ -1330,7 +1329,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-mono, monospace);
 			font-size: 10px;
 			font-weight: 700;
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.06em;
 			padding: 2px 8px;
 			border: 1px solid;
@@ -1399,7 +1398,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 700;
 			font-size: var(--text-sm);
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: var(--tracking-wide);
 			border: 2px solid;
 			cursor: pointer;
@@ -1415,8 +1414,8 @@ export const deployOperativeStyles = [
 		}
 
 		.footer__btn--deploy:hover:not(:disabled) {
-			box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 40%, transparent),
-				0 0 40px var(--color-primary-glow);
+			box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-primary) 40%, transparent),
+				0 0 calc(40px * var(--glow-strength)) var(--color-primary-glow);
 			transform: translateY(-1px);
 		}
 
@@ -1552,7 +1551,7 @@ export const deployOperativeStyles = [
 			font-family: var(--font-brutalist);
 			font-weight: 900;
 			font-size: clamp(24px, 4vw, 40px);
-			text-transform: uppercase;
+			text-transform: var(--label-transform);
 			letter-spacing: 0.15em;
 			color: var(--color-epoch-accent);
 			border: 4px solid var(--color-epoch-accent);

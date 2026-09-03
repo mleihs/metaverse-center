@@ -178,7 +178,7 @@ export class ChatFeed extends LitElement {
       color: var(--color-text-quiet);
       white-space: nowrap;
       flex-shrink: 0;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -199,7 +199,7 @@ export class ChatFeed extends LitElement {
       font-family: var(--font-mono);
       font-size: 10px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
     }
 
@@ -339,7 +339,7 @@ export class ChatFeed extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
     }
@@ -358,7 +358,7 @@ export class ChatFeed extends LitElement {
     .starters__heading {
       font-family: var(--font-mono);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-quiet);
       opacity: 0.6;

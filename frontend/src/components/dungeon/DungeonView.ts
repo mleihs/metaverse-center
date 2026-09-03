@@ -23,7 +23,7 @@ import { localized } from '@lit/localize';
 import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-
+import { restorePlatformCardFrame } from '../../services/card-frame.js';
 import { dungeonState } from '../../services/DungeonStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { themeService } from '../../services/ThemeService.js';
@@ -119,6 +119,20 @@ export class VelgDungeonView extends SignalWatcher(LitElement) {
      * `resetTheme`, which would remove the shell's shared custom-CSS element.
      */
     themeService.applyConfig(PLATFORM_DARK_CONFIG, this);
+  }
+
+  disconnectedCallback(): void {
+    /*
+     * Die Inline-Tokens gehen mit dem Element, wie der Kommentar oben sagt —
+     * der Kartenrahmen nicht. Er ist ein globales Signal, das connectedCallback
+     * auf den dunklen Wert gesetzt hat; ohne diese Zeile behielte die ganze
+     * Anwendung ihn, auch nachdem der Dungeon verlassen ist. Auf dem
+     * Papier-Skin gemessen: die Karten verloren ihr Papier und trugen bis zum
+     * naechsten Skin-Wechsel ein Terminal-Schild. Siehe
+     * restorePlatformCardFrame in card-frame.ts.
+     */
+    restorePlatformCardFrame();
+    super.disconnectedCallback();
   }
 
   protected willUpdate(): void {

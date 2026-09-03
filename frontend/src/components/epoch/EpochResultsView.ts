@@ -70,14 +70,14 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 900;
       font-size: clamp(48px, 10vw, 96px);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--declassified-red);
       opacity: 0;
       animation: stamp-slam 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.0s forwards;
       pointer-events: none;
       user-select: none;
-      text-shadow: 0 0 30px var(--color-danger-border);
+      text-shadow: 0 0 calc(30px * var(--glow-strength)) var(--color-danger-border);
       border: 4px solid var(--declassified-red);
       padding: 4px 24px;
       white-space: nowrap;
@@ -93,7 +93,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 900;
       font-size: clamp(24px, 4vw, 36px);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.2em;
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2);
@@ -213,7 +213,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       text-align: center;
@@ -254,7 +254,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 900;
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.2em;
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-4);
@@ -324,7 +324,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
     }
 
@@ -404,7 +404,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 900;
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.15em;
       color: var(--gold);
     }
@@ -413,7 +413,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
     }
@@ -467,7 +467,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--dim-color, var(--color-text-muted));
       margin-bottom: var(--space-2);
@@ -546,7 +546,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       text-align: left;
@@ -584,7 +584,7 @@ export class VelgEpochResultsView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: 700;
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
     }

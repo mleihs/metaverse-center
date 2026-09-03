@@ -236,7 +236,7 @@ export class ChatBubble extends LitElement {
     .bubble--assistant h4 {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: var(--space-3) 0 var(--space-2);
     }
@@ -278,7 +278,7 @@ export class ChatBubble extends LitElement {
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -288,7 +288,7 @@ export class ChatBubble extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-secondary);
       cursor: pointer;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       padding: var(--space-1) var(--space-2);
       transition: color var(--transition-fast);
@@ -339,7 +339,7 @@ export class ChatBubble extends LitElement {
     .bubble--assistant th {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-surface-sunken);
     }

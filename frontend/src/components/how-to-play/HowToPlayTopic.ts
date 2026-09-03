@@ -96,7 +96,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -114,7 +114,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-6);
       flex-wrap: wrap;
@@ -152,7 +152,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -175,7 +175,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_topic-accent);
       margin: 0 0 var(--space-3);
     }
@@ -217,7 +217,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xl);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.04em;
       color: var(--color-text-primary);
       margin: var(--space-10) 0 var(--space-5);
@@ -257,7 +257,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       margin-bottom: var(--space-2);
     }
 
@@ -297,7 +297,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -336,7 +336,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-base);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.03em;
       color: var(--color-text-primary);
     }
@@ -380,7 +380,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -401,7 +401,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-success);
       margin-bottom: var(--space-1);
     }
@@ -424,7 +424,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-warning);
       margin-bottom: var(--space-1);
     }
@@ -464,7 +464,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -504,7 +504,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: var(--_op-color, var(--color-text-primary));
     }
@@ -522,7 +522,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
@@ -566,7 +566,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-base);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -613,7 +613,7 @@ export class VelgHowToPlayTopic extends LitElement {
     .topic-presets-table__header {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
     }
 
@@ -647,7 +647,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       display: block;
       margin-bottom: var(--space-1);
@@ -670,7 +670,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 9px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       border: 1px solid var(--color-border);
       padding: 1px var(--space-2);
@@ -687,7 +687,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: 0.05em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
 
     .topic-lifecycle__arrow {
@@ -706,7 +706,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-4);
@@ -726,7 +726,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: 0.05em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       text-decoration: none;
       color: var(--color-text-secondary);
       padding: var(--space-2) var(--space-3);
@@ -782,7 +782,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: 10px;
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -791,7 +791,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: 0.04em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -807,7 +807,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
       padding-bottom: var(--space-2);
@@ -856,7 +856,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: 10px;
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
       padding-bottom: var(--space-2);
@@ -906,7 +906,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       text-decoration: none;
       color: var(--color-primary);
@@ -928,7 +928,7 @@ export class VelgHowToPlayTopic extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: 0.1em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       background: none;
       border: 2px solid var(--color-border);

@@ -124,7 +124,7 @@ export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--tracking-wide);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         padding: var(--space-1) var(--space-2);
         border: var(--border-width-thin) solid var(--color-border-light);
         color: var(--color-text-secondary);
@@ -173,7 +173,7 @@ export class VelgIntakeScanLogModal extends SignalWatcher(LitElement) {
         font-size: var(--text-xs);
         font-weight: var(--font-normal);
         letter-spacing: var(--tracking-widest);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--color-text-muted);
         padding: var(--space-2) var(--space-3);
         background: var(--color-surface-sunken);

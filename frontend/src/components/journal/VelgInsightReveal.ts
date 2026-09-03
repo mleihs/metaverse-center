@@ -116,7 +116,7 @@ export class VelgInsightReveal extends LitElement {
     .frame__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       margin: 0 0 var(--space-3);
@@ -172,7 +172,7 @@ export class VelgInsightReveal extends LitElement {
       transform: translateX(-50%);
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-quiet);
       opacity: 0;
@@ -218,7 +218,7 @@ export class VelgInsightReveal extends LitElement {
     .attunement__label {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: color-mix(in srgb, var(--_accent) 80%, var(--color-text-muted));
       margin: 0 0 var(--space-1);
@@ -228,7 +228,7 @@ export class VelgInsightReveal extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-md);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0 0 var(--space-2);

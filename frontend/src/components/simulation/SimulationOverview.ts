@@ -176,7 +176,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-size: var(--text-2xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--_kicker-tracking);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
     }
 
@@ -185,7 +185,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       line-height: var(--leading-tight);
     }
@@ -211,7 +211,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: calc(var(--tracking-widest) * 2.5);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-accent-amber-readable);
       background: none;
       border: none;
@@ -314,7 +314,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: calc(var(--tracking-widest) * 2);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_dim);
     }
 
@@ -339,7 +339,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
     }
 
@@ -360,7 +360,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_threat, var(--color-accent-amber));
     }
 
@@ -465,7 +465,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       white-space: nowrap;
       overflow: hidden;
@@ -476,7 +476,7 @@ export class VelgSimulationOverview extends SignalWatcher(LitElement) {
     .duty__role {
       font-size: var(--text-2xs);
       letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       /* Gemessen 2,98 : 1 auf heller Welt-Flaeche. --color-text-muted faellt in
          hellen Themes von sich aus durch; -quiet mischt zu text-primary. */
       color: var(--color-text-quiet);

@@ -124,9 +124,42 @@ describe('computeShadows', () => {
       }
     });
 
-    it('pressed = "2px 2px 0 var(--color-border)"', () => {
+    /*
+     * Pressed is cast in the shadow ink, not in the border colour.
+     *
+     * The old expectation here was `2px 2px 0 var(--color-border)`, which
+     * contradicted the token's own default in `_shadows.css`
+     * (`2px 2px 0 var(--color-shadow)`). The contradiction stayed invisible
+     * because computeShadows only ever ran for a theme whose offset ink was not
+     * black — two presets — and nobody compared the two spellings. Now that
+     * applyConfig computes shadows for every host, the two had to agree, and
+     * the scale is the half that is right: pressed is a shorter version of the
+     * same shadow.
+     */
+    it('pressed is cast in the shadow ink, like the rest of the scale', () => {
       const result = computeShadows('offset', '#ff0000');
-      expect(result['--shadow-pressed']).toBe('2px 2px 0 var(--color-border)');
+      expect(result['--shadow-pressed']).toBe('2px 2px 0 #ff0000');
+    });
+
+    /*
+     * The default case must reproduce `_shadows.css` exactly. This is the whole
+     * safety net for computing shadows unconditionally: platform-dark and every
+     * #000000 preset now go through this function where they used to skip it,
+     * and must come out the other side unchanged.
+     */
+    it('reproduces the :root defaults for offset/#000000', () => {
+      const result = computeShadows('offset', '#000000');
+      expect(result['--shadow-pressed']).toBe('2px 2px 0 #000000');
+      expect(result['--shadow-inset']).toBe(
+        'inset 2px 2px 0 color-mix(in srgb, #000000 20%, transparent)',
+      );
+    });
+
+    it('emits --shadow-inset in the theme ink, not against :root black', () => {
+      expect(computeShadows('offset', '#17201d')['--shadow-inset']).toBe(
+        'inset 2px 2px 0 color-mix(in srgb, #17201d 20%, transparent)',
+      );
+      expect(computeShadows('none', '#17201d')['--shadow-inset']).toBe('none');
     });
   });
 

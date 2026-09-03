@@ -155,7 +155,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-primary);
       margin: 0;
@@ -173,7 +173,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       padding: 2px 5px;
       color: var(--color-warning);
@@ -202,7 +202,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       min-width: 80px;
@@ -226,7 +226,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       padding: 1px 6px;
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       border: 1px solid;
       letter-spacing: 0.04em;
     }
@@ -319,7 +319,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-quiet);
       margin: 0;
@@ -374,7 +374,7 @@ export class VelgEpochIntelDossierTab extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: var(--color-text-tertiary);
       flex: 1;

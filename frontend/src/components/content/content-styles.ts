@@ -41,7 +41,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-lg);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-secondary);
   }
@@ -60,7 +60,7 @@ export const contentStyles = css`
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
     text-decoration: none;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
   }
 
@@ -83,8 +83,8 @@ export const contentStyles = css`
       0deg,
       transparent,
       transparent 2px,
-      rgba(255 255 255 / 0.015) 2px,
-      rgba(255 255 255 / 0.015) 4px
+      var(--color-scanline) 2px,
+      var(--color-scanline) 4px
     );
     pointer-events: none;
   }
@@ -102,7 +102,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-danger);
     border: 2px solid var(--color-danger);
@@ -116,7 +116,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: clamp(2rem, 6vw, var(--text-4xl));
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: 0.15em;
     color: var(--color-text-primary);
     margin: 0 0 var(--space-3);
@@ -129,7 +129,7 @@ export const contentStyles = css`
     font-size: var(--text-base);
     color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     margin: 0;
     opacity: 0;
     animation: fade-down 0.6s var(--ease-dramatic) 0.4s forwards;
@@ -156,7 +156,7 @@ export const contentStyles = css`
     font-size: var(--text-xs);
     color: var(--color-text-quiet);
     letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     opacity: 0;
     animation: fade-down 0.6s var(--ease-dramatic) 0.55s forwards;
   }
@@ -209,7 +209,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: 9px;
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-widest);
     color: var(--color-text-quiet);
     margin: 0 0 var(--space-4);
@@ -307,7 +307,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-xl);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-4);
@@ -430,7 +430,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-xs);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     color: var(--color-text-tertiary);
     margin-bottom: var(--space-2);
@@ -481,7 +481,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-md);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
   }
@@ -502,7 +502,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-black);
     font-size: var(--text-md);
-    text-transform: uppercase;
+    text-transform: var(--heading-transform);
     letter-spacing: var(--tracking-brutalist);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-4);
@@ -587,7 +587,7 @@ export const contentStyles = css`
     font-family: var(--font-brutalist);
     font-weight: var(--font-bold);
     font-size: var(--text-sm);
-    text-transform: uppercase;
+    text-transform: var(--label-transform);
     letter-spacing: var(--tracking-wide);
     text-decoration: none;
     cursor: pointer;

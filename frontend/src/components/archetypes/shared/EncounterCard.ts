@@ -80,7 +80,7 @@ export class VelgEncounterCard extends LitElement {
         align-items: baseline;
         gap: 8px;
         padding: 6px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        border-top: 1px solid var(--color-overlay-ink-strong);
       }
 
       .choice:first-child { border-top: none; }

@@ -98,7 +98,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-black);
         font-size: 9px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.18em;
         color: var(--color-text-quiet);
         padding-bottom: var(--space-1);
@@ -145,7 +145,7 @@ export class VelgBroadsheetHealthHero extends LitElement {
         font-family: var(--font-brutalist);
         font-weight: var(--font-bold);
         font-size: 10px;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.1em;
         color: var(--_bar-color);
       }

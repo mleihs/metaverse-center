@@ -37,7 +37,7 @@ export class VelgBuildStrip extends LitElement {
       font-size: 10px;
       font-weight: var(--font-medium, 500);
       letter-spacing: var(--tracking-wider, 0.05em);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--_ink);
     }
 

@@ -54,7 +54,7 @@ export class VelgOpsLedgerPanel extends LitElement {
       font-size: var(--text-sm);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
     }
 
@@ -100,7 +100,7 @@ export class VelgOpsLedgerPanel extends LitElement {
       font-size: 8px;
       font-weight: var(--font-bold);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
@@ -114,7 +114,7 @@ export class VelgOpsLedgerPanel extends LitElement {
       font-family: var(--font-mono);
       font-size: 9px;
       color: var(--color-text-quiet);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.04em;
       margin-top: var(--space-1);
     }
@@ -129,7 +129,7 @@ export class VelgOpsLedgerPanel extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
       letter-spacing: var(--tracking-brutalist);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-secondary);
       margin: 0 0 var(--space-2) 0;
     }
@@ -152,7 +152,7 @@ export class VelgOpsLedgerPanel extends LitElement {
     .breakdown__table th {
       color: var(--color-text-quiet);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.06em;
       border-bottom: 1px solid var(--color-border);
     }

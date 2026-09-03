@@ -37,7 +37,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       margin: 0;
     }
@@ -56,7 +56,7 @@ export class VelgInvitationAcceptView extends LitElement {
     .invitation__highlight {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -66,7 +66,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-info-bg);
       border: var(--border-width-default) solid var(--color-info-border);
@@ -79,7 +79,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
     }
 
@@ -127,7 +127,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       background: var(--color-primary);
       color: var(--color-text-inverse);
@@ -162,7 +162,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-secondary);
     }
@@ -175,7 +175,7 @@ export class VelgInvitationAcceptView extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
     }
   `;
 

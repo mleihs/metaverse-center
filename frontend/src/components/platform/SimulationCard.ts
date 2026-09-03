@@ -39,7 +39,7 @@ export class VelgSimulationCard extends LitElement {
       position: relative;
       min-height: 280px;
       border: 2px solid var(--color-surface-raised);
-      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+      box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-shadow) 40%, transparent);
       border-radius: var(--border-radius);
       overflow: hidden;
       cursor: pointer;
@@ -53,7 +53,7 @@ export class VelgSimulationCard extends LitElement {
 
     .shard:hover {
       transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
+      box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-shadow) 50%, transparent);
       border-color: var(--color-text-muted);
     }
 
@@ -68,7 +68,7 @@ export class VelgSimulationCard extends LitElement {
 
     .shard:active {
       transform: translate(0);
-      box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+      box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-shadow) 30%, transparent);
     }
 
     .shard__image {
@@ -134,7 +134,7 @@ export class VelgSimulationCard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black);
       font-size: var(--text-lg);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: var(--tracking-brutalist);
       color: var(--color-text-primary);
       margin: 0;
@@ -181,7 +181,7 @@ export class VelgSimulationCard extends LitElement {
 
     .shard__stat-label {
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wide);
       color: color-mix(in srgb, var(--color-text-primary) 50%, transparent);
     }
@@ -190,7 +190,7 @@ export class VelgSimulationCard extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: var(--tracking-wider);
       color: var(--shard-color, color-mix(in srgb, var(--color-text-primary) 60%, transparent));
       align-self: flex-end;
@@ -210,8 +210,8 @@ export class VelgSimulationCard extends LitElement {
       border: 2px solid var(--shard-color, var(--color-text-muted));
       border-radius: var(--border-radius);
       box-shadow:
-        inset 0 0 20px var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 20%, transparent)),
-        0 0 15px var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 15%, transparent));
+        inset 0 0 calc(20px * var(--glow-strength)) var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 20%, transparent)),
+        0 0 calc(15px * var(--glow-strength)) var(--shard-color-alpha, color-mix(in srgb, var(--color-text-muted) 15%, transparent));
       opacity: 0;
       transition: opacity var(--transition-normal);
       pointer-events: none;

@@ -124,9 +124,8 @@ export class VelgDailyBriefing extends LitElement {
       padding: 0;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.04),
-        0 24px 64px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 0 1px var(--color-overlay-ink-strong),
+        0 24px 64px color-mix(in srgb, var(--color-shadow) 70%, transparent);
       overflow: hidden;
       animation: none;
       transform: translateY(20px) scale(0.97);
@@ -208,8 +207,8 @@ export class VelgDailyBriefing extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(255, 255, 255, 0.015) 2px,
-        rgba(255, 255, 255, 0.015) 4px
+        var(--color-scanline) 2px,
+        var(--color-scanline) 4px
       );
       pointer-events: none;
       z-index: 1;
@@ -234,7 +233,7 @@ export class VelgDailyBriefing extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: 0.2em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-primary);
       margin: 0;
     }
@@ -276,7 +275,7 @@ export class VelgDailyBriefing extends LitElement {
       font-size: 9px;
       font-weight: var(--font-bold);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       color: var(--color-text-quiet);
       margin-bottom: var(--space-2);
     }
@@ -333,7 +332,7 @@ export class VelgDailyBriefing extends LitElement {
       font-size: 9px;
       font-weight: var(--font-black);
       letter-spacing: 0.15em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: 2px 8px;
       background: rgba(0, 0, 0, 0.6);
       border: 1px solid;
@@ -390,7 +389,7 @@ export class VelgDailyBriefing extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-xs);
       font-weight: var(--font-bold);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
     }
@@ -487,7 +486,7 @@ export class VelgDailyBriefing extends LitElement {
       font-size: var(--text-xs);
       font-weight: var(--font-black);
       letter-spacing: 0.12em;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       padding: var(--space-2) var(--space-4);
       cursor: pointer;
       transition:

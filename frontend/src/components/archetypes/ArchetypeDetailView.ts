@@ -482,7 +482,7 @@ export class VelgArchetypeDetail extends LitElement {
         transform: translateY(-50%);
         width: 4px;
         height: 40vh;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink-strong);
         border-radius: 2px;
         z-index: 200;
         overflow: hidden;
@@ -514,8 +514,8 @@ export class VelgArchetypeDetail extends LitElement {
         20%  { background-color: color-mix(in oklch, var(--_accent) 30%, var(--color-text-muted, #666)); }
         40%  { background-color: color-mix(in oklch, var(--_accent) 55%, var(--color-text-muted, #666)); }
         60%  { background-color: var(--_accent); }
-        80%  { background-color: var(--_accent); box-shadow: 0 0 8px var(--_accent-glow); }
-        to   { height: 100%; background-color: #ff1a1a; box-shadow: 0 0 16px rgba(255, 26, 26, 0.5); }
+        80%  { background-color: var(--_accent); box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--_accent-glow); }
+        to   { height: 100%; background-color: #ff1a1a; box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(255, 26, 26, 0.5); }
       }
 
       .gauge__label {
@@ -551,7 +551,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-size: clamp(0.7rem, 1vw, 0.85rem);
         font-weight: 400;
         letter-spacing: 0.3em;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         color: var(--_accent-text);
         opacity: 0.6;
         margin-bottom: var(--space-4, 16px);
@@ -562,10 +562,10 @@ export class VelgArchetypeDetail extends LitElement {
         font-size: var(--_monument-size);
         font-weight: var(--_monument-weight);
         letter-spacing: var(--_monument-tracking);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         line-height: 0.95;
         color: var(--color-text-primary, #e5e5e5);
-        text-shadow: 0 0 80px var(--_accent-glow);
+        text-shadow: 0 0 calc(80px * var(--glow-strength)) var(--_accent-glow);
         text-align: center;
         margin: 0;
       }
@@ -587,7 +587,7 @@ export class VelgArchetypeDetail extends LitElement {
         background: var(--_accent);
         opacity: 0.4;
         margin: var(--space-6, 24px) 0;
-        box-shadow: 0 0 12px var(--_accent-glow);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_accent-glow);
       }
 
       .title__signature {
@@ -606,7 +606,7 @@ export class VelgArchetypeDetail extends LitElement {
         max-width: 50ch;
         margin: var(--space-4, 16px) 0 0;
         opacity: 0.7;
-        text-shadow: 0 0 20px var(--_accent-glow);
+        text-shadow: 0 0 calc(20px * var(--glow-strength)) var(--_accent-glow);
       }
 
       .title__gauge-hint {
@@ -681,8 +681,8 @@ export class VelgArchetypeDetail extends LitElement {
       }
 
       @keyframes _heartbeat {
-        0%, 100% { text-shadow: 0 0 80px var(--_accent-glow); }
-        50%      { text-shadow: 0 0 120px color-mix(in oklch, var(--_accent) 50%, transparent); }
+        0%, 100% { text-shadow: 0 0 calc(80px * var(--glow-strength)) var(--_accent-glow); }
+        50%      { text-shadow: 0 0 calc(120px * var(--glow-strength)) color-mix(in oklch, var(--_accent) 50%, transparent); }
       }
 
       /* ═══════════════════════════════════════════════════════════
@@ -805,7 +805,7 @@ export class VelgArchetypeDetail extends LitElement {
       .gauge-visual {
         width: 100%;
         height: 12px;
-        background: rgba(255, 255, 255, 0.06);
+        background: var(--color-overlay-ink-strong);
         border-radius: 6px;
         overflow: hidden;
         margin: var(--space-3, 12px) 0;
@@ -1025,8 +1025,8 @@ export class VelgArchetypeDetail extends LitElement {
       @keyframes _whisper-emerge {
         entry 0%    { opacity: 0; transform: translateY(2rem) scale(0.96); }
         entry 100%  { opacity: 1; transform: translateY(0) scale(1); }
-        contain 30% { text-shadow: 0 0 40px var(--_accent-glow); }
-        contain 70% { text-shadow: 0 0 40px var(--_accent-glow); }
+        contain 30% { text-shadow: 0 0 calc(40px * var(--glow-strength)) var(--_accent-glow); }
+        contain 70% { text-shadow: 0 0 calc(40px * var(--glow-strength)) var(--_accent-glow); }
         exit 0%     { opacity: 1; transform: translateY(0) scale(1); }
         exit 100%   { opacity: 0; transform: translateY(-1.5rem) scale(0.97); }
       }
@@ -1111,7 +1111,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-style: italic;
         color: var(--color-text-muted, #888);
         padding-top: var(--space-3, 12px);
-        border-top: 1px solid rgba(255, 255, 255, 0.04);
+        border-top: 1px solid var(--color-overlay-ink-strong);
       }
 
       .loot-tier-header:first-child {
@@ -1132,12 +1132,12 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-display);
         font-size: clamp(1.5rem, 4vw, 2.5rem);
         font-weight: var(--_monument-weight);
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.2em;
         color: var(--_accent-text);
         text-shadow:
-          0 0 40px var(--_accent-glow),
-          0 0 80px color-mix(in oklch, var(--_accent) 40%, transparent);
+          0 0 calc(40px * var(--glow-strength)) var(--_accent-glow),
+          0 0 calc(80px * var(--glow-strength)) color-mix(in oklch, var(--_accent) 40%, transparent);
         margin-bottom: var(--space-4, 16px);
         text-align: center;
       }
@@ -1160,7 +1160,7 @@ export class VelgArchetypeDetail extends LitElement {
         text-align: center;
         max-width: 50ch;
         margin-bottom: var(--space-8, 32px);
-        text-shadow: 0 0 40px var(--_accent-glow);
+        text-shadow: 0 0 calc(40px * var(--glow-strength)) var(--_accent-glow);
       }
 
       .exit__cta-text {
@@ -1179,7 +1179,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-display);
         font-size: 0.85rem;
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.12em;
         color: var(--color-text-primary, #e5e5e5);
         background: color-mix(in oklch, var(--_accent) 20%, transparent);
@@ -1192,7 +1192,7 @@ export class VelgArchetypeDetail extends LitElement {
 
       .exit__cta:hover {
         background: color-mix(in oklch, var(--_accent) 35%, transparent);
-        box-shadow: 0 0 24px var(--_accent-glow);
+        box-shadow: 0 0 calc(24px * var(--glow-strength)) var(--_accent-glow);
       }
 
       @media (prefers-reduced-motion: no-preference) {
@@ -1202,8 +1202,8 @@ export class VelgArchetypeDetail extends LitElement {
       }
 
       @keyframes _cta-pulse {
-        0%, 100% { box-shadow: 0 0 8px var(--_accent-glow); }
-        50%      { box-shadow: 0 0 24px var(--_accent-glow); }
+        0%, 100% { box-shadow: 0 0 calc(8px * var(--glow-strength)) var(--_accent-glow); }
+        50%      { box-shadow: 0 0 calc(24px * var(--glow-strength)) var(--_accent-glow); }
       }
 
       .exit__nav {
@@ -1253,7 +1253,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-display);
         font-size: var(--_section-size);
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.1em;
       }
 
@@ -1297,7 +1297,7 @@ export class VelgArchetypeDetail extends LitElement {
       .not-found__numeral {
         font-family: var(--_font-display);
         font-size: var(--text-xs, 10px);
-        text-transform: uppercase;
+        text-transform: var(--label-transform);
         letter-spacing: 0.15em;
         color: var(--_card-accent);
       }
@@ -1306,7 +1306,7 @@ export class VelgArchetypeDetail extends LitElement {
         font-family: var(--_font-display);
         font-size: var(--text-base, 16px);
         font-weight: 700;
-        text-transform: uppercase;
+        text-transform: var(--heading-transform);
         letter-spacing: 0.08em;
         color: var(--color-text-primary, #e5e5e5);
       }

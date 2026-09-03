@@ -145,7 +145,7 @@ export class VelgCartographerMap extends LitElement {
 
     .mobile-card:hover {
       transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.4));
+      box-shadow: var(--shadow-lg, 0 4px 12px color-mix(in srgb, var(--color-shadow) 40%, transparent));
     }
 
     .mobile-card__color {

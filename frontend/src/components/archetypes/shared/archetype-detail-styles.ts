@@ -244,13 +244,12 @@ export const detailCardStyles = css`
 
   /* ── Glass card ── */
   .glass-card {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--color-overlay-ink-strong);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-overlay-ink-strong);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--color-shadow) 30%, transparent),
+      inset 0 1px 0 var(--color-overlay-ink-strong);
     border-radius: 8px;
     padding: var(--space-5, 20px);
     transition: transform 0.3s var(--_ease-dramatic), box-shadow 0.3s var(--_ease-dramatic);
@@ -264,9 +263,8 @@ export const detailCardStyles = css`
 
   .glass-card:hover {
     transform: translateY(-2px);
-    box-shadow:
-      0 12px 40px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px color-mix(in srgb, var(--color-shadow) 40%, transparent),
+      inset 0 1px 0 var(--color-overlay-ink-strong);
   }
 
   /* ── Section header — literary, not brutalist ── */
@@ -279,7 +277,7 @@ export const detailCardStyles = css`
     color: var(--color-text-primary, #e5e5e5);
     margin: 0 0 var(--space-3, 12px);
     text-shadow:
-      0 0 40px var(--_accent-glow),
+      0 0 calc(40px * var(--glow-strength)) var(--_accent-glow),
       0 2px 4px rgba(0, 0, 0, 0.8);
   }
 
@@ -293,7 +291,7 @@ export const detailCardStyles = css`
     font-family: var(--_font-prose);
     font-size: 0.82rem;
     letter-spacing: 0.01em;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-overlay-ink-strong);
     color: var(--color-text-secondary, #a0a0a0);
     white-space: nowrap;
   }
@@ -316,15 +314,15 @@ export const detailCardStyles = css`
   }
 
   .tier-badge--minion {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--color-overlay-ink-strong);
     color: var(--color-text-muted, #888);
   }
   .tier-badge--standard {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-overlay-ink-strong);
     color: var(--color-text-secondary, #a0a0a0);
   }
   .tier-badge--narrative {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-overlay-ink-strong);
     color: var(--color-text-secondary, #a0a0a0);
   }
   .tier-badge--elite {
@@ -336,10 +334,10 @@ export const detailCardStyles = css`
     background: color-mix(in oklch, var(--_accent) 15%, transparent);
     color: var(--_accent);
     border: 1px solid color-mix(in oklch, var(--_accent) 30%, transparent);
-    box-shadow: 0 0 12px var(--_accent-glow);
+    box-shadow: 0 0 calc(12px * var(--glow-strength)) var(--_accent-glow);
   }
   .tier-badge--combat {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-overlay-ink-strong);
     color: var(--color-text-secondary, #a0a0a0);
   }
 
@@ -374,7 +372,7 @@ export const detailCardStyles = css`
   .aptitude-row__bar {
     flex: 1;
     height: 6px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--color-overlay-ink-strong);
     border-radius: 3px;
     overflow: hidden;
     max-width: 200px;

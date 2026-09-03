@@ -66,7 +66,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-primary);
       margin: 0;
@@ -75,7 +75,7 @@ export class VelgDarkroomStudio extends LitElement {
     .header__budget {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-accent-amber);
       padding: var(--space-1) var(--space-2);
@@ -125,7 +125,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-quiet);
       background: transparent;
@@ -181,7 +181,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-black, 900);
       font-size: var(--text-xl);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.15em;
       color: var(--color-text-primary);
       margin: 0;
@@ -198,7 +198,7 @@ export class VelgDarkroomStudio extends LitElement {
     .purchase-cta__cost {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.12em;
       color: var(--color-accent-amber);
     }
@@ -212,7 +212,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: #030712;
       background: var(--color-accent-amber);
@@ -223,7 +223,7 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     .purchase-cta__btn:hover:not(:disabled) {
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
       transform: translateY(-1px);
     }
 
@@ -249,7 +249,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0;
@@ -275,7 +275,7 @@ export class VelgDarkroomStudio extends LitElement {
     .theme-card:hover {
       border-color: var(--color-accent-amber);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 30%, transparent);
     }
 
     .theme-card__swatches {
@@ -292,7 +292,7 @@ export class VelgDarkroomStudio extends LitElement {
     .theme-card__label {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-quiet);
     }
@@ -308,7 +308,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: 10px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       cursor: pointer;
       transition: all 0.2s;
@@ -326,7 +326,7 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     .theme-card__btn--apply:hover {
-      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
     }
 
     .theme-card__btn--preview {
@@ -345,7 +345,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-secondary);
       background: transparent;
@@ -377,7 +377,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-base);
-      text-transform: uppercase;
+      text-transform: var(--heading-transform);
       letter-spacing: 0.1em;
       color: var(--color-text-primary);
       margin: 0;
@@ -417,7 +417,7 @@ export class VelgDarkroomStudio extends LitElement {
       padding: var(--space-1);
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.05em;
       color: white;
       background: rgba(0, 0, 0, 0.75);
@@ -459,7 +459,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-sm);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.08em;
       color: var(--color-text-primary);
       margin: 0;
@@ -535,7 +535,7 @@ export class VelgDarkroomStudio extends LitElement {
     .regen-panel__budget {
       font-family: var(--font-mono, monospace);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: var(--color-accent-amber);
     }
@@ -545,7 +545,7 @@ export class VelgDarkroomStudio extends LitElement {
       font-family: var(--font-brutalist);
       font-weight: var(--font-bold, 700);
       font-size: var(--text-xs);
-      text-transform: uppercase;
+      text-transform: var(--label-transform);
       letter-spacing: 0.1em;
       color: #030712;
       background: var(--color-accent-amber);
@@ -556,7 +556,7 @@ export class VelgDarkroomStudio extends LitElement {
     }
 
     .regen-panel__btn:hover:not(:disabled) {
-      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
     }
 
     .regen-panel__btn:disabled {
@@ -989,7 +989,7 @@ export class VelgDarkroomStudio extends LitElement {
           font-family: var(--font-brutalist);
           font-weight: var(--font-bold, 700);
           font-size: var(--text-base);
-          text-transform: uppercase;
+          text-transform: var(--heading-transform);
           letter-spacing: 0.1em;
           color: var(--color-text-primary);
           margin: 0;
