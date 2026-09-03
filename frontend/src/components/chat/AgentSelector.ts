@@ -423,7 +423,9 @@ export class VelgAgentSelector extends LitElement {
 
         <input
           class="selector__search"
-          type="text"
+          type="search"
+          name="agent-search"
+          autocomplete="off"
           placeholder=${msg('Search agents...')}
           .value=${this._searchQuery}
           @input=${this._handleSearch}

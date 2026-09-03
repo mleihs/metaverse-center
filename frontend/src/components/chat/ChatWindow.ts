@@ -17,10 +17,11 @@ import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import { captureError } from '../../services/SentryService.js';
 import type { Agent, AgentBrief, ChatConversation, ChatEventReference } from '../../types/index.js';
-import { agentAccentColor } from '../../utils/agent-colors.js';
+import { agentAccentColor, MOOD_BANDS } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import '../shared/VelgMetricExplainer.js';
 import '../agents/AgentDetailsPanel.js';
 import '../shared/EmptyState.js';
 import '../shared/LoadingState.js';
@@ -99,12 +100,24 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       cursor: pointer;
     }
 
+    /*
+      Ein Kopfmass, und nur eine Linie.
+
+      Auf Prod gemessen (03.09.2026): dieser Kopf war 68 px hoch, der Kopf der
+      Liste links 56 — 12 px auseinander, obwohl --chat-header-h auf 58
+      rechnet. Der Prototyp hat beide auf 58 und nennt es woertlich "Koepfe
+      buendig auf 58px". Die Hoehe kam hier aus dem Inhalt statt aus dem Mass.
+
+      Und der Schatten ist weg: ein harter Versatz (2px 2px 0) ZUSAETZLICH zum
+      3-px-Rand liess den Block aufgeklebt wirken. Der Prototyp hat nur die
+      Linie. Ein Rand trennt bereits; ein Schatten daneben sagt dasselbe noch
+      einmal lauter.
+    */
     .window__header {
       display: flex;
       flex-direction: column;
       background: var(--color-surface-header);
       border-bottom: var(--border-medium);
-      box-shadow: var(--shadow-xs);
       flex-shrink: 0;
       z-index: 1;
     }
@@ -1333,6 +1346,25 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               </div>
             </div>
             <div class="window__header-actions" role="toolbar" aria-label=${msg('Chat actions')}>
+              <!--
+                Die Legende zum Stimmungsring.
+
+                Der Ring liegt an den Portraits im Verlauf und sagte bis zum
+                03.09.2026 nirgends, was er bedeutet — kein Tooltip, kein
+                title, nichts in der Hilfe. Ein farbiger Ring ohne Legende ist
+                Dekoration.
+
+                Er steht hier und nicht in einer Hilfeseite, weil eine Legende
+                dort hingehoert, wo das Zeichen ist. Der Erklaerer
+                ist der Ort, an dem dieses Haus Kennzahlen erklaert, und sein
+                Tor verlangt alle drei Fragen: was, warum, was tun.
+              -->
+              <velg-metric-explainer
+                .metric=${msg('Mood ring')}
+                .what=${msg('A coloured ring around a portrait in the transcript. Green means the agent is in good spirits, red means strained. No ring means neutral - which is most of the time.')}
+                .why=${msg(str`The ring follows the mood score, which runs from -100 to +100. Above ${MOOD_BANDS.positive} it turns green, below ${MOOD_BANDS.distressed} red. In between there is no ring at all, because a mark that sits on almost every portrait stops being a mark.`)}
+                .action=${msg('A red ring is worth reading: the agent answers differently under strain, because the mood block travels into the prompt. Needs, weather and recent events move the score - the agent page shows which.')}
+              ></velg-metric-explainer>
               <button
                 class="window__action-btn ${hasEventsBar ? 'window__action-btn--active' : ''}"
                 @click=${this._toggleEventsBar}

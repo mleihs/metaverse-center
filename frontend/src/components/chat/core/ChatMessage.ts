@@ -23,7 +23,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import type { OptimisticChatMessage } from '../../../services/chat/ChatSessionStore.js';
 import type { Participant } from '../../../services/chat/chat-types.js';
 import type { ChatMessage as ChatMessageData } from '../../../types/index.js';
-import { moodRingColor } from '../../../utils/agent-colors.js';
+import { moodBand, moodRingColor } from '../../../utils/agent-colors.js';
 import { formatRelativeTimeVerbose } from '../../../utils/date-format.js';
 import { agentAltText } from '../../../utils/text.js';
 
@@ -430,8 +430,16 @@ export class ChatMessage extends LitElement {
     }
 
     const src = this.participant?.avatarUrl ?? this.message.agent?.portrait_image_url ?? '';
-    const mood =
-      this.participant?.moodScore != null ? moodRingColor(this.participant.moodScore) : '';
+    const moodScore = this.participant?.moodScore;
+    const mood = moodScore != null ? moodRingColor(moodScore) : '';
+    // Der Ring erscheint nur noch bei einer Abweichung, und er sagt jetzt,
+    // welcher — als `title` am Bild und als Text fuer Vorlesehilfen.
+    const moodWort =
+      moodScore == null || !mood
+        ? ''
+        : moodBand(moodScore) === 'positive'
+          ? msg('Mood: good')
+          : msg('Mood: strained');
 
     return html`
       <div class="avatar">
@@ -439,6 +447,7 @@ export class ChatMessage extends LitElement {
           .src=${src}
           .name=${this._senderName}
           .moodColor=${mood}
+          .moodLabel=${moodWort}
           alt=${agentAltText({ name: this._senderName })}
           size="sm"
           clickable

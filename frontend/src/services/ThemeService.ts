@@ -606,7 +606,30 @@ class ThemeService {
     if (grounds.length === 0 || toward === null) return 0;
 
     let lifted = 0;
-    for (const token of ['--color-text-secondary', '--color-text-muted']) {
+    // `--color-text-quiet` und `--color-text-tertiary` gehoeren dazu, und das
+    // Fehlen war teuer.
+    //
+    // Am 03.09.2026 auf Prod gemessen: im Chat von Velgarien stand die
+    // Initiale eines Avatars in `--color-text-quiet` = #414141 auf
+    // `--color-surface-sunken` = #000000. Kontrast 2,12 : 1, verlangt sind
+    // 4,5. Die Hebung lief — sie lief nur nicht ueber diese Farbe.
+    //
+    // Ausgezaehlt, wie oft jede Rolle als Schriftfarbe vorkommt:
+    //
+    //     --color-text-quiet       967   <- war NICHT gehoben
+    //     --color-text-primary     660       (ist das Ziel der Hebung)
+    //     --color-text-secondary   457       gehoben
+    //     --color-text-muted       185       gehoben
+    //     --color-text-tertiary    124   <- war NICHT gehoben
+    //
+    // Die Liste deckte 642 Stellen ab und liess 1091 aus — mehr als sie
+    // schuetzte. Ein Waechter, der die Mehrheit nicht ansieht, ist keiner.
+    for (const token of [
+      '--color-text-secondary',
+      '--color-text-muted',
+      '--color-text-quiet',
+      '--color-text-tertiary',
+    ]) {
       const raw = read(token);
       const fg = parseColor(raw);
       if (fg === null) {

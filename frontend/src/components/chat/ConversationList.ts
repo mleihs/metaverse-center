@@ -1116,7 +1116,9 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
         <span class="search__icon">${icons.search(14)}</span>
         <input
           class="search__input"
-          type="text"
+          type="search"
+          name="conversation-search"
+          autocomplete="off"
           placeholder=${msg('Search conversations...')}
           .value=${this._searchTerm}
           @input=${this._handleSearchInput}

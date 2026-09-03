@@ -50,29 +50,47 @@ export class VelgAvatar extends LitElement {
       border-bottom: var(--border-medium);
     }
 
+    /* Schatten-DOM erbt keine globale Klasse — die Hilfsklasse muss hier
+       stehen, sonst ist der Text sichtbar statt nur hoerbar. */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
     /* ── Mood ring ──────────────────────────────────── */
 
+    /*
+      Ein Ring, kein Alarm.
+
+      Bis zum 03.09.2026 trug er 2 px Rand, 6 px Schein UND einen Dauerpuls
+      (opacity 0.55 -> 1 -> 0.55, alle 3 s, endlos). Auf Prod gemessen: 15 von
+      35 Portraits im Chatverlauf hatten ihn, alle in derselben Farbe, weil
+      neutral damals Bernstein zurueckgab. Ein pulsierender Schein an fast jedem
+      zweiten Bild sagt "hier stimmt etwas nicht" — der Nutzer hat ihn genau so
+      gelesen ("sehe aus wie ein Fehler"), und das war die richtige Lesart.
+
+      Der Puls ist weg: eine Dauerbewegung ist im ganzen Haus fuer LAUFENDE
+      Vorgaenge reserviert (Ladezustand, Erzeugung). Ein Zustand bewegt sich
+      nicht. Der Schein ist weg, weil er die Farbe ueber den Rand hinaus in den
+      Untergrund traegt und den Ring unscharf macht — auf einem 32-px-Bild ist
+      ein 6-px-Schein fast so gross wie der Ring selbst.
+
+      Geblieben ist, was die Aussage traegt: ein klarer Rand in der Farbe des
+      Bandes. Neutral bekommt gar keinen mehr (siehe moodRingColor), also
+      steht ein Ring jetzt fuer eine ABWEICHUNG und nicht fuer den Normalfall.
+    */
     .mood-ring {
       position: absolute;
       inset: -3px;
       border: 2px solid var(--_mood-color, transparent);
       z-index: 0;
-      animation: mood-pulse 3s ease-in-out infinite;
-      will-change: opacity;
-      /* Glow effect matching ring color */
-      box-shadow: 0 0 6px 0 var(--_mood-color, transparent);
-    }
-
-    @keyframes mood-pulse {
-      0%, 100% { opacity: 0.55; }
-      50% { opacity: 1; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .mood-ring {
-        animation: none;
-        opacity: 0.8;
-      }
     }
 
     .avatar__img {
@@ -113,8 +131,23 @@ export class VelgAvatar extends LitElement {
   @property({ type: String, attribute: 'alt' }) altText = '';
   @property({ type: String, reflect: true }) size: 'xs' | 'sm' | 'full' = 'sm';
   @property({ type: Boolean, reflect: true }) clickable = false;
-  /** Agent mood ring color (CSS value). When set, renders a pulsing ring around the avatar. */
+  /** Ringfarbe (CSS-Wert). Gesetzt = der Agent weicht vom neutralen Band ab. */
   @property({ type: String }) moodColor = '';
+  /**
+   * Was der Ring BEDEUTET, in Worten.
+   *
+   * Ein farbiger Ring ohne Legende ist Dekoration. Auf Prod gemessen
+   * (03.09.2026): der Ring lag an 15 von 35 Portraits im Chatverlauf, und
+   * nirgends in der Oberflaeche stand, was er heisst — kein Tooltip, kein
+   * `title`, kein `aria-label`, nichts in der Hilfe. Die einzigen Erwaehnungen
+   * standen in Code-Kommentaren.
+   *
+   * Wer den Ring setzt, sagt jetzt auch, wofuer er steht. Er wandert als
+   * `title` an das Bild (Mauszeiger) und als unsichtbarer Text in den
+   * Vorlesefluss, denn der Ring selbst ist `aria-hidden` und traegt fuer eine
+   * Vorlesehilfe sonst gar nichts.
+   */
+  @property({ type: String }) moodLabel = '';
 
   private _handleClick(e: Event): void {
     if (!this.clickable) return;
@@ -135,6 +168,12 @@ export class VelgAvatar extends LitElement {
       style=${styleMap({ '--_mood-color': this.moodColor })}
       aria-hidden="true"
     ></div>`;
+  }
+
+  /** Der Ring, in Worten — fuer Vorlesehilfen, die den Rand nicht sehen. */
+  private _renderMoodLabel() {
+    if (!this.moodColor || !this.moodLabel) return nothing;
+    return html`<span class="visually-hidden">${this.moodLabel}</span>`;
   }
 
   /**
@@ -160,8 +199,8 @@ export class VelgAvatar extends LitElement {
   protected render() {
     if (this.src && !this._srcFailed) {
       return html`
-        <div class="avatar-wrap">
-          ${this._renderMoodRing()}
+        <div class="avatar-wrap" title=${this.moodLabel || nothing}>
+          ${this._renderMoodRing()}${this._renderMoodLabel()}
           <div class="avatar">
             <img
               class="avatar__img"
@@ -177,8 +216,8 @@ export class VelgAvatar extends LitElement {
     }
 
     return html`
-      <div class="avatar-wrap">
-        ${this._renderMoodRing()}
+      <div class="avatar-wrap" title=${this.moodLabel || nothing}>
+        ${this._renderMoodRing()}${this._renderMoodLabel()}
         <div class="avatar" @click=${this.clickable ? this._handleClick : nothing}>
           <span class="avatar__initials">${getInitials(this.name)}</span>
         </div>

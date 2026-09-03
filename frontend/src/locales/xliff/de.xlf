@@ -31348,6 +31348,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>New</source>
   <target>Neu</target>
 </trans-unit>
+<trans-unit id="s8b22523416c3d2d0">
+  <source>Mood ring</source>
+  <target>Stimmungsring</target>
+</trans-unit>
+<trans-unit id="s34cc885a40edc99c">
+  <source>A coloured ring around a portrait in the transcript. Green means the agent is in good spirits, red means strained. No ring means neutral - which is most of the time.</source>
+  <target>Ein farbiger Ring um ein Portrait im Verlauf. Grün heißt, der Agent ist guter Dinge, Rot heißt belastet. Kein Ring heißt neutral – und das ist er meistens.</target>
+</trans-unit>
+<trans-unit id="s5ef603f7b38baac2">
+  <source>The ring follows the mood score, which runs from -100 to +100. Above <x id="0" equiv-text="${MOOD_BANDS.positive}"/> it turns green, below <x id="1" equiv-text="${MOOD_BANDS.distressed}"/> red. In between there is no ring at all, because a mark that sits on almost every portrait stops being a mark.</source>
+  <target>Der Ring folgt dem Stimmungswert, der von -100 bis +100 läuft. Über <x id="0" equiv-text="${MOOD_BANDS.positive}"/> wird er grün, unter <x id="1" equiv-text="${MOOD_BANDS.distressed}"/> rot. Dazwischen gibt es gar keinen Ring, denn ein Zeichen, das an fast jedem Portrait steht, ist keines mehr.</target>
+</trans-unit>
+<trans-unit id="s5e2d92193de9d95d">
+  <source>A red ring is worth reading: the agent answers differently under strain, because the mood block travels into the prompt. Needs, weather and recent events move the score - the agent page shows which.</source>
+  <target>Ein roter Ring lohnt das Hinsehen: unter Belastung antwortet der Agent anders, denn der Stimmungsblock reist mit in den Prompt. Bedürfnisse, Wetter und jüngste Ereignisse bewegen den Wert – welche davon, zeigt die Agentenseite.</target>
+</trans-unit>
+<trans-unit id="s7ac89b88c7743609">
+  <source>Mood: good</source>
+  <target>Stimmung: gut</target>
+</trans-unit>
+<trans-unit id="s14d5232c982b10f0">
+  <source>Mood: strained</source>
+  <target>Stimmung: belastet</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
