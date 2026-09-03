@@ -127,7 +127,7 @@ const THEME_TOKEN_MAP: Record<string, string> = {
  * Six further setting keys are NOT in the map above and are handled in
  * `applyConfig` step 2b instead: `shadow_color`, `glow_strength`,
  * `label_transform`, `label_tracking`, `color_surface_contrast`,
- * `text_on_contrast`.
+ * `text_on_contrast`, `accent_on_contrast`.
  *
  * The map writes a token only when the config names it. That is correct while
  * :root is the only thing above a host, and wrong as soon as one themed host
@@ -423,6 +423,7 @@ class ThemeService {
        */
       ['--color-surface-contrast', config.color_surface_contrast ?? 'var(--color-surface-raised)'],
       ['--color-text-on-contrast', config.text_on_contrast ?? 'var(--color-text-primary)'],
+      ['--color-accent-on-contrast', config.accent_on_contrast ?? 'var(--color-primary)'],
     ];
     for (const [token, value] of inheritanceSafeDefaults) {
       hostElement.style.setProperty(token, value);

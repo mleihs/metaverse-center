@@ -121,6 +121,14 @@
    * without the other. */
   --color-surface-contrast: var(--color-surface-raised);
   --color-text-on-contrast: var(--color-text-primary);
+  /* The third half. Ground and ink alone are not enough: a counter-block that
+   * reverses the page also reverses what a STATUS colour is worth on it.
+   * Measured on prod 2026-09-03: the paper skin's vermilion, tuned to 4.85 : 1
+   * against paper, reads 2.31 : 1 on #24332d — seven places in the Atlas
+   * session log, all of them the accent, none of them caught by the ink pair.
+   * Defaults to the page's own accent, which is correct wherever the block is
+   * NOT reversed (the dark chrome, where it is an ordinary raised card). */
+  --color-accent-on-contrast: var(--color-primary);
 
   /* === TEXT COLORS === */
   --color-text-primary: #e5e5e5;

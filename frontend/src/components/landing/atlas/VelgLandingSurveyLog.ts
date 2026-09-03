@@ -22,6 +22,21 @@
  *   Blatt einfach eine Karte, und das ist richtig: ein dunkler Block auf
  *   dunklem Grund waere kein Kontrast, sondern ein Loch.
  *
+ * DER AKZENT IST DIE DRITTE HAELFTE, NICHT DIE TINTE
+ *   Grund und Tinte allein reichen nicht. Am 03.09.2026 auf Prod gemessen:
+ *   die Ueberschrift, die fuenf Befehle und der Eingabezeiger standen im
+ *   Zinnober des Papiers auf dem Gegenblock-Grund — 2,31 : 1. Sieben
+ *   Stellen, alle derselbe
+ *   Fehler, und keine davon war ueber die Tinte erreichbar: dieses Blatt hatte
+ *   seine Tinte korrekt neu verankert (sheet-head, lede, line__out mischen aus
+ *   --color-text-on-contrast) und hatte fuer seinen Akzent schlicht kein Token,
+ *   an das es sich haette haengen koennen.
+ *
+ *   Seither gibt es --color-accent-on-contrast, geschrieben im selben Schritt
+ *   wie seine zwei Geschwister. Auf dem Papier ist es das Amber des Terminals
+ *   (6,16 : 1), weil dieser Block ein Terminal ZEIGT; auf dem Dark-Skin faellt
+ *   es auf den Akzent der Seite zurueck, weil der Block dort nichts umkehrt.
+ *
  * WARUM DIE BEFEHLE ECHT SIND
  *   look · examine · talk · eine freie Zeile im Gespraech · weather. Alle fuenf
  *   stehen in der COMMAND_REGISTRY des Terminals. Ein erfundener Befehl in
@@ -122,7 +137,7 @@ export class VelgLandingSurveyLog extends LitElement {
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         letter-spacing: var(--label-tracking);
-        color: var(--color-primary);
+        color: var(--color-accent-on-contrast);
         overflow-wrap: anywhere;
       }
 
@@ -142,13 +157,13 @@ export class VelgLandingSurveyLog extends LitElement {
         gap: var(--space-2);
         font-family: var(--font-mono);
         font-size: var(--text-sm);
-        color: var(--color-primary);
+        color: var(--color-accent-on-contrast);
       }
 
       .caret__bar {
         width: 8px;
         height: 1em;
-        background: var(--color-primary);
+        background: var(--color-accent-on-contrast);
         animation: caret-blink 1100ms steps(1, end) infinite;
       }
 

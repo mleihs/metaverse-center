@@ -539,6 +539,10 @@ export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
   text_inverse: '#e9ede9',
   color_surface_contrast: '#24332d', // the one dark block: session log, footer CTA
   text_on_contrast: '#e9ede9',
+  // Der Gegenblock zeigt ein Terminal, und ein Terminal ist im ganzen Projekt
+  // amber auf dunkel. Gemessen gegen #24332d: 6,16 : 1 — der Zinnober des
+  // Papiers stand dort bei 2,31.
+  accent_on_contrast: '#f59e0b',
 
   // Typography
   font_heading: "'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif",

@@ -170,4 +170,55 @@ describe.each(Object.entries(SKINS))('%s skin holds its contrast floor', (name, 
       'counter-block ground and ink must be declared together',
     ).toBe('text_on_contrast' in config);
   });
+
+  /*
+   * THE THIRD HALF, AND WHY THE PAIR WAS NEVER A PAIR.
+   *
+   * Ground and ink were declared together and travelled together, and the test
+   * above guarded exactly that. It was not enough, and the gap was invisible
+   * for the same reason the pair looked complete: a counter-block reverses the
+   * page, so it reverses what a STATUS colour is worth on it too — and nothing
+   * in this file measured a status colour against anything but the page.
+   *
+   * Measured on production 2026-09-03: the paper skin's vermilion, tuned to
+   * 4.85 : 1 against paper, reads 2.31 : 1 on the counter-block's #24332d. Seven
+   * places in the Atlas session log stood at that ratio, all of them the accent,
+   * none of them reachable by the ink check — the component had correctly
+   * re-anchored its ink and had no third token to re-anchor its accent to.
+   *
+   * The floor is `fill`, not `text`: the accent marks commands and a caret bar,
+   * which are small type and a solid rule, not running prose.
+   */
+  it('the counter-block can carry its own accent', () => {
+    const accent = config.accent_on_contrast ?? config.color_primary;
+    expect(ratio(accent, config.color_surface_contrast)).toBeGreaterThanOrEqual(floor.fill);
+  });
+
+  /*
+   * And the default has to hold on its own. A skin that names a reversed ground
+   * but no accent falls back to `var(--color-primary)` in ThemeService — which
+   * is right only while the block is NOT reversed. Naming the ground is
+   * therefore the moment the accent has to be named too.
+   */
+  it('a reversed ground names its accent', () => {
+    /*
+     * "Reversed" is a measurement, not a key comparison. The first version of
+     * this test asked whether `color_surface_contrast` differed from
+     * `color_surface_raised` — and the dark skin does not declare
+     * `color_surface_raised` at all, so the comparison was against `undefined`
+     * and every skin looked reversed. A test that fails for a reason it does
+     * not name is worse than no test.
+     *
+     * _colors.css says what the block is for: it "reverses the page's polarity
+     * to draw a hard edge". A hard edge is 3 : 1. On the dark chrome the block
+     * is #111111 against a #0a0a0a page — 1.1 : 1, no edge, an ordinary raised
+     * card, and the page's own accent is the right one there.
+     */
+    const reversed = ratio(config.color_surface_contrast, config.color_surface) >= 3;
+    if (!reversed) return;
+    expect(
+      'accent_on_contrast' in config,
+      'a counter-block that reverses the page must name the accent that survives there',
+    ).toBe(true);
+  });
 });
