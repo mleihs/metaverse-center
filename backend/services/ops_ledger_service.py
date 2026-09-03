@@ -173,7 +173,7 @@ class OpsLedgerService:
             .select(
                 "id, created_at, provider, model, purpose, "
                 "total_tokens, estimated_cost_usd, duration_ms, "
-                "simulation_id, user_id, key_source, metadata"
+                "simulation_id, user_id, key_source, metadata, outcome, error_kind"
             )
             .order("created_at", desc=True)
             .limit(limit)
@@ -452,8 +452,14 @@ def _coerce_runtime_state(raw: str) -> CircuitState:
 
 
 def _row_to_firehose(row: dict[str, Any]) -> FirehoseEntry:
+    # `outcome` ist die Spalte (Migration 352). Der alte Umweg ueber
+    # `metadata["status"]` bleibt als Rueckfall stehen, damit Zeilen aus der
+    # Zeit davor nicht anders aussehen als sie waren — geschrieben hat ihn
+    # allerdings nie jemand.
     metadata = row.get("metadata") or {}
-    status = "error" if isinstance(metadata, dict) and metadata.get("status") == "error" else "ok"
+    status = str(row.get("outcome") or "").strip()
+    if not status:
+        status = "error" if isinstance(metadata, dict) and metadata.get("status") == "error" else "ok"
     return FirehoseEntry(
         id=_require_uuid(row["id"]),
         created_at=_parse_timestamp(row["created_at"]) or datetime.now(UTC),
@@ -467,6 +473,7 @@ def _row_to_firehose(row: dict[str, Any]) -> FirehoseEntry:
         user_id=_parse_uuid(row.get("user_id")),
         key_source=str(row.get("key_source") or "platform"),
         status=status,
+        error_kind=(str(row["error_kind"]) if row.get("error_kind") else None),
     )
 
 
