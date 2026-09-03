@@ -757,7 +757,7 @@ class OperativeMissionService:
             )
 
             logger.info(
-                "Betrayal detected — alliance dissolved, penalty applied",
+                "Betrayal detected – alliance dissolved, penalty applied",
                 extra={
                     "source_simulation_id": mission["source_simulation_id"],
                     "target_simulation_id": mission["target_simulation_id"],
@@ -968,7 +968,7 @@ class OperativeMissionService:
 
                     event_data = {
                         "simulation_id": target_sim_id,
-                        "title": f"Infrastructure Sabotage — {zone_name_label}",
+                        "title": f"Infrastructure Sabotage – {zone_name_label}",
                         "event_type": "crisis",
                         "impact_level": impact_level,
                         "event_status": "active",
@@ -1002,7 +1002,7 @@ class OperativeMissionService:
         target_sim = mission["target_simulation_id"]
         event_data = {
             "simulation_id": target_sim,
-            "title": "Propaganda Campaign — Foreign Influence Detected",
+            "title": "Propaganda Campaign – Foreign Influence Detected",
             "description": "Morale undermined by external propaganda operations.",
             "event_type": "social",
             "impact_level": secrets.SystemRandom().randint(3, 5),

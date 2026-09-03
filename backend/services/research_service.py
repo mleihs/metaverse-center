@@ -51,7 +51,7 @@ _THEMATIC_LENSES = [
             "Thermodynamic irreversibility as narrative engine. Ilya Prigogine's "
             "dissipative structures suggest that order emerges from chaos only at "
             "the cost of accelerating entropy elsewhere. In urban sociology, this "
-            "maps to the broken-window thesis — visible decay as a self-reinforcing "
+            "maps to the broken-window thesis – visible decay as a self-reinforcing "
             "signal. The architecture of abandoned shopping malls (dead malls) offers "
             "a physical metaphor: cathedrals of consumerism reclaimed by entropy."
         ),
@@ -75,7 +75,7 @@ _THEMATIC_LENSES = [
             "prediction markets extract value from human experience. China's social "
             "credit system operationalizes this into concrete governance. Counter-"
             "surveillance (sousveillance) movements propose radical transparency "
-            "as antidote — David Brin's 'The Transparent Society' argues that "
+            "as antidote – David Brin's 'The Transparent Society' argues that "
             "privacy is already dead; the question is who watches the watchers."
         ),
     },
@@ -85,7 +85,7 @@ _THEMATIC_LENSES = [
             "Victor Turner's liminality describes transitional states where normal "
             "social structures dissolve. Backrooms-genre fiction transforms mundane "
             "architecture (office corridors, empty pools) into existential horror. "
-            "Marc Augé's 'non-places' — airports, highways, hotel rooms — are "
+            "Marc Augé's 'non-places' – airports, highways, hotel rooms – are "
             "spaces of transience where identity becomes provisional. The Japanese "
             "concept of 'ma' (間) treats emptiness as a positive compositional element."
         ),
@@ -96,7 +96,7 @@ _THEMATIC_LENSES = [
             "Donna Haraway's cyborg manifesto dissolves the boundary between human "
             "and machine. Body-modification subcultures (grinders, transhumanists) "
             "treat flesh as substrate. N. Katherine Hayles argues we became posthuman "
-            "the moment information lost its body — virtuality precedes digital "
+            "the moment information lost its body – virtuality precedes digital "
             "technology. Octavia Butler's Xenogenesis trilogy explores forced hybridity "
             "as both violation and evolution."
         ),
@@ -215,7 +215,7 @@ class ResearchService:
         """
         if not TavilySearchService.is_available():
             logger.warning(
-                "Tavily unavailable — using deterministic emulator",
+                "Tavily unavailable – using deterministic emulator",
                 extra={"seed_preview": seed[:60], "source": "emulator"},
             )
             return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
@@ -243,14 +243,14 @@ class ResearchService:
 
         if not results:
             logger.warning(
-                "All Tavily Phase 1 searches failed — falling back to emulator",
+                "All Tavily Phase 1 searches failed – falling back to emulator",
                 extra={"seed_preview": seed[:60]},
             )
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag("forge_phase", "astrolabe_research")
                 scope.set_context("forge", {"seed_preview": seed[:60]})
                 sentry_sdk.capture_message(
-                    "Tavily fully unavailable in Phase 1 — emulator fallback",
+                    "Tavily fully unavailable in Phase 1 – emulator fallback",
                     level="warning",
                 )
             return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
@@ -307,17 +307,17 @@ class ResearchService:
                 "research brief that will ground worldbuilding lore in real intellectual "
                 "traditions.\n\n"
                 "For each research axis, cite SPECIFIC works, authors, movements, and "
-                "dates. Do not invent references — only cite real sources. Be precise: "
+                "dates. Do not invent references – only cite real sources. Be precise: "
                 "author name, work title, year, and the specific concept or technique "
                 "that applies.\n\n"
                 "Format your output as three labeled sections:\n"
-                "[LITERARY GENEALOGY] — 3-5 specific literary works/authors and what "
+                "[LITERARY GENEALOGY] – 3-5 specific literary works/authors and what "
                 "narrative techniques they contribute (e.g., unreliable narration, "
                 "document fiction, competing accounts, institutional voice)\n\n"
-                "[PHILOSOPHICAL FRAMEWORK] — 2-3 philosophical traditions or thinkers "
+                "[PHILOSOPHICAL FRAMEWORK] – 2-3 philosophical traditions or thinkers "
                 "and how their concepts map to worldbuilding mechanics (e.g., "
                 "epistemological instability → competing origin stories)\n\n"
-                "[ARCHITECTURAL & VISUAL VOCABULARY] — 2-3 specific architectural "
+                "[ARCHITECTURAL & VISUAL VOCABULARY] – 2-3 specific architectural "
                 "movements, materials, and visual references with dates "
                 "(e.g., Soviet Constructivism 1920s: Tatlin's Tower, El Lissitzky "
                 "poster art; or Art Nouveau ironwork: Hector Guimard Métro entrances)\n\n"
@@ -414,12 +414,12 @@ class ResearchService:
                         },
                     )
             else:
-                logger.warning("All Phase 4 Tavily searches failed — continuing with LLM research only")
+                logger.warning("All Phase 4 Tavily searches failed – continuing with LLM research only")
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("forge_phase", "lore_research_augmentation")
                     scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})
                     sentry_sdk.capture_message(
-                        "Tavily fully unavailable in Phase 4 — LLM research only",
+                        "Tavily fully unavailable in Phase 4 – LLM research only",
                         level="warning",
                     )
         else:
@@ -456,7 +456,7 @@ class ResearchService:
             "BILINGUAL OUTPUT: For every text field, also produce a German equivalent "
             "in the corresponding _de field (title_de, literary_influence_de, "
             "core_question_de, description_de). The German text should read as if "
-            "originally written in German — not a literal translation."
+            "originally written in German – not a literal translation."
         )
 
         # Bureau Ops Deferral A.2 — global + purpose enforcement

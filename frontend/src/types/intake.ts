@@ -77,7 +77,6 @@ export const INTAKE_TONES: readonly IntakeTone[] = ['official', 'propaganda', 'r
  * auf 0.7 abbildet und irgendwann daneben liegt.
  */
 export const INTAKE_FREEDOMS = [0.4, 0.7, 0.9] as const;
-export type IntakeFreedom = (typeof INTAKE_FREEDOMS)[number];
 
 /** Die Linse: wie aus dem Signal ein Ereignis DIESER Welt wird. */
 export interface IntakeLens {
@@ -438,6 +437,3 @@ export function effectiveMagnitude(magnitude: number, susceptibility: number): n
  * Vorschau mit (`will_skip`), weil nur der Server die Ableitung kennt.
  */
 export const EFFECT_SKIP_THRESHOLD = 0.05;
-
-/** Die Stufen, die als „im Umlauf" gelten (Kammer ① bis ③). */
-export const ACTIVE_STAGES: readonly IntakeStage[] = ['raw', 'in', 'q', 'ev', 'res', 'flag'];

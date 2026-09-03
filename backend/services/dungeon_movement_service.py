@@ -421,7 +421,7 @@ class DungeonMovementService:
             # find it. Not an exception: from the engine's side this IS a correctly
             # refused request.
             logger.warning(
-                "Action rejected — run is not in an encounter phase",
+                "Action rejected – run is not in an encounter phase",
                 extra=log_extra(
                     instance,
                     phase=instance.phase,
@@ -492,7 +492,7 @@ class DungeonMovementService:
                 "breakdown": {"reason": "no_capable_agent"},
             }
             logger.info(
-                "Skill check without a capable agent — resolved as failure",
+                "Skill check without a capable agent – resolved as failure",
                 extra=log_extra(
                     instance,
                     choice_id=choice.id,
@@ -898,7 +898,7 @@ class DungeonMovementService:
             (water_level >= 75) or (water_level >= 50 and room_depth >= 2) or (water_level >= 25 and room_depth >= 4)
         )
         if not submerged:
-            raise bad_request("Room is not submerged — water level too low")
+            raise bad_request("Room is not submerged – water level too low")
 
         # Prevent double-diving
         salvaged = instance.archetype_state.get("_salvaged_rooms", [])
@@ -1068,7 +1068,7 @@ class DungeonMovementService:
 
         if room_type == "encounter":
             logger.warning(
-                "No encounter template — auto-clearing room",
+                "No encounter template – auto-clearing room",
                 extra=log_extra(instance, room_type=room_type, depth=instance.depth),
             )
             instance.phase = "room_clear"

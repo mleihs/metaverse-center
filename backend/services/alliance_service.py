@@ -305,7 +305,7 @@ class AllianceService:
 
         result = extract_one(resp)
         if result is None:
-            raise server_error("Failed to record alliance vote — insert returned no data.")
+            raise server_error("Failed to record alliance vote – insert returned no data.")
         return result
 
     # ── Proposal: List ────────────────────────────────────

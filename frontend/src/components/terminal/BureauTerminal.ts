@@ -31,6 +31,7 @@ import {
 import { formatFeedEntry } from '../../utils/terminal-formatters.js';
 import { type StopPoll, startVisibilityPoll } from '../../utils/visibility-poll.js';
 import { terminalAnimations, terminalTokens } from '../shared/terminal-theme-styles.js';
+import { bureauPaletteStyles } from '../shared/bureau-palette-styles.js';
 import './TerminalQuickActions.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -60,11 +61,16 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         --_phosphor: #f59e0b; /* lint-color-ok */
         --_phosphor-dim: #d97706; /* lint-color-ok */
         --_phosphor-glow: #fbbf2480; /* lint-color-ok */
-        --_screen-bg: #0a0a08; /* lint-color-ok */
+        /* Diese vier teilt das Terminal mit Schleuse und Schluesselbund; sie
+           stehen in shared/bureau-palette-styles.ts, hier nur die Namen, unter
+           denen das Terminal sie fuehrt. Die Variable --_surface und die
+           Phosphor-Werte gehoeren allein der CRT-Emulation und bleiben lokal.
+           (Kein Backtick in einem css-Kommentar: er beendet das Template.) */
+        --_screen-bg: var(--_bureau-screen);
         --_surface: #12120e; /* lint-color-ok */
-        --_border: #3d3200; /* lint-color-ok */
-        --_text: #f5c542; /* lint-color-ok */
-        --_text-dim: #a68a2e; /* lint-color-ok */
+        --_border: var(--_bureau-border);
+        --_text: var(--_bureau-text);
+        --_text-dim: var(--_bureau-dim);
         --_mono: var(--font-mono, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace);
         --_danger: #ef4444; /* lint-color-ok */
         --_success: #22c55e; /* lint-color-ok */
@@ -490,6 +496,7 @@ export class VelgBureauTerminal extends SignalWatcher(LitElement) {
         border: 0;
       }
     `,
+    bureauPaletteStyles,
   ];
 
   // ── Properties ───────────────────────────────────────────────────────────

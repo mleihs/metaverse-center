@@ -244,11 +244,11 @@ class TestEntityDetailMeta:
         assert result.html != ""
         assert result.jsonld != ""
         assert result.meta is not None
-        assert result.meta.title == "Alice Smith — Station Null | metaverse.center"
+        assert result.meta.title == "Alice Smith – Station Null | metaverse.center"
         assert result.meta.description is not None
         assert "brilliant inventor" in result.meta.description
         assert result.meta.og_image == "https://example.com/alice.jpg"
-        assert result.meta.og_image_alt == "Alice Smith — portrait"
+        assert result.meta.og_image_alt == "Alice Smith – portrait"
         assert result.meta.og_type == "profile"
 
     def test_agent_detail_not_found_is_empty_result(self):
@@ -270,7 +270,7 @@ class TestEntityDetailMeta:
         }])
         result = build_building_detail(client, "sim-1", "Station Null", "station-null", "the-observatory")
         assert result.meta is not None
-        assert result.meta.title == "The Observatory — Station Null | metaverse.center"
+        assert result.meta.title == "The Observatory – Station Null | metaverse.center"
         assert "astrolabe" in (result.meta.description or "")
         assert result.meta.og_image == "https://example.com/obs.jpg"
         assert "Observatory" in result.meta.og_image_alt

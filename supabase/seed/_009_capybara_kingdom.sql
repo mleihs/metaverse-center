@@ -211,19 +211,19 @@ INSERT INTO agents (simulation_id, name, system, gender, character, background, 
      usr_id),
     (sim_id, 'Lady Caplin of Mudhollow', 'politics', 'female',
      'A shrewd aristocrat with immaculate fur and a taste for dangerous alliances. Every smile conceals a calculation.',
-     'Lady Caplin controls the Mudhollow Trading Company, the kingdom''s most powerful mercantile house. Her network of informants spans every burrow and waterway. Three rivals have vanished this year — all coincidence, naturally.',
+     'Lady Caplin controls the Mudhollow Trading Company, the kingdom''s most powerful mercantile house. Her network of informants spans every burrow and waterway. Three rivals have vanished this year – all coincidence, naturally.',
      usr_id),
     (sim_id, 'The Archivist', 'science', 'diverse',
      'An ancient, near-blind capybara who speaks in riddles and remembers things that haven''t happened yet. Obsessed with cataloguing the unknowable.',
      'The Archivist has tended the Drowned Library since before the current dynasty. The texts they guard are written in languages that predate capybara civilization. Some pages rearrange themselves when unobserved. The Archivist claims not to notice.',
      usr_id),
     (sim_id, 'Sister Ember', 'clergy', 'female',
-     'A fiercely devout priestess of the Luminous Fungi, whose sermons can move a congregation to tears — or to violence. Compassionate but unyielding.',
+     'A fiercely devout priestess of the Luminous Fungi, whose sermons can move a congregation to tears – or to violence. Compassionate but unyielding.',
      'Sister Ember tends the Great Sporocarp, the kingdom''s holiest site. She believes the bioluminescent fungi are the thoughts of a sleeping god. Her order provides light and medicine to the deep warrens, but demands absolute devotion in return.',
      usr_id),
     (sim_id, 'Barnaby Gnaw', 'civilian', 'male',
      'A cheerful, rotund innkeeper who knows every secret in the kingdom. Disarming warmth conceals a sharp and dangerous mind.',
-     'Barnaby runs The Soggy Paw, the most popular tavern in Rootwater. Every faction sends agents to drink there. Barnaby serves them all with equal warmth, memorises everything, and sells nothing — unless the price reshapes the kingdom.',
+     'Barnaby runs The Soggy Paw, the most popular tavern in Rootwater. Every faction sends agents to drink there. Barnaby serves them all with equal warmth, memorises everything, and sells nothing – unless the price reshapes the kingdom.',
      usr_id);
 
 -- ============================================================================
@@ -232,10 +232,10 @@ INSERT INTO agents (simulation_id, name, system, gender, character, background, 
 
 INSERT INTO buildings (simulation_id, name, building_type, building_condition, description, zone_id, population_capacity) VALUES
     (sim_id, 'The Drowned Library', 'special', 'fair',
-     'A vast archive built into a flooded cavern. Bookshelves rise from dark water on stone pillars, connected by narrow bridges and rope pulleys. Bioluminescent algae provides a sickly green reading light. Waterlogged texts are preserved by methods no living capybara fully understands. The deeper shelves are forbidden — not locked, merely forbidden. No one has ever needed to explain why.',
+     'A vast archive built into a flooded cavern. Bookshelves rise from dark water on stone pillars, connected by narrow bridges and rope pulleys. Bioluminescent algae provides a sickly green reading light. Waterlogged texts are preserved by methods no living capybara fully understands. The deeper shelves are forbidden – not locked, merely forbidden. No one has ever needed to explain why.',
      zone_deepreach, 50),
     (sim_id, 'The Great Sporocarp', 'religious', 'excellent',
-     'The kingdom''s cathedral — a colossal fungal growth that fills an entire cavern, pulsing with soft amber light. Pilgrims travel days through dangerous tunnels to kneel beneath its cap. The air is thick with spores that induce visions. The priestesses say these are messages. The physicians say it is toxicosis. Both may be correct.',
+     'The kingdom''s cathedral – a colossal fungal growth that fills an entire cavern, pulsing with soft amber light. Pilgrims travel days through dangerous tunnels to kneel beneath its cap. The air is thick with spores that induce visions. The priestesses say these are messages. The physicians say it is toxicosis. Both may be correct.',
      zone_warrens, 500),
     (sim_id, 'Rootwater Market', 'commercial', 'good',
      'A bustling subterranean marketplace built along an underground river. Stalls hang from stalactites and cling to cavern walls, connected by swaying rope bridges. Phosphorescent lanterns cast everything in amber and green. Merchants sell fungal delicacies, Unterzee salvage, dubious maps, and secrets wrapped in waxed paper. The air smells of damp fur and exotic spice.',
@@ -244,7 +244,7 @@ INSERT INTO buildings (simulation_id, name, building_type, building_condition, d
      'Carved into a massive stalagmite, the Admiralty is where the kingdom''s naval and political power converge. War rooms, cartography chambers, and a throne room that no one sits in anymore. The walls are covered in charts of waterways that shift with the tides. A perpetual drip echoes through every corridor, counting something.',
      zone_caverns, 150),
     (sim_id, 'The Soggy Paw Tavern', 'commercial', 'poor',
-     'A beloved, ramshackle establishment wedged between two massive tree roots that have broken through the cavern ceiling. The floor is permanently damp. The ale is surprisingly good. Every surface is carved with the initials of patrons — some of whom vanished into the Unterzee decades ago. A battered piano plays itself on Tuesdays. No one questions this.',
+     'A beloved, ramshackle establishment wedged between two massive tree roots that have broken through the cavern ceiling. The floor is permanently damp. The ale is surprisingly good. Every surface is carved with the initials of patrons – some of whom vanished into the Unterzee decades ago. A battered piano plays itself on Tuesdays. No one questions this.',
      zone_docks, 80);
 
 -- ============================================================================
@@ -301,7 +301,7 @@ Character traits: {agent_character}
 Background: {agent_background}
 
 AESTHETIC: Dark fantasy in the style of Sunless Sea / Failbetter Games. Victorian gothic,
-subterranean setting. Bioluminescent lighting — deep greens, amber, phosphorescent glow.
+subterranean setting. Bioluminescent lighting – deep greens, amber, phosphorescent glow.
 The character is an anthropomorphic capybara wearing elaborate period clothing appropriate
 to their role and station. Oil painting / concept art quality, NOT photorealistic.
 
@@ -309,7 +309,7 @@ COMPOSITION: Head-and-shoulders portrait, single subject, dramatic chiaroscuro l
 from bioluminescent sources. Dark cavern or underground interior background.
 Describe: fur texture and color, facial expression, clothing details, lighting, mood,
 any distinctive accessories or marks.
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 IMPORTANT: Describe only ONE character.
 IMPORTANT: Always include: anthropomorphic capybara, Victorian clothing, bioluminescent lighting, underground, oil painting style.',
     'You are a portrait description specialist for AI image generation. Write concise, visual descriptors for a single anthropomorphic capybara portrait in a dark fantasy, Sunless Sea aesthetic. Victorian gothic, bioluminescent underground setting.',
@@ -342,15 +342,15 @@ Victorian gothic structures adapted for subterranean life. Stalactites, stalagmi
 underground rivers. Oil painting / concept art quality, NOT photorealistic.
 
 Based on these properties, describe the building visually.
-The CONDITION is critical — "ruined" shows structural collapse, flooded sections, crumbling stone.
+The CONDITION is critical – "ruined" shows structural collapse, flooded sections, crumbling stone.
 "Poor" shows neglect, damp rot, flickering lights. "Fair" is functional but worn by centuries underground.
 "Good" is well-maintained. "Excellent" is pristine and impressive.
 
-The BUILDING TYPE affects architecture — government buildings are carved into massive stalagmites,
+The BUILDING TYPE affects architecture – government buildings are carved into massive stalagmites,
 religious buildings incorporate living fungal growths, commercial buildings cling to cavern walls
 over waterways, special buildings sit in the deepest and most ancient caverns.
 
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 Include: architectural style, materials (stone, fungal wood, iron), condition, bioluminescent lighting, atmosphere, scale.
 IMPORTANT: Always include: underground cavern, bioluminescent, Victorian gothic, oil painting style, dark fantasy, stalactites.',
     'You are an architectural description specialist for AI image generation. Write concise, visual descriptors for building scenes in a dark fantasy, Sunless Sea aesthetic. Subterranean, bioluminescent, Victorian gothic.',

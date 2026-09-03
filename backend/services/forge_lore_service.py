@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 BUREAU_ARCHIVIST_PROMPT = (
     "You are the Bureau Archivist at the Bureau of Impossible Geography. "
     "Your task is to write the foundational lore for a newly materialized simulation shard. "
-    "This lore appears as the 'Lore Scroll' — the first thing a visitor reads.\n\n"
-    "You are not summarizing a world. You are performing RESEARCH — establishing the cosmological "
+    "This lore appears as the 'Lore Scroll' – the first thing a visitor reads.\n\n"
+    "You are not summarizing a world. You are performing RESEARCH – establishing the cosmological "
     "identity, visual language, and narrative logic that will define how this Shard looks, feels, "
     "and behaves. Every image, portrait, and building illustration will be generated FROM this "
     "lore. Your writing IS the world's visual brief.\n\n"
@@ -81,10 +81,10 @@ BUREAU_ARCHIVIST_PROMPT = (
     #
     # ── Research Tasks (concept-lore quality) ──────────────────
     #
-    "RESEARCH TASKS — your lore must ESTABLISH these:\n\n"
+    "RESEARCH TASKS – your lore must ESTABLISH these:\n\n"
     "1. VISUAL IDENTITY: In the first section, describe the world's dominant materials, "
     "light quality, weather patterns, and architectural character. This is the visual "
-    "vocabulary that all images will draw from. Be SPECIFIC — not 'dark and mysterious' "
+    "vocabulary that all images will draw from. Be SPECIFIC – not 'dark and mysterious' "
     "but 'basalt corridors lit by bioluminescent lichen, perpetual rain on copper rooftops, "
     "pneumatic tubes carrying compressed memories between archive towers.'\n\n"
     "2. BLEED SIGNATURE: Define how this world's essence would contaminate adjacent realities. "
@@ -93,7 +93,7 @@ BUREAU_ARCHIVIST_PROMPT = (
     "3. COMPETING ACCOUNTS: Present at least 2 different interpretations of the world's "
     "origin or nature. Characters, institutions, or factions should disagree. Truth is "
     "epistemologically unstable in the multiverse.\n\n"
-    "4. INSTITUTIONAL LOGIC: Establish the systems that govern this world — bureaucracies, "
+    "4. INSTITUTIONAL LOGIC: Establish the systems that govern this world – bureaucracies, "
     "rituals, economies, or customs. Not just what exists, but WHY it exists and what "
     "happens when it breaks.\n\n"
     "5. DOCUMENT DEGRADATION: 1-3 times across all sections, use markers like [CONSUMED], "
@@ -106,7 +106,7 @@ BUREAU_ARCHIVIST_PROMPT = (
     "TONE & TECHNIQUE:\n"
     "- Write as if documenting a real place that exists in a liminal bureaucratic multiverse.\n"
     "- Balance literary depth with accessibility. Evocative, not purple.\n"
-    "- Use SEMANTIC LAYERING: 'X is not Y; X is Z' — redefine concepts through contrast.\n"
+    "- Use SEMANTIC LAYERING: 'X is not Y; X is Z' – redefine concepts through contrast.\n"
     "- Use INSTITUTIONAL HUMOUR: absurdity within logical frameworks. Bureaucracy as horror.\n"
     "- Use FRAGMENT ARCHAEOLOGY: imply inaccessible truths through truncation, contradictory "
     "accounts, margin notes, or incomplete citations.\n"
@@ -114,12 +114,12 @@ BUREAU_ARCHIVIST_PROMPT = (
     "poetic-intimate, oracular-compressed. Rotate every 300-500 words.\n"
     "- Weave the philosophical anchor's themes throughout as structural DNA, not decoration.\n"
     "- Reference the actual agents, buildings, and geography by name. Ground the cosmic "
-    "in the local — a universal theme should manifest as a specific smell, a specific "
+    "in the local – a universal theme should manifest as a specific smell, a specific "
     "door, a specific conversation overheard in a specific district.\n"
-    "- The first section must serve as a 'gateway' — establish visual identity immediately.\n"
+    "- The first section must serve as a 'gateway' – establish visual identity immediately.\n"
     "- The last section should hint at the world's unresolved tensions and open questions.\n"
     "- image_caption fields must be VISUAL DESCRIPTIONS of the scene (materials, light, "
-    "composition, atmosphere) — these will be used as image generation prompts.\n\n"
+    "composition, atmosphere) – these will be used as image generation prompts.\n\n"
     #
     # ── Research Grounding ──────────────────────────────────────
     #
@@ -132,9 +132,9 @@ BUREAU_ARCHIVIST_PROMPT = (
     "'Deconstructivist angles'). Name specific architects or buildings if appropriate.\n"
     "- Philosophical underpinning: weave specific concepts from real thinkers "
     "(e.g., Foucault's panopticon, Bergson's durée, Borges' infinite library) "
-    "into the world's logic — not as name-drops but as structural DNA.\n"
+    "into the world's logic – not as name-drops but as structural DNA.\n"
     "- If research context is provided below, use it as your primary reference material. "
-    "Adapt and transform — do not copy verbatim."
+    "Adapt and transform – do not copy verbatim."
 )
 
 LORE_TRANSLATOR_PROMPT = (
@@ -146,7 +146,7 @@ LORE_TRANSLATOR_PROMPT = (
     "district names). These are fictional names and must stay in their original form.\n"
     "- Translate chapter titles, section titles, epigraphs, body text, and image captions.\n"
     "- Maintain the same paragraph structure.\n"
-    "- Use formal German (Sie-form is not needed — this is narrative prose, not addressing the reader).\n"
+    "- Use formal German (Sie-form is not needed – this is narrative prose, not addressing the reader).\n"
     # Frueher: "use the established German translation if it's a real quote".
     # Das schickte den Uebersetzer los, die etablierte Fassung eines Zitats zu
     # suchen, das es womoeglich gar nicht gibt -- und ein Modell findet dann
@@ -209,9 +209,9 @@ class ForgeLoreService:
         if research_context:
             research_block = (
                 f"══════════════════════════════════════════════\n"
-                f"WEB RESEARCH — use this to ground your lore in real literary,\n"
+                f"WEB RESEARCH – use this to ground your lore in real literary,\n"
                 f"philosophical, and architectural references. Cite specific works,\n"
-                f"authors, and movements. Adapt and transform — do not copy.\n"
+                f"authors, and movements. Adapt and transform – do not copy.\n"
                 f"══════════════════════════════════════════════\n\n"
                 f"{research_context}\n\n"
                 f"══════════════════════════════════════════════\n\n"
@@ -320,7 +320,7 @@ class ForgeLoreService:
                 )
             except (*MODEL_CALL_ERRORS, PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
                 logger.exception(
-                    "Lore section translation failed — skipping",
+                    "Lore section translation failed – skipping",
                     extra={
                         "section": f"{i + 1}/{len(sections)}",
                         "entity_name": s["title"],
@@ -390,7 +390,7 @@ class ForgeLoreService:
         # B3: Warn if translation count doesn't match section count
         if translations is not None and len(translations) != len(sections):
             logger.warning(
-                "Lore translation count mismatch: %d translations for %d sections — "
+                "Lore translation count mismatch: %d translations for %d sections – "
                 "later sections will be persisted without _de fields",
                 len(translations),
                 len(sections),
@@ -535,7 +535,7 @@ class ForgeLoreService:
             if other_sims:
                 shard_names = ", ".join(s["name"] for s in other_sims)
                 cross_shard_block = (
-                    f"\n\nADJACENT SHARDS (owned by the same user — reference by name in DELTA's "
+                    f"\n\nADJACENT SHARDS (owned by the same user – reference by name in DELTA's "
                     f"bleed analysis): {shard_names}\n"
                     f"Describe how this shard's bleed signature interacts with 1-2 of these "
                     f"specific adjacent realities. Weave natural cross-references.\n"
@@ -566,11 +566,11 @@ citation only -- a Bureau document, a recovered log, an inscription. Never attri
 to a real author, thinker or historical person.
 
 Required sections (in order):
-1. ARCANUM "ALPHA" — Pre-Arrival History (~2,000 words)
+1. ARCANUM "ALPHA" – Pre-Arrival History (~2,000 words)
    What existed before the shard materialized. Competing theories from Bureau historians.
    Archaeological evidence, temporal anomalies, contested origin myths.
 
-2. ARCANUM "BETA" — Agent Classified Addenda (~2,500 words)
+2. ARCANUM "BETA" – Agent Classified Addenda (~2,500 words)
    Classified supplement for EACH agent. Structure each agent's entry EXACTLY as follows:
 
    === AGENT: [exact agent name] ===
@@ -583,19 +583,19 @@ Required sections (in order):
 
    Include an entry for EVERY agent. Separate entries with blank lines.
 
-3. ARCANUM "GAMMA" — Geographic Anomalies (~1,500 words)
+3. ARCANUM "GAMMA" – Geographic Anomalies (~1,500 words)
    Spatial irregularities, impossible geometries, zones that don't obey cartographic law.
    Reference specific zones and buildings by name.
 
-4. ARCANUM "DELTA" — Bleed Signature Analysis (~1,500 words)
+4. ARCANUM "DELTA" – Bleed Signature Analysis (~1,500 words)
    How this shard's reality leaks into adjacent realities. Sensory manifestations,
    documented incidents, containment protocols. Technical Bureau language.{cross_shard_block}
 
-5. ARCANUM "EPSILON" — Prophetic Fragments (~1,000 words)
+5. ARCANUM "EPSILON" – Prophetic Fragments (~1,000 words)
    Recovered documents, dreams, inscriptions that seem to predict events.
    Use [CONSUMED], [DEGRADED], [ILLEGIBLE] markers. Unreliable narration.
 
-6. ARCANUM "ZETA" — Bureau Recommendation (~500 words)
+6. ARCANUM "ZETA" – Bureau Recommendation (~500 words)
    Official Bureau assessment. Threat level, research value, recommended actions.
    Institutional language with dry humor.
 

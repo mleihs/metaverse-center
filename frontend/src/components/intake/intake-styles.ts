@@ -214,21 +214,37 @@ export const intakeKindColorStyles = css`
 `;
 
 /**
- * Die Farben des Bureaus.
+ * Die Farben des Bureaus — nur noch weitergereicht.
  *
- * Es gibt sie NICHT als globale Token, und das ist Absicht: die Depesche des
- * Bureaus ist eine Fläche, die in allen zehn Themes gleich aussehen muss, weil
- * sie nicht der Welt gehört, sondern der Plattform. `BureauTerminal.ts` (Z.
- * 60–71) führt dieselben Werte als Privat-Variablen mit derselben Marke; wer
- * sie hier ändert, ändert eine Depesche, die dort anders aussieht.
- *
- * `lint-color-ok` ist die Marke, die `lint-color-tokens.sh` liest.
+ * Die Werte standen hier, und ihr eigener Kommentar hat bereits beschrieben,
+ * dass `BureauTerminal.ts` dieselben vier Farben unter anderen Namen führt.
+ * Beschrieben ist nicht behoben: am selben Tag kamen mit dem Schlüsselbund
+ * zwei weitere Kopien dazu. Sie stehen jetzt an EINER Stelle,
+ * `shared/bureau-palette-styles.ts`, und werden hier nur re-exportiert, damit
+ * die bestehenden Importe der Schleuse gültig bleiben.
  */
-export const bureauPaletteStyles = css`
-  :host {
-    --_bureau-screen: #0a0a08; /* lint-color-ok: Depesche des Bureaus, themenunabhaengig */
-    --_bureau-border: #3d3200; /* lint-color-ok */
-    --_bureau-text: #f5c542; /* lint-color-ok */
-    --_bureau-dim: #a68a2e; /* lint-color-ok */
+export { bureauPaletteStyles } from '../shared/bureau-palette-styles.js';
+
+/**
+ * Die Werkzeugleiste über einer Kammer.
+ *
+ * Vier Modale trugen diesen Block wörtlich gleich — und unter ZWEI Namen:
+ * `.tools` in Durchsicht und Sichtung, `.head` im Lesesaal und im Scan-Log.
+ * Zwei Namen für dieselbe Sache sind der Anfang zweier Gestaltungen: wer die
+ * Polsterung an einer Stelle nachzieht, verschiebt die Leiste in zwei von vier
+ * Kammern. Der Name ist jetzt `.tools`, überall.
+ *
+ * `.head` blieb bewusst NICHT der gemeinsame Name: die Klasse steht in fast
+ * jeder Datei der Schleuse für etwas anderes, ein geteilter Block unter diesem
+ * Namen hätte Flächen getroffen, die keine Werkzeugleiste sind.
+ */
+export const intakeToolbarStyles = css`
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-5);
+    border-block-end: var(--border-width-thin) solid var(--color-border-light);
   }
 `;

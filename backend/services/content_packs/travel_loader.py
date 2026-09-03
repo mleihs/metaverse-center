@@ -105,7 +105,7 @@ def load_quest_templates(root: Path | None = None) -> list[QuestTemplateRecord]:
     quests_dir = root / "quests"
     records: list[QuestTemplateRecord] = []
     if not quests_dir.is_dir():
-        logger.debug("no drift quests directory at %s — nothing to load", quests_dir)
+        logger.debug("no drift quests directory at %s – nothing to load", quests_dir)
         return records
 
     for file in sorted(quests_dir.iterdir()):
@@ -152,7 +152,7 @@ def load_signal_templates(root: Path | None = None) -> list[SignalTemplateRecord
     signals_dir = root / "signals"
     records: list[SignalTemplateRecord] = []
     if not signals_dir.is_dir():
-        logger.debug("no drift signals directory at %s — nothing to load", signals_dir)
+        logger.debug("no drift signals directory at %s – nothing to load", signals_dir)
         return records
 
     for file in sorted(signals_dir.iterdir()):
@@ -162,7 +162,7 @@ def load_signal_templates(root: Path | None = None) -> list[SignalTemplateRecord
         if pack.signal_class != file.stem:
             msg = (
                 f"{file}: signal_class '{pack.signal_class}' does not match the filename "
-                f"'{file.stem}' — one file per class"
+                f"'{file.stem}' – one file per class"
             )
             raise ValueError(msg)
         for template in pack.signals:

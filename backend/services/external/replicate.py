@@ -160,7 +160,7 @@ class ReplicateService:
                     if next_attempt <= _E005_MAX_RETRIES:
                         current_prompt = _soften_prompt_for_safety(prompt, next_attempt)
                         logger.warning(
-                            "E005 safety filter — retrying with softened prompt",
+                            "E005 safety filter – retrying with softened prompt",
                             extra={"model": model, "attempt": next_attempt, "prompt": current_prompt[:80]},
                         )
                         continue
@@ -179,7 +179,7 @@ class ReplicateService:
                         extra={"model": model, "error": str(e), "duration_ms": duration_ms},
                     )
                     raise ReplicateBillingError(
-                        f"Replicate billing error — check credits at replicate.com/account/billing: {e}"
+                        f"Replicate billing error – check credits at replicate.com/account/billing: {e}"
                     ) from e
                 # E005 safety filter — retry with softened prompt
                 if "e005" in err_str or "flagged as sensitive" in err_str:
@@ -187,7 +187,7 @@ class ReplicateService:
                     if next_attempt <= _E005_MAX_RETRIES:
                         current_prompt = _soften_prompt_for_safety(prompt, next_attempt)
                         logger.warning(
-                            "E005 safety filter — retrying with softened prompt",
+                            "E005 safety filter – retrying with softened prompt",
                             extra={"model": model, "attempt": next_attempt, "prompt": current_prompt[:80]},
                         )
                         continue

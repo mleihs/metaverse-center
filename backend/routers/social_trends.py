@@ -95,7 +95,7 @@ def _upstream_news_error(source: str, exc: Exception) -> HTTPException:
                 detail=(
                     f"{source} refused the configured API key ({exc.status_code}). "
                     f"A platform admin has to renew '{source}_api_key' in the "
-                    f"platform settings — retrying will not help."
+                    f"platform settings – retrying will not help."
                 ),
             )
         if exc.is_rate_limited:

@@ -202,7 +202,7 @@ class GenerationService:
             if description:
                 return description
         except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
-            logger.debug("No banner_description template — using hardcoded prompt")
+            logger.debug("No banner_description template – using hardcoded prompt")
 
         # Fallback: hardcoded prompt (backwards-compatible)
         return (
@@ -310,7 +310,7 @@ class GenerationService:
             if description:
                 return description
         except (httpx.HTTPError, json.JSONDecodeError, KeyError, TypeError, ValueError):
-            logger.debug("No lore_image_description template — using fallback")
+            logger.debug("No lore_image_description template – using fallback")
 
         # Fallback: compose from section content directly
         return (
@@ -723,12 +723,12 @@ class GenerationService:
         parsed = self._parse_json_object(raw_content, source="generate_resonance_event")
         if parsed:
             return {
-                "title": parsed.get("title", f"{archetype_name} — {event_type}"),
+                "title": parsed.get("title", f"{archetype_name} – {event_type}"),
                 "description": parsed.get("description", raw_content),
                 "impact_level": parsed.get("impact_level"),
             }
         return {
-            "title": f"{archetype_name} — {event_type}",
+            "title": f"{archetype_name} – {event_type}",
             "description": raw_content,
         }
 
@@ -1089,7 +1089,7 @@ class GenerationService:
 
         if not await json_repair_allowed(await get_admin_supabase()):
             logger.info(
-                "LLM JSON repair is switched off — leaving the malformed answer alone",
+                "LLM JSON repair is switched off – leaving the malformed answer alone",
                 extra={"source": source},
             )
             return None

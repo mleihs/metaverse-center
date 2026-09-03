@@ -132,8 +132,8 @@ banter:
 - id: ob_18
   trigger: combat_won
   personality_filter: {}
-  text_en: Victory. The revolution devours its children — but not today. Today, the children devour.
-  text_de: Sieg. Die Revolution frisst ihre Kinder — aber nicht heute. Heute fressen die Kinder.
+  text_en: Victory. The revolution devours its children – but not today. Today, the children devour.
+  text_de: Sieg. Die Revolution frisst ihre Kinder – aber nicht heute. Heute fressen die Kinder.
   fracture_tier: 2
 - id: ob_19
   trigger: room_entered
@@ -153,9 +153,9 @@ banter:
 - id: ob_21
   trigger: room_entered
   personality_filter: {}
-  text_en: The Pretender speaks. {agent} has heard these words before — in their own voice, on Floor
+  text_en: The Pretender speaks. {agent} has heard these words before – in their own voice, on Floor
     1.
-  text_de: Der Prätendent spricht. {agent} hat diese Worte schon gehört — in der eigenen Stimme, auf
+  text_de: Der Prätendent spricht. {agent} hat diese Worte schon gehört – in der eigenen Stimme, auf
     Etage 1.
   fracture_tier: 3
 - id: ob_22

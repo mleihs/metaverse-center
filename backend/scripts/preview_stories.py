@@ -38,7 +38,7 @@ REACTIONS = [
     },
     {
         "agent_name": "Sera Voss",
-        "text": "This should NOT appear on the final image — second reaction culled.",
+        "text": "This should NOT appear on the final image – second reaction culled.",
         "emotion": "defiance",
     },
 ]
@@ -47,7 +47,7 @@ EVENTS = [
     "Flood Protocol Alpha initiated",
     "Tidal surge detected in District 7",
     "Emergency evacuation order issued",
-    "Infrastructure collapse — Bridge 14",
+    "Infrastructure collapse – Bridge 14",
 ]
 
 # ── Render All Templates ───────────────────────────────────────────────

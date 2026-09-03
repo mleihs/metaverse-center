@@ -80,7 +80,7 @@ class DungeonCheckpointService:
                 await cls.checkpoint(admin_supabase or await get_admin_supabase(), instance)
             except Exception as exc:
                 logger.exception(
-                    "Re-checkpoint of dirty instance failed — evicting",
+                    "Re-checkpoint of dirty instance failed – evicting",
                     extra={"run_id": str(run_id)},
                 )
                 _store.remove(run_id)
@@ -136,7 +136,7 @@ class DungeonCheckpointService:
         except PostgrestAPIError:
             _store.mark_dirty(instance.run_id)
             logger.exception(
-                "Checkpoint failed — instance marked dirty",
+                "Checkpoint failed – instance marked dirty",
                 extra=log_extra(instance, phase=instance.phase),
             )
             with sentry_sdk.push_scope() as scope:

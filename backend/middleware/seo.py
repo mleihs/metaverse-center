@@ -165,7 +165,7 @@ def get_crawler_redirect(url_path: str) -> str | None:
 # Static meta tags for platform-level routes (no DB query needed)
 _PLATFORM_META: dict[str, dict[str, str]] = {
     "/": {
-        "title": "metaverse.center — Multiplayer Worldbuilding & Strategy Platform",
+        "title": "metaverse.center – Multiplayer Worldbuilding & Strategy Platform",
         "description": (
             "Build civilizations, deploy operatives, shape the multiverse."
             " A multiplayer worldbuilding and strategy platform with AI-powered agents,"
@@ -176,25 +176,25 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/dashboard": {
         "title": "Operative Terminal | metaverse.center",
         "description": (
-            "Your operative command center — monitor active epochs,"
+            "Your operative command center – monitor active epochs,"
             " browse simulation worlds, and track substrate anomalies."
         ),
         "canonical": "https://metaverse.center/dashboard",
     },
     "/multiverse": {
         "title": "Multiverse Map | metaverse.center",
-        "description": "Interactive force-directed graph of the multiverse — simulation connections and epoch battles.",
+        "description": "Interactive force-directed graph of the multiverse – simulation connections and epoch battles.",
         "canonical": "https://metaverse.center/multiverse",
     },
     "/how-to-play": {
         "title": "How to Play | metaverse.center",
-        "description": "Complete guide to epoch gameplay — operatives, scoring, alliances, and strategy.",
+        "description": "Complete guide to epoch gameplay – operatives, scoring, alliances, and strategy.",
         "canonical": "https://metaverse.center/how-to-play",
     },
     "/epoch": {
         "title": "Epoch Command Center | metaverse.center",
         "description": (
-            "Join competitive PvP epochs — deploy operatives,"
+            "Join competitive PvP epochs – deploy operatives,"
             " form alliances, and compete for multiverse dominance."
         ),
         "canonical": "https://metaverse.center/epoch",
@@ -203,7 +203,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "title": "Bureau Archives | metaverse.center",
         "description": (
             "Declassified archives of the Bureau of Impossible Geography"
-            " — the complete mythology of the Fracture, the Bleed,"
+            " – the complete mythology of the Fracture, the Bleed,"
             " and the Convergence."
         ),
         "canonical": "https://metaverse.center/archives",
@@ -211,7 +211,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/worlds": {
         "title": "Explore Living Worlds | metaverse.center",
         "description": (
-            "Browse player-created civilizations — each with AI-powered characters,"
+            "Browse player-created civilizations – each with AI-powered characters,"
             " evolving cities, and stories that write themselves."
             " Every world started as a single sentence."
         ),
@@ -226,7 +226,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "description": (
             "Every world writes its own newspaper."
             " Read AI-generated broadsheets from active simulations"
-            " — fiction tied to real gameplay events."
+            " – fiction tied to real gameplay events."
         ),
         "canonical": "https://metaverse.center/chronicles",
         "og_image": (
@@ -236,11 +236,11 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     },
     # --- Content pages: landing pages ---
     "/worldbuilding": {
-        "title": "AI Worldbuilding Platform — Create Living Worlds | metaverse.center",
+        "title": "AI Worldbuilding Platform – Create Living Worlds | metaverse.center",
         "description": (
             "Build AI-powered worlds with characters who remember, cities that evolve,"
             " and stories that write themselves. From Tolkien's subcreation to procedural"
-            " generation — worldbuilding reimagined."
+            " generation – worldbuilding reimagined."
         ),
         "canonical": "https://metaverse.center/worldbuilding",
     },
@@ -254,7 +254,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "canonical": "https://metaverse.center/ai-characters",
     },
     "/strategy-game": {
-        "title": "Multiplayer Strategy Game — Competitive Epochs | metaverse.center",
+        "title": "Multiplayer Strategy Game – Competitive Epochs | metaverse.center",
         "description": (
             "Deploy operatives, form alliances, and compete across five scoring dimensions"
             " in time-limited PvP epochs. A strategy game where your world is your weapon."
@@ -265,7 +265,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/perspectives/what-is-the-metaverse": {
         "title": "What Is the Metaverse? Beyond Corporate Hype | metaverse.center",
         "description": (
-            "From Stephenson's Snow Crash to Baudrillard's simulacra — a literary and"
+            "From Stephenson's Snow Crash to Baudrillard's simulacra – a literary and"
             " philosophical exploration of what the metaverse actually means, beyond"
             " corporate buzzwords and failed VR demos."
         ),
@@ -283,7 +283,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         "title": "Digital Sovereignty: Who Governs Virtual Worlds? | metaverse.center",
         "description": (
             "Lessig's 'Code is Law,' Foucault's governmentality, and the EU Digital"
-            " Markets Act — exploring self-determination in digital spaces and why"
+            " Markets Act – exploring self-determination in digital spaces and why"
             " platform governance matters."
         ),
         "canonical": "https://metaverse.center/perspectives/digital-sovereignty",
@@ -291,7 +291,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/perspectives/virtual-civilizations": {
         "title": "Virtual Civilizations: Architecture, Decay, and Renewal | metaverse.center",
         "description": (
-            "From Spengler's cyclical history to Metabolist architecture — how virtual"
+            "From Spengler's cyclical history to Metabolist architecture – how virtual"
             " civilizations mirror, challenge, and transcend physical urban development."
         ),
         "canonical": "https://metaverse.center/perspectives/virtual-civilizations",
@@ -299,7 +299,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/perspectives/competitive-strategy": {
         "title": "Competitive Strategy in Virtual Worlds: From Sun Tzu to EVE Online | metaverse.center",
         "description": (
-            "Game theory, asymmetric warfare, and emergent player strategy — how"
+            "Game theory, asymmetric warfare, and emergent player strategy – how"
             " competitive virtual worlds create strategic depth that rivals real geopolitics."
         ),
         "canonical": "https://metaverse.center/perspectives/competitive-strategy",
@@ -369,7 +369,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     banner_url = sim.get("banner_url", "")
 
     # Sim-level defaults — overridden below if the detail builder declares entity meta
-    title = f"{view_label} — {sim_name} | metaverse.center" if sim_name else f"{view_label} | metaverse.center"
+    title = f"{view_label} – {sim_name} | metaverse.center" if sim_name else f"{view_label} | metaverse.center"
     theme = sim.get("theme", "")
     if sim_desc:
         description = sim_desc
@@ -384,7 +384,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     if entity_id_or_slug:
         canonical = f"{canonical}/{entity_id_or_slug}"
     og_image = banner_url
-    og_image_alt = f"{sim_name} — simulation banner" if banner_url and sim_name else ""
+    og_image_alt = f"{sim_name} – simulation banner" if banner_url and sim_name else ""
     og_type = "website"
 
     # Fetch entity detail up-front so its meta can override sim-level meta. The

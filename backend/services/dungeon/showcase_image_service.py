@@ -86,7 +86,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "perspective looking upward through massive stone arches and staircases "
             "that lead both up and down simultaneously. Etching and conte crayon "
             "rendering style with deep cross-hatched shadows. Bridges span impossible "
-            "chasms between brutalist concrete columns. Angles subtly wrong — load-bearing "
+            "chasms between brutalist concrete columns. Angles subtly wrong – load-bearing "
             "walls lean imperceptibly. Thin vertical lines of pale data stream down walls. "
             "Color #4A8AB5 for steel-blue highlights, color #0A1218 for deep shadow. "
             "Institutional not gothic, functioning not ruined. Hard directional light "
@@ -107,7 +107,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "structures. Tendrils and botanical nodules grow from ceiling with "
             "scientific precision. Warm humid atmosphere, color #021210 for deep "
             "background. Watercolor-meets-oil texture. The space is welcoming, "
-            "not threatening — a womb, not a machine."
+            "not threatening – a womb, not a machine."
         ),
     ),
     "entropy": ArchetypeVisual(
@@ -122,10 +122,10 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "grey. One side partially intact chandelier, other side same chandelier "
             "reduced to vague form. Golden light filtering through shattered skylights "
             "illuminates suspended dust frozen in still air. Patina of decades on "
-            "every surface. Mixed media — scorched earth pigment, lead grey, cracked "
+            "every surface. Mixed media – scorched earth pigment, lead grey, cracked "
             "lacquer. Color #CC7722 for ochre warmth, color #8B7355 for weathered "
             "stone, color #4A3728 for rust. Nature reclaiming, melancholy beauty. "
-            "Not destruction — equalization."
+            "Not destruction – equalization."
         ),
     ),
     "prometheus": ArchetypeVisual(
@@ -142,7 +142,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "workbenches. Sparks frozen mid-flight. Thick oil paint brushstrokes, "
             "visible canvas grain. Color temperature 3200K warmth. Smoke hangs in "
             "visible layers. Zero ambient fill, hard shadows. Deep volcanic black "
-            "background, color #1A0800. Tools arranged with loving precision — "
+            "background, color #1A0800. Tools arranged with loving precision – "
             "this is craft, not magic."
         ),
     ),
@@ -155,7 +155,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "A drowned civilization seen from the waterline, the composition split "
             "horizontally where water meets air. Above the surface: storm clouds and "
             "desperate amber emergency lighting reflecting on dark water. Below the "
-            "surface: haunting subaquatic beauty — marble Art Deco columns and "
+            "surface: haunting subaquatic beauty – marble Art Deco columns and "
             "shattered domes submerged in clear jade-green water. Caustic light "
             "patterns ripple across submerged walls where waves concentrate and "
             "focus light into bright lines. Light passes through translucent wave "
@@ -172,16 +172,16 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         image_size="2K",
         prompt=(
             "A surreal liminal interior reminiscent of de Chirico's 'Mystery and "
-            "Melancholy of a Street' — elongated impossible shadows cast by unseen "
+            "Melancholy of a Street' – elongated impossible shadows cast by unseen "
             "objects, empty arcaded architecture with conflicting vanishing points. "
             "The space is simultaneously a library, a desert plain, and a neuronal "
             "network. Recursive doorways recede into distance, each subtly different "
-            "like the same memory recalled imperfectly. The light has no source — "
+            "like the same memory recalled imperfectly. The light has no source – "
             "the space itself is luminous, as in Magritte's 'Empire of Light' where "
             "a nighttime street exists under a bright daylit sky. Translucent "
             "geometric solids float at mid-height like crystallized thoughts. "
             "Ethereal lavender and deep midnight blue palette with silver-white "
-            "accents. Hypnagogic — the moment between sleep and waking. "
+            "accents. Hypnagogic – the moment between sleep and waking. "
             "Calm. Familiar but wrong. Rendered in layered oil glazes."
         ),
     ),
@@ -194,10 +194,10 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "A monumental mirror palace in mid-collapse, rendered as a 1920s Russian "
             "Constructivist composition crossed with thick expressionist oil painting. "
             "Grand hall where every mirror reflection shows a different version of "
-            "the same throne room — some intact, some burning, some empty. Shattered "
+            "the same throne room – some intact, some burning, some empty. Shattered "
             "thrones and toppled statues of forgotten leaders. Torn crimson banners "
             "hang from vaulted ceiling lost in smoke. Official documents scatter "
-            "through air. Bold geometric typography partially visible on walls — "
+            "through air. Bold geometric typography partially visible on walls – "
             "weathered posters with fragments torn away, overlapping proclamations. "
             "Diagonal composition at 30 degrees. Lightning through broken stained "
             "glass casts fractured colored light. Blood red, storm grey, bruised "
@@ -217,10 +217,10 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "A narrow corridor deep inside a mirror palace, reminiscent of "
             "El Lissitzky's 'Beat the Whites with the Red Wedge' but rendered "
             "as claustrophobic architecture. Opposing mirrors create infinite "
-            "recursion — each reflection wearing different political insignia. "
+            "recursion – each reflection wearing different political insignia. "
             "Torn propaganda posters layer upon each other on stone walls, "
             "contradictory decrees in Gothic and Cyrillic script, partially "
-            "redacted. A single chair sits beneath a bare bulb — Koestler's "
+            "redacted. A single chair sits beneath a bare bulb – Koestler's "
             "interrogation chamber. Cracked marble floor reflects crimson "
             "overhead light. Paranoid atmosphere. Color #d4364b for all red "
             "elements, deep charcoal blacks. Thick expressionist impasto, "
@@ -234,7 +234,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         image_size="2K",
         prompt=(
             "A long marble corridor in a mirror palace, painted in the style "
-            "of Vilhelm Hammershøi — muted, desaturated, profoundly still. "
+            "of Vilhelm Hammershøi – muted, desaturated, profoundly still. "
             "Identical doors on both sides, each slightly ajar. Official notices "
             "pinned to walls in neat rows, the text too small to read. A single "
             "figure at the far end, back turned, walking away. The mirrors reflect "
@@ -251,11 +251,11 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         image_size="2K",
         prompt=(
             "A grand assembly hall in ruins, painted in the violent style of "
-            "Anselm Kiefer — scorched surfaces, layered materials, monumental "
+            "Anselm Kiefer – scorched surfaces, layered materials, monumental "
             "scale. Faction banners torn and overlapping on the walls, three "
             "different insignia competing for the same space. An overturned "
             "podium. Scattered documents form a carpet on the floor. In the "
-            "center, an empty chair — the seat of power, vacated mid-sentence. "
+            "center, an empty chair – the seat of power, vacated mid-sentence. "
             "Smoke and red light #d4364b pouring through shattered windows. "
             "Charcoal and ash mixed into thick paint. The architecture crumbles "
             "but the propaganda remains intact. Heavy impasto, burnt umber, "
@@ -270,13 +270,13 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         prompt=(
             "A throne room at the heart of a shattered mirror palace, "
             "inspired by Francis Bacon's 'Study after Velázquez's Portrait "
-            "of Pope Innocent X' — a figure on a throne, distorted, screaming "
+            "of Pope Innocent X' – a figure on a throne, distorted, screaming "
             "or smiling (impossible to tell), viewed through fractured glass. "
             "The throne is surrounded by broken mirrors that each reflect the "
             "same figure in a different state: one regal, one bestial, one "
             "serpentine. Milton's Satan in three phases. The floor is covered "
             "in scattered official seals and torn documents. Crimson light "
-            "descends from a single point above — authoritarian spotlight. "
+            "descends from a single point above – authoritarian spotlight. "
             "The mirrors multiply the figure into infinite pretenders. "
             "Blood red #d4364b, papal purple, bone white, void black. "
             "Expressionist oil paint, violent brushwork, Bacon's smeared flesh."
@@ -291,7 +291,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         prompt=(
             "Interior of a vast antiquarian library, shelves stretching into "
             "grey distance, painted in thick impasto oil with palette knife marks. "
-            "Every object on every shelf approaches the same muted tone — books, "
+            "Every object on every shelf approaches the same muted tone – books, "
             "instruments, globes, all weathered to uniform patina. Amber light "
             "from a cracked skylight casts a single warm shaft through suspended "
             "dust particles. Color #CC7722 for the last ochre warmth in the light "
@@ -325,10 +325,10 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
         prompt=(
             "A deep chamber where dissolution is advanced, thick mixed-media "
             "surface with embedded geological texture and cracked varnish. "
-            "Shapes barely distinguishable from background — columns, arches, "
+            "Shapes barely distinguishable from background – columns, arches, "
             "furniture all averaging into the same grey mass. A mirror on the "
             "wall reflects nothing distinct, its surface the same shade as the "
-            "room. One last patch of color — amber ochre #CC7722 — clinging to "
+            "room. One last patch of color – amber ochre #CC7722 – clinging to "
             "a corner where a chandelier once hung. The rest is equalized: "
             "color #6B6B6B uniform, color #4A4A4A for what remains of shadow. "
             "Beckett's Lessness made architecture. Serene, terminal, beautiful."
@@ -346,7 +346,7 @@ ARCHETYPE_VISUALS: dict[str, ArchetypeVisual] = {
             "raised in protection of an absence. Armor plates dissolve into "
             "stone, stone dissolves into floor, floor dissolves into shadow. "
             "The figure is indistinguishable from its post. Overhead, a crack "
-            "admits a single shaft of dying amber light — color #CC7722. "
+            "admits a single shaft of dying amber light – color #CC7722. "
             "Everything else is the color of equalization: lead grey #7A7A7A, "
             "rust #4A3728, void #1A1A1A. Monumental. Empty. The last distinction."
         ),

@@ -155,7 +155,7 @@ class BlueskyScheduler(BaseSchedulerMixin):
 
         if not config["posting_enabled"]:
             logger.info(
-                "Bluesky posting disabled (dry-run mode) — skipping publish",
+                "Bluesky posting disabled (dry-run mode) – skipping publish",
                 extra={
                     "post_count": len(due),
                     "iteration": cls._iteration_count,
@@ -165,7 +165,7 @@ class BlueskyScheduler(BaseSchedulerMixin):
 
         if not config["handle"] or not config["app_password"]:
             logger.warning(
-                "Bluesky credentials not configured — cannot publish",
+                "Bluesky credentials not configured – cannot publish",
                 extra={
                     "iteration": cls._iteration_count,
                     "handle": config["handle"] or "EMPTY",
@@ -185,7 +185,7 @@ class BlueskyScheduler(BaseSchedulerMixin):
                 await cls._publish_single_post(admin, bsky, post)
             except BlueskyAuthError as exc:
                 logger.error(
-                    "Bluesky authentication failed — disabling posting. Check app password in Admin Panel → Bluesky.",
+                    "Bluesky authentication failed – disabling posting. Check app password in Admin Panel → Bluesky.",
                     extra={
                         "post_id": str(post_id),
                         "iteration": cls._iteration_count,
@@ -214,7 +214,7 @@ class BlueskyScheduler(BaseSchedulerMixin):
                 return
             except BlueskyRateLimitError:
                 logger.warning(
-                    "Bluesky rate limit reached — stopping publish cycle",
+                    "Bluesky rate limit reached – stopping publish cycle",
                     extra={
                         "post_id": str(post_id),
                         "iteration": cls._iteration_count,

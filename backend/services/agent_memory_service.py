@@ -20,7 +20,7 @@ MOCK_OBSERVATIONS = [
 ]
 
 MOCK_REFLECTIONS = [
-    {"content": "I notice a pattern — visitors always ask about the old quarter first.", "importance": 7},
+    {"content": "I notice a pattern – visitors always ask about the old quarter first.", "importance": 7},
 ]
 
 

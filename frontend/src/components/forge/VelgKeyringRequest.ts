@@ -16,18 +16,22 @@ import { forgeApi } from '../../services/api/ForgeApiService.js';
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { icons } from '../../utils/icons.js';
+import { bureauPaletteStyles } from '../shared/bureau-palette-styles.js';
 import { VelgToast } from '../shared/Toast.js';
 
 @localized()
 @customElement('velg-keyring-request')
 export class VelgKeyringRequest extends LitElement {
-  static styles = css`
+  static styles = [
+    css`
     :host {
       display: block;
-      --_gold: #a68a2e; /* lint-color-ok — Bureau-Gold wie terminal/BureauTerminal.ts */
-      --_gold-bright: #f5c542; /* lint-color-ok */
-      --_gold-border: #3d3200; /* lint-color-ok */
-      --_gold-bg: #0a0a08; /* lint-color-ok */
+      /* Die vier Werte stehen in shared/bureau-palette-styles.ts; hier nur
+         die Namen, unter denen dieser Baustein sie kennt. */
+      --_gold: var(--_bureau-dim);
+      --_gold-bright: var(--_bureau-text);
+      --_gold-border: var(--_bureau-border);
+      --_gold-bg: var(--_bureau-screen);
     }
 
     .box {
@@ -134,7 +138,9 @@ export class VelgKeyringRequest extends LitElement {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
     }
-  `;
+  `,
+    bureauPaletteStyles,
+  ];
 
   /** `none` heisst plattformweit aus — dann gibt es nichts zu beantragen. */
   @property({ type: String }) accessPolicy: 'none' | 'all' | 'per_user' = 'per_user';

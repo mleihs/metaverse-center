@@ -153,7 +153,7 @@ class EpochInvitationService:
             ValueError,
         ):
             logger.warning(
-                "Invitation lore unavailable — sending the invitation without it",
+                "Invitation lore unavailable – sending the invitation without it",
                 extra={"epoch_id": str(epoch_id)},
                 exc_info=True,
             )

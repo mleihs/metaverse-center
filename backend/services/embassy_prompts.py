@@ -29,7 +29,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
         "lighting": (
             "harsh overhead fluorescent tubes with cold white flicker, flat "
             "institutional lighting with no warmth, light that creates "
-            "bureaucratic precision — no shadows allowed to be ambiguous"
+            "bureaucratic precision – no shadows allowed to be ambiguous"
         ),
         "textures": (
             "brutalist board-marked concrete (wood grain pressed into cement), "
@@ -76,7 +76,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
         "atmosphere": (
             "warm humid fog that smells of copper and earth, the sense of vast "
             "depth beneath floors, dripping sounds from impossible sources, "
-            "cave-breath — warm exhalations from below"
+            "cave-breath – warm exhalations from below"
         ),
         "color": (
             "deep emerald green encroaching on sterile environments, amber warmth "
@@ -93,7 +93,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
         "lighting": (
             "green-tinted CRT monitor glow, red emergency klaxon wash, sickly "
             "fluorescent flicker in the wrong color temperature for the world, "
-            "light that feels recycled — stale photons"
+            "light that feels recycled – stale photons"
         ),
         "textures": (
             "condensation on cold metal surfaces, biological film on aerospace "
@@ -107,7 +107,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
             "gaskets, airlock pressure gauges"
         ),
         "atmosphere": (
-            "recycled air quality — sterile yet somehow wrong, the hum of life "
+            "recycled air quality – sterile yet somehow wrong, the hum of life "
             "support systems expressed as vibration in walls, cosmic radiation "
             "rendered as faint static visual noise, the vacuum pressing inward"
         ),
@@ -140,7 +140,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
         ),
         "atmosphere": (
             "warm dry air carrying the scent of rosemary and dust, the quality "
-            "of hope — rendered as golden light bleeding through cracks, the "
+            "of hope – rendered as golden light bleeding through cracks, the "
             "sound of distant radio static carrying human voices, survivors' "
             "ingenuity visible in every repair"
         ),
@@ -160,7 +160,7 @@ CONTAMINATION_VOCABULARY: dict[str, dict[str, str]] = {
 
 VECTOR_VISUAL_LANGUAGE: dict[str, str] = {
     "memory": (
-        "Temporal palimpsest — layered images where one reality shows through "
+        "Temporal palimpsest – layered images where one reality shows through "
         "another like an overexposed photograph or a pentimento painting. "
         "Surfaces that display two states simultaneously. Double-exposed quality: "
         "ghost images of the partner world bleeding through solid surfaces. "
@@ -169,24 +169,24 @@ VECTOR_VISUAL_LANGUAGE: dict[str, str] = {
         "material surfaces showing grain/texture from both worlds simultaneously."
     ),
     "resonance": (
-        "Frequency interference — standing wave patterns, moire effects, and "
+        "Frequency interference – standing wave patterns, moire effects, and "
         "harmonic visual distortion. Two signals occupying the same space. Moire "
         "patterns where two different grid systems overlap at wrong angles. "
         "Vibration blur on surfaces, as though the building exists at two "
-        "different frequencies simultaneously. Radio wave visualization — "
+        "different frequencies simultaneously. Radio wave visualization – "
         "concentric wave patterns etched or stained onto surfaces. Key visual: "
         "parallel lines from both worlds creating interference patterns."
     ),
     "language": (
-        "Translation artifacts — text that transforms mid-word between "
+        "Translation artifacts – text that transforms mid-word between "
         "languages, signage that means something different when viewed from "
         "different angles, writing that writes itself. Bilingual text that "
         "transitions mid-sentence. Documents where the paper is wrong for the "
-        "text. Typography anomalies — letter forms that hybridize. Key visual: "
+        "text. Typography anomalies – letter forms that hybridize. Key visual: "
         "the physical medium contradicting the message."
     ),
     "dream": (
-        "Biological logic applied to mechanical systems and vice versa — "
+        "Biological logic applied to mechanical systems and vice versa – "
         "organic growth following circuit board traces, technology that operates "
         "on ecological principles, the uncanny fusion of evolved and engineered. "
         "Bioluminescent organisms growing along circuit pathways. Metal structures "
@@ -195,15 +195,15 @@ VECTOR_VISUAL_LANGUAGE: dict[str, str] = {
         "or was manufactured."
     ),
     "commerce": (
-        "Exchange residue — the physical evidence of trade that should not have "
+        "Exchange residue – the physical evidence of trade that should not have "
         "happened. Goods, materials, and craftsmanship from one world appearing "
         "in the other's market logic. Impossible merchandise: goods displayed "
-        "with the wrong world's aesthetics. Currency confusion — coins valid in "
+        "with the wrong world's aesthetics. Currency confusion – coins valid in "
         "both worlds. Key visual: the market stall where every item is both "
         "perfectly normal and deeply wrong."
     ),
     "desire": (
-        "Hope made physical — golden light in vacuum, warmth where there should "
+        "Hope made physical – golden light in vacuum, warmth where there should "
         "be none, the visible evidence that wanting something badly enough bends "
         "the rules of the universe. Golden warm light emanating from no source "
         "in a cold environment. Plants growing in vacuum or underground. Radio "
@@ -245,7 +245,7 @@ VECTOR_PERSON_EFFECTS: dict[str, str] = {
         "priced things in a currency they cannot name."
     ),
     "desire": (
-        "A warmth about the person that does not match their environment — "
+        "A warmth about the person that does not match their environment – "
         "flushed skin in cold, or a glow that seems internal. Eyes that are "
         "looking at something beautiful that is not visible."
     ),
@@ -270,14 +270,14 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "amber and green, moisture stains on concrete ceiling that form the "
         "impression of stalactites, the cabinet handles showing verdigris patina "
         "incongruous with steel, a single small luminous mushroom growing from a "
-        "crack where wall meets floor — the only organic element in a rigidly "
+        "crack where wall meets floor – the only organic element in a rigidly "
         "geometric space, ghost image of carved limestone visible in concrete "
         "grain like a photographic double exposure"
     ),
     "The Threshold": (
         "underground limestone cavern transitioning into impossible corridor, "
         "natural cave opening carved with Victorian archway frame, beyond the "
-        "arch the walls become flat poured concrete — a material unknown in this "
+        "arch the walls become flat poured concrete – a material unknown in this "
         "world, fluorescent tube lighting visible down the corridor casting cold "
         "flat white against warm bioluminescent green, filing cabinets embedded "
         "in limestone as though fossilized there, documents in an archaic "
@@ -299,7 +299,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "concrete underneath, stacks of classified transmission logs in wire "
         "baskets, moire interference pattern visible where concrete formwork grid "
         "meets an overlay of hex-bolt riveted aerospace aluminum panels on one "
-        "wall — materials that should not be in a 1962 bunker, condensation "
+        "wall – materials that should not be in a 1962 bunker, condensation "
         "forming on that metal wall despite the room being dry, pressure gauge "
         "mounted near the door reading in units not used on Earth, the radio "
         "dials all tuned to the same impossible frequency, faint vibration blur "
@@ -312,13 +312,13 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "phosphor oscilloscope displays, black rubber cable conduit running along "
         "ceiling, harsh overhead fluorescent tubes casting sickly green-white "
         "light, industrial metal grating floor with condensation pooling below, "
-        "one wall section replaced with poured concrete — raw brutalist "
+        "one wall section replaced with poured concrete – raw brutalist "
         "board-marked surface incongruous with station architecture, a filing "
         "cabinet of grey steel wedged between equipment racks looking "
         "institutional rather than aerospace, moire patterns visible where "
         "station hull rivets align with concrete formwork lines creating visual "
         "interference beats, radio equipment receiving transmissions on "
-        "frequencies that predate the station by two centuries, warmth anomaly — "
+        "frequencies that predate the station by two centuries, warmth anomaly – "
         "condensation on walls suggesting atmosphere from elsewhere, typewriter "
         "ribbon ink stains on equipment manifests, the room reads the same "
         "impossible number on both station and terrestrial gauges"
@@ -330,7 +330,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "painted zone markings, classified document boxes stacked methodically on "
         "shelves, heavy steel security door with combination lock visible at "
         "frame edge, one section of shelving holding documents on paper that "
-        "analysis cannot classify — warm cream Italian stock rather than standard "
+        "analysis cannot classify – warm cream Italian stock rather than standard "
         "government grey, the text visible on exposed pages transitioning from "
         "German typescript to handwritten Italian mid-sentence, shelf labels in "
         "regulation Fraktur typeface but the metal label plates are sun-bleached "
@@ -345,13 +345,13 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "stone walls with mineral deposit streaks, warm amber lighting from "
         "salvaged string light bulbs strung along rope supports, crude wooden "
         "table with hand-forged iron legs, stacked documents in impossibly "
-        "perfect condition — industrial precision paper manufactured with methods "
+        "perfect condition – industrial precision paper manufactured with methods "
         "Speranza cannot replicate, German text in regulation typescript "
         "describing this city by name with accurate maps, the paper stock cold "
         "institutional grey against warm limestone surroundings, one wall where "
         "limestone transitions to what looks like poured concrete that someone "
         "has tried to cover with hanging fabric, a rubber stamp impression on "
-        "the stone floor — administrative markings in a language from an absent "
+        "the stone floor – administrative markings in a language from an absent "
         "bureaucracy, a typewriter key imprint visible in clay as though the "
         "stone itself was once a carbon copy, hand-painted Italian signage next "
         "to stamped German regulation placards, the paper approximately negative "
@@ -368,7 +368,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "hum vibrating the water in standing wave patterns visible as concentric "
         "rings of luminescence, small CRT-green indicator lights visible beneath "
         "coral growth still functioning after unknown years submerged, circuit "
-        "board traces visible through translucent organism growth — the "
+        "board traces visible through translucent organism growth – the "
         "technology and the biology sharing the same pathway architecture, brass "
         "Victorian diving bell observation port mounted incongruously on the "
         "structure's access hatch, deep emerald and amber bioluminescence "
@@ -382,7 +382,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "overhead lighting competing with organic green-amber glow emanating "
         "from biological film on walls, microscope station with slides containing "
         "organisms that defy classification, the floor grating partially flooded "
-        "with luminous liquid smelling of copper and earth — liquid from "
+        "with luminous liquid smelling of copper and earth – liquid from "
         "somewhere that is not the station's water supply, the bioluminescent "
         "organisms organized in patterns following the room's electrical conduit "
         "layout as though the biology is wiring itself into the station's "
@@ -390,14 +390,14 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "hexagonal geometry of station hull panels, condensation on every surface "
         "carrying faint phosphorescent shimmer, laboratory equipment that appears "
         "to be growing rather than corroding, Victorian brass specimen jar on a "
-        "modern steel shelf — wrong era, wrong world"
+        "modern steel shelf – wrong era, wrong world"
     ),
     "The Warm Market": (
         "underground cavern market section with anomalous temperature zone, "
         "stone vendor slabs arranged in traditional bazaar pattern beneath "
         "stalactite ceiling, warm amber light replacing the usual bioluminescent "
         "green-blue in this section only, bioluminescent mushroom varieties "
-        "displayed alongside sun-dried goods that should not exist underground — "
+        "displayed alongside sun-dried goods that should not exist underground – "
         "herbs still warm from sunlight that ended centuries ago, terracotta pots "
         "incongruous with Victorian brass market fixtures, one vendor stall "
         "constructed from sun-bleached limestone rather than dark cave stone, "
@@ -405,7 +405,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "notices, salvaged string lights strung between stalactites mimicking the "
         "arrangement of an above-ground market, woven fabric awnings in "
         "Mediterranean patterns stretched between stone columns, impossible "
-        "merchandise — maps of underground passages in a geography matching no "
+        "merchandise – maps of underground passages in a geography matching no "
         "known Reach territory, a merchant with too-long fingers in a warm leather apron "
         "stitched with rope rather than thread, warm air currents rising from "
         "the stall carrying scent of rosemary and clay"
@@ -414,11 +414,11 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "rough market stall in underground settlement marketplace, limestone "
         "cavern walls with salvaged rope bridge railing visible above, warm "
         "amber string light illumination on crude wooden display tables, the "
-        "stall sells impossible merchandise — mushrooms that glow with "
+        "stall sells impossible merchandise – mushrooms that glow with "
         "bioluminescent green-amber light, fabric woven from spun light that "
         "shimmers with phosphorescence, maps drawn on damp parchment showing "
         "underground passages that match no known geography, the merchant is "
-        "always the same figure — someone too tall, with fingers too long, smiling "
+        "always the same figure – someone too tall, with fingers too long, smiling "
         "behind the counter with Victorian-era brass scales and specimen jars "
         "for measuring goods, Victorian brass fittings on the stall framework "
         "incongruous with Speranza's salvaged-industrial aesthetic, a single "
@@ -432,7 +432,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
     "The Garden": (
         "unauthorized cultivation space in station lower decks, Mediterranean "
         "plants growing impossibly in vacuum-adjacent compartment, olive tree "
-        "and rosemary bushes in soil identified as Tuscan clay — warm terracotta "
+        "and rosemary bushes in soil identified as Tuscan clay – warm terracotta "
         "earth in aerospace metal planting troughs, warm golden light emanating "
         "from no identifiable source in a station lit only by fluorescent tubes, "
         "the golden amber glow competing with sickly green station fluorescence "
@@ -440,7 +440,7 @@ EMBASSY_BUILDING_PROMPTS: dict[str, str] = {
         "with tendrils wrapping hex-bolt rivets, condensation on surrounding "
         "metal walls but the garden area is dry and warm, industrial metal "
         "grating floor partially buried under earth that should not be here, "
-        "string light bulbs — the warm amber salvaged type from Speranza — wired "
+        "string light bulbs – the warm amber salvaged type from Speranza – wired "
         "into the station's electrical system, a hand-drawn map of a settlement "
         "on Earth pinned to a cable junction box, the air smells of hope which "
         "registers on station sensors as an unclassified warm atmospheric "
@@ -479,12 +479,12 @@ AMBASSADOR_PORTRAIT_PROMPTS: dict[str, str] = {
     "Inspektor Mueller": (
         "middle-aged Germanic man, late 50s, precise haircut going grey at "
         "temples, thin wire-frame spectacles, deep-set analytical eyes that "
-        "focus on two distances simultaneously — watching something layered over "
+        "focus on two distances simultaneously – watching something layered over "
         "reality, clean-shaven jaw with deep lines of decades of frowning at "
         "impossible paperwork, regulation grey suit jacket showing wear at "
         "elbows, collar pressed but with faint verdigris stain at the neck as "
         "though copper dust has settled into the fabric, ink stains on right "
-        "hand fingers in two different colors — standard black and a faint "
+        "hand fingers in two different colors – standard black and a faint "
         "bioluminescent amber that should not exist, breast pocket holding both "
         "a regulation pen and a brass compass with too many cardinal directions, "
         "exhaustion of a man who has catalogued every impossibility and filed "
@@ -494,26 +494,26 @@ AMBASSADOR_PORTRAIT_PROMPTS: dict[str, str] = {
     "Archivist Quill": (
         "ancient androgynous figure of indeterminate age, near-blind milky eyes "
         "behind small round Victorian spectacles, fingers conspicuously too long "
-        "for their hands — seven-jointed and ink-stained in two scripts, one "
+        "for their hands – seven-jointed and ink-stained in two scripts, one "
         "Victorian copperplate and one regulation German typescript written "
         "simultaneously, elaborate Victorian archivist robes in deep burgundy "
         "with brass button closures, one lapel bearing an incongruous rubber "
-        "stamp impression — a Velgarien administrative seal pressed into the "
+        "stamp impression – a Velgarien administrative seal pressed into the "
         "fabric, carrying a specimen jar containing a faintly luminous liquid "
         "that reflects green off their spectacles, warm bioluminescent "
         "amber-green lighting from below, damp stone archival chamber background "
         "with filing cabinet shadows, expression of patient methodical exhaustion "
-        "— three months without sleep and still cross-referencing, subtle "
+        "– three months without sleep and still cross-referencing, subtle "
         "wrongness in proportions that the viewer cannot quite identify"
     ),
     "Navigator Braun": (
         "woman in early 30s, sharp features drawn tight with contained unease, "
         "dark hair pulled back severely but with loose strands carrying visible "
         "static charge, intense dark eyes with slightly dilated pupils as though "
-        "adjusting between two light sources — one fluorescent and one warm "
+        "adjusting between two light sources – one fluorescent and one warm "
         "amber, visible dark circles and sweat sheen, olive-drab station "
         "jumpsuit with mission patches, the jumpsuit collar bearing embroidered "
-        "Mediterranean herb stems — rosemary pattern she does not remember "
+        "Mediterranean herb stems – rosemary pattern she does not remember "
         "adding, utility belt holding navigation tools alongside a hand-drawn "
         "map on leather that depicts a settlement she has never visited with "
         "perfect accuracy, soil residue under fingernails from tending "
@@ -526,8 +526,8 @@ AMBASSADOR_PORTRAIT_PROMPTS: dict[str, str] = {
     "Padre Ignazio": (
         "elderly Italian man, mid 70s, deeply weathered sun-darkened face with "
         "kind creased eyes, short white hair and close-cropped white beard, "
-        "former priest's bearing — upright posture with gentle forward lean of "
-        "a listener, worn utilitarian clothing in warm earth tones — canvas "
+        "former priest's bearing – upright posture with gentle forward lean of "
+        "a listener, worn utilitarian clothing in warm earth tones – canvas "
         "jacket with rope-fiber patches, one jacket pocket visibly heavy and "
         "square-shaped as though carrying government-standard filing cards from "
         "a bureaucracy that does not exist here, hands showing ink stains in "

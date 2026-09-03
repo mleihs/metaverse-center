@@ -1707,8 +1707,8 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "de": "FREIGABE-UPGRADE GENEHMIGT",
     },
     "clearance_granted_intro": {
-        "en": "Your application for Reality Architect clearance has been approved. You now have access to the Simulation Forge — create worlds with AI-driven agents, buildings, and events.",
-        "de": "Dein Antrag auf die Freigabestufe Realitätsarchitekt wurde genehmigt. Du hast jetzt Zugang zur Simulationsschmiede — erschaffe Welten mit KI-gesteuerten Agenten, Gebäuden und Ereignissen.",
+        "en": "Your application for Reality Architect clearance has been approved. You now have access to the Simulation Forge – create worlds with AI-driven agents, buildings, and events.",
+        "de": "Dein Antrag auf die Freigabestufe Realitätsarchitekt wurde genehmigt. Du hast jetzt Zugang zur Simulationsschmiede – erschaffe Welten mit KI-gesteuerten Agenten, Gebäuden und Ereignissen.",
     },
     "clearance_granted_cta": {
         "en": "ENTER THE FORGE",

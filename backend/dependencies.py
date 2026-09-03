@@ -78,7 +78,7 @@ class _ResilientJWKClient(PyJWKClient):
             if self._last_good is None:
                 raise
             logger.warning(
-                "JWKS endpoint unreachable — verifying against the last known key set (age %.0fs)",
+                "JWKS endpoint unreachable – verifying against the last known key set (age %.0fs)",
                 time.monotonic() - self._last_good_at,
             )
             return self._last_good

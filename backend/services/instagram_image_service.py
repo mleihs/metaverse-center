@@ -142,7 +142,7 @@ class InstagramImageService:
         return await asyncio.to_thread(
             self._compose_with_overlay,
             raw_bytes,
-            title=f"PERSONNEL FILE — {agent_name}",
+            title=f"PERSONNEL FILE – {agent_name}",
             subtitle=f"SHARD: {simulation_name}",
             color_primary=color_primary,
             color_background=color_background,
@@ -176,7 +176,7 @@ class InstagramImageService:
         return await asyncio.to_thread(
             self._compose_with_overlay,
             raw_bytes,
-            title=f"SHARD SURVEILLANCE — {building_name}",
+            title=f"SHARD SURVEILLANCE – {building_name}",
             subtitle=f"LOCATION: {simulation_name}",
             color_primary=color_primary,
             color_background=color_background,
@@ -353,7 +353,7 @@ class InstagramImageService:
         try:
             from PIL import Image, ImageDraw
         except ImportError:
-            logger.warning("Pillow not installed — returning raw JPEG conversion")
+            logger.warning("Pillow not installed – returning raw JPEG conversion")
             return self._convert_to_jpeg(image_bytes)
 
         try:

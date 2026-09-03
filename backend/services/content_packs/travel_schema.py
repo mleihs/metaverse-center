@@ -238,7 +238,7 @@ class SignalRequirements(StrictModel):
         for name in ("kh_band", "dz_band", "window_band"):
             value = getattr(self, name)
             if value is not None and not value:
-                raise ValueError(f"requires.{name} is empty — the template could never fire")
+                raise ValueError(f"requires.{name} is empty – the template could never fire")
             if value is not None and len(set(value)) != len(value):
                 raise ValueError(f"requires.{name} lists a band twice")
         return self
@@ -300,7 +300,7 @@ class SignalDeltas(StrictModel):
         # the delta list the HUD renders. Say nothing instead of saying "0".
         for name in ("kh", "bb", "dz", "takt", "siegel"):
             if getattr(self, name) == 0:
-                raise ValueError(f"delta '{name}' is 0 — omit the key instead")
+                raise ValueError(f"delta '{name}' is 0 – omit the key instead")
         return self
 
 
@@ -319,7 +319,7 @@ class SignalCost(StrictModel):
     @model_validator(mode="after")
     def _not_empty(self) -> SignalCost:
         if self.bb is None and self.kh is None and self.takt is None:
-            raise ValueError("cost is empty — omit the key instead")
+            raise ValueError("cost is empty – omit the key instead")
         return self
 
 
@@ -383,13 +383,13 @@ class SignalOption(StrictModel):
                     "success and failure"
                 )
             if self.result is not None:
-                raise ValueError(f"option '{self.key}' has a check — use success/failure, not result")
+                raise ValueError(f"option '{self.key}' has a check – use success/failure, not result")
         else:
             if self.result is None:
                 raise ValueError(f"option '{self.key}' has no check and therefore needs a result")
             if self.success is not None or self.failure is not None:
                 raise ValueError(
-                    f"option '{self.key}' has no check — use result, not success/failure"
+                    f"option '{self.key}' has no check – use result, not success/failure"
                 )
         _reject_unknown_tokens(self.label_de, self.label_en, allowed=_SIGNAL_TOKENS)
         return self
@@ -441,7 +441,7 @@ class SignalTemplate(StrictModel):
             raise ValueError("band_weights must be in [0, 100]")
         if not any(weight > 0 for weight in self.band_weights.values()):
             raise ValueError(
-                f"template '{self.template_key}' has weight 0 in every band — it could never be drawn"
+                f"template '{self.template_key}' has weight 0 in every band – it could never be drawn"
             )
         keys = [option.key for option in self.options]
         if len(set(keys)) != len(keys):
@@ -474,7 +474,7 @@ class SignalPack(VersionedPack):
                     )
                 if template.auto is not None:
                     raise ValueError(
-                        f"'{template.template_key}': class '{self.signal_class}' is interactive — "
+                        f"'{template.template_key}': class '{self.signal_class}' is interactive – "
                         "it resolves through options, not 'auto'"
                     )
             else:
@@ -485,7 +485,7 @@ class SignalPack(VersionedPack):
                     )
                 if template.options:
                     raise ValueError(
-                        f"'{template.template_key}': class '{self.signal_class}' never asks — "
+                        f"'{template.template_key}': class '{self.signal_class}' never asks – "
                         "it must not carry options"
                     )
         return self

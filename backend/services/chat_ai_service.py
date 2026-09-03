@@ -599,7 +599,7 @@ class ChatAIService:
                     event="error",
                     data={
                         "agent_id": agent_id,
-                        "error": f"{agent_name} stays silent — the AI budget for this world is exhausted.",
+                        "error": f"{agent_name} stays silent – the AI budget for this world is exhausted.",
                         "error_type": "budget_exceeded",
                     },
                 )
@@ -613,7 +613,7 @@ class ChatAIService:
 
             if attempt < max_retries:
                 logger.warning(
-                    "Attempt %d/%d produced empty/error response for %s — retrying",
+                    "Attempt %d/%d produced empty/error response for %s – retrying",
                     attempt,
                     max_retries,
                     agent_name,
@@ -738,7 +738,7 @@ class ChatAIService:
         response_text = self._sanitize_response(response_text)
         if not response_text:
             logger.warning(
-                "Empty response after sanitization for agent %s in conversation %s — skipping persist",
+                "Empty response after sanitization for agent %s in conversation %s – skipping persist",
                 agent.get("name", agent["id"]),
                 conversation_id,
             )
@@ -807,7 +807,7 @@ class ChatAIService:
         conversation = await self._load_conversation(conversation_id)
         agent_id = conversation.get("agent_id")
         if not agent_id:
-            msg = f"Conversation {conversation_id} has no agent_id — use group methods for multi-agent conversations"
+            msg = f"Conversation {conversation_id} has no agent_id – use group methods for multi-agent conversations"
             raise ValueError(msg)
         agent = await self._load_agent(agent_id)
         simulation = await self._load_simulation()

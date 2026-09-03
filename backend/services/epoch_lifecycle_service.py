@@ -183,7 +183,7 @@ class EpochLifecycleService:
 
         result = extract_one(resp)
         if result is None:
-            raise server_error("Failed to start epoch — update returned no data.")
+            raise server_error("Failed to start epoch – update returned no data.")
         return result
 
     @classmethod
@@ -279,7 +279,7 @@ class EpochLifecycleService:
 
         result = extract_one(resp)
         if result is None:
-            raise server_error("Failed to advance phase — update returned no data.")
+            raise server_error("Failed to advance phase – update returned no data.")
         return result
 
     @classmethod

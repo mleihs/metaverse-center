@@ -229,7 +229,7 @@ class AttunementService:
                         f"'{signature}' attunement deepened "
                         f"({old_depth:.2f} -> {new_depth:.2f}). "
                         + (
-                            "HARMONIZED — positive events possible!"
+                            "HARMONIZED – positive events possible!"
                             if just_harmonized
                             else f"Threshold at {threshold:.2f}."
                         )
@@ -238,7 +238,7 @@ class AttunementService:
                         f"'{signature}' Abstimmung vertieft "
                         f"({old_depth:.2f} -> {new_depth:.2f}). "
                         + (
-                            "HARMONISIERT — positive Ereignisse moeglich!"
+                            "HARMONISIERT – positive Ereignisse moeglich!"
                             if just_harmonized
                             else f"Schwelle bei {threshold:.2f}."
                         )

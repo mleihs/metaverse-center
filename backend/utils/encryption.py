@@ -71,7 +71,7 @@ def decrypt(ciphertext: str) -> str:
     try:
         return decrypter.decrypt(ciphertext.encode()).decode()
     except InvalidToken as e:
-        msg = "Failed to decrypt value — invalid key or corrupted data."
+        msg = "Failed to decrypt value – invalid key or corrupted data."
         raise ValueError(msg) from e
 
 

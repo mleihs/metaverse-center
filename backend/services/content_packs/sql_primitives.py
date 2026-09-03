@@ -42,7 +42,7 @@ def _safe_tag(body: str, preferred: str = "DQ") -> str:
             return tag
     # Exhausting 8 tags requires pathological content. Raise loudly so a
     # regeneration exposes the problem rather than silently corrupting SQL.
-    raise ValueError(f"cannot dollar-quote body — all candidate tags collide: {body[:80]!r}")
+    raise ValueError(f"cannot dollar-quote body – all candidate tags collide: {body[:80]!r}")
 
 
 # ── SqlValue hierarchy ────────────────────────────────────────────────────

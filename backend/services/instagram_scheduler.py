@@ -170,7 +170,7 @@ class InstagramScheduler(BaseSchedulerMixin):
 
         if not config["posting_enabled"]:
             logger.info(
-                "Posting disabled (dry-run mode) — skipping publish",
+                "Posting disabled (dry-run mode) – skipping publish",
                 extra={
                     "post_count": len(due),
                     "iteration": cls._iteration_count,
@@ -180,7 +180,7 @@ class InstagramScheduler(BaseSchedulerMixin):
 
         if not config["access_token"] or not config["ig_user_id"]:
             logger.warning(
-                "Instagram credentials not configured — cannot publish",
+                "Instagram credentials not configured – cannot publish",
                 extra={
                     "iteration": cls._iteration_count,
                     "token_status": "missing",
@@ -201,7 +201,7 @@ class InstagramScheduler(BaseSchedulerMixin):
                 token_prefix = config["access_token"][:12] + "…" if config["access_token"] else "EMPTY"
                 last_refresh = cls._last_token_refresh.isoformat() if cls._last_token_refresh else "never"
                 logger.error(
-                    "Instagram access token expired — disabling posting. "
+                    "Instagram access token expired – disabling posting. "
                     "Generate a new token at Meta Developer Dashboard and save it "
                     "via Admin Panel → Instagram → Configuration.",
                     extra={
@@ -237,7 +237,7 @@ class InstagramScheduler(BaseSchedulerMixin):
                 return
             except InstagramRateLimitError:
                 logger.warning(
-                    "Instagram rate limit reached — stopping publish cycle",
+                    "Instagram rate limit reached – stopping publish cycle",
                     extra={
                         "post_id": str(post_id),
                         "iteration": cls._iteration_count,
@@ -536,7 +536,7 @@ class InstagramScheduler(BaseSchedulerMixin):
 
         if not config["posting_enabled"]:
             logger.info(
-                "Posting disabled (dry-run) — skipping story publish",
+                "Posting disabled (dry-run) – skipping story publish",
                 extra={
                     "story_count": len(due),
                     "iteration": cls._iteration_count,
@@ -546,7 +546,7 @@ class InstagramScheduler(BaseSchedulerMixin):
 
         if not config["access_token"] or not config["ig_user_id"]:
             logger.warning(
-                "Instagram credentials not configured — cannot publish stories",
+                "Instagram credentials not configured – cannot publish stories",
                 extra={
                     "iteration": cls._iteration_count,
                 },
@@ -602,7 +602,7 @@ class InstagramScheduler(BaseSchedulerMixin):
 
             except InstagramTokenExpiredError:
                 logger.error(
-                    "Token expired during story publish — stopping",
+                    "Token expired during story publish – stopping",
                     extra={
                         "story_id": story_id,
                         "iteration": cls._iteration_count,
@@ -611,7 +611,7 @@ class InstagramScheduler(BaseSchedulerMixin):
                 return
             except InstagramRateLimitError:
                 logger.warning(
-                    "Rate limit hit during story publish — stopping",
+                    "Rate limit hit during story publish – stopping",
                     extra={
                         "story_id": story_id,
                         "iteration": cls._iteration_count,
@@ -633,7 +633,7 @@ class InstagramScheduler(BaseSchedulerMixin):
                         .execute()
                     )
                     logger.warning(
-                        "Story publish failed — will retry",
+                        "Story publish failed – will retry",
                         extra={
                             "story_id": story_id,
                             "retry_count": retry_count + 1,

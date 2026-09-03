@@ -72,7 +72,7 @@ import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import '../shared/LoadingState.js';
 import { archetypeLabel } from './intake-labels.js';
-import { intakeControlStyles, intakeKindColorStyles } from './intake-styles.js';
+import { intakeControlStyles, intakeKindColorStyles, intakeToolbarStyles } from './intake-styles.js';
 
 /**
  * Liefert das Bureau eine PASSUNG je Kandidat und Welt? (Lücke 3)
@@ -135,6 +135,7 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
   static styles = [
     intakeControlStyles,
     intakeKindColorStyles,
+    intakeToolbarStyles,
     css`
       :host {
         display: block;
@@ -152,15 +153,6 @@ export class VelgIntakeTriageModal extends SignalWatcher(LitElement) {
       }
 
       /* ── Werkzeugleiste ─────────────────────────────────────────────── */
-
-      .tools {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        padding: var(--space-3) var(--space-5);
-        border-block-end: var(--border-width-thin) solid var(--color-border-light);
-      }
 
       .search {
         flex: 1 1 220px;

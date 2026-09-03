@@ -709,7 +709,7 @@ class ContentDraftsService:
                     draft_id, current_status, require_status.value,
                 )
                 raise conflict(
-                    f"Draft is in status '{current_status}' — this "
+                    f"Draft is in status '{current_status}' – this "
                     f"operation is only allowed for drafts in "
                     f"'{require_status.value}' status.",
                 )

@@ -462,7 +462,7 @@ def safe_background(func):
             # Deliberate admin action — info-level, no Sentry capture.
             elapsed = time.monotonic() - t0
             logger.info(
-                "Background task skipped (AI budget blocked): %s (after %.1fs) — %s:%s %s $%.4f/$%.4f",
+                "Background task skipped (AI budget blocked): %s (after %.1fs) – %s:%s %s $%.4f/$%.4f",
                 task_name,
                 elapsed,
                 exc.scope,
@@ -506,7 +506,7 @@ def validate_bilingual_output(
             incomplete += 1
     if incomplete:
         logger.warning(
-            "Bilingual gap: %d/%d %s(s) missing _de fields — patched with EN fallback",
+            "Bilingual gap: %d/%d %s(s) missing _de fields – patched with EN fallback",
             incomplete,
             len(entities),
             entity_type,

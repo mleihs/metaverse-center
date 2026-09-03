@@ -100,7 +100,7 @@ async def _run_phase(
     except Exception:
         elapsed = (datetime.now(UTC) - t0).total_seconds()
         logger.exception(
-            "Heartbeat phase %s failed after %.2fs for %s (tick #%d) — continuing",
+            "Heartbeat phase %s failed after %.2fs for %s (tick #%d) – continuing",
             phase_name,
             elapsed,
             sim_name,
@@ -551,7 +551,7 @@ class HeartbeatService(BaseSchedulerMixin):
             .execute()
         )
         logger.warning(
-            "Heartbeat: pointer for %s lagged behind a completed tick %d — advanced (dated %s)",
+            "Heartbeat: pointer for %s lagged behind a completed tick %d – advanced (dated %s)",
             sim_name,
             tick_number,
             completed_at.isoformat(),
@@ -938,7 +938,7 @@ class HeartbeatService(BaseSchedulerMixin):
                 await cls._insert_entries(admin, entries, sim_id, tick_number)
             except (PostgrestAPIError, httpx.HTTPError):
                 logger.exception(
-                    "Heartbeat: chronicle insert failed for %s (tick #%d, %d entries) — finalizing anyway",
+                    "Heartbeat: chronicle insert failed for %s (tick #%d, %d entries) – finalizing anyway",
                     sim_name,
                     tick_number,
                     len(entries),
@@ -1012,7 +1012,7 @@ class HeartbeatService(BaseSchedulerMixin):
             )
 
             logger.info(
-                "Heartbeat: tick #%d completed for %s — %d entries",
+                "Heartbeat: tick #%d completed for %s – %d entries",
                 tick_number,
                 sim_name,
                 len(entries),
@@ -1059,7 +1059,7 @@ class HeartbeatService(BaseSchedulerMixin):
                 )
             except Exception:
                 logger.exception(
-                    "Heartbeat: DOUBLE FAULT — failed to mark tick #%d as failed for %s",
+                    "Heartbeat: DOUBLE FAULT – failed to mark tick #%d as failed for %s",
                     tick_number,
                     sim_name,
                 )
@@ -1079,7 +1079,7 @@ class HeartbeatService(BaseSchedulerMixin):
                 )
             except Exception:
                 logger.exception(
-                    "Heartbeat: CRITICAL — failed to advance next_heartbeat_at for %s, sim may be stuck",
+                    "Heartbeat: CRITICAL – failed to advance next_heartbeat_at for %s, sim may be stuck",
                     sim_name,
                 )
 
@@ -2007,7 +2007,7 @@ class HeartbeatService(BaseSchedulerMixin):
             return
         except PostgrestAPIError as batch_err:
             logger.warning(
-                "Heartbeat entry batch rejected (%d entries) — retrying row by row",
+                "Heartbeat entry batch rejected (%d entries) – retrying row by row",
                 len(entries),
                 extra={
                     "simulation_id": str(sim_id),
@@ -2040,7 +2040,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     )
                     sentry_sdk.capture_exception(row_err)
                 logger.error(
-                    "Heartbeat entry rejected by the database (entry_type=%s) — entry dropped, tick continues",
+                    "Heartbeat entry rejected by the database (entry_type=%s) – entry dropped, tick continues",
                     entry_type,
                     extra={
                         "simulation_id": str(sim_id),
@@ -2067,7 +2067,7 @@ class HeartbeatService(BaseSchedulerMixin):
     def _build_dispatch(entries: list[dict], tick_number: int, locale: str) -> str:
         """Build a human-readable dispatch summary from entries."""
         field = "narrative_en" if locale == "en" else "narrative_de"
-        lines = [f"=== SUBSTRATE PULSE — TICK #{tick_number} ==="]
+        lines = [f"=== SUBSTRATE PULSE – TICK #{tick_number} ==="]
         for entry in entries[:10]:  # Cap at 10 for readability
             text = entry.get(field) or entry.get("narrative_en", "")
             severity = entry.get("severity", "info")

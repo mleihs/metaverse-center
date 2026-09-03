@@ -195,7 +195,7 @@ STYLE (platform requirement, overrides anything above):
 - No formula that sums the subject up in a single clause.
 - The LAST sentence is a fact, not an epigram and not a comparison.
 - Sentences may be long; they should just not all share one shape.',
-    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
+    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional – never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -221,7 +221,7 @@ STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
 - Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
 - Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
-    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
+    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein – niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 200, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -246,7 +246,7 @@ STYLE (platform requirement, overrides anything above):
 - No formula that sums the subject up in a single clause.
 - The LAST sentence is a fact, not an epigram and not a comparison.
 - Sentences may be long; they should just not all share one shape.',
-    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional — never flowery prose.',
+    'You are an architectural worldbuilder. Generate concise building entries for a simulation database. Descriptions must be brief and functional – never flowery prose.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -271,7 +271,7 @@ STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Keine Formel, die den Gegenstand in einem Nebensatz zusammenfasst.
 - Der LETZTE Satz ist eine Tatsache, keine Pointe und kein Vergleich.
 - Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.',
-    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein — niemals blumige Prosa.',
+    'Du bist ein architektonischer Weltenbauer. Generiere knappe Gebäudeeinträge für eine Simulationsdatenbank. Beschreibungen müssen kurz und funktional sein – niemals blumige Prosa.',
     '[{"name": "simulation_name"}, {"name": "building_name"}, {"name": "building_type"}, {"name": "locale_name"}]',
     'meta-llama/llama-3.3-70b-instruct:free', 0.7, 150, true, admin_id
 ) ON CONFLICT DO NOTHING;
@@ -292,7 +292,7 @@ COMPOSITION: Close-up head-and-shoulders portrait, single subject centered in fr
 shallow depth of field, studio-quality lighting.
 Describe in detail: age, ethnicity, facial features, expression, hairstyle,
 clothing visible at shoulders, lighting direction, mood.
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 IMPORTANT: Describe only ONE person. Never mention multiple people.
 IMPORTANT: Include lighting and mood descriptors for visual consistency.',
     'You are a portrait description specialist for AI image generation. Write concise, visual descriptors for a single person portrait.',
@@ -318,7 +318,7 @@ KOMPOSITION: Nahaufnahme Kopf-und-Schulter-Portrait, einzelne Person zentriert,
 geringe Tiefenschärfe, Studio-Beleuchtung.
 Beschreibe detailliert: Alter, Ethnie, Gesichtszüge, Ausdruck, sichtbare Kleidung an Schultern,
 Lichtrichtung, Stimmung.
-Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+Schreibe als Bildgenerierungs-Prompt – kommagetrennte Deskriptoren, keine Sätze.
 WICHTIG: Beschreibe nur EINE Person. Erwähne niemals mehrere Personen.
 WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).
 WICHTIG: Beleuchtung und Stimmung immer beschreiben für visuelle Konsistenz.',
@@ -348,15 +348,15 @@ Description: {building_description}
 Zone: {zone_name}
 
 Based on these properties, describe the building visually.
-The CONDITION is critical — a "ruined" building should show structural damage, crumbling walls,
+The CONDITION is critical – a "ruined" building should show structural damage, crumbling walls,
 broken windows. A "poor" building shows neglect and decay. "Fair" is functional but worn.
 "Good" is well-maintained. "Excellent" is pristine.
 
-The BUILDING TYPE affects architecture — government buildings are imposing and authoritarian,
+The BUILDING TYPE affects architecture – government buildings are imposing and authoritarian,
 military buildings are fortified and stark, industrial buildings are functional and massive,
 residential buildings vary by condition.
 
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 Include: architectural style, materials, condition indicators, lighting, atmosphere, scale.',
     'You are an architectural description specialist for AI image generation. Write concise, visual descriptors for building photographs.',
     '[{"name": "building_name"}, {"name": "building_type"}, {"name": "building_condition"}, {"name": "building_style"}, {"name": "special_type"}, {"name": "construction_year"}, {"name": "building_description"}, {"name": "zone_name"}, {"name": "simulation_name"}]',
@@ -383,15 +383,15 @@ Beschreibung: {building_description}
 Zone: {zone_name}
 
 Beschreibe das Gebäude visuell basierend auf diesen Eigenschaften.
-Der ZUSTAND ist entscheidend — ein "ruiniertes" Gebäude zeigt strukturelle Schäden, bröckelnde Mauern,
+Der ZUSTAND ist entscheidend – ein "ruiniertes" Gebäude zeigt strukturelle Schäden, bröckelnde Mauern,
 zerbrochene Fenster. "Schlecht" zeigt Vernachlässigung und Verfall. "Mittel" ist funktional aber abgenutzt.
 "Gut" ist gepflegt. "Ausgezeichnet" ist makellos.
 
-Der GEBÄUDETYP beeinflusst die Architektur — Regierungsgebäude sind imposant und autoritär,
+Der GEBÄUDETYP beeinflusst die Architektur – Regierungsgebäude sind imposant und autoritär,
 Militärgebäude sind befestigt und karg, Industriegebäude sind funktional und massiv,
 Wohngebäude variieren je nach Zustand.
 
-Schreibe als Bildgenerierungs-Prompt — kommagetrennte Deskriptoren, keine Sätze.
+Schreibe als Bildgenerierungs-Prompt – kommagetrennte Deskriptoren, keine Sätze.
 Einschließen: Architekturstil, Materialien, Zustandsindikatoren, Beleuchtung, Atmosphäre, Maßstab.
 WICHTIG: Schreibe die Beschreibung auf ENGLISCH (für die Bildgenerierung).',
     'Du bist ein Architektur-Beschreibungs-Spezialist für KI-Bildgenerierung. Schreibe prägnante, visuelle Deskriptoren auf Englisch für Gebäudefotografien.',
@@ -855,13 +855,13 @@ INSERT INTO prompt_templates (
 Resonance: {resonance_title}
 {resonance_description}
 
-Archetype: {archetype_name} — {archetype_description}
+Archetype: {archetype_name} – {archetype_description}
 Event type: {event_type}
 Magnitude: {magnitude}/10
 
 Write the event AS IF it is happening inside the simulation world.
 The archetype is metaphorical context, NOT the event itself.
-Do NOT write an essay or explanation — write a narrative event report.
+Do NOT write an essay or explanation – write a narrative event report.
 
 Generate a JSON object:
 - "title": Compelling event headline (max 120 chars)
@@ -886,13 +886,13 @@ INSERT INTO prompt_templates (
 Resonanz: {resonance_title}
 {resonance_description}
 
-Archetyp: {archetype_name} — {archetype_description}
+Archetyp: {archetype_name} – {archetype_description}
 Ereignistyp: {event_type}
 Magnitude: {magnitude}/10
 
 Schreibe das Ereignis SO, ALS OB es in der Simulationswelt passiert.
 Der Archetyp ist metaphorischer Kontext, NICHT das Ereignis selbst.
-Schreibe KEINEN Aufsatz oder keine Erklärung — schreibe einen narrativen Ereignisbericht.
+Schreibe KEINEN Aufsatz oder keine Erklärung – schreibe einen narrativen Ereignisbericht.
 
 Generiere ein JSON-Objekt:
 - "title": Packende Ereignis-Schlagzeile (max 120 Zeichen)
@@ -944,7 +944,7 @@ BEGIN
 Name: {agent_name}
 System/Faction: {agent_system}
 Gender: {agent_gender}
-Velgarien is an authoritarian state: total control, propaganda, surveillance, brutalist architecture. Characters are shaped by this system — as supporters, quiet rebels, or broken citizens.
+Velgarien is an authoritarian state: total control, propaganda, surveillance, brutalist architecture. Characters are shaped by this system – as supporters, quiet rebels, or broken citizens.
 Generate the following fields as a JSON object:
 - "character": Personality, motivations, relationship with the regime (200-300 words)
 - "background": History, origin, key experiences within the system (200-300 words)
@@ -959,7 +959,7 @@ STYLE (platform requirement, overrides anything above):
 - The LAST sentence of each field is a fact, not an epigram and not a comparison.
 - Sentences may be long; they should just not all share one shape.
 - Ordinary registers are allowed: a clerk may be described in the language of clerks.',
-     'You are a character designer for a dystopian simulation. Velgarien is an authoritarian state under total control. Create characters that exist within this dark, oppressive world — shaped by propaganda, surveillance, resistance, or submission.',
+     'You are a character designer for a dystopian simulation. Velgarien is an authoritarian state under total control. Create characters that exist within this dark, oppressive world – shaped by propaganda, surveillance, resistance, or submission.',
      '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
      'deepseek/deepseek-chat-v3-0324', 0.8, 800, false, '00000000-0000-0000-0000-000000000001'),
     (velgarien_id, 'agent_generation_full', 'generation', 'de', 'Velgarien Agent Generation (DE)',
@@ -967,7 +967,7 @@ STYLE (platform requirement, overrides anything above):
 Name: {agent_name}
 System/Fraktion: {agent_system}
 Geschlecht: {agent_gender}
-Velgarien ist ein autoritärer Staat: totale Kontrolle, Propaganda, Überwachung, brutalistische Architektur. Charaktere sind von diesem System geprägt — sei es als Unterstützer, stille Rebellen oder gebrochene Bürger.
+Velgarien ist ein autoritärer Staat: totale Kontrolle, Propaganda, Überwachung, brutalistische Architektur. Charaktere sind von diesem System geprägt – sei es als Unterstützer, stille Rebellen oder gebrochene Bürger.
 Generiere folgende Felder als JSON-Objekt:
 - "character": Persönlichkeit, Motivationen, Beziehung zum Regime (200-300 Wörter)
 - "background": Geschichte, Herkunft, Schlüsselerlebnisse im System (200-300 Wörter)
@@ -982,7 +982,7 @@ STIL (Vorgabe der Plattform, geht allem oben Stehenden vor):
 - Der LETZTE Satz jedes Feldes ist eine Tatsache, keine Pointe und kein Vergleich.
 - Saetze duerfen lang sein; sie sollen nur nicht alle dasselbe Muster haben.
 - Gewoehnliche Register sind erlaubt: eine Beamtin darf in der Sprache der Beamten beschrieben werden.',
-     'Du bist ein Charakterdesigner für eine dystopische Simulation. Velgarien ist ein autoritärer Staat unter totaler Kontrolle. Erstelle Charaktere, die in dieser düsteren, oppressiven Welt leben — geprägt von Propaganda, Überwachung, Widerstand oder Unterwerfung.',
+     'Du bist ein Charakterdesigner für eine dystopische Simulation. Velgarien ist ein autoritärer Staat unter totaler Kontrolle. Erstelle Charaktere, die in dieser düsteren, oppressiven Welt leben – geprägt von Propaganda, Überwachung, Widerstand oder Unterwerfung.',
      '[{"name": "simulation_name"}, {"name": "agent_name"}, {"name": "agent_system"}, {"name": "agent_gender"}, {"name": "locale_name"}]',
      'deepseek/deepseek-chat-v3-0324', 0.8, 800, false, '00000000-0000-0000-0000-000000000001')
     ON CONFLICT DO NOTHING;

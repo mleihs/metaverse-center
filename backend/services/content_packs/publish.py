@@ -265,7 +265,7 @@ class ContentPacksPublishService:
                     supabase, draft_ids=draft_ids,
                 )
                 raise conflict(
-                    "Default branch moved during publish — drafts marked as "
+                    "Default branch moved during publish – drafts marked as "
                     "conflict. Refresh and resolve before retrying.",
                 ) from exc
             raise
@@ -712,7 +712,7 @@ def _make_commit_message(
             "",
             "The migration file is derived from the YAML changes via "
             "`backend.services.content_packs.generate_migration`. Review "
-            "the YAML files only — the migration is regenerated "
+            "the YAML files only – the migration is regenerated "
             "deterministically and TRUNCATE+re-inserts the full content "
             "seed. Applied by CI on merge.",
         ])

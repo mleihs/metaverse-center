@@ -278,7 +278,7 @@ class BotPersonality(ABC):
             archetypes = [r.get("archetype", "?") for r in state.active_resonances]
             parts.append(f"Resonance active: {', '.join(archetypes)}.")
         if state.is_under_resonance_pressure():
-            parts.append("The substrate trembles — reinforcing defenses.")
+            parts.append("The substrate trembles – reinforcing defenses.")
         parts.append(f"RP: {state.current_rp} available.")
         return " ".join(parts)
 

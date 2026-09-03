@@ -68,7 +68,7 @@ class ScoringService:
         scores = extract_list(resp)
         if not scores:
             logger.error(
-                "Scoring RPC returned no data — no participants in epoch?",
+                "Scoring RPC returned no data – no participants in epoch?",
                 extra={"epoch_id": str(epoch_id), "cycle_number": cycle_number},
             )
 
@@ -120,7 +120,7 @@ class ScoringService:
             epoch = await EpochService.get(supabase, epoch_id)
         cycle_number = max(1, epoch.get("current_cycle", 1) - 1)
         logger.warning(
-            "No epoch_scores found — falling back to cycle %d",
+            "No epoch_scores found – falling back to cycle %d",
             cycle_number,
             extra={"epoch_id": str(epoch_id)},
         )
@@ -457,7 +457,7 @@ class ScoringService:
             awards.append(
                 {
                     "title": "Master Spy",
-                    "description": "Highest military score — supreme covert operations.",
+                    "description": "Highest military score – supreme covert operations.",
                     "simulation_id": best_military["simulation_id"],
                     "simulation_name": best_military.get("simulation_name", ""),
                     "value": best_military["military"],
@@ -470,7 +470,7 @@ class ScoringService:
             awards.append(
                 {
                     "title": "Iron Guardian",
-                    "description": "Highest sovereignty — impenetrable defenses.",
+                    "description": "Highest sovereignty – impenetrable defenses.",
                     "simulation_id": best_sovereignty["simulation_id"],
                     "simulation_name": best_sovereignty.get("simulation_name", ""),
                     "value": best_sovereignty["sovereignty"],
@@ -483,7 +483,7 @@ class ScoringService:
             awards.append(
                 {
                     "title": "The Diplomat",
-                    "description": "Highest diplomatic score — master of alliances.",
+                    "description": "Highest diplomatic score – master of alliances.",
                     "simulation_id": best_diplomatic["simulation_id"],
                     "simulation_name": best_diplomatic.get("simulation_name", ""),
                     "value": best_diplomatic["diplomatic"],
@@ -505,7 +505,7 @@ class ScoringService:
             awards.append(
                 {
                     "title": "Most Lethal",
-                    "description": "Highest success rate — surgical precision.",
+                    "description": "Highest success rate – surgical precision.",
                     "simulation_id": best_rate["simulation_id"],
                     "simulation_name": sim_name,
                     "value": round(best_rate_val * 100),
@@ -518,7 +518,7 @@ class ScoringService:
             awards.append(
                 {
                     "title": "Cultural Domination",
-                    "description": "Highest influence — reshaping the narrative.",
+                    "description": "Highest influence – reshaping the narrative.",
                     "simulation_id": best_influence["simulation_id"],
                     "simulation_name": best_influence.get("simulation_name", ""),
                     "value": best_influence["influence"],

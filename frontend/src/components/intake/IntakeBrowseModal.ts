@@ -39,7 +39,7 @@ import type { IntakeSignal } from '../../types/intake.js';
 import '../shared/BaseModal.js';
 import '../shared/EmptyState.js';
 import '../shared/LoadingState.js';
-import { intakeControlStyles } from './intake-styles.js';
+import { intakeControlStyles, intakeToolbarStyles } from './intake-styles.js';
 
 /**
  * Die Quellen, die der Browse-Weg kennt.
@@ -63,20 +63,12 @@ const GUARDIAN_SECTIONS = ['world', 'environment', 'science', 'technology', 'bus
 export class VelgIntakeBrowseModal extends SignalWatcher(LitElement) {
   static styles = [
     intakeControlStyles,
+    intakeToolbarStyles,
     css`
       :host {
         display: block;
         --modal-max-width: min(1100px, calc(100vw - 2 * var(--stage-gutter)));
         --modal-body-padding: 0;
-      }
-
-      .tools {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        padding: var(--space-3) var(--space-5);
-        border-block-end: var(--border-width-thin) solid var(--color-border-light);
       }
 
       .search {

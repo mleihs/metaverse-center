@@ -23,10 +23,10 @@ enemies:
     ambient: 10
   special_abilities:
   - denounce
-  description_en: Havel's greengrocer made operative. The informer does not believe — the informer
+  description_en: Havel's greengrocer made operative. The informer does not believe – the informer
     performs. The sign in the window says what the faction requires. Behind the counter, the informer
     reports who does not display theirs.
-  description_de: Havels Gemüsehändler, zum Agenten geworden. Der Spitzel glaubt nicht — der Spitzel
+  description_de: Havels Gemüsehändler, zum Agenten geworden. Der Spitzel glaubt nicht – der Spitzel
     führt auf. Das Schild im Fenster sagt, was die Fraktion verlangt. Hinter der Theke meldet der
     Spitzel, wer seines nicht zeigt.
   ambient_text_en:
@@ -59,17 +59,17 @@ enemies:
     ambient: 15
   special_abilities:
   - rewrite
-  description_en: Orwell's Squealer on two legs. The agent does not lie — the agent renders the concept
+  description_en: Orwell's Squealer on two legs. The agent does not lie – the agent renders the concept
     of lying meaningless. Yesterday's alliance was always today's betrayal. The records have been
     updated. The records were always thus.
-  description_de: Orwells Schwatzwutz auf zwei Beinen. Der Agent lügt nicht — der Agent macht den
+  description_de: Orwells Schwatzwutz auf zwei Beinen. Der Agent lügt nicht – der Agent macht den
     Begriff des Lügens bedeutungslos. Das gestrige Bündnis war schon immer der heutige Verrat. Die
     Akten wurden aktualisiert. Die Akten waren immer so.
   ambient_text_en:
-  - The agent reads aloud. {agent} has heard these words before — in their own voice.
+  - The agent reads aloud. {agent} has heard these words before – in their own voice.
   - History is being revised. The revision is already the third this floor.
   ambient_text_de:
-  - Der Agent liest vor. {agent} hat diese Worte schon gehört — in der eigenen Stimme.
+  - Der Agent liest vor. {agent} hat diese Worte schon gehört – in der eigenen Stimme.
   - Die Geschichte wird überarbeitet. Die Überarbeitung ist bereits die dritte auf dieser Etage.
 - id: overthrow_regime_enforcer
   name_en: Regime Enforcer
@@ -96,10 +96,10 @@ enemies:
   special_abilities:
   - suppress
   description_en: 'The muscle behind the rhetoric. The enforcer does not care which faction gives
-    the order — only that the order exists. Arendt''s ideal subject: one for whom the distinction
+    the order – only that the order exists. Arendt''s ideal subject: one for whom the distinction
     between fact and fiction has ceased to matter.'
   description_de: 'Die Muskeln hinter der Rhetorik. Der Vollstrecker kümmert sich nicht, welche Fraktion
-    den Befehl gibt — nur dass der Befehl existiert. Arendts ideales Subjekt: eines, für das der Unterschied
+    den Befehl gibt – nur dass der Befehl existiert. Arendts ideales Subjekt: eines, für das der Unterschied
     zwischen Tatsache und Fiktion aufgehört hat zu zählen.'
   ambient_text_en:
   - The enforcer does not think. The enforcer processes. This is the advantage.
@@ -133,10 +133,10 @@ enemies:
   special_abilities:
   - interrogate
   description_en: 'Dostoevsky''s three powers made flesh: miracle, mystery, authority. The Inquisitor
-    does not punish dissent — the Inquisitor explains why dissent was always agreement, misunderstood.
+    does not punish dissent – the Inquisitor explains why dissent was always agreement, misunderstood.
     The confession is not extracted. It is assisted.'
   description_de: 'Dostojewskis drei Mächte, Fleisch geworden: Wunder, Geheimnis, Autorität. Der Inquisitor
-    bestraft keinen Dissens — der Inquisitor erklärt, warum Dissens immer Zustimmung war, nur missverstanden.
+    bestraft keinen Dissens – der Inquisitor erklärt, warum Dissens immer Zustimmung war, nur missverstanden.
     Das Geständnis wird nicht erzwungen. Es wird begleitet.'
   ambient_text_en:
   - The Inquisitor smiles. The smile contains three thousand years of practice.
@@ -171,20 +171,20 @@ enemies:
   special_abilities:
   - rhetoric
   - rewrite
-  description_en: 'Milton''s Satan made sovereign. The Pretender began as a rebel — magnificent, defiant,
+  description_en: 'Milton''s Satan made sovereign. The Pretender began as a rebel – magnificent, defiant,
     charismatic. Power degraded the vision. Phase 1: Book I archangel, addressing armies with impossible
     eloquence. Phase 2: Book IV, ''squat like a toad,'' truth exposed. Phase 3: Book X, permanently
     serpentine. The Pretender quotes everyone. Especially you.'
-  description_de: 'Miltons Satan, zum Souverän geworden. Der Prätendent begann als Rebell — prächtig,
+  description_de: 'Miltons Satan, zum Souverän geworden. Der Prätendent begann als Rebell – prächtig,
     trotzig, charismatisch. Die Macht zersetzte die Vision. Phase 1: Erzengel aus Buch I, Armeen ansprechend
     mit unmöglicher Eloquenz. Phase 2: Buch IV, ''hockend wie eine Kröte,'' Wahrheit enthüllt. Phase
     3: Buch X, dauerhaft zur Schlange geworden. Der Prätendent zitiert alle. Besonders euch.'
   ambient_text_en:
-  - The Pretender speaks. {agent} has heard these words before — in their own voice, on Floor 1.
+  - The Pretender speaks. {agent} has heard these words before – in their own voice, on Floor 1.
   - '''You said you were here for freedom. I said that too, once.'''
   - The mirror shows {agent} and the Pretender. The reflection is the same.
   ambient_text_de:
-  - Der Prätendent spricht. {agent} hat diese Worte schon gehört — in der eigenen Stimme, auf Etage
+  - Der Prätendent spricht. {agent} hat diese Worte schon gehört – in der eigenen Stimme, auf Etage
     1.
   - »Ihr sagtet, ihr seid für die Freiheit hier. Das sagte ich auch, einmal.«
   - Der Spiegel zeigt {agent} und den Prätendenten. Die Spiegelung ist dieselbe.

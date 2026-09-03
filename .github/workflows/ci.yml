@@ -26,6 +26,14 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
+      # `scripts/lint-no-em-dash-in-content.sh` liest Python ueber den
+      # Tokenizer und braucht 3.12+, weil f-Strings erst dort als
+      # FSTRING_MIDDLE erscheinen. Das Tor bricht auf aelteren Interpretern
+      # laut ab; hier steht der Grund, warum es nie dazu kommt.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
       - run: npm ci
 
       - name: TypeScript type check
@@ -184,6 +192,16 @@ jobs:
 
       - name: Lint (server, type and label know the same roles)
         run: bash scripts/lint-role-vocabulary.sh
+        working-directory: .
+
+      # Die msg()-Seite hielt `frontend/scripts/lint-llm-content.sh` seit je.
+      # Die andere Seite hatte kein Tor, und dort standen 1 253 Geviertstriche:
+      # im Backend, in der Saat und in den Verlies-Paketen — allein 806 in
+      # `ambient_weather_templates.py`, also in Text, den das Spiel woertlich
+      # anzeigt. Ein Prompt mit Geviertstrichen bringt sie ausserdem dem Modell
+      # bei, dessen Ausgabe wieder ein Leser bekommt.
+      - name: Lint (kein Geviertstrich in Backend-Strings, Saat und Paketen)
+        run: bash scripts/lint-no-em-dash-in-content.sh
         working-directory: .
 
       # Die Hilfe, der Bau-Editor und die Spezifikation nannten dieselbe

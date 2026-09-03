@@ -341,7 +341,7 @@ def _declared(purpose: str) -> AIPurpose:
     if declared is not None:
         return declared
     logger.warning(
-        "AI purpose %r is not declared in ai_purposes.AI_PURPOSES — "
+        "AI purpose %r is not declared in ai_purposes.AI_PURPOSES – "
         "falling back to the conservative floor (max_tokens=%d, timeout=%ds)",
         purpose,
         UNDECLARED_PURPOSE.max_tokens,
@@ -366,7 +366,7 @@ def _positive_int_setting(key: str, default: int, purpose: str) -> int:
         value = int(str(raw).strip().strip('"'))
     except (TypeError, ValueError):
         logger.warning(
-            "platform_settings.%s is not an integer (%r) — using the declared default %d",
+            "platform_settings.%s is not an integer (%r) – using the declared default %d",
             key,
             raw,
             default,
@@ -375,7 +375,7 @@ def _positive_int_setting(key: str, default: int, purpose: str) -> int:
         return default
     if value <= 0:
         logger.warning(
-            "platform_settings.%s must be positive (got %d) — using the declared default %d",
+            "platform_settings.%s must be positive (got %d) – using the declared default %d",
             key,
             value,
             default,

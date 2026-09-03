@@ -106,7 +106,7 @@ class ResonanceScheduler(BaseSchedulerMixin):
                     user_id=UUID("00000000-0000-0000-0000-000000000000"),
                 )
                 logger.info(
-                    "Auto-processed resonance %s — %d impact(s) created",
+                    "Auto-processed resonance %s – %d impact(s) created",
                     resonance_id,
                     len(impacts),
                     extra={"resonance_id": str(resonance_id), "impact_count": len(impacts)},

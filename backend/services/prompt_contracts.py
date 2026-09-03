@@ -167,12 +167,12 @@ _FRAME_PROSE = (
     "STYLE (platform requirement, overrides anything above): write plainly. The LAST sentence of "
     "each field is a fact, not an epigram and not a simile. Sentences may be long; they should "
     "just not all share one shape. Ration figurative language to at most one image per paragraph, "
-    "and only where a plain sentence cannot carry it — a simile in every sentence reads as effort, "
+    "and only where a plain sentence cannot carry it – a simile in every sentence reads as effort, "
     "not as observation.\n"
     'Do not sum the subject up in a formula: no "Their greatest contradiction:", no "Their '
     'private heresy:", no colon-introduced thesis about who or what this is. State the facts '
     "and let them imply it.\n"
-    "No signature quirk invented to make the subject memorable, and no closing epigram — end "
+    "No signature quirk invented to make the subject memorable, and no closing epigram – end "
     "on the last fact, not on a short dramatic sentence.\n"
     "Ordinary registers are allowed and usually right: a clerk may be described in the "
     "language of clerks."
@@ -472,7 +472,7 @@ class TemplateAudit:
     """Declared variables the template uses. These are the honest placeholders."""
 
     unknown: frozenset[str] = frozenset()
-    """Placeholders no call site supplies — invented, and the reason for W1."""
+    """Placeholders no call site supplies – invented, and the reason for W1."""
 
     mustache: frozenset[str] = frozenset()
     """Placeholders written ``{{name}}``, regardless of whether they are known."""

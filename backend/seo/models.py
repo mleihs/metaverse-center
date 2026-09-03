@@ -25,7 +25,7 @@ class EntityMeta:
 
     title: str | None = None
     """Full <title> including the "| metaverse.center" brand suffix, e.g.
-    "Alice Smith — Station Null | metaverse.center". The builder owns the
+    "Alice Smith – Station Null | metaverse.center". The builder owns the
     suffix so the middleware can regex-replace in a single step."""
 
     description: str | None = None
@@ -37,11 +37,11 @@ class EntityMeta:
     image). Empty string falls back to the simulation banner."""
 
     og_image_alt: str = ""
-    """Accessible alt text for og_image (e.g. "Alice Smith — portrait").
+    """Accessible alt text for og_image (e.g. "Alice Smith – portrait").
     Empty falls back to the simulation-level platform alt."""
 
     og_type: str = ""
-    """Open Graph content type — 'website' | 'article' | 'profile'.
+    """Open Graph content type – 'website' | 'article' | 'profile'.
     Empty falls back to 'website' (the platform default)."""
 
 

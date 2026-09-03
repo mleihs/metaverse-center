@@ -62,7 +62,7 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "{world_context}\n\n"
         "Write a concise image prompt (2-3 sentences) for a portrait photograph. "
         "Include age, facial features, clothing appropriate to the world, and mood. "
-        "The portrait must feel like it belongs in THIS world — use the visual "
+        "The portrait must feel like it belongs in THIS world – use the visual "
         "identity from the lore context above. Respond in English."
     ),
     "event_generation": (
@@ -133,7 +133,7 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "{world_context}\n\n"
         "Write a vivid, cinematic image prompt (2-3 sentences) describing the building's "
         "exterior or most striking interior space. The building must feel like it belongs "
-        "in THIS world — use the materials, light quality, and architectural vocabulary "
+        "in THIS world – use the materials, light quality, and architectural vocabulary "
         "from the lore context above. Include condition indicators, atmosphere, and scale. "
         "Do not mention characters or people."
     ),
@@ -144,7 +144,7 @@ HARDCODED_FALLBACKS: dict[str, str] = {
         "{world_context}\n\n"
         "Write a vivid, atmospheric image prompt (2-3 sentences) depicting a key moment "
         "or landscape from this lore passage. The scene must use the visual identity "
-        "established in the world context — same materials, light quality, weather, "
+        "established in the world context – same materials, light quality, weather, "
         "architectural character. Focus on environment, light, scale, and mood. "
         "No text, no characters in focus, no UI elements. Painterly, cinematic composition."
     ),

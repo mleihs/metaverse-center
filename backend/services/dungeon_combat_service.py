@@ -132,14 +132,14 @@ class DungeonCombatService:
                 agent_id = action_data["agent_id"]
                 if str(agent_id) not in party_agent_ids:
                     logger.warning(
-                        "Submitted agent_id not in party — skipping",
+                        "Submitted agent_id not in party – skipping",
                         extra=log_extra(instance, agent_id=agent_id),
                     )
                     continue
                 ability_id = action_data["ability_id"]
                 if not get_ability_by_id(ability_id):
                     logger.warning(
-                        "Invalid ability_id submitted — auto-defend will cover this agent",
+                        "Invalid ability_id submitted – auto-defend will cover this agent",
                         extra=log_extra(instance, ability_id=ability_id, agent_id=agent_id),
                     )
                     continue
@@ -150,7 +150,7 @@ class DungeonCombatService:
                 actor = next((a for a in instance.party if str(a.agent_id) == str(agent_id)), None)
                 if actor and is_on_cooldown(actor, ability_id):
                     logger.info(
-                        "Ability still on cooldown — auto-defend will cover this agent",
+                        "Ability still on cooldown – auto-defend will cover this agent",
                         extra=log_extra(
                             instance,
                             ability_id=ability_id,

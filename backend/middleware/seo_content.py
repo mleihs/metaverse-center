@@ -93,7 +93,7 @@ def build_agent_detail(
 
     meta = EntityMeta(
         title=(
-            f"{name} — {sim_name} | metaverse.center" if name and sim_name
+            f"{name} – {sim_name} | metaverse.center" if name and sim_name
             else f"{name} | metaverse.center" if name
             else None
         ),
@@ -101,7 +101,7 @@ def build_agent_detail(
             f"Operative in {sim_name}" if sim_name else None
         ),
         og_image=portrait,
-        og_image_alt=f"{name} — portrait" if portrait and name else "",
+        og_image_alt=f"{name} – portrait" if portrait and name else "",
         og_type="profile",
     )
 
@@ -167,13 +167,13 @@ def build_building_detail(
     og_image_alt_parts = [name, btype] if name and btype else [name] if name else []
     meta = EntityMeta(
         title=(
-            f"{name} — {sim_name} | metaverse.center" if name and sim_name
+            f"{name} – {sim_name} | metaverse.center" if name and sim_name
             else f"{name} | metaverse.center" if name
             else None
         ),
         description=meta_description,
         og_image=image,
-        og_image_alt=" — ".join(og_image_alt_parts) if image and og_image_alt_parts else "",
+        og_image_alt=" – ".join(og_image_alt_parts) if image and og_image_alt_parts else "",
     )
 
     return EntityDetailResult(
@@ -236,7 +236,7 @@ def build_lore_detail(
 
     meta = EntityMeta(
         title=(
-            f"{headline} — {sim_name} | metaverse.center" if headline and sim_name
+            f"{headline} – {sim_name} | metaverse.center" if headline and sim_name
             else f"{headline} | metaverse.center" if headline
             else None
         ),
@@ -264,7 +264,7 @@ def build_agents_view(
     )
     agents = response.data or []
 
-    parts = [f"<h2>{_esc(sim_name)} — Agents</h2>"]
+    parts = [f"<h2>{_esc(sim_name)} – Agents</h2>"]
     for a in agents:
         name = _esc(a.get("name"))
         profession = _esc(a.get("primary_profession"))
@@ -281,12 +281,12 @@ def build_agents_view(
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": f"{sim_name} — Agents",
+        "name": f"{sim_name} – Agents",
         "url": f"{BASE_URL}/simulations/{slug}/agents",
         "numberOfItems": len(agents),
         "description": (
             f"AI characters in the {sim_name} simulation"
-            f" — each with unique personalities, professions, and memories."
+            f" – each with unique personalities, professions, and memories."
         ),
         "itemListElement": [
             {
@@ -321,7 +321,7 @@ def build_buildings_view(
     )
     buildings = response.data or []
 
-    parts = [f"<h2>{_esc(sim_name)} — Buildings</h2>"]
+    parts = [f"<h2>{_esc(sim_name)} – Buildings</h2>"]
     for b in buildings:
         name = _esc(b.get("name"))
         btype = _esc(b.get("building_type"))
@@ -337,7 +337,7 @@ def build_buildings_view(
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": f"{sim_name} — Buildings",
+        "name": f"{sim_name} – Buildings",
         "url": f"{BASE_URL}/simulations/{slug}/buildings",
         "numberOfItems": len(buildings),
         "description": f"Architecture and infrastructure in the {sim_name} simulation.",
@@ -387,7 +387,7 @@ def build_lore_view(
     chapters = lore_resp.data or []
 
     parts = [
-        f"<h2>{_esc(sim_name)} — Lore</h2>",
+        f"<h2>{_esc(sim_name)} – Lore</h2>",
         f"<p>{_esc(desc)}</p>",
     ]
     for ch in chapters:
@@ -441,7 +441,7 @@ def build_chronicle_view(
     editions = response.data or []
 
     if not editions:
-        entity_html = f"<h2>{_esc(sim_name)} — Chronicle</h2>\n<p>No editions published yet.</p>"
+        entity_html = f"<h2>{_esc(sim_name)} – Chronicle</h2>\n<p>No editions published yet.</p>"
         return entity_html, ""
 
     latest = editions[0]
@@ -451,7 +451,7 @@ def build_chronicle_view(
     truncated = _esc(_truncate(content, 500))
 
     entity_html = (
-        f"<h2>{_esc(sim_name)} — Chronicle</h2>\n"
+        f"<h2>{_esc(sim_name)} – Chronicle</h2>\n"
         f"<article><h3>{title}</h3>\n"
         f"<p><strong>{headline}</strong></p>\n"
         f"<p>{truncated}</p></article>"
@@ -499,7 +499,7 @@ def build_broadsheet_view(
 
     if not editions:
         entity_html = (
-            f"<h2>{_esc(sim_name)} — Broadsheet</h2>\n"
+            f"<h2>{_esc(sim_name)} – Broadsheet</h2>\n"
             f"<p>No editions published yet.</p>"
         )
         return entity_html, ""
@@ -511,7 +511,7 @@ def build_broadsheet_view(
     articles = latest.get("articles") or []
 
     parts = [
-        f"<h2>{_esc(sim_name)} — {title}</h2>",
+        f"<h2>{_esc(sim_name)} – {title}</h2>",
         f'<p class="edition">Edition {edition}</p>',
     ]
     if subtitle:
@@ -558,14 +558,14 @@ def build_social_view(
     """
     del client, sim_id  # no DB fetch — this view has no persistent rows to surface
     entity_html = (
-        f"<h2>{_esc(sim_name)} — Social Trends</h2>\n"
+        f"<h2>{_esc(sim_name)} – Social Trends</h2>\n"
         f"<p>Real-world news transformed into simulation events."
         f" AI-driven narrative integration for {_esc(sim_name)}.</p>"
     )
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": f"{sim_name} — Social Trends",
+        "name": f"{sim_name} – Social Trends",
         "url": f"{BASE_URL}/simulations/{slug}/social",
         "description": (
             f"Real-world news transformed into simulation events in {sim_name}."
@@ -595,7 +595,7 @@ def build_locations_view(
     )
     streets = streets_resp.data or []
 
-    parts = [f"<h2>{_esc(sim_name)} — Locations</h2>"]
+    parts = [f"<h2>{_esc(sim_name)} – Locations</h2>"]
     if zones:
         parts.append("<h3>Zones</h3>")
         for z in zones:
@@ -612,7 +612,7 @@ def build_locations_view(
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": f"{sim_name} — Locations",
+        "name": f"{sim_name} – Locations",
         "url": f"{BASE_URL}/simulations/{slug}/locations",
         "numberOfItems": len(zones) + len(streets),
         "description": f"Zones and streets in the {sim_name} simulation.",
@@ -635,7 +635,7 @@ def build_events_view(
     )
     events = response.data or []
 
-    parts = [f"<h2>{_esc(sim_name)} — Events</h2>"]
+    parts = [f"<h2>{_esc(sim_name)} – Events</h2>"]
     for ev in events:
         title = _esc(ev.get("title") or "")
         desc = _esc(_truncate(ev.get("description") or ""))
@@ -649,7 +649,7 @@ def build_events_view(
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": f"{sim_name} — Events",
+        "name": f"{sim_name} – Events",
         "url": f"{BASE_URL}/simulations/{slug}/events",
         "numberOfItems": len(events),
         "description": f"Recent events in the {sim_name} simulation.",
@@ -662,7 +662,7 @@ def build_health_view(
     client: Client, sim_id: str, sim_name: str, slug: str,
 ) -> tuple[str, str]:
     entity_html = (
-        f"<h2>{_esc(sim_name)} — Simulation Health</h2>\n"
+        f"<h2>{_esc(sim_name)} – Simulation Health</h2>\n"
         f"<p>Building Readiness, Zone Stability, Embassy Effectiveness,"
         f" and overall health metrics for {_esc(sim_name)}.</p>"
     )
@@ -670,7 +670,7 @@ def build_health_view(
     jsonld = _safe_jsonld({
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": f"{sim_name} — Simulation Health",
+        "name": f"{sim_name} – Simulation Health",
         "url": f"{BASE_URL}/simulations/{slug}/health",
         "description": (
             f"Game metrics dashboard for {sim_name}:"

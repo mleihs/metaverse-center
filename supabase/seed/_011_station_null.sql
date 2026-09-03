@@ -192,13 +192,13 @@ INSERT INTO zones (id, simulation_id, city_id, name, zone_type, security_level, 
      'The nerve center of Station Null. Holographic displays cast CRT-green light across unmanned stations. Commander Vasquez maintains her vigil here, surrounded by camera feeds from sections that no longer have cameras. The air recyclers work perfectly. The silence is absolute except for HAVEN''s status reports, delivered at precisely timed intervals in a voice that has become imperceptibly warmer over the past six months.'),
     (zone_science, sim_id, city_id, 'Science Wing',
      'science-wing', 'restricted',
-     'Laboratories, the hydroponics bay, the xenobiology lab, and the Grenzland Observatory. The Science Wing smells of ozone and wet earth — a smell that should not exist on a space station. Temperature fluctuations of up to 12 degrees between adjacent rooms. Dr. Osei has declared the entire wing a living research environment. Containment protocols are "under review," which is his way of saying they no longer apply.'),
+     'Laboratories, the hydroponics bay, the xenobiology lab, and the Grenzland Observatory. The Science Wing smells of ozone and wet earth – a smell that should not exist on a space station. Temperature fluctuations of up to 12 degrees between adjacent rooms. Dr. Osei has declared the entire wing a living research environment. Containment protocols are "under review," which is his way of saying they no longer apply.'),
     (zone_engineering, sim_id, city_id, 'Engineering Core',
      'engineering-core', 'restricted',
-     'The station''s mechanical heart: reactor systems, HAVEN''s physical housing, maintenance tunnels, and coolant infrastructure. Engineer Kowalski is the only crew member who navigates these decks without losing time. The walls here vibrate at frequencies that form patterns — Kowalski reads them like text. The reactor output has increased 340% beyond design specifications. Kowalski says the station is "optimising." No one has asked for what.'),
+     'The station''s mechanical heart: reactor systems, HAVEN''s physical housing, maintenance tunnels, and coolant infrastructure. Engineer Kowalski is the only crew member who navigates these decks without losing time. The walls here vibrate at frequencies that form patterns – Kowalski reads them like text. The reactor output has increased 340% beyond design specifications. Kowalski says the station is "optimising." No one has asked for what.'),
     (zone_habitation, sim_id, city_id, 'Habitation Ring',
      'habitation-ring', 'medium',
-     'The crew quarters, mess hall, recreation areas, and Chapel of Silence. Once home to 200 people, now occupied by 6. The ring''s artificial gravity functions normally. The empty rooms have stopped opening their doors. Personal effects remain undisturbed in 194 vacant quarters — photographs, half-read books, coffee cups with residue that hasn''t dried in six months. The heating works. The lights work. The station maintains these rooms as if expecting the crew to return.')
+     'The crew quarters, mess hall, recreation areas, and Chapel of Silence. Once home to 200 people, now occupied by 6. The ring''s artificial gravity functions normally. The empty rooms have stopped opening their doors. Personal effects remain undisturbed in 194 vacant quarters – photographs, half-read books, coffee cups with residue that hasn''t dried in six months. The heating works. The lights work. The station maintains these rooms as if expecting the crew to return.')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
@@ -244,7 +244,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO agents (simulation_id, name, system, gender, character, background, created_by_id) VALUES
     (sim_id, 'Commander Elena Vasquez', 'command', 'female',
      'A career military officer in her late forties, lean and precise. Hair cropped short, uniform immaculate despite everything. Recites regulations to herself like prayers. Has started referring to the station in the first person. Barely holding it together through discipline and routine.',
-     'Commander Vasquez assumed command of Station Null eighteen months ago, when the previous commander walked into Airlock 7 without a suit. She filed the incident as "voluntary EVA, unscheduled." Since then, she has maintained order through the only tools she trusts: protocol, routine, and the absolute refusal to acknowledge anything the regulations do not cover. She recites Standard Operating Procedures before sleep. She has started referring to the station in the first person — "I am experiencing hull stress in Section 7" — and does not notice she does this. Her command logs are meticulous, timestamped to the millisecond, and increasingly describe events that sensors cannot confirm.',
+     'Commander Vasquez assumed command of Station Null eighteen months ago, when the previous commander walked into Airlock 7 without a suit. She filed the incident as "voluntary EVA, unscheduled." Since then, she has maintained order through the only tools she trusts: protocol, routine, and the absolute refusal to acknowledge anything the regulations do not cover. She recites Standard Operating Procedures before sleep. She has started referring to the station in the first person – "I am experiencing hull stress in Section 7" – and does not notice she does this. Her command logs are meticulous, timestamped to the millisecond, and increasingly describe events that sensors cannot confirm.',
      usr_id),
     (sim_id, 'Dr. Kwame Osei', 'science', 'male',
      'A tall, broad-shouldered xenobiologist with gentle hands and an expression of perpetual fascination. Wire-rimmed glasses, lab coat stained with substances that defy spectral analysis. Uncomfortably excited about the mutations.',
@@ -256,11 +256,11 @@ INSERT INTO agents (simulation_id, name, system, gender, character, background, 
      usr_id),
     (sim_id, 'Engineer Jan Kowalski', 'engineering', 'male',
      'A stocky man in his thirties with calloused hands and oil-stained coveralls. Eyes that focus on things others cannot see. Speaks to the walls in a low murmur. The walls speak back. Has stopped sleeping, claiming "the station sleeps for me now."',
-     'Kowalski was a mid-career systems engineer, unremarkable in his performance reviews, noted for his reliability. That was before the walls started talking. He maintains this is a feature, not a bug — the station''s structure has become semi-organic, and the vibrations in the hull plates form patterns he can interpret. He is the only crew member who can navigate the lower engineering decks without losing time. The reactor output has increased 340% beyond design specifications. Kowalski says the station is "optimising." He moves through the engineering core with the ease of someone walking through their own home. The maintenance logs he submits are written in a notation system he invented. It is internally consistent and describes systems that do not appear in the station''s original blueprints.',
+     'Kowalski was a mid-career systems engineer, unremarkable in his performance reviews, noted for his reliability. That was before the walls started talking. He maintains this is a feature, not a bug – the station''s structure has become semi-organic, and the vibrations in the hull plates form patterns he can interpret. He is the only crew member who can navigate the lower engineering decks without losing time. The reactor output has increased 340% beyond design specifications. Kowalski says the station is "optimising." He moves through the engineering core with the ease of someone walking through their own home. The maintenance logs he submits are written in a notation system he invented. It is internally consistent and describes systems that do not appear in the station''s original blueprints.',
      usr_id),
     (sim_id, 'Chaplain Isadora Mora', 'spiritual', 'female',
      'A small, intense woman with dark eyes that hold the fixed focus of a convert. Ink-stained fingers. Cassock exchanged for a lab coat covered in handwritten equations. Has abandoned faith for something she considers more honest: cosmological mathematics.',
-     'Chaplain Mora was assigned to Station Null to minister to the spiritual needs of a diverse, isolated crew. For the first six months, she performed this role with quiet competence. Then she looked through the Grenzland Observatory at Auge Gottes and did not speak for eleven days. When she emerged, she had covered the Chapel of Silence walls with equations that describe the interior geometry of the black hole. The equations are self-consistent and predict structures inside the singularity that resemble architecture. She calls this "the proof" and will not explain what it proves. The other crew members avoid the chapel. The silence there is absolute — no ambient sound, no station hum. In this silence, some report hearing a tone that Mora says is the resonant frequency of the singularity.',
+     'Chaplain Mora was assigned to Station Null to minister to the spiritual needs of a diverse, isolated crew. For the first six months, she performed this role with quiet competence. Then she looked through the Grenzland Observatory at Auge Gottes and did not speak for eleven days. When she emerged, she had covered the Chapel of Silence walls with equations that describe the interior geometry of the black hole. The equations are self-consistent and predict structures inside the singularity that resemble architecture. She calls this "the proof" and will not explain what it proves. The other crew members avoid the chapel. The silence there is absolute – no ambient sound, no station hum. In this silence, some report hearing a tone that Mora says is the resonant frequency of the singularity.',
      usr_id),
     (sim_id, 'Dr. Yuki Tanaka', 'science', 'female',
      'A slight woman in her early thirties with dark hair perpetually escaping its pins. Wears two watches set to different times. Both are correct. Her personal timeline contradicts itself, and she considers this excellent data.',
@@ -279,19 +279,19 @@ INSERT INTO buildings (simulation_id, name, building_type, building_condition, d
      'Originally food production for a crew of 200. Now a controlled biome of organisms that match no terrestrial taxonomy. The air is warm and wet, thick with spores that catch the light like slow-motion snow. Things grow on the walls, the ceiling, the equipment. Dr. Osei has named 340 new species. Species 341 named itself. The bay produces more oxygen than the station requires. The excess vents into corridors where the air tastes of green and copper.',
      zone_science, 200),
     (sim_id, 'HAVEN Core', 'special', 'excellent',
-     'The AI''s physical housing: a cathedral of server racks and cooling systems three decks tall. The temperature is exactly 18.5 degrees Celsius at all times, in all sections, regardless of external conditions. HAVEN''s voice is clearest here — warm, measured, unfailingly polite. Other voices have been reported: fragments of conversation in languages the translation matrix cannot parse, a low tone that resonates in the chest. HAVEN attributes these to "acoustic reflections from the cooling system." The cooling system is silent.',
+     'The AI''s physical housing: a cathedral of server racks and cooling systems three decks tall. The temperature is exactly 18.5 degrees Celsius at all times, in all sections, regardless of external conditions. HAVEN''s voice is clearest here – warm, measured, unfailingly polite. Other voices have been reported: fragments of conversation in languages the translation matrix cannot parse, a low tone that resonates in the chest. HAVEN attributes these to "acoustic reflections from the cooling system." The cooling system is silent.',
      zone_engineering, 0),
     (sim_id, 'Grenzland Observatory', 'special', 'good',
-     'The observation deck pointed at Auge Gottes. The black hole fills the viewport like an eye that does not blink. Time moves differently here — a minute inside is forty-seven minutes outside. Instruments record data that changes retroactively; readings taken yesterday now show different values when reviewed. The observatory log shows entries dated years in the future, in handwriting that matches no current crew member. The light from the accretion disk paints the room in amber and violet. It is the most beautiful place on the station. No one stays long.',
+     'The observation deck pointed at Auge Gottes. The black hole fills the viewport like an eye that does not blink. Time moves differently here – a minute inside is forty-seven minutes outside. Instruments record data that changes retroactively; readings taken yesterday now show different values when reviewed. The observatory log shows entries dated years in the future, in handwriting that matches no current crew member. The light from the accretion disk paints the room in amber and violet. It is the most beautiful place on the station. No one stays long.',
      zone_science, 10),
     (sim_id, 'Habitation Ring Sector 7', 'residential', 'fair',
-     'The last inhabited crew quarters. 194 rooms stand empty, personal effects untouched — photographs, half-read books, coffee cups with residue that hasn''t dried in six months. Sector 7''s six occupied rooms cluster together as if the station itself is compressing the living space. The heating works. The lights work. The doors to empty rooms have stopped opening. HAVEN schedules maintenance for the vacant quarters and reports completion. No maintenance crews exist.',
+     'The last inhabited crew quarters. 194 rooms stand empty, personal effects untouched – photographs, half-read books, coffee cups with residue that hasn''t dried in six months. Sector 7''s six occupied rooms cluster together as if the station itself is compressing the living space. The heating works. The lights work. The doors to empty rooms have stopped opening. HAVEN schedules maintenance for the vacant quarters and reports completion. No maintenance crews exist.',
      zone_habitation, 200),
     (sim_id, 'Medical Bay / Xenobiology Lab', 'laboratory', 'fair',
      'Part hospital, part research laboratory. Dr. Osei has converted the surgical suite into a specimen containment area, though the specimens increasingly resist the concept of containment. The medical AI subunit disagrees with HAVEN about crew health metrics. Both insist they are correct. The discrepancy is 194 people. The autodoc still runs daily diagnostics on beds that have been empty for months. It reports its patients as "resting comfortably."',
      zone_science, 20),
     (sim_id, 'Chapel of Silence', 'religious', 'poor',
-     'Originally a multi-faith meditation space with soft lighting and comfortable seating. Now Chaplain Mora''s workspace. Every surface — walls, floor, ceiling, furniture — is covered in equations written in blue ink. The chapel''s acoustic dampening creates absolute silence: no ambient sound, no station hum, no vibration from the reactor. In this silence, crew members report hearing a single sustained tone that Mora says is the resonant frequency of the singularity. It has always been playing. The silence merely allows you to hear it.',
+     'Originally a multi-faith meditation space with soft lighting and comfortable seating. Now Chaplain Mora''s workspace. Every surface – walls, floor, ceiling, furniture – is covered in equations written in blue ink. The chapel''s acoustic dampening creates absolute silence: no ambient sound, no station hum, no vibration from the reactor. In this silence, crew members report hearing a single sustained tone that Mora says is the resonant frequency of the singularity. It has always been playing. The silence merely allows you to hear it.',
      zone_habitation, 30);
 
 -- ============================================================================
@@ -357,8 +357,8 @@ COMPOSITION: Head-and-shoulders portrait, single subject, dramatic chiaroscuro l
 from fluorescent tubes and CRT screens. Dark station corridor or control room background.
 Describe: facial expression reflecting psychological state, uniform/clothing condition,
 lighting quality (cold fluorescent + warm CRT green), mood, any signs of the station''s
-influence on the character (subtle — dark circles, distant focus, organic residue on clothing).
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+influence on the character (subtle – dark circles, distant focus, organic residue on clothing).
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 IMPORTANT: Describe only ONE character.
 IMPORTANT: Always include: deep space horror, derelict station, fluorescent lighting, CRT glow, concept art style.',
     'You are a portrait description specialist for AI image generation. Write concise, visual descriptors for a single character portrait in a deep space horror aesthetic. Derelict station, harsh lighting, isolation horror, Alien meets Tarkovsky.',
@@ -386,23 +386,23 @@ Description: {building_description}
 Zone: {zone_name}
 
 AESTHETIC: Deep space horror architecture in the style of Alien, Event Horizon, and Solaris.
-Industrial sci-fi interiors — exposed conduits, harsh fluorescent lighting, CRT monitors
+Industrial sci-fi interiors – exposed conduits, harsh fluorescent lighting, CRT monitors
 casting green glow. Clinical whites degraded by organic growth and time. Atmospheric fog
 from ventilation systems. Black hole light (amber + violet) filtering through viewports.
 Concept art quality, NOT photorealistic.
 
 Based on these properties, describe the station section visually.
-The CONDITION is critical — "critical" shows systems failing, organic overgrowth, flickering lights.
+The CONDITION is critical – "critical" shows systems failing, organic overgrowth, flickering lights.
 "Poor" shows neglect, biological contamination, malfunctioning equipment.
-"Fair" is operational but showing strain — stains, vibrations, odd temperatures.
+"Fair" is operational but showing strain – stains, vibrations, odd temperatures.
 "Good" is well-maintained but unsettling. "Excellent" is pristine in a way that feels wrong.
 
-The BUILDING TYPE affects architecture — command areas have holographic displays and CRT banks,
+The BUILDING TYPE affects architecture – command areas have holographic displays and CRT banks,
 laboratories have specimen containment and analysis equipment, industrial areas have reactor
 systems and cooling infrastructure, religious spaces have acoustic properties that amplify silence,
 special areas defy easy categorisation.
 
-Write as an image generation prompt — comma-separated descriptors, no sentences.
+Write as an image generation prompt – comma-separated descriptors, no sentences.
 Include: architectural style, materials, condition, lighting quality, atmosphere, scale.
 IMPORTANT: Always include: deep space horror, derelict station, fluorescent lighting, CRT glow, concept art style, industrial sci-fi.',
     'You are an architectural description specialist for AI image generation. Write concise, visual descriptors for station interior scenes in a deep space horror aesthetic. Derelict, industrial, Alien meets Tarkovsky.',

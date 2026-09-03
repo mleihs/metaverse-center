@@ -245,13 +245,13 @@ ARCHETYPE_CONFIGS: dict[str, dict] = {
         "signature": "authority_fracture",
         "title_en": "Der Spiegelpalast",
         "title_de": "Der Spiegelpalast",
-        "tagline_en": "Power changes hands. The old order does not die — it metamorphoses.",
-        "tagline_de": "Macht wechselt die Hände. Die alte Ordnung stirbt nicht — sie verwandelt sich.",
+        "tagline_en": "Power changes hands. The old order does not die – it metamorphoses.",
+        "tagline_de": "Macht wechselt die Hände. Die alte Ordnung stirbt nicht – sie verwandelt sich.",
         "prose_style": (
             "Political vertigo. Clinical precision at low fracture (Machiavelli), "
             "ascending paranoia at high (Dostoevsky). Every NPC is a political actor. "
             "Power is language, not violence. Certainty of allegiance degrades, not "
-            "grammar. German: Spiegelpalast-Deutsch — legalistic → Brechtian → compressed."
+            "grammar. German: Spiegelpalast-Deutsch – legalistic → Brechtian → compressed."
         ),
         "mechanic": "faction_navigation",
         "mechanic_config": {

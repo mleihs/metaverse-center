@@ -9,9 +9,9 @@ loot:
     stress_heal: 50
     when: after_dungeon
   description_en: Names, alliances, debts. Kadare's Palace of Dreams made portable. Knowledge is not
-    power — knowledge is the absence of fear.
+    power – knowledge is the absence of fear.
   description_de: Namen, Bündnisse, Schulden. Kadares Palast der Träume, tragbar gemacht. Wissen ist
-    nicht Macht — Wissen ist die Abwesenheit von Furcht.
+    nicht Macht – Wissen ist die Abwesenheit von Furcht.
   drop_weight: 30
 - id: overthrow_propaganda_leaflet
   name_en: Propaganda Leaflet
@@ -75,9 +75,9 @@ loot:
     aptitude: propagandist
     boost: 10
     duration_rooms: 8
-  description_en: An official seal. The office no longer exists. The seal still carries weight — authority
+  description_en: An official seal. The office no longer exists. The seal still carries weight – authority
     persists after the authority is gone.
-  description_de: Ein Amtssiegel. Das Amt existiert nicht mehr. Das Siegel hat noch Gewicht — Autorität
+  description_de: Ein Amtssiegel. Das Amt existiert nicht mehr. Das Siegel hat noch Gewicht – Autorität
     besteht fort, nachdem die Autorität vergangen ist.
   drop_weight: 25
 - id: overthrow_double_agents_testimony
@@ -89,9 +89,9 @@ loot:
     stress_resist: 0.15
     duration_rooms: 6
   description_en: 'Ngũgĩ''s informer-hero: the traitor whose confession is the most heroic act. This
-    testimony protects because it reveals — and revelation is armor.'
+    testimony protects because it reveals – and revelation is armor.'
   description_de: 'Ngũgĩs Spitzel-Held: der Verräter, dessen Geständnis die heldenhafteste Tat ist.
-    Diese Aussage schützt, weil sie enthüllt — und Enthüllung ist Rüstung.'
+    Diese Aussage schützt, weil sie enthüllt – und Enthüllung ist Rüstung.'
   drop_weight: 25
 - id: overthrow_erased_photograph
   name_en: Erased Photograph
@@ -153,8 +153,8 @@ loot:
     delta: 5
     description_en: The mirror shows what the viewer wants, not what the viewer is. Openness +5.
     description_de: Der Spiegel zeigt, was der Betrachter will, nicht was er ist. Offenheit +5.
-  description_en: A shard of the Spiegelpalast's central mirror. It still reflects — but what it reflects
+  description_en: A shard of the Spiegelpalast's central mirror. It still reflects – but what it reflects
     is no longer the room.
-  description_de: Eine Scherbe des zentralen Spiegels im Spiegelpalast. Sie reflektiert noch — aber
+  description_de: Eine Scherbe des zentralen Spiegels im Spiegelpalast. Sie reflektiert noch – aber
     was sie reflektiert, ist nicht mehr der Raum.
   drop_weight: 20

@@ -92,7 +92,7 @@ class EmbeddingService:
 
         key = api_key or settings.openrouter_api_key
         if not key:
-            logger.warning("No API key for embeddings — memory stays unembedded")
+            logger.warning("No API key for embeddings – memory stays unembedded")
             return None
 
         try:
@@ -112,6 +112,6 @@ class EmbeddingService:
                 data = resp.json()
                 return data["data"][0]["embedding"]
         except (httpx.HTTPError, KeyError, ValueError) as exc:
-            logger.exception("Embedding request failed — memory stays unembedded")
+            logger.exception("Embedding request failed – memory stays unembedded")
             sentry_sdk.capture_exception(exc)
             return None

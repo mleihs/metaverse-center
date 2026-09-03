@@ -427,7 +427,7 @@ class ForgeThemeService:
             f'You are refining image style prompts for the world "{sim.get("name", "?")}".\n\n'
             f"WORLD DESCRIPTION: {sim.get('description', '')}\n\n"
             f"LORE EXCERPTS (these define the world's unique atmosphere):\n{lore_digest}\n\n"
-            f"CURRENT STYLE PROMPTS (too generic — need to be more distinctive):\n"
+            f"CURRENT STYLE PROMPTS (too generic – need to be more distinctive):\n"
             f"- Portrait: {current_styles.get('image_style_prompt_portrait', '')}\n"
             f"- Building: {current_styles.get('image_style_prompt_building', '')}\n"
             f"- Lore: {current_styles.get('image_style_prompt_lore', '')}\n"
@@ -439,7 +439,7 @@ class ForgeThemeService:
             f"- Reference unique elements from the lore (materials, lighting, textures)\n"
             f"- Create a visual language that could ONLY belong to this world\n"
             f"- Be technically precise (describe lens, lighting, medium, color grading)\n\n"
-            f"BANNER is the world's establishing shot — a single wide 16:9 landscape, no "
+            f"BANNER is the world's establishing shot – a single wide 16:9 landscape, no "
             f"characters, no text. Keep it a place seen whole, in the same visual language "
             f"as the other three.\n\n"
             f"Respond with ONLY the four prompts, one per line, in this format:\n"
@@ -609,7 +609,7 @@ class ForgeThemeService:
             f"VISUAL STYLE: {styles.get('image_style_prompt_portrait', 'not set')}\n\n"
             f"Generate {len(GENERATED_TEMPLATES)} prompt templates that capture this world's "
             f"UNIQUE voice, visual language, and narrative conventions. Each template must be "
-            f"deeply specific to this world — referencing its materials, aesthetics, social "
+            f"deeply specific to this world – referencing its materials, aesthetics, social "
             f"structures, and atmospheric qualities from the lore.\n\n"
             f"Return valid JSON with exactly these {len(GENERATED_TEMPLATES)} keys:\n"
             f"{_response_shape_hint(sim_name)}\n\n"
@@ -619,8 +619,8 @@ class ForgeThemeService:
             f"- portrait_description MUST reference the visual style above\n"
             f"- chronicle MUST capture the world's media/propaganda voice from lore\n"
             f"- chat MUST establish how characters from this world speak and think\n"
-            f"- Be BOLD and SPECIFIC — generic templates are useless\n\n"
-            f"VARIABLES — a hard contract, not a suggestion. Each template may use ONLY "
+            f"- Be BOLD and SPECIFIC – generic templates are useless\n\n"
+            f"VARIABLES – a hard contract, not a suggestion. Each template may use ONLY "
             f"the names listed for it:\n"
             f"{_variable_contract_hint()}\n"
             f"- Write a variable as {{name}}. Never {{{{name}}}}: doubled braces are not "
@@ -628,7 +628,7 @@ class ForgeThemeService:
             f"- Any other {{placeholder}} is stripped before the template is stored, taking "
             f"its sentence's meaning with it.\n"
             f"- Do not invent a variable because this world has a concept for it. If the "
-            f"world measures legibility, write about legibility in words — there is no "
+            f"world measures legibility, write about legibility in words – there is no "
             f"{{legibility_level}} for the code to fill.\n\n"
             f"COMPOSITION: the platform appends its own constraints (subject count, framing, "
             f"output format) to every rendered prompt. Write this world's style and voice; do "
@@ -640,7 +640,7 @@ class ForgeThemeService:
                 (
                     "You are a worldbuilding narrative architect. Generate prompt templates "
                     "as valid JSON. Each template must be deeply specific to the world's "
-                    "identity — never generic. Return ONLY the JSON object, no markdown."
+                    "identity – never generic. Return ONLY the JSON object, no markdown."
                 ),
                 api_key=openrouter_key,
                 purpose="templates",
@@ -677,7 +677,7 @@ class ForgeThemeService:
                 spec = GENERATED_TEMPLATES.get(ttype)
                 if spec is None:
                     logger.warning(
-                        "Template generation returned an unrequested type '%s' — ignored",
+                        "Template generation returned an unrequested type '%s' – ignored",
                         ttype,
                         extra={"simulation_id": str(simulation_id)},
                     )

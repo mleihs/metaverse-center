@@ -267,9 +267,9 @@ async def load_all_content(supabase: Client) -> None:
 
         # Warn on empty tables (seed may not have run)
         if total_banter == 0:
-            logger.warning("dungeon_banter table is empty — seed data may not be applied")
+            logger.warning("dungeon_banter table is empty – seed data may not be applied")
         if total_encounters == 0:
-            logger.warning("dungeon_encounter_templates table is empty — seed data may not be applied")
+            logger.warning("dungeon_encounter_templates table is empty – seed data may not be applied")
 
     except Exception:
         logger.exception("Failed to load dungeon content from DB")
