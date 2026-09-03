@@ -46,11 +46,28 @@ import type { LandingCitizen } from '../../types/index.js';
 import { t } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import '../shared/VelgGameCard.js';
+import { citizenTeaser } from '../../utils/citizen-teaser.js';
 import { professionLabel } from '../../utils/profession.js';
 import { stageStyles } from '../shared/stage-styles.js';
 
 /** Die Faecherung des Entwurfs: drei Karten, leicht ueberlappend. */
 const FAN_ANGLES = [-7, 0, 7];
+
+/**
+ * Welche Karte die Folie traegt.
+ *
+ * `<velg-game-card>` rendert die holografische Schicht (`.card__holo`)
+ * AUSSCHLIESSLICH bei `rarity="legendary"` — und am 03.09.2026 gemessen setzt
+ * kein einziger Aufrufer der App `rarity`. Die Folie war damit nirgends je zu
+ * sehen, obwohl das Kartenmodul sie seit dem TCG-Entwurf mitbringt und der
+ * Vorgabe-Rahmen sie auf "holographic" stellt.
+ *
+ * Sie sitzt hier auf der VORDEREN Karte, nicht auf allen dreien. Das ist eine
+ * Aussage ueber die Auslage, nicht ueber den Buerger: ein Schaufenster hat
+ * einen Blickpunkt, und drei glaenzende Karten nebeneinander sind keiner.
+ * Rang im Sinne des Spiels bedeutet das nicht — den fuehrt bislang nichts.
+ */
+const FAN_RARITIES = ['common', 'legendary', 'common'] as const;
 
 /**
  * Wie lange eine Karte steht, bevor der Platz weiterblaettert.
@@ -406,7 +423,7 @@ export class VelgLandingCitizens extends LitElement {
           <h2 class="title">${msg('They remember')}<em>.</em></h2>
           <p class="lede">
             ${msg(
-              'Every world is populated by AI characters with memory, opinion, and intent. They hold grudges, form bonds, and print their own morning broadsheet.',
+              'Every world is populated by AI characters who carry a memory, an opinion, and an intent of their own. They keep accounts, form attachments, fall out over nothing, and print the whole affair in the morning broadsheet.',
             )}
           </p>
           <button class="more" @click=${() => navigate('/worlds')}>
@@ -433,11 +450,13 @@ export class VelgLandingCitizens extends LitElement {
                 <velg-game-card
                   type="agent"
                   size="md"
+                  rarity=${FAN_RARITIES[index]}
                   .name=${citizen.name}
                   image-url=${citizen.portrait_image_url ?? ''}
                   .subtitle=${[professionLabel(t(citizen, 'profession')), citizen.zone_name]
                     .filter(Boolean)
                     .join(' · ')}
+                  .description=${citizenTeaser(t(citizen, 'character'), citizen.name)}
                   @click=${() =>
                     navigate(`/simulations/${citizen.simulation_slug}/agents/${citizen.slug}`)}
                 ></velg-game-card>

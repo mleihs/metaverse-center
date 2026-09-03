@@ -14433,12 +14433,9 @@ CITE DES DAMES zu ALLEN SPLITTERN: Bücher. Unbekannte Bände, die auf Regalen a
 <trans-unit id="s834a4ee5a356e780">
   <source>No chronicles have been published yet. Worlds are still writing their stories.</source>
 <target>Noch keine Chroniken veröffentlicht. Die Welten schreiben noch ihre Geschichten.</target></trans-unit>
-<trans-unit id="sb6c7e6405d341696">
-  <source>These stories write themselves. Build a world and watch it generate its own newspaper.</source>
-<target>Diese Geschichten schreiben sich selbst. Bau eine Welt und schau zu, wie sie ihre eigene Zeitung erzeugt.</target></trans-unit>
 <trans-unit id="s83bcd9832e5e6a55">
   <source>Meet more characters</source>
-<target>Weitere Charaktere kennenlernen</target></trans-unit>
+<target>Weitere Bürger kennenlernen</target></trans-unit>
 <trans-unit id="s18cfc8da58d12b99">
   <source>Explore Worlds</source>
 <target>Welten erkunden</target></trans-unit>
@@ -28625,10 +28622,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>They remember</source>
   <target>Sie erinnern sich</target>
 </trans-unit>
-<trans-unit id="s5fa78e6ce15416cc">
-  <source>Every world is populated by AI characters with memory, opinion, and intent. They hold grudges, form bonds, and print their own morning broadsheet.</source>
-  <target>Jede Welt ist von KI-Figuren bewohnt, die Gedächtnis, Meinung und Absicht haben. Sie tragen nach, schließen Bindungen und drucken ihr eigenes Morgenblatt.</target>
-</trans-unit>
 <trans-unit id="s5e0b4a4680eb0d79">
   <source>A drowned republic where the tide is legal tender and every clerk owes the moon a debt. High water is payday, low water is austerity, and the Brine Chancellery keeps two sets of books: one for the living, one for the sea.</source>
   <target>Eine ertrunkene Republik, in der die Gezeiten gesetzliches Zahlungsmittel sind und jeder Beamte beim Mond in der Kreide steht. Flut ist Zahltag, Ebbe ist Sparzwang, und die Salzkanzlei führt zwei Bücher: eines für die Lebenden, eines für die See.</target>
@@ -28735,15 +28728,11 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="se5d2586aa19d46e3">
   <source>Transmission open</source>
-  <target>Übertragung offen</target>
-</trans-unit>
-<trans-unit id="s8d9ced2965afea3b">
-  <source>yours</source>
-  <target>deine Welt</target>
+  <target>Kanal offen</target>
 </trans-unit>
 <trans-unit id="s59ecbd14e3782b36">
   <source>Anchor it in a philosophy</source>
-  <target>Veranker sie in einer Philosophie</target>
+  <target>Verankere sie in einer Philosophie</target>
 </trans-unit>
 <trans-unit id="sfd535d526d5e2ecd">
   <source>Required · shapes every citizen’s soul</source>
@@ -28753,17 +28742,13 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Forge this world</source>
   <target>Diese Welt schmieden</target>
 </trans-unit>
-<trans-unit id="s55751932cc674bbf">
-  <source>Free · alive in minutes</source>
-  <target>Kostenlos · in Minuten lebendig</target>
-</trans-unit>
 <trans-unit id="s4d37149c55aa0c5d">
   <source>living worlds</source>
   <target>lebende Welten</target>
 </trans-unit>
 <trans-unit id="s2c136eae7fc56ad1">
   <source>transmitting</source>
-  <target>senden</target>
+  <target>auf Sendung</target>
 </trans-unit>
 <trans-unit id="s6af7129b9c89b1a8">
   <source>citizens</source>
@@ -28797,17 +28782,13 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Living</source>
   <target>Lebendige</target>
 </trans-unit>
-<trans-unit id="s21afe3f78faf36b8">
-  <source>Forged from a single sentence. Playing while you sleep. Populated by citizens who remember what you did.</source>
-  <target>Aus einem einzigen Satz geschmiedet. Spielt, während du schläfst. Bewohnt von Bürgern, die sich erinnern, was du getan hast.</target>
-</trans-unit>
 <trans-unit id="s6005f4a35a6cc7cd">
   <source>Or just watch one</source>
   <target>Oder sieh einer beim Leben zu</target>
 </trans-unit>
 <trans-unit id="s7344eb3ac03a4186">
   <source>The Bureau of Impossible Geography. AI-simulated living worlds, forged from a sentence, populated by citizens who remember, playing while you sleep.</source>
-  <target>Das Büro für Unmögliche Geographie. KI-simulierte lebende Welten, aus einem Satz geschmiedet, bewohnt von Bürgern, die sich erinnern, im Spiel, während du schläfst.</target>
+  <target>Das Büro für Unmögliche Geographie. KI-simulierte lebende Welten, aus einem Satz geschmiedet, bewohnt von Bürgern, die sich erinnern – und in Betrieb, während du schläfst.</target>
 </trans-unit>
 <trans-unit id="se29a00611761719c">
   <source>World Forge</source>
@@ -28853,10 +28834,6 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>System 01 // The Forge</source>
   <target>System 01 // Die Forge</target>
 </trans-unit>
-<trans-unit id="s15814319d5b58c6b">
-  <source>One sentence becomes a civilization – geography, citizens, lore. Minutes, not months.</source>
-  <target>Ein Satz wird zur Zivilisation – Geographie, Bürger, Lore. Minuten, nicht Monate.</target>
-</trans-unit>
 <trans-unit id="s6639341a73348909">
   <source>The intake desk of the Bureau. You file a single sentence; the Forge answers with coastlines, a census, a founding grudge and a working economy. It names the rivers, seats the parliament, invents the folk songs, and decides – before you can object – which of your words was the important one.</source>
   <target>Der Anmeldeschalter des Bureaus. Du reichst einen einzigen Satz ein; die Forge antwortet mit Küstenlinien, einer Volkszählung, einem Gründungsgroll und einer laufenden Wirtschaft. Sie benennt die Flüsse, besetzt das Parlament, erfindet die Volkslieder und entscheidet, ehe du widersprechen kannst, welches deiner Wörter das wichtige war.</target>
@@ -28875,7 +28852,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s15955a3a9dbb9d2f">
   <source>Compete in Seasons</source>
-  <target>Tritt in Spielzeiten an</target>
+  <target>Tritt in einer Spielzeit an</target>
 </trans-unit>
 <trans-unit id="s51b919747fe0e45b">
   <source>Timed epochs where civilizations clash: deploy operatives, forge alliances, betray on time.</source>
@@ -28903,7 +28880,7 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s7224d2d046b1dae5">
   <source>Eight literary descents where stress is real. Agents return changed – or not at all.</source>
-  <target>Acht literarische Abstiege, in denen Stress wirklich ist. Agenten kehren verändert zurück – oder gar nicht.</target>
+  <target>Acht literarische Abstiege, in denen der Stress echt ist. Agenten kehren verändert zurück – oder gar nicht.</target>
 </trans-unit>
 <trans-unit id="scea7a67229ec3c31">
   <source>Below every world lie resonance dungeons – eight literary descents where the water rises one bureaucratic percentage point at a time and the odds are printed honestly on every door. Stress is bookkeeping here, kept in amber ink: agents return changed, decorated, or as a single line in the ledger of the deep.</source>
@@ -28971,11 +28948,11 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 </trans-unit>
 <trans-unit id="s22e64a10620eac0b">
   <source>Play It as Text</source>
-  <target>Als Text spielen</target>
+  <target>Spiel deine Welt als Text</target>
 </trans-unit>
 <trans-unit id="s0c83f51773c421d6">
   <source>A command-line window into your world. Local perspective, narrative prose, no mercy.</source>
-  <target>Ein Kommandozeilenfenster in deine Welt. Örtliche Sicht, erzählende Prosa, keine Gnade.</target>
+  <target>Ein Kommandozeilenfenster in deine Welt. Sicht von der Straße, erzählende Prosa, keine Gnade.</target>
 </trans-unit>
 <trans-unit id="s68bacba8b7abb325">
   <source>The Bureau Terminal is a keyhole into your world: one phosphor screen, one cursor, no mercy and no minimap. You see what a citizen at street level sees, told in narrative prose that does not care about your feelings. Type "look" and the world describes itself. Type something braver and it describes you back.</source>
@@ -31487,6 +31464,30 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s1e6ca89568256ed5">
   <source>On record</source>
         <target>Aktenkundig</target>
+</trans-unit>
+<trans-unit id="h4f13c954beffe157">
+  <source>Forge<x id="0" equiv-text="&lt;br&gt;"/>yours</source>
+        <target>Schmiede<x id="0" equiv-text="&lt;br&gt;"/>deine Welt</target>
+</trans-unit>
+<trans-unit id="s5eecbd1e7b411604">
+  <source>These stories write themselves. Found a world, then read what it decides to print about you.</source>
+        <target>Diese Geschichten schreiben sich selbst. Gründe eine Welt und lies, was sie über dich zu drucken beschließt.</target>
+</trans-unit>
+<trans-unit id="s23a38930fbb74643">
+  <source>Every world is populated by AI characters who carry a memory, an opinion, and an intent of their own. They keep accounts, form attachments, fall out over nothing, and print the whole affair in the morning broadsheet.</source>
+        <target>Jede Welt ist von KI-Figuren bewohnt, die ein eigenes Gedächtnis haben, eine eigene Meinung, eine eigene Absicht. Sie führen Buch, gehen Bindungen ein, zerstreiten sich über nichts – und drucken die ganze Sache am Morgen im Blatt.</target>
+</trans-unit>
+<trans-unit id="s2fec0ebf4b1e42c5">
+  <source>Free · after that, the world decides</source>
+        <target>Kostenlos · danach entscheidet die Welt</target>
+</trans-unit>
+<trans-unit id="s0439ef2639d02278">
+  <source>A single sentence is enough to begin. What grows from it keeps its own hours, argues with itself, and remembers you longer than you would like.</source>
+        <target>Ein einziger Satz genügt als Anfang. Was daraus wächst, hält seine eigenen Stunden, streitet mit sich selbst und erinnert sich länger an dich, als dir lieb ist.</target>
+</trans-unit>
+<trans-unit id="s6ae324caf2d66f83">
+  <source>One sentence becomes a civilization: coastlines, a census, a founding grudge. You write the seed. The world writes everything after it.</source>
+        <target>Ein Satz wird zur Zivilisation: Küstenlinien, eine Volkszählung, ein Gründungsgroll. Du schreibst den Keim. Alles danach schreibt die Welt.</target>
 </trans-unit>
 </body>
 </file>

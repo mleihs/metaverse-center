@@ -465,7 +465,7 @@ export class VelgChronicleFeed extends LitElement {
           ? html`
             <div class="feed-cta">
               <p class="feed-cta__text">
-                ${msg('These stories write themselves. Build a world and watch it generate its own newspaper.')}
+                ${msg('These stories write themselves. Found a world, then read what it decides to print about you.')}
               </p>
               <a
                 class="feed-cta__btn"

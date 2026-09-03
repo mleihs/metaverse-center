@@ -452,7 +452,20 @@ export class VelgLandingForge extends LitElement {
       <div class="layout stage-container">
         <div>
           <p class="kicker">${msg('Transmission open')}</p>
-          <h2 class="title">${msg('Forge')}<br />${msg('yours')}<em>.</em></h2>
+          <!--
+            EINE Einheit, nicht zwei.
+
+            Vorher stand hier msg('Forge') plus msg('yours'). Auf Deutsch wurde
+            daraus "Forge deine Welt" — halb englisch, weil "Forge" an sieben
+            weiteren Stellen (Navigation, Befehlspalette, Verwaltung) der
+            PRODUKTNAME ist und dort auch "Forge" heissen muss. Eine geteilte
+            Einheit kann nicht an einer Stelle Verb und an sechs anderen Name
+            sein.
+
+            Als eine Einheit mit dem Umbruch darin entscheidet jede Sprache
+            selbst: "Forge / yours." und "Schmiede / deine Welt."
+          -->
+          <h2 class="title">${msg(html`Forge<br />yours`)}<em>.</em></h2>
         </div>
 
         <div class="right">
@@ -479,7 +492,7 @@ export class VelgLandingForge extends LitElement {
             <button class="cta" @click=${() => navigate('/forge')}>
               ${msg('Forge this world')} <span aria-hidden="true">&rarr;</span>
             </button>
-            <span class="caption">${msg('Free · alive in minutes')}</span>
+            <span class="caption">${msg('Free · after that, the world decides')}</span>
           </div>
         </div>
       </div>
