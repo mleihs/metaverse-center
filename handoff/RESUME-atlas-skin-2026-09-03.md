@@ -539,10 +539,10 @@ deutlich; der Farbton ist etwas neutraler.
      1920 · 2560, je Dark und Atlas. **Braucht echte Fensterbreiten** — in
      dieser Umgebung ließ sich das Fenster nicht verkleinern (`outerWidth: 0`),
      und ein verkleinertes ELEMENT prüft nur Container-Abfragen.
-   - **Eine Serienpalette für helle Gründe.** Die fünf Serienfarben der
-     Diagramme sind Identitäten und stehen weiter als Hexwerte da; auf Papier
-     sind einige schwach (das Grün misst rund 1,8). Eigene Frage, absichtlich
-     nicht still entschieden.
+   - ~~Eine Serienpalette für helle Gründe~~ — **erledigt.** Vier von fünf
+     Serienfarben lagen auf Papier unter 3 : 1 (Station Null bei 1,23). Der
+     Farbton bleibt bei allen fünf exakt gleich, nur die Helligkeit sinkt auf
+     den hellsten Wert, der noch hält.
 1. **Phase 2 Templates: Landing + Dashboard.** Das Paket sagt dazu (README §28):
    ein Skin bringt dort „nur 70 % der Wirkung", beide brauchen eigene
    Sheet-Raster-Layouts. Vorlagen liegen als `.dc.html` im Paket
