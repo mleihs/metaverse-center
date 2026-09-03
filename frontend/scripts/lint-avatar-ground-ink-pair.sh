@@ -11,7 +11,13 @@
 # `velg-avatar` nennt. Ein Bauteil, das dasselbe Token an sich selbst setzt,
 # geht es nichts an.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+
+# Der Anker in der Form, die `scripts/lint-lint-scripts-anchored.sh` verlangt:
+# `$0` kann relativ sein und zeigt nach einem cd ins Leere, `BASH_SOURCE` wird
+# VOR dem Wechsel aufgeloest. Ohne das greift ein Tor je nach Aufrufort ins
+# Nichts — und meldet dann PASS, statt zu scheitern.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 files=$(find src -name '*.ts' -type f)
 
