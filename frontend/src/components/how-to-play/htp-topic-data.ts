@@ -67,6 +67,7 @@ export type TopicSlug =
   | 'agents'
   | 'bonds'
   | 'events'
+  | 'intake'
   | 'living-world'
   | 'map'
   | 'epochs'
@@ -406,7 +407,88 @@ export const TOPICS: TopicDefinition[] = [
       { kind: 'steps', title: msg('Social Trends & Campaigns'), steps: getSocialTrendsGuideSteps },
       { kind: 'steps', title: msg('Event Pressure & Zones'), steps: getZoneDynamicsGuideSteps },
     ],
-    related: ['world', 'living-world', 'advanced'],
+    related: ['world', 'living-world', 'intake', 'advanced'],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 04b: SIGNAL INTAKE
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    slug: 'intake',
+    title: msg('Signal Intake'),
+    icon: 'radar',
+    description: msg('The one door a real-world signal passes through on its way into a world.'),
+    accent: '--color-info',
+    readTime: msg('6 min'),
+    tldr: () => [
+      msg('One door: every signal takes the same seven stages, whatever its source'),
+      msg(
+        'Sighting, intake, quarantine – then released as an event, raised as a resonance, reported, or discarded',
+      ),
+      msg(
+        'The lens decides how the signal becomes THIS world’s event: place, vector, tone, kind, impact',
+      ),
+      msg('The freedom dial IS the sampling temperature – there is no second table to drift'),
+      msg(
+        'Social sources add pace to a story that already exists; they never bring one of their own',
+      ),
+      msg('Architects and platform admins only – the door is not a player surface'),
+    ],
+    sections: () => [
+      {
+        kind: 'text',
+        content: msg(
+          'Before the intake, the same piece of news could sit in two different lists under two different words for its status, depending on where it had come from. That is what the intake removes. A signal now has exactly one stage at any moment, and it only ever moves forward: nothing quietly reappears one step behind where you left it.',
+        ),
+      },
+      {
+        kind: 'callouts',
+        items: [
+          {
+            type: 'info',
+            label: msg('The seven stages'),
+            text: msg(
+              'Sighting is what the scanner found. Intake is what an architect has accepted. Quarantine holds what is doubtful. From there a signal leaves in one of four ways: released as an event, raised as a resonance, reported to the Bureau, or discarded. Discarded is a stage like any other – a signal that was thrown away is still on the record as having been seen.',
+            ),
+          },
+          {
+            type: 'info',
+            label: msg('The lens'),
+            text: msg(
+              'A scanned signal is not yet an event of any particular world. The lens is what makes it one: which place it touches, along which vector it travels, in which tone the world hears of it, what kind of thing it is, how hard it lands, and whether agents react. Two worlds can admit the same signal and end up with two different events – that is the point of it.',
+            ),
+          },
+          {
+            type: 'tip',
+            label: msg('The freedom dial is the temperature'),
+            text: msg(
+              'Three degrees of freedom, and the value you pick is passed to the model as the sampling temperature itself. There is deliberately no second table mapping a word like "balanced" onto a number – a table like that is right on the day it is written and wrong the first time somebody edits one side of it.',
+            ),
+          },
+          {
+            type: 'warn',
+            label: msg('What a source can and cannot say'),
+            text: msg(
+              'Sources are not equal and the intake does not pretend they are. Measured sources such as earthquakes or severe weather arrive as numbers and need no model at all. Others need a classification before anyone can act on them. Social sources are the narrow case: they contribute pace and reach to a story that already exists, never a story of their own – and a source that is connected but has no key is shown as unusable rather than as quiet.',
+            ),
+          },
+          {
+            type: 'warn',
+            label: msg('Who may open the door'),
+            text: msg(
+              'The intake belongs to the architect of a world and to platform admins. It is not a player surface: admitting a signal writes an event into a world, and that is an authoring act, not a move in a game.',
+            ),
+          },
+        ],
+      },
+      {
+        kind: 'text',
+        content: msg(
+          'A signal that has been admitted does not vanish into the world without trace. The aftermath chamber shows what it actually did once the world had absorbed it, and the reading room keeps the full text the scanner captured, so a decision can still be checked against what was in front of you when you made it.',
+        ),
+      },
+    ],
+    related: ['events', 'advanced', 'world'],
   },
 
   // ────────────────────────────────────────────────────────────────────────

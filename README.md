@@ -246,7 +246,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
            ▼        │
 ┌────────────────┐    │
 │   FastAPI       │    │
-│  59 routers     │    │
+│  63 routers     │    │
 │  AsyncClient    │    │
 │   PyJWT auth    │    │
 │   Sentry SDK    │    │
@@ -285,7 +285,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| FastAPI | 0.136 | Async web framework, 59 routers |
+| FastAPI | 0.136 | Async web framework, 63 routers |
 | Pydantic v2 | 2.12 | Request/response validation, typed API responses (45 response models), settings |
 | structlog | 25.5 | Structured logging (JSON production, console dev) |
 | Supabase Python | 2.28 | Native AsyncClient with RLS enforcement |
@@ -305,7 +305,7 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 | Library | Version | Purpose |
 |:--------|:--------|:--------|
-| Lit | 3.3 | Web Components framework (318 custom elements) |
+| Lit | 3.3 | Web Components framework (351 custom elements) |
 | Preact Signals | 1.14 | Fine-grained reactive state management |
 | Supabase JS | 2.101 | Auth, Storage, Realtime channels |
 | Apache ECharts | 6.0 | Intelligence Report charts (radar, heatmap, bar, line) – tree-shaken, lazy-loaded |
@@ -338,7 +338,9 @@ The How-to-Play page includes an interactive **Intelligence Report** built with 
 
 ## Project Statistics
 
-Measured against the production database and the repository, 2026-08-30.
+Repository figures measured 2026-09-03; database figures 2026-08-30. The two
+dates are kept apart on purpose: the schema counts below predate migrations
+330–351, which are in the repository but not yet pushed to production.
 
 | Metric | Count |
 |:-------|------:|
@@ -347,15 +349,15 @@ Measured against the production database and the repository, 2026-08-30.
 | Triggers | 133 |
 | Views (regular + materialized) | 11 + 5 |
 | RLS policies | 388 |
-| SQL migrations | 280 |
-| Routers | 59 |
+| SQL migrations | 361 |
+| Routers | 63 |
 | Achievement badges | 35 (7 categories, 5 rarity tiers, 13 DB triggers) |
-| Web Components | 318 (Lit custom elements, 36 directories) |
-| Backend tests | 3,780 (pytest) |
-| Localized UI strings | 7,759 (EN/DE, 0 missing) |
-| Lint gates | 16 (typecheck, tests-typecheck, Biome + 13 project gates) |
+| Web Components | 351 (Lit custom elements, 44 directories) |
+| Backend tests | 5,222 (pytest) |
+| Localized UI strings | 8,562 (EN/DE, 0 missing) |
+| Lint gates | 38 (typecheck, tests-typecheck, Biome + 35 project gates) |
 | GA4 custom events | 44 |
-| Documentation files | 158 markdown (Divio structure + 9 ADRs) |
+| Documentation files | 169 markdown (Divio structure + 10 ADRs) |
 | Dungeon archetypes | 8 playable (Shadow, Tower, Entropy, Mother, Prometheus, Deluge, Awakening, Overthrow) |
 | Dungeon render modes | 2 (terminal war room, rendered 2D) |
 | Flagship simulations | 5 + community-forged worlds |
@@ -370,6 +372,7 @@ Measured against the production database and the repository, 2026-08-30.
 ## Features
 
 ### Worldbuilding
+
 - **Simulation Forge** – 4-phase AI pipeline: Astrolabe (research) → Drafting Table (entities) → Darkroom (theme) → Ignition (materialization). BYOK API key support with standalone key management panel (test, save, revoke per provider).
 - **TCG card system** – Unified collectible card component with 3D tilt, holographic foil, rarity tiers, stat gems, aptitude pips, card-deal animations
 - **Classified Dossier** – 6-section Bureau dossier (ALPHA–ZETA) with theatrical reveal ceremony, tabbed Case File viewer, prophetic fragments, threat level badges
@@ -378,6 +381,7 @@ Measured against the production database and the repository, 2026-08-30.
 - **Simulation lore** – ~5,000 words per simulation with AI-generated lore images and living dossier evolution
 
 ### Competitive Play
+
 - **Epochs** – Operative deployment, 5-dimension scoring, cycle-based resolution, DECLASSIFIED results with podium and MVP commendations
 - **Foundation phase** – Spies + guardians in early game, hidden zone fortification, intel dossier tab
 - **Agent aptitudes & draft** – Pre-match deckbuilding with card-hand UI and aptitude-weighted success rates
@@ -401,36 +405,60 @@ Every simulation has a navigable OSM-style map: procedurally generated street ne
 A per-player record of what the substrate did to their worlds: fragments collected from resonance events, arranged into constellations, with an attunement panel that tracks affinity per archetype.
 
 ### Agent Bonds
+
 - **Bond Formation** – Bonds emerge from accumulated attention (viewing agent detail pages). After crossing a configurable threshold over 14+ days, agents recognize the player and offer a bond. Max 5 bonds per simulation.
 - **Whisper System** – Bonded agents generate short, mood-dependent first-person messages (whispers) during heartbeat ticks. 5 whisper types: state, event, memory, question, reflection. Available types expand with bond depth (1–5). LLM-generated via OpenRouter with 60 hand-authored bilingual literary templates as fallback.
 - **Bond Lifecycle** – Depth progression through engagement (reading whispers, acting on requests). Postgres trigger enforces status transitions (forming→active→strained→farewell), slot limits, depth monotonicity, and auto-timestamps. Strain from neglect, recovery through demonstrated care, farewell on agent deletion.
 - **Dossier UI** – Brutalist listening-post aesthetic with agent avatars, mood rings, corner brackets, prose-font whisper cards with unread glow. Configurable via Settings panel (LLM budget, max bonds, recognition threshold).
 
 ### Agent Chat
+
 - **Unified Chat System** – SSE-streamed AI conversations with agents (single or group). Markdown rendering, code syntax highlighting, typing indicators, message reactions, conversation pinning/search/export
 - **Agent Personality** – Per-agent accent colors (FNV-1a hash → oklch), mood ring on avatars, deterministic typing phrases, conversation starters from agent profile + recent events + mood
 - **Streaming Architecture** – 3x retry on empty responses, 7-layer defense against CoT leaks and empty messages, optimistic UI with broadcast reconciliation, abort-safe conversation switching
 - **Sound Effects** – Howler.js sprite (message-sent, received, typing, stream-complete), opt-in audio with per-channel volume, WCAG 1.4.2 compliant
+- **Dictation** – Speak instead of type, via the Web Speech API. The microphone appears only where the browser can actually hear, so it never offers something it cannot do
+- **Sealing a conversation** – A conversation can be put under seal; a released seal stays recognisable as one
+- **Measured history** – The context window is measured rather than estimated, and German is priced higher than English because it costs more tokens
 - **Epoch Chat** – Migrated to shared core components (ChatFeed, ChatBubble, ChatMessage), broadcast + presence channels, team chat
 
 ### Cross-Simulation
+
 - **Diplomacy** – Embassies, ambassadors, event echoes (narrative bleed between worlds)
 - **Cartographer's Map** – Force-directed multiverse graph with operative trails, health arcs, sparklines, battle feed
 - **Substrate Resonances** – 8 archetypes that modify operative effectiveness, zone pressure bonuses, attacker penalties
-- **Substrate Scanner** – 10 source adapters (USGS, NOAA, NASA, Guardian, NewsAPI, GDELT, Hacker News, etc.) with LLM classification
+- **Substrate Scanner** – 11 source adapters (USGS, NOAA, NASA EONET, GDACS, disease.sh, WHO outbreaks, Guardian, NewsAPI, GDELT, Hacker News, Bluesky) with LLM classification
+
+### Signal Intake
+The one door a real-world signal passes through on its way into a world. Eight
+chambers, each with its own view, and a signal only ever moves forward:
+
+- **Sensor bar & browse** – Live per-source status; an architect can pull the raw feed for a source instead of waiting for the scheduler
+- **Crucible** – Turns a scanned signal into an event for *this* world through a lens: place, vector, tone, kind, impact, reactions, and a freedom dial that *is* the sampling temperature (no second table mapping "balanced" onto 0.7)
+- **Quarantine, resonance & flagging** – A signal can be held, measured against the world's adaptive susceptibility, or reported to the Bureau
+- **Triage & reading room** – Bulk disposition and a full-text view of what the scanner actually captured, including the scan log
+- **Aftermath chamber** – What the admitted signal did to the world, after the fact
+- **Subscriptions** – The place where a source is bound to a world once, instead of the choice being repeated at every ingest
+
+### Keyring
+
+- **Bring your own key** – A key belongs to the person, not to the Forge: a keyring in the personnel file, per-provider test and revoke, and cost tracking that knows who paid, so a platform budget never counts someone else's money
+- **Access requests** – Whoever may not hold their own key gets a way to ask, and the admin an inbox with the four numbers the decision needs
 
 ### Social Media
+
 - **Instagram pipeline** – Bureau-themed posts from simulation content with cipher ARG system
 - **Resonance Stories** – Multi-slide Instagram Story sequences from substrate resonance impacts
 - **Bluesky cross-posting** – AT Protocol auto-mirroring with reformatted captions
 
 ### Platform
+
 - **Landing page** – Live AI characters as "Intercepted Dossiers" with holographic foil TCG cards, viewport-responsive (6–12 agents)
 - **Alpha suite** – Four Bureau-flavoured pre-release indicators (stamp, build strip, first-contact modal, redaction marker) behind a build-time flag, so a release cut removes them by tree-shaking rather than by editing
 - **Bureau Ops** – AI spend and signal control centre: per-purpose model selection, reasoning effort, and budget enforcement across four axes (global, purpose, simulation, user)
 - **Daily Substrate Dispatch** – Classified Bureau intelligence briefing on first daily visit
 - **Commendations** – 35 badges across 7 categories, 5 rarity tiers, hexagonal badge grid, Realtime unlock toasts, dashboard summary card, 13 PostgreSQL triggers + backend hooks
-- **Bilingual i18n** – English + German (7,759 localized strings, 0 missing)
+- **Bilingual i18n** – English + German (8,562 localized strings, 0 missing)
 - **Per-simulation theming** – CSS presets with WCAG 2.1 AA validation, light & dark modes
 - **Public-first browsing** – Full read access without authentication
 - **SEO** – Slug URLs, JSON-LD, dynamic sitemap (1500+ URLs), server-side crawler enrichment
@@ -490,10 +518,10 @@ npx playwright test
 
 ```
 backend/
-  app.py                    # FastAPI entry (59 routers)
+  app.py                    # FastAPI entry (63 routers)
   logging_config.py         # structlog setup
   dependencies.py           # JWT auth, Supabase clients, role checking
-  routers/                  # 59 route modules
+  routers/                  # 63 route modules
   models/                   # Pydantic models
   services/                 # Business logic (BaseService CRUD, AI, email, bots, scanning)
     combat/                 # Shared combat engine (ability schools, skill checks, conditions, stress)
@@ -503,22 +531,24 @@ backend/
 frontend/
   src/
     app-shell.ts            # Router + auth + simulation context
-    components/             # 318 Lit web components across 36 directories
+    components/             # 351 Lit web components across 44 directories
       dungeon/              # Resonance Dungeons HUD (terminal, combat, map, party, enemy)
         graphical/          # Rendered 2D dungeon (PixiJS, light-DOM render root)
       drift/                # DRIFT travel game (chart, dock, logbook, ledger)
       world-map/            # Per-simulation MapLibre world map
       journal/              # Resonance Journal (fragments, constellations, attunement)
+      intake/               # Signal Intake (eight chambers, one way forward)
+      forge/                # Simulation Forge + keyring (bring your own key)
     services/               # API, state, theme, i18n, realtime, SEO, analytics
-    styles/tokens/          # CSS design tokens (8 files)
+    styles/tokens/          # CSS design tokens (9 files)
     types/                  # TypeScript interfaces + Zod schemas
     locales/                # i18n (XLIFF source + generated output)
 supabase/
-  migrations/               # 280 SQL migrations
+  migrations/               # 361 SQL migrations
   seed/                     # Seed data (21 files)
 content/                    # Authoring source for dungeon + DRIFT content packs (YAML)
 scripts/                    # Image generation, epoch simulation, doc index, env sync
-docs/                       # 158 markdown documents (Divio structure)
+docs/                       # 169 markdown documents (Divio structure)
   specs/                    # 20 hard contracts
   references/               # canonical data
   guides/                   # 20 procedural guides
@@ -526,7 +556,7 @@ docs/                       # 158 markdown documents (Divio structure)
   explanations/             # understanding docs
   analysis/                 # audits, playtests and production-run reports
   plans/                    # implementation plans
-  adr/                      # 9 Architecture Decision Records
+  adr/                      # 10 Architecture Decision Records
   INDEX.md                  # Auto-generated catalog
   llms.txt                  # AI-friendly doc index
 e2e/                        # Playwright E2E tests (13 spec files)
@@ -536,7 +566,7 @@ e2e/                        # Playwright E2E tests (13 spec files)
 
 ## Documentation
 
-The `docs/` directory contains 158 markdown documents in [Divio](https://docs.divio.com/documentation-system/) structure; the 93 that carry YAML frontmatter are catalogued automatically. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
+The `docs/` directory contains 169 markdown documents in [Divio](https://docs.divio.com/documentation-system/) structure; the 93 that carry YAML frontmatter are catalogued automatically. See [`docs/INDEX.md`](docs/INDEX.md) for the catalog or [`docs/llms.txt`](docs/llms.txt) for AI-friendly consumption. See [`CHANGELOG.md`](CHANGELOG.md) for recent changes.
 
 ---
 
