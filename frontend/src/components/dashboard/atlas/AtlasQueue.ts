@@ -20,13 +20,18 @@ import { customElement, property } from 'lit/decorators.js';
 import type { ActiveEpochParticipation } from '../../../types/index.js';
 import { epochStatusLabel } from '../../../utils/enum-labels.js';
 import { navigate } from '../../../utils/navigation.js';
-import { atlasHoverStyles, atlasSheetHeadStyles } from '../../shared/atlas-sheet-styles.js';
+import {
+  atlasEntranceStyles,
+  atlasHoverStyles,
+  atlasSheetHeadStyles,
+} from '../../shared/atlas-sheet-styles.js';
 import { stageStyles } from '../../shared/stage-styles.js';
 
 @localized()
 @customElement('velg-atlas-queue')
 export class VelgAtlasQueue extends LitElement {
   static styles = [
+    atlasEntranceStyles,
     stageStyles,
     atlasSheetHeadStyles,
     atlasHoverStyles,
@@ -226,7 +231,7 @@ export class VelgAtlasQueue extends LitElement {
     const open = rows.filter((p) => !p.has_acted_this_cycle).length;
 
     return html`
-      <div class="sheet stage-container">
+      <div class="sheet stage-container atlas-enter" style="--i: 2">
         <div>
           <div class="sheet-head">
             <span class="sheet-head__no">${msg('Sheet 02')}</span>
@@ -245,16 +250,20 @@ export class VelgAtlasQueue extends LitElement {
           </p>
         </div>
 
-        <div class="cells">${rows.map((p) => this._renderCell(p))}</div>
+        <div class="cells">${rows.map((p, i) => this._renderCell(p, i))}</div>
       </div>
     `;
   }
 
-  private _renderCell(p: ActiveEpochParticipation) {
+  private _renderCell(p: ActiveEpochParticipation, index: number) {
     const open = !p.has_acted_this_cycle;
 
     return html`
-      <button class="cell" @click=${() => navigate('/epoch')}>
+      <button
+        class="cell atlas-lift-sm atlas-enter-row"
+        style="--j: ${index}"
+        @click=${() => navigate('/epoch')}
+      >
         <div class="cell__top">
           <span>${p.simulation_name}</span>
           <span class="flag ${open ? 'flag--open' : 'flag--done'}">

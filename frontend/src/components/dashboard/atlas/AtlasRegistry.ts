@@ -19,7 +19,11 @@ import type { Simulation } from '../../../types/index.js';
 import { simulationThemeLabel } from '../../../utils/enum-labels.js';
 import { t } from '../../../utils/locale-fields.js';
 import { navigate } from '../../../utils/navigation.js';
-import { atlasHoverStyles, atlasSheetHeadStyles } from '../../shared/atlas-sheet-styles.js';
+import {
+  atlasEntranceStyles,
+  atlasHoverStyles,
+  atlasSheetHeadStyles,
+} from '../../shared/atlas-sheet-styles.js';
 import { stageStyles } from '../../shared/stage-styles.js';
 
 /** Wie viele Blaetter gezeigt werden. Der Rest begruendet die Zeile darunter. */
@@ -29,6 +33,7 @@ const CARD_COUNT = 6;
 @customElement('velg-atlas-registry')
 export class VelgAtlasRegistry extends LitElement {
   static styles = [
+    atlasEntranceStyles,
     stageStyles,
     atlasSheetHeadStyles,
     atlasHoverStyles,
@@ -36,6 +41,11 @@ export class VelgAtlasRegistry extends LitElement {
       :host {
         display: block;
         container-type: inline-size;
+        /* Blatt 04. Steht am Wirt und nicht an einem Wrapper, weil render()
+           hier Kopf und Raster als Geschwister liefert -- beide erben --i von
+           hier, und ein Wrapper nur fuer eine Zahl waere ein Layout-Knoten
+           ohne Aufgabe. */
+        --i: 4;
       }
 
       .head {
@@ -270,13 +280,13 @@ export class VelgAtlasRegistry extends LitElement {
     const rest = this.worlds.length - shown.length;
 
     return html`
-      <div class="sheet-head">
+      <div class="sheet-head atlas-enter">
         <span class="sheet-head__no">${msg('Sheet 04')}</span>
         <span>${msg('Shard registry')}</span>
         <span class="sheet-head__rule"></span>
       </div>
 
-      <div class="head">
+      <div class="head atlas-enter">
         <!--
           Zwischen der Ueberschrift und der Klammer steht ein GESCHUETZTES
           Leerzeichen (U+00A0), kein gewoehnliches. Es ist im Quelltext nicht
@@ -318,7 +328,11 @@ export class VelgAtlasRegistry extends LitElement {
     const theme = world.theme ? simulationThemeLabel(world.theme) : '';
 
     return html`
-      <button class="card atlas-zoom" @click=${() => navigate(`/simulations/${world.slug}`)}>
+      <button
+        class="card atlas-zoom atlas-enter-row"
+        style="--j: ${index}"
+        @click=${() => navigate(`/simulations/${world.slug}`)}
+      >
         <span class="card__plate">
           ${
             world.banner_url

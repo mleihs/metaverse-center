@@ -22,13 +22,14 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { atlasSignalStyles } from '../../shared/atlas-sheet-styles.js';
+import { atlasEntranceStyles, atlasSignalStyles } from '../../shared/atlas-sheet-styles.js';
 import { stageStyles } from '../../shared/stage-styles.js';
 
 @localized()
 @customElement('velg-atlas-command-strip')
 export class VelgAtlasCommandStrip extends LitElement {
   static styles = [
+    atlasEntranceStyles,
     stageStyles,
     atlasSignalStyles,
     css`
@@ -112,7 +113,7 @@ export class VelgAtlasCommandStrip extends LitElement {
     const stable = this.substrate !== 'anomalous';
 
     return html`
-      <div class="strip stage-container">
+      <div class="strip stage-container atlas-enter">
         <div class="facts">
           <span class="fact fact--sheet">${msg('Sheet 00 · Operative desk')}</span>
           <span class="fact">${msg('Shards')}<b>${this.shards}</b></span>

@@ -125,6 +125,38 @@ export class VelgDashboardWorlds extends LitElement {
         text-align: left;
         cursor: pointer;
         transition: background var(--transition-fast);
+        animation: row-in var(--duration-entrance) var(--ease-dramatic) both;
+        animation-delay: calc(var(--i, 0) * var(--duration-stagger));
+      }
+
+      /*
+       * ⚠ --i wurde hier SEIT JEHER GESETZT (in _renderRow, aus dem
+       * Zeilenindex) und von niemandem gelesen.
+       *
+       * NEBENBEI: die erste Fassung dieses Kommentars schrieb den Aufruf
+       * woertlich hin -- mit Dollar und geschweifter Klammer. In einem
+       * css-Template ist das keine Erklaerung, sondern eine EINSETZUNG:
+       * "Cannot find name index". Derselbe Fallstrick wie der Backtick im
+       * css-Kommentar, nur dass tsc ihn diesmal gefangen hat. Gemessen 04.09.2026: eine einzige Stelle im
+       * ganzen Dashboard las var(--i), und das war DashboardRail.
+       *
+       * Eine Staffelung, deren Index gesetzt, aber nicht verbraucht wird,
+       * sieht im Quelltext aus wie eine Staffelung. Sie kostet nichts, sie
+       * faellt nicht auf, und sie ist nicht da -- dieselbe Bauart wie
+       * card_frame_texture: 'paper' ohne passende Regel.
+       *
+       * Endzustand transform: none, nicht translateY(0): translateY(0) bleibt
+       * ein Transform und damit ein Enthaltungskontext.
+       */
+      @keyframes row-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
       }
 
       .row:last-of-type {
@@ -471,6 +503,10 @@ export class VelgDashboardWorlds extends LitElement {
       }
 
       @media (prefers-reduced-motion: reduce) {
+        .row {
+          animation: none;
+        }
+
         .row__titleline,
         .panel__art {
           transition: none;

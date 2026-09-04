@@ -30,6 +30,7 @@ import { memberRoleLabel, simulationThemeLabel } from '../../../utils/enum-label
 import { t } from '../../../utils/locale-fields.js';
 import { navigate } from '../../../utils/navigation.js';
 import {
+  atlasEntranceStyles,
   atlasGridStyles,
   atlasHoverStyles,
   atlasSelectionStyles,
@@ -41,6 +42,7 @@ import { stageStyles } from '../../shared/stage-styles.js';
 @customElement('velg-atlas-worlds')
 export class VelgAtlasWorlds extends LitElement {
   static styles = [
+    atlasEntranceStyles,
     stageStyles,
     atlasSheetHeadStyles,
     atlasSelectionStyles,
@@ -407,7 +409,7 @@ export class VelgAtlasWorlds extends LitElement {
 
     return html`
       <div class="sheet-grid" aria-hidden="true"></div>
-      <div class="sheet stage-container">
+      <div class="sheet stage-container atlas-enter" style="--i: 3">
         <div>
           <div class="sheet-head">
             <span class="sheet-head__no">${msg('Sheet 03')}</span>
@@ -439,7 +441,8 @@ export class VelgAtlasWorlds extends LitElement {
 
     return html`
       <button
-        class="row atlas-cell"
+        class="row atlas-cell atlas-enter-row"
+        style="--j: ${index}"
         role="tab"
         aria-selected=${selected}
         tabindex=${selected ? 0 : -1}

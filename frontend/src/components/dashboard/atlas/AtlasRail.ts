@@ -34,7 +34,11 @@ import { icons } from '../../../utils/icons.js';
 import { t } from '../../../utils/locale-fields.js';
 import { navigate } from '../../../utils/navigation.js';
 import { professionLabel } from '../../../utils/profession.js';
-import { atlasHoverStyles, atlasSheetHeadStyles } from '../../shared/atlas-sheet-styles.js';
+import {
+  atlasEntranceStyles,
+  atlasHoverStyles,
+  atlasSheetHeadStyles,
+} from '../../shared/atlas-sheet-styles.js';
 import '../../shared/VelgGameCard.js';
 import '../../platform/VelgAchievementSummaryCard.js';
 
@@ -49,6 +53,7 @@ const DISTURBING = new Set(['detected', 'impacting']);
 @customElement('velg-atlas-rail')
 export class VelgAtlasRail extends LitElement {
   static styles = [
+    atlasEntranceStyles,
     atlasSheetHeadStyles,
     atlasHoverStyles,
     css`
@@ -178,10 +183,41 @@ export class VelgAtlasRail extends LitElement {
         background: var(--color-border-light);
       }
 
+      /*
+       * Der Balken wird GEZOGEN, nicht gesetzt.
+       *
+       * Das dunkle Rail macht das seit jeher (grow, 900 ms, je Zeile 150 ms
+       * versetzt); im Atlas stand nur die Breite. Eine Messung, die sich
+       * aufbaut, liest sich als Messung -- eine, die fertig dasteht, als Bild.
+       *
+       * Die Breite bleibt inline und die Animation skaliert dagegen: so
+       * bleibt der Endwert die gemessene Groesse und nicht eine, die die
+       * Animation behauptet. transform-origin: left, weil eine Skala von
+       * links waechst; der Endzustand ist transform: none, damit kein
+       * Enthaltungskontext stehen bleibt.
+       */
       .tremor__fill {
         display: block;
         height: 100%;
         background: var(--color-primary);
+        transform-origin: left;
+        animation: atlas-tremor-grow var(--duration-slower) var(--ease-default) both;
+        animation-delay: calc(var(--i, 0) * var(--duration-cascade) + var(--j, 0) * 90ms);
+      }
+
+      @keyframes atlas-tremor-grow {
+        from {
+          transform: scaleX(0);
+        }
+        to {
+          transform: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .tremor__fill {
+          animation: none;
+        }
       }
 
       .tremor__mag {
@@ -225,7 +261,7 @@ export class VelgAtlasRail extends LitElement {
     const position = `${String(index + 1).padStart(2, '0')} / ${String(this.agents.length).padStart(2, '0')}`;
 
     return html`
-      <section class="block">
+      <section class="block atlas-enter" style="--i: 5">
         <div class="block__head">
           <span><span class="block__no">${msg('Sheet 05')}</span> ${msg('· Dossier')}</span>
           <span class="nav">
@@ -263,7 +299,7 @@ export class VelgAtlasRail extends LitElement {
     const rows = this.resonances.slice(0, MONITOR_ROWS);
 
     return html`
-      <section class="block">
+      <section class="block atlas-enter" style="--i: 6">
         <div class="block__head">
           <span>${msg('Substrate monitor')}</span>
           <span>${msg('magnitude 1–10')}</span>
@@ -271,7 +307,7 @@ export class VelgAtlasRail extends LitElement {
         <div class="block__body">
           ${
             rows.length
-              ? rows.map((r) => this._renderTremor(r))
+              ? rows.map((r, i) => this._renderTremor(r, i))
               : html`<p class="empty">${msg('No tremors on record')}</p>`
           }
         </div>
@@ -279,12 +315,12 @@ export class VelgAtlasRail extends LitElement {
     `;
   }
 
-  private _renderTremor(tremor: Resonance) {
+  private _renderTremor(tremor: Resonance, index: number) {
     const live = DISTURBING.has(tremor.status);
     const share = Math.max(0, Math.min(1, (tremor.magnitude ?? 0) / MAX_MAGNITUDE));
 
     return html`
-      <div class="tremor">
+      <div class="tremor atlas-enter-row" style="--j: ${index}">
         <span class="tremor__dot ${live ? 'tremor__dot--live' : ''}" aria-hidden="true"></span>
         <span>
           <span class="tremor__name">${tremor.title}</span>

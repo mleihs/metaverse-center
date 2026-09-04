@@ -97,11 +97,40 @@ export const atlasSheetHeadStyles = css`
   }
 
   /* Ein Strich, der den Rest der Zeile ausfuellt -- die Nummerierung einer
-     Kartenmappe, nicht eine Ueberschrift. */
+     Kartenmappe, nicht eine Ueberschrift.
+
+     ER ZIEHT SICH SELBST, UND ZWAR HIER UND NICHT IM EINTRITTSMODUL.
+     Das Blatt wird GEZOGEN: der Strich ist die eine Bewegung, die diese
+     Flaeche wirklich meint, so wie der Balken im dunklen Rail sein grow hat.
+     Weil er im Kopf steht und nicht in einem Zusatz, bekommt ihn jedes
+     Bauteil mit Blattkopf ohne eine einzige Aenderung am Aufrufort -- und es
+     gibt keinen Kopf ohne Strich, an dem die Geste fehlen koennte.
+
+     transform auf einem 1px-Blatt ist erlaubt: das ist ein Blattelement,
+     kein Layout-Behaelter, und der Endzustand ist transform: none, also
+     bleibt danach kein Enthaltungskontext stehen. */
   .sheet-head__rule {
     flex: 1 1 auto;
     height: 1px;
     background: var(--color-border-light);
+    transform-origin: left;
+    animation: atlas-rule-draw var(--duration-slower) var(--ease-default) both;
+    animation-delay: calc(var(--i, 0) * var(--duration-cascade) + var(--duration-fast));
+  }
+
+  @keyframes atlas-rule-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sheet-head__rule {
+      animation: none;
+    }
   }
 
   @container (max-width: 900px) {
@@ -324,11 +353,138 @@ export const atlasSelectionStyles = css`
   }
 `;
 
-/** Alle fuenf zusammen, fuer eine Flaeche, die das ganze Vokabular braucht. */
+/**
+ * DER EINTRITT -- die Bewegung, die dem Atlas bis hierhin ganz gefehlt hat.
+ *
+ * WAS GEMESSEN WURDE (04.09.2026, sechs Dashboard-Bauteile je Skin)
+ *   dunkel   8 Keyframe-Saetze, 8 animation-Deklarationen, eine Staffelung
+ *   atlas    0 Keyframe-Saetze, 0 animation-Deklarationen, keine Staffelung
+ *
+ *   Das Atlas-Dashboard hatte damit GENAU EINE Bewegung, die ohne Zeiger
+ *   stattfindet: den Pulsring der Befehlsleiste. Alles andere -- Heben,
+ *   Zoomen, Pfeil -- haengt an :hover und existiert auf einem Blatt, das man
+ *   nur ansieht, ueberhaupt nicht. Auf einem Touch-Geraet damit: nichts.
+ *
+ * WARUM DAS KEIN VERSEHEN EINZELNER BAUTEILE WAR
+ *   Der Kopf dieser Datei zaehlt auf, was das Papier braucht: Raster,
+ *   Blattkoepfe, Hover-Vokabular, zwei Lebenszeichen. Ein EINTRITT steht
+ *   nicht auf der Liste. Es fehlte also nicht die Anwendung eines Vokabulars,
+ *   sondern das Vokabular selbst -- deshalb konnte auch kein Bauteil es
+ *   vergessen, und deshalb gehoert die Reparatur hierher und nicht in sechs
+ *   Dateien.
+ *
+ *   Das Design-Paket nennt genau das den wirksamsten Moment: "one
+ *   well-orchestrated page load with staggered reveals creates more delight
+ *   than scattered micro-interactions".
+ *
+ * ZWEI BAENDER, WEIL ZWEI DINGE ANKOMMEN
+ *   Ein Blatt ist eine Zeremonie und darf sich Zeit nehmen; eine Zeile in
+ *   einer Liste ist eine Reaktion und darf es nicht, sonst wartet man beim
+ *   zwoelften Eintrag auf Papier. Die Baender stehen so in der Projektnotiz
+ *   zu Mikroanimationen: 180-280 ms reaktiv, 480-900 ms zeremoniell.
+ *
+ * ES FRAGT KEIN SELEKTOR NACH DEM SKIN.
+ *   var(--ease-default) IST auf dem Atlas dessen eigene Kurve
+ *   (cubic-bezier(.2,.7,.2,1), aus animation_easing), und applyConfig
+ *   skaliert die --duration-* ueber animation_speed. Dasselbe Modul auf einer
+ *   anderen Flaeche spricht deshalb von selbst deren Tempo.
+ *
+ * DER ENDZUSTAND IST transform: none, NICHT translateY(0).
+ *   translateY(0) ist ein Transform und erzeugt weiterhin einen
+ *   Enthaltungskontext -- position: fixed in einem Modal darueber waere
+ *   dauerhaft kaputt. Nur none loest ihn wieder auf. Das dunkle rise macht es
+ *   seit jeher so; hier steht es, damit es niemand "aufraeumt".
+ */
+export const atlasEntranceStyles = css`
+  /*
+   * Ein Blatt wird aufgelegt -- NUR ueber die Deckung, ohne Transform.
+   *
+   * DAS IST DIE STELLE, AN DER DIE HAUSREGEL GILT.
+   *   .atlas-enter sitzt auf Blaettern und Bloecken, also auf
+   *   LAYOUT-BEHAELTERN. CLAUDE.md verbietet dort transform, weil ein
+   *   Transform einen Enthaltungskontext erzeugt und position: fixed in einem
+   *   Modal darueber ins Blatt faellt statt ins Fenster.
+   *
+   *   Der erste Entwurf hier hatte ein translateY(12px) und endete auf
+   *   transform: none -- der Kontext haette sich also von selbst wieder
+   *   aufgeloest, nach bis zu 860 ms (Block 06: 360 ms Verzoegerung plus
+   *   500 ms Lauf). Das ist kein DAUERSCHADEN, aber es ist ein Fenster, in
+   *   dem ein geoeffnetes Modal falsch sitzt, und die Regel ist nicht als
+   *   "meistens" formuliert.
+   *
+   *   Der Weg gehoert ohnehin dem INHALT: die Zeilen schieben sich (dort ist
+   *   transform erlaubt, das sind Blattelemente), der Strich zieht sich, die
+   *   Balken wachsen. Das Blatt darunter blendet auf. Zusammen liest sich das
+   *   als aufgelegtes Blatt, und kein Behaelter wird je verschoben.
+   */
+  .atlas-enter {
+    animation: atlas-settle var(--duration-slower) var(--ease-default) both;
+    animation-delay: calc(var(--i, 0) * var(--duration-cascade));
+  }
+
+  @keyframes atlas-settle {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /*
+   * Eine Zeile trifft ein. Kuerzer, enger gestaffelt, kleinerer Weg.
+   *
+   * ZWEI GROESSEN, WEIL ZWEI DINGE ZAEHLEN.
+   *   --i ist die Nummer des BLATTES und wird vom Blatt hierher vererbt; --j
+   *   ist der Platz der Zeile IN diesem Blatt. Die Verzoegerung addiert beide,
+   *   die Zeile wartet also erst auf ihr eigenes Blatt und staffelt sich dann
+   *   darin.
+   *
+   *   Mit nur --i waere es andersherum: eine Zeile mit Index 0 traefe zum
+   *   Zeitpunkt 0 ein, waehrend Blatt 04 noch 240 ms auf seinen Auftritt
+   *   wartet -- der Inhalt stuende vor seiner eigenen Ueberschrift da. Genau
+   *   das stand hier im ersten Entwurf.
+   */
+  .atlas-enter-row {
+    animation: atlas-arrive var(--duration-entrance) var(--ease-default) both;
+    animation-delay: calc(
+      var(--i, 0) * var(--duration-cascade) + var(--j, 0) * var(--duration-stagger)
+    );
+  }
+
+  @keyframes atlas-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /*
+   * Ohne Bewegung erscheint alles sofort und VOLLSTAENDIG.
+   *
+   * Das geht nur, weil opacity: 0 ausschliesslich im from-Keyframe steht und
+   * nirgends als Grundzustand: faellt die Animation weg, ist die Grunddeckung
+   * 1. Ein Modul, das die Deckung im Grundzustand auf 0 setzt, blendet fuer
+   * diese Leser die halbe Seite dauerhaft aus.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-enter,
+    .atlas-enter-row {
+      animation: none;
+    }
+  }
+`;
+
+/** Alle sechs zusammen, fuer eine Flaeche, die das ganze Vokabular braucht. */
 export const atlasSheetStyles = [
   atlasGridStyles,
   atlasSheetHeadStyles,
   atlasHoverStyles,
   atlasSignalStyles,
   atlasSelectionStyles,
+  atlasEntranceStyles,
 ];

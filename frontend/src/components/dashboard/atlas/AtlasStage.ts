@@ -39,9 +39,11 @@ import type { ActiveEpochParticipation } from '../../../types/index.js';
 import { navigate } from '../../../utils/navigation.js';
 import '../../shared/VelgSurveyLoader.js';
 import {
+  atlasEntranceStyles,
   atlasGridStyles,
   atlasHoverStyles,
   atlasSheetHeadStyles,
+  atlasSignalStyles,
 } from '../../shared/atlas-sheet-styles.js';
 import { stageStyles } from '../../shared/stage-styles.js';
 import { CycleCountdown } from '../cycle-countdown.js';
@@ -50,6 +52,8 @@ import { CycleCountdown } from '../cycle-countdown.js';
 @customElement('velg-atlas-stage')
 export class VelgAtlasStage extends LitElement {
   static styles = [
+    atlasSignalStyles,
+    atlasEntranceStyles,
     stageStyles,
     atlasSheetHeadStyles,
     atlasHoverStyles,
@@ -172,8 +176,33 @@ export class VelgAtlasStage extends LitElement {
         background: color-mix(in srgb, var(--color-primary) 45%, transparent);
       }
 
+      /*
+       * Der laufende Takt atmet. Im dunklen Dashboard tut er das (segment-pulse,
+       * 2,4 s); im Atlas stand er still -- ausgerechnet das eine Feld, das sagt
+       * "hier stehst du gerade", war von allen das ruhigste.
+       *
+       * Nur die Deckung, kein Transform: das Feld ist ein Flex-Kind mit
+       * flex: 1 1 0, und eine Skalierung darauf liesse die Taktleiste zappeln.
+       */
       .seg--now {
         background: var(--color-primary);
+        animation: atlas-seg-breathe 2400ms ease-in-out infinite;
+      }
+
+      @keyframes atlas-seg-breathe {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.45;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .seg--now {
+          animation: none;
+        }
       }
 
       .actions {
@@ -365,7 +394,7 @@ export class VelgAtlasStage extends LitElement {
 
     return html`
       <div class="sheet-grid" aria-hidden="true"></div>
-      <div class="sheet stage-container">
+      <div class="sheet stage-container atlas-enter" style="--i: 1">
         ${this.loading ? this._renderLoading() : p ? this._renderActive(p) : this._renderIdle()}
       </div>
     `;
@@ -436,18 +465,19 @@ export class VelgAtlasStage extends LitElement {
           <span class="sheet-head__rule"></span>
         </div>
 
-        <h1 class="headline">${p.epoch_name}<em>.</em></h1>
+        <h1 class="headline atlas-enter-row" style="--j: 0">${p.epoch_name}<em>.</em></h1>
 
         ${
           running
             ? html`<p
-                class="clock"
+                class="clock atlas-enter-row"
+                style="--j: 1"
                 role="timer"
                 aria-live="off"
                 aria-label=${msg(str`${this._cycle.hoursLeft} hours left in this cycle`)}
               >${this._cycle.formatted}</p>`
             : html`
-                <p class="idle">${msg('No cycle clock running')}</p>
+                <p class="idle atlas-enter-row" style="--j: 1">${msg('No cycle clock running')}</p>
                 <p class="note">
                   ${msg(
                     'This epoch has no cycle deadline set, so nothing is counting down. The cycle advances when the epoch is resolved.',
@@ -456,7 +486,7 @@ export class VelgAtlasStage extends LitElement {
               `
         }
 
-        <p class="facts">
+        <p class="facts atlas-enter-row" style="--j: 2">
           <span>${p.simulation_name}</span>
           <span>${msg(str`RP ${p.current_rp} / ${p.rp_cap}`)}</span>
           ${
@@ -468,7 +498,7 @@ export class VelgAtlasStage extends LitElement {
 
         ${this._renderSegments(p)}
 
-        <div class="actions">
+        <div class="actions atlas-enter-row" style="--j: 4">
           <button class="cta atlas-lift-sm" @click=${() => navigate('/epoch')}>
             ${msg('Enter war room')} <span aria-hidden="true">→</span>
           </button>
@@ -479,7 +509,7 @@ export class VelgAtlasStage extends LitElement {
       </div>
 
       <div>
-        <div class="plate atlas-zoom">
+        <div class="plate atlas-scan atlas-zoom atlas-enter-row" style="--j: 3">
           ${
             p.simulation_banner_url
               ? html`<img src=${p.simulation_banner_url} alt="" loading="lazy" decoding="async" />`
@@ -492,7 +522,7 @@ export class VelgAtlasStage extends LitElement {
           </span>
         </div>
 
-        <div class="stats">
+        <div class="stats atlas-enter-row" style="--j: 5">
           <div class="stat">
             <div class="stat__k">${msg('Rank')}</div>
             <div class="stat__v">${p.rank}</div>
@@ -521,7 +551,7 @@ export class VelgAtlasStage extends LitElement {
     if (p.total_cycles <= 0) return nothing;
 
     return html`
-      <div class="segs" role="presentation">
+      <div class="segs atlas-enter-row" style="--j: 3" role="presentation">
         ${Array.from({ length: p.total_cycles }, (_v, i) => {
           const n = i + 1;
           const cls = n < p.current_cycle ? 'seg--past' : n === p.current_cycle ? 'seg--now' : '';
