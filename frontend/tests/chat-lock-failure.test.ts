@@ -70,11 +70,11 @@ describe('lockFailureFrom', () => {
 
 /**
  * Die zweite Haelfte desselben Fehlers: eine 401 von diesen beiden Endpunkten
- * meldete den Nutzer aus der ganzen Anwendung ab. `BaseApiService` ruft bei
- * jeder 401 `supabase.auth.signOut()` auf — richtig fuer ein abgelaufenes
- * Token, falsch fuer „dieses Passwort stimmt nicht". Ein Tippfehler im
- * Passwortfeld zerstoerte die Sitzung, und jeder weitere Versuch scheiterte
- * danach ohne Token erneut mit 401.
+ * beendete die Sitzung in der ganzen Anwendung. `BaseApiService` ruft bei jeder
+ * 401 `supabase.auth.signOut()` auf. Das ist richtig fuer ein abgelaufenes
+ * Token und falsch, wo 401 die Antwort auf ein Passwort ist. Ein Tippfehler im
+ * Passwortfeld zerstoerte damit die Sitzung, und jeder weitere Versuch
+ * scheiterte danach ohne Token erneut mit 401.
  */
 describe('Passwortpfade melden nicht ab', () => {
   it('reauth und setConversationLock gehen ueber die 401-duldenden Methoden', async () => {
