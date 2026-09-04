@@ -90,8 +90,9 @@ export function moodBand(moodScore: number): MoodBand {
  * derselben Farbe, mit 2 px Rand, 6 px Schein und Dauerpuls.
  *
  * Damit trug der HÄUFIGSTE und am wenigsten aussagekräftige Zustand die
- * lauteste Behandlung. Der Nutzer las ihn als Fehler (Wortlaut nicht wiedergegeben)), und das war die richtige Lesart: ein pulsierender Ring an fast jedem
- * zweiten Bild sagt (Wortlaut nicht wiedergegeben), nicht „hier ist alles normal".
+ * lauteste Behandlung. Gemeldet wurde er als Fehler, und das war die richtige
+ * Lesart: ein pulsierender Ring an fast jedem
+ * zweiten Bild sagt „hier stimmt etwas nicht", nicht „hier ist alles normal".
  *
  * Ein Signal markiert die ABWEICHUNG, nicht den Normalfall. Neutral bekommt
  * deshalb keinen Ring; grün und rot behalten ihren, und sind dadurch zum

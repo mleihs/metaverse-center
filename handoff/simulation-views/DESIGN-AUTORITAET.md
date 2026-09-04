@@ -153,8 +153,9 @@ halbe Beschriftung trägt.
 ## Punkt 5 — Breitbild und 4K: hier stand der Skill WIRKLICH im Weg (behoben)
 
 Dies ist der zweite echte Konflikt, und anders als bei der Schrift war er nicht
-nur eine Formulierung, sondern eine **veraltete Token-Liste**. Vom Nutzer als
-grosser Punkt benannt (Wortlaut nicht wiedergegeben)
+nur eine Formulierung, sondern eine **veraltete Token-Liste**. Als grosser Punkt
+benannt: die Oberfläche soll auch für 4K und generell responsiv sinnvoll
+gestaltet sein.
 
 **Was der Skill sagte.** Seine Layout-Liste kannte genau eine Container-Leiter,
 `--container-sm` bis `--container-max` (1600 px), und sonst nichts. Gemessen:

@@ -19,8 +19,8 @@
  *     fuer den wandernden Boden. Richtig gedacht — aber `_performScroll` startete
  *     ein WEICHES Rollen und setzte im selben Frame `scrollTop` hart. Ein
  *     programmatischer Schreibzugriff bricht eine laufende Smooth-Animation ab;
- *     die weiche Bewegung kam also nie zustande. Der Nutzer sah, was er meldete:
- * (Wortlaut nicht wiedergegeben).
+ *     die weiche Bewegung kam also nie zustande. Gemeldet wurde genau das,
+ *     was zu sehen war: kein fluessiges Rollen, sondern ein Sprung.
  *
  * (3) Dieser hier. Er folgt dem, was sich fuer Streaming-Verlaeufe durchgesetzt
  *     hat (`use-stick-to-bottom`, StackBlitz), und zwar in vier Punkten:

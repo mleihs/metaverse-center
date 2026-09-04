@@ -732,7 +732,7 @@ schlimmer als der Fehler.
 
 ## T9 · Gesprächstitel und `user_id` sind öffentlich lesbar — ✅ ENTSCHIEDEN: nicht öffentlich (Migration 317)
 
-> **Entscheidung des Nutzers, 31.08.2026 nachts:** (Wortlaut nicht wiedergegeben)
+> **Entscheidung des Betreibers, 31.08.2026 nachts:** die Titel bleiben nicht öffentlich.
 >
 > **Migration 317** entfernt die anonymen Leserichtlinien — und zwar **vier**,
 > nicht zwei. Die Chat-Familie hat noch zwei weitere, die beim ersten Messen

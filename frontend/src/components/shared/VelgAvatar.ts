@@ -85,8 +85,8 @@ export class VelgAvatar extends LitElement {
       (opacity 0.55 -> 1 -> 0.55, alle 3 s, endlos). Auf Prod gemessen: 15 von
       35 Portraits im Chatverlauf hatten ihn, alle in derselben Farbe, weil
       neutral damals Bernstein zurueckgab. Ein pulsierender Schein an fast jedem
-      zweiten Bild sagt "hier stimmt etwas nicht" — der Nutzer hat ihn genau so
-      gelesen ("sehe aus wie ein Fehler"), und das war die richtige Lesart.
+      zweiten Bild sagt "hier stimmt etwas nicht" — und genau so wurde er
+      gelesen, naemlich als Fehler. Das war die richtige Lesart.
 
       Der Puls ist weg: eine Dauerbewegung ist im ganzen Haus fuer LAUFENDE
       Vorgaenge reserviert (Ladezustand, Erzeugung). Ein Zustand bewegt sich

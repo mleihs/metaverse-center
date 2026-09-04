@@ -82,6 +82,18 @@ def lade_sperrliste() -> set[str]:
 
 SPERRE = lade_sperrliste()
 
+# Beschriftungen der Oberflaeche und Fachbegriffe, die neben dem Wort „Nutzer"
+# stehen duerfen. Jeder Eintrag hier ist eine Behauptung, dass diese Zeichen
+# aus dem PRODUKT stammen und nicht aus einem Gespraech — nur mit Beleg
+# ergaenzen.
+ZITAT_FREI = (
+    "Is Architect",
+    "Simulation Forge Access",
+    "Chronik erzeugen",
+    "Command Stage",
+    "/users/me",
+)
+
 def sperrtreffer(text: str) -> bool:
     if not SPERRE:
         return False
@@ -103,8 +115,19 @@ MUSTER = [
      re.compile(VOR + r'\d{1,2}:\d{2}(:\d{2})?[ \t]+[A-ZÄÖÜ][a-zäöüß]{2,}[ \t]*[:,][ \t]*\S')),
     ("Rollenzeile aus einem Verlauf",
      re.compile(VOR + r'(user|assistant)[ \t]{2,}(?!<)\S{6,}')),
+    # DIE ZUSCHREIBUNG IST DAS SIGNAL, NICHT DER WORTLAUT.
+    #
+    # Die erste Fassung verlangte einen Doppelpunkt oder Gedankenstrich vor dem
+    # Zitat. Damit lief sie an jeder Klammer vorbei — und an jedem Zitat, das
+    # ueber zwei Zeilen ging. Ein formbasierter Suchlauf ohne diese Verengung
+    # fand danach SIEBZEHN weitere Fundstellen in Dateien und Nachrichten, die
+    # drei vorherige Suchen uebersehen hatten.
+    #
+    # Deshalb jetzt: Zuschreibung, dann irgendwas bis zum Anfuehrungszeichen,
+    # dann ein Zitat ab 14 Zeichen. Kurze Zitate bleiben frei, weil dort fast
+    # immer eine Beschriftung der Oberflaeche steht und kein Gespraech.
     ("zugeschriebenes Zitat",
-     re.compile(r'(Nutzer|Nutzers|User|Mensch)[^\n]{0,45}[:—-][ \t]*„[^"]{10,}"')),
+     re.compile(r'(Nutzers?|User|Mensch(en)?|Anwender)[^\n„"]{0,60}[:,(—-]?[ \t]*„[^"]{14,}"')),
     # Eine Sprechermarke MIT Text ist eine Gespraechszeile. Erlaubt sind genau
     # die erfundenen Testfiguren — an ihnen erkennt man auf einen Blick, dass
     # ein Beispiel ein Beispiel ist. Jeder ANDERE Zweiwortname an dieser Stelle
@@ -121,8 +144,25 @@ def pruefe(text, herkunft, funde):
     zeilen = text.split("\n")
     for i, zeile in enumerate(zeilen, 1):
         for name, p in MUSTER:
+            if name == "zugeschriebenes Zitat":
+                continue  # laeuft unten ueber ein Fenster, nicht zeilenweise
             if p.search(zeile):
                 funde.append((herkunft, i, name, zeile.strip()[:90]))
+
+    # Ein Zitat bricht um. Zeilenweise gesucht, findet man dann die Zuschreibung
+    # ohne ihr Zitat und das Zitat ohne seine Zuschreibung — und beides ist
+    # unauffaellig. Also ueber drei Zeilen am Stueck.
+    zitat = dict(MUSTER)["zugeschriebenes Zitat"]
+    for i in range(len(zeilen)):
+        fenster = " ".join(zeilen[i:i + 3])
+        # Das Fenster normalisieren, bevor die Freiliste greift: eine
+        # Beschriftung, die ueber zwei Zeilen umbricht („Chronik\n# erzeugen"),
+        # traf sonst keinen Eintrag und meldete sich als Fund.
+        flach = re.sub(r"[\s#*/-]+", " ", fenster)
+        if zitat.search(fenster) and not any(g in flach for g in ZITAT_FREI):
+            funde.append((herkunft, i + 1, "zugeschriebenes Zitat",
+                          zeilen[i].strip()[:90]))
+            break
 
     # Die Sperrliste laeuft ueber ein FENSTER von drei Zeilen, nicht ueber
     # einzelne. Ein umgebrochenes Zitat war einer der vier Faelle, an denen die

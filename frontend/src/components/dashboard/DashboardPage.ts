@@ -102,8 +102,8 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
          *     Scherbenregister 1233 px | 356 px    Naht bei 1281
          *
          * Aussen bündig (48 links, 1665 rechts), innen 284 px auseinander —
-         * die senkrechte Naht springt beim Scrollen zur Seite. Genau das hat
-         * der Nutzer als (Wortlaut nicht wiedergegeben) gemeldet, und die Frage nach dem
+         * die senkrechte Naht springt beim Scrollen zur Seite. Genau das wurde
+         * als sichtbar kaputt gemeldet, und die Frage nach dem
          * Plan dahinter hatte keine Antwort: es gab keinen.
          *
          * Die Umbruchpunkte waren bereits identisch (1920 / 1024), nur die

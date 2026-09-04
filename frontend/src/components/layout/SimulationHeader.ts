@@ -229,7 +229,7 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
       /*
        * 20 % kleiner als der Entwurf, auf Ansage des Nutzers.
        *
-       * Der Handoff nennt (Wortlaut nicht wiedergegeben); das war clamp(2.25rem, 5.2vw,
+       * Der Handoff nannte rund 74 px bei 1440; das war clamp(2.25rem, 5.2vw,
        * 4.625rem). Alle drei Werte mal 0,8. Gemessen war der Masthead 320 px
        * hoch bei 927 px Fensterhoehe — ein Drittel des Schirms fuer einen
        * Namen und eine Zeile.
@@ -545,7 +545,8 @@ export class VelgSimulationHeader extends SignalWatcher(LitElement) {
    *
    * Beide Knoepfe dieses Bauteils — „Bureau Terminal" und die Bedrohungsmarke
    * — schickten ein `navigate-to-tab` los. Gesucht: **null** Zuhoerer im
-   * ganzen Werk. Der Nutzer hat es auf Prod bemerkt (Wortlaut nicht wiedergegeben)), und er hatte recht: geklickt wurde, gefeuert wurde, gehoert hat
+   * ganzen Werk. Auf Prod gemeldet als Knopf ohne Wirkung — zu Recht:
+   * geklickt wurde, gefeuert wurde, gehoert hat
    * es niemand.
    *
    * Dieselbe Form wie ein POST ohne Aufrufer: es gibt eine Oberflaeche, und

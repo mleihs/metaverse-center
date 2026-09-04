@@ -54,8 +54,9 @@
 --   ohne Bezug zu Welt oder Verfasser, eine Liste von Saetzen. Am Weltobjekt
 --   ist derselbe Satz ZUORDENBAR — er haengt an einer benannten Welt, und die
 --   hat einen Architekten. Das ist eine echte Erweiterung gegenueber 314 und
---   keine Formalie; der Nutzer hat sie am 31.08.2026 ausdruecklich verlangt
- (Wortlaut nicht wiedergegeben)), und die Korrelation auf der Frontseite ist ohne sie nicht
+--   keine Formalie; sie wurde am 31.08.2026 ausdruecklich verlangt — der
+--   erzeugende Prompt einer Welt soll erhalten bleiben. Die Korrelation auf
+--   der Frontseite ist ohne sie nicht
 --   moeglich. Hier notiert, damit die Entscheidung sichtbar bleibt statt
 --   irgendwann als Nebenwirkung entdeckt zu werden.
 --

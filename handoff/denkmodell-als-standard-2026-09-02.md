@@ -1,6 +1,8 @@
 # Ein Denkmodell als Standard — projektweit zu prüfen
 
-**Auftrag des Nutzers, 02.09.2026:** (Wortlaut nicht wiedergegeben)
+**Auftrag des Betreibers, 02.09.2026:** ein Denkmodell als Vorgabe ist
+möglicherweise generell falsch; das gehört projektweit überprüft und deshalb
+festgehalten.
 
 Anlass war ein konkreter Ausfall in der Schleuse. Der Befund ist aber nicht auf
 sie beschränkt, und das ist der Grund für dieses Dokument.

@@ -5,7 +5,7 @@
 
 ## Context
 
-Velgarien hat bereits ein ~80% fertiges, server-autoritatives Dungeon-Frontend (Terminal/HUD: `DungeonTerminalView`, `DungeonMap`, `DungeonCombatBar`, `DungeonPartyPanel`, `DungeonEnemyPanel`, `DungeonQuickActions` + `dungeonState`/`dungeonApi`). Der P0-Prototyp (`spikes/dungeon-p0-prototype.html`) hat einen grafischen Modus konzeptionell bewiesen: „Meter als Umgebung", Scene-Backdrop, Combat-Juice.
+Velgarien hat bereits ein ~80% fertiges, server-autoritatives Dungeon-Frontend (Terminal/HUD: `DungeonTerminalView`, `DungeonMap`, `DungeonCombatBar`, `DungeonPartyPanel`, `DungeonEnemyPanel`, `DungeonQuickActions` + `dungeonState`/`dungeonApi`). Der P0-Prototyp (`spikes/dungeon-p0-prototype.html`) hat einen grafischen Modus konzeptionell bewiesen: „Meter = Umgebung", Scene-Backdrop, Combat-Juice.
 
 **Ziel:** Einen ZWEITEN, grafischen Dungeon-Modus **parallel** aufbauen, der dieselbe Spielmechanik/API/State wiederverwendet. Die alte Terminal-View bleibt **byte-genau unangetastet**. Null Spiellogik im Client — alles bleibt server-autoritativ.
 
@@ -24,7 +24,7 @@ Velgarien hat bereits ein ~80% fertiges, server-autoritatives Dungeon-Frontend (
 - **Default `terminal`** bis der grafische Modus fertig & verifiziert ist.
 - **Lazy-load:** Der grafische Modus (inkl. PixiJS) wird per `import()` **dynamisch** geladen → Terminal-Nutzer zahlen keinen Bundle-Aufschlag.
 
-## Phase 1 — Scene-Layer (Wortlaut nicht wiedergegeben) für alle 8)
+## Phase 1 — Scene-Layer (Meter als Umgebung, für alle 8)
 
 - **Environment-Resolver:** neue **pure function** `utils/dungeon-environment.ts` (kein DOM): `(archetype, ArchetypeState) → { pressure01, tier, meterLabel, meterValue, direction, fxProfile }`. Nutzt die bestehenden Type-Guards (`isShadowState`/`isTowerState`/… `types/dungeon.ts:229-267`) + `max_*`-Felder. `pressure01` ist **immer „1 = schlimmster"** nach Inversion. Spiegelt die Extraktion in `DungeonHeader.ts:963-991`. **Unit-getestet** (`tests/dungeon-environment.test.ts`, Muster `tests/world-map-styles.test.ts`).
 - **Scene-Host:** `components/dungeon/graphical/DungeonGraphicalView.ts` — light-DOM-Root (`createRenderRoot(){return this}`), `?inline`-CSS via `getRootNode()`+WeakSet. **Referenz 1:1: `components/drift/DriftChartHost.ts`** (existierender Three.js-light-DOM-WebGL-Host). Forced-dark `/* lint-color-ok */`-Block wie `DungeonTerminalView.ts:72-78`.

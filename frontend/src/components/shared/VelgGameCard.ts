@@ -775,10 +775,11 @@ export class VelgGameCard extends LitElement {
      * bei ihren festen 200 × 320 px stehen. Auf Produktion gemessen
      * (2560 px, Gebäude-Reiter): die Rasterzelle war 611 px breit, die Karte
      * 200 — **411 px jeder Zelle blieben leer**, und die entfesselte Prosa
-     * quetschte sich in ein Fünftel der Breite. Der Nutzer las das als
-     * (Wortlaut nicht wiedergegeben).
+     * quetschte sich in ein Fünftel der Breite. Gemeldet wurde es als
+     * unerklärlicher Abstand zwischen den Gebäuden.
      *
-     * Der Entwurf verlangt für diesen Reiter (Wortlaut nicht wiedergegeben) — also eine Karte, die ihre Spalte ausfüllt. Die
+     * Der Entwurf verlangt für diesen Reiter „Bild-Karten 3× mit vollem
+     * Beschreibungstext" — also eine Karte, die ihre Spalte ausfüllt. Die
      * Grössenleiter xs/sm/md/lg endet bei 280 px; für 611 gibt es dort keine
      * Sprosse, und es soll auch keine geben: die Breite gehört hier dem
      * Raster, nicht der Karte.
