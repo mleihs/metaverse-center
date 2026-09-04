@@ -1590,6 +1590,12 @@ class ChatAIService:
             closing_instruction = self._prompt_resolver.fill_template(
                 group_instr,
                 {
+                    # Der eigene Name MUSS mit. Die Anweisung ist das Letzte vor
+                    # der Antwort; nannte sie nur die anderen, nahm das Modell
+                    # seine Identitaet aus der naechstliegenden Ich-Stimme — das
+                    # war der Zug des Vorredners. Gemessen am 05.09.2026: alle
+                    # drei Sprecher antworteten als der erste.
+                    "agent_name": str(agents[idx].get("name") or "") if idx < len(agents) else "",
                     "other_agent_names": ", ".join(other_names),
                 },
             )

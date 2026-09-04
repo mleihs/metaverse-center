@@ -535,7 +535,15 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             # welteigenen Vorlagen auf Prod hatten genau das (04.09.2026).
             required=frozenset({"agent_memories", "agent_mood"}),
         ),
-        _contract("chat_group_instruction", ("other_agent_names",), frame=_FRAME_GROUP),
+        _contract(
+            "chat_group_instruction",
+            ("agent_name", "other_agent_names"),
+            frame=_FRAME_GROUP,
+            # Der eigene Name ist PFLICHT, nicht Schmuck. Die Anweisung steht
+            # als letzte Zeile vor der Antwort; nennt sie nur die anderen,
+            # ist der einzige Ich-Sprecher in Reichweite der Vorredner.
+            required=("agent_name",),
+        ),
         _contract(
             "chat_continuation",
             (
