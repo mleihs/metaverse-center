@@ -387,6 +387,7 @@ class ChatAIService:
         extra_variables: dict[str, str] | None = None,
         extra_context: str = "",
         extra_metadata: dict[str, Any] | None = None,
+        participant_names: list[str] | None = None,
     ) -> tuple[str, dict]:
         """Core generation logic for a single agent response.
 
@@ -434,6 +435,7 @@ class ChatAIService:
             generation_ms=generation_ms,
             locale=locale,
             extra_metadata=extra_metadata,
+            participant_names=participant_names,
         )
 
     async def _chat_budget(self) -> BudgetContext:
@@ -475,6 +477,7 @@ class ChatAIService:
         extra_variables: dict[str, str] | None = None,
         extra_context: str = "",
         extra_metadata: dict[str, Any] | None = None,
+        participant_names: list[str] | None = None,
     ) -> AsyncIterator[SSEEvent]:
         """Stream a single agent's response token-by-token.
 
@@ -608,7 +611,7 @@ class ChatAIService:
             generation_ms = int((time.monotonic() - t0) * 1000)
 
             # Check if we got meaningful content after sanitization
-            if not stream_error and self._sanitize_response(full_text):
+            if not stream_error and self._sanitize_response(full_text, participant_names):
                 break  # Success — proceed to persist
 
             if attempt < max_retries:
@@ -647,6 +650,7 @@ class ChatAIService:
             generation_ms=generation_ms,
             locale=locale,
             extra_metadata=extra_metadata,
+            participant_names=participant_names,
         )
 
         if not saved:
@@ -701,14 +705,41 @@ class ChatAIService:
         return mock_text, saved
 
     @staticmethod
-    def _sanitize_response(text: str) -> str:
+    def _sanitize_response(text: str, participant_names: list[str] | None = None) -> str:
         """Strip leaked agent tags, CoT blocks, and meta-commentary from AI output.
 
         Locale-agnostic: patterns match structural markers (brackets, parens,
         XML tags) rather than language-specific keywords.
+
+        ``participant_names`` sind die bekannten Sprecher des Fadens. Mit ihnen
+        wird das Tor genauer UND weiter zugleich, und beides ist noetig:
+
+        * **Weiter**, weil das alte Muster einen Doppelpunkt verlangte
+          (``^\\[…\\]:``), das Modell aber ``[Suse Sonnenblum] *Ich hebe die Hand*``
+          **ohne** ihn schreibt. Von 16 Nachrichten mit Marke im Faden
+          7b2e37c3 fing das alte Tor **null**. Und es sah nur Zeichen 0 —
+          eine Marke in Zeile drei blieb stehen.
+        * **Genauer**, weil ein weites Muster ohne Doppelpunkt ueber jede
+          Regieanweisung in eckigen Klammern herfiele. Gegen die bekannten
+          Namen kann es das nicht.
+
+        Ohne Namensliste bleibt es beim alten, engen Verhalten: fuehrende
+        Marke, Doppelpunkt verlangt. Ein Tor, das raet, ist schlimmer als
+        eines, das zugibt, nichts zu wissen.
         """
         # Strip <think>...</think> blocks (CoT reasoning leak)
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+        known = [n for n in (participant_names or []) if n and n.strip()]
+        if known:
+            # `[Name]`, `[Name]:`, `Name:` — jeweils am Anfang EINER Zeile,
+            # nicht nur am Anfang des Textes.
+            alternation = "|".join(re.escape(n.strip()) for n in known)
+            text = re.sub(
+                rf"^[ \t]*(?:\[(?:{alternation})\]\s*:?|(?:{alternation})\s*:)[ \t]*",
+                "",
+                text,
+                flags=re.MULTILINE,
+            )
         # Strip [AgentName]: prefixes at start of response
         text = re.sub(r"^\[[\w\s.äöüÄÖÜß]+\]:\s*", "", text)
         # Strip parenthetical meta-reasoning blocks at start of response.
@@ -733,9 +764,10 @@ class ChatAIService:
         generation_ms: int,
         locale: str = "de",
         extra_metadata: dict[str, Any] | None = None,
+        participant_names: list[str] | None = None,
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
-        response_text = self._sanitize_response(response_text)
+        response_text = self._sanitize_response(response_text, participant_names)
         if not response_text:
             logger.warning(
                 "Empty response after sanitization for agent %s in conversation %s – skipping persist",
@@ -946,6 +978,7 @@ class ChatAIService:
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
             extra_context=ctx.get("relationship_context", ""),
+            participant_names=[ctx["agent"].get("name", "")],
         )
 
         if not saved:
@@ -1032,6 +1065,7 @@ class ChatAIService:
                 history_messages=history_messages,
                 extra_context="\n\n".join(extra_parts),
                 extra_metadata={"group_turn_index": idx},
+                participant_names=agent_names,
             )
 
             if saved:
@@ -1060,6 +1094,7 @@ class ChatAIService:
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
             extra_context=ctx.get("relationship_context", ""),
+            participant_names=[ctx["agent"].get("name", "")],
         ):
             yield sse_event
             if sse_event.event == "agent_done":
@@ -1113,6 +1148,7 @@ class ChatAIService:
                 agent_total=len(agents),
                 extra_context="\n\n".join(extra_parts),
                 extra_metadata={"group_turn_index": idx},
+                participant_names=agent_names,
             ):
                 yield sse_event
                 if sse_event.event == "agent_done":
@@ -1153,29 +1189,92 @@ class ChatAIService:
             )
             extra_parts.append(group_text)
 
+        current_agent_id = str(agents[idx]["id"]) if idx < len(agents) else ""
+
         history = await self._load_history(conversation_id, model_id)
-        history_messages: list[dict[str, str]] = []
-        for msg in history:
-            role = "assistant" if msg["sender_role"] == "assistant" else "user"
-            content = msg["content"]
-            if role == "assistant" and msg.get("agent_id") and len(agents) > 1:
-                # Erst die Nachricht selbst fragen (siehe `_load_history`), dann
-                # die Besetzung. Findet keines von beiden einen Namen, bekommt
-                # die Zeile trotzdem eine Marke: ein fremder Satz ohne Sprecher
-                # wird sonst als der EIGENE gelesen, und das ist der teurere
-                # Fehler als eine unbekannte Herkunft zuzugeben.
-                msg_agent_name = self._message_speaker(msg) or self._find_agent_name(agents, msg["agent_id"])
-                label = msg_agent_name or _DEPARTED_SPEAKER
-                content = f"[{label}]: {content}"
-            history_messages.append({"role": role, "content": content})
+        history_messages: list[dict[str, str]] = [
+            self._as_turn(msg, agents=agents, current_agent_id=current_agent_id) for msg in history
+        ]
         history_messages.append({"role": "user", "content": user_message})
 
+        # Die frischen Zuege dieses Durchgangs. GENAU HIER brach Position 1:
+        # der eben fertig gewordene Zug des Agenten davor ging als
+        # `role="assistant"` hinaus, also als Zusicherung „das hast du gerade
+        # gesagt" — und der zweite Sprecher schrieb daraufhin weiter am Satz
+        # des ersten. Sie laufen jetzt durch dieselbe Regel wie der Verlauf.
         for prev_msg in saved_messages:
-            prev_agent_name = self._find_agent_name(agents, prev_msg.get("agent_id"))
-            prefix = f"[{prev_agent_name}]: " if prev_agent_name else ""
-            history_messages.append({"role": "assistant", "content": f"{prefix}{prev_msg['content']}"})
+            history_messages.append(self._as_turn(prev_msg, agents=agents, current_agent_id=current_agent_id))
 
-        return extra_parts, history_messages
+        return extra_parts, self._merge_consecutive_user_turns(history_messages)
+
+    def _as_turn(
+        self,
+        msg: dict,
+        *,
+        agents: list[dict],
+        current_agent_id: str,
+    ) -> dict[str, str]:
+        """Eine gespeicherte Nachricht als Protokollzug fuer EINEN Agenten.
+
+        ``role: "assistant"`` ist im Chat-Protokoll keine Beschriftung, sondern
+        eine Zusicherung: „das hier hast du gesagt". Ein fremder Agentenzug,
+        der so hineingeht, wird vom Modell als eigene fruehere Aeusserung
+        gelesen; die Textmarke ``[Name]: `` ist blosser Inhalt und verliert
+        gegen die Rolle. Ausgezaehlt am Faden 7b2e37c3 (04.09.2026, 79
+        Agentennachrichten): alle neun Bruchstuecke lagen auf Zugposition 1,
+        keines auf Position 0, keines in den zehn Einzelgespraechen davor.
+        Position 1 ist die erste, die einen FRISCHEN fremden Zug bekommt.
+
+        Daraus die beiden Haelften der Regel:
+
+        * **Eigene** Zuege bleiben ``assistant`` und tragen **keine** Marke.
+          Trugen sie eine, saehe sich das Modell beim Namen in der dritten
+          Person — das war die zweite Haelfte des Fehlers, das Kippen zwischen
+          Ich- und Er-Form.
+        * **Fremde** Zuege werden ``user`` und tragen die Marke. Findet sich
+          kein Name (ein entfernter Teilnehmer, dessen Saetze stehen bleiben),
+          steht ``_DEPARTED_SPEAKER`` da: eine unbekannte Herkunft zuzugeben
+          ist der billigere Fehler als eine falsche zu behaupten.
+        """
+        content = str(msg.get("content") or "")
+        if msg.get("sender_role") != "assistant":
+            return {"role": "user", "content": content}
+
+        agent_id = msg.get("agent_id")
+        if agent_id and str(agent_id) == current_agent_id:
+            return {"role": "assistant", "content": content}
+
+        # Erst die Nachricht selbst fragen (siehe `_load_history`), dann die
+        # Besetzung — der Name gehoert an die Nachricht, nicht an die
+        # Anwesenheitsliste.
+        label = (
+            self._message_speaker(msg)
+            or self._find_agent_name(agents, str(agent_id) if agent_id else None)
+            or _DEPARTED_SPEAKER
+        )
+        return {"role": "user", "content": f"[{label}]: {content}"}
+
+    @staticmethod
+    def _merge_consecutive_user_turns(messages: list[dict[str, str]]) -> list[dict[str, str]]:
+        """Fasst aufeinanderfolgende ``user``-Zuege zu einem zusammen.
+
+        Kein Schoenheitsgriff. Seit fremde Agentenzuege als ``user`` laufen,
+        stehen sie regelmaessig zu mehreren nebeneinander — und mehrere
+        Anthropic- und Mistral-Modelle lehnen zwei gleiche Rollen in Folge mit
+        einem 400er ab. DeepSeek nimmt sie an, weshalb der Fehler erst beim
+        naechsten Modellwechsel aufschlagen wuerde, also genau dann, wenn
+        niemand mehr an diese Stelle denkt.
+        """
+        merged: list[dict[str, str]] = []
+        for msg in messages:
+            if merged and msg["role"] == "user" and merged[-1]["role"] == "user":
+                merged[-1] = {
+                    "role": "user",
+                    "content": f"{merged[-1]['content']}\n\n{msg['content']}",
+                }
+            else:
+                merged.append(dict(msg))
+        return merged
 
     @staticmethod
     def _build_agent_variables(agent: dict, simulation: dict, locale: str) -> dict[str, str]:

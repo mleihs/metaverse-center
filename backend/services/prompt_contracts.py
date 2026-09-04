@@ -184,6 +184,22 @@ _FRAME_CHAT = (
     "internal reasoning, chain-of-thought or meta-commentary in your reply."
 )
 
+#: Was eine Welt an der Gruppen-Instruktion NICHT wegschreiben darf.
+#:
+#: Der Ton eines Gruppengesprächs gehört der Welt; dass niemand für einen
+#: anderen spricht, gehört ihr nicht. Ausgezählt am 04.09.2026 (Faden
+#: 7b2e37c3): neun Bruchstücke, alle auf Zugposition 1, alle aus dem Moment,
+#: in dem ein Agent den Zug seines Vorgängers für seinen eigenen hielt. Die
+#: strukturelle Hälfte der Reparatur sitzt in `chat_ai_service._as_turn`; dies
+#: ist die andere Hälfte, und sie muss jede Vorlage überleben.
+_FRAME_GROUP = (
+    "Speak only as yourself, and only in the first person. Never write, quote or continue "
+    "another participant's lines, and never answer on their behalf. Do not put any name in "
+    'front of your reply: no bracketed tag, no "Name:" opener. Messages from the others '
+    "reach you marked with their name; that mark identifies them and is not a format for "
+    "your own text."
+)
+
 
 # ── The declaration ──────────────────────────────────────────────────────────
 #
@@ -429,7 +445,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             ),
             frame=_FRAME_CHAT,
         ),
-        _contract("chat_group_instruction", ("other_agent_names",)),
+        _contract("chat_group_instruction", ("other_agent_names",), frame=_FRAME_GROUP),
         _contract("chat_event_context", ("event_list",)),
         _contract(
             "chat_event_item",
