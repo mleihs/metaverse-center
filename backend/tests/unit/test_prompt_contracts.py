@@ -46,6 +46,7 @@ RENDERING_MODULES = (
     "services/generation_service.py",
     "services/chat_ai_service.py",
     "services/chat/conversation_digest_service.py",
+    "services/chat/continuation_service.py",
     "services/epoch_invitation_service.py",
 )
 

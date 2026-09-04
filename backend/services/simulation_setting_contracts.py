@@ -102,6 +102,10 @@ HEARTBEAT_OVERRIDE_KEYS: Final[dict[str, str]] = {
     # Phase 9.7 — wie viele Agenten je Tick hoechstens verdichten duerfen.
     # Ein Modellaufruf je Agent, deshalb gehoert die Grenze zum Herzschlag.
     "reflection_budget": "heartbeat",
+    # Phase 9.8 — wie viele FAEDEN je Tick hoechstens weiterreden duerfen.
+    # Ein Modellaufruf je Faden (der ganze Wortwechsel entsteht in einem),
+    # deshalb gehoert die Grenze zum Herzschlag und nicht zu den Bindungen.
+    "continuation_budget": "heartbeat",
 }
 
 

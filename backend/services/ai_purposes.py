@@ -177,6 +177,25 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         ),
     ),
     _purpose(
+        "agent_continuation",
+        "chat",
+        1200,
+        90,
+        reasoning="off",
+        why=(
+            "Ein ganzer Wortwechsel ohne Zuhoerer: 2-4 Zuege in EINEM Aufruf, als "
+            "JSON. 1 200 Token tragen vier Zuege von je rund 200 deutschen Woertern "
+            "plus die JSON-Huelle. Weniger schnitte den letzten Zug ab, und ein "
+            "abgeschnittener Zug macht die ganze Antwort unparsbar — anders als bei "
+            "`chat_response`, wo ein zu kurzer Text immer noch ein Text ist. "
+            "90 s wie bei `chat_digest`: der Lauf haengt an keiner Anfrage, sondern "
+            "am Herzschlag. "
+            "reasoning=off: dasselbe `<think>`-Problem wie im Chat, und hier waere es "
+            "schlimmer — ein Denkblock im JSON macht es unparsbar, der Aufruf ist "
+            "bezahlt und das Ergebnis unbrauchbar."
+        ),
+    ),
+    _purpose(
         "research",
         "research",
         2048,

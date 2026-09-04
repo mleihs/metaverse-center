@@ -199,6 +199,26 @@ _FRAME_CHAT = (
 #: * **Keine Regie.** Die Verdichtung ist Bericht, nicht Fortsetzung. Ohne
 #:   diesen Satz schreibt ein Rollenspielmodell den Wortwechsel weiter, statt
 #:   ihn zusammenzufassen.
+#: Was eine Welt am Wortwechsel ohne Zuhörer NICHT wegschreiben darf.
+#:
+#: Hier schreibt EIN Modell alle Stimmen — anders als im Chat, und mit
+#: Absicht: es schreibt eine Szene, nicht eine Person. Genau deshalb braucht
+#: es die Form, an der die Zuordnung danach hängt. Ohne die JSON-Zusage gibt
+#: es nichts zuzuordnen, und ein Zug ohne erkennbaren Sprecher wird verworfen
+#: (`ContinuationService._parse_turns`) — der teure Aufruf wäre umsonst.
+#:
+#: Der zweite Satz ist der wichtigere: der Mensch ist NICHT da. Ein
+#: Wortwechsel, der ihn anspricht, behauptet eine Anwesenheit, die es nicht
+#: gab, und er liest sie beim Zurückkommen als etwas, das er verpasst hat.
+_FRAME_CONTINUATION = (
+    "OUTPUT FORMAT (platform requirement): return valid JSON and nothing else: "
+    '{"turns": [{"speaker": "exact participant name", "content": "what they say"}]}. '
+    "Use only the participant names given above, spelled exactly as given.\n"
+    "The user is NOT present and is not being addressed. Nobody speaks to them, nobody "
+    "waits for them, nobody narrates their absence. This is the participants among "
+    "themselves."
+)
+
 _FRAME_DIGEST = (
     "Report only what was actually said. Never invent an event, a decision, a name or a "
     "feeling that is not in the transcript above; if something is unclear, leave it out. "
@@ -469,6 +489,18 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             frame=_FRAME_CHAT,
         ),
         _contract("chat_group_instruction", ("other_agent_names",), frame=_FRAME_GROUP),
+        _contract(
+            "chat_continuation",
+            (
+                "participant_names",
+                "agent_profiles",
+                "conversation_digest",
+                "recent_transcript",
+                "locale_name",
+                "turn_count",
+            ),
+            frame=_FRAME_CONTINUATION,
+        ),
         _contract(
             "chat_conversation_digest",
             ("participant_names", "transcript", "locale_name", "segment_index"),

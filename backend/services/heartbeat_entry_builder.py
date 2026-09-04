@@ -57,6 +57,10 @@ HEARTBEAT_ENTRY_TYPES: Final[tuple[str, ...]] = (
     # gesehen hat, zu einer Einsicht. Vorher lief die Verdichtung an keinem
     # Tick — fuenf Verdichtungen gegen 300 Beobachtungen auf Prod.
     "memory_reflection",
+    # Added 2026-09-04 (Migration 362). Phase 9.8: Agenten haben in einem Faden
+    # ohne den Menschen weitergeredet. Die Zeile ist die einzige Spur davon im
+    # Herzschlag — der Wortwechsel selbst steht im Gespraech.
+    "agent_continuation",
 )
 
 

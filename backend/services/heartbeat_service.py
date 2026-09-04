@@ -37,6 +37,7 @@ from backend.services.attunement_service import AttunementService
 from backend.services.autonomous_event_service import AutonomousEventService
 from backend.services.bond.whisper_service import WhisperService
 from backend.services.bureau_response_service import BureauResponseService
+from backend.services.chat.continuation_service import ContinuationService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry, state_word_de
@@ -902,6 +903,53 @@ class HeartbeatService(BaseSchedulerMixin):
                         )
                     )
             tick_stats["memory_reflections"] = reflections_written
+
+            # Phase 9.8: Gespraeche, die ohne den Menschen weitergehen
+            #
+            # Laeuft NACH der Verdichtung der Erinnerungen: ein Wortwechsel,
+            # der gleich entsteht, soll die Einsichten dieses Ticks schon
+            # kennen. Und nach den Fluestern, weil Schritt 3 daraus einen
+            # eigenen Whisper-Typ ableitet.
+            #
+            # Das Merkmalstor `agent_continuation_enabled` prueft der Dienst
+            # selbst und fail-closed: fehlt die Zeile, ist es ZU. Eine Phase,
+            # die Modellaufrufe erzeugt, darf nicht dadurch anlaufen, dass
+            # jemand vergessen hat, sie abzuschalten.
+            #
+            # Das Budget zaehlt FAEDEN, nicht Aufrufe — je Faden entsteht der
+            # ganze Wortwechsel in einem einzigen Aufruf.
+            continuation_result = await _run_phase(
+                "agent_continuation",
+                ContinuationService.generate_for_simulation(
+                    admin,
+                    sim_id,
+                    budget=int(overrides.get("continuation_budget", 2)),
+                    openrouter_api_key=bw_key if bw_has_key else None,
+                ),
+                **_ctx,
+            )
+            continuations_written = 0
+            if continuation_result:
+                continuations_written = len(continuation_result)
+                for cont in continuation_result:
+                    namen = ", ".join(cont.get("agent_names", [])[:3])
+                    entries.append(
+                        make_heartbeat_entry(
+                            heartbeat_id,
+                            sim_id,
+                            tick_number,
+                            "agent_continuation",
+                            f"{namen} kept talking without you",
+                            f"{namen} haben ohne dich weitergeredet",
+                            severity="info",
+                            metadata={
+                                "conversation_id": cont.get("conversation_id"),
+                                "turns": len(cont.get("turns", [])),
+                                "notify": cont.get("notify"),
+                            },
+                        )
+                    )
+            tick_stats["agent_continuations"] = continuations_written
 
             # Phase 10: Refresh materialized views
             await _run_phase(

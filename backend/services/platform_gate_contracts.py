@@ -132,6 +132,19 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     ),
     # ── Erzählschichten ─────────────────────────────────────────────────
     PlatformGate(
+        key="agent_continuation_enabled",
+        group="narrative",
+        label="Gespräche ohne Zuhörer",
+        turns_on="Phase 9.8 des Ticks: Agenten reden in Fäden weiter, deren Besitzer es "
+        "eingeschaltet hat – im selben Faden, sichtbar beim nächsten Öffnen.",
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AUS. Eine Phase, "
+        "die Modellaufrufe erzeugt, darf nicht anlaufen, weil jemand vergessen hat, sie "
+        "abzuschalten. Der Schalter am einzelnen Gespräch bleibt bedienbar, damit ein "
+        "Mensch seine Wahl vorbereiten kann, bevor das Tor öffnet.",
+        default_when_missing=False,
+        reader="backend/services/chat/continuation_service.py",
+    ),
+    PlatformGate(
         key="journal_enabled",
         group="narrative",
         label="Journal-Fragmente",

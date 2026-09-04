@@ -33,6 +33,8 @@ from pathlib import Path
 from backend.services.heartbeat_entry_builder import HEARTBEAT_ENTRY_TYPES
 
 _BACKEND = Path(__file__).resolve().parents[2]
+
+
 def _current_check_migration() -> Path:
     """Die ZULETZT gültige CHECK-Definition, nicht eine bestimmte.
 
@@ -53,7 +55,6 @@ def _current_check_migration() -> Path:
     )
     assert kandidaten, "keine Migration setzt heartbeat_entries_entry_type_check"
     return kandidaten[-1]
-
 
 
 # `entry_type` is the FOURTH POSITIONAL parameter of make_heartbeat_entry.
@@ -150,7 +151,20 @@ def test_the_check_constraint_matches_the_declaration() -> None:
     migration = _current_check_migration()
     sql = migration.read_text(encoding="utf-8")
     body = sql[sql.index("ADD CONSTRAINT heartbeat_entries_entry_type_check") :]
-    in_check = re.findall(r"'([a-z_]+)'", body)
+    # NUR der ARRAY-Block, nicht der ganze Rest der Datei.
+    #
+    # ⚠ Vorher las diese Zeile jede Zeichenkette NACH dem ADD CONSTRAINT. Das
+    # ging gut, solange dort nichts anderes stand — und brach an der ersten
+    # Migration, die ihre eigene Wirkung PRUEFT: die Probe in 362 setzt den
+    # neuen Typ probeweise ein, und der Name tauchte damit zweimal auf. Der
+    # Test meldete „lists a value twice" ueber eine korrekte Migration.
+    #
+    # Die Selbstpruefung ist das Richtige (sie zeigt, dass der CHECK den Wert
+    # wirklich annimmt, nicht nur, dass er dasteht). Also wird hier genauer
+    # gelesen statt dort weniger geprueft.
+    block = re.search(r"ARRAY\s*\[(.+?)\]\s*::\s*TEXT\s*\[\]", body, re.DOTALL)
+    assert block, f"{migration.name}: kein ARRAY[...]::TEXT[] nach dem ADD CONSTRAINT"
+    in_check = re.findall(r"'([a-z_]+)'", block.group(1))
 
     assert set(in_check) == set(HEARTBEAT_ENTRY_TYPES), (
         f"{migration.name}: CHECK und HEARTBEAT_ENTRY_TYPES stimmen nicht überein.\n"
