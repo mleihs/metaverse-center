@@ -409,11 +409,91 @@ class TestSanitize:
         assert "%" not in result.text
 
     def test_removal_closes_the_gap_it_leaves(self):
-        """The space before the full stop goes with the token, not after it."""
+        """The space before the full stop goes with the token, not after it.
+
+        Der Gegenstand hier ist die NAHT, nicht der Anhang. `chat_system_prompt`
+        traegt seit dem 04.09.2026 Pflichtvariablen, die die Bereinigung
+        anhaengt, wenn sie fehlen — deshalb steht der Text unten dahinter. Die
+        Zeile davor ist die gepruefte.
+        """
         contract = get_contract("chat_system_prompt")
         text = "{agent_background} A purge left {agent_condition}. Speak on."
         result = sanitize_template(text, contract)
-        assert result.text == "{agent_background} A purge left. Speak on."
+        assert result.text.splitlines()[0] == "{agent_background} A purge left. Speak on."
+
+
+class TestEineFehlendePflichtvariableWirdAngehaengt:
+    """Die vierte Regel der Bereinigung — die einzige, die EINFUEGT.
+
+    BEFUND vom 04.09.2026 auf Produktion: drei von vier welteigenen
+    `chat_system_prompt`-Vorlagen kannten weder ``{agent_memories}`` noch
+    ``{agent_mood}``. Ein Agent hatte 195 Erinnerungen in der Datenbank, und
+    keine einzige ist je in einen Prompt gelangt.
+
+    Das ist die stillste der Fehlerarten: ``UNKNOWN`` und ``MUSTACHE``
+    beschreiben einen Platzhalter, der DASTEHT und nicht wirkt. Hier steht
+    keiner, und was fehlt, faellt lautlos weg — ohne Meldung, ohne Luecke im
+    Text, ohne jede Spur.
+    """
+
+    VELGARIEN = (
+        "You are {agent_name}, a {agent_character} working for the Bureau of "
+        "{agent_background}. You must respond with appropriate compliance."
+    )
+
+    def test_der_befund_wird_erkannt(self):
+        audit = audit_template(self.VELGARIEN, get_contract("chat_system_prompt"))
+        assert audit.missing == frozenset({"agent_memories", "agent_mood"})
+        assert not audit.is_clean
+
+    def test_beide_werden_angehaengt(self):
+        contract = get_contract("chat_system_prompt")
+        result = sanitize_template(self.VELGARIEN, contract)
+        assert result.changed
+        assert audit_template(result.text, contract).is_clean
+
+    def test_der_fremde_text_bleibt_unangetastet(self):
+        """Angehaengt wird, nicht redigiert. Die Vorlage gehoert ihrer Welt."""
+        result = sanitize_template(self.VELGARIEN, get_contract("chat_system_prompt"))
+        assert result.text.startswith(self.VELGARIEN)
+
+    def test_es_wird_kein_satz_erfunden(self):
+        """Der nackte Platzhalter auf eigener Zeile — genau die Gestalt, die
+        die Plattform-Vorlage seit jeher hat. Ein Begleitsatz muesste eine
+        Sprache waehlen, und die reparierte Vorlage kennt womoeglich eine
+        andere als ihre Welt (auf Prod war genau das der Fall)."""
+        result = sanitize_template(self.VELGARIEN, get_contract("chat_system_prompt"))
+        angehaengt = result.text[len(self.VELGARIEN) :].strip()
+        assert angehaengt == "{agent_memories}\n\n{agent_mood}"
+
+    def test_eine_vollstaendige_vorlage_wird_nicht_angefasst(self):
+        contract = get_contract("chat_system_prompt")
+        vollstaendig = self.VELGARIEN + "\n\n{agent_memories}\n\n{agent_mood}"
+        assert not sanitize_template(vollstaendig, contract).changed
+
+    def test_nur_das_fehlende_kommt_dazu(self):
+        contract = get_contract("chat_system_prompt")
+        halb = self.VELGARIEN + "\n\n{agent_mood}"
+        result = sanitize_template(halb, contract)
+        assert result.text.count("{agent_mood}") == 1
+        assert result.text.count("{agent_memories}") == 1
+
+    def test_ohne_vertrag_kein_urteil(self):
+        """Keine Deklaration, keine Pflicht. Raten waere schlimmer als
+        Schweigen."""
+        assert audit_template(self.VELGARIEN, None).missing == frozenset()
+        assert not sanitize_template(self.VELGARIEN, None).changed
+
+    def test_eine_pflicht_muss_deklariert_sein(self):
+        """Eine Pflichtvariable, die keine Aufrufstelle liefert, muesste die
+        Vorlage nennen, ohne dass sie je gefuellt wuerde. Der Fehler faellt
+        beim Laden des Moduls auf, nicht im Betrieb."""
+        from backend.services.prompt_contracts import PromptContract, _contract
+
+        with pytest.raises(ValueError, match="Pflichtvariablen nicht deklariert"):
+            _contract("x", ("a", "b"), required=("c",))
+        # Der gueltige Fall bleibt gueltig.
+        assert isinstance(_contract("x", ("a", "b"), required=("a",)), PromptContract)
 
     def test_a_sentence_with_a_declared_variable_is_kept(self):
         contract = get_contract("chronicle_generation")

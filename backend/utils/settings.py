@@ -27,6 +27,79 @@ logger = logging.getLogger(__name__)
 _TRUE_STRINGS = frozenset({"true", "1", "yes", "on"})
 
 
+#: Die Sprache, in der eine Welt ihre Inhalte fuehrt, wenn sie es nicht sagt.
+#:
+#: ⚠ DIESE ZAHL STAND ZWEIMAL IM WERK, MIT ZWEI VERSCHIEDENEN WERTEN.
+#:
+#:     ChatAIService._get_locale()               -> "de"
+#:     PromptResolver._get_simulation_locale()   -> "en"
+#:
+#: Gemessen am 04.09.2026 auf Produktion: KEINE der 41 Welten hat
+#: `general.content_locale` gesetzt. Der Widerspruch galt also fuer jede.
+#:
+#: Was er anrichtete, ist kein Konfigurationsdetail. Der Chat fragte nach
+#: einer DEUTSCHEN Vorlage, fand keine, und Stufe 2 des Aufloesers
+#: ("Welt + Vorgabesprache der Welt") gab ihm die ENGLISCHE welteigene. Ein
+#: Agent in Velgarien bekam damit:
+#:
+#:   · einen englischen Rahmen um eine deutsche Figur ("You are Mira, a
+#:     <1100 Zeichen deutscher Lebenslauf>")
+#:   · die Anweisung "Acknowledge the party's Citizen Identification Number
+#:     (CIN)" — daher die CIN-Bruchstuecke in den Antworten
+#:   · KEINEN `{agent_memories}`-Platzhalter, also nie sein Gedaechtnis
+#:   · KEINEN `{agent_mood}`-Platzhalter, also nie seine Stimmung
+#:   · kein Wort zur Ich-Form, also Erzaehlung von aussen ueber sich selbst
+#:
+#: WARUM "de" UND NICHT "en": gemessen, nicht gewaehlt. Alle 5 Gespraeche der
+#: Plattform laufen auf `de`, und die Oberflaeche ist deutsch. Dass die
+#: welteigenen Vorlagen 50:6 englisch sind, sagt etwas ueber die SCHMIEDE
+#: (sie schreibt englisch), nicht ueber die Sprache, in der gespielt wird.
+#:
+#: Der Wert wirkt NUR in Stufe 2 des Aufloesers: alle elf `resolve()`-Aufrufe
+#: im Werk geben die Sprache ausdruecklich mit. Er entscheidet also allein
+#: darueber, ob eine welteigene Vorlage in einer FREMDEN Sprache einer
+#: Plattform-Vorlage in der RICHTIGEN vorgezogen wird — und das soll sie nicht.
+DEFAULT_CONTENT_LOCALE = "de"
+
+
+async def get_content_locale(supabase: Client, simulation_id: UUID | str | None) -> str:
+    """Die Sprache, in der eine Welt ihre Inhalte fuehrt.
+
+    Die EINE Stelle, an der diese Frage beantwortet wird. Vorher gab es zwei,
+    und sie widersprachen sich — siehe :data:`DEFAULT_CONTENT_LOCALE`.
+
+    Kein Puffer hier: die Aufrufer halten ihren eigenen (``_cached_locale``,
+    ``_sim_locale``), und beide leben genau eine Anfrage lang. Ein Puffer an
+    dieser Stelle muesste eine Lebensdauer waehlen, die keiner der beiden
+    braucht.
+    """
+    if not simulation_id:
+        return DEFAULT_CONTENT_LOCALE
+    try:
+        response = await (
+            supabase.table("simulation_settings")
+            .select("setting_value")
+            .eq("simulation_id", str(simulation_id))
+            .eq("setting_key", "general.content_locale")
+            .limit(1)
+            .execute()
+        )
+    except (PostgrestAPIError, httpx.HTTPError):
+        # Eine Welt ohne erreichbare Einstellung ist nicht englisch, sie ist
+        # unbekannt. Der Vorgabewert ist die ehrlichere Antwort als ein Fehler
+        # mitten im Prompt-Aufbau.
+        logger.warning("Sprache der Welt %s nicht lesbar", simulation_id, exc_info=True)
+        return DEFAULT_CONTENT_LOCALE
+    rows = extract_list(response)
+    if not rows:
+        return DEFAULT_CONTENT_LOCALE
+    wert = rows[0].get("setting_value")
+    # jsonb kann als '"de"' ankommen; die Anfuehrungszeichen gehoeren nicht
+    # in einen Sprachschluessel.
+    text = str(wert or "").strip().strip('"')
+    return text or DEFAULT_CONTENT_LOCALE
+
+
 def parse_setting_bool(value: object) -> bool:
     """Parse a platform_settings value as a boolean (fail-closed).
 

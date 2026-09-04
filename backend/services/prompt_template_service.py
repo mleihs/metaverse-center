@@ -50,15 +50,34 @@ class PromptTemplateService:
             if problems:
                 offenders[field_name] = problems
 
-        if not offenders:
+        # Die Pflichtvariablen werden ueber BEIDE Felder zusammen geprueft, nicht
+        # je Feld. Eine Vorlage darf `{agent_memories}` im System-Prompt oder im
+        # Rumpf tragen; sie muss es nur irgendwo tragen. Je Feld geprueft haette
+        # jede Vorlage abgewiesen, die die beiden sinnvoll aufteilt.
+        beide = " ".join(str(data.get(f) or "") for f in ("prompt_content", "system_prompt"))
+        fehlend = sorted(audit_template(beide, contract).missing) if beide.strip() else []
+
+        if not offenders and not fehlend:
             return
 
-        detail = "; ".join(f"{field}: {', '.join(names)}" for field, names in sorted(offenders.items()))
-        allowed = ", ".join(sorted(contract.variables))
-        raise bad_request(
-            f"Template '{template_type}' uses placeholders no code supplies ({detail}). "
-            f"Write them as {{name}}, not {{{{name}}}}, and use only: {allowed}."
-        )
+        teile: list[str] = []
+        if offenders:
+            detail = "; ".join(f"{field}: {', '.join(names)}" for field, names in sorted(offenders.items()))
+            allowed = ", ".join(sorted(contract.variables))
+            teile.append(
+                f"uses placeholders no code supplies ({detail}). "
+                f"Write them as {{name}}, not {{{{name}}}}, and use only: {allowed}"
+            )
+        if fehlend:
+            # Die stillste Fehlerart: was fehlt, faellt lautlos weg. Drei von
+            # vier welteigenen Chat-Vorlagen auf Prod kannten weder
+            # `{agent_memories}` noch `{agent_mood}` — ein Agent sprach damit
+            # ohne Gedaechtnis und ohne Stimmung, und niemand sah es ihm an.
+            teile.append(
+                "omits placeholders the code fills and the character needs "
+                f"({', '.join(fehlend)}). Put each of them somewhere in the template"
+            )
+        raise bad_request(f"Template '{template_type}' " + "; and it " .join(teile) + ".")
 
     @classmethod
     async def list_templates(

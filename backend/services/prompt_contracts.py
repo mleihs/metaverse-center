@@ -85,6 +85,19 @@ class Defect(StrEnum):
     MUSTACHE = "mustache_placeholder"
     """Written as ``{{name}}``. Wrong syntax for this renderer."""
 
+    MISSING = "missing_required_placeholder"
+    """Omits a variable the code SUPPLIES and the template must carry.
+
+    Die stillste der drei Fehlerarten. ``UNKNOWN`` und ``MUSTACHE`` beschreiben
+    einen Platzhalter, der DASTEHT und nicht wirkt; hier steht keiner, und was
+    fehlt, faellt lautlos weg — ohne Meldung, ohne Luecke im Text, ohne
+    irgendeine Spur.
+
+    GEMESSEN am 04.09.2026 auf Produktion: drei von vier welteigenen
+    `chat_system_prompt`-Vorlagen kannten weder ``{agent_memories}`` noch
+    ``{agent_mood}``. Ein Agent in Velgarien hatte 195 Erinnerungen in der
+    Datenbank, und keine einzige ist je in einen Prompt gelangt."""
+
 
 @dataclass(frozen=True, slots=True)
 class PromptContract:
@@ -106,6 +119,18 @@ class PromptContract:
     template_type: str
     variables: frozenset[str]
     frame: str = ""
+    required: frozenset[str] = frozenset()
+    """Variablen, ohne die die Vorlage ihren Zweck nicht erfuellt.
+
+    Eine Teilmenge von ``variables``. Der Unterschied ist nicht Strenge,
+    sondern Wirkung: eine deklarierte Variable ohne Platzhalter ist meist
+    harmlos (``{agent_gender}`` fehlt, der Text liest sich trotzdem). Diese
+    hier tragen den ZUSTAND des Agenten — sein Gedaechtnis, seine Stimmung.
+    Fehlt der Platzhalter, spricht die Figur ohne beides und niemand sieht es
+    ihr an.
+
+    Leer fuer jeden Vorlagentyp, der keinen solchen Zustand traegt. Eine
+    Pflicht, die man ueberall hinschreibt, ist keine."""
 
 
 # ── Platform frames ──────────────────────────────────────────────────────────
@@ -255,8 +280,23 @@ _FRAME_GROUP = (
 # at a call site that is not mirrored here turns a test red.
 
 
-def _contract(template_type: str, variables: Iterable[str], frame: str = "") -> PromptContract:
-    return PromptContract(template_type=template_type, variables=frozenset(variables), frame=frame)
+def _contract(
+    template_type: str,
+    variables: Iterable[str],
+    frame: str = "",
+    required: Iterable[str] = (),
+) -> PromptContract:
+    pflicht = frozenset(required)
+    alle = frozenset(variables)
+    # Eine Pflichtvariable, die nicht deklariert ist, koennte keine Aufrufstelle
+    # liefern — die Vorlage muesste dann etwas nennen, das nie gefuellt wird.
+    # Der Fehler faellt beim Laden des Moduls auf, nicht im Betrieb.
+    if not pflicht <= alle:
+        msg = f"{template_type}: Pflichtvariablen nicht deklariert: {sorted(pflicht - alle)}"
+        raise ValueError(msg)
+    return PromptContract(
+        template_type=template_type, variables=alle, frame=frame, required=pflicht
+    )
 
 
 _AGENT_IDENTITY = ("agent_name", "agent_character", "agent_background")
@@ -491,6 +531,10 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 "locale_name",
             ),
             frame=_FRAME_CHAT,
+            # Ohne diese beiden spricht die Figur ohne Gedaechtnis und ohne
+            # Stimmung — und es sieht ihr niemand an. Drei von vier
+            # welteigenen Vorlagen auf Prod hatten genau das (04.09.2026).
+            required=frozenset({"agent_memories", "agent_mood"}),
         ),
         _contract("chat_group_instruction", ("other_agent_names",), frame=_FRAME_GROUP),
         _contract(
@@ -557,9 +601,13 @@ class TemplateAudit:
     mustache: frozenset[str] = frozenset()
     """Placeholders written ``{{name}}``, regardless of whether they are known."""
 
+    missing: frozenset[str] = frozenset()
+    """Pflichtvariablen, die die Vorlage NICHT nennt — und die deshalb
+    lautlos wegfallen. Siehe :attr:`Defect.MISSING`."""
+
     @property
     def is_clean(self) -> bool:
-        return not self.unknown and not self.mustache
+        return not self.unknown and not self.mustache and not self.missing
 
     @property
     def defects(self) -> dict[Defect, frozenset[str]]:
@@ -569,6 +617,8 @@ class TemplateAudit:
             found[Defect.UNKNOWN] = self.unknown
         if self.mustache:
             found[Defect.MUSTACHE] = self.mustache
+        if self.missing:
+            found[Defect.MISSING] = self.missing
         return found
 
 
@@ -594,10 +644,15 @@ def audit_template(text: str, contract: PromptContract | None) -> TemplateAudit:
         else:
             unknown.add(name)
 
+    # Was die Vorlage haette nennen MUESSEN und nicht nennt. Nur mit Vertrag:
+    # ohne Deklaration gibt es keine Pflicht, die man verfehlen koennte.
+    missing = frozenset(contract.required - known) if contract else frozenset()
+
     return TemplateAudit(
         known=frozenset(known),
         unknown=frozenset(unknown),
         mustache=frozenset(mustache),
+        missing=missing,
     )
 
 
@@ -751,6 +806,34 @@ def sanitize_template(text: str, contract: PromptContract | None) -> SanitizeRes
         rebuilt.append(repaired)
 
     result = "".join(rebuilt)
+
+    # ── Die vierte Regel: eine fehlende Pflichtvariable wird ANGEHAENGT ─────
+    #
+    # Die drei Regeln oben schneiden. Diese fuegt ein, und das ist ein anderer
+    # Eingriff — er wird deshalb so eng wie moeglich gehalten: der blosse
+    # Platzhalter auf einer eigenen Zeile, kein erfundener Begleitsatz.
+    #
+    # Genau die Gestalt, die die Plattform-Vorlage seit jeher hat:
+    #
+    #     Dein Hintergrund: {agent_background}
+    #
+    #     {agent_memories}
+    #
+    #     {agent_mood}
+    #
+    # Ein Satz drumherum muesste eine Sprache waehlen, und die Vorlage, die
+    # repariert wird, kennt womoeglich eine andere als die Welt (auf Prod war
+    # genau das der Fall). Der nackte Platzhalter kennt keine.
+    #
+    # ANS ENDE, nicht mittendrin: was zuletzt im Prompt steht, wiegt am
+    # schwersten, und der Zustand des Agenten soll gegen den Rahmen nicht
+    # verlieren. Ausserdem gibt es keine Stelle im fremden Text, die man
+    # aufschneiden koennte, ohne ihn zu redigieren.
+    if audit.missing:
+        result = result.rstrip() + "\n\n" + "\n\n".join(
+            "{" + name + "}" for name in sorted(audit.missing)
+        )
+
     return SanitizeResult(text=result, audit=audit, changed=result != original)
 
 

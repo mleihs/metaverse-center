@@ -31,6 +31,7 @@ from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from backend.utils.responses import extract_list
+from backend.utils.settings import get_content_locale
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -1941,19 +1942,15 @@ class ChatAIService:
         return _trim_history_to_budget(messages, model_id, await self._get_locale())
 
     async def _get_locale(self) -> str:
-        """Get the simulation's content locale (cached per instance)."""
+        """Die Sprache dieser Welt, gepuffert je Dienst.
+
+        ⚠ Diese Methode antwortete ``"de"``, wenn die Welt nichts gesetzt
+        hatte — waehrend `PromptResolver._get_simulation_locale()` auf
+        dieselbe Frage ``"en"`` antwortete. Beide fragen jetzt dieselbe
+        Funktion; siehe `backend/utils/settings.DEFAULT_CONTENT_LOCALE` fuer
+        das, was der Widerspruch angerichtet hat.
+        """
         if hasattr(self, "_cached_locale"):
             return self._cached_locale
-        response = await (
-            self._supabase.table("simulation_settings")
-            .select("setting_value")
-            .eq("simulation_id", str(self._simulation_id))
-            .eq("setting_key", "general.content_locale")
-            .limit(1)
-            .execute()
-        )
-        locale = "de"
-        if response and response.data:
-            locale = str(response.data[0].get("setting_value", "de"))
-        self._cached_locale = locale
-        return locale
+        self._cached_locale = await get_content_locale(self._supabase, self._simulation_id)
+        return self._cached_locale

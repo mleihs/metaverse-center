@@ -15,6 +15,7 @@ from backend.services.prompt_contracts import (
     get_contract,
     render_template,
 )
+from backend.utils.settings import get_content_locale
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -256,29 +257,22 @@ class PromptResolver:
         self._sim_locale: str | None = None
 
     async def _get_simulation_locale(self) -> str:
-        """Get the simulation's default content locale."""
+        """Die Sprache, in der diese Welt ihre Inhalte fuehrt.
+
+        ⚠ Diese Methode gab bis zum 04.09.2026 ``"en"`` zurueck, wenn die
+        Welt nichts gesetzt hatte — waehrend `ChatAIService._get_locale()`
+        auf dieselbe Frage ``"de"`` antwortete. Keine der 41 Welten auf
+        Produktion hatte die Zeile, der Widerspruch galt also fuer jede.
+
+        Beide fragen jetzt :func:`get_content_locale`. Der Widerspruch ist
+        damit nicht behoben, sondern baulich unmoeglich.
+
+        Der Puffer bleibt hier: der Aufloeser lebt eine Anfrage lang und ruft
+        die Methode in Stufe 2 potenziell mehrfach.
+        """
         if self._sim_locale is not None:
             return self._sim_locale
-
-        if not self._simulation_id:
-            self._sim_locale = "en"
-            return "en"
-
-        response = await (
-            self._supabase.table("simulation_settings")
-            .select("setting_value")
-            .eq("simulation_id", str(self._simulation_id))
-            .eq("setting_key", "general.content_locale")
-            .limit(1)
-            .execute()
-        )
-
-        if response and response.data:
-            row = response.data[0] if isinstance(response.data, list) else response.data
-            self._sim_locale = str(row.get("setting_value", "en"))
-        else:
-            self._sim_locale = "en"
-
+        self._sim_locale = await get_content_locale(self._supabase, self._simulation_id)
         return self._sim_locale
 
     async def resolve(
