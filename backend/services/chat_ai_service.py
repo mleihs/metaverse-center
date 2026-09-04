@@ -1180,6 +1180,8 @@ class ChatAIService:
         conversation_id: UUID,
         participant_names: list[str],
         locale: str,
+        *,
+        participants: list[dict] | None = None,
     ) -> None:
         """Fehlende Abschnitte im Hintergrund verdichten.
 
@@ -1387,7 +1389,13 @@ class ChatAIService:
                 saved_messages=saved_messages,
                 model_id=model.model_id,
                 digest_text=ConversationDigestService.render(
-                    setup.digest_rows, setup.locale, since=agent.get("_joined_at")
+                    setup.digest_rows,
+                    setup.locale,
+                    since=agent.get("_joined_at"),
+                    # Ohne diese Kennung bekaeme jede Figur nur das geteilte
+                    # Protokoll — und genau diese Bauform misst 60,9 statt
+                    # 73,3 (ReverieMem-Ablation, Migration 373).
+                    agent_id=str(agent["id"]),
                 ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
@@ -1410,7 +1418,7 @@ class ChatAIService:
             if saved:
                 saved_messages.append(saved)
 
-        self._fire_and_forget_digest(conversation_id, agent_names, locale)
+        self._fire_and_forget_digest(conversation_id, agent_names, locale, participants=agents)
         return saved_messages
 
     # ── Public streaming methods ───────────────────────────
@@ -1476,7 +1484,13 @@ class ChatAIService:
                 saved_messages=saved_messages,
                 model_id=model.model_id,
                 digest_text=ConversationDigestService.render(
-                    setup.digest_rows, setup.locale, since=agent.get("_joined_at")
+                    setup.digest_rows,
+                    setup.locale,
+                    since=agent.get("_joined_at"),
+                    # Ohne diese Kennung bekaeme jede Figur nur das geteilte
+                    # Protokoll — und genau diese Bauform misst 60,9 statt
+                    # 73,3 (ReverieMem-Ablation, Migration 373).
+                    agent_id=str(agent["id"]),
                 ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
@@ -1503,7 +1517,7 @@ class ChatAIService:
                     if msg_data:
                         saved_messages.append(msg_data)
 
-        self._fire_and_forget_digest(conversation_id, agent_names, locale)
+        self._fire_and_forget_digest(conversation_id, agent_names, locale, participants=agents)
 
     @staticmethod
     def _join_context(*parts: str) -> str:
@@ -1597,6 +1611,12 @@ class ChatAIService:
                     # drei Sprecher antworteten als der erste.
                     "agent_name": str(agents[idx].get("name") or "") if idx < len(agents) else "",
                     "other_agent_names": ", ".join(other_names),
+                    "addressed_note": self._addressed_note(
+                        user_message,
+                        agent_names=agent_names,
+                        idx=idx,
+                        locale=locale,
+                    ),
                 },
             )
 
@@ -1644,6 +1664,96 @@ class ChatAIService:
             self._merge_consecutive_user_turns(history_messages),
             closing_instruction,
         )
+
+    @staticmethod
+    def _addressed_note(
+        user_message: str,
+        *,
+        agent_names: list[str],
+        idx: int,
+        locale: str,
+    ) -> str:
+        """Wen der Mensch gerade angesprochen hat — und wer vor dir dran war.
+
+        GEMESSEN am 05.09.2026 an 330 Agentenzuegen eines Fadens mit drei
+        Figuren. Gezaehlt wurde, wie oft eine Figur ihren EIGENEN Namen mit
+        einem fremden zu einem Paar buendelt ("A und B" von A geschrieben) —
+        sie zaehlt sich dann zu den anderen:
+
+            Figur   Position   der Mensch nannte SIE   er nannte eine ANDERE
+            erste     1,00              6 %                    5 %
+            zweite    2,00             10 %                   22 %
+            dritte    3,00             22 %                   37 %
+
+        Zwei Ursachen, beide in der Tabelle:
+
+        * **Die Position.** Wer als zweite oder dritte antwortet, hat zwei
+          fremde Ich-Erzaehlungen ueber DENSELBEN Moment unmittelbar vor sich.
+          Faktor sechs allein dadurch.
+        * **Die dritte Person.** Ein Mensch schreibt "waehrend ich A kuesse" —
+          darin steht kein "du". Fuer B und C enthaelt die Nachricht nichts,
+          woraus sie schliessen koennten, dass sie NICHT gemeint sind. Genau
+          dann ist es am schlimmsten: 22 statt 10, 37 statt 22.
+
+        Beides ist ohne Modell entscheidbar: die Namen stehen im Text, die
+        Reihenfolge steht im Aufruf. Deshalb wird hier gerechnet und nicht
+        gefragt — ein Modell, das die Grenze kennt und trotzdem uebertritt,
+        ist gemessen (CHARM: 72,4 Punkte Abstand zwischen Erkennen und
+        Einhalten bei GPT-4o). Was man ausrechnen kann, gehoert nicht in eine
+        Bitte.
+
+        Leer, wenn nichts zu sagen ist: ein Satz, der immer dasteht, wird
+        Tapete.
+        """
+        if idx >= len(agent_names):
+            return ""
+        ich = agent_names[idx]
+        text = user_message or ""
+
+        def genannt(name: str) -> bool:
+            # Der Vorname genuegt: so sprechen Menschen ihre Figuren an, und
+            # der volle Name kommt in Anreden praktisch nie vor.
+            vorname = name.split()[0] if name else ""
+            if not vorname:
+                return False
+            return re.search(rf"\b{re.escape(vorname)}\b", text, re.IGNORECASE) is not None
+
+        andere_genannt = [n for i, n in enumerate(agent_names) if i != idx and genannt(n)]
+        ich_genannt = genannt(ich)
+        vor_mir = [n for i, n in enumerate(agent_names) if i < idx]
+
+        de = locale == "de"
+        teile: list[str] = []
+
+        if andere_genannt and not ich_genannt:
+            wen = ", ".join(andere_genannt)
+            teile.append(
+                f"Der Mensch spricht in seiner letzten Zeile {wen} an, nicht dich. "
+                f"Was er {wen} tut oder sagt, geschieht nicht dir — du bist die, die es mitbekommt."
+                if de else
+                f"In their last line the human is addressing {wen}, not you. "
+                f"What they do or say to {wen} does not happen to you — you are the one who notices it."
+            )
+        elif ich_genannt:
+            teile.append(
+                f"Der Mensch spricht in seiner letzten Zeile dich an, {ich}."
+                if de else
+                f"In their last line the human is addressing you, {ich}."
+            )
+
+        if vor_mir:
+            wer = ", ".join(vor_mir)
+            teile.append(
+                f"In dieser Runde haben vor dir schon {wer} geantwortet. "
+                f"Ihre Zeilen gehoeren ihnen und beschreiben denselben Augenblick aus ihrer Sicht; "
+                f"deine ist eine andere."
+                if de else
+                f"Earlier in this round {wer} already answered. "
+                f"Those lines are theirs and describe the same moment from their vantage point; "
+                f"yours is a different one."
+            )
+
+        return " ".join(teile)
 
     def _as_turn(
         self,

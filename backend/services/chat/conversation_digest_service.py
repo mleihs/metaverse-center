@@ -131,8 +131,15 @@ class ConversationDigestService:
         """
         return await self._load_digests(conversation_id)
 
-    @staticmethod
-    def render(rows: list[dict[str, Any]], locale: str = "de", *, since: str | None = None) -> str:
+    @classmethod
+    def render(
+        cls,
+        rows: list[dict[str, Any]],
+        locale: str = "de",
+        *,
+        since: str | None = None,
+        agent_id: str | None = None,
+    ) -> str:
         """Abschnitte zu einem Block. Reine Rechnung, kein Netz.
 
         ``since`` ist die PERSPEKTIVGRENZE: ein Abschnitt, der vor dem
@@ -151,14 +158,44 @@ class ConversationDigestService:
         if not rows:
             return ""
 
-        # Die NEUESTEN behalten, wenn gedeckelt wird. `rows` kommt aufsteigend,
-        # der Schnitt liegt also vorn.
-        rows = rows[-MAX_DIGESTS_IN_PROMPT:]
-        kopf = (
-            "Earlier in this conversation (your own memory of it):"
-            if locale == "en"
-            else "Frueher in diesem Gespraech (deine eigene Erinnerung daran):"
+        geteilt = [r for r in rows if not r.get("agent_id")]
+        eigen = (
+            [r for r in rows if agent_id and str(r.get("agent_id") or "") == str(agent_id)]
+            if agent_id
+            else []
         )
+
+        en = locale == "en"
+        bloecke: list[str] = []
+
+        # Die Reihenfolge ist Absicht: erst das geteilte Protokoll, dann die
+        # eigene Erinnerung. Das Letzte vor der Antwort gewinnt, und die
+        # eigene Stimme soll die letzte sein, die die Figur von sich liest.
+        if geteilt:
+            bloecke.append(
+                cls._block(
+                    geteilt,
+                    "Record of this conversation so far — external events only, "
+                    "as anyone in the room could have observed them:"
+                    if en
+                    else "Protokoll dieses Gespraechs bisher — nur was im Raum "
+                    "beobachtbar war, so wie es jeder haette sehen koennen:",
+                )
+            )
+        if eigen:
+            bloecke.append(
+                cls._block(
+                    eigen,
+                    "What you yourself remember of it:"
+                    if en
+                    else "Woran DU dich davon erinnerst:",
+                )
+            )
+        return "\n\n".join(bloecke)
+
+    @staticmethod
+    def _block(rows: list[dict[str, Any]], kopf: str) -> str:
+        rows = rows[-MAX_DIGESTS_IN_PROMPT:]
         teile = [kopf]
         for row in rows:
             teile.append(
@@ -169,7 +206,7 @@ class ConversationDigestService:
     async def _load_digests(self, conversation_id: UUID) -> list[dict[str, Any]]:
         response = await (
             self._supabase.table("chat_conversation_digests")
-            .select("segment_index, covers_from, covers_to, summary")
+            .select("segment_index, covers_from, covers_to, summary, agent_id")
             .eq("conversation_id", str(conversation_id))
             .order("segment_index")
             .execute()
@@ -183,6 +220,7 @@ class ConversationDigestService:
         conversation_id: UUID,
         *,
         participant_names: list[str],
+        participants: list[dict[str, Any]] | None = None,
         locale: str = "de",
         max_per_run: int = 2,
     ) -> int:
@@ -218,13 +256,35 @@ class ConversationDigestService:
         if vollstaendig == 0:
             return 0
 
-        vorhanden = {row["segment_index"] for row in await self._load_digests(conversation_id)}
-        fehlend = [i for i in range(vollstaendig) if i not in vorhanden]
-        if not fehlend:
+        zeilen = await self._load_digests(conversation_id)
+        # Das geteilte Protokoll und die Ich-Erinnerungen fehlen unabhaengig
+        # voneinander. Wuerde hier ueber beide zusammen gezaehlt, hielte ein
+        # vorhandenes Protokoll den Abschnitt fuer erledigt und keine Figur
+        # bekaeme je eine eigene Erinnerung (Migration 373).
+        hat_protokoll = {r["segment_index"] for r in zeilen if not r.get("agent_id")}
+        hat_episode = {
+            (r["segment_index"], str(r["agent_id"])) for r in zeilen if r.get("agent_id")
+        }
+        fehlend = [i for i in range(vollstaendig) if i not in hat_protokoll]
+
+        besetzung = [a for a in (participants or []) if a.get("id")]
+        fehlende_episoden = [
+            (i, a)
+            for i in range(vollstaendig)
+            for a in besetzung
+            if (i, str(a["id"])) not in hat_episode
+        ]
+        if not fehlend and not fehlende_episoden:
             return 0
 
         model = await self._model_resolver.resolve_text_model(PURPOSE)
         template = await self._prompt_resolver.resolve("chat_conversation_digest", locale)
+        # Bewusst eine Anweisung und kein Bedingungsausdruck: der
+        # Vertragspruefer bindet einen Vorlagennamen an sein `resolve(...)`,
+        # und ein `x = a if b else None` verbirgt genau diese Bindung.
+        episode_template: Any = None
+        if fehlende_episoden:
+            episode_template = await self._prompt_resolver.resolve("chat_character_episode", locale)
         budget = BudgetContext(
             admin_supabase=self._supabase,
             purpose=PURPOSE,
@@ -243,6 +303,31 @@ class ConversationDigestService:
                 budget=budget,
             ):
                 erzeugt += 1
+
+        # Die Ich-Schicht. Sie kostet einen Aufruf je Figur und Abschnitt —
+        # aber EINMAL je Abschnitt, nicht je Zug. Die Ablation aus
+        # ReverieMem sagt, warum sie nicht wegkann: das geteilte Protokoll
+        # allein bringt 60,9 statt 73,3, und die Verweigerungsgenauigkeit
+        # faellt von 81 auf 47. Ohne eigene Erfahrung haelt nichts die Figur
+        # in ihrer Sicht.
+        rest = max(0, max_per_run * max(len(besetzung), 1) - erzeugt)
+        if episode_template is not None:
+            for index, agent in fehlende_episoden[:rest]:
+                if index not in hat_protokoll and index not in fehlend[:max_per_run]:
+                    # Ohne Protokoll waere die Ich-Erinnerung die einzige
+                    # Schicht — und genau die Bauform misst 17,8 statt 73,3.
+                    continue
+                if await self._write_one(
+                    conversation_id,
+                    index,
+                    participant_names=participant_names,
+                    locale=locale,
+                    model=model,
+                    episode_template=episode_template,
+                    budget=budget,
+                    agent=agent,
+                ):
+                    erzeugt += 1
         return erzeugt
 
     async def _write_one(
@@ -253,8 +338,10 @@ class ConversationDigestService:
         participant_names: list[str],
         locale: str,
         model: Any,
-        template: Any,
         budget: BudgetContext,
+        template: Any = None,
+        episode_template: Any = None,
+        agent: dict[str, Any] | None = None,
     ) -> bool:
         messages = await self._load_segment(conversation_id, segment_index)
         if len(messages) < SEGMENT_SIZE:
@@ -271,16 +358,43 @@ class ConversationDigestService:
             return False
 
         transcript = "\n".join(self._as_line(m) for m in messages)
-        prompt = self._prompt_resolver.fill_template(
-            template,
-            {
-                "participant_names": ", ".join(participant_names),
-                "transcript": transcript,
-                "locale_name": LOCALE_NAMES.get(locale, locale),
-                "segment_index": str(segment_index + 1),
-            },
-        )
-        system_prompt = self._prompt_resolver.fill_system_prompt(template, {})
+
+        # ⚠ ZWEI Vorlagen, ZWEI Fuellstellen — mit Absicht.
+        #
+        # Eine gemeinsame Fuellstelle waere kuerzer gewesen und hat den
+        # Vertragspruefer sofort rot gemacht: er bindet einen Vorlagennamen an
+        # sein `resolve(...)`, also htte er die Ich-Variablen dem PROTOKOLL
+        # zugeschrieben und fuer die Ich-Vorlage gar keine Stelle gefunden.
+        #
+        # Das Tor hatte recht, und nicht nur formal: das Protokoll DARF
+        # `agent_name` nicht kennen. Kennte es ihn, waere es wieder ein Text
+        # mit einer Figur im Mittelpunkt — genau das, wovon 373 wegwill.
+        # Getrennte Fuellstellen machen aus dieser Zusage etwas Pruefbares.
+        if agent is None:
+            vorlage = template
+            prompt = self._prompt_resolver.fill_template(
+                template,
+                {
+                    "participant_names": ", ".join(participant_names),
+                    "transcript": transcript,
+                    "locale_name": LOCALE_NAMES.get(locale, locale),
+                    "segment_index": str(segment_index + 1),
+                },
+            )
+        else:
+            name = str(agent.get("name") or "")
+            vorlage = episode_template
+            prompt = self._prompt_resolver.fill_template(
+                episode_template,
+                {
+                    "agent_name": name,
+                    "other_agent_names": ", ".join(n for n in participant_names if n != name),
+                    "transcript": transcript,
+                    "locale_name": LOCALE_NAMES.get(locale, locale),
+                    "segment_index": str(segment_index + 1),
+                },
+            )
+        system_prompt = self._prompt_resolver.fill_system_prompt(vorlage, {})
 
         try:
             text = await self._openrouter.generate(
@@ -347,6 +461,7 @@ class ConversationDigestService:
                         "summary": text,
                         "locale": locale,
                         "model": model.model_id,
+                        "agent_id": str(agent["id"]) if agent is not None else None,
                     }
                 )
                 .execute()

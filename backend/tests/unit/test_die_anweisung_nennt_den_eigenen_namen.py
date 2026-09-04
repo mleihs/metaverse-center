@@ -99,3 +99,78 @@ class TestDieVorlageAnkertVornUndHinten:
         assert text.rstrip().endswith(f"Antworte jetzt als {wer}.")
         for n in andere:
             assert f"Du bist {n}." not in text
+
+
+class TestDieLageWirdAusgerechnetNichtErbeten:
+    """Der zweite Anker: wer gemeint war, und wer vor dir dran war.
+
+    Gemessen an 330 Zuegen (Migration 372). Zwei Zahlen tragen die Klasse:
+    die Position (6 % bei der ersten Sprecherin, 37 % bei der dritten) und
+    die Anrede in der dritten Person (22 statt 10, 37 statt 22, wenn der
+    Mensch eine ANDERE nannte).
+
+    Beides steht im Text und im Aufruf — also wird es gerechnet. CHARM misst
+    72,4 Punkte Abstand zwischen dem Erkennen einer Grenze und ihrem
+    Einhalten; eine weitere Bitte haelt das nicht.
+    """
+
+    def test_wer_nicht_gemeint_war_erfaehrt_es(self):
+        note = ChatAIService._addressed_note(
+            "waehrend ich Marie kuesse, fessle ich die beiden anderen",
+            agent_names=BESETZUNG, idx=1, locale="de",
+        )
+        assert "Marie Morgenrot" in note
+        assert "nicht dich" in note
+
+    def test_wer_gemeint_war_erfaehrt_es_auch(self):
+        note = ChatAIService._addressed_note(
+            "Marie, komm her", agent_names=BESETZUNG, idx=0, locale="de"
+        )
+        assert "dich an" in note
+        assert "nicht dich" not in note
+
+    def test_der_vorname_genuegt(self):
+        """So sprechen Menschen ihre Figuren an. Verlangte die Erkennung den
+        vollen Namen, traefe sie in echten Nachrichten fast nie."""
+        note = ChatAIService._addressed_note(
+            "ich kuesse marie", agent_names=BESETZUNG, idx=1, locale="de"
+        )
+        assert "nicht dich" in note
+
+    def test_die_vorredner_dieser_runde_stehen_drin(self):
+        note = ChatAIService._addressed_note(
+            "was passiert?", agent_names=BESETZUNG, idx=2, locale="de"
+        )
+        assert "Marie Morgenrot" in note and "Suse Sonnenblum" in note
+        assert "denselben Augenblick" in note
+
+    def test_die_erste_sprecherin_hat_keine_vorredner(self):
+        note = ChatAIService._addressed_note(
+            "was passiert?", agent_names=BESETZUNG, idx=0, locale="de"
+        )
+        assert note == "", f"die erste Sprecherin bekommt einen Hinweis auf Vorredner: {note!r}"
+
+    def test_ohne_anlass_bleibt_der_satz_leer(self):
+        """Ein Satz, der IMMER dasteht, wird Tapete. Die Wirkung haengt daran,
+        dass er nur erscheint, wenn er etwas sagt."""
+        assert ChatAIService._addressed_note("", agent_names=BESETZUNG, idx=0, locale="de") == ""
+
+    def test_beide_sprachen_sind_verschieden(self):
+        de = ChatAIService._addressed_note("ich kuesse Marie", agent_names=BESETZUNG, idx=1, locale="de")
+        en = ChatAIService._addressed_note("ich kuesse Marie", agent_names=BESETZUNG, idx=1, locale="en")
+        assert de != en and "not you" in en
+
+    def test_ein_teilstring_loest_nicht_aus(self):
+        """`Marie` darf nicht in `Marienbad` treffen — sonst spraeche der
+        Hinweis von einer Anrede, die niemand gemacht hat."""
+        note = ChatAIService._addressed_note(
+            "wir fahren nach Marienbad", agent_names=BESETZUNG, idx=1, locale="de"
+        )
+        assert "nicht dich" not in note
+
+    def test_der_vertrag_kennt_die_lage(self):
+        assert "addressed_note" in get_contract("chat_group_instruction").variables
+
+    def test_die_aufrufstelle_fuellt_sie(self):
+        quelle = inspect.getsource(ChatAIService._build_group_turn_context)
+        assert '"addressed_note"' in quelle

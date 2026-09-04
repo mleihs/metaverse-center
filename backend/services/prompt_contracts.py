@@ -537,7 +537,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
         ),
         _contract(
             "chat_group_instruction",
-            ("agent_name", "other_agent_names"),
+            ("agent_name", "other_agent_names", "addressed_note"),
             frame=_FRAME_GROUP,
             # Der eigene Name ist PFLICHT, nicht Schmuck. Die Anweisung steht
             # als letzte Zeile vor der Antwort; nennt sie nur die anderen,
@@ -560,6 +560,14 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             "chat_conversation_digest",
             ("participant_names", "transcript", "locale_name", "segment_index"),
             frame=_FRAME_DIGEST,
+        ),
+        _contract(
+            # Die Ich-Schicht (Migration 373). Der eigene Name ist Pflicht:
+            # ohne ihn waere es wieder ein Bericht ueber alle.
+            "chat_character_episode",
+            ("agent_name", "other_agent_names", "segment_index", "transcript", "locale_name"),
+            frame=_FRAME_DIGEST,
+            required=("agent_name",),
         ),
         _contract("chat_event_context", ("event_list",)),
         _contract(
