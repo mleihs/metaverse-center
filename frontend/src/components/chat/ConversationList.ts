@@ -134,7 +134,17 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      min-height: calc(var(--chat-header-h, 58px) - var(--border-width-default));
+      /*
+       * DAS MASS IST DAS GANZE, NICHT DAS GANZE MINUS EINEM RAND.
+       *
+       * Hier stand calc(… minus --border-width-default), also 58 - 2 = 56.
+       * Zwei Dinge stimmten daran nicht, und beide sind am 04.09.2026 auf Prod
+       * gemessen: der Rand ist gar nicht 2 px, sondern 3 (--border-medium),
+       * und bei box-sizing: border-box liegt er ohnehin INNERHALB der Hoehe —
+       * abgezogen gehoert er also nirgends. Dieser Kopf stand dadurch auf 56,
+       * der rechte auf 68: 12 px auseinander.
+       */
+      min-height: var(--chat-header-h, 58px);
       box-sizing: border-box;
       padding-inline: var(--space-3);
       background: var(--color-surface-header);

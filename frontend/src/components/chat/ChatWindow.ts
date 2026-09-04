@@ -135,17 +135,37 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       border-bottom: var(--border-medium);
       flex-shrink: 0;
       z-index: 1;
+      /*
+       * Das Mass haengt am AEUSSEREN Kasten, weil hier der Rand sitzt — genau
+       * wie links am list__header. Vorher trug es die innere Zeile, und der
+       * Rand des Elternteils kam obendrauf: derselbe Ausdruck ergab links 56
+       * und rechts 56 + 3. Zwei Kaesten, die dieselbe Rechnung benutzen und
+       * trotzdem verschieden hoch sind, sind schlimmer als zwei verschiedene
+       * Rechnungen — man sucht den Fehler nicht dort, wo beide gleich aussehen.
+       *
+       * min-height und nicht height: klappt die Ereignisleiste auf, DARF der
+       * Kopf wachsen. Buendig sein muss er im Ruhezustand.
+       */
+      min-height: var(--chat-header-h, 58px);
+      box-sizing: border-box;
     }
 
     .window__header-main {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--space-3) var(--space-4);
-      /* Auf das gemeinsame Mass aus ChatView festgenagelt, damit die Liste
-         links auf derselben Linie enden kann. Die Ereignis-Leiste haengt
-         DARUNTER als eigener Streifen und darf nicht in diese Hoehe hinein. */
-      min-height: calc(var(--chat-header-h, 58px) - var(--border-width-default));
+      /*
+       * Polster 8 statt 12, und das ist keine Kosmetik, sondern Arithmetik:
+       * der Inhalt dieser Zeile ist 39 px hoch (Name 24 + Unterzeile 15, am
+       * 04.09.2026 auf Prod gemessen), der Portraitstapel 36. Mit 12 px oben
+       * und unten waren das 63 — das min-height von 56 war ein BODEN, kein
+       * Deckel, also hat der Inhalt es einfach ueberschritten, ohne dass etwas
+       * gemeldet haette. Mit 8 sind es 55, und der Kasten haelt sein Mass.
+       */
+      padding: var(--space-2) var(--space-4);
+      /* Die Hoehe kommt vom Elternteil; diese Zeile fuellt nur, was uebrig
+         ist. Die Ereignis-Leiste haengt DARUNTER als eigener Streifen. */
+      flex: 1 1 auto;
       box-sizing: border-box;
     }
 
@@ -365,7 +385,13 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       gap: var(--space-2);
       padding: 0 var(--space-4);
       overflow: hidden;
-      border-top: var(--border-light);
+      /*
+       * Der Rand gehoert zur GEOEFFNETEN Leiste. Geschlossen ist sie
+       * max-height: 0 und trotzdem 2 px hoch — ihr eigener oberer Rand
+       * zeichnet eine Linie unter einen Streifen, den es gerade nicht gibt,
+       * und schiebt die Unterkante des Kopfes nach unten.
+       */
+      border-top: 0;
       background: var(--color-surface-sunken);
       max-height: 0;
       opacity: 0;
@@ -376,6 +402,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
 
     .window__events-bar--open {
+      border-top: var(--border-light);
       max-height: 120px;
       opacity: 1;
       padding: var(--space-2) var(--space-4);
