@@ -174,10 +174,25 @@ export class VelgAtlasTerritories extends LitElement {
         color: var(--color-text-primary);
       }
 
+      /* NICHT space-between, und das ist der Punkt.
+         Diese Karte ist die einzige der Mappe ohne Innenabstand: ihr Inhalt
+         liegt buendig auf den Spaltenkanten, weil die Platte darueber eine
+         gerahmte Abbildung ist und ihr Rahmen die Spalte definiert. Mit
+         space-between wurde die Buergerzahl gegen genau diese Kante gedrueckt
+         -- gemessen am 04.09.2026: null Pixel zwischen dem letzten Buchstaben
+         und der Plattenkante. Bei den Karten eins bis drei folgt darauf eine
+         Rasterluecke und es faellt nicht auf; bei der letzten der Reihe folgt
+         der Blattrand, und das Wort sieht aus, als sei es hinuntergefallen.
+
+         Die Mappe hat fuer ein Etikettenpaar ohnehin schon eine Grammatik --
+         der Blattkopf schreibt "BLATT 04 · VERMESSENE GEBIETE", nebeneinander
+         mit Trennpunkt, nicht auseinandergezogen. Die Meta-Zeile folgt ihr
+         jetzt. Damit beruehrt nichts mehr die rechte Kante, und die Zeile liest
+         als eine Angabe statt als zwei, die sich meiden. */
       .facts {
         display: flex;
-        justify-content: space-between;
-        gap: var(--space-3);
+        justify-content: flex-start;
+        gap: var(--space-2);
         margin-top: var(--space-3);
         font-family: var(--font-mono);
         font-size: var(--text-xs);
@@ -188,6 +203,12 @@ export class VelgAtlasTerritories extends LitElement {
 
       .facts__live {
         color: var(--color-success);
+      }
+
+      /* Der Trennpunkt gehoert der Zeile, nicht den zwei Angaben: er nimmt
+         deshalb den leisesten Ton und ist fuer Vorlesegeraete nicht da. */
+      .facts__dot {
+        color: var(--color-border);
       }
 
       h3 {
@@ -301,6 +322,7 @@ export class VelgAtlasTerritories extends LitElement {
           <span class=${world.transmitting ? 'facts__live' : ''}>
             ${world.transmitting ? msg('Transmitting') : msg('Quiet')}
           </span>
+          <span class="facts__dot" aria-hidden="true">·</span>
           <span>${msg(str`${world.agent_count} citizens`)}</span>
         </p>
 

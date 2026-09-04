@@ -124,7 +124,13 @@ export class VelgIntakeBrowseModal extends SignalWatcher(LitElement) {
         border: var(--border-width-thin) solid var(--color-border-light);
       }
 
+      /* Wie .card__plate im Atlas-Register: dieser Platzhalter ist ein <span>,
+         also inline, und eine Inline-Box nimmt weder aspect-ratio noch
+         inline-size an. Der gestrichelte Kasten fuer "kein Bild" hatte damit
+         gar keine Groesse. .shot daneben ist ein <img> und deshalb nie
+         betroffen -- ein ersetztes Element bringt seine eigene Box mit. */
       .shot--none {
+        display: block;
         aspect-ratio: 16 / 9;
         inline-size: 96px;
         border: var(--border-width-thin) dashed var(--color-border-light);

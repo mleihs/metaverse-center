@@ -102,6 +102,13 @@ jobs:
       - name: Lint - Avatar-Plakette setzt Grund und Tinte gemeinsam
         run: bash frontend/scripts/lint-avatar-ground-ink-pair.sh
         working-directory: .
+      # Eine Inline-Box nimmt kein aspect-ratio an. Der Nachbar mit demselben
+      # CSS und einem <div> im Markup sieht richtig aus — deshalb faellt es
+      # weder beim Lesen noch im Browser auf, bis jemand den fehlenden Namen
+      # meldet.
+      - name: Lint - kein aspect-ratio auf einer Inline-Box
+        run: bash frontend/scripts/lint-no-sized-inline-box.sh
+        working-directory: .
 
       # A comment whose end lands in the wrong place turns the paragraph after
       # it into bare CSS. Nothing else here parses .css: tsc does not read it,

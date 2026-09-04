@@ -106,7 +106,17 @@ export class VelgAtlasRegistry extends LitElement {
       /* Eine kleine Platte, damit das Register wie der Rest der Mappe liest:
          ein Blatt zeigt eine Aufnahme, keinen Text allein. Fehlt das Bild,
          bleibt das Raster — ein Gebiet, das noch niemand fotografiert hat. */
+      /* display: block ist hier KEIN Beiwerk. Die Platte ist ein <span> --
+         richtig so, ein <button> darf nur Phrasing-Inhalt tragen -- und ein
+         Span ist inline. Eine Inline-Box ignoriert aspect-ratio UND
+         overflow: hidden, und das Bild darin hat mit height: 100% nichts, woran
+         es sich messen koennte. Das Bild lief deshalb ungeklippt auf seine
+         natuerliche Hoehe und schob Nummer, Meta-Zeile und Namen aus dem Blick:
+         man sah nur Bilder. Das Landing-Gegenstueck (AtlasTerritories .plate)
+         hat dasselbe CSS und ein <div> im Markup -- deshalb fiel es dort nie
+         auf. Gemeldet am 04.09.2026. */
       .card__plate {
+        display: block;
         position: relative;
         aspect-ratio: 16 / 9;
         margin-bottom: var(--space-3);
