@@ -219,6 +219,13 @@ jobs:
         run: bash scripts/lint-role-vocabulary.sh
         working-directory: .
 
+      # Kein Gespraechs-Wortlaut im Repo. Am 04.09.2026 stand er in Kommentaren,
+      # in einem Migrationskopf, in TESTFIXTURES und in Commit-Nachrichten —
+      # darunter Saetze des Nutzers. Das Repo ist oeffentlich.
+      - name: Lint (kein Gespraechs-Wortlaut in Dateien und Commits)
+        run: bash scripts/lint-no-chat-content.sh
+        working-directory: .
+
       # Die msg()-Seite hielt `frontend/scripts/lint-llm-content.sh` seit je.
       # Die andere Seite hatte kein Tor, und dort standen 1 253 Geviertstriche:
       # im Backend, in der Saat und in den Verlies-Paketen — allein 806 in

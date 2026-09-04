@@ -215,6 +215,23 @@ msg('...')
 
 ### Safety (HARD BLOCKS)
 
+- NEVER put verbatim conversation content anywhere in this repository. Not in
+  code, comments, docstrings, tests, fixtures, docs, migrations, handoffs — and
+  not in a commit message. This covers agent messages from a real simulation
+  AND anything the user said, whether to the agents or to Claude during the
+  work. The repository is public.
+  - Allowed instead: measurements, counts, line numbers, timestamps without
+    content, and the SHAPE of a transcript (`user <line>` / `[Agent A]: <reply>`).
+    They carry the finding better than a quote does.
+  - Examples must be invented and harmless. The sanctioned test figures are
+    Marie Morgenrot, Benno Blattgold, Suse Sonnenblum, Doktor Freundlich — never
+    the cast of a real world.
+  - Agent names ALONE are world content (seed, help, public site) and stay. What
+    is forbidden is a name together with message text.
+  - Enforced by `scripts/lint-no-chat-content.sh` (files + the last 50 commit
+    messages). It exists because a real excerpt is tempting: it proves a finding
+    better than an invented one. That is exactly why the rule needs a gate and
+    not good intentions.
 - NEVER destroy, delete, reset, drop, or truncate production database data.
 - Python 3.13 everywhere (production + local venv), NOT system Python 3.9.
 

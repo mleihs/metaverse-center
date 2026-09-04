@@ -17,15 +17,15 @@ Nachgemessen an den echten 329 Nachrichten des Fadens
 | | fremde Züge als ICH | eigene Züge mit Namensmarke |
 |---|---|---|
 | Marie Morgenrot | 37 → **0** | 146 → **0** |
-| Benno Blattgold | 151 → **0** | 32 → **0** |
-| Suse Sonnenblum | 178 → **0** | 5 → **0** |
+| Suse Sonnenblum | 151 → **0** | 32 → **0** |
+| Benno Blattgold | 178 → **0** | 5 → **0** |
 
 Doppelte `user`-Züge: 36/264/319 roh → 0 nach dem Zusammenfassen.
 Zwei Namensmarken übereinander: 32 → 0.
 
 Nebenbefund im Bestand: von 57 Agentennachrichten, die mit `[` beginnen, sind
 **41 echte Regieanweisungen** und **16 fremde Namensmarken unter eigener
-`agent_id`** (`[Benno Blattgold] …` gespeichert als Marie). Die 16 werden beim LESEN
+`agent_id`** (`[Suse Sonnenblum] …` gespeichert als Marie). Die 16 werden beim LESEN
 weggeschnitten (`_strip_speaker_labels` in `_as_turn`); **der Bestand ist
 unangetastet**. Ob sie auch in der Datenbank fallen sollen, ist eine
 Entscheidung über fremde Gesprächsdaten und steht noch aus.
