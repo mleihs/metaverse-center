@@ -41,6 +41,7 @@ import type { ActiveEpochParticipation } from '../../types/index.js';
 import { navigate } from '../../utils/navigation.js';
 import { buttonStyles } from '../shared/button-styles.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import '../shared/VelgSurveyLoader.js';
 import { CycleCountdown } from './cycle-countdown.js';
 
 /** Wie oft die Uhr nachrechnet. Eine Sekunde ist die feinste Angabe, die der
@@ -360,6 +361,13 @@ export class VelgDashboardStage extends LitElement {
   @property({ attribute: false }) participation: ActiveEpochParticipation | null = null;
 
   /**
+   * Der Abruf laeuft noch. Ohne dieses Merkmal hat `participation === null`
+   * zwei Bedeutungen, und die Buehne zeigt waehrend des Ladens „Nothing
+   * requires you" — siehe AtlasStage, dieselbe Ursache und derselbe Tag.
+   */
+  @property({ type: Boolean, reflect: true }) loading = false;
+
+  /**
    * Die Zyklusuhr. Sie liegt seit dem 03.09.2026 in `cycle-countdown.ts`, weil
    * das Atlas-Blatt dieselbe Zahl zeigt — zwei Uhren gehen irgendwann
    * auseinander, und die eine spraenge eine Sekunde spaeter auf Null als die
@@ -380,6 +388,7 @@ export class VelgDashboardStage extends LitElement {
 
   protected render() {
     const p = this.participation;
+    if (this.loading) return this._renderLoading();
     if (!p) return this._renderIdle();
 
     const running = this._cycle.running;
@@ -466,6 +475,17 @@ export class VelgDashboardStage extends LitElement {
   }
 
   /** Kein laufender Einsatz. Kein Bild, keine Uhr, keine erfundene Dringlichkeit. */
+  /** Waehrend der Abruf laeuft: das Etikett steht, die Aussage nicht. */
+  private _renderLoading() {
+    return html`
+      <div class="body stage-container">
+        <p class="kicker">${msg('Priority // No active operation')}</p>
+        <velg-survey-loader size="lg" stacked .label=${msg('Surveying your deployment')}>
+        </velg-survey-loader>
+      </div>
+    `;
+  }
+
   private _renderIdle() {
     return html`
       <div class="body stage-container">

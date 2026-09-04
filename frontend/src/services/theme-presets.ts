@@ -657,9 +657,17 @@ export const PLATFORM_SKINS: Record<PlatformSkin, Record<string, string>> = {
   atlas: PLATFORM_ATLAS_CONFIG,
 };
 
-/** Narrow an arbitrary stored string to a skin, or nothing. */
-export function isPlatformSkin(value: string | null): value is PlatformSkin {
-  return value !== null && value in PLATFORM_SKINS;
+/**
+ * Narrow an arbitrary value to a skin, or nothing.
+ *
+ * `unknown` and not `string | null`: the callers are a localStorage read, a
+ * JSON field off the wire and an admin form — none of them can promise a
+ * string, and a guard that has to be talked into accepting its input is a
+ * guard that gets bypassed with a cast. The `typeof` check below is what makes
+ * `in` safe here.
+ */
+export function isPlatformSkin(value: unknown): value is PlatformSkin {
+  return typeof value === 'string' && value in PLATFORM_SKINS;
 }
 
 /** Maps SimulationTheme types to suggested preset names. */

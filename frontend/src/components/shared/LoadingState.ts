@@ -1,6 +1,29 @@
+/**
+ * Der gemeinsame Wartezustand — an 46 Stellen im Werk.
+ *
+ * Er zeigte bis zum 04.09.2026 einen Kreisel: ein 40-px-Quadrat mit einer
+ * rotierenden Kante. Das ist die Vorgabe jeder Anwendung und sagt nichts ueber
+ * diese hier. Seither zeigt er den Vermessungstakt (velg-survey-loader) — ein
+ * kleines Feld, das Zelle fuer Zelle abgeschritten wird, wie ein Grundstueck,
+ * das jemand gerade aufnimmt.
+ *
+ * WARUM DIE AENDERUNG HIER STATT AN 46 STELLEN
+ *   Weil dieses Bauteil genau dafuer da ist. Jede Ansicht, die schon
+ *   velg-loading-state benutzt, bekommt das neue Zeichen ohne eine Zeile
+ *   Aenderung — und behaelt ihre eigene Beschriftung, denn die Schnittstelle
+ *   (`message`) bleibt dieselbe.
+ *
+ * WARUM KEIN EIGENER ATLAS-WARTEZUSTAND
+ *   Der Takt fragt nirgends nach dem Skin: er nimmt --color-grid,
+ *   --color-border und --color-primary wie jede Platte der Mappe. Auf Papier
+ *   liest er als Vermessung, auf Phosphor als abtastende Sensorzeile —
+ *   dieselbe Bewegung, zwei Lesarten, eine Datei.
+ */
+
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import './VelgSurveyLoader.js';
 
 @localized()
 @customElement('velg-loading-state')
@@ -12,45 +35,24 @@ export class VelgLoadingState extends LitElement {
 
     .loading {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: var(--space-4);
       min-height: 200px;
       padding: var(--space-8);
     }
-
-    .loading__spinner {
-      width: 40px;
-      height: 40px;
-      border: var(--border-width-thick) solid var(--color-border-light);
-      border-top-color: var(--color-primary);
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-
-    .loading__message {
-      font-family: var(--font-brutalist);
-      font-weight: var(--font-bold);
-      font-size: var(--text-sm);
-      text-transform: var(--label-transform);
-      letter-spacing: var(--tracking-brutalist);
-      color: var(--color-text-secondary);
-    }
   `;
 
+  /**
+   * Die Beschriftung. Leer laesst sie weg — der Takt setzt dann selbst eine
+   * verborgene fuer den Schirmleser, denn ein Wartezeichen ohne Wort ist fuer
+   * einen Schirmleser gar kein Zeichen.
+   */
   @property({ type: String }) message = msg('Loading...');
 
   protected render() {
     return html`
       <div class="loading">
-        <div class="loading__spinner"></div>
-        ${this.message ? html`<div class="loading__message">${this.message}</div>` : null}
+        <velg-survey-loader size="lg" stacked .label=${this.message}></velg-survey-loader>
       </div>
     `;
   }

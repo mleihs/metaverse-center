@@ -37,6 +37,7 @@ import { SignalWatcher } from '@lit-labs/preact-signals';
 import { css, html, LitElement, nothing, type TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { appState } from '../../services/AppStateManager.js';
+import '../shared/PlatformFooter.js';
 import { agentsApi } from '../../services/api/AgentsApiService.js';
 import { resonanceApi } from '../../services/api/index.js';
 import { simulationsApi } from '../../services/api/SimulationsApiService.js';
@@ -203,6 +204,20 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
     `,
   ];
 
+  /*
+   * DREI ZUSTAENDE BRAUCHEN DREI WERTE, NICHT ZWEI.
+   *
+   * `_dashboard === null` hiess bisher zweierlei: „wird noch geladen" UND
+   * „nichts da". Die Buehne bekam nur das null und zeigte deshalb waehrend des
+   * Abrufs „nichts verlangt nach dir" — eine Auskunft, die niemand geprueft
+   * hatte, und die eine halbe Sekunde spaeter wieder verschwand. Vom Benutzer
+   * gemeldet am 04.09.2026.
+   *
+   * Ein Wert, der nach dem Abruf gesetzt wird, kann das nicht loesen: ein
+   * FEHLGESCHLAGENER Abruf laesst _dashboard ebenfalls null. Deshalb ein
+   * eigenes Merkmal, das nur eines sagt — ist der Abruf durch.
+   */
+  @state() private _geladen = false;
   @state() private _dashboard: DashboardData | null = null;
   @state() private _registry: Simulation[] = [];
   @state() private _agents: Agent[] = [];
@@ -260,6 +275,9 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
     }
 
     await this._loadDossiers();
+    /* Nach allen vier Abrufen, unabhaengig vom Ausgang: die Frage ist „ist der
+       Abruf durch", nicht „hat er etwas gebracht". */
+    this._geladen = true;
   }
 
   /** Die Dossierkarten kommen aus der ERSTEN eigenen Welt, nicht aus einer
@@ -341,7 +359,10 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
         .clock=${this._clock}
       ></velg-dashboard-command-strip>
 
-      <velg-dashboard-stage .participation=${participations[0] ?? null}></velg-dashboard-stage>
+      <velg-dashboard-stage
+        .participation=${participations[0] ?? null}
+        ?loading=${!this._geladen}
+      ></velg-dashboard-stage>
 
       ${
         appState.isPlatformAdmin.value
@@ -396,6 +417,10 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
         <button class="ops__btn" @click=${() => navigate('/epoch')}>${msg('Create Epoch')}</button>
         <button class="ops__btn" @click=${() => navigate('/worlds')}>${msg('Browse Shards')}</button>
       </div>
+
+      <!-- Wie in der Kartenmappe: derselbe Fussbereich, dieselbe Stelle. Beide
+           Garnituren geben dieselbe Auskunft, auch hier unten. -->
+      <velg-platform-footer></velg-platform-footer>
     `;
   }
 
@@ -424,7 +449,10 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
         .clock=${this._clock}
       ></velg-atlas-command-strip>
 
-      <velg-atlas-stage .participation=${v.participations[0] ?? null}></velg-atlas-stage>
+      <velg-atlas-stage
+        .participation=${v.participations[0] ?? null}
+        ?loading=${!this._geladen}
+      ></velg-atlas-stage>
 
       ${
         appState.isPlatformAdmin.value
@@ -479,6 +507,20 @@ export class VelgOperativeDashboard extends SignalWatcher(LitElement) {
         <button class="ops__btn" @click=${() => navigate('/epoch')}>${msg('Create Epoch')}</button>
         <button class="ops__btn" @click=${() => navigate('/worlds')}>${msg('Browse Shards')}</button>
       </div>
+
+      <!--
+        Der Fussbereich der Plattform, mit seinen fuenfzehn geprueften
+        Verweisen. Er stand hier NIE — ChronicleFeed, WorldsGallery und
+        SimulationShell binden ihn ein, das Dashboard war die einzige
+        dokumentartige Ansicht ohne. Vom Benutzer gemeldet am 04.09.2026;
+        Ein git log -S auf den Tag-Namen bestaetigt, dass er nicht verloren
+        ging, sondern fehlte.
+
+        Ganz unten und ausserhalb von .stage-container: er bringt seine eigene
+        Breite mit und laeuft ueber die volle Seite, wie in den anderen drei
+        Ansichten auch.
+      -->
+      <velg-platform-footer></velg-platform-footer>
     `;
   }
 }

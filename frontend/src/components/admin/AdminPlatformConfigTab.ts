@@ -9,8 +9,16 @@ import './AdminResearchTab.js';
 import './AdminCachingTab.js';
 import './AdminAnnouncementsTab.js';
 import './AdminFeatureGatesTab.js';
+import './AdminAppearanceTab.js';
 
-type PlatformSection = 'gates' | 'apikeys' | 'models' | 'research' | 'caching' | 'announcements';
+type PlatformSection =
+  | 'gates'
+  | 'apikeys'
+  | 'models'
+  | 'research'
+  | 'caching'
+  | 'announcements'
+  | 'appearance';
 
 @localized()
 @customElement('velg-admin-platform-config-tab')
@@ -77,6 +85,14 @@ export class VelgAdminPlatformConfigTab extends LitElement {
             this._section = 'announcements';
           }}
         >${msg('Announcements')}</button>
+        <button
+          class="subnav__btn ${this._section === 'appearance' ? 'subnav__btn--active' : ''}"
+          role="tab"
+          aria-selected=${this._section === 'appearance'}
+          @click=${() => {
+            this._section = 'appearance';
+          }}
+        >${msg('Appearance')}</button>
       </div>
 
       <div class="subnav__content" role="tabpanel">
@@ -99,6 +115,8 @@ export class VelgAdminPlatformConfigTab extends LitElement {
         return html`<velg-admin-caching-tab></velg-admin-caching-tab>`;
       case 'announcements':
         return html`<velg-admin-announcements-tab></velg-admin-announcements-tab>`;
+      case 'appearance':
+        return html`<velg-admin-appearance-tab></velg-admin-appearance-tab>`;
     }
   }
 }

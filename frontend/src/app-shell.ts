@@ -7,14 +7,20 @@ import { customElement, state } from 'lit/decorators.js';
 import { analyticsService } from './services/AnalyticsService.js';
 import { appState } from './services/AppStateManager.js';
 import { epochsApi } from './services/api/EpochsApiService.js';
-import { membersApi, settingsApi, simulationsApi, taxonomiesApi } from './services/api/index.js';
+import {
+  membersApi,
+  platformAppearanceApi,
+  settingsApi,
+  simulationsApi,
+  taxonomiesApi,
+} from './services/api/index.js';
 import { localeService } from './services/i18n/locale-service.js';
 import { captureError } from './services/SentryService.js';
 import { seoService } from './services/SeoService.js';
 import { applySimulationRouteMeta } from './services/seo-patterns.js';
 import { authService } from './services/supabase/SupabaseAuthService.js';
 import { themeService } from './services/ThemeService.js';
-import { PLATFORM_SKINS } from './services/theme-presets.js';
+import { isPlatformSkin, PLATFORM_SKINS } from './services/theme-presets.js';
 import type { Simulation } from './types/index.js';
 
 import { lazyRoute } from './utils/lazy-route.js';
@@ -955,6 +961,7 @@ export class VelgApp extends LitElement {
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
     this._watchPlatformSkin();
+    void this._fetchDefaultSkin();
     await localeService.initLocale();
     analyticsService.init();
     this.addEventListener('navigate', this._handleNavigate as EventListener);
@@ -993,6 +1000,33 @@ export class VelgApp extends LitElement {
    * host, and DRIFT and the dungeon re-assert `PLATFORM_DARK_CONFIG` on theirs.
    * Both override by proximity, whichever skin is underneath.
    */
+  /**
+   * Die Vorgabe des Hauses nachziehen — im Hintergrund, ohne zu blockieren.
+   *
+   * NICHT AWAITED, und das ist Absicht. Der Umschalter oben hat aus der Ablage
+   * bereits eine Ausgabe gesetzt: die eigene Wahl, sonst die zuletzt gemeldete
+   * Vorgabe. Beides ist synchron da. Auf diesen Abruf zu warten hiesse, JEDEM
+   * Leser eine Netzwerkrunde lang einen leeren Grund zu zeigen, damit ein Gast
+   * beim allerersten Besuch ein Umschalten weniger sieht.
+   *
+   * appState.applyDefaultSkin entscheidet dann, ob es jemanden betrifft: wer
+   * gewaehlt hat, behaelt seine Wahl, und der Abruf hat nur die Erinnerung
+   * aufgefrischt.
+   *
+   * Der Fehlerpfad ist beobachtet und sonst folgenlos: ohne Antwort bleibt die
+   * Ausgabe, die schon steht. Ein Erscheinungsbild ist nichts, wofuer man eine
+   * Seite anhaelt.
+   */
+  private async _fetchDefaultSkin(): Promise<void> {
+    try {
+      const antwort = await platformAppearanceApi.getAppearance();
+      const skin = antwort.data?.default_skin;
+      if (isPlatformSkin(skin)) appState.applyDefaultSkin(skin);
+    } catch (err) {
+      captureError(err, { source: 'VelgApp._fetchDefaultSkin' });
+    }
+  }
+
   private _watchPlatformSkin(): void {
     this._disposeSkinEffect?.();
     this._disposeSkinEffect = effect(() => {

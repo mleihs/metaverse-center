@@ -9,18 +9,20 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, datetime
-from typing import TypedDict
+from typing import TypedDict, cast, get_args
 from uuid import UUID
 
 import httpx
 from postgrest.exceptions import APIError as PostgrestAPIError
 
+from backend.models.platform_appearance import DEFAULT_PLATFORM_SKIN, PlatformSkin
 from backend.models.settings import is_sensitive_key
 from backend.services.platform_gate_contracts import (
     GATE_GROUPS,
     PLATFORM_GATES,
     gate_keys,
 )
+from backend.utils.db import maybe_single_data
 from backend.utils.encryption import decrypt, mask
 from backend.utils.errors import not_found, server_error
 from backend.utils.responses import extract_list
@@ -43,6 +45,8 @@ DEFAULT_SETTINGS: dict[str, int] = {
 
 _ALPHA_FC_ENABLED = "alpha_first_contact_modal_enabled"
 _ALPHA_FC_VERSION = "alpha_first_contact_modal_version"
+
+_DEFAULT_SKIN = "platform_default_skin"
 
 
 class PlatformSettingsService:
@@ -296,6 +300,39 @@ class PlatformSettingsService:
         by_key = {r["setting_key"]: r["setting_value"] for r in (extract_list(response))}
         parsed = cls._parse_dungeon_global(by_key)
         return (parsed["override_mode"], set(parsed["override_archetypes"]))
+
+    # ── Erscheinungsbild ───────────────────────────────────────────────
+
+    @classmethod
+    async def get_default_skin(cls, admin_supabase: Client) -> PlatformSkin:
+        """Welche Ausgabe ein Besucher ohne eigene Wahl bekommt.
+
+        Fällt auf ``DEFAULT_PLATFORM_SKIN`` zurück, wenn die Zeile fehlt (frische
+        Datenbank, Migrationslücke) ODER einen Namen trägt, den es nicht gibt.
+        Beides ist derselbe Fall: die Plattform weiß nicht, was gemeint war, und
+        rät nicht — sie nimmt die Vorgabe. Ein unbekannter Name wird protokolliert,
+        denn er ist ein Tippfehler in der Verwaltung und kein Betriebszustand.
+
+        Der Admin-Client, weil ``platform_settings`` keine anon-Richtlinie hat;
+        heraus geht nur der Name der Ausgabe.
+        """
+        row = await maybe_single_data(
+            admin_supabase.table(cls.table_name).select("setting_value").eq("setting_key", _DEFAULT_SKIN).maybe_single()
+        )
+        if row is None:
+            return DEFAULT_PLATFORM_SKIN
+
+        # jsonb kommt als '"dark"' oder als dark, je nach Schreibweg.
+        raw = str(row.get("setting_value", "")).strip().strip('"')
+        if raw in get_args(PlatformSkin):
+            return cast(PlatformSkin, raw)
+
+        logger.warning(
+            "platform_default_skin trägt %r, das ist keine Ausgabe — es gilt %s",
+            raw,
+            DEFAULT_PLATFORM_SKIN,
+        )
+        return DEFAULT_PLATFORM_SKIN
 
     # ── Alpha First-Contact Modal ──────────────────────────────────────
 

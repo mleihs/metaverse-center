@@ -20,20 +20,53 @@ import { isPlatformSkin, type LandingTemplate, type PlatformSkin } from './theme
 const PLATFORM_SKIN_KEY = 'velg-platform-skin';
 
 /**
- * The skin this browser last chose, or the platform default.
+ * Die zuletzt vom Server gemeldete Vorgabe.
  *
- * Read once at construction rather than on every access: the value changes only
- * through `setPlatformSkin`, and a signal that re-reads storage would make the
- * switch depend on a synchronous disk hit inside a render effect.
+ * Ein eigener Schluessel neben der eigenen Wahl, und das ist der Kern der
+ * Sache: die zwei sind verschiedene Dinge. Die WAHL gehoert dem Benutzer und
+ * ueberlebt jede Aenderung in der Verwaltung. Die VORGABE gehoert dem Haus und
+ * darf sich aendern, ohne dass jemandes Wahl davon beruehrt wird. In einem
+ * Schluessel zusammengelegt waere die erste Anwendung der Vorgabe zugleich eine
+ * Wahl gewesen — der Gast haette damit fuer immer das Aussehen behalten, das
+ * am Tag seines ersten Besuchs eingestellt war.
+ */
+const PLATFORM_DEFAULT_SKIN_KEY = 'velg-default-skin';
+
+/** Wenn weder Wahl noch gemeldete Vorgabe vorliegen. */
+const FALLBACK_SKIN: PlatformSkin = 'dark';
+
+function lies(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (err) {
+    captureError(err, { source: 'AppStateManager.lies' });
+    return null;
+  }
+}
+
+/**
+ * Die Ausgabe, mit der diese Sitzung anfaengt.
+ *
+ * Drei Stufen, in dieser Reihenfolge:
+ *   1. die eigene Wahl dieses Browsers — sie schlaegt alles,
+ *   2. die zuletzt gemeldete Vorgabe des Hauses,
+ *   3. Phosphor.
+ *
+ * Stufe 2 ist der Grund, warum die Vorgabe ueberhaupt gespeichert wird: sie
+ * kommt aus einem Abruf, und ein Abruf braucht Zeit. Ohne die Erinnerung saehe
+ * ein Gast bei JEDEM Aufruf erst Phosphor und dann das Papier. Mit ihr sieht
+ * er das Umschalten genau einmal — beim allerersten Besuch.
+ *
+ * Einmal beim Bau gelesen und nicht bei jedem Zugriff: der Wert aendert sich
+ * nur ueber setPlatformSkin bzw. applyDefaultSkin, und ein Signal, das die
+ * Ablage neu liest, machte den Umschalter von einem Plattenzugriff mitten in
+ * einem Render-Effekt abhaengig.
  */
 function readStoredSkin(): PlatformSkin {
-  try {
-    const stored = localStorage.getItem(PLATFORM_SKIN_KEY);
-    return isPlatformSkin(stored) ? stored : 'dark';
-  } catch (err) {
-    captureError(err, { source: 'AppStateManager.readStoredSkin' });
-    return 'dark';
-  }
+  const gewaehlt = lies(PLATFORM_SKIN_KEY);
+  if (isPlatformSkin(gewaehlt)) return gewaehlt;
+  const vorgabe = lies(PLATFORM_DEFAULT_SKIN_KEY);
+  return isPlatformSkin(vorgabe) ? vorgabe : FALLBACK_SKIN;
 }
 
 export class AppStateManager {
@@ -232,6 +265,26 @@ export class AppStateManager {
     } catch (err) {
       captureError(err, { source: 'AppStateManager.setPlatformSkin' });
     }
+  }
+
+  /**
+   * Die Vorgabe des Hauses uebernehmen — aber NUR fuer den, der nicht gewaehlt
+   * hat.
+   *
+   * Die Bedingung ist die ganze Methode. Wer den Editionsumschalter benutzt
+   * hat, dem darf eine Aenderung in der Verwaltung sein Aussehen nicht unter
+   * den Fuessen wegziehen; das waere aus seiner Sicht ein Fehler, kein
+   * Merkmal. Gespeichert wird die Vorgabe trotzdem in jedem Fall, damit der
+   * naechste Aufruf ohne Warten richtig anfaengt.
+   */
+  applyDefaultSkin(skin: PlatformSkin): void {
+    try {
+      localStorage.setItem(PLATFORM_DEFAULT_SKIN_KEY, skin);
+    } catch (err) {
+      captureError(err, { source: 'AppStateManager.applyDefaultSkin' });
+    }
+    if (isPlatformSkin(lies(PLATFORM_SKIN_KEY))) return;
+    this.platformSkin.value = skin;
   }
 
   setSettings(settings: SimulationSetting[]): void {

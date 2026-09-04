@@ -53,6 +53,7 @@ from backend.models.landing import LandingSnapshotResponse
 from backend.models.location import CityResponse, StreetResponse, ZoneResponse
 from backend.models.lore import LoreSectionResponse
 from backend.models.memory import MemoryResponse
+from backend.models.platform_appearance import PlatformAppearancePublic
 from backend.models.relationship import RelationshipResponse
 from backend.models.resonance import ResonanceImpactResponse, ResonanceResponse
 from backend.models.resonance_dungeon import (
@@ -1267,6 +1268,33 @@ async def get_alpha_state(
         first_contact=FirstContactPublic(enabled=config["enabled"], version=config["version"]),
     )
     return SuccessResponse(data=payload)
+
+
+# ── Erscheinungsbild (welche Ausgabe ein Gast bekommt) ──────────────────────
+
+
+@router.get("/appearance")
+@limiter.limit(RATE_LIMIT_PUBLIC)
+async def get_platform_appearance(
+    request: Request, admin_supabase: Annotated[Client, Depends(get_admin_supabase)]
+) -> SuccessResponse[PlatformAppearancePublic]:
+    """Welche Ausgabe ein Besucher OHNE eigene Wahl bekommt.
+
+    Die Plattform hat zwei: das Phosphor-Chrom und die Kartenmappe. Wer im
+    Editionsumschalter eine wählt, dessen Wahl liegt im Browser und gilt; diese
+    Auskunft betrifft nur, womit jemand anfängt.
+
+    Ein eigener Endpunkt und nicht ein Feld in ``/alpha-state``: die Alpha-Suite
+    wird zum Erscheinen aus dem Bündel geworfen (``VITE_IS_ALPHA``), das
+    Erscheinungsbild bleibt. Ein Feld dort wäre am Tag des Releases still
+    verschwunden.
+
+    Immer 200, nie 404 — eine fehlende Zeile ist eine Antwort (die Vorgabe),
+    keine Abwesenheit. Der Admin-Client, weil ``platform_settings`` keine
+    anon-Richtlinie hat; heraus geht ein einziger Name.
+    """
+    skin = await PlatformSettingsService.get_default_skin(admin_supabase)
+    return SuccessResponse(data=PlatformAppearancePublic(default_skin=skin))
 
 
 # ── Journal (öffentliches Tor, damit der Leerzustand nicht lügt — G6) ───────

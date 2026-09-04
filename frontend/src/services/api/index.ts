@@ -31,6 +31,10 @@ export { JournalApiService, journalApi } from './JournalApiService.js';
 export { LocationsApiService, locationsApi } from './LocationsApiService.js';
 export { LoreApiService, loreApi } from './LoreApiService.js';
 export { MembersApiService, membersApi } from './MembersApiService.js';
+export {
+  PlatformAppearanceApiService,
+  platformAppearanceApi,
+} from './PlatformAppearanceApiService.js';
 export { PromptTemplatesApiService, promptTemplatesApi } from './PromptTemplatesApiService.js';
 export { RelationshipsApiService, relationshipsApi } from './RelationshipsApiService.js';
 export { ResonanceApiService, resonanceApi } from './ResonanceApiService.js';

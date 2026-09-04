@@ -37,6 +37,7 @@ import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { ActiveEpochParticipation } from '../../../types/index.js';
 import { navigate } from '../../../utils/navigation.js';
+import '../../shared/VelgSurveyLoader.js';
 import {
   atlasGridStyles,
   atlasHoverStyles,
@@ -334,6 +335,18 @@ export class VelgAtlasStage extends LitElement {
 
   @property({ attribute: false }) participation: ActiveEpochParticipation | null = null;
 
+  /**
+   * Der Abruf laeuft noch.
+   *
+   * Ohne dieses Merkmal hat `participation === null` ZWEI Bedeutungen — „wird
+   * geladen" und „nimmt an nichts teil" — und die Buehne kann sie nicht
+   * auseinanderhalten. Sie zeigte deshalb bei jedem Aufruf des Dashboards
+   * kurz „nichts verlangt nach dir", bevor die Daten kamen: eine Auskunft,
+   * die niemand geprueft hatte. Das ist schlimmer als ein Wartezeichen, denn
+   * sie ist nicht nur unfertig, sondern moeglicherweise falsch.
+   */
+  @property({ type: Boolean, reflect: true }) loading = false;
+
   private readonly _cycle = new CycleCountdown(this);
 
   connectedCallback(): void {
@@ -353,7 +366,29 @@ export class VelgAtlasStage extends LitElement {
     return html`
       <div class="sheet-grid" aria-hidden="true"></div>
       <div class="sheet stage-container">
-        ${p ? this._renderActive(p) : this._renderIdle()}
+        ${this.loading ? this._renderLoading() : p ? this._renderActive(p) : this._renderIdle()}
+      </div>
+    `;
+  }
+
+  /**
+   * Waehrend der Abruf laeuft.
+   *
+   * Der Blattkopf steht schon — er haengt nicht an den Daten, und ein Blatt
+   * ohne Kopf saehe aus, als fehle es ganz. Darunter der Vermessungstakt statt
+   * einer Aussage: die Buehne sagt, dass sie noch aufnimmt, und behauptet
+   * nichts ueber den Bestand.
+   */
+  private _renderLoading() {
+    return html`
+      <div>
+        <div class="sheet-head">
+          <span class="sheet-head__no">${msg('Sheet 01')}</span>
+          <span>${msg('Current deployment')}</span>
+          <span class="sheet-head__rule"></span>
+        </div>
+        <velg-survey-loader size="lg" stacked .label=${msg('Surveying your deployment')}>
+        </velg-survey-loader>
       </div>
     `;
   }
