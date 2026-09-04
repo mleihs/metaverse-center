@@ -1,4 +1,25 @@
-# Code-Review Frontseiten-Bilder — 15 Befunde, Stand 05.09.2026 UNBEARBEITET
+# Code-Review Frontseiten-Bilder — 15 Befunde, am 05.09.2026 ALLE BEHOBEN
+
+> `/code-review` auf `max`, gelaufen am 04.09.2026 13:15–13:30 lokal, gegen den
+> Commit `a36826cc` (vor der Historien-Umschreibung: `2e9badd0`) —
+> „der Anmeldesaal als Held". Zehn Blickwinkel, danach eine eigene Verifikation.
+> Die Meldung landete in einer anderen Sitzung und wurde nie gelesen.
+>
+> **Abgearbeitet am 05.09.2026 in `4f3106b8`.** Vorher jeder Befund einzeln
+> nachgemessen, alle 15 noch gueltig. Der sichtbarste (B2) hat jetzt eine
+> eigene Bilddatei: `heroWide`, ein beim Ableiten gesetzter 16:9-Zuschnitt,
+> 78 KB statt 364 KB. Neu abgelegt wurden 8 Dateien; **nichts ueberschrieben**,
+> weil die vorhandenen `heroPortrait`-Dateien aus dem echten Original stammen
+> und die verfuegbare Quelle nur noch die verlustbehaftete 1440er Fassung war.
+>
+> Die reparierte Budget-Probe schlug beim ersten Lauf sofort an — sie misst
+> jetzt jedes Format, nicht nur AVIF.
+>
+> Was aus dem Review NICHT vollstaendig behoben ist: das 1440er WebP auf Prod
+> traegt weiter 615 KB. Es neu abzuleiten haette eine zweite Generation
+> Verlust bedeutet; stattdessen sorgen die neue 1200er Stufe und das
+> korrigierte `sizes` dafuer, dass diese Stufe kaum noch gewaehlt wird. Wer
+> das Original wiederbeschafft, leitet einmal sauber neu ab.
 
 > `/code-review` auf `max`, gelaufen am 04.09.2026 13:15–13:30 lokal, gegen den
 > Commit `a36826cc` (vor der Historien-Umschreibung: `2e9badd0`) —
