@@ -79,8 +79,9 @@ falsche Figur** ohne Mehrparteien-Erdung, 2,2 % mit.
 
 Seine Zeile stand ohne Besitzer in einem Block voller beschrifteter — und das
 Zusammenfassen aufeinanderfolgender `user`-Züge aus 356 hat es verschärft.
-Der Nutzer schrieb es den Agenten selbst (Wortlaut nicht wiedergegeben)). Jetzt
-`[User]: `, sobald mehr als ein Agent im Faden ist.
+Der Nutzer hat es den Agenten im Faden selbst vorgehalten — er musste die
+Verwechslung benennen, bevor sie jemandem am Code auffiel. Jetzt `[User]: `,
+sobald mehr als ein Agent im Faden ist.
 
 ### 3. Zwei Dateien, zwei Antworten auf dieselbe Frage → 366 + `get_content_locale`
 
@@ -237,7 +238,7 @@ Soweit die Recherche reicht, ist das die einzige Umsetzung von *Says Who?*
 
 | | Beleg | warum nicht |
 |---|---|---|
-| **Zugreihenfolge / Schweigen** | Inner Thoughts (CHI 2025), 82 % vorgezogen | ändert das Produktgefühl — Nutzerentscheidung. ⚠ Und der schweigsame Agent wurde von **7 von 12** als schlechtester bewertet: die Regel (Wortlaut nicht wiedergegeben) ist womöglich selbst ein Fehler |
+| **Zugreihenfolge / Schweigen** | Inner Thoughts (CHI 2025), 82 % vorgezogen | ändert das Produktgefühl — Nutzerentscheidung. ⚠ Und der schweigsame Agent wurde von **7 von 12** als schlechtester bewertet — eine Regel, die die Szene warten lässt, ist womöglich selbst ein Fehler |
 | **Neuversuch bei erkannter Allwissenheit** | die Lücke, die beide Gutachten als *im Feld ungefüllt* bezeichnen | kostet ~15 % mehr Aufrufe. Nichts hat sich heute selbst scharfgestellt |
 | **Modellstufe des Detektors** | ohne sie weiß niemand, wie oft die Heuristik irrt | deklariert (`wired=False`), Tor aus, nicht gebaut |
 | **Struktureller Weltzustand** | Versu, Generative Agents | die Szene ist ein KANAL; automatisch schreibt niemand hinein. NCP-Bench: Erzähler-Agenten erzeugen **40–68 % Faktenkonflikte** |
@@ -352,7 +353,8 @@ Kein Auto-Deploy beim Push.
 ## Zwei offene Entscheidungen des Nutzers
 
 1. **Der alte Faden und die 208 Erinnerungen sind unangetastet.** Der Auftrag,
-   beides zu löschen, wurde vom Nutzer selbst unterbrochen (Wortlaut nicht wiedergegeben)) und nie wieder aufgenommen.
+   beides zu löschen, wurde vom Nutzer selbst gestoppt — er wollte den Faden
+   vorher noch angesehen haben — und danach nie wieder aufgenommen.
 2. **16 Zeilen im Bestand** tragen eine fremde Namensmarke unter eigener
    `agent_id`. Sie werden beim LESEN weggeschnitten
    (`_strip_speaker_labels`); der Bestand ist unangetastet. Ob sie auch in der
