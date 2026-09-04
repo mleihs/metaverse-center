@@ -104,32 +104,70 @@ export class VelgLandingHero extends LitElement {
      */
 
 
+    /* ── Bernsteinknopf, in drei Groessen ──────────────────────────────
+     *
+     * WIEDERHERGESTELLT am 04.09.2026, gemeldet vom Benutzer: die zwei Knoepfe
+     * des Helden standen im Grau des Browsers (rgb(107,107,107), 2px outset) —
+     * also ganz ohne Regel. Der Sweep im Atlas-Commit 23283b1e hatte aus dieser
+     * Datei 22 Regelkoepfe entfernt; dreizehn davon zu Recht, weil die
+     * Navigation nach LandingNav gewandert ist, neun aus Versehen.
+     *
+     * Er hat dabei jeweils die ZWEITE Selektorzeile einer Liste samt Koerper
+     * geloescht und die erste mit ihrem Komma stehen lassen. Aus
+     *
+     *     .cta:hover,
+     *     .cta:focus-visible { … }
+     *
+     * wurde ein Komma ins Nichts, das sich an die naechste Regel haengte: die
+     * fuenf Waisen hier trugen zuletzt gemeinsam mit .hero ein
+     * "position: relative; overflow: hidden". Kein Parserfehler, kein rotes
+     * Tor, keine Warnung — gueltiges CSS, das etwas anderes sagt.
+     *
+     * text-transform steht jetzt als --label-transform statt hart auf
+     * uppercase: eine Knopfbeschriftung ist ein Etikett, und auf Papier bleibt
+     * ein Etikett versal, waehrend Ueberschriften klein gesetzt werden.
+     */
 
-
-    .locale button[aria-current='true'],
-    .locale button:hover,
-
-
-
-
-
-
-    .nav__link:hover,
-
-
-    /* ── Bernsteinknopf, in drei Groessen ──────────────────────────── */
-
-
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2-5);
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-wider);
+      text-transform: var(--label-transform);
+      color: var(--color-on-accent-amber);
+      background: var(--color-accent-amber);
+      border: var(--border-width-thin) solid var(--color-accent-amber-dim);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal),
+        background var(--transition-normal);
+    }
 
     .cta:hover,
+    .cta:focus-visible {
+      background: var(--color-accent-amber-hover);
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-md);
+    }
 
+    .cta--sm {
+      padding: var(--space-2-5) var(--space-6);
+      font-size: var(--text-xs);
+    }
 
-
-
-
+    .cta--lg {
+      padding: var(--space-4) var(--space-10);
+      font-size: var(--text-sm);
+      letter-spacing: var(--tracking-widest);
+      box-shadow: var(--shadow-md);
+    }
 
     .cta--lg:hover,
-
+    .cta--lg:focus-visible {
+      box-shadow: var(--shadow-xl);
+    }
 
     /* ── Held ──────────────────────────────────────────────────────── */
 
@@ -317,14 +355,35 @@ export class VelgLandingHero extends LitElement {
       flex: 0 0 auto;
     }
 
-
+    /* Der leise Zwilling: derselbe Akt ohne Flaeche. Auch er stand nach dem
+       Sweep ohne Regel da — siehe der Kommentar beim Bernsteinknopf. */
+    .watch {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      font-size: var(--text-xs);
+      letter-spacing: var(--tracking-wider);
+      text-transform: var(--label-transform);
+      color: var(--color-text-quiet);
+      background: none;
+      border: 0;
+      padding: var(--space-1) 0;
+      cursor: pointer;
+      transition: color var(--transition-normal);
+    }
 
     .watch:hover,
+    .watch:focus-visible {
+      color: var(--color-accent-amber);
+    }
 
+    .watch__arrow {
+      display: inline-block;
+      transition: transform var(--transition-normal);
+    }
 
-
-
-
+    .watch:hover .watch__arrow {
+      transform: translateX(4px);
+    }
 
     /* ── Laufband ──────────────────────────────────────────────────── */
 

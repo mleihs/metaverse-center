@@ -109,6 +109,11 @@ jobs:
       - name: Lint - kein aspect-ratio auf einer Inline-Box
         run: bash frontend/scripts/lint-no-sized-inline-box.sh
         working-directory: .
+      # Ein Komma ins Nichts ist gueltiges CSS: der verwaiste Selektor erbt die
+      # naechste Regel, die geloeschte ist weg. Kein Parser sieht es.
+      - name: Lint - kein verwaister Selektor
+        run: bash frontend/scripts/lint-no-orphan-selector.sh
+        working-directory: .
 
       # A comment whose end lands in the wrong place turns the paragraph after
       # it into bare CSS. Nothing else here parses .css: tsc does not read it,
