@@ -288,13 +288,21 @@ export class VelgLandingSeoFooter extends LitElement {
           <span>&copy; ${new Date().getFullYear()} metaverse.center</span>
           <span>${msg('Bureau of Multiverse Observation')}</span>
           <span>${msg('Signal status:')} <b>${msg('transmitting')}</b></span>
-          <!-- Der zweite Zugang zum Editionsumschalter, und der einzige auf
-               DIESER Seite. Die Frontseite verbirgt fuer Gaeste die
-               Plattform-Kopfleiste (app-shell.ts, hideHeaderForLanding), weil
-               sie ihre eigene Navigation traegt — der Umschalter im SYS-Feld
-               des Kopfes ist hier also nicht da. Ohne diese Zeile koennte ein
-               Erstbesucher die Ausgabe genau auf der Seite nicht wechseln, auf
-               der er zuerst steht. -->
+          <!-- Der Umschalter am Fuss der Seite.
+               Die Frontseite verbirgt fuer Gaeste die Plattform-Kopfleiste
+               (app-shell.ts, hideHeaderForLanding), weil sie ihre eigene
+               Navigation traegt — der Umschalter im SYS-Feld des Kopfes ist
+               hier also nicht da.
+
+               BIS 04.09.2026 STAND HIER, DIES SEI DER EINZIGE AUF DIESER
+               SEITE. Das stimmte und war trotzdem zu wenig: dieser Fuss liegt
+               rund 6 000 px unter dem Anfang, und er traegt "no-label". Wer
+               die Ausgabe wechseln will, findet hier einen unbeschrifteten
+               Knopf, nachdem er die ganze Seite durchgescrollt hat. Seither
+               steht einer in landing/LandingNav.ts, neben dem
+               Sprachschalter — dort, wo der Kopfkommentar von
+               VelgEditionSwitch ihn ohnehin verortet. Dieser hier bleibt:
+               wer unten ankommt, soll nicht hochscrollen muessen. -->
           <velg-edition-switch no-label></velg-edition-switch>
         </div>
 

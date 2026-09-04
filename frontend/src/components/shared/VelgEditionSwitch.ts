@@ -48,8 +48,12 @@ import type { PlatformSkin } from '../../services/theme-presets.js';
 /**
  * `menu` — the switch sits inside a `role="menu"`; items become
  * `menuitemradio`. `standalone` — anywhere else; items become toggle buttons.
+ * `bar` — same aria shape as `standalone`, quieter ink: it sits in a
+ * navigation bar beside a primary call to action, and an amber-filled plate
+ * next to an amber-filled button reads as a second action rather than as a
+ * preference. Only the SELECTED colour changes; everything else is shared.
  */
-export type EditionSwitchContext = 'menu' | 'standalone';
+export type EditionSwitchContext = 'menu' | 'standalone' | 'bar';
 
 @localized()
 @customElement('velg-edition-switch')
@@ -119,6 +123,25 @@ export class VelgEditionSwitch extends SignalWatcher(LitElement) {
     .edition__opt[aria-pressed='true'] {
       background: var(--color-primary);
       color: var(--color-text-inverse);
+    }
+
+    /*
+     * IN EINER LEISTE IST DIE TINTE EINE ANDERE.
+     *
+     * Der amber-gefuellte Reiter steht dort neben dem amber-gefuellten
+     * Handlungsknopf („Forge a World"). Zwei gleich laute Flaechen
+     * nebeneinander, und die leisere von beiden ist eine VORLIEBE, keine
+     * Handlung — auf dem Schirm gemessen sah der gewaehlte Reiter aus wie ein
+     * zweiter Knopf.
+     *
+     * Getauscht wird nur die Fuellung des GEWAEHLTEN Reiters, gegen das
+     * Paar Text/Flaeche, das die Seite ohnehin fuer Fliesstext benutzt. Damit
+     * bleibt der Kontrast der des Koerpertexts — auf beiden Ausgaben, ohne
+     * dass hier eine zweite Farbe gepflegt werden muss.
+     */
+    :host([context='bar']) .edition__opt[aria-pressed='true'] {
+      background: var(--color-text-primary);
+      color: var(--color-surface);
     }
 
     @media (max-width: 640px) {

@@ -35,6 +35,7 @@ import { localeService } from '../../services/i18n/locale-service.js';
 import { captureError } from '../../services/SentryService.js';
 import { navigate } from '../../utils/navigation.js';
 import { stageStyles } from '../shared/stage-styles.js';
+import '../shared/VelgEditionSwitch.js';
 
 @localized()
 @customElement('velg-landing-nav')
@@ -112,6 +113,39 @@ export class VelgLandingNav extends LitElement {
 
     .locale__sep {
       color: var(--color-border);
+    }
+
+    /*
+     * Der Ausgaben-Umschalter bringt Polster fuer ein Menue mit (padding auf
+     * seinem :host). In einer Leiste ist das zu viel; alles andere an ihm
+     * bleibt, wie es ist. Dieselbe Zaehmung wie im Fuss der Frontseite — die
+     * INNEREN Masse liegen in seinem Schattenbaum und gehen uns nichts an.
+     * (Kein Backtick in einem css-Kommentar: er beendet das Template.)
+     */
+    velg-edition-switch {
+      padding: 0;
+    }
+
+    /*
+     * Unter 900 px bricht die Leiste um und die Verweise rutschen in eine
+     * eigene Zeile. Sprache und Ausgabe bleiben oben: es sind zwei Wahlen
+     * DIESES Browsers, keine Ziele — sie gehoeren zusammen und nicht zwischen
+     * die Navigation.
+     *
+     * flex-wrap auf der rechten Gruppe, und zwar aus Vorsicht statt aus
+     * Messung: die Gruppe ist mit dem Umschalter 440 px breit (gemessen bei
+     * 1728 px), und auf einem Telefon steht daneben noch die Wortmarke. Ich
+     * konnte das nicht am schmalen Schirm nachmessen — die Fenstergroesse liess
+     * sich in dieser Sitzung nicht aendern —, also steht hier die Regel, die
+     * nicht ueberlaufen KANN: was nicht passt, faellt in die naechste Zeile,
+     * statt die Seite seitlich zu schieben.
+     */
+    @media (max-width: 900px) {
+      .nav__end {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: var(--space-3) var(--space-4);
+      }
     }
 
     .nav__link {
@@ -267,6 +301,7 @@ export class VelgLandingNav extends LitElement {
               @click=${() => this._setLocale('en')}
             >EN</button>
           </div>
+          <velg-edition-switch context="bar" no-label></velg-edition-switch>
           <button class="nav__link" @click=${this._openLogin}>${msg('Sign in')}</button>
           <button class="cta cta--sm" @click=${() => navigate('/forge')}>
             ${msg('Forge a World')}
