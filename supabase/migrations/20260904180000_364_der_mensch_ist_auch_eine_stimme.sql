@@ -6,26 +6,24 @@
 -- des Menschen mit ihnen. Das ist eine andere Ursache, und sie stand nach 356
 -- noch offen.
 --
--- ── DER BEFUND, aus dem Protokoll selbst ───────────────────────────────────
+-- ── DER BEFUND ─────────────────────────────────────────────────────────────
 --
---   04.09.2026, 14:12 UTC, der Nutzer an die Agenten:
- (Wortlaut nicht wiedergegeben)
+--   Ein Agent hat eine Handlung des MENSCHEN für sich übernommen: Agent A
+--   schrieb sie ihm korrekt zu, Agent B nahm sie Sekunden später an sich.
 --
---   14:22:01, Marie:  „*Du hältst dem Kreis zwei frische Äpfel hin*"
---   14:22:06, Benno: „*Der Brunnen glitzert heute*"
---
---   Benno hat die Handlung des Menschen übernommen. Fünf Sekunden nachdem
---   Marie sie ihm korrekt zugeschrieben hatte.
+--   Der Wortlaut steht hier nicht. Er stammt aus einem echten Gespräch, und
+--   dieses Repo ist öffentlich — für den Befund reicht die Form.
 --
 -- ── DIE URSACHE ────────────────────────────────────────────────────────────
 --
---   Sie liegt im zusammengesetzten Verlauf, nicht im Ton. So sah Benno ihn:
+--   Sie liegt im zusammengesetzten Verlauf, nicht im Ton. So kommt er bei
+--   Agent B an (schematisch, erfundener Inhalt):
 --
---       user   <Zeile nicht wiedergegeben>
+--       user   <Zeile des Menschen>
 --
---              [Marie Morgenrot]: *Du hältst dem Kreis zwei frische Äpfel hin.*
+--              [Marie Morgenrot]: *Du hältst einen Korb Äpfel in den Händen.*
 --
---              (Bennos nächste Zeile)
+--              (nächste Zeile von Agent B)
 --
 --   EIN Block. Maries Zeile hat einen Besitzer, die des Menschen hat KEINEN.
 --   Eine unbeschriftete Zeile zwischen beschrifteten liest sich wie herrenlose

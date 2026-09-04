@@ -260,7 +260,7 @@ export class VelgDashboardWorlds extends LitElement {
        *   Tafel war beim Blaettern noch da. Eine 407 px hohe, die oben klebt,
        *   ist nach vier Registerzeilen weg.
        *
-       *   Der Nutzer hat es gemeldet (Wortlaut nicht wiedergegeben)
+       *   Der Nutzer hat es gemeldet hat es gemeldet (Wortlaut nicht wiedergegeben)
        *   Er fragte nach dem Sinn dahinter — es gab keinen. Ich hatte einen
        *   Fehler behoben und dabei eine Eigenschaft entfernt, die niemand als
        *   solche benannt hatte, weil sie ein Nebenprodukt war.

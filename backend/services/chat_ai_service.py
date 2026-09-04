@@ -7,7 +7,7 @@ import logging
 import re
 import time
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
@@ -30,7 +30,6 @@ from backend.services.i18n_utils import (
 from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
-from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -90,17 +89,19 @@ _DEPARTED_SPEAKER = "former participant"
 
 #: Die Marke des MENSCHEN im Gruppenverlauf.
 #:
-#: BEFUND vom 04.09.2026, 14:12 UTC — der Nutzer schrieb es den Agenten
-#: selbst ins Gespraech (Wortlaut nicht wiedergegeben) Zehn Minuten spaeter, 14:22: Marie schreibt „*Du haeltst dem Kreis zwei frische Aepfel hin*", und Benno antwortet „*Der Brunnen glitzert heute*" — sie hat die Handlung des Menschen
-#: uebernommen.
+#: BEFUND: ein Agent hat die Handlung des MENSCHEN fuer sich uebernommen —
+#: Agent A schrieb sie ihm korrekt zu, Agent B nahm sie Sekunden spaeter an
+#: sich. Der Wortlaut steht hier bewusst nicht: er stammt aus einem echten
+#: Gespraech, und dieses Repo ist oeffentlich. Fuer den Befund reicht die Form.
 #:
-#: DIE URSACHE steht im zusammengesetzten Verlauf. So sah Benno ihn:
+#: DIE URSACHE steht im zusammengesetzten Verlauf. So kommt er bei Agent B an
+#: (schematisch, erfundener Inhalt):
 #:
-#:     user   <Zeile nicht wiedergegeben>
+#:     user   <Zeile des Menschen>
 #:
-#:            [Marie Morgenrot]: *Du haeltst dem Kreis zwei frische Aepfel hin.*
+#:            [Marie Morgenrot]: *Du haeltst einen Korb Aepfel in den Haenden.*
 #:
-#:            (Bennos naechste Zeile)
+#:            (naechste Zeile von Agent B)
 #:
 #: EIN Block. Maries Zeile hat einen Besitzer, die des Menschen hat KEINEN.
 #: Eine unbeschriftete Zeile in einem Block voller beschrifteter liest sich
@@ -308,6 +309,25 @@ class _GroupTurnSetup:
     model: ResolvedModel
     event_context: str
     digest_text: str = ""
+    #: Der Verlauf, EINMAL geladen.
+    #:
+    #: Er ist fuer alle Sprecher derselbe — dieselbe Unterhaltung, dasselbe
+    #: Modell, dieselbe Kappung. Geladen wurde er trotzdem je Agent: gemessen
+    #: am 04.09.2026 gegen einen zaehlenden Doppelgaenger, drei Agenten,
+    #: 14 Rundreisen je Nutzernachricht, davon DREI identische Abrufe von
+    #: `chat_messages` mit bis zu 200 Zeilen.
+    #:
+    #: Was sich je Agent unterscheidet, ist nicht der Verlauf, sondern seine
+    #: AUSLEGUNG (`_as_turn` entscheidet je Sprecher ueber Rolle und Marke) —
+    #: und die ist reine Rechnung ohne Netz.
+    history: list[dict] = field(default_factory=list)
+    #: Der Beziehungskontext JE AGENT, in EINER Abfrage geholt.
+    #:
+    #: Er unterscheidet sich je Sprecher, die Abfrage muss es nicht: bis zum
+    #: 04.09.2026 lief `_build_relationship_context` einmal je Agent, also
+    #: dreimal dieselbe Tabelle mit demselben Filter auf
+    #: `simulation_id`, nur mit einer anderen `agent_id`.
+    relationships: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -346,6 +366,10 @@ class ChatAIService:
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
         self._digests = ConversationDigestService(supabase, simulation_id, openrouter_api_key)
+        #: Stimmung je Agent, im Vorlauf eines Gruppenzugs gefuellt.
+        #: Der Dienst lebt genau eine Anfrage lang; er kann darin nicht
+        #: veralten. Derselbe Weg wie `_cached_locale`.
+        self._mood_cache: dict[str, str] = {}
 
     # ── Shared prompt assembly ───────────────────────────────
 
@@ -642,9 +666,7 @@ class ChatAIService:
             generation_ms = int((time.monotonic() - t0) * 1000)
 
             # Check if we got meaningful content after sanitization
-            if not stream_error and self._sanitize_response(
-                full_text, self._known_speakers(participant_names)
-            ):
+            if not stream_error and self._sanitize_response(full_text, self._known_speakers(participant_names)):
                 break  # Success — proceed to persist
 
             if attempt < max_retries:
@@ -770,10 +792,10 @@ class ChatAIService:
            mehr in den Bestand geraet.
         2. ``_as_turn`` — beim LESEN, denn die 16 stehen laengst da. Sie tragen
            die Marke eines FREMDEN Namens unter der eigenen ``agent_id``
-           (``[Benno Blattgold] …`` gespeichert als Marie). Ohne diesen Schnitt
+           (``[Suse Sonnenblum] …`` gespeichert als Marie). Ohne diesen Schnitt
            bekaeme das Modell sie weiter als Vorbild zu sehen — und fuer einen
            fremden Zug haengte ``_as_turn`` eine zweite Marke davor:
-           ``[Marie Morgenrot]: [Benno Blattgold] …``. Eine Reparatur, die den alten
+           ``[Marie Morgenrot]: [Suse Sonnenblum] …``. Eine Reparatur, die den alten
            Fehler im Verlauf stehen laesst, repariert nur die Zukunft, und der
            Verlauf ist genau das, woraus ein Modell lernt.
 
@@ -802,7 +824,7 @@ class ChatAIService:
         wird das Tor genauer UND weiter zugleich, und beides ist noetig:
 
         * **Weiter**, weil das alte Muster einen Doppelpunkt verlangte
-          (``^\\[…\\]:``), das Modell aber ``[Suse Sonnenblum] *Ich hebe die Hand*``
+          (``^\\[…\\]:``), das Modell aber ``[Benno Blattgold] *Ich hebe die Hand*``
           **ohne** ihn schreibt. Von 16 Nachrichten mit Marke im Faden
           7b2e37c3 fing das alte Tor **null**. Und es sah nur Zeichen 0 —
           eine Marke in Zeile drei blieb stehen.
@@ -844,9 +866,7 @@ class ChatAIService:
         participant_names: list[str] | None = None,
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
-        response_text = self._sanitize_response(
-            response_text, self._known_speakers(participant_names)
-        )
+        response_text = self._sanitize_response(response_text, self._known_speakers(participant_names))
         if not response_text:
             logger.warning(
                 "Empty response after sanitization for agent %s in conversation %s – skipping persist",
@@ -920,30 +940,45 @@ class ChatAIService:
         if not agent_id:
             msg = f"Conversation {conversation_id} has no agent_id – use group methods for multi-agent conversations"
             raise ValueError(msg)
-        agent = await self._load_agent(agent_id)
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
+        # Drei Wellen, nach ABHAENGIGKEIT geschnitten — wie im Gruppenzug.
+        # Neun Abrufe nacheinander waren eine Viertelsekunde reines Warten,
+        # bevor der erste Buchstabe ans Modell ging.
+        agent, simulation, locale, model = await asyncio.gather(
+            self._load_agent(agent_id),
+            self._load_simulation(),
+            self._get_locale(),
+            self._model_resolver.resolve_text_model("chat_response"),
+        )
 
-        memories = await AgentMemoryService.retrieve(
-            self._supabase,
-            UUID(agent["id"]),
-            self._simulation_id,
-            query_text=user_message,
-            top_k=8,
+        # Welle 2 braucht den Agenten (Erinnerungen, Beziehungen), die Sprache
+        # (Vorlage, Verdichtung) oder das Modell (Verlaufskappung).
+        #
+        # `_build_relationship_context` fuehrt auf die Stapelfassung zurueck;
+        # hier ist der Stapel einelementig, und das ist richtig so — ein
+        # eigener Weg fuer den Einzelfall waere ein zweiter Ort, an dem
+        # dieselbe Abfrage steht.
+        (
+            memories,
+            relationship_context,
+            digest_text,
+            prompt_template,
+            history,
+        ) = await asyncio.gather(
+            AgentMemoryService.retrieve(
+                self._supabase,
+                UUID(agent["id"]),
+                self._simulation_id,
+                query_text=user_message,
+                top_k=8,
+            ),
+            self._build_relationship_context(agent["id"], locale),
+            # Reiner Lesevorgang — kein Modellaufruf im Anfragepfad; erzeugt
+            # wird die Verdichtung im Hintergrund.
+            self._digests.load_digest_text(conversation_id, locale),
+            self._prompt_resolver.resolve("chat_system_prompt", locale),
+            self._load_history(conversation_id, model.model_id),
         )
         memory_text = AgentMemoryService.format_for_prompt(memories)
-
-        # L4: Inject relationship context into agent prompts
-        relationship_context = await self._build_relationship_context(agent["id"], locale)
-
-        # Die verdichtete Vorgeschichte. Reiner Lesevorgang — kein
-        # Modellaufruf im Anfragepfad; erzeugt wird sie im Hintergrund.
-        digest_text = await self._digests.load_digest_text(conversation_id, locale)
-
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
-
-        history = await self._load_history(conversation_id, model.model_id)
         history_messages = self._build_history_messages(history, user_message)
 
         return {
@@ -959,35 +994,65 @@ class ChatAIService:
         }
 
     async def _build_relationship_context(self, agent_id: str, locale: str) -> str:
-        """Build relationship context string for injection into agent prompts.
+        """Der Beziehungskontext EINES Agenten.
 
-        Queries the agent's relationships and formats them as natural-language
-        context that the AI can reference when generating responses.
-        Returns empty string if no relationships exist (no prompt pollution).
+        Fuehrt auf :meth:`_build_relationship_contexts` zurueck. Zwei
+        Fassungen derselben Abfrage waeren zwei Gelegenheiten, sie
+        unterschiedlich zu aendern — und die eine, die niemand anfasst, faengt
+        an zu luegen.
         """
+        return (await self._build_relationship_contexts([agent_id], locale)).get(agent_id, "")
+
+    async def _build_relationship_contexts(self, agent_ids: list[str], locale: str) -> dict[str, str]:
+        """Der Beziehungskontext MEHRERER Agenten, in EINER Abfrage.
+
+        Er unterscheidet sich je Sprecher; die Abfrage muss es nicht. Bis zum
+        04.09.2026 lief sie einmal je Agent — dieselbe Tabelle, derselbe
+        Filter auf `simulation_id`, nur eine andere `agent_id`. Gemessen an
+        einem Gruppenzug mit drei Agenten: drei Rundreisen von vierzehn.
+
+        ⚠ Die Kappung auf sechs Beziehungen sitzt jetzt HIER und nicht mehr
+        im `LIMIT`. Ein `LIMIT 6` ueber die Vereinigung aller Agenten gaebe
+        einem Agenten sechs und den anderen keine — die Grenze gilt je
+        Sprecher, also muss sie da gezogen werden, wo nach Sprechern sortiert
+        wird. Die Zeilen kommen absteigend nach `intensity`, die ersten sechs
+        je Agent sind deshalb seine staerksten.
+        """
+        if not agent_ids:
+            return {}
+        ids = ",".join(agent_ids)
         try:
             resp = await (
                 self._supabase.table("agent_relationships")
                 .select(
-                    "relationship_type, intensity, is_bidirectional, description,"
+                    "source_agent_id, target_agent_id,"
+                    " relationship_type, intensity, is_bidirectional, description,"
                     " source_agent:agents!source_agent_id(name),"
                     " target_agent:agents!target_agent_id(name)"
                 )
-                .or_(f"source_agent_id.eq.{agent_id},target_agent_id.eq.{agent_id}")
+                .or_(f"source_agent_id.in.({ids}),target_agent_id.in.({ids})")
                 .eq("simulation_id", str(self._simulation_id))
                 .order("intensity", desc=True)
-                .limit(6)
                 .execute()
             )
         except Exception:
-            logger.debug("Relationship context query failed for agent %s", agent_id, exc_info=True)
-            return ""
+            logger.debug("Relationship context query failed for %s", agent_ids, exc_info=True)
+            return {}
 
-        if not resp.data:
-            return ""
+        gesucht = set(agent_ids)
+        je_agent: dict[str, list[dict]] = {a: [] for a in agent_ids}
+        for rel in extract_list(resp):
+            for spalte in ("source_agent_id", "target_agent_id"):
+                wer = str(rel.get(spalte) or "")
+                if wer in gesucht and len(je_agent[wer]) < 6:
+                    je_agent[wer].append(rel)
+        return {agent_id: self._format_relationships(zeilen, locale) for agent_id, zeilen in je_agent.items() if zeilen}
 
+    @staticmethod
+    def _format_relationships(zeilen: list[dict], locale: str) -> str:
+        """Die Zeilen als Text fuer den System-Prompt."""
         lines = []
-        for rel in resp.data:
+        for rel in zeilen:
             source_name = (rel.get("source_agent") or {}).get("name", "?")
             target_name = (rel.get("target_agent") or {}).get("name", "?")
             # Show the "other" agent from this agent's perspective
@@ -1136,22 +1201,46 @@ class ChatAIService:
         Kontextquelle nicht in der einen Fassung ankommen und in der anderen
         fehlen kann.
         """
-        agents = await self._load_conversation_agents(conversation_id)
-        event_refs = await self._load_event_references(conversation_id)
-        simulation = await self._load_simulation()
-        locale = await self._get_locale()
-        prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
-        model = await self._model_resolver.resolve_text_model("chat_response")
+        # ── Drei Wellen statt zwoelf Wartezeiten ──────────────────────────
+        #
+        # Was voneinander nichts weiss, muss auch nicht aufeinander warten.
+        # Zwoelf Abrufe nacheinander sind bei 20-50 ms je Rundreise eine
+        # Viertel- bis halbe Sekunde reines Warten, BEVOR der erste Buchstabe
+        # ans Modell geht — und der Mensch sieht davon nur, dass es dauert.
+        #
+        # Die Wellen sind nach ABHAENGIGKEIT geschnitten, nicht nach Gefuehl:
+        #   1  haengt an nichts
+        #   2  braucht Sprache (Vorlage, Verdichtung, Beziehungen, Stimmung),
+        #      Modell (Verlauf) oder Besetzung und Ereignisse (Reaktionen)
+        #   3  braucht die Reaktionen aus Welle 2
+        #
+        # `_get_locale` puffert je Dienst; es steht trotzdem in Welle 1, damit
+        # der erste Aufruf nicht die zweite Welle aufhaelt.
+        agents, event_refs, simulation, locale, model = await asyncio.gather(
+            self._load_conversation_agents(conversation_id),
+            self._load_event_references(conversation_id),
+            self._load_simulation(),
+            self._get_locale(),
+            self._model_resolver.resolve_text_model("chat_response"),
+        )
 
         event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
         agent_ids = [str(a["id"]) for a in agents]
-        reactions = await self._load_event_reactions(event_ids, agent_ids)
-        event_context = await self._build_event_context(event_refs, reactions, locale)
 
         # Die verdichtete Vorgeschichte gilt fuer alle Sprecher gleich — sie
         # ist die Erinnerung an DIESEN Faden, nicht an eine Person. Einmal
-        # geladen, nicht je Agent.
-        digest_text = await self._digests.load_digest_text(conversation_id, locale)
+        # geladen, nicht je Agent. Dasselbe fuer den Verlauf, die Beziehungen
+        # und die Stimmung.
+        prompt_template, reactions, digest_text, history, relationships, _ = await asyncio.gather(
+            self._prompt_resolver.resolve("chat_system_prompt", locale),
+            self._load_event_reactions(event_ids, agent_ids),
+            self._digests.load_digest_text(conversation_id, locale),
+            self._load_history(conversation_id, model.model_id),
+            self._build_relationship_contexts(agent_ids, locale),
+            self._prime_mood_contexts(agent_ids, locale),
+        )
+
+        event_context = await self._build_event_context(event_refs, reactions, locale)
 
         return _GroupTurnSetup(
             agents=agents,
@@ -1162,6 +1251,8 @@ class ChatAIService:
             model=model,
             event_context=event_context,
             digest_text=digest_text,
+            history=history,
+            relationships=relationships,
         )
 
     async def generate_group_response(
@@ -1193,6 +1284,8 @@ class ChatAIService:
                 saved_messages=saved_messages,
                 model_id=model.model_id,
                 digest_text=setup.digest_text,
+                history=setup.history,
+                relationship_context=setup.relationships.get(str(agent["id"]), ""),
             )
 
             _, saved = await self._generate_single_response(
@@ -1277,6 +1370,8 @@ class ChatAIService:
                 saved_messages=saved_messages,
                 model_id=model.model_id,
                 digest_text=setup.digest_text,
+                history=setup.history,
+                relationship_context=setup.relationships.get(str(agent["id"]), ""),
             )
 
             async for sse_event in self.stream_single_response(
@@ -1331,6 +1426,8 @@ class ChatAIService:
         saved_messages: list[dict],
         model_id: str = "",
         digest_text: str = "",
+        history: list[dict] | None = None,
+        relationship_context: str = "",
     ) -> tuple[list[str], list[dict[str, str]]]:
         """Build extra_parts and history_messages for a single agent's turn
         in a group conversation. Shared by streaming and non-streaming paths.
@@ -1362,7 +1459,6 @@ class ChatAIService:
             memory_text = AgentMemoryService.format_for_prompt(memories)
             if memory_text:
                 extra_parts.append(memory_text)
-            relationship_context = await self._build_relationship_context(str(agent["id"]), locale)
             if relationship_context:
                 extra_parts.append(relationship_context)
 
@@ -1382,7 +1478,12 @@ class ChatAIService:
 
         current_agent_id = str(agents[idx]["id"]) if idx < len(agents) else ""
 
-        history = await self._load_history(conversation_id, model_id)
+        # KEIN eigener Abruf mehr. Der Verlauf kommt aus dem Vorlauf
+        # (`_GroupTurnSetup.history`) und ist fuer alle Sprecher derselbe.
+        # Der Rueckfall auf einen eigenen Abruf bleibt fuer Aufrufer, die
+        # keinen mitgeben — er ist der alte Weg, nicht der gewoehnliche.
+        if history is None:
+            history = await self._load_history(conversation_id, model_id)
         history_messages: list[dict[str, str]] = [
             self._as_turn(msg, agents=agents, current_agent_id=current_agent_id) for msg in history
         ]
@@ -1392,9 +1493,7 @@ class ChatAIService:
         history_messages.append(
             {
                 "role": "user",
-                "content": (
-                    f"[{_USER_SPEAKER}]: {user_message}" if len(agents) > 1 else user_message
-                ),
+                "content": (f"[{_USER_SPEAKER}]: {user_message}" if len(agents) > 1 else user_message),
             }
         )
 
@@ -1451,7 +1550,7 @@ class ChatAIService:
 
         # Die 16 Zeilen, die schon dastehen. Gemessen am 04.09.2026 im Faden
         # 7b2e37c3: 16 Agentennachrichten tragen eine fremde Namensmarke unter
-        # der eigenen `agent_id` — `[Benno Blattgold] …`, gespeichert als Marie. Sie
+        # der eigenen `agent_id` — `[Suse Sonnenblum] …`, gespeichert als Marie. Sie
         # sind das Ergebnis des Fehlers und zugleich sein Lehrbuch: ein Modell
         # lernt das Format aus dem Verlauf. Ohne diesen Schnitt bekaeme ein
         # fremder Zug ausserdem zwei Marken uebereinander.
@@ -1508,24 +1607,81 @@ class ChatAIService:
         }
 
     async def _build_mood_context(self, agent_id: UUID, locale: str = "en") -> str:
-        """Build mood context string for system prompt injection.
+        """Die Stimmung EINES Agenten fuer den System-Prompt.
 
-        Returns empty string if no autonomy data exists for this agent.
-        Mood and stress descriptors are localized via i18n_utils.
+        Nimmt, was der Vorlauf schon geholt hat, wenn er es geholt hat —
+        sonst fragt sie selbst. Fuehrt in beiden Faellen auf
+        :meth:`_build_mood_contexts` zurueck: zwei Fassungen derselben
+        Abfrage waeren zwei Gelegenheiten, sie unterschiedlich zu aendern.
         """
-        mood = await maybe_single_data(
-            self._supabase.table("agent_mood")
-            .select("mood_score, dominant_emotion, stress_level")
-            .eq("agent_id", str(agent_id))
-            .maybe_single()
+        gepuffert = self._mood_cache.get(str(agent_id))
+        if gepuffert is not None:
+            return gepuffert
+        return (await self._build_mood_contexts([str(agent_id)], locale)).get(str(agent_id), "")
+
+    async def _build_mood_contexts(self, agent_ids: list[str], locale: str) -> dict[str, str]:
+        """Die Stimmung MEHRERER Agenten, in ZWEI Abfragen statt in 2N.
+
+        Gemessen am 04.09.2026 an einem Gruppenzug mit drei Agenten: die
+        Stimmung lief einmal je Sprecher, und mit vorhandenen Moodlets sind
+        das zwei Abfragen je Agent — sechs von sechzehn Rundreisen fuer eine
+        Auskunft, die aus zwei Tabellen kommt.
+
+        ⚠ Die Kappung auf fuenf Moodlets sitzt hier und nicht im `LIMIT`. Ein
+        `LIMIT 5` ueber alle Agenten gaebe einem Agenten fuenf und den anderen
+        keine — dieselbe Falle wie bei den Beziehungen.
+        """
+        if not agent_ids:
+            return {}
+
+        moods = extract_list(
+            await self._supabase.table("agent_mood")
+            .select("agent_id, mood_score, dominant_emotion, stress_level")
+            .in_("agent_id", agent_ids)
+            .execute()
         )
-        if not mood:
-            return ""
+        if not moods:
+            return {}
+
+        moodlets_resp = await (
+            self._supabase.table("agent_moodlets")
+            .select("agent_id, moodlet_type, emotion, strength")
+            .in_("agent_id", agent_ids)
+            .order("strength")
+            .execute()
+        )
+        je_agent: dict[str, list[dict]] = {}
+        for ml in extract_list(moodlets_resp):
+            eintraege = je_agent.setdefault(str(ml.get("agent_id")), [])
+            if len(eintraege) < 5:
+                eintraege.append(ml)
+
+        return {
+            str(mood["agent_id"]): self._format_mood(mood, je_agent.get(str(mood["agent_id"]), []), locale)
+            for mood in moods
+        }
+
+    async def _prime_mood_contexts(self, agent_ids: list[str], locale: str) -> None:
+        """Den Puffer fuellen, damit der Prompt-Bau je Agent nicht mehr fragt.
+
+        Derselbe Weg wie `_cached_locale`: der Dienst lebt genau eine Anfrage
+        lang, ein Puffer kann darin nicht veralten.
+        """
+        self._mood_cache = await self._build_mood_contexts(agent_ids, locale)
+        # Wer keine Stimmung hat, bekommt einen LEEREN Eintrag statt keinen.
+        # Ohne ihn fiele `_build_mood_context` fuer genau diese Agenten auf
+        # eine eigene Abfrage zurueck — und die Ersparnis waere fuer die
+        # stillsten Faelle dahin.
+        for agent_id in agent_ids:
+            self._mood_cache.setdefault(agent_id, "")
+
+    @staticmethod
+    def _format_mood(mood: dict, moodlets: list[dict], locale: str) -> str:
+        """Eine Stimmungszeile und ihre Einfluesse als Text."""
         score = mood["mood_score"]
         emotion = mood["dominant_emotion"]
         stress = mood["stress_level"]
 
-        # Mood descriptor (localized)
         descs = MOOD_DESCRIPTORS.get(locale, MOOD_DESCRIPTORS["en"])
         if score > 50:
             mood_desc = descs["very_positive"]
@@ -1538,7 +1694,6 @@ class ChatAIService:
         else:
             mood_desc = descs["distressed"]
 
-        # Stress descriptor (localized)
         stress_descs = STRESS_DESCRIPTORS.get(locale, STRESS_DESCRIPTORS["en"])
         if stress > 800:
             stress_desc = stress_descs["breakdown"]
@@ -1549,26 +1704,14 @@ class ChatAIService:
         else:
             stress_desc = stress_descs["calm"]
 
-        # Fetch active moodlets for detail
-        moodlets_result = await (
-            self._supabase.table("agent_moodlets")
-            .select("moodlet_type, emotion, strength")
-            .eq("agent_id", str(agent_id))
-            .order("strength")
-            .limit(5)
-            .execute()
-        )
         moodlet_lines = []
-        for ml in extract_list(moodlets_result):
+        for ml in moodlets:
             sign = "+" if ml["strength"] > 0 else ""
             ml_type = localize_label(ml["moodlet_type"], MOODLET_TYPE_LABELS, locale)
             ml_emotion = localize_label(ml["emotion"], EMOTION_LABELS, locale)
             moodlet_lines.append(f"  - {ml_type}: {ml_emotion} ({sign}{ml['strength']})")
 
-        # Localize dominant emotion
         emotion_localized = localize_label(emotion, EMOTION_LABELS, locale)
-
-        # Assemble context with localized templates
         templates = MOOD_CONTEXT_TEMPLATES.get(locale, MOOD_CONTEXT_TEMPLATES["en"])
         context = templates["state"].format(
             mood_desc=mood_desc,

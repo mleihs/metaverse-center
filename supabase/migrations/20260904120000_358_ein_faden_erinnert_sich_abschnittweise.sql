@@ -2,7 +2,7 @@
 -- 358 · Ein Faden erinnert sich abschnittweise
 -- ═══════════════════════════════════════════════════════════════════════════
 --
--- DAS PROBLEM, wörtlich vom Nutzer (Wortlaut nicht wiedergegeben)
+-- DAS PROBLEM, wörtlich vom Nutzer hat es gemeldet (Wortlaut nicht wiedergegeben)
 --
 -- Er hat recht, aber nicht ganz aus dem Grund, den man vermutet, und der
 -- Unterschied entscheidet über die Bauform.

@@ -1,6 +1,6 @@
 """Die verdichtete Vorgeschichte eines Fadens — abschnittweise, einmalig.
 
-DER ANLASS, wörtlich vom Nutzer (Wortlaut nicht wiedergegeben)
+DER ANLASS, wörtlich vom Nutzer hat es gemeldet (Wortlaut nicht wiedergegeben)
 
 Der Satz stimmt, aber die naheliegende Antwort (mehr Verlauf mitschicken) ist
 falsch, und drei gemessene Befunde bestimmen deshalb die Bauform:

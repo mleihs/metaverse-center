@@ -15,9 +15,9 @@
 
 ## Kontext
 
-Der Nutzer hat in Velgarien mit **Marie Morgenrot** und **Benno Blattgold** gechattet
+Der Nutzer hat in Velgarien mit **Marie Morgenrot** und **Suse Sonnenblum** gechattet
 (Faden `7b2e37c3-46ab-423c-ab18-ed54c6428dc2`, 329 Nachrichten, dritter
-Teilnehmer Suse Sonnenblum). Zwei Wünsche:
+Teilnehmer Benno Blattgold). Zwei Wünsche:
 
 1. Die Agenten sollen **in seiner Abwesenheit weiterreden** und sich melden,
    damit er sich wieder einklinken kann.
@@ -44,12 +44,12 @@ Konzept 02 (Nebenzimmer) und 04 (offene Leitung) sind ausdrücklich zurückgeste
 | Position | Agent | Nachrichten | Bruchstücke | mit `[Marke]` |
 |---|---|---|---|---|
 | 0 | Marie Morgenrot | 32 | **0** | 8 |
-| 1 | Benno Blattgold | 32 | **9** | 5 |
-| 2 | Suse Sonnenblum | 5 | 0 | 3 |
+| 1 | Suse Sonnenblum | 32 | **9** | 5 |
+| 2 | Benno Blattgold | 5 | 0 | 3 |
 | — | Marie, *vor* der Gruppe (Einzelchat) | 10 | **0** | **0** |
 
 Alle Bruchstücke auf Position 1, keines auf Position 0, keines im Einzelchat.
-Beispiele: `DIESE NACHRICHT WURDE BEREITS GESENDET`, `CIN 7 984 MARIE`.
+Beispiele: `DIESE NACHRICHT WURDE BEREITS GESENDET`, `CIN 7 984 MIRA`.
 
 **Ursache** — `backend/services/chat_ai_service.py`, `_build_group_turn_context`
 (um Zeile 1130): jeder fertige Zug der *anderen* Agenten wird mit
@@ -62,7 +62,7 @@ die einen **frischen fremden Zug als eigenen** bekommt.
 Modell sieht sich beim Namen in der dritten Person und übernimmt den Ton.
 
 **Drittes:** `_sanitize_response` (Zeile ~704) verlangt einen Doppelpunkt
-(`^\[…\]:`); das Modell schreibt aber `[Suse Sonnenblum] *Ich hebe…` **ohne**
+(`^\[…\]:`); das Modell schreibt aber `[Benno Blattgold] *Ich hebe…` **ohne**
 Doppelpunkt. Von 16 Nachrichten mit Marke fängt das Tor **null**.
 
 ---

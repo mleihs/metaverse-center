@@ -4,8 +4,8 @@ BEFUND, der diese Datei ausgelöst hat (04.09.2026, Faden
 7b2e37c3-46ab-423c-ab18-ed54c6428dc2, 79 Agentennachrichten ausgezählt):
 
     Zugposition 0   Marie Morgenrot   32 Nachrichten   0 Bruchstücke
-    Zugposition 1   Benno Blattgold       32 Nachrichten   9 Bruchstücke
-    Zugposition 2   Suse Sonnenblum         5 Nachrichten   0 Bruchstücke
+    Zugposition 1   Suse Sonnenblum       32 Nachrichten   9 Bruchstücke
+    Zugposition 2   Benno Blattgold         5 Nachrichten   0 Bruchstücke
     Einzelchat      Marie, davor      10 Nachrichten   0 Bruchstücke
 
 Alle neun auf Position 1. Das ist keine Streuung, das ist eine Adresse:
@@ -36,14 +36,14 @@ from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.chat_ai_service import _DEPARTED_SPEAKER, ChatAIService
 from backend.services.prompt_service import PromptSource, ResolvedPrompt
 
-MARIE = "11111111-1111-1111-1111-111111111111"
-BENNO = "22222222-2222-2222-2222-222222222222"
-SUSE = "33333333-3333-3333-3333-333333333333"
+MIRA = "11111111-1111-1111-1111-111111111111"
+ELENA = "22222222-2222-2222-2222-222222222222"
+LENA = "33333333-3333-3333-3333-333333333333"
 
 AGENTS = [
-    {"id": MARIE, "name": "Marie Morgenrot"},
-    {"id": BENNO, "name": "Benno Blattgold"},
-    {"id": SUSE, "name": "Suse Sonnenblum"},
+    {"id": MIRA, "name": "Marie Morgenrot"},
+    {"id": ELENA, "name": "Suse Sonnenblum"},
+    {"id": LENA, "name": "Benno Blattgold"},
 ]
 AGENT_NAMES = [a["name"] for a in AGENTS]
 
@@ -64,9 +64,9 @@ def _user_msg(content: str) -> dict:
 
 HISTORY = [
     _user_msg("Wie steht es um die Akte?"),
-    _agent_msg(MARIE, "Marie Morgenrot", "Ich habe sie heute morgen geholt."),
-    _agent_msg(BENNO, "Benno Blattgold", "Und ich habe sie gegengelesen."),
-    _agent_msg(SUSE, "Suse Sonnenblum", "Mir fiel der Stempel auf."),
+    _agent_msg(MIRA, "Marie Morgenrot", "Ich habe frische Aepfel mitgebracht."),
+    _agent_msg(ELENA, "Suse Sonnenblum", "Und ich habe sie gegengelesen."),
+    _agent_msg(LENA, "Benno Blattgold", "Der Brunnen glitzert heute."),
 ]
 
 
@@ -134,8 +134,8 @@ class TestFremderZugIstNiemalsAssistant:
     async def test_fremde_saetze_kommen_als_user_mit_marke_an(self, service):
         messages = await _turns(service, 1)
         alles = "\n".join(m["content"] for m in messages if m["role"] == "user")
-        assert "[Marie Morgenrot]: Ich habe sie heute morgen geholt." in alles
-        assert "[Suse Sonnenblum]: Mir fiel der Stempel auf." in alles
+        assert "[Marie Morgenrot]: Ich habe frische Aepfel mitgebracht." in alles
+        assert "[Benno Blattgold]: Der Brunnen glitzert heute." in alles
 
 
 class TestEigenerZugTraegtKeineMarke:
@@ -158,20 +158,20 @@ class TestFrischeZuegeDesLaufendenDurchgangs:
     """
 
     async def test_frischer_fremder_zug_ist_user(self, service):
-        saved = [{"content": "Ich habe sie heute morgen geholt.", "sender_role": "assistant", "agent_id": MARIE}]
+        saved = [{"content": "Ich habe frische Aepfel mitgebracht.", "sender_role": "assistant", "agent_id": MIRA}]
         messages = await _turns(service, 1, saved)
         letzter = messages[-1]
         # Zusammengefasst mit der Nutzerzeile davor (Zusage 3) — geprueft wird
         # deshalb die Rolle und die Marke, nicht der Zeilenanfang.
         assert letzter["role"] == "user"
-        assert "[Marie Morgenrot]: Ich habe sie heute morgen geholt." in letzter["content"]
+        assert "[Marie Morgenrot]: Ich habe frische Aepfel mitgebracht." in letzter["content"]
         assert not any(
-            "Ich habe sie heute morgen geholt." in m["content"] for m in messages if m["role"] == "assistant"
+            "Ich habe frische Aepfel mitgebracht." in m["content"] for m in messages if m["role"] == "assistant"
         )
 
     async def test_frischer_eigener_zug_bleibt_assistant(self, service):
         """Kommt der eigene Zug im selben Durchgang zurück, ist er der eigene."""
-        saved = [{"content": "Nachtrag von mir.", "sender_role": "assistant", "agent_id": BENNO}]
+        saved = [{"content": "Nachtrag von mir.", "sender_role": "assistant", "agent_id": ELENA}]
         messages = await _turns(service, 1, saved)
         assert messages[-1] == {"role": "assistant", "content": "Nachtrag von mir."}
 
@@ -217,7 +217,7 @@ class TestAbgegangeneStimme:
                 "agent_id": "99999999-9999-9999-9999-999999999999",
             },
             agents=AGENTS,
-            current_agent_id=BENNO,
+            current_agent_id=ELENA,
         )
         assert turn["role"] == "user"
         assert turn["content"].startswith(f"[{_DEPARTED_SPEAKER}]: ")
@@ -227,19 +227,19 @@ class TestSanitizeMarke:
     """Das Tor, das von 16 Marken im Faden 7b2e37c3 genau null fing."""
 
     def test_marke_ohne_doppelpunkt_wird_gefangen(self):
-        text = "[Suse Sonnenblum] *Ich hebe die Hand.*"
+        text = "[Benno Blattgold] *Ich hebe die Hand.*"
         assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "*Ich hebe die Hand.*"
 
     def test_marke_mit_doppelpunkt_wird_gefangen(self):
-        text = "[Benno Blattgold]: Ich lese noch."
-        assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "Ich lese noch."
+        text = "[Suse Sonnenblum]: Ich lese noch ein Kapitel."
+        assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "Ich lese noch ein Kapitel."
 
     def test_marke_ohne_klammer_wird_gefangen(self):
         assert ChatAIService._sanitize_response("Marie Morgenrot: Guten Tag.", AGENT_NAMES) == "Guten Tag."
 
     def test_marke_mitten_im_text_wird_gefangen(self):
-        text = "Ich lese noch.\n[Suse Sonnenblum] Und ich stemple."
-        assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "Ich lese noch.\nUnd ich stemple."
+        text = "Ich lese noch ein Kapitel.\n[Benno Blattgold] Und ich giesse die Blumen."
+        assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "Ich lese noch ein Kapitel.\nUnd ich giesse die Blumen."
 
     def test_regieanweisung_bleibt_stehen(self):
         """Der Grund, gegen NAMEN zu prüfen statt gegen ein weites Muster."""
@@ -248,8 +248,8 @@ class TestSanitizeMarke:
 
     def test_ohne_namensliste_bleibt_es_beim_engen_verhalten(self):
         """Ein Tor, das rät, ist schlimmer als eines, das nichts weiss."""
-        assert ChatAIService._sanitize_response("[Suse Sonnenblum] *hebt die Hand*") == "[Suse Sonnenblum] *hebt die Hand*"
-        assert ChatAIService._sanitize_response("[Suse Sonnenblum]: hebt die Hand") == "hebt die Hand"
+        assert ChatAIService._sanitize_response("[Benno Blattgold] *winkt freundlich*") == "[Benno Blattgold] *winkt freundlich*"
+        assert ChatAIService._sanitize_response("[Benno Blattgold]: winkt freundlich") == "winkt freundlich"
 
 
 class TestAlteMarkenImBestand:
@@ -257,7 +257,7 @@ class TestAlteMarkenImBestand:
 
     Gemessen am 04.09.2026 im Faden 7b2e37c3: von 57 Agentennachrichten, die
     mit einer eckigen Klammer beginnen, sind 41 echte Regieanweisungen und 16
-    fremde Namensmarken unter der EIGENEN ``agent_id`` — ``[Benno Blattgold] …``,
+    fremde Namensmarken unter der EIGENEN ``agent_id`` — ``[Suse Sonnenblum] …``,
     gespeichert als Marie. Sie sind das Ergebnis des Fehlers und zugleich sein
     Lehrbuch, denn ein Modell lernt das Format aus dem Verlauf.
     """
@@ -265,60 +265,62 @@ class TestAlteMarkenImBestand:
     def test_eigener_zug_verliert_die_fremde_marke(self, service):
         turn = service._as_turn(
             {
-                "content": "[Benno Blattgold] *Bennos Atem stockt.*",
+                "content": "[Suse Sonnenblum] *Suses Atem stockt.*",
                 "sender_role": "assistant",
-                "agent_id": MARIE,
+                "agent_id": MIRA,
             },
             agents=AGENTS,
-            current_agent_id=MARIE,
+            current_agent_id=MIRA,
         )
-        assert turn == {"role": "assistant", "content": "*Bennos Atem stockt.*"}
+        assert turn == {"role": "assistant", "content": "*Suses Atem stockt.*"}
 
     def test_fremder_zug_bekommt_keine_zweite_marke(self, service):
-        """Ohne den Schnitt stuende hier ``[Marie Morgenrot]: [Benno Blattgold] …``."""
+        """Ohne den Schnitt stuende hier ``[Marie Morgenrot]: [Suse Sonnenblum] …``."""
         turn = service._as_turn(
             {
-                "content": "[Benno Blattgold] *Bennos Atem stockt.*",
+                "content": "[Suse Sonnenblum] *Suses Atem stockt.*",
                 "sender_role": "assistant",
-                "agent_id": MARIE,
+                "agent_id": MIRA,
                 "agents": {"name": "Marie Morgenrot"},
             },
             agents=AGENTS,
-            current_agent_id=BENNO,
+            current_agent_id=ELENA,
         )
-        assert turn == {"role": "user", "content": "[Marie Morgenrot]: *Bennos Atem stockt.*"}
+        assert turn == {"role": "user", "content": "[Marie Morgenrot]: *Suses Atem stockt.*"}
 
     def test_regieanweisung_ueberlebt_den_verlauf(self, service):
         """41 der 57 — sie duerfen nicht angetastet werden."""
         text = "[Der Raum ist still, als sich die Tür einen Spalt öffnet.]"
         turn = service._as_turn(
-            {"content": text, "sender_role": "assistant", "agent_id": MARIE},
+            {"content": text, "sender_role": "assistant", "agent_id": MIRA},
             agents=AGENTS,
-            current_agent_id=MARIE,
+            current_agent_id=MIRA,
         )
         assert turn["content"] == text
 
     def test_der_bestand_bleibt_unangetastet(self, service):
         """Nur was das Modell sieht, ist bereinigt — die Zeile selbst nicht."""
-        msg = {"content": "[Benno Blattgold] *Bennos Atem stockt.*", "sender_role": "assistant", "agent_id": MARIE}
-        service._as_turn(msg, agents=AGENTS, current_agent_id=MARIE)
-        assert msg["content"] == "[Benno Blattgold] *Bennos Atem stockt.*"
+        msg = {"content": "[Suse Sonnenblum] *Suses Atem stockt.*", "sender_role": "assistant", "agent_id": MIRA}
+        service._as_turn(msg, agents=AGENTS, current_agent_id=MIRA)
+        assert msg["content"] == "[Suse Sonnenblum] *Suses Atem stockt.*"
 
 
 class TestDerMenschHatAuchEineMarke:
-    """Der Befund vom 04.09.2026, 14:22 UTC.
+    """Ein Agent übernimmt die Handlung des Menschen.
 
-    Marie schrieb „*Du hältst dem Kreis zwei frische Äpfel hin*", und fünf
-    Sekunden später Benno „*Der Brunnen glitzert heute*" — sie hatte die Handlung des Menschen übernommen. Zehn
-    Minuten davor hatte der Nutzer es den Agenten selbst geschrieben (Wortlaut nicht wiedergegeben)
+    Der Ablauf, schematisch und mit erfundenem Inhalt — der Wortlaut eines
+    echten Gesprächs gehört weder in eine Datei noch in ein Commit-Log:
 
-    Die Ursache lag im zusammengesetzten Verlauf. So sah Benno ihn:
+        Agent A schreibt eine Handlung dem MENSCHEN zu — richtig.
+        Agent B übernimmt dieselbe Handlung Sekunden später für sich.
 
-        user   <Zeile nicht wiedergegeben>
+    Die Ursache liegt im zusammengesetzten Verlauf. So kommt er bei Agent B an:
 
-               [Marie Morgenrot]: *Du hältst dem Kreis zwei frische Äpfel hin.*
+        user   <Zeile des Menschen>
 
-               (Bennos nächste Zeile)
+               [Marie Morgenrot]: *Du hältst einen Korb Äpfel in den Händen.*
+
+               (nächste Zeile von Agent B)
 
     EIN Block, weil aufeinanderfolgende `user`-Züge zusammengefasst werden
     müssen. Maries Zeile hat einen Besitzer, die des Menschen hat KEINEN — und
@@ -332,11 +334,11 @@ class TestDerMenschHatAuchEineMarke:
 
     def test_die_zeile_des_menschen_traegt_seine_marke(self, service):
         turn = service._as_turn(
-            {"content": "ich biete ihnen zwei Aepfel an", "sender_role": "user", "agent_id": None},
+            {"content": "Ich stelle den Korb auf den Tisch.", "sender_role": "user", "agent_id": None},
             agents=AGENTS,
-            current_agent_id=MARIE,
+            current_agent_id=MIRA,
         )
-        assert turn == {"role": "user", "content": "[User]: ich biete ihnen zwei Aepfel an"}
+        assert turn == {"role": "user", "content": "[User]: Ich stelle den Korb auf den Tisch."}
 
     def test_im_einzelchat_bleibt_sie_weg(self, service):
         """Dort gibt es zwei Stimmen, die Rolle sagt schon alles, und eine
@@ -344,7 +346,7 @@ class TestDerMenschHatAuchEineMarke:
         turn = service._as_turn(
             {"content": "Hallo.", "sender_role": "user", "agent_id": None},
             agents=[AGENTS[0]],
-            current_agent_id=MARIE,
+            current_agent_id=MIRA,
         )
         assert turn == {"role": "user", "content": "Hallo."}
 

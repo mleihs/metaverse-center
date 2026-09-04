@@ -48,7 +48,7 @@ import { htpBackStyles, htpHeroStyles } from './htp-shared-styles.js';
  * Was ein Parameter BEDEUTET — die Mechanik in Worten.
  *
  * Der Katalog zeigte zuerst nur Name, Stufe, Flavour-Text, Wirkungsart und
- * Fallgewicht. Der Nutzer hat gefragt, was er damit anfangen soll (Wortlaut nicht wiedergegeben) Er hatte recht.
+ * Fallgewicht. Der Nutzer hat gefragt, was er damit anfangen soll hat es gemeldet (Wortlaut nicht wiedergegeben) Er hatte recht.
  * Die Antwort stand die ganze Zeit in den Daten und wurde weggeworfen.
  *
  *     Spiegelscherbe des Spiegelpalasts

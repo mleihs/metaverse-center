@@ -3,7 +3,7 @@
 **Tester:** Claude (WebMCP automated)
 **Environment:** Production (https://metaverse.center)
 **Simulation:** Velgarien
-**Conversation:** Doktor Freundlich, Benno Blattgold +1 (3 agents, 13 messages)
+**Conversation:** Doktor Freundlich, Suse Sonnenblum +1 (3 agents, 13 messages)
 **Browser:** Playwright Chrome 146, macOS
 **Viewports tested:** 1440x900, 640x900, 375x812
 
@@ -67,24 +67,24 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### H3. AI Chain-of-Thought leak in message content
 **Severity:** High
 **Component:** AI Pipeline / Chat streaming
-**Description:** Benno Blattgold message at 10:47 displays raw AI reasoning: "(the model deliberating about the user, verbatim in the message body oder sucht nach einer klaren Handlungsanweisung. Zwei Aspekte: 1. Was tun mit der Brutzeitverschiebung? 2. Die tanzenden Bananen.)" followed by multiple paragraphs of internal reasoning before the actual response.
+**Description:** Suse Sonnenblum message at 10:47 displays raw AI reasoning: "(the model deliberating about the user, verbatim in the message body oder sucht nach einer klaren Handlungsanweisung. Zwei Aspekte: 1. Was tun mit der Brutzeitverschiebung? 2. Die tanzenden Bananen.)" followed by multiple paragraphs of internal reasoning before the actual response.
 **Impact:** Breaks immersion completely. Users see the AI "thinking out loud."
 **Fix:** System prompt needs `<think>` tag stripping or the streaming handler needs to filter CoT blocks.
 
 ### H4. Raw agent name tags in message text
 **Severity:** High
 **Component:** Chat renderer / AI Pipeline
-**Description:** Messages contain raw `[Doktor Freundlich]:` and `[Benno Blattgold]:` prefixes inline in the text. These should either be stripped by the frontend renderer or prevented in the system prompt.
+**Description:** Messages contain raw `[Doktor Freundlich]:` and `[Suse Sonnenblum]:` prefixes inline in the text. These should either be stripped by the frontend renderer or prevented in the system prompt.
 **Examples:**
 - `[Doktor Freundlich]: [Doktor Freundlich]:` (doubled!)
-- `[Benno Blattgold]: [Doktor Freundlich]:` (attribution confusion)
+- `[Suse Sonnenblum]: [Doktor Freundlich]:` (attribution confusion)
 **Fix:** Frontend: strip `[AgentName]:` prefixes from message content. Backend: improve group chat prompt to prevent these tags.
 
 ### H5. Attribution mismatch in group chat
 **Severity:** High
 **Component:** AI Pipeline
-**Description:** In group conversations, a single agent's response contains dialog from multiple agents. A "Doktor Freundlich" message includes `[Benno Blattgold]:` sections with her dialog. This means one API response contains both agents' contributions, but is attributed to only one.
-**Impact:** Confusing -- Benno Blattgold appears to speak under Doktor Freundlich's name header.
+**Description:** In group conversations, a single agent's response contains dialog from multiple agents. A "Doktor Freundlich" message includes `[Suse Sonnenblum]:` sections with her dialog. This means one API response contains both agents' contributions, but is attributed to only one.
+**Impact:** Confusing -- Suse Sonnenblum appears to speak under Doktor Freundlich's name header.
 **Fix:** Either split multi-agent responses into separate messages, or visually indicate quoted speech from other agents.
 
 ---
@@ -118,7 +118,7 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### M5. No visual separator between different agents
 **Severity:** Medium
 **Component:** `ChatMessage.ts`
-**Description:** When the speaking agent changes (e.g., Doktor Freundlich -> Benno Blattgold -> General Gutmut), there's no visual break other than the name label. In long conversations this makes it hard to scan who said what.
+**Description:** When the speaking agent changes (e.g., Doktor Freundlich -> Suse Sonnenblum -> General Gutmut), there's no visual break other than the name label. In long conversations this makes it hard to scan who said what.
 **Fix:** Add subtle separator line or extra spacing when `sender` changes between consecutive messages.
 
 ### M6. Italic stage directions not visually distinct
@@ -148,7 +148,7 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### M10. Rename input shows truncated name
 **Severity:** Medium
 **Component:** `ConversationList.ts`
-**Description:** Double-click rename shows "FREUNDLICH, BENNO BLATTGOLD" instead of the full "Doktor Freundlich, Benno Blattgold +1". The "Doktor" prefix and "+1" suffix are missing from the editable input.
+**Description:** Double-click rename shows "FREUNDLICH, BENNO BLATTGOLD" instead of the full "Doktor Freundlich, Suse Sonnenblum +1". The "Doktor" prefix and "+1" suffix are missing from the editable input.
 **Fix:** Pass the full conversation title to the rename input, not a truncated version.
 
 ---
@@ -255,7 +255,7 @@ The composer textarea shows "TYPE YOUR MESSAGE..." placeholder and "Shift+Enter 
 ### A8. Event strip in header area is confusing
 Below the chat header, there's an event strip showing "Kryo-Vogel in Nordlicht verlegen Brutzeit..." with a close button and a "+" button. Its purpose is unclear -- is it a filter? A context pin? The strip takes ~50px of vertical space. The "x" and "+" buttons have no labels/tooltips.
 
-### A9. "Gruppe: Doktor Freundlich, Benno Blattgold" subtitle in ConversationList
+### A9. "Gruppe: Doktor Freundlich, Suse Sonnenblum" subtitle in ConversationList
 The subtitle shows "Gruppe:" prefix which is German in a potentially mixed-language interface. Should use `msg()` for i18n. Also, the group label duplicates the title information.
 
 ### A10. Conversation item shows date without year
@@ -369,7 +369,7 @@ backend/models/chat.py                             -- ConversationUpdate(title: 
 The group chat prompt likely tells the AI to respond as multiple agents in a single response. This produces:
 1. `[AgentName]:` prefixes that leak into the displayed text
 2. One message attributed to Agent A containing Agent B's dialog
-3. Sometimes CoT reasoning leaks (Benno Blattgold 10:47)
+3. Sometimes CoT reasoning leaks (Suse Sonnenblum 10:47)
 
 **Two-pronged fix needed:**
 - **Backend**: Strip `[AgentName]:` prefixes before storing. Or better: split multi-agent response into separate DB messages (one per agent).
