@@ -184,6 +184,29 @@ _FRAME_CHAT = (
     "internal reasoning, chain-of-thought or meta-commentary in your reply."
 )
 
+#: Was eine Welt an der Verdichtung NICHT wegschreiben darf.
+#:
+#: Eine Verdichtung geht in den System-Prompt jedes folgenden Zuges. Was darin
+#: steht, GILT für das Modell — und was nicht darin steht, hat nicht
+#: stattgefunden. Zwei Zusicherungen sind deshalb nicht verhandelbar:
+#:
+#: * **Nichts erfinden.** Eine Verdichtung, die einen Satz hinzufügt, den
+#:   niemand gesagt hat, kann er nie widerlegt werden: der Urtext wird beim
+#:   nächsten Zug nicht mehr mitgeschickt. Die Fehlerhäufung, die
+#:   arXiv:2308.15022 beim rekursiven Zusammenfassen beschreibt, ist hier
+#:   baulich ausgeschlossen (jeder Abschnitt wird genau einmal erzeugt) — eine
+#:   ERFINDUNG in der einen Erzeugung wäre trotzdem dauerhaft.
+#: * **Keine Regie.** Die Verdichtung ist Bericht, nicht Fortsetzung. Ohne
+#:   diesen Satz schreibt ein Rollenspielmodell den Wortwechsel weiter, statt
+#:   ihn zusammenzufassen.
+_FRAME_DIGEST = (
+    "Report only what was actually said. Never invent an event, a decision, a name or a "
+    "feeling that is not in the transcript above; if something is unclear, leave it out. "
+    "Write a report, not a continuation: no dialogue, no stage directions, no new scene. "
+    "Third person, past tense, at most 180 words."
+)
+
+
 #: Was eine Welt an der Gruppen-Instruktion NICHT wegschreiben darf.
 #:
 #: Der Ton eines Gruppengesprächs gehört der Welt; dass niemand für einen
@@ -446,6 +469,11 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             frame=_FRAME_CHAT,
         ),
         _contract("chat_group_instruction", ("other_agent_names",), frame=_FRAME_GROUP),
+        _contract(
+            "chat_conversation_digest",
+            ("participant_names", "transcript", "locale_name", "segment_index"),
+            frame=_FRAME_DIGEST,
+        ),
         _contract("chat_event_context", ("event_list",)),
         _contract(
             "chat_event_item",

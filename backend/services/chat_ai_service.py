@@ -16,6 +16,7 @@ from backend.dependencies import get_admin_supabase
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import BudgetExceededError
+from backend.services.chat.conversation_digest_service import ConversationDigestService
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 # Strong references so fire-and-forget extraction tasks cannot be
 # garbage-collected mid-flight (asyncio only holds weak refs to running tasks).
 _MEMORY_EXTRACT_TASKS: set[asyncio.Task[None]] = set()
+_DIGEST_TASKS: set[asyncio.Task[None]] = set()
 
 # ── Model-aware history limits ────────────────────────────
 # Instead of a static message count, compute the limit from the model's
@@ -278,6 +280,7 @@ class _GroupTurnSetup:
     prompt_template: Any
     model: ResolvedModel
     event_context: str
+    digest_text: str = ""
 
 
 @dataclass
@@ -315,6 +318,7 @@ class ChatAIService:
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
+        self._digests = ConversationDigestService(supabase, simulation_id, openrouter_api_key)
 
     # ── Shared prompt assembly ───────────────────────────────
 
@@ -885,6 +889,10 @@ class ChatAIService:
         # L4: Inject relationship context into agent prompts
         relationship_context = await self._build_relationship_context(agent["id"], locale)
 
+        # Die verdichtete Vorgeschichte. Reiner Lesevorgang — kein
+        # Modellaufruf im Anfragepfad; erzeugt wird sie im Hintergrund.
+        digest_text = await self._digests.load_digest_text(conversation_id, locale)
+
         prompt_template = await self._prompt_resolver.resolve("chat_system_prompt", locale)
         model = await self._model_resolver.resolve_text_model("chat_response")
 
@@ -900,6 +908,7 @@ class ChatAIService:
             "history_messages": history_messages,
             "memory_text": memory_text,
             "relationship_context": relationship_context,
+            "digest_text": digest_text,
         }
 
     async def _build_relationship_context(self, agent_id: str, locale: str) -> str:
@@ -950,6 +959,54 @@ class ChatAIService:
 
         header = "Relationships:" if locale == "en" else "Beziehungen:"
         return f"{header}\n" + "\n".join(lines)
+
+    def _fire_and_forget_digest(
+        self,
+        conversation_id: UUID,
+        participant_names: list[str],
+        locale: str,
+    ) -> None:
+        """Fehlende Abschnitte im Hintergrund verdichten.
+
+        NICHT im Anfragepfad. Ein Verdichtungsaufruf sieht 40 Nachrichten und
+        dauert Sekunden; im Zug eines Chats waere er eine Wartezeit, die der
+        Mensch fuer die Antwort haelt.
+
+        Derselbe Weg wie :meth:`_fire_and_forget_memory_extraction`, und aus
+        demselben Grund mit EIGENEM Client: die Aufgabe laeuft bis 120 s nach
+        der Antwort weiter, und `self._supabase` ist anfragegebunden und beim
+        Abbau der Anfrage geschlossen (Deep-Audit P1-1). Ein Dienst, der den
+        geschlossenen Client benutzte, scheiterte still — und still ist genau
+        das, was eine Hintergrundaufgabe ohnehin schon ist.
+
+        Der Zaehler `_DIGEST_TASKS` haelt eine starke Referenz: asyncio haelt
+        auf laufende Aufgaben nur schwache, und eine eingesammelte Aufgabe
+        stuerbe mitten im Modellaufruf.
+        """
+        simulation_id = self._simulation_id
+
+        async def _safe_digest() -> None:
+            try:
+                admin = await get_admin_supabase()
+                service = ConversationDigestService(admin, simulation_id)
+                erzeugt = await asyncio.wait_for(
+                    service.ensure_digests(
+                        conversation_id,
+                        participant_names=participant_names,
+                        locale=locale,
+                    ),
+                    timeout=120.0,
+                )
+                if erzeugt:
+                    logger.info("%d Abschnitt(e) von %s verdichtet", erzeugt, conversation_id)
+            except TimeoutError:
+                logger.warning("Verdichtung von %s im Zeitlimit haengen geblieben", conversation_id)
+            except Exception:
+                logger.exception("Verdichtung von %s fehlgeschlagen", conversation_id)
+
+        task = asyncio.create_task(_safe_digest())
+        _DIGEST_TASKS.add(task)
+        task.add_done_callback(_DIGEST_TASKS.discard)
 
     def _fire_and_forget_memory_extraction(
         self,
@@ -1005,7 +1062,7 @@ class ChatAIService:
             model=ctx["model"],
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
-            extra_context=ctx.get("relationship_context", ""),
+            extra_context=self._join_context(ctx.get("relationship_context", ""), ctx.get("digest_text", "")),
             participant_names=[ctx["agent"].get("name", "")],
         )
 
@@ -1021,6 +1078,7 @@ class ChatAIService:
             user_message,
             response_text,
         )
+        self._fire_and_forget_digest(conversation_id, [ctx["agent"].get("name", "")], ctx["locale"])
         return response_text
 
     async def _prepare_group_turn(self, conversation_id: UUID) -> _GroupTurnSetup:
@@ -1043,6 +1101,11 @@ class ChatAIService:
         reactions = await self._load_event_reactions(event_ids, agent_ids)
         event_context = await self._build_event_context(event_refs, reactions, locale)
 
+        # Die verdichtete Vorgeschichte gilt fuer alle Sprecher gleich — sie
+        # ist die Erinnerung an DIESEN Faden, nicht an eine Person. Einmal
+        # geladen, nicht je Agent.
+        digest_text = await self._digests.load_digest_text(conversation_id, locale)
+
         return _GroupTurnSetup(
             agents=agents,
             agent_names=[a.get("name", "Agent") for a in agents],
@@ -1051,6 +1114,7 @@ class ChatAIService:
             prompt_template=prompt_template,
             model=model,
             event_context=event_context,
+            digest_text=digest_text,
         )
 
     async def generate_group_response(
@@ -1081,6 +1145,7 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
+                digest_text=setup.digest_text,
             )
 
             _, saved = await self._generate_single_response(
@@ -1099,6 +1164,7 @@ class ChatAIService:
             if saved:
                 saved_messages.append(saved)
 
+        self._fire_and_forget_digest(conversation_id, agent_names, locale)
         return saved_messages
 
     # ── Public streaming methods ───────────────────────────
@@ -1121,7 +1187,7 @@ class ChatAIService:
             model=ctx["model"],
             history_messages=ctx["history_messages"],
             extra_variables={"agent_memories": ctx["memory_text"]},
-            extra_context=ctx.get("relationship_context", ""),
+            extra_context=self._join_context(ctx.get("relationship_context", ""), ctx.get("digest_text", "")),
             participant_names=[ctx["agent"].get("name", "")],
         ):
             yield sse_event
@@ -1133,6 +1199,7 @@ class ChatAIService:
             user_message,
             response_text,
         )
+        self._fire_and_forget_digest(conversation_id, [ctx["agent"].get("name", "")], ctx["locale"])
 
     async def stream_group_response(
         self,
@@ -1162,6 +1229,7 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
+                digest_text=setup.digest_text,
             )
 
             async for sse_event in self.stream_single_response(
@@ -1184,6 +1252,23 @@ class ChatAIService:
                     if msg_data:
                         saved_messages.append(msg_data)
 
+        self._fire_and_forget_digest(conversation_id, agent_names, locale)
+
+    @staticmethod
+    def _join_context(*parts: str) -> str:
+        """Kontextbloecke zu einem System-Prompt-Anhang, leere weggelassen.
+
+        Die REIHENFOLGE der Argumente ist die Reihenfolge im Prompt, und die
+        ist eine Entscheidung: was zuletzt steht, wiegt am schwersten (siehe
+        Handoff `last-thing-wins-in-a-prompt` — der Stilprompt schlug dort
+        Vorlage, Beschreibung und Rahmen allein durch seine Position).
+
+        Deshalb vom Allgemeinen zum Naechsten: Beziehungen, dann die
+        verdichtete Vorgeschichte dieses Fadens, dann die Gruppenanweisung.
+        Der woertliche Verlauf steht ohnehin danach, als eigene Zuege.
+        """
+        return "\n\n".join(p.strip() for p in parts if p and p.strip())
+
     # ── Group chat context helper ──────────────────────────
 
     async def _build_group_turn_context(
@@ -1198,6 +1283,7 @@ class ChatAIService:
         user_message: str,
         saved_messages: list[dict],
         model_id: str = "",
+        digest_text: str = "",
     ) -> tuple[list[str], list[dict[str, str]]]:
         """Build extra_parts and history_messages for a single agent's turn
         in a group conversation. Shared by streaming and non-streaming paths.
@@ -1205,6 +1291,36 @@ class ChatAIService:
         extra_parts: list[str] = []
         if event_context:
             extra_parts.append(event_context)
+
+        # ⚠ DAS HIER FEHLTE. Bis zum 04.09.2026 bekam ein Agent im
+        # GRUPPENGESPRAECH weder seine Erinnerungen noch seine Beziehungen —
+        # beides ging nur in den Einzelchat (`_prepare_single_context`). Wer
+        # mit Marie allein sprach, redete mit einer Figur, die sich an ihn
+        # erinnerte; wer sie zu zweit ansprach, mit einer, die bei null anfing.
+        # Kein Fehler, keine Meldung, nur eine Person, die in Gesellschaft
+        # blasser ist als unter vier Augen.
+        #
+        # Das ist der groessere Teil des „erlernter Charakter geht verloren",
+        # und er kostet nichts: `retrieve` ist eine RPC mit Vektorabstand,
+        # `_build_relationship_context` eine Abfrage.
+        agent = agents[idx] if idx < len(agents) else {}
+        if agent.get("id"):
+            memories = await AgentMemoryService.retrieve(
+                self._supabase,
+                UUID(str(agent["id"])),
+                self._simulation_id,
+                query_text=user_message,
+                top_k=8,
+            )
+            memory_text = AgentMemoryService.format_for_prompt(memories)
+            if memory_text:
+                extra_parts.append(memory_text)
+            relationship_context = await self._build_relationship_context(str(agent["id"]), locale)
+            if relationship_context:
+                extra_parts.append(relationship_context)
+
+        if digest_text:
+            extra_parts.append(digest_text)
 
         if len(agents) > 1:
             group_instr = await self._prompt_resolver.resolve("chat_group_instruction", locale)

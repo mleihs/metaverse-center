@@ -165,12 +165,36 @@ def _direct_purpose_sites() -> set[str]:
     misst am falschen Ort.
     """
     muster = re.compile(
-        r'(?:resolve_text_model|get_platform_max_tokens|get_platform_reasoning|get_platform_model)'
+        r"(?:resolve_text_model|get_platform_max_tokens|get_platform_reasoning|get_platform_model)"
         r'\(\s*"([a-z_]+)"'
+    )
+    # Derselbe Aufruf, aber mit einer Modulkonstante statt eines Literals.
+    #
+    # ⚠ Zweite Fassung desselben blinden Flecks. Das Tor sah nur Literale —
+    # ein Dienst, der seinen Zweck EINMAL benennt (`PURPOSE = "chat_digest"`)
+    # und die Konstante an drei Stellen benutzt, sah unbenutzt aus. Genau die
+    # Schreibweise, die man empfiehlt. Ein Tor, das zum Ausschreiben derselben
+    # Zeichenkette an drei Stellen draengt, misst am falschen Ort.
+    ueber_konstante = re.compile(
+        r"(?:resolve_text_model|get_platform_max_tokens|get_platform_reasoning|get_platform_model)"
+        r"\(\s*([A-Z][A-Z0-9_]*)\s*[,)]"
     )
     gefunden: set[str] = set()
     for datei in _source_files():
-        gefunden.update(muster.findall(datei.read_text(encoding="utf-8")))
+        text = datei.read_text(encoding="utf-8")
+        gefunden.update(muster.findall(text))
+        namen = set(ueber_konstante.findall(text))
+        if not namen:
+            continue
+        # Nur Zuweisungen im MODULRUMPF, also ohne Einrueckung: eine
+        # Konstante, die in einer Funktion steht, gehoert nicht dem Modul.
+        for name in namen:
+            for treffer in re.finditer(
+                rf'^{re.escape(name)}(?:\s*:[^=\n]+)?\s*=\s*"([a-z_]+)"',
+                text,
+                re.MULTILINE,
+            ):
+                gefunden.add(treffer.group(1))
     return gefunden
 
 
@@ -200,9 +224,8 @@ def test_every_forge_agent_names_its_purpose() -> None:
 
 def test_agent_purposes_are_declared() -> None:
     undeclared = {p: sites for p, sites in AGENT_SITES.items() if p not in AI_PURPOSES}
-    assert not undeclared, (
-        "create_forge_agent is called with undeclared purposes:\n"
-        + "\n".join(f"  {p}: {', '.join(sites)}" for p, sites in sorted(undeclared.items()))
+    assert not undeclared, "create_forge_agent is called with undeclared purposes:\n" + "\n".join(
+        f"  {p}: {', '.join(sites)}" for p, sites in sorted(undeclared.items())
     )
 
 

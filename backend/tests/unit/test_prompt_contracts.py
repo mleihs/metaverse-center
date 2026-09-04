@@ -45,6 +45,7 @@ BACKEND = Path(__file__).resolve().parents[2]
 RENDERING_MODULES = (
     "services/generation_service.py",
     "services/chat_ai_service.py",
+    "services/chat/conversation_digest_service.py",
     "services/epoch_invitation_service.py",
 )
 
@@ -114,6 +115,37 @@ def _dict_keys(node: ast.AST) -> set[str] | None:
     return keys
 
 
+def _module_aliases(tree: ast.AST) -> dict[str, str]:
+    """Namen, die MODULWEIT genau einer Vorlage zugeordnet sind.
+
+    Der Regelfall ist, dass `resolve` und `fill_template` in derselben
+    Funktion stehen; dann greift die funktionslokale Zuordnung und diese hier
+    aendert nichts. Sie deckt den Fall ab, dass ein Dienst die Vorlage EINMAL
+    aufloest und an die Methode weiterreicht, die sie mehrfach fuellt.
+
+    Nur EINDEUTIGE Namen. Bindet derselbe Bezeichner in zwei Funktionen zwei
+    verschiedene Vorlagen, wird er hier weggelassen: eine falsche Zuordnung
+    waere schlimmer als gar keine, weil sie den Variablensatz der einen
+    Vorlage gegen den Vertrag der anderen prueft — und das ist ein Test, der
+    entweder falsch besteht oder falsch scheitert.
+    """
+    gesehen: dict[str, set[str]] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        value = node.value
+        call = value.value if isinstance(value, ast.Await) else value
+        if not (isinstance(call, ast.Call) and ast.unparse(call.func).endswith(".resolve")):
+            continue
+        template_type = _literal(call.args[0]) if call.args else None
+        if not template_type:
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                gesehen.setdefault(target.id, set()).add(template_type)
+    return {name: next(iter(types)) for name, types in gesehen.items() if len(types) == 1}
+
+
 def _call_sites(path: Path) -> list[tuple[str, set[str], int]]:
     """Extract (template_type, supplied variable names, line) from one module.
 
@@ -126,13 +158,20 @@ def _call_sites(path: Path) -> list[tuple[str, set[str], int]]:
     """
     tree = ast.parse(path.read_text(encoding="utf-8"))
     found: list[tuple[str, set[str], int]] = []
+    module_aliases = _module_aliases(tree)
 
     for fn in ast.walk(tree):
         if not isinstance(fn, ast.AsyncFunctionDef | ast.FunctionDef):
             continue
 
-        # local name -> template_type, from `resolve("<type>")`
-        aliases: dict[str, str] = {}
+        # local name -> template_type, from `resolve("<type>")`.
+        # Vorbelegt mit den modulweit EINDEUTIGEN Namen: ein Dienst darf die
+        # Vorlage einmal aufloesen und an die Methode weiterreichen, die sie
+        # je Abschnitt fuellt (`conversation_digest_service`). Erzwaenge man
+        # beides in einer Funktion, loeste der Dienst dieselbe Vorlage N-mal
+        # ueber das Netz auf — eine Pruefung, die den Code schlechter macht,
+        # damit sie ihn sehen kann, ist die falsche Pruefung.
+        aliases: dict[str, str] = dict(module_aliases)
         # local name -> the template_type patterns a plain assignment can yield
         type_aliases: dict[str, list[str]] = {}
         # local name -> literal dict keys
@@ -418,15 +457,7 @@ class TestSanitize:
         rewrite with no reason to show the operator, on 48 production rows.
         """
         contract = get_contract("portrait_description")
-        text = (
-            "RULES:\n"
-            "- Be bold\n"
-            "\n"
-            "VARIABLES:\n"
-            "- {agent_name}\n"
-            "\n"
-            "Portrait of {agent_character}.\n\n- mood\n\n- light"
-        )
+        text = "RULES:\n- Be bold\n\nVARIABLES:\n- {agent_name}\n\nPortrait of {agent_character}.\n\n- mood\n\n- light"
         result = sanitize_template(text, contract)
         assert result.text == text
         assert not result.changed

@@ -32,6 +32,7 @@ from uuid import uuid4
 
 import pytest
 
+from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.chat_ai_service import _DEPARTED_SPEAKER, ChatAIService
 from backend.services.prompt_service import PromptSource, ResolvedPrompt
 
@@ -88,9 +89,16 @@ async def _turns(service: ChatAIService, idx: int, saved: list[dict] | None = No
         negative_prompt=None,
         source=PromptSource.PLATFORM_LOCALE,
     )
+    # Erinnerungen und Beziehungen gehen seit dem 04.09.2026 auch in den
+    # Gruppenzug ein (davor bekam ein Agent in Gesellschaft keine). Sie sind
+    # hier NICHT der Gegenstand — geprueft werden die Rollen — und beide
+    # sprechen mit der Datenbank. Abgeschaltet, damit diese Datei rein
+    # strukturell bleibt: kein LLM, kein Netz.
     with (
         patch.object(service, "_load_history", return_value=list(HISTORY)),
         patch.object(service._prompt_resolver, "resolve", return_value=resolved),
+        patch.object(AgentMemoryService, "retrieve", return_value=[]),
+        patch.object(service, "_build_relationship_context", return_value=""),
     ):
         _extra, messages = await service._build_group_turn_context(
             conversation_id=uuid4(),

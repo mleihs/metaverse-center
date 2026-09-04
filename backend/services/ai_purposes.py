@@ -87,9 +87,7 @@ __all__ = [
 # why each one is not simply `default`. No count is written here on purpose —
 # the sentence used to say "the four, plus forecast" and was wrong twice over
 # by the time anyone read it again.
-ModelKey = Literal[
-    "default", "fallback", "forge", "research", "forecast", "classify", "dispatch", "chat"
-]
+ModelKey = Literal["default", "fallback", "forge", "research", "forecast", "classify", "dispatch", "chat"]
 
 # `auto` means "send nothing, the model decides". Deliberately distinct from
 # `off`, which sends {"enabled": false} and suppresses thinking outright.
@@ -155,6 +153,27 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "Gedankenketten waren also ein TATSAECHLICHES Problem. Abschalten "
             "beseitigt die Ursache statt das Symptom. Fuer Charakter-Rollenspiel "
             "traegt Nachdenken ohnehin nichts zur Personentreue bei."
+        ),
+    ),
+    _purpose(
+        "chat_digest",
+        "chat",
+        700,
+        90,
+        reasoning="off",
+        why=(
+            "Der Bericht ueber EINEN Abschnitt eines langen Fadens (40 Nachrichten). "
+            "700 Token sind rund 500 deutsche Woerter; die Vorlage verlangt hoechstens "
+            "180, das Budget haelt also Luft und schneidet nicht mitten im Satz ab. "
+            "Ein GROESSERES Budget waere hier schaedlich und nicht nur teuer: die "
+            "Verdichtung geht in JEDEN folgenden Zug ein, bis zu acht Abschnitte "
+            "gleichzeitig — 2 000 Token je Abschnitt waeren 16 000 im System-Prompt "
+            "und naehmen genau den Platz zurueck, den die Verdichtung sparen soll. "
+            "90 s statt 60: die Eingabe ist mit 40 Nachrichten deutlich groesser als "
+            "ein Gespraechszug, und der Lauf haengt an keiner Anfrage. "
+            "reasoning=off aus demselben Grund wie bei `chat_response` — hier kommt "
+            "hinzu, dass eine durchgesickerte Gedankenkette in einer Verdichtung "
+            "DAUERHAFT waere: sie wird gespeichert und nie wieder ueberschrieben."
         ),
     ),
     _purpose(
