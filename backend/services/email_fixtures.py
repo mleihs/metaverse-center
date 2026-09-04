@@ -31,11 +31,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from backend.services.email_templates import (
+    continuation_subject,
     epoch_invitation_subject,
     render_account_deleted,
     render_clearance_denied,
     render_clearance_granted,
     render_clearance_request_admin_notification,
+    render_continuation,
     render_cycle_briefing,
     render_deadline_reminder,
     render_epoch_completed,
@@ -234,6 +236,37 @@ FIXTURES: tuple[EmailFixture, ...] = (
             campaign_stats={"events": 42, "missions": 18},
             unsubscribe_url=_UNSUB,
         ),
+    ),
+    EmailFixture(
+        key="continuation",
+        label="Gespräche, die ohne dich weitergingen",
+        subject=lambda lang: continuation_subject(2, lang),
+        # ZWEI Fäden, nicht einer: die Vorlage baut je Faden einen eigenen
+        # Abschnitt, und eine Musterung mit einem einzigen Eintrag zeigt nie,
+        # ob zwei aneinandergesetzt noch lesbar sind. Der zweite Auszug trägt
+        # bewusst einen Zeilenumbruch — `white-space: pre-wrap` ist genau die
+        # Sorte Auszeichnung, die in einem Postfach anders fällt als im
+        # Browser.
+        render=lambda lang: render_continuation(
+            [
+                {
+                    "title": "Mira Steinfeld",
+                    "excerpt": "Waehrend du weg warst, hat Mira Steinfeld mit Elena Voss "
+                    "gesprochen.\n\n\u201eDie Akte lag heute morgen schon auf meinem "
+                    "Tisch, und niemand will sie dorthin gelegt haben.\u201c",
+                    "url": "https://metaverse.center/chat?conversation=7b2e37c3",
+                },
+                {
+                    "title": "Lena Kray",
+                    "excerpt": "Waehrend du weg warst, hat Lena Kray mit Mira Steinfeld "
+                    "gesprochen.\n\n\u201eIch habe den Stempel nachgesehen. Er stammt aus "
+                    "einer Abteilung, die es seit vier Jahren nicht mehr gibt.\u201c",
+                    "url": "https://metaverse.center/chat?conversation=91ab44de",
+                },
+            ],
+            email_locale=lang,
+        ),
+        unsubscribable=False,
     ),
     EmailFixture(
         key="welcome",

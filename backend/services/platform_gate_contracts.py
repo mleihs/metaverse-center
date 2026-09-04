@@ -132,6 +132,17 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     ),
     # ── Erzählschichten ─────────────────────────────────────────────────
     PlatformGate(
+        key="continuation_mail_enabled",
+        group="narrative",
+        label="Post über Gespräche ohne Zuhörer",
+        turns_on="Die zwei Mail-Sweeps zu Wortwechseln ohne Zuhörer: die Sofortpost und "
+        "der Gesprächs-Abschnitt der Wochenpost.",
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AUS. Die Flüster-Karte "
+        "in der App erscheint trotzdem; nur Post geht keine hinaus.",
+        default_when_missing=False,
+        reader="backend/services/lifecycle_mail_scheduler.py",
+    ),
+    PlatformGate(
         key="agent_continuation_enabled",
         group="narrative",
         label="Gespräche ohne Zuhörer",

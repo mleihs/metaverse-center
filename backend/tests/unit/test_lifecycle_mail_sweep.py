@@ -103,6 +103,35 @@ def _profile(age: timedelta, *, email: str = "a@b.test") -> dict:
 # ── Die Untergrenze ──────────────────────────────────────────────────
 
 
+def _sweep_source(fn) -> str:
+    """Die Quelle eines Sweeps UND der Modulfunktionen, die er direkt ruft.
+
+    ⚠ Die beiden Prüfungen unten lasen bis zum 04.09.2026 nur den Sweep
+    selbst. Das ging gut, solange jeder Sweep alles bei sich trug — und brach
+    beim ersten, der einen gemeinsamen Rumpf benutzt: zwei wiederkehrende
+    Sweeps (`continuation_immediate`, `continuation_digest`) teilen ihre
+    Versandschleife, weil sie sonst zweimal danebenstünde.
+
+    Die Zusagen, die hier geprüft werden, gelten weiter — sie stehen nur eine
+    Aufrufebene tiefer. Eine Prüfung, die zum Abschreiben derselben fünfzehn
+    Zeilen drängt, misst am falschen Ort.
+
+    EINE Ebene, nicht beliebig viele: tiefer wird die Suche unscharf, und eine
+    Zusicherung, die drei Ebenen entfernt eingelöst wird, ist am Sweep nicht
+    mehr abzulesen.
+    """
+    quellen = [textwrap.dedent(inspect.getsource(fn))]
+    for knoten in ast.walk(ast.parse(quellen[0])):
+        if not isinstance(knoten, ast.Call) or not isinstance(knoten.func, ast.Name):
+            continue
+        gerufen = getattr(lms, knoten.func.id, None)
+        if inspect.isfunction(gerufen) and gerufen.__module__ == lms.__name__:
+            quelle = textwrap.dedent(inspect.getsource(gerufen))
+            if quelle not in quellen:
+                quellen.append(quelle)
+    return "\n".join(quellen)
+
+
 class TestTheFirstRunDoesNotGreetTheArchive:
     """Post lässt sich nicht zurückholen; deshalb steht dieser Block zuerst."""
 
@@ -143,7 +172,7 @@ class TestTheFirstRunDoesNotGreetTheArchive:
         source = textwrap.dedent(inspect.getsource(lms))
         assert source.count("_BACKLOG_HORIZON = ") == 1
         for name in lms.SWEEPS:
-            fn_src = textwrap.dedent(inspect.getsource(lms.SWEEPS[name]))
+            fn_src = _sweep_source(lms.SWEEPS[name])
             assert "_BACKLOG_HORIZON" in fn_src, f"Sweep {name} kennt die Untergrenze nicht"
 
 
@@ -206,9 +235,7 @@ class TestNobodyIsGreetedTwice:
         profile = _profile(timedelta(hours=3))
         store = {
             "user_profiles": [profile],
-            "email_log": [
-                {"recipient_user_id": profile["id"], "template": "welcome", "ok": False}
-            ],
+            "email_log": [{"recipient_user_id": profile["id"], "template": "welcome", "ok": False}],
         }
         with patch.object(lms.EmailService, "send", new=AsyncMock(return_value=True)) as send:
             sent = await lms._sweep_welcome(_Admin(store), datetime.now(UTC))
@@ -231,24 +258,60 @@ class TestNobodyIsGreetedTwice:
         Name beim Versand vom Namen im Register ab, findet der Wächter nie eine
         Zeile und der Sweep wiederholt sich für immer."""
         for name, fn in lms.SWEEPS.items():
-            src = textwrap.dedent(inspect.getsource(fn))
+            src = _sweep_source(fn)
             tree = ast.parse(src)
-            templates = {
-                kw.value.value
-                for node in ast.walk(tree)
-                if isinstance(node, ast.Call)
-                and isinstance(node.func, ast.Name)
-                and node.func.id == "MailRecord"
-                for kw in node.keywords
-                if kw.arg == "template" and isinstance(kw.value, ast.Constant)
-            }
+            # Der Name, unter dem der Eintrag geschrieben wird.
+            #
+            # Er steht entweder als Literal am `MailRecord` — so macht es die
+            # Begruessung — oder er wird HEREINGEREICHT, wenn zwei Sweeps
+            # denselben Versandrumpf teilen. Im zweiten Fall ist die Zusage
+            # sogar staerker: derselbe Parameter fuettert den Waechter UND den
+            # Eintrag, die beiden KOENNEN nicht auseinanderlaufen.
+            #
+            # Also: Literal nehmen, wo eines steht; sonst die `template=`-Literale
+            # der Weiterreichung. Ein falsches Literal irgendwo im Pfad laesst
+            # die Menge trotzdem auffliegen, weil auf Gleichheit geprueft wird.
+            schreibt_variabel = False
+            templates: set[str] = set()
+            for node in ast.walk(tree):
+                if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)):
+                    continue
+                if node.func.id != "MailRecord":
+                    continue
+                for kw in node.keywords:
+                    if kw.arg != "template":
+                        continue
+                    if isinstance(kw.value, ast.Constant):
+                        templates.add(kw.value.value)
+                    else:
+                        schreibt_variabel = True
+            if schreibt_variabel:
+                templates |= {
+                    kw.value.value
+                    for node in ast.walk(tree)
+                    if isinstance(node, ast.Call)
+                    for kw in node.keywords
+                    if kw.arg == "template" and isinstance(kw.value, ast.Constant)
+                }
             assert templates == {name}, f"Sweep {name} schreibt {templates}"
+            # Zwei Waechter, EINE Zusage.
+            #
+            # `already_mailed` fragt „ueberhaupt schon einmal?" — richtig fuer
+            # eine Begruessung, die es genau einmal je Konto gibt.
+            # `_last_sent_at` fragt „zuletzt wann?" — richtig fuer alles
+            # Wiederkehrende. Mit `already_mailed` ginge eine Wochenpost genau
+            # EINMAL hinaus und danach nie wieder, und dieser Fehler zeigt
+            # sich nur als Schweigen.
+            #
+            # Geprueft wird an beiden dasselbe: der Name, unter dem der
+            # Waechter fragt, muss der Schluessel des Sweeps sein. Weicht er
+            # ab, findet der Waechter nie eine Zeile.
             guards = {
                 node.args[1].value
                 for node in ast.walk(tree)
                 if isinstance(node, ast.Call)
                 and isinstance(node.func, ast.Name)
-                and node.func.id == "already_mailed"
+                and node.func.id in {"already_mailed", "_last_sent_at"}
                 and len(node.args) > 1
                 and isinstance(node.args[1], ast.Constant)
             }
@@ -291,21 +354,13 @@ class TestTheSwitchFailsClosed:
 
     @pytest.mark.asyncio
     async def test_a_seeded_true_turns_them_on(self):
-        store = {
-            "platform_settings": [
-                {"setting_key": "lifecycle_mail_enabled", "setting_value": True}
-            ]
-        }
+        store = {"platform_settings": [{"setting_key": "lifecycle_mail_enabled", "setting_value": True}]}
         config = await lms.LifecycleMailScheduler._load_config(_Admin(store))
         assert config["enabled"] is True
 
     @pytest.mark.asyncio
     async def test_a_malformed_value_does_not_arm_a_mailing(self):
-        store = {
-            "platform_settings": [
-                {"setting_key": "lifecycle_mail_enabled", "setting_value": None}
-            ]
-        }
+        store = {"platform_settings": [{"setting_key": "lifecycle_mail_enabled", "setting_value": None}]}
         config = await lms.LifecycleMailScheduler._load_config(_Admin(store))
         assert config["enabled"] is False
 

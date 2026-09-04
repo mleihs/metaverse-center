@@ -270,7 +270,9 @@ def phase_change_preheader(cycle_count: int, standing_data: dict | None, email_l
     return _nt("pre_phase_plain", lang, n=cycle_count)
 
 
-def epoch_completed_subject(epoch_name: str, leaderboard: list[dict], player_simulation_id: str, email_locale: str | None) -> str:
+def epoch_completed_subject(
+    epoch_name: str, leaderboard: list[dict], player_simulation_id: str, email_locale: str | None
+) -> str:
     lang = _resolve_lang(email_locale)
     rank = next(
         (i for i, e in enumerate(leaderboard, start=1) if e.get("simulation_id") == player_simulation_id),
@@ -971,7 +973,7 @@ def _footer_row(email_locale: str | None = None, *, unsubscribe_url: str | None 
         links.append(f'<a href="{unsubscribe_url}" style="{link_style}">{_nt("footer_unsubscribe", footer_lang)}</a>')
     links.append(
         f'<a href="{settings.site_url}/settings/notifications" style="{link_style}">'
-        f'{_nt("footer_manage", footer_lang)}</a>'
+        f"{_nt('footer_manage', footer_lang)}</a>"
     )
     links.append(f'<a href="{settings.site_url}/privacy" style="{link_style}">{_nt("footer_legal", footer_lang)}</a>')
     link_row = "&nbsp;&middot;&nbsp;".join(links)
@@ -1612,6 +1614,34 @@ _NOTIF_STRINGS: dict[str, dict[str, str]] = {
         "en": "Your account is ready. Here is the shortest way in.",
         "de": "Dein Konto ist bereit. Hier ist der kürzeste Weg hinein.",
     },
+    "continuation_subject_one": {
+        "en": "They kept talking",
+        "de": "Sie haben weitergeredet",
+    },
+    "continuation_subject_many": {
+        "en": "{count} conversations went on without you",
+        "de": "{count} Gespraeche gingen ohne dich weiter",
+    },
+    "continuation_pre": {
+        "en": "What was said while you were away.",
+        "de": "Was gesagt wurde, waehrend du weg warst.",
+    },
+    "continuation_header": {
+        "en": "WHILE YOU WERE AWAY",
+        "de": "WAEHREND DU WEG WARST",
+    },
+    "continuation_lead": {
+        "en": "You left these conversations running. This is what was said in them.",
+        "de": "Du hast diese Gespraeche weiterlaufen lassen. Das wurde darin gesagt.",
+    },
+    "continuation_cta": {
+        "en": "Join back in",
+        "de": "Wieder einklinken",
+    },
+    "continuation_off": {
+        "en": "Every conversation carries its own switch, in the window header. Turning it off ends these messages for that conversation.",
+        "de": "Jedes Gespraech traegt seinen eigenen Schalter, im Fensterkopf. Wer ihn umlegt, beendet diese Nachrichten fuer dieses Gespraech.",
+    },
     "welcome_subject": {
         "en": "Welcome to metaverse.center",
         "de": "Willkommen bei metaverse.center",
@@ -1870,7 +1900,6 @@ _TITLE_TRANSLATIONS: dict[str, dict[str, str]] = {
 # ── Cycle Briefing Template ─────────────────────────────────────────────
 
 
-
 def _action_row(data: dict, lang: str, *, accent: str) -> str:
     """The one instruction in a message otherwise made of results.
 
@@ -1900,10 +1929,7 @@ def _action_row(data: dict, lang: str, *, accent: str) -> str:
             rp=data.get("rp_balance", 0),
             # "+12 → 30 / 40" carries the cap; the sentence only wants the
             # number the player will hold.
-            projected=_esc(str(data.get("next_cycle_rp_projection", "")))
-            .split("\u2192")[-1]
-            .split("/")[0]
-            .strip()
+            projected=_esc(str(data.get("next_cycle_rp_projection", ""))).split("\u2192")[-1].split("/")[0].strip()
             or data.get("rp_balance", 0),
         )
     )
@@ -2360,9 +2386,7 @@ def _render_briefing_block(data: dict, lang: str, *, accent: str = _AMBER) -> st
     return "\n".join(sections)
 
 
-def render_cycle_briefing(
-    data: dict, *, email_locale: str | None = None, unsubscribe_url: str | None = None
-) -> str:
+def render_cycle_briefing(data: dict, *, email_locale: str | None = None, unsubscribe_url: str | None = None) -> str:
     """Render the cycle briefing email.
 
     If email_locale is "en" or "de", renders single-language.
@@ -2575,7 +2599,6 @@ def render_phase_change(
 
 
 # ── Epoch Completed Template ─────────────────────────────────────────────
-
 
 
 def _podium_row(leaderboard: list[dict], player_simulation_id: str, lang: str, *, accent: str) -> str:
@@ -2861,9 +2884,7 @@ def render_account_deleted(
     lang = _resolve_lang(email_locale)
     accent = _AMBER
 
-    worlds_line = (
-        _nt("deleted_worlds", lang) if worlds_transferred else _nt("deleted_no_worlds", lang)
-    )
+    worlds_line = _nt("deleted_worlds", lang) if worlds_transferred else _nt("deleted_no_worlds", lang)
 
     top = f"""\
           <tr>
@@ -2917,6 +2938,86 @@ def render_account_deleted(
         "\n".join(blocks),
         lang=lang,
         preheader=_nt("pre_deleted", lang),
+    )
+
+
+def continuation_subject(count: int, email_locale: str | None = None) -> str:
+    """Betreff der Post ueber Wortwechsel ohne Zuhoerer.
+
+    Zwei Formen, weil eine Zahl im Betreff bei EINS falsch klingt („1
+    Gespraech ging ohne dich weiter") und der Betreff die Zeile ist, an der
+    entschieden wird, ob die Nachricht ueberhaupt geoeffnet wird.
+    """
+    lang = _resolve_lang(email_locale)
+    if count <= 1:
+        return _nt("continuation_subject_one", lang)
+    return _nt("continuation_subject_many", lang, count=count)
+
+
+def render_continuation(
+    items: list[dict[str, str]],
+    *,
+    email_locale: str | None = None,
+) -> str:
+    """Was gesagt wurde, waehrend der Leser weg war.
+
+    ``items`` traegt je Faden ``title`` (wer geredet hat), ``excerpt`` (die
+    Zeilen selbst) und ``url`` (der Weg zurueck in den Faden).
+
+    DIE ZEILEN STEHEN DRIN, nicht eine Zusammenfassung davon. Eine Mail, die
+    sagt „es gab ein Gespraech", verlangt einen Klick, um zu erfahren, ob er
+    sich gelohnt haette — und wer das zweimal umsonst getan hat, klickt kein
+    drittes Mal. Der Plan verlangt es ausdruecklich: „Die Mail traegt die
+    echten Zeilen und einen Verweis auf den Faden."
+
+    Der Ausschaltweg steht am Ende und nennt die STELLE, nicht nur die
+    Moeglichkeit. „Du kannst das abschalten" ohne zu sagen wo, ist keine
+    Auskunft.
+    """
+    lang = _resolve_lang(email_locale)
+    accent = _AMBER
+
+    blocks = [
+        f"""\
+          <tr>
+            <td style="padding:24px 32px 4px;">
+              <p style="margin:0;font-size:14px;line-height:1.65;color:{_TEXT};">
+                {_esc(_nt("continuation_lead", lang))}
+              </p>
+            </td>
+          </tr>""",
+    ]
+    for item in items:
+        blocks.append(_section_header(item["title"]))
+        blocks.append(
+            f"""\
+          <tr>
+            <td style="padding:4px 32px 12px;">
+              <p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:{_TEXT};white-space:pre-wrap;">
+                {_esc(item["excerpt"])}
+              </p>
+              <p style="margin:0;font-size:13px;line-height:1.6;">
+                <a href="{_esc(item["url"])}" style="color:{accent};">{_esc(_nt("continuation_cta", lang))}</a>
+              </p>
+            </td>
+          </tr>"""
+        )
+    blocks.append(
+        f"""\
+          <tr>
+            <td style="padding:8px 32px 24px;">
+              <p style="margin:0;font-size:13px;line-height:1.6;color:{_TEXT_DIM};">
+                {_esc(_nt("continuation_off", lang))}
+              </p>
+            </td>
+          </tr>"""
+    )
+
+    return _email_shell(
+        _nt("continuation_header", lang),
+        "\n".join(blocks),
+        lang=lang,
+        preheader=_nt("continuation_pre", lang),
     )
 
 

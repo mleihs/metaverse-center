@@ -300,6 +300,14 @@ class ContinuationService:
             return None
 
         await cls._record_memories(admin, simulation_id, zuege, agents, conversation_id)
+        gefluestert = await cls._whisper(
+            admin,
+            faden,
+            zuege,
+            agents,
+            locale=locale,
+            conversation_id=conversation_id,
+        )
         return {
             "conversation_id": str(conversation_id),
             "user_id": faden.get("user_id"),
@@ -307,7 +315,117 @@ class ContinuationService:
             "locale": locale,
             "turns": zuege,
             "agent_names": namen,
+            "whispers": gefluestert,
         }
+
+    # ── Melden ────────────────────────────────────────────────────────────
+
+    @classmethod
+    async def _whisper(
+        cls,
+        admin: Client,
+        faden: dict[str, Any],
+        zuege: list[dict[str, str]],
+        agents: list[dict[str, Any]],
+        *,
+        locale: str,
+        conversation_id: UUID,
+    ) -> list[str]:
+        """Ein Flüstern über das, was ohne den Menschen geschah.
+
+        ⚠ **ABWEICHUNG VOM PLAN, und sie ist gemessen.** Der Plan sagt:
+        erzeugt, „wenn der Spieler darin vorkommt UND eine Bindung besteht".
+        Die erste Bedingung ist nicht erfüllbar:
+
+        * ``user_profiles`` führt keinen Anzeigenamen (id, email,
+          onboarding_completed, academy_epochs_played, created_at, updated_at).
+        * Vor allem: der Agent ERFÄHRT den Namen nie. Weder
+          ``chat_ai_service`` noch ein Prompt-Vertrag reicht ihn durch; in
+          jeder Mitschrift heisst der Mensch schlicht „User".
+
+        Eine Bedingung, die auf einen Namen prüft, den niemand kennt, ist
+        immer falsch — das Merkmal sähe gebaut aus und liefe nie. Es gilt
+        deshalb die zweite Bedingung allein, und sie ist auch die richtigere:
+        die BINDUNG ist die Beziehung, die die Nachricht bedeutsam macht.
+        Ohne sie wäre das Flüstern die Benachrichtigung einer Fremden.
+
+        ``never`` schweigt vollständig — kein Flüstern, keine Karte, keine
+        Post. Die Zeile entstünde sonst und läge nur ungelesen da.
+        """
+        if (faden.get("continue_notify") or "digest") == "never":
+            return []
+        user_id = faden.get("user_id")
+        if not user_id:
+            return []
+
+        agent_ids = [str(a["id"]) for a in agents]
+        response = await (
+            admin.table("agent_bonds")
+            .select("id, agent_id")
+            .eq("user_id", str(user_id))
+            .in_("agent_id", agent_ids)
+            .neq("status", "farewell")
+            .execute()
+        )
+        bindungen = extract_list(response)
+        if not bindungen:
+            return []
+
+        nach_id = {str(a["id"]): str(a.get("name") or "?") for a in agents}
+        geschrieben: list[str] = []
+        for bindung in bindungen:
+            name = nach_id.get(str(bindung.get("agent_id")), "?")
+            andere = [n for i, n in nach_id.items() if i != str(bindung.get("agent_id"))]
+            zeile = zuege[0]["content"]
+            try:
+                await (
+                    admin.table("bond_whispers")
+                    .insert(
+                        {
+                            "bond_id": bindung["id"],
+                            "whisper_type": "conversation",
+                            "content_de": cls._whisper_text(name, andere, zeile, "de"),
+                            "content_en": cls._whisper_text(name, andere, zeile, "en"),
+                            # Ohne die conversation_id waere das Fluestern eine
+                            # Behauptung ohne Beleg — der Mensch koennte nicht
+                            # nachsehen, wovon die Rede ist.
+                            "trigger_context": {
+                                "conversation_id": str(conversation_id),
+                                "notify": faden.get("continue_notify") or "digest",
+                                "turns": len(zuege),
+                                "locale": locale,
+                            },
+                        }
+                    )
+                    .execute()
+                )
+                geschrieben.append(str(bindung["id"]))
+            except Exception:
+                # Ein misslungenes Fluestern kostet den Wortwechsel NICHT: der
+                # steht schon im Faden und ist beim naechsten Oeffnen da.
+                logger.exception(
+                    "Fluestern fuer Bindung %s aus Wortwechsel %s fehlgeschlagen",
+                    bindung.get("id"),
+                    conversation_id,
+                )
+        return geschrieben
+
+    @staticmethod
+    def _whisper_text(name: str, andere: list[str], zeile: str, sprache: str) -> str:
+        """Der Text der Karte. KEIN Modellaufruf.
+
+        Der Wortwechsel ist schon geschrieben und bezahlt; ihn ein zweites Mal
+        durch ein Modell zu schicken, um zu sagen „wir haben geredet", wäre ein
+        Aufruf für eine Auskunft, die schon dasteht. Die erste Zeile des
+        Wortwechsels IST die Nachricht.
+        """
+        mit = ", ".join(andere) if andere else ("someone" if sprache == "en" else "jemandem")
+        auszug = zeile.strip()
+        if len(auszug) > 180:
+            auszug = auszug[:177].rstrip() + "..."
+        if sprache == "en":
+            return f"While you were away, {name} talked with {mit}.\n\n\u201e{auszug}\u201c"
+        return f"Waehrend du weg warst, hat {name} mit {mit} gesprochen.\n\n\u201e{auszug}\u201c"
 
     # ── Kontext ───────────────────────────────────────────────────────────
 
