@@ -55,9 +55,17 @@ export class VelgAtlasRegistry extends LitElement {
         letter-spacing: var(--heading-tracking);
         text-transform: var(--heading-transform);
         color: var(--color-text-primary);
-        /* Aus dem Pruefbericht des Prototyps: die Zeile darf nicht umbrechen,
-           sonst rutscht die Zahl in Klammern allein auf die zweite Zeile. */
-        white-space: nowrap;
+        /* KEIN white-space: nowrap.
+           Der Pruefbericht des Prototyps verlangte, dass die Zahl in Klammern
+           nicht allein auf die zweite Zeile rutscht -- das ist ein Verbot fuer
+           EINE STELLE, nicht fuer die Zeile. Als nowrap gesetzt hat es am
+           04.09.2026 im Dashboard genau das Gegenteil bewirkt: die Spalte des
+           Registers ist dort 341 px breit, die deutsche Ueberschrift 432 px,
+           und sie lief 43 px unter die rechte Schiene. Die Medienabfrage, die
+           es bei 767 px zuruecknimmt, greift nicht -- das Fenster war 1100 px
+           breit, eng war die SPALTE. Die Bindung sitzt jetzt dort, wo sie
+           hingehoert: als geschuetztes Leerzeichen zwischen dem letzten Wort
+           und der Klammer. */
       }
 
       h2 span {
@@ -151,17 +159,28 @@ export class VelgAtlasRegistry extends LitElement {
         color: var(--color-primary);
       }
 
-      /* Aus dem Pruefbericht: die Meta-Zeile darf nicht umbrechen. */
+      /* Derselbe Denkfehler wie bei h2, eine Ebene tiefer. Der Pruefbericht
+         meinte: eine Angabe darf nicht mitten im Wort brechen. Als nowrap auf
+         der ZEILE lief sie bei 170 px Kartenbreite (zwei Spalten in einer
+         341-px-Schiene) aus der Karte heraus -- "BENUTZERDEFINIERT 6 BÜRGER"
+         passt dort in keiner Sprache. Das Verbot sitzt jetzt auf den beiden
+         Angaben, der Umbruch ZWISCHEN ihnen ist erlaubt. Damit braucht es
+         keinen Haltepunkt: die Zeile bleibt einzeilig, solange sie passt, und
+         bricht genau dann, wenn sie es nicht mehr tut. */
       .card__meta {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
-        gap: var(--space-3);
+        gap: var(--space-1) var(--space-3);
         margin-top: var(--space-3);
         font-family: var(--font-mono);
         font-size: var(--text-xs);
         text-transform: var(--label-transform);
         letter-spacing: var(--label-tracking);
         color: var(--color-text-muted);
+      }
+
+      .card__meta > span {
         white-space: nowrap;
       }
 
@@ -227,10 +246,6 @@ export class VelgAtlasRegistry extends LitElement {
           align-items: flex-start;
           gap: var(--space-3);
         }
-
-        h2 {
-          white-space: normal;
-        }
       }
     `,
   ];
@@ -250,7 +265,15 @@ export class VelgAtlasRegistry extends LitElement {
       </div>
 
       <div class="head">
-        <h2>${msg('surveyed by others')} <span>(${this.worlds.length})</span></h2>
+        <!--
+          Zwischen der Ueberschrift und der Klammer steht ein GESCHUETZTES
+          Leerzeichen (U+00A0), kein gewoehnliches. Es ist im Quelltext nicht
+          zu sehen und traegt trotzdem die Regel, die frueher als
+          white-space: nowrap auf der ganzen Zeile stand: die Zahl soll beim
+          Umbruch nicht allein auf der zweiten Zeile stehen. Wer es durch ein
+          normales Leerzeichen ersetzt, bekommt genau das zurueck.
+        -->
+        <h2>${msg('surveyed by others')} <span>(${this.worlds.length})</span></h2>
         <button class="link atlas-arrow" @click=${() => navigate('/worlds')}>
           ${msg(str`All ${this.worlds.length} sheets`)} <span aria-hidden="true">→</span>
         </button>
