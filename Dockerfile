@@ -96,5 +96,13 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
 # einzelnen Aufrufer erlaubt, die Anmeldung fuer die ganze Plattform zu
 # sperren. Wo der Container direkt erreichbar ist, MUSS die Variable auf die
 # Adresse des Proxys gesetzt werden.
+#
+# DIE ANFUEHRUNGSZEICHEN UM ${FORWARDED_ALLOW_IPS} SIND PFLICHT.
+# Der Wert ist `*`. Unquoted expandiert die Shell ihn gegen das
+# Arbeitsverzeichnis, und uvicorn bekommt die Dateinamen: gemessen am
+# 05.09.2026 in einem fehlgeschlagenen Deploy —
+#   Error: Got unexpected extra arguments (pyproject.toml static)
+# Der Container startete nicht, die Gesundheitspruefung schlug fehl, Coolify
+# rollte auf den vorherigen zurueck. Kein Ausfall, aber auch kein Deploy.
 ENV FORWARDED_ALLOW_IPS="*"
-CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log --proxy-headers --forwarded-allow-ips ${FORWARDED_ALLOW_IPS}"]
+CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log --proxy-headers --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS}\""]
