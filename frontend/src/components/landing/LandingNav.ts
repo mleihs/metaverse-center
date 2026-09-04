@@ -70,9 +70,21 @@ export class VelgLandingNav extends LitElement {
       border: 0;
       padding: 0;
       cursor: pointer;
+      transition: color var(--transition-normal);
     }
 
     .wordmark span {
+      color: var(--color-accent-amber);
+    }
+
+    /*
+     * Die Wortmarke ist ein Knopf (sie fuehrt zurueck auf die Frontseite) und
+     * hatte als einziges Bedienelement der Leiste ueberhaupt keinen Zustand —
+     * weder Zeiger noch Tastatur. Beim Ueberfahren nimmt sie die Farbe an, die
+     * ihr Punkt schon traegt: der Name wird EIN Wort statt zwei.
+     */
+    .wordmark:hover,
+    .wordmark:focus-visible {
       color: var(--color-accent-amber);
     }
 
@@ -107,6 +119,7 @@ export class VelgLandingNav extends LitElement {
       transition: color var(--transition-normal);
     }
 
+    .locale button:hover,
     .locale button:focus-visible {
       color: var(--color-accent-amber);
     }
@@ -161,6 +174,7 @@ export class VelgLandingNav extends LitElement {
       transition: color var(--transition-normal);
     }
 
+    .nav__link:hover,
     .nav__link:focus-visible {
       color: var(--color-accent-amber);
     }
@@ -182,6 +196,7 @@ export class VelgLandingNav extends LitElement {
         background var(--transition-normal);
     }
 
+    .cta:hover,
     .cta:focus-visible {
       background: var(--color-accent-amber-hover);
       transform: translate(-1px, -1px);
@@ -200,6 +215,7 @@ export class VelgLandingNav extends LitElement {
       box-shadow: var(--shadow-md);
     }
 
+    .cta--lg:hover,
     .cta--lg:focus-visible {
       box-shadow: var(--shadow-xl);
     }
@@ -218,6 +234,7 @@ export class VelgLandingNav extends LitElement {
       transition: color var(--transition-normal);
     }
 
+    .watch:hover,
     .watch:focus-visible {
       color: var(--color-accent-amber);
     }
@@ -229,6 +246,29 @@ export class VelgLandingNav extends LitElement {
 
     .watch:hover .watch__arrow {
       transform: translateX(4px);
+    }
+
+    /*
+     * Der Handlungsknopf verschiebt sich beim Ueberfahren um einen Pixel. Das
+     * ist Bewegung, also braucht es die Ausnahme des Hauses — sie fehlte,
+     * solange es den Zustand nur fuer die Tastatur gab, und faellt erst auf,
+     * wenn ihn auch der Zeiger ausloest. Die Farbe bleibt: sie sagt „hier bist
+     * du", und das darf sie auch ohne Bewegung.
+     */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .cta:hover,
+      .cta:focus-visible {
+        transform: none;
+      }
+
+      .watch:hover .watch__arrow {
+        transform: none;
+      }
     }
 
     @media (max-width: 900px) {
