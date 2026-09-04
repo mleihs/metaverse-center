@@ -328,7 +328,7 @@ class PlatformSettingsService:
             return cast(PlatformSkin, raw)
 
         logger.warning(
-            "platform_default_skin trägt %r, das ist keine Ausgabe — es gilt %s",
+            "platform_default_skin trägt %r, das ist keine Ausgabe – es gilt %s",
             raw,
             DEFAULT_PLATFORM_SKIN,
         )

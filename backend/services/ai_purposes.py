@@ -167,11 +167,11 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "180, das Budget haelt also Luft und schneidet nicht mitten im Satz ab. "
             "Ein GROESSERES Budget waere hier schaedlich und nicht nur teuer: die "
             "Verdichtung geht in JEDEN folgenden Zug ein, bis zu acht Abschnitte "
-            "gleichzeitig — 2 000 Token je Abschnitt waeren 16 000 im System-Prompt "
+            "gleichzeitig – 2 000 Token je Abschnitt waeren 16 000 im System-Prompt "
             "und naehmen genau den Platz zurueck, den die Verdichtung sparen soll. "
             "90 s statt 60: die Eingabe ist mit 40 Nachrichten deutlich groesser als "
             "ein Gespraechszug, und der Lauf haengt an keiner Anfrage. "
-            "reasoning=off aus demselben Grund wie bei `chat_response` — hier kommt "
+            "reasoning=off aus demselben Grund wie bei `chat_response` – hier kommt "
             "hinzu, dass eine durchgesickerte Gedankenkette in einer Verdichtung "
             "DAUERHAFT waere: sie wird gespeichert und nie wieder ueberschrieben."
         ),
@@ -186,12 +186,12 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "Ein ganzer Wortwechsel ohne Zuhoerer: 2-4 Zuege in EINEM Aufruf, als "
             "JSON. 1 200 Token tragen vier Zuege von je rund 200 deutschen Woertern "
             "plus die JSON-Huelle. Weniger schnitte den letzten Zug ab, und ein "
-            "abgeschnittener Zug macht die ganze Antwort unparsbar — anders als bei "
+            "abgeschnittener Zug macht die ganze Antwort unparsbar – anders als bei "
             "`chat_response`, wo ein zu kurzer Text immer noch ein Text ist. "
             "90 s wie bei `chat_digest`: der Lauf haengt an keiner Anfrage, sondern "
             "am Herzschlag. "
             "reasoning=off: dasselbe `<think>`-Problem wie im Chat, und hier waere es "
-            "schlimmer — ein Denkblock im JSON macht es unparsbar, der Aufruf ist "
+            "schlimmer – ein Denkblock im JSON macht es unparsbar, der Aufruf ist "
             "bezahlt und das Ergebnis unbrauchbar."
         ),
     ),
