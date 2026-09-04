@@ -157,6 +157,12 @@ export class VelgAtlasWorlds extends LitElement {
         letter-spacing: var(--heading-tracking);
         text-transform: var(--heading-transform);
         color: var(--color-text-primary);
+        /* Ein Weltname ist erzeugter Text und im Deutschen oft ein einziges
+           langes Wort. Ohne diese zwei Zeilen laeuft er aus der Zeile, ohne
+           dass die Element-Box waechst -- also ohne dass eine Pruefung ueber
+           getBoundingClientRect etwas meldet. Siehe AtlasRegistry h3. */
+        hyphens: auto;
+        overflow-wrap: break-word;
       }
 
       .row__desc {
@@ -226,6 +232,14 @@ export class VelgAtlasWorlds extends LitElement {
         position: absolute;
         left: var(--space-3);
         bottom: var(--space-3);
+        /* Absolut gesetzt mit left und bottom, aber ohne rechte Schranke: die
+           Box waechst mit dem Namen und laeuft aus der Platte heraus. KEIN
+           right, denn dann waere der Kasten immer so breit wie die Platte und
+           eine kurze Beschriftung saehe aus wie ein Balken -- eine Obergrenze
+           laesst ihn mit dem Inhalt schrumpfen und haelt ihn trotzdem drin. */
+        max-inline-size: calc(100% - var(--space-6));
+        hyphens: auto;
+        overflow-wrap: break-word;
         padding: var(--space-1) var(--space-2);
         background: var(--color-surface);
         font-family: var(--font-mono);

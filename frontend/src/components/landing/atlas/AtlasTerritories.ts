@@ -220,6 +220,18 @@ export class VelgAtlasTerritories extends LitElement {
         letter-spacing: var(--heading-tracking);
         text-transform: var(--heading-transform);
         color: var(--color-text-primary);
+        /* Ein Weltname ist erzeugter Text und kann ein einzelnes langes Wort
+           sein -- im Deutschen fast immer. Gemessen auf Prod am 04.09.2026:
+           "Staatspathographie" braucht 155 px in einer 129 px breiten Spalte
+           und lief 26 px ueber die Kartenkante. Der Fehler war dabei nicht zu
+           sehen, WEIL eine ueberlaufende Zeile die Element-Box nicht
+           vergroessert: eine Pruefung ueber getBoundingClientRect meldet
+           nichts. Die ehrliche Frage ist scrollWidth gegen clientWidth.
+
+           hyphens vor break-word: die Trennung mit Trennstrich ist die
+           richtige, break-word faengt nur, was sich nicht trennen laesst. */
+        hyphens: auto;
+        overflow-wrap: break-word;
       }
 
       .desc {
