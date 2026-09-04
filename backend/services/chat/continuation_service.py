@@ -51,7 +51,6 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
@@ -173,44 +172,41 @@ class ContinuationService:
     ) -> list[dict[str, Any]]:
         """Fäden, die weiterreden dürfen UND deren Abstand abgelaufen ist.
 
+        EINE Abfrage (``fn_due_continuations``, Migration 365). Der Zeit-Riegel
+        und die Besetzungsprüfung stehen dort, nicht hier.
+
+        ⚠ Die erste Fassung tat beides in Python: sie lud jede eingeschaltete
+        Unterhaltung und verglich dann ``now() - last_message_at`` gegen
+        ``continue_interval_hours`` — zwei Spalten DERSELBEN ZEILE, in der
+        Anwendung verglichen, also jede Zeile geholt, um die meisten
+        wegzuwerfen. Und „mindestens zwei Agenten" lief als eigene Abfrage je
+        Zeile: bei zwanzig eingeschalteten Fäden einundzwanzig Abfragen für
+        höchstens zwei Ergebnisse. Beides ein Verstoss gegen ADR-007.
+
         Der Zeit-Riegel misst gegen ``last_message_at``, und das ist Absicht:
         schreibt der Mensch selbst etwas, ist die Uhr zurückgestellt. Wer da
         ist, braucht keine Agenten, die ohne ihn reden.
 
-        ``locked`` steht in der Bedingung, obwohl der Teilindex aus 357 sie
-        ohnehin trägt: eine Abfrage, deren Richtigkeit an einem Index hängt,
-        ist beim nächsten Index falsch.
+        Die Besetzung wird danach noch EINMAL geladen — die Funktion gibt ihre
+        Anzahl zurück, aber der Wortwechsel braucht Namen und Profile. Das ist
+        kein N+1: höchstens ``limit`` Fäden, also höchstens zwei Abfragen.
         """
-        response = await (
-            admin.table("chat_conversations")
-            .select("id, locale, continue_interval_hours, continue_notify, last_message_at, user_id")
-            .eq("simulation_id", str(simulation_id))
-            .eq("continues_without_user", True)
-            .eq("locked", False)
-            .eq("status", "active")
-            .order("last_message_at")
-            .execute()
-        )
+        response = await admin.rpc(
+            "fn_due_continuations",
+            {"p_simulation_id": str(simulation_id), "p_limit": limit},
+        ).execute()
 
-        jetzt = datetime.now(UTC)
         faellig: list[dict[str, Any]] = []
         for row in extract_list(response):
-            zuletzt = row.get("last_message_at")
-            if not zuletzt:
-                # Ein Faden ohne eine einzige Nachricht hat nichts, woran ein
-                # Wortwechsel anknuepfen koennte.
-                continue
-            abstand = timedelta(hours=int(row.get("continue_interval_hours") or 12))
-            if jetzt - datetime.fromisoformat(zuletzt) < abstand:
-                continue
             agents = await cls._load_agents(admin, row["id"])
             if len(agents) < 2:
-                # Ein einzelner Agent redet nicht mit sich selbst.
+                # Die Funktion hat schon gezählt; zwischen ihrem Lauf und
+                # diesem kann jemand einen Agenten entfernt haben. Die Prüfung
+                # bleibt deshalb stehen — sie kostet nichts und schliesst das
+                # Fenster.
                 continue
             row["agents"] = agents
             faellig.append(row)
-            if len(faellig) >= limit:
-                break
         return faellig
 
     @staticmethod
@@ -372,43 +368,50 @@ class ContinuationService:
             return []
 
         nach_id = {str(a["id"]): str(a.get("name") or "?") for a in agents}
-        geschrieben: list[str] = []
+        zeilen = []
         for bindung in bindungen:
-            name = nach_id.get(str(bindung.get("agent_id")), "?")
-            andere = [n for i, n in nach_id.items() if i != str(bindung.get("agent_id"))]
+            agent_id = str(bindung.get("agent_id"))
+            name = nach_id.get(agent_id, "?")
+            andere = [n for i, n in nach_id.items() if i != agent_id]
             zeile = zuege[0]["content"]
-            try:
-                await (
-                    admin.table("bond_whispers")
-                    .insert(
-                        {
-                            "bond_id": bindung["id"],
-                            "whisper_type": "conversation",
-                            "content_de": cls._whisper_text(name, andere, zeile, "de"),
-                            "content_en": cls._whisper_text(name, andere, zeile, "en"),
-                            # Ohne die conversation_id waere das Fluestern eine
-                            # Behauptung ohne Beleg — der Mensch koennte nicht
-                            # nachsehen, wovon die Rede ist.
-                            "trigger_context": {
-                                "conversation_id": str(conversation_id),
-                                "notify": faden.get("continue_notify") or "digest",
-                                "turns": len(zuege),
-                                "locale": locale,
-                            },
-                        }
-                    )
-                    .execute()
-                )
-                geschrieben.append(str(bindung["id"]))
-            except Exception:
-                # Ein misslungenes Fluestern kostet den Wortwechsel NICHT: der
-                # steht schon im Faden und ist beim naechsten Oeffnen da.
-                logger.exception(
-                    "Fluestern fuer Bindung %s aus Wortwechsel %s fehlgeschlagen",
-                    bindung.get("id"),
-                    conversation_id,
-                )
-        return geschrieben
+            zeilen.append(
+                {
+                    "bond_id": bindung["id"],
+                    "whisper_type": "conversation",
+                    "content_de": cls._whisper_text(name, andere, zeile, "de"),
+                    "content_en": cls._whisper_text(name, andere, zeile, "en"),
+                    # Ohne die conversation_id waere das Fluestern eine
+                    # Behauptung ohne Beleg — der Mensch koennte nicht
+                    # nachsehen, wovon die Rede ist.
+                    "trigger_context": {
+                        "conversation_id": str(conversation_id),
+                        "notify": faden.get("continue_notify") or "digest",
+                        "turns": len(zuege),
+                        "locale": locale,
+                    },
+                }
+            )
+
+        # EIN Insert fuer alle Bindungen, nicht einer je Schleifendurchlauf.
+        # Zwei gebundene Agenten im selben Faden sind zwei Zeilen, und zwei
+        # Rundreisen dafuer sind eine zu viel (ADR-007).
+        #
+        # Alles oder nichts ist hier auch das RICHTIGE: die Bindungen eines
+        # Fadens gehoeren demselben Menschen. Bekaeme er eine Karte und die
+        # zweite nicht, saehe er einen halben Wortwechsel und haette keinen
+        # Anhalt, dass etwas fehlt.
+        try:
+            await admin.table("bond_whispers").insert(zeilen).execute()
+        except Exception:
+            # Ein misslungenes Fluestern kostet den Wortwechsel NICHT: der
+            # steht schon im Faden und ist beim naechsten Oeffnen da.
+            logger.exception(
+                "Fluestern aus Wortwechsel %s fehlgeschlagen (%d Bindung(en))",
+                conversation_id,
+                len(zeilen),
+            )
+            return []
+        return [str(z["bond_id"]) for z in zeilen]
 
     @staticmethod
     def _whisper_text(name: str, andere: list[str], zeile: str, sprache: str) -> str:

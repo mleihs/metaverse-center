@@ -77,7 +77,7 @@ class TestDasFluesternTraegtSeinenBeleg:
         koennte nicht nachsehen, wovon die Rede ist."""
         admin, ids = await _whisper("digest", [{"id": "b1", "agent_id": "id-mira"}])
         assert ids == ["b1"]
-        zeile = admin._insert.call_args.args[0]
+        zeile = admin._insert.call_args.args[0][0]
         assert zeile["whisper_type"] == "conversation"
         assert zeile["trigger_context"]["conversation_id"]
         assert zeile["trigger_context"]["notify"] == "digest"
@@ -90,17 +90,27 @@ class TestDasFluesternTraegtSeinenBeleg:
         nichts. Sie waere gruen gewesen, waere `notify` gar nicht mitgegangen.
         """
         admin, _ = await _whisper("immediate", [{"id": "b1", "agent_id": "id-mira"}])
-        kontext = admin._insert.call_args.args[0]["trigger_context"]
+        kontext = admin._insert.call_args.args[0][0]["trigger_context"]
         assert kontext["notify"] == "immediate"
         assert kontext["turns"] == len(ZUEGE)
         assert kontext["locale"] == "de"
 
-    async def test_je_bindung_ein_fluestern(self):
+    async def test_je_bindung_eine_zeile_aber_ein_einziger_insert(self):
         """Zwei gebundene Agenten im selben Faden sind zwei Beziehungen und
-        zwei Nachrichten – jede aus der Sicht ihres Agenten."""
+        zwei Nachrichten – jede aus der Sicht ihres Agenten. Aber EIN Insert:
+        zwei Rundreisen dafuer sind eine zu viel (ADR-007).
+
+        Alles oder nichts ist hier auch das RICHTIGE. Die Bindungen eines
+        Fadens gehoeren demselben Menschen; bekaeme er eine Karte und die
+        zweite nicht, saehe er einen halben Wortwechsel und haette keinen
+        Anhalt, dass etwas fehlt.
+        """
         admin, ids = await _whisper("app", [{"id": "b1", "agent_id": "id-mira"}, {"id": "b2", "agent_id": "id-elena"}])
         assert sorted(ids) == ["b1", "b2"]
-        assert admin._insert.call_count == 2
+        assert admin._insert.call_count == 1, "je Bindung eine Rundreise statt einer fuer alle"
+        zeilen = admin._insert.call_args.args[0]
+        assert len(zeilen) == 2
+        assert {z["bond_id"] for z in zeilen} == {"b1", "b2"}
 
 
 class TestDerTextIstDieErsteZeile:

@@ -25,6 +25,7 @@ Deshalb die vier Gegenstände:
 from __future__ import annotations
 
 import json
+import pathlib
 from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
@@ -142,14 +143,27 @@ class TestDasTorIstFailClosed:
 
 
 class TestDieAuswahl:
+    """Seit Migration 365 entscheidet POSTGRES ueber die Faelligkeit.
+
+    Der Zeit-Riegel (`last_message_at < now() - make_interval(...)`) und die
+    Besetzungspruefung (`HAVING count(*) >= 2`) stehen in
+    `fn_due_continuations`. Die erste Fassung tat beides in Python: sie lud
+    jede eingeschaltete Unterhaltung und verglich zwei Spalten DERSELBEN ZEILE
+    in der Anwendung, und „mindestens zwei Agenten" lief als eigene Abfrage je
+    Zeile — ein N+1.
+
+    Was hier zu pruefen bleibt, ist deshalb NICHT mehr die Zeitrechnung (die
+    misst die Datenbank), sondern die Verdrahtung: wird die richtige Funktion
+    mit den richtigen Werten gerufen, und was geschieht mit dem, was sie
+    liefert.
+    """
+
     @staticmethod
     def _admin(rows):
         admin = MagicMock()
-        kette = MagicMock()
-        for name in ("select", "eq", "order"):
-            getattr(kette, name).return_value = kette
-        kette.execute = AsyncMock(return_value=MagicMock(data=rows))
-        admin.table.return_value = kette
+        aufruf = MagicMock()
+        aufruf.execute = AsyncMock(return_value=MagicMock(data=rows))
+        admin.rpc = MagicMock(return_value=aufruf)
         return admin
 
     @staticmethod
@@ -161,50 +175,102 @@ class TestDieAuswahl:
             "continue_notify": "digest",
             "last_message_at": (datetime.now(UTC) - timedelta(hours=13)).isoformat(),
             "user_id": str(uuid4()),
+            "agent_count": 3,
         }
         basis.update(kw)
         return basis
 
-    async def test_der_abstand_wird_eingehalten(self):
-        """Zwoelf Stunden heisst zwoelf Stunden. Elf sind nicht faellig."""
-        faden = self._faden(last_message_at=(datetime.now(UTC) - timedelta(hours=11)).isoformat())
-        admin = self._admin([faden])
-        with patch.object(ContinuationService, "_load_agents", AsyncMock(return_value=[{"id": "a"}, {"id": "b"}])):
-            faellig = await ContinuationService._due_conversations(admin, uuid4(), limit=5)
-        assert faellig == []
+    async def test_die_datenbank_wird_gefragt_nicht_die_tabelle(self):
+        admin = self._admin([])
+        sim = uuid4()
+        await ContinuationService._due_conversations(admin, sim, limit=2)
+        admin.rpc.assert_called_once()
+        name, argumente = admin.rpc.call_args.args
+        assert name == "fn_due_continuations"
+        assert argumente == {"p_simulation_id": str(sim), "p_limit": 2}
+        admin.table.assert_not_called(), "die Auswahl liest wieder direkt aus der Tabelle"
 
-    async def test_abgelaufen_ist_faellig(self):
+    async def test_was_die_funktion_liefert_bekommt_seine_besetzung(self):
         admin = self._admin([self._faden()])
         with patch.object(ContinuationService, "_load_agents", AsyncMock(return_value=[{"id": "a"}, {"id": "b"}])):
             faellig = await ContinuationService._due_conversations(admin, uuid4(), limit=5)
         assert len(faellig) == 1
+        assert len(faellig[0]["agents"]) == 2
 
-    async def test_ein_einzelner_agent_redet_nicht_mit_sich_selbst(self):
-        admin = self._admin([self._faden()])
+    async def test_ein_inzwischen_entfernter_agent_faellt_noch_raus(self):
+        """Zwischen dem Lauf der Funktion und diesem kann jemand einen Agenten
+        entfernt haben. Die Pruefung kostet nichts und schliesst das Fenster."""
+        admin = self._admin([self._faden(agent_count=2)])
         with patch.object(ContinuationService, "_load_agents", AsyncMock(return_value=[{"id": "a"}])):
-            faellig = await ContinuationService._due_conversations(admin, uuid4(), limit=5)
-        assert faellig == []
-
-    async def test_ein_faden_ohne_nachricht_hat_nichts_zum_anknuepfen(self):
-        admin = self._admin([self._faden(last_message_at=None)])
-        with patch.object(ContinuationService, "_load_agents", AsyncMock(return_value=[{"id": "a"}, {"id": "b"}])):
             assert await ContinuationService._due_conversations(admin, uuid4(), limit=5) == []
 
-    async def test_das_budget_deckelt(self):
-        admin = self._admin([self._faden() for _ in range(6)])
-        with patch.object(ContinuationService, "_load_agents", AsyncMock(return_value=[{"id": "a"}, {"id": "b"}])):
-            faellig = await ContinuationService._due_conversations(admin, uuid4(), limit=2)
-        assert len(faellig) == 2
-
-    async def test_verschlossene_faeden_stehen_in_der_bedingung(self):
-        """Nicht nur im Teilindex aus 357: eine Abfrage, deren Richtigkeit an
-        einem Index haengt, ist beim naechsten Index falsch."""
+    async def test_das_budget_geht_an_die_datenbank(self):
+        """Gedeckelt wird per LIMIT in SQL, nicht durch Abbrechen einer
+        Schleife ueber alles, was geladen wurde."""
         admin = self._admin([])
-        kette = admin.table.return_value
         await ContinuationService._due_conversations(admin, uuid4(), limit=2)
-        bedingungen = [c.args for c in kette.eq.call_args_list]
-        assert ("locked", False) in bedingungen
-        assert ("continues_without_user", True) in bedingungen
+        assert admin.rpc.call_args.args[1]["p_limit"] == 2
+
+
+class TestDieFunktionTraegtDieRiegel:
+    """Was in Python stand, muss jetzt im SQL stehen — sonst ist die Logik
+    nicht verschoben, sondern verschwunden."""
+
+    _DATEI = pathlib.Path(
+        "supabase/migrations/20260904190000_365_die_faelligkeit_gehoert_in_die_datenbank.sql"
+    ).read_text()
+
+    #: Nur die ANWEISUNGEN, ohne die Kommentarzeilen.
+    #:
+    #: ⚠ Die erste Fassung dieser Klasse las die ganze Datei — und
+    #: `test_kein_security_definer` schlug an dem Kommentar an, der ERKLAERT,
+    #: warum es keines gibt („WARUM KEIN SECURITY DEFINER"). Ein Test, der die
+    #: Beschreibung statt der Sache misst, faellt entweder falsch aus oder
+    #: besteht falsch; hier fiel er falsch aus, was der guenstigere von beiden
+    #: Faellen ist.
+    SQL = "\n".join(zeile for zeile in _DATEI.splitlines() if not zeile.lstrip().startswith("--"))
+
+    def test_der_zeitriegel_steht_im_sql(self):
+        assert "make_interval(hours => c.continue_interval_hours)" in self.SQL
+        assert "c.last_message_at <" in self.SQL
+
+    def test_die_besetzungspruefung_steht_im_sql(self):
+        assert "HAVING count(ca.agent_id) >= 2" in self.SQL
+
+    def test_verschlossene_und_ausgeschaltete_bleiben_draussen(self):
+        assert "NOT c.locked" in self.SQL
+        assert "c.continues_without_user" in self.SQL
+
+    def test_der_laengst_stille_faden_zuerst(self):
+        """Sonst bekaeme derselbe Faden bei knappem Budget jeden Takt den
+        Zuschlag und die uebrigen nie."""
+        assert "ORDER BY c.last_message_at" in self.SQL
+
+    def test_kein_security_definer(self):
+        """PostgREST boete eine SECURITY-DEFINER-Funktion jedem an, dem EXECUTE
+        zusteht. Sie braucht es nicht: der Herzschlag ruft sie als
+        service_role, und der umgeht RLS ohnehin.
+
+        ⚠ Zweimal am falschen Ort gemessen. Die erste Fassung las die ganze
+        Datei und traf den Kommentar, der ERKLAERT, warum es keines gibt. Die
+        zweite las die Datei ohne Kommentare und traf den Text der
+        Fehlermeldung IN der Selbstpruefung. Gemessen wird jetzt nur die
+        Anweisung selbst — vom CREATE bis zu ihrem Ende.
+
+        Der Rest ist ohnehin die staerkere Pruefung: die Selbstpruefung der
+        Migration liest `pg_proc.prosecdef` auf der laufenden Datenbank. Diese
+        hier haelt nur die Absicht in der Datei fest.
+        """
+        anfang = self.SQL.index("CREATE OR REPLACE FUNCTION")
+        anweisung = self.SQL[anfang : self.SQL.index("$$;", anfang)]
+        assert "SECURITY DEFINER" not in anweisung.upper()
+        assert "REVOKE ALL ON FUNCTION" in self.SQL
+        assert "GRANT EXECUTE ON FUNCTION public.fn_due_continuations(uuid, int) TO service_role" in self.SQL
+
+    def test_die_migration_prueft_es_auch_an_der_datenbank(self):
+        """Eine Absicht in einer Datei ist keine Eigenschaft der Datenbank."""
+        assert "prosecdef" in self._DATEI
+        assert "has_function_privilege" in self._DATEI
 
 
 class TestDieMitschriftIstDieJUENGSTE:
