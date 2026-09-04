@@ -88,6 +88,33 @@ _MIN_MESSAGES = 20
 #: eine falsche zu behaupten.
 _DEPARTED_SPEAKER = "former participant"
 
+#: Die Marke des MENSCHEN im Gruppenverlauf.
+#:
+#: BEFUND vom 04.09.2026, 14:12 UTC — der Nutzer schrieb es den Agenten
+#: selbst ins Gespraech (Wortlaut nicht wiedergegeben) Zehn Minuten spaeter, 14:22: Marie schreibt „*Du haeltst dem Kreis zwei frische Aepfel hin*", und Benno antwortet „*Der Brunnen glitzert heute*" — sie hat die Handlung des Menschen
+#: uebernommen.
+#:
+#: DIE URSACHE steht im zusammengesetzten Verlauf. So sah Benno ihn:
+#:
+#:     user   <Zeile nicht wiedergegeben>
+#:
+#:            [Marie Morgenrot]: *Du haeltst dem Kreis zwei frische Aepfel hin.*
+#:
+#:            (Bennos naechste Zeile)
+#:
+#: EIN Block. Maries Zeile hat einen Besitzer, die des Menschen hat KEINEN.
+#: Eine unbeschriftete Zeile in einem Block voller beschrifteter liest sich
+#: wie herrenlose Erzaehlung — also schreibt das Modell daran weiter.
+#:
+#: Das Zusammenfassen aufeinanderfolgender `user`-Zuege (noetig, weil mehrere
+#: Anbieter zwei gleiche Rollen in Folge ablehnen) hat es verschaerft: vorher
+#: stand der Satz des Menschen wenigstens fuer sich.
+#:
+#: Strukturell wie `_DEPARTED_SPEAKER`: englisch, im Prompt, nie auf dem
+#: Bildschirm — und deshalb NICHT uebersetzt. Dieselbe Marke benutzt
+#: `ConversationDigestService._as_line` in der Mitschrift.
+_USER_SPEAKER = "User"
+
 # ── Zeichen je Token, je Sprache ──────────────────────────────────────────
 #
 # GEMESSEN AM 02.09.2026 an 419 PARALLELEN Textpaaren aus der Produktion
@@ -615,7 +642,9 @@ class ChatAIService:
             generation_ms = int((time.monotonic() - t0) * 1000)
 
             # Check if we got meaningful content after sanitization
-            if not stream_error and self._sanitize_response(full_text, participant_names):
+            if not stream_error and self._sanitize_response(
+                full_text, self._known_speakers(participant_names)
+            ):
                 break  # Success — proceed to persist
 
             if attempt < max_retries:
@@ -709,6 +738,22 @@ class ChatAIService:
         return mock_text, saved
 
     @staticmethod
+    def _known_speakers(participant_names: list[str] | None) -> list[str] | None:
+        """Die Besetzung PLUS die Marke des Menschen.
+
+        Schreibt ein Modell `[User]: …` an den Anfang seiner Antwort zurueck,
+        ist das derselbe Fehler wie `[Marie Morgenrot]: …` — es hat die
+        Protokollmarke fuer ein Textformat gehalten. Das Tor muss sie deshalb
+        kennen.
+
+        Ohne Besetzung bleibt es bei None: das Tor faellt dann auf sein enges
+        Verhalten zurueck, statt gegen einen einzelnen Namen zu raten.
+        """
+        if not participant_names:
+            return participant_names
+        return [*participant_names, _USER_SPEAKER]
+
+    @staticmethod
     def _strip_speaker_labels(text: str, participant_names: list[str] | None) -> str:
         """Entfernt `[Name]`, `[Name]:` und `Name:` am Anfang JEDER Zeile.
 
@@ -799,7 +844,9 @@ class ChatAIService:
         participant_names: list[str] | None = None,
     ) -> tuple[str, dict]:
         """Save AI response to DB + log usage. Shared by streaming and non-streaming."""
-        response_text = self._sanitize_response(response_text, participant_names)
+        response_text = self._sanitize_response(
+            response_text, self._known_speakers(participant_names)
+        )
         if not response_text:
             logger.warning(
                 "Empty response after sanitization for agent %s in conversation %s – skipping persist",
@@ -1339,7 +1386,17 @@ class ChatAIService:
         history_messages: list[dict[str, str]] = [
             self._as_turn(msg, agents=agents, current_agent_id=current_agent_id) for msg in history
         ]
-        history_messages.append({"role": "user", "content": user_message})
+        # Auch die FRISCHE Nutzernachricht traegt die Marke. Ohne sie stuende
+        # ausgerechnet der Satz, auf den geantwortet werden soll, als
+        # einziger ohne Besitzer da.
+        history_messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"[{_USER_SPEAKER}]: {user_message}" if len(agents) > 1 else user_message
+                ),
+            }
+        )
 
         # Die frischen Zuege dieses Durchgangs. GENAU HIER brach Position 1:
         # der eben fertig gewordene Zug des Agenten davor ging als
@@ -1382,6 +1439,14 @@ class ChatAIService:
         """
         content = str(msg.get("content") or "")
         if msg.get("sender_role") != "assistant":
+            # Der Mensch bekommt im GRUPPENVERLAUF dieselbe Marke wie alle
+            # anderen. Ohne sie steht seine Zeile ohne Besitzer in einem Block
+            # voller beschrifteter Zeilen — siehe `_USER_SPEAKER`.
+            #
+            # Im Einzelchat NICHT: dort gibt es nur zwei Stimmen, die Rolle
+            # sagt schon alles, und eine Marke waere Laerm.
+            if len(agents) > 1:
+                return {"role": "user", "content": f"[{_USER_SPEAKER}]: {content}"}
             return {"role": "user", "content": content}
 
         # Die 16 Zeilen, die schon dastehen. Gemessen am 04.09.2026 im Faden

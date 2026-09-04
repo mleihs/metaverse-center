@@ -303,3 +303,78 @@ class TestAlteMarkenImBestand:
         msg = {"content": "[Benno Blattgold] *Bennos Atem stockt.*", "sender_role": "assistant", "agent_id": MARIE}
         service._as_turn(msg, agents=AGENTS, current_agent_id=MARIE)
         assert msg["content"] == "[Benno Blattgold] *Bennos Atem stockt.*"
+
+
+class TestDerMenschHatAuchEineMarke:
+    """Der Befund vom 04.09.2026, 14:22 UTC.
+
+    Marie schrieb „*Du hältst dem Kreis zwei frische Äpfel hin*", und fünf
+    Sekunden später Benno „*Der Brunnen glitzert heute*" — sie hatte die Handlung des Menschen übernommen. Zehn
+    Minuten davor hatte der Nutzer es den Agenten selbst geschrieben (Wortlaut nicht wiedergegeben)
+
+    Die Ursache lag im zusammengesetzten Verlauf. So sah Benno ihn:
+
+        user   <Zeile nicht wiedergegeben>
+
+               [Marie Morgenrot]: *Du hältst dem Kreis zwei frische Äpfel hin.*
+
+               (Bennos nächste Zeile)
+
+    EIN Block, weil aufeinanderfolgende `user`-Züge zusammengefasst werden
+    müssen. Maries Zeile hat einen Besitzer, die des Menschen hat KEINEN — und
+    eine unbeschriftete Zeile zwischen beschrifteten liest sich wie herrenlose
+    Erzählung.
+
+    ⚠ Das Zusammenfassen ist Teil derselben Reparatur, die den Rollen-Fehler
+    behoben hat. Sie hat diese zweite Lücke geöffnet. Eine Reparatur, die das
+    tut, ist eine halbe.
+    """
+
+    def test_die_zeile_des_menschen_traegt_seine_marke(self, service):
+        turn = service._as_turn(
+            {"content": "ich biete ihnen zwei Aepfel an", "sender_role": "user", "agent_id": None},
+            agents=AGENTS,
+            current_agent_id=MARIE,
+        )
+        assert turn == {"role": "user", "content": "[User]: ich biete ihnen zwei Aepfel an"}
+
+    def test_im_einzelchat_bleibt_sie_weg(self, service):
+        """Dort gibt es zwei Stimmen, die Rolle sagt schon alles, und eine
+        Marke waere Laerm."""
+        turn = service._as_turn(
+            {"content": "Hallo.", "sender_role": "user", "agent_id": None},
+            agents=[AGENTS[0]],
+            current_agent_id=MARIE,
+        )
+        assert turn == {"role": "user", "content": "Hallo."}
+
+    async def test_kein_satz_im_block_steht_ohne_besitzer(self, service):
+        """Die Zusicherung, um die es geht: JEDE Zeile im zusammengefassten
+        `user`-Block nennt, von wem sie ist."""
+        messages = await _turns(service, 1)
+        for msg in messages:
+            if msg["role"] != "user":
+                continue
+            for zeile in msg["content"].split("\n"):
+                if not zeile.strip():
+                    continue
+                assert zeile.lstrip().startswith("["), f"Zeile ohne Besitzer im user-Block: {zeile!r}"
+
+    async def test_auch_die_frische_nachricht_traegt_sie(self, service):
+        """Sonst stuende ausgerechnet der Satz, auf den geantwortet werden
+        soll, als einziger ohne Besitzer da."""
+        messages = await _turns(service, 1)
+        assert any("[User]: Und was folgt daraus?" in m["content"] for m in messages)
+
+    def test_das_tor_kennt_die_marke_des_menschen(self, service):
+        """Schreibt ein Modell `[User]: …` zurueck, ist das derselbe Fehler wie
+        `[Marie Morgenrot]: …` — es hat die Protokollmarke fuer ein Textformat
+        gehalten."""
+        namen = ChatAIService._known_speakers(AGENT_NAMES)
+        assert ChatAIService._sanitize_response("[User]: ich warte", namen) == "ich warte"
+
+    def test_ohne_besetzung_wird_nicht_geraten(self):
+        """Das Tor faellt auf sein enges Verhalten zurueck statt gegen einen
+        einzelnen Namen zu raten."""
+        assert ChatAIService._known_speakers(None) is None
+        assert ChatAIService._known_speakers([]) == []

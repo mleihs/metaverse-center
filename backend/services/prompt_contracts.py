@@ -240,7 +240,11 @@ _FRAME_GROUP = (
     "another participant's lines, and never answer on their behalf. Do not put any name in "
     'front of your reply: no bracketed tag, no "Name:" opener. Messages from the others '
     "reach you marked with their name; that mark identifies them and is not a format for "
-    "your own text."
+    "your own text.\n"
+    "One of those marks is [User]. That is the person you are talking to. They are present, "
+    "they act, and they speak for themselves. Never write what they say, never narrate what "
+    "they do, never decide what they feel or agree to. You may describe how you perceive "
+    "them. If your reply depends on something only they can do, stop and let them do it."
 )
 
 
