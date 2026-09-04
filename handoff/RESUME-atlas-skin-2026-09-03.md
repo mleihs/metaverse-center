@@ -683,6 +683,95 @@ Es ist ein Token für einen bewusst dunklen Modal, kein vergessener Dark-Wert.
 - **Die Dashboard-Blätter mit echten Daten** — braucht ein laufendes Backend
   und eine angemeldete Sitzung.
 
+---
+
+## Was der Benutzer am 04.09.2026 gemeldet hat — und was daran hing
+
+Zwei Meldungen, drei Ursachen, eine davon eine ganze Fehlerklasse.
+
+### Der Name der Welt fehlte im Splitterverzeichnis
+
+Nur Bilder zu sehen. Der Name stand im Markup und war nie weg:
+
+```html
+<span class="card__plate"> … </span>
+```
+
+Ein `<span>` ist inline, und die Regel dazu nannte kein `display`. **Eine
+nicht-ersetzte Inline-Box ignoriert `aspect-ratio` und `overflow: hidden`**, und
+das `<img>` darin hat mit `height: 100%` keinen Bezug. Das Bild lief ungeklippt
+auf seine natürliche Höhe und schob alles darunter aus dem Blick.
+
+Das `<span>` ist dabei das **richtige** Element — die Karte ist ein `<button>`,
+der nur Phrasing-Inhalt tragen darf. Es fehlte eine Zeile.
+
+Warum es beim Bauen durchging: das Landing-Gegenstück (`AtlasTerritories
+.plate`) hat dasselbe CSS und ein `<div>` im Markup und sieht richtig aus. Ein
+Nachbar, der beweist, dass das CSS stimmt, lenkt die Suche vom Markup weg.
+
+Dritter Fall derselben Bauart in dieser Sitzungsreihe (vorher: `<picture>` ist
+inline, das `<img>` fiel auf null). Deshalb jetzt
+`scripts/lint-no-sized-inline-box.sh`, in `lint:full` **und** in CI — 36 Tore.
+Bewusst nur `aspect-ratio`: ein Flex- oder Grid-Kind wird blockifiziert, also
+ist `width` auf einem `<span>` in einer Flex-Zeile völlig richtig, und ein Tor,
+das den Elternteil nicht kennt, kann das nicht unterscheiden.
+
+### `white-space: nowrap` verbot der Zeile, was für eine Stelle gemeint war
+
+Beim Nachsehen sichtbar geworden: das Register lief unter die rechte Schiene.
+Spalte 341 px, Überschrift 432 px. Beide betroffenen Regeln trugen einen
+Kommentar, der etwas **anderes** verlangte als das, was die Regel tut:
+
+> „die Zeile darf nicht umbrechen, **sonst rutscht die Zahl in Klammern allein
+> auf die zweite Zeile**"
+
+Gemeint war ein Umbruchverbot für *eine Stelle*. Als `nowrap` auf der Zeile
+verhindert es den Umbruch überall — und wo es dann nicht passt, läuft der Text
+hinaus statt zu brechen. Das ist schlimmer als das, was verhindert werden
+sollte. Jetzt: ein geschütztes Leerzeichen (U+00A0) vor der Klammer, und bei
+der Meta-Zeile `nowrap` auf den beiden Angaben mit `flex-wrap` auf der Zeile.
+Kein Haltepunkt nötig — die Zeile beantwortet die Frage selbst.
+
+Die Rücknahme `@media (max-width: 767px) { h2 { white-space: normal } }` hatte
+nie gegriffen: das **Fenster** war 1100 px breit, eng war die **Spalte**.
+
+### Ein Weltname ist ein Wort
+
+„Staatspathographie" braucht 155 px in einer 129-px-Spalte. Vier Stellen
+gefunden (über `t(world, 'name')`, nicht nur die gemeldete) und mit
+`hyphens: auto` + `overflow-wrap: break-word` versehen; `.plate__cap` bekam
+zusätzlich eine Obergrenze, weil sie absolut gesetzt war **ohne** rechte
+Schranke.
+
+Kein Tor dafür. „Passt dieser Text" lässt sich nicht am Quelltext beantworten —
+die Frage hängt an Sprache, Inhalt und der Breite, die die Spalte gerade hat.
+Sie gehört in die Messung unten.
+
+---
+
+## Die Messvorschrift für den Browser
+
+Drei Fehler dieser Sitzung kamen nicht aus dem Werk, sondern aus dem
+Messgerät. **Jede Messfunktion braucht einen Selbsttest, bevor sie eine Zahl
+herausgibt.**
+
+| Frage | Falsches Werkzeug | Richtiges Werkzeug | Selbsttest |
+|---|---|---|---|
+| Kontrast | Zahlen per `[\d.]+` und `/255` | `color(srgb …)` ist **0–1**; Alpha über den Grund komponieren | Schwarz auf Weiß **muss** 21 sein, Weiß auf Weiß 1 |
+| Läuft Text über? | `getBoundingClientRect` | `scrollWidth > clientWidth` | ein zu langes Wort in 40 px **muss** anschlagen |
+| Greift ein Haltepunkt? | ein Element verkleinern | nur echte Fensterbreiten | ein Element zu verkleinern prüft **nie** eine Medienabfrage |
+| Welcher Build läuft? | ein Aufruf | mehrere, plus `merge-base --is-ancestor` | ein Aufruf mitten im Rollout misst den **Behälter** |
+
+Eine überlaufende Zeile vergrößert die Element-Box **nicht** — das ist der
+Grund, warum die dritte Ursache oben nach einer Prüfung übrig blieb, die
+„keine Überläufe" gemeldet hatte.
+
+Und beim Bauen eines Tors gilt dasselbe: `lint-no-sized-inline-box.sh` meldete
+in seiner ersten Fassung **PASS auf genau der Datei mit dem Fehler**, für den
+es gebaut war (es zog den Kommentar über der Regel in den Selektor und suchte
+`.plate` statt `.card__plate`). Ein Tor ist erst geprüft, wenn es mit
+zurückgenommenem Fix **rot** war.
+
 ## Kontrolle nach jedem Schritt
 
 ```bash
