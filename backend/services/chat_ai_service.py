@@ -705,6 +705,44 @@ class ChatAIService:
         return mock_text, saved
 
     @staticmethod
+    def _strip_speaker_labels(text: str, participant_names: list[str] | None) -> str:
+        """Entfernt `[Name]`, `[Name]:` und `Name:` am Anfang JEDER Zeile.
+
+        Gegen die BEKANNTEN Namen und gegen nichts sonst. Der Grund steht im
+        Bestand: von 57 Agentennachrichten des Fadens 7b2e37c3, die mit einer
+        eckigen Klammer beginnen, sind **41 echte Regieanweisungen**
+        (``[Der Raum ist still, als sich die Tuer einen Spalt oeffnet…]``) und
+        nur **16 Namensmarken**. Ein Muster, das die Klammer allein sieht,
+        loescht also viermal so viel Text, wie es reparieren soll.
+
+        Zwei Aufrufer, und der zweite ist der Grund fuer diese Methode:
+
+        1. ``_sanitize_response`` — beim SCHREIBEN, damit keine neue Marke
+           mehr in den Bestand geraet.
+        2. ``_as_turn`` — beim LESEN, denn die 16 stehen laengst da. Sie tragen
+           die Marke eines FREMDEN Namens unter der eigenen ``agent_id``
+           (``[Benno Blattgold] …`` gespeichert als Marie). Ohne diesen Schnitt
+           bekaeme das Modell sie weiter als Vorbild zu sehen — und fuer einen
+           fremden Zug haengte ``_as_turn`` eine zweite Marke davor:
+           ``[Marie Morgenrot]: [Benno Blattgold] …``. Eine Reparatur, die den alten
+           Fehler im Verlauf stehen laesst, repariert nur die Zukunft, und der
+           Verlauf ist genau das, woraus ein Modell lernt.
+
+        Der BESTAND bleibt unangetastet. Was ein Mensch gelesen hat, bleibt
+        stehen; nur was das Modell zu sehen bekommt, ist bereinigt.
+        """
+        known = [n.strip() for n in (participant_names or []) if n and n.strip()]
+        if not known:
+            return text
+        alternation = "|".join(re.escape(n) for n in known)
+        return re.sub(
+            rf"^[ \t]*(?:\[(?:{alternation})\]\s*:?|(?:{alternation})\s*:)[ \t]*",
+            "",
+            text,
+            flags=re.MULTILINE,
+        )
+
+    @staticmethod
     def _sanitize_response(text: str, participant_names: list[str] | None = None) -> str:
         """Strip leaked agent tags, CoT blocks, and meta-commentary from AI output.
 
@@ -729,17 +767,7 @@ class ChatAIService:
         """
         # Strip <think>...</think> blocks (CoT reasoning leak)
         text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
-        known = [n for n in (participant_names or []) if n and n.strip()]
-        if known:
-            # `[Name]`, `[Name]:`, `Name:` — jeweils am Anfang EINER Zeile,
-            # nicht nur am Anfang des Textes.
-            alternation = "|".join(re.escape(n.strip()) for n in known)
-            text = re.sub(
-                rf"^[ \t]*(?:\[(?:{alternation})\]\s*:?|(?:{alternation})\s*:)[ \t]*",
-                "",
-                text,
-                flags=re.MULTILINE,
-            )
+        text = ChatAIService._strip_speaker_labels(text, participant_names)
         # Strip [AgentName]: prefixes at start of response
         text = re.sub(r"^\[[\w\s.äöüÄÖÜß]+\]:\s*", "", text)
         # Strip parenthetical meta-reasoning blocks at start of response.
@@ -1239,6 +1267,14 @@ class ChatAIService:
         content = str(msg.get("content") or "")
         if msg.get("sender_role") != "assistant":
             return {"role": "user", "content": content}
+
+        # Die 16 Zeilen, die schon dastehen. Gemessen am 04.09.2026 im Faden
+        # 7b2e37c3: 16 Agentennachrichten tragen eine fremde Namensmarke unter
+        # der eigenen `agent_id` — `[Benno Blattgold] …`, gespeichert als Marie. Sie
+        # sind das Ergebnis des Fehlers und zugleich sein Lehrbuch: ein Modell
+        # lernt das Format aus dem Verlauf. Ohne diesen Schnitt bekaeme ein
+        # fremder Zug ausserdem zwei Marken uebereinander.
+        content = self._strip_speaker_labels(content, [str(a.get("name") or "") for a in agents])
 
         agent_id = msg.get("agent_id")
         if agent_id and str(agent_id) == current_agent_id:

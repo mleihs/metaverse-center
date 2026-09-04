@@ -242,3 +242,56 @@ class TestSanitizeMarke:
         """Ein Tor, das rät, ist schlimmer als eines, das nichts weiss."""
         assert ChatAIService._sanitize_response("[Suse Sonnenblum] *hebt die Hand*") == "[Suse Sonnenblum] *hebt die Hand*"
         assert ChatAIService._sanitize_response("[Suse Sonnenblum]: hebt die Hand") == "hebt die Hand"
+
+
+class TestAlteMarkenImBestand:
+    """Die 16 Zeilen, die schon dastehen.
+
+    Gemessen am 04.09.2026 im Faden 7b2e37c3: von 57 Agentennachrichten, die
+    mit einer eckigen Klammer beginnen, sind 41 echte Regieanweisungen und 16
+    fremde Namensmarken unter der EIGENEN ``agent_id`` — ``[Benno Blattgold] …``,
+    gespeichert als Marie. Sie sind das Ergebnis des Fehlers und zugleich sein
+    Lehrbuch, denn ein Modell lernt das Format aus dem Verlauf.
+    """
+
+    def test_eigener_zug_verliert_die_fremde_marke(self, service):
+        turn = service._as_turn(
+            {
+                "content": "[Benno Blattgold] *Bennos Atem stockt.*",
+                "sender_role": "assistant",
+                "agent_id": MARIE,
+            },
+            agents=AGENTS,
+            current_agent_id=MARIE,
+        )
+        assert turn == {"role": "assistant", "content": "*Bennos Atem stockt.*"}
+
+    def test_fremder_zug_bekommt_keine_zweite_marke(self, service):
+        """Ohne den Schnitt stuende hier ``[Marie Morgenrot]: [Benno Blattgold] …``."""
+        turn = service._as_turn(
+            {
+                "content": "[Benno Blattgold] *Bennos Atem stockt.*",
+                "sender_role": "assistant",
+                "agent_id": MARIE,
+                "agents": {"name": "Marie Morgenrot"},
+            },
+            agents=AGENTS,
+            current_agent_id=BENNO,
+        )
+        assert turn == {"role": "user", "content": "[Marie Morgenrot]: *Bennos Atem stockt.*"}
+
+    def test_regieanweisung_ueberlebt_den_verlauf(self, service):
+        """41 der 57 — sie duerfen nicht angetastet werden."""
+        text = "[Der Raum ist still, als sich die Tür einen Spalt öffnet.]"
+        turn = service._as_turn(
+            {"content": text, "sender_role": "assistant", "agent_id": MARIE},
+            agents=AGENTS,
+            current_agent_id=MARIE,
+        )
+        assert turn["content"] == text
+
+    def test_der_bestand_bleibt_unangetastet(self, service):
+        """Nur was das Modell sieht, ist bereinigt — die Zeile selbst nicht."""
+        msg = {"content": "[Benno Blattgold] *Bennos Atem stockt.*", "sender_role": "assistant", "agent_id": MARIE}
+        service._as_turn(msg, agents=AGENTS, current_agent_id=MARIE)
+        assert msg["content"] == "[Benno Blattgold] *Bennos Atem stockt.*"
