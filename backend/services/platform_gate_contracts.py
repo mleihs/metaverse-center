@@ -132,6 +132,19 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
     ),
     # ── Erzählschichten ─────────────────────────────────────────────────
     PlatformGate(
+        key="focalization_model_check_enabled",
+        group="operations",
+        label="Fokalisierung per Modell nachprüfen",
+        turns_on="Die teure Stufe der Fokalisierungsmessung: ein Modellaufruf, der die "
+        "kostenlose Heuristik an Stichproben eicht.",
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AUS. Die Heuristik "
+        "misst weiter auf jedem Zug und kostet nichts; ohne die Eichung weiss nur niemand, "
+        "wie oft sie irrt.",
+        default_when_missing=False,
+        reader="backend/services/chat/focalization_service.py",
+        wired=False,
+    ),
+    PlatformGate(
         key="continuation_mail_enabled",
         group="narrative",
         label="Post über Gespräche ohne Zuhörer",

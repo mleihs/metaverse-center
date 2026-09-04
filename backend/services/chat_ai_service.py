@@ -17,6 +17,7 @@ from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.chat.conversation_digest_service import ConversationDigestService
+from backend.services.chat.focalization_service import FocalizationService
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
@@ -944,6 +945,23 @@ class ChatAIService:
         if extra_metadata:
             metadata.update(extra_metadata)
 
+        # Die Fokalisierung wird BEIM SPEICHERN gemessen, nicht spaeter.
+        #
+        # Hier stehen die Teilnehmernamen ohnehin schon da (das Sanitize-Tor
+        # braucht sie), es kostet kein Netz und keine Sekunde. Eine spaetere
+        # Messung muesste die Besetzung noch einmal laden — und eine, die im
+        # Herzschlag nachlaeuft, misst nie den Zug, den gerade jemand liest.
+        #
+        # Der Befund AENDERT NICHTS: er blockiert die Antwort nicht und
+        # schreibt sie nicht um. Ein Tor, das in den Anfragepfad eingreift,
+        # waere beim ersten Fehlurteil ein Ausfall; eines, das misst, ist
+        # beim ersten Fehlurteil eine falsche Zahl.
+        fokus = FocalizationService.measure(
+            response_text,
+            speaker=str(agent.get("name") or ""),
+            others=[n for n in (participant_names or []) if n != agent.get("name")],
+        )
+
         save_resp = (
             await self._supabase.table("chat_messages")
             .insert(
@@ -959,6 +977,12 @@ class ChatAIService:
         )
 
         saved = save_resp.data[0] if save_resp.data else {}
+        if saved.get("id"):
+            # Erst jetzt gibt es eine Nachricht, an die der Befund haengen
+            # kann. Fehler hier kosten NICHTS: die Nachricht steht, und ein
+            # fehlender Messwert ist eine Luecke in einer Statistik, kein
+            # Ausfall im Gespraech.
+            await FocalizationService.record(self._supabase, UUID(str(saved["id"])), fokus)
         return response_text, saved
 
     # ── Shared setup helpers ─────────────────────────────────
