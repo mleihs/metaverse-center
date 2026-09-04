@@ -96,6 +96,7 @@ export class BaseApiService {
     body?: unknown,
     params?: QueryParams,
     extraHeaders?: Record<string, string>,
+    signOutOn401 = true,
   ): Promise<ApiResponse<T>> {
     try {
       const url = this.buildUrl(path, params);
@@ -113,7 +114,7 @@ export class BaseApiService {
       }
 
       const response = await fetch(url, options);
-      return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response, signOutOn401);
     } catch (err) {
       captureError(err, { source: 'BaseApiService.request', method, path });
       const message = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -167,6 +168,25 @@ export class BaseApiService {
 
   protected post<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>('POST', path, body);
+  }
+
+  /**
+   * POST/PATCH, bei dem eine 401 eine ANTWORT ist und kein abgelaufenes Token.
+   *
+   * Es gibt genau zwei solche Stellen, und beide pruefen ein Passwort:
+   * `/auth/reauth` und der Verschluss eines Gespraechs. Eine 401 bedeutet dort
+   * ein falsches Passwort und keine tote Sitzung — der normale Weg ruft
+   * daraufhin aber `supabase.auth.signOut()` auf. Ein Tippfehler im
+   * Passwortfeld beendete damit die Sitzung in der ganzen Anwendung, und jeder
+   * weitere Versuch scheiterte danach ohne Token erneut mit 401. Von aussen
+   * ist das ununterscheidbar von einem Passwort, das nicht mehr gilt.
+   */
+  protected postExpecting401<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>('POST', path, body, undefined, undefined, false);
+  }
+
+  protected patchExpecting401<T>(path: string, body?: unknown): Promise<ApiResponse<T>> {
+    return this.request<T>('PATCH', path, body, undefined, undefined, false);
   }
 
   protected put<T>(path: string, body?: unknown, updatedAt?: string): Promise<ApiResponse<T>> {

@@ -25,7 +25,9 @@ export class ChatApiService extends BaseApiService {
    * Antwort sagt nur, wie lange die Oberflaeche das Ja gelten lassen darf.
    */
   reauth(password: string): Promise<ApiResponse<{ valid_for_seconds: number }>> {
-    return this.post('/auth/reauth', { password });
+    // `postExpecting401`: hier heisst 401 „falsches Passwort", nicht
+    // „abgelaufene Sitzung". Der normale Weg meldet den Nutzer ab.
+    return this.postExpecting401('/auth/reauth', { password });
   }
 
   /**
@@ -41,10 +43,11 @@ export class ChatApiService extends BaseApiService {
     locked: boolean,
     password: string,
   ): Promise<ApiResponse<{ id: string; locked: boolean }>> {
-    return this.patch(`/simulations/${simulationId}/chat/conversations/${conversationId}/lock`, {
-      locked,
-      password,
-    });
+    // Siehe `reauth`: 401 ist hier die Antwort auf das Passwort.
+    return this.patchExpecting401(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/lock`,
+      { locked, password },
+    );
   }
 
   /**

@@ -16,6 +16,7 @@ import type {
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 
+import { type ChatLockFailure, lockFailureFrom } from './ChatLockModal.js';
 import './ChatLockModal.js';
 import './ConversationList.js';
 import './ChatWindow.js';
@@ -174,7 +175,7 @@ export class VelgChatView extends LitElement {
   @state() private _lockModalOpen = false;
   @state() private _lockPurpose: 'lock' | 'unlock' | 'reveal' = 'lock';
   @state() private _lockTarget: ChatConversation | null = null;
-  @state() private _lockRejected = false;
+  @state() private _lockFailure: ChatLockFailure = '';
   @state() private _lockBusy = false;
 
   @state() private _conversations: ChatConversation[] = [];
@@ -481,13 +482,13 @@ export class VelgChatView extends LitElement {
   ): void {
     this._lockPurpose = e.detail.purpose;
     this._lockTarget = e.detail.conversation;
-    this._lockRejected = false;
+    this._lockFailure = '';
     this._lockModalOpen = true;
   }
 
   private _closeLockModal(): void {
     this._lockModalOpen = false;
-    this._lockRejected = false;
+    this._lockFailure = '';
     this._lockTarget = null;
   }
 
@@ -496,12 +497,12 @@ export class VelgChatView extends LitElement {
   ): Promise<void> {
     const { purpose, password } = e.detail;
     this._lockBusy = true;
-    this._lockRejected = false;
+    this._lockFailure = '';
     try {
       if (purpose === 'reveal') {
         const resp = await chatApi.reauth(password);
         if (!resp.success || !resp.data) {
-          this._lockRejected = true;
+          this._lockFailure = lockFailureFrom(resp.error);
           return;
         }
         chatLock.grant(resp.data.valid_for_seconds);
@@ -521,7 +522,7 @@ export class VelgChatView extends LitElement {
         password,
       );
       if (!resp.success) {
-        this._lockRejected = true;
+        this._lockFailure = lockFailureFrom(resp.error);
         return;
       }
       // Den Bestand vor Ort nachziehen statt neu zu laden: die Liste soll in
@@ -536,7 +537,7 @@ export class VelgChatView extends LitElement {
       this._closeLockModal();
     } catch (err) {
       captureError(err, { source: 'ChatView._handleLockSubmit' });
-      this._lockRejected = true;
+      this._lockFailure = 'error';
     } finally {
       this._lockBusy = false;
     }
@@ -669,7 +670,7 @@ export class VelgChatView extends LitElement {
         ?open=${this._lockModalOpen}
         .purpose=${this._lockPurpose}
         .conversationTitle=${this._lockTarget?.title ?? ''}
-        ?rejected=${this._lockRejected}
+        .failure=${this._lockFailure}
         ?busy=${this._lockBusy}
         @lock-submit=${this._handleLockSubmit}
         @lock-cancel=${this._closeLockModal}

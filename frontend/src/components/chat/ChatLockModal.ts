@@ -13,9 +13,52 @@
 import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import type { ApiError } from '../../types/index.js';
 import '../shared/BaseModal.js';
 
 export type ChatLockPurpose = 'lock' | 'unlock' | 'reveal';
+
+/**
+ * Warum der Versuch nicht durchging.
+ *
+ * Bis 2026-09-05 gab es hier ein `rejected: boolean`, und jede Art von
+ * Fehlschlag las sich als „Password not recognised". Auf Produktion gemessen:
+ * `/auth/reauth` ist auf 5 Versuche je Minute gedrosselt und antwortet danach
+ * mit HTTP 429 — die Oberflaeche schob das dem Passwort zu. Wer dann das
+ * richtige Passwort noch einmal eingab, bekam dieselbe Meldung, und das Konto
+ * sah aus, als haette es sein Passwort vergessen.
+ *
+ * Ein Fehlschlag, der nicht am Passwort lag, darf das Feld auch nicht leeren:
+ * das Eingetippte war ja vermutlich richtig.
+ */
+export type ChatLockFailure = '' | 'password' | 'throttled' | 'unreachable' | 'denied' | 'error';
+
+/**
+ * Uebersetzt den Fehler einer API-Antwort in einen Grund, den man anzeigen darf.
+ *
+ * Die Zahl entscheidet, nicht der Text: `code` ist bei einer Drossel
+ * `HTTP_429` und der Rumpf traegt `{"error": "Rate limit exceeded: 5 per 1
+ * minute"}` ohne `message`-Feld, also nichts, worauf sich ein Vergleich
+ * verlassen koennte.
+ */
+export function lockFailureFrom(error: ApiError | undefined): ChatLockFailure {
+  if (!error) return 'error';
+  if (error.code === 'NETWORK_ERROR') return 'unreachable';
+  switch (error.status) {
+    case 401:
+      return 'password';
+    case 429:
+      return 'throttled';
+    case 403:
+    case 404:
+      return 'denied';
+    default:
+      // 502/503/504 kommen vom Proxy, wenn die Anwendung nicht antwortet; 500
+      // ist ihr eigener Absturz. In beiden Faellen wurde das Passwort nie
+      // geprueft, und das ist das Einzige, was der Nutzer wissen muss.
+      return (error.status ?? 0) >= 500 ? 'unreachable' : 'error';
+  }
+}
 
 @localized()
 @customElement('velg-chat-lock-modal')
@@ -120,8 +163,8 @@ export class ChatLockModal extends LitElement {
   @property({ type: String }) purpose: ChatLockPurpose = 'lock';
   /** Titel des betroffenen Gesprächs — nur zur Orientierung im Text. */
   @property({ type: String }) conversationTitle = '';
-  /** Vom Aufrufer gesetzt, wenn der Server das Passwort abgelehnt hat. */
-  @property({ type: Boolean }) rejected = false;
+  /** Vom Aufrufer gesetzt, wenn der Versuch nicht durchging. */
+  @property({ type: String }) failure: ChatLockFailure = '';
   @property({ type: Boolean }) busy = false;
 
   @state() private _password = '';
@@ -139,9 +182,31 @@ export class ChatLockModal extends LitElement {
     // Nach einer Ablehnung bleibt der Fokus im Feld — die Spezifikation nennt
     // das ausdrücklich, und es ist richtig: wer sich vertippt hat, will
     // weitertippen, nicht erst wieder hinklicken.
-    if (changed.has('rejected') && this.rejected) {
-      this._password = '';
+    if (changed.has('failure') && this.failure) {
+      // Nur ein FALSCHES Passwort wird geloescht. Bei einer Drossel oder einem
+      // Serverfehler stand vermutlich das Richtige im Feld — es wegzuwerfen
+      // zwingt zum Neutippen und legt nahe, das Passwort sei schuld.
+      if (this.failure === 'password') {
+        this._password = '';
+      }
       this.updateComplete.then(() => this._input?.focus());
+    }
+  }
+
+  private _failureText(): string {
+    switch (this.failure) {
+      case 'throttled':
+        return msg(
+          'Too many attempts in one minute. Wait a minute and try again \u2013 this was not the password.',
+        );
+      case 'unreachable':
+        return msg('The server did not answer. Your password was never checked; the lock stays.');
+      case 'denied':
+        return msg('This conversation is not yours to open.');
+      case 'error':
+        return msg('The attempt failed before the password was checked. The lock stays.');
+      default:
+        return msg('Password not recognised. The lock stays.');
     }
   }
 
@@ -217,13 +282,7 @@ export class ChatLockModal extends LitElement {
               }
             }}
           />
-          ${
-            this.rejected
-              ? html`<p class="error" role="alert">
-                  ${msg('Password not recognised. The lock stays.')}
-                </p>`
-              : nothing
-          }
+          ${this.failure ? html`<p class="error" role="alert">${this._failureText()}</p>` : nothing}
         </div>
         <div slot="footer" class="footer">
           <button class="btn" @click=${this._close} ?disabled=${this.busy}>

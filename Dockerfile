@@ -79,4 +79,22 @@ EXPOSE ${PORT:-8000}
 # avoids a restart-on-unhealthy crash-loop under Coolify.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/api/v1/health || exit 1
-CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
+# --proxy-headers / --forwarded-allow-ips: OHNE diese beiden sieht die Anwendung
+# als Absenderadresse den REVERSE PROXY, bei jedem Aufruf dieselbe. Der
+# Ratenbegrenzer (slowapi, key_func=get_remote_address) legt dann ALLE Nutzer in
+# EINEN Eimer. Gemessen auf Produktion am 2026-09-05: sechs Aufrufe von
+# /api/v1/auth/reauth hintereinander -- fuenfmal HTTP 200, danach HTTP 429
+# "Rate limit exceeded: 5 per 1 minute". Das trifft nicht nur den Sechsten,
+# sondern jeden anderen Nutzer derselben Minute, an neun Routern mit
+# RATE_LIMIT_EXTERNAL_API und an jedem anderen Limit gleichermassen.
+#
+# FORWARDED_ALLOW_IPS ist der Preis dafuer: wer den Container DIREKT erreicht,
+# kann seine Adresse ueber X-Forwarded-For faelschen und sein eigenes Limit
+# umgehen. Das ist hinnehmbar, solange der Container nur ueber den Proxy
+# erreichbar ist (Coolify/Traefik im internen Netz, kein veroeffentlichter
+# Port) -- und es ist in jedem Fall besser als ein Eimer fuer alle, der einem
+# einzelnen Aufrufer erlaubt, die Anmeldung fuer die ganze Plattform zu
+# sperren. Wo der Container direkt erreichbar ist, MUSS die Variable auf die
+# Adresse des Proxys gesetzt werden.
+ENV FORWARDED_ALLOW_IPS="*"
+CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log --proxy-headers --forwarded-allow-ips ${FORWARDED_ALLOW_IPS}"]
