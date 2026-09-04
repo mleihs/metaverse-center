@@ -174,3 +174,70 @@ class TestDieLageWirdAusgerechnetNichtErbeten:
     def test_die_aufrufstelle_fuellt_sie(self):
         quelle = inspect.getsource(ChatAIService._build_group_turn_context)
         assert '"addressed_note"' in quelle
+
+
+class TestDieMarkeDesMenschenIstProsa:
+    """Der Mensch hat keinen Namen — also muss seine Marke einer sein koennen.
+
+    GEMESSEN am 05.09.2026 beim Durchspielen auf Produktion: 11 von 24
+    Agentenzuegen schrieben `[User]` woertlich in ihre Prosa. Eine Anweisung
+    dagegen (Migration 374) war ebenso gemessen WIRKUNGSLOS — 3 von 3 Zuegen
+    schrieben sie weiter.
+
+    Der Figur fehlte kein Verbot, sondern ein WORT: weder `user_profiles`
+    noch `simulation_members` fuehren einen Anzeigenamen. Also ist die Marke
+    jetzt selbst eine Bezeichnung, in der DRITTEN Person, weil die Figuren
+    ihn ohnehin so erzaehlen.
+    """
+
+    def test_die_marke_ist_ein_deutscher_ausdruck(self):
+        from backend.services.chat_ai_service import _user_speaker
+
+        assert _user_speaker("de") == "dein Gegenüber"
+
+    def test_englisch_ist_wirklich_englisch(self):
+        from backend.services.chat_ai_service import _user_speaker
+
+        assert _user_speaker("en") == "your counterpart"
+
+    def test_ohne_sprache_faellt_sie_nicht_auf_englisch_zurueck(self):
+        """Der Rueckfall ist die Sprache der Plattform, nicht die des Codes.
+        Ein englisches Wort mitten in deutscher Prosa waere sichtbar."""
+        from backend.services.chat_ai_service import _user_speaker
+
+        assert _user_speaker(None) == "dein Gegenüber"
+        assert _user_speaker("") == "dein Gegenüber"
+
+    def test_sie_steht_in_der_dritten_person(self):
+        """Ein Anredewort taete es NICHT. „wie Du Mira die Hand auf den Arm
+        legt" verlangte „legst" — die Figur erzaehlt ihn aber in der dritten
+        Person, und dazu muss die Bezeichnung passen."""
+        from backend.services.chat_ai_service import _user_speaker
+
+        for locale in ("de", "en"):
+            assert _user_speaker(locale).lower() not in {"du", "you", "dich", "dir"}
+
+    def test_die_klammer_faellt_die_bezeichnung_bleibt(self):
+        """Deterministisch, kein Verlass auf Einhaltung. Was bleibt, muss ein
+        richtiger Satz sein."""
+        text = "Ich sehe, wie [dein Gegenüber] Marie die Hand auf den Arm legt."
+        sauber = ChatAIService._strip_speaker_labels(text, [*BESETZUNG, "dein Gegenüber"])
+        assert sauber == "Ich sehe, wie dein Gegenüber Marie die Hand auf den Arm legt."
+
+    def test_auch_die_alte_marke_wird_noch_entklammert(self):
+        """Der Bestand traegt sie. Eine Reparatur, die nur die Zukunft sauber
+        haelt, laesst das Modell weiter am alten Vorbild lernen."""
+        sauber = ChatAIService._strip_speaker_labels("Ein Blick zu [User].", [*BESETZUNG, "User"])
+        assert sauber == "Ein Blick zu User."
+
+    def test_eine_regieanweisung_bleibt_unangetastet(self):
+        """Die Gegenprobe. Von 57 Zeilen mit eckiger Klammer im echten Bestand
+        waren 41 echte Regieanweisungen — ein Muster, das jede Klammer nimmt,
+        loescht viermal so viel, wie es repariert."""
+        text = "[Der Raum ist still, als sich die Tür einen Spalt öffnet.]"
+        assert ChatAIService._strip_speaker_labels(text, [*BESETZUNG, "dein Gegenüber"]) == text
+
+    def test_beide_marken_gelten_als_bekannte_sprecher(self):
+        bekannt = ChatAIService._known_speakers(BESETZUNG)
+        assert "dein Gegenüber" in bekannt
+        assert "User" in bekannt

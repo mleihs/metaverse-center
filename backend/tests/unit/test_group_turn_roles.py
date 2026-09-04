@@ -33,7 +33,7 @@ from uuid import uuid4
 import pytest
 
 from backend.services.agent_memory_service import AgentMemoryService
-from backend.services.chat_ai_service import _DEPARTED_SPEAKER, ChatAIService
+from backend.services.chat_ai_service import _DEPARTED_SPEAKER, ChatAIService, _user_speaker
 from backend.services.prompt_service import PromptSource, ResolvedPrompt
 
 MIRA = "11111111-1111-1111-1111-111111111111"
@@ -344,7 +344,14 @@ class TestDerMenschHatAuchEineMarke:
             agents=AGENTS,
             current_agent_id=MIRA,
         )
-        assert turn == {"role": "user", "content": "[User]: Ich stelle den Korb auf den Tisch."}
+        # Gegen die MARKE, nicht gegen eine Zeichenkette. Sie hat sich am
+        # 05.09.2026 geaendert (`[User]` -> `[dein Gegenueber]`), weil 11 von
+        # 24 Zuegen die alte woertlich in ihre Prosa schrieben — dem Menschen
+        # fehlt ein Name, also griff die Figur zur Marke. Was hier zugesagt
+        # wird, ist der BESITZER der Zeile; welches Wort ihn bezeichnet, darf
+        # sich aendern, ohne dass ein Tor bricht.
+        marke = _user_speaker("de")
+        assert turn == {"role": "user", "content": f"[{marke}]: Ich stelle den Korb auf den Tisch."}
 
     def test_im_einzelchat_bleibt_sie_weg(self, service):
         """Dort gibt es zwei Stimmen, die Rolle sagt schon alles, und eine
@@ -372,7 +379,8 @@ class TestDerMenschHatAuchEineMarke:
         """Sonst stuende ausgerechnet der Satz, auf den geantwortet werden
         soll, als einziger ohne Besitzer da."""
         messages = await _turns(service, 1)
-        assert any("[User]: Und was folgt daraus?" in m["content"] for m in messages)
+        marke = _user_speaker("de")
+        assert any(f"[{marke}]: Und was folgt daraus?" in m["content"] for m in messages)
 
     def test_das_tor_kennt_die_marke_des_menschen(self, service):
         """Schreibt ein Modell `[User]: …` zurueck, ist das derselbe Fehler wie

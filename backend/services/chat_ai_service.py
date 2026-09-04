@@ -113,10 +113,44 @@ _DEPARTED_SPEAKER = "former participant"
 #: Anbieter zwei gleiche Rollen in Folge ablehnen) hat es verschaerft: vorher
 #: stand der Satz des Menschen wenigstens fuer sich.
 #:
-#: Strukturell wie `_DEPARTED_SPEAKER`: englisch, im Prompt, nie auf dem
-#: Bildschirm — und deshalb NICHT uebersetzt. Dieselbe Marke benutzt
-#: `ConversationDigestService._as_line` in der Mitschrift.
+#: ⚠ SIE MUSS ALS PROSA FUNKTIONIEREN, und das war sie zuerst nicht.
+#:
+#: Bis zum 05.09.2026 stand hier `"User"`. Beim Durchspielen auf Produktion
+#: gemessen: **11 von 24 Agentenzuegen schrieben `[User]` woertlich in ihre
+#: Prosa** — „Ich sehe, wie [User] Mira die Hand auf den Arm legt."
+#:
+#: Der Grund ist keine Regelverletzung, sondern eine Luecke im Wortschatz.
+#: Der Mensch traegt NIRGENDS einen Namen: weder `user_profiles` noch
+#: `simulation_members` fuehren einen Anzeigenamen, und im Prompt heisst er
+#: sonst nicht. Braucht eine Figur mitten im Satz ein Wort fuer ihn, nimmt
+#: sie das einzige, das dasteht.
+#:
+#: Eine Anweisung dagegen wurde versucht (Migration 374) und GEMESSEN
+#: WIRKUNGSLOS: 3 von 3 Zuegen schrieben die Marke weiter. Das deckt sich
+#: mit CHARM (arXiv:2609.01352): zwischen Erkennen und Einhalten liegen bei
+#: GPT-4o 72,4 Punkte. Was die Figur braucht, ist kein Verbot, sondern ein
+#: Wort.
+#:
+#: Jedes ausgelieferte Rollenspielprodukt loest das mit einem NAMEN
+#: (SillyTaverns `{{user}}`-Persona). Einen Namen gibt es hier nicht, also
+#: tritt eine Bezeichnung an seine Stelle — und zwar in der DRITTEN Person,
+#: weil die Figuren ihn ohnehin so erzaehlen. „wie dein Gegenüber Mira die
+#: Hand auf den Arm legt" ist grammatisch richtig; ein Anredewort waere es
+#: nicht („wie Du … legt" verlangte „legst").
+#:
+#: Deshalb ist diese Marke — anders als `_SCENE_SPEAKER` und
+#: `_DEPARTED_SPEAKER` — die EINZIGE, die uebersetzt wird: sie landet im
+#: sichtbaren Text, wenn eine Figur sie aufgreift.
+_USER_SPEAKER_BY_LOCALE = {"de": "dein Gegenüber", "en": "your counterpart"}
+
+#: Der Rueckfall, wenn keine Sprache mitkommt. Historisch die einzige Marke;
+#: sie bleibt bekannt, damit alte Zeilen im Bestand weiter erkannt werden.
 _USER_SPEAKER = "User"
+
+
+def _user_speaker(locale: str | None) -> str:
+    """Die Marke des Menschen in der Sprache der Welt."""
+    return _USER_SPEAKER_BY_LOCALE.get((locale or "de").lower(), _USER_SPEAKER_BY_LOCALE["de"])
 
 #: Die Marke der SZENE — eine Stimme, die keiner Figur gehört.
 #:
@@ -853,7 +887,12 @@ class ChatAIService:
         """
         if not participant_names:
             return participant_names
-        return [*participant_names, _USER_SPEAKER, _SCENE_SPEAKER]
+        return [
+            *participant_names,
+            _USER_SPEAKER,
+            *_USER_SPEAKER_BY_LOCALE.values(),
+            _SCENE_SPEAKER,
+        ]
 
     @staticmethod
     def _strip_speaker_labels(text: str, participant_names: list[str] | None) -> str:
@@ -886,12 +925,23 @@ class ChatAIService:
         if not known:
             return text
         alternation = "|".join(re.escape(n) for n in known)
-        return re.sub(
+        text = re.sub(
             rf"^[ \t]*(?:\[(?:{alternation})\]\s*:?|(?:{alternation})\s*:)[ \t]*",
             "",
             text,
             flags=re.MULTILINE,
         )
+        # Und die Marke des Menschen MITTEN im Satz. Sie ist der einzige
+        # Sprecher ohne Namen, deshalb greift eine Figur zu ihr, wenn sie ein
+        # Wort fuer ihn braucht — gemessen am 05.09.2026: 11 von 24 Zuegen.
+        #
+        # Hier faellt nur die KLAMMER, nicht die Bezeichnung: „wie [dein
+        # Gegenueber] Mira die Hand auf den Arm legt" wird zu „wie dein
+        # Gegenueber Mira die Hand auf den Arm legt" — ein richtiger deutscher
+        # Satz. Genau dafuer ist die Marke eine Bezeichnung in der dritten
+        # Person und kein Anredewort.
+        marken = "|".join(re.escape(m) for m in (_USER_SPEAKER, *_USER_SPEAKER_BY_LOCALE.values()))
+        return re.sub(rf"\[({marken})\]", r"\1", text)
 
     @staticmethod
     def _sanitize_response(text: str, participant_names: list[str] | None = None) -> str:
@@ -1639,7 +1689,8 @@ class ChatAIService:
                 ungesehen,
             )
         history_messages: list[dict[str, str]] = [
-            self._as_turn(msg, agents=agents, current_agent_id=current_agent_id) for msg in history
+            self._as_turn(msg, agents=agents, current_agent_id=current_agent_id, locale=locale)
+            for msg in history
         ]
         # Auch die FRISCHE Nutzernachricht traegt die Marke. Ohne sie stuende
         # ausgerechnet der Satz, auf den geantwortet werden soll, als
@@ -1647,7 +1698,9 @@ class ChatAIService:
         history_messages.append(
             {
                 "role": "user",
-                "content": (f"[{_USER_SPEAKER}]: {user_message}" if len(agents) > 1 else user_message),
+                "content": (
+                    f"[{_user_speaker(locale)}]: {user_message}" if len(agents) > 1 else user_message
+                ),
             }
         )
 
@@ -1657,7 +1710,9 @@ class ChatAIService:
         # gesagt" — und der zweite Sprecher schrieb daraufhin weiter am Satz
         # des ersten. Sie laufen jetzt durch dieselbe Regel wie der Verlauf.
         for prev_msg in saved_messages:
-            history_messages.append(self._as_turn(prev_msg, agents=agents, current_agent_id=current_agent_id))
+            history_messages.append(
+                self._as_turn(prev_msg, agents=agents, current_agent_id=current_agent_id, locale=locale)
+            )
 
         return (
             extra_parts,
@@ -1761,6 +1816,7 @@ class ChatAIService:
         *,
         agents: list[dict],
         current_agent_id: str,
+        locale: str = "de",
     ) -> dict[str, str]:
         """Eine gespeicherte Nachricht als Protokollzug fuer EINEN Agenten.
 
@@ -1801,7 +1857,7 @@ class ChatAIService:
             # Im Einzelchat NICHT: dort gibt es nur zwei Stimmen, die Rolle
             # sagt schon alles, und eine Marke waere Laerm.
             if len(agents) > 1:
-                return {"role": "user", "content": f"[{_USER_SPEAKER}]: {content}"}
+                return {"role": "user", "content": f"[{_user_speaker(locale)}]: {content}"}
             return {"role": "user", "content": content}
 
         # Die 16 Zeilen, die schon dastehen. Gemessen am 04.09.2026 im Faden

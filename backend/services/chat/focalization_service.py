@@ -178,6 +178,44 @@ class FocalizationService:
     """Misst, ob ein Agentenzug im Horizont seiner Figur bleibt."""
 
     # ── Die kostenlose Stufe ──────────────────────────────────────────────
+    #: Woertliche Rede. Drei Paare kommen in diesen Faeden vor: deutsche
+    #: Anfuehrungszeichen, typografische und gerade.
+    _REDE = re.compile(
+        "\u201e[^\u201c\u201d\"]*[\u201c\u201d]"
+        "|\u201c[^\u201d]*\u201d"
+        '|"[^"\n]{2,}"'
+    )
+
+    @classmethod
+    def _ohne_rede(cls, text: str) -> str:
+        """Der ERZAEHLTE Teil, ohne das, was die Figur laut sagt.
+
+        Fokalisierung ist eine Eigenschaft der ERZAEHLUNG. Was eine Figur
+        ausspricht, ist ihre Behauptung und faellt nicht darunter: „Mira,
+        solange Lena weg ist – was liegt in deinem Archiv?" ist eine Anrede
+        an die eine und eine Erwaehnung der anderen, kein allwissender Satz.
+
+        ⚠ GEMESSEN am 05.09.2026. Nach den Reparaturen 371/372/373 meldete
+        der Detektor 2 von 9 Zuegen als allwissend — MEHR als die 14 % des
+        alten Fadens. Beide Treffer lagen in woertlicher Rede:
+
+            "mehrere_fremde_ohne_ich"  eine an eine Figur gerichtete Frage,
+                                       die die dritte beim Namen nennt
+            "fremdes_inneres"          ein Bedingungssatz innerhalb der Rede
+
+        Ein Messgeraet, das die Rede mitliest, bestraft eine Figur dafuer,
+        dass sie ihre Gegenueber beim Namen anspricht — also fuer genau das
+        Verhalten, das ein Gruppengespraech ausmacht. Alle frueheren Zahlen
+        dieses Detektors (14,6 % · 13,4 % · 20,4 %) tragen diesen Fehler und
+        sind nach oben verzerrt.
+
+        Bleibt nach dem Schnitt nichts uebrig, besteht der Zug GANZ aus Rede.
+        Dann gibt es keine Erzaehlung, die einen Blickwinkel haben koennte —
+        `measure` gibt dafuer `internal` zurueck, nicht `zero`. Den vollen
+        Text zurueckzugeben (die erste Fassung tat das) hiess, genau den Fall
+        wieder mitzumessen, den dieser Schnitt ausnehmen soll.
+        """
+        return cls._REDE.sub(" ", text)
 
     @classmethod
     def measure(cls, text: str, *, speaker: str, others: list[str]) -> FocalizationResult:
@@ -199,11 +237,22 @@ class FocalizationService:
             return FocalizationResult("unclear", evidence={"grund": "leerer Text"})
 
         fremde = [n for n in others if n and n.strip() and n != speaker]
-        genannt = [n for n in fremde if cls._names_person(text, n)]
+        # Gemessen wird der ERZAEHLTE Teil. Siehe `_ohne_rede`.
+        erzaehlt = cls._ohne_rede(text)
+        if not erzaehlt.strip():
+            # Nur Rede. Keine Erzaehlung, also kein Blickwinkel, der
+            # ueberschritten werden koennte — eine Figur, die ausschliesslich
+            # spricht, ist in ihrer eigenen Stimme, per Definition.
+            return FocalizationResult(
+                "internal",
+                evidence={"nur_rede": True},
+                others_named=[n for n in fremde if cls._names_person(text, n)],
+            )
+        genannt = [n for n in fremde if cls._names_person(erzaehlt, n)]
 
-        kollektiv = cls._find_collective(text, teilnehmer=len(fremde) + 1)
-        inneres = cls._find_foreign_interior(text, fremde)
-        gemeinsam = cls._find_joint_others(text, fremde, speaker=speaker)
+        kollektiv = cls._find_collective(erzaehlt, teilnehmer=len(fremde) + 1)
+        inneres = cls._find_foreign_interior(erzaehlt, fremde)
+        gemeinsam = cls._find_joint_others(erzaehlt, fremde, speaker=speaker)
 
         belege: dict[str, Any] = {}
         if kollektiv:
@@ -230,7 +279,7 @@ class FocalizationService:
         #   · ausser dem Sprecher handelt niemand — „Mira hebt die Hand" ist
         #     die übliche Rollenspielkonvention und bleibt bei EINER Person.
         #     Das Register ist nicht die Fokalisierung.
-        erste_person = bool(_FIRST_PERSON.search(text))
+        erste_person = bool(_FIRST_PERSON.search(erzaehlt))
         nur_ich = not genannt
         if erste_person or nur_ich:
             return FocalizationResult(
