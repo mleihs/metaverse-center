@@ -38,12 +38,33 @@ export const LANDING_IMAGE_WIDTHS = {
   panel: [640, 960, 1280],
   /** Sechs Stueck in 640 px mit 10 px Abstand, je rund 96 CSS-px. */
   thumb: [192, 288],
+  /*
+   * Die Hochkant-Tafel der Atlas-Frontseite (`aspect-ratio: 3 / 4`).
+   *
+   * Eigene Rolle und nicht `hero`, weil das etwas anderes ist: `hero` ist die
+   * VOLLE Seitenbreite der alten Frontseite und quer. Diese Tafel steht in der
+   * 4fr-Spalte eines `8fr 4fr`-Rasters — gemessen 438 CSS-px bei 1728 px
+   * Fenster, also rund 25 vw. 1440 deckt das bei doppelter Pixeldichte auf
+   * einem 2560er Schirm; 1920 waere Ablage fuer einen Fall, den es nicht gibt.
+   */
+  heroPortrait: [640, 960, 1440],
 } as const;
 
 export type LandingImageRole = keyof typeof LANDING_IMAGE_WIDTHS;
 
 /** Die Staemme, wie `derive_landing_images.py` sie schreibt. */
 export const LANDING_HERO_STEM = 'hero-bureau';
+
+/**
+ * Der Held der Atlas-Frontseite: der Anmeldesaal.
+ *
+ * Ein EIGENER Stamm, nicht `hero-bureau`. Beide Frontseiten teilten sich bis
+ * hierher denselben, und das ging nur gut, solange beide quer waren. Der
+ * Atlas-Rahmen ist 3:4 mit `object-fit: cover` — ein Querformat wird darin auf
+ * einen schmalen Mittelstreifen beschnitten. Das Bild hier ist 1792 x 2400
+ * (0,747), also genau der Zuschnitt des Rahmens.
+ */
+export const ATLAS_HERO_STEM = 'hero-intake-hall';
 
 export const LANDING_SYSTEM_STEMS = [
   'system-01-forge',
@@ -97,4 +118,16 @@ export const LANDING_IMAGE_SIZES: Record<LandingImageRole, string> = {
   // wie der Inhalt, darueber steht sie fest bei 640 px.
   panel: '(max-width: 1024px) 100vw, 640px',
   thumb: '(max-width: 1024px) 16vw, 100px',
+  /*
+   * Unter 1024 px klappt das Raster auf eine Spalte, die Tafel wird so breit
+   * wie der Inhalt. Darueber steht sie in der 4fr-Spalte: gemessen 438 CSS-px
+   * bei 1728 px Fenster, also 25,3 vw.
+   *
+   * Hier steht 26 und nicht 30, und das ist keine Kosmetik. Mit 30 vw waehlt
+   * ein 1728er Schirm bei doppelter Dichte die 1440er Stufe (364 KB) statt der
+   * 960er (155 KB) — fuer eine Tafel, die 438 px breit dasteht. Ein `sizes`,
+   * das grosszuegig schaetzt, kostet echte Bytes an der einzigen Stelle, an
+   * der die Seite ein Bild ueber der Falz laedt.
+   */
+  heroPortrait: '(max-width: 1023px) 100vw, 26vw',
 };

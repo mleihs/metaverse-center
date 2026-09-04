@@ -85,6 +85,27 @@ _HERO = Role(
     note="volle Seitenbreite, abgedunkelt",
 )
 
+_HERO_PORTRAIT = Role(
+    name="heroPortrait",
+    # Die Tafel steht in der 4fr-Spalte eines `8fr 4fr`-Rasters: gemessen
+    # 438 CSS-px bei 1728 px Fenster, rund 25 vw. 1440 deckt doppelte
+    # Pixeldichte auf einem 2560er Schirm. 1920 waere Ablage fuer einen Fall,
+    # den es nicht gibt.
+    widths=(1440, 960, 640),
+    # Anders als der quere Held liegt diese Tafel NICHT unter `brightness(.72)`
+    # und drei Verlaeufen, sondern nur unter einem Raster und einem
+    # Scan-Streifen. Eine Federzeichnung mit dieser Strichdichte zeigt jeden
+    # Kompressionsfehler, deshalb naeher an der Tafel-Qualitaet als am Helden.
+    # GEMESSEN am 04.09.2026 an genau diesem Bild (1792 x 2400, Federzeichnung
+    # mit dichter Schraffur — teuer zu komprimieren):
+    #     1440px  q58 = 449 KB   q52 = 364 KB   q46 = 280 KB
+    # Die Grenze des Hauses fuer die erste Bildlast ist 400 KB. q58 reisst sie,
+    # q52 nicht — und q52 ist dieselbe Stufe, die der quere Held schon faehrt.
+    quality_avif=52,
+    quality_webp=80,
+    note="3:4-Tafel der Atlas-Frontseite",
+)
+
 _PANEL = Role(
     name="panel",
     widths=(1280, 960, 640),
@@ -108,6 +129,7 @@ _THUMB = Role(
 #: auf einem Server nichts verloren.
 _SOURCES: dict[str, tuple[str, tuple[Role, ...]]] = {
     "hero-bureau.jpeg": ("hero-bureau", (_HERO,)),
+    "hero-intake-hall.jpeg": ("hero-intake-hall", (_HERO_PORTRAIT,)),
     "system-01-forge.jpeg": ("system-01-forge", (_PANEL, _THUMB)),
     "system-02-epochs-war-room.jpeg": ("system-02-epochs", (_PANEL, _THUMB)),
     "system-03-dungeons-descent.jpeg": ("system-03-dungeons", (_PANEL, _THUMB)),
@@ -168,6 +190,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--src", required=True, type=Path, help="Verzeichnis mit den sieben JPEG")
     parser.add_argument("--out", type=Path, default=Path("build/landing-images"))
+    parser.add_argument(
+        "--only",
+        nargs="+",
+        metavar="KENNUNG",
+        help=(
+            "Nur diese Zielkennungen ableiten (z. B. hero-intake-hall). Ohne die "
+            "Angabe werden alle Quellen verlangt."
+        ),
+    )
     args = parser.parse_args()
 
     src: Path = args.src
@@ -178,7 +209,29 @@ def main() -> int:
     out: Path = args.out
     out.mkdir(parents=True, exist_ok=True)
 
-    missing = [name for name in _SOURCES if not (src / name).is_file()]
+    """
+    WARUM ES EINE AUSWAHL GIBT.
+
+    Die erste Fassung verlangte alle sieben Quellen. Das stimmte an dem Tag, an
+    dem das Entwurfspaket ankam und alle sieben auf der Platte lagen. Danach
+    nicht mehr: abgeleitet wird einmal, die Ergebnisse liegen im Storage, die
+    Erzeugerdateien sind weg. Ein spaeter nachgereichtes Bild — der Anmeldesaal
+    der Atlas-Frontseite — haette so nur abgeleitet werden koennen, indem man
+    sechs Dateien beschafft, die niemand mehr braucht.
+
+    `--only` waehlt nach ZIELKENNUNG, nicht nach Dateiname: die Kennung ist das
+    Stabile (sie steht in `landing-images.ts`), der Dateiname der Quelle ist
+    Zufall des Erzeugers.
+    """
+    quellen = _SOURCES
+    if args.only:
+        unbekannt = [k for k in args.only if k not in {stem for stem, _ in _SOURCES.values()}]
+        if unbekannt:
+            print(f"Unbekannte Kennung(en): {unbekannt}", file=sys.stderr)
+            return 1
+        quellen = {n: v for n, v in _SOURCES.items() if v[0] in set(args.only)}
+
+    missing = [name for name in quellen if not (src / name).is_file()]
     if missing:
         print(f"Fehlende Quelldateien: {missing}", file=sys.stderr)
         return 1
@@ -186,7 +239,7 @@ def main() -> int:
     source_total = 0
     everything: list[Derived] = []
 
-    for name, (stem, roles) in _SOURCES.items():
+    for name, (stem, roles) in quellen.items():
         path = src / name
         source_total += path.stat().st_size
         with Image.open(path) as image:
@@ -202,7 +255,7 @@ def main() -> int:
     print("=" * 74)
 
     derived_total = sum(d.size for d in everything)
-    print(f"Quellen (7 Dateien)            {_human(source_total)}")
+    print(f"Quellen ({len(quellen)} Dateien)            {_human(source_total)}")
     print(f"Abgeleitet ({len(everything):3d} Dateien)        {_human(derived_total)}")
 
     def _pick(role: str, fmt: str, width: int, stem: str | None = None) -> list[Derived]:
@@ -212,7 +265,19 @@ def main() -> int:
             if d.role == role and d.fmt == fmt and d.width == width and (stem is None or d.stem == stem)
         ]
 
-    hero = _pick("hero", "avif", 1920)
+    """
+    WAS „ERSTE BILDLAST" IST, HAENGT AM SKIN.
+
+    Die alte Frontseite laedt den queren Helden in AVIF 1920. Die
+    Atlas-Frontseite laedt stattdessen die 3:4-Tafel; die groesste Stufe, die
+    ein ueblicher Schirm dort waehlt, ist 1440. Beide gegen dieselbe Grenze zu
+    pruefen ist richtig — sie an derselben DATEI zu pruefen waere falsch.
+
+    Und: wenn keine der beiden abgeleitet wurde (etwa bei `--only` auf eine
+    Tafel), steht hier kein „0 KB ✓". Ein Haken, weil nichts gefunden wurde,
+    ist kein bestandener Test.
+    """
+    hero = _pick("hero", "avif", 1920) or _pick("heroPortrait", "avif", 1440)
     hero_bytes = sum(d.size for d in hero)
 
     # Was der Systemabschnitt beim Aufklappen nachlädt: eine Tafel in
@@ -222,13 +287,20 @@ def main() -> int:
     section_bytes = sum(d.size for d in panel_first) + sum(d.size for d in thumbs)
 
     print()
-    print("Erste Bildlast (nur der Held, AVIF 1920):")
-    print(f"  {_human(hero_bytes):>12s}   {'UNTER 400 KB ✓' if hero_bytes < 400 * 1024 else 'ÜBER 400 KB ✗'}")
+    if hero:
+        welche = f"{hero[0].stem} {hero[0].role.upper()} {hero[0].width}"
+        print(f"Erste Bildlast (nur der Held, AVIF — {welche}):")
+        urteil = "UNTER 400 KB ✓" if hero_bytes < 400 * 1024 else "ÜBER 400 KB ✗"
+        print(f"  {_human(hero_bytes):>12s}   {urteil}")
+    else:
+        print("Erste Bildlast: KEIN Held in dieser Auswahl — die 400-KB-Probe")
+        print("  ist AUSGESETZT, nicht bestanden.")
     print()
-    print("Systemabschnitt beim Erreichen (1 Tafel 1280 + 6 Miniaturen 288, AVIF):")
-    print(f"  {_human(section_bytes):>12s}")
-    print()
-    print(f"Held + Systemabschnitt zusammen: {_human(hero_bytes + section_bytes)}")
+    if panel_first or thumbs:
+        print("Systemabschnitt beim Erreichen (1 Tafel 1280 + 6 Miniaturen 288, AVIF):")
+        print(f"  {_human(section_bytes):>12s}")
+        print()
+        print(f"Held + Systemabschnitt zusammen: {_human(hero_bytes + section_bytes)}")
 
     print("\nGrößte abgeleitete Dateien:")
     for d in sorted(everything, key=lambda x: x.size, reverse=True)[:6]:

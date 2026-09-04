@@ -40,7 +40,7 @@ import {
 } from '../../shared/atlas-sheet-styles.js';
 import { stageStyles } from '../../shared/stage-styles.js';
 import {
-  LANDING_HERO_STEM,
+  ATLAS_HERO_STEM,
   LANDING_IMAGE_SIZES,
   landingFallbackUrl,
   landingSrcset,
@@ -381,16 +381,16 @@ export class VelgAtlasHero extends LitElement {
             <picture>
               <source
                 type="image/avif"
-                srcset=${landingSrcset(LANDING_HERO_STEM, 'hero', 'avif')}
-                sizes=${LANDING_IMAGE_SIZES.hero}
+                srcset=${landingSrcset(ATLAS_HERO_STEM, 'heroPortrait', 'avif')}
+                sizes=${LANDING_IMAGE_SIZES.heroPortrait}
               />
               <source
                 type="image/webp"
-                srcset=${landingSrcset(LANDING_HERO_STEM, 'hero', 'webp')}
-                sizes=${LANDING_IMAGE_SIZES.hero}
+                srcset=${landingSrcset(ATLAS_HERO_STEM, 'heroPortrait', 'webp')}
+                sizes=${LANDING_IMAGE_SIZES.heroPortrait}
               />
               <img
-                src=${landingFallbackUrl(LANDING_HERO_STEM, 'hero')}
+                src=${landingFallbackUrl(ATLAS_HERO_STEM, 'heroPortrait')}
                 alt=""
                 fetchpriority="high"
                 decoding="async"
