@@ -656,6 +656,74 @@ class ImageRegenRequest(BaseModel):
     prompt_override: str | None = Field(None, max_length=500)
 
 
+class ResearchQueryPlan(BaseModel):
+    """Die Uebersetzung eines Seeds in Suchbegriffe fuer Fachdatenbanken.
+
+    Warum uebersetzt und nicht durchgereicht: Phase 1 gab den Seed bis
+    2026-09-04 woertlich an die Suchmaschine. Eine Suchmaschine, der man eine
+    Fiktionspraemisse gibt, antwortet mit fiktionsfoermigem Material — gemessen
+    an einem Produktionsseed kamen ein Bilderdienst, ein Weltenbau-Forum und
+    ein Bastelratgeber. Keine Domainschranke macht daraus Wissenschaft, weil es
+    keine gibt, die auf diese Anfrage antwortet.
+
+    Warum die Koernigkeit im Feldtext steht: derselbe Seed, gegen OpenAlex,
+    einmal mit Fachnamen und einmal mit Begriffen —
+
+    * ``memory studies`` holte Olick & Robbins **und** eine Arbeit zur
+      Demenzpraevalenz; ``allegory`` holte C. S. Lewis' *The Allegory of Love*,
+      also das richtige Wort in der falschen Bedeutung;
+    * ``collective memory and forgetting`` holte Connerton, Olick, Fowler;
+      ``critical cartography and power`` holte Crampton.
+
+    Ein blosser Fachname ist zu weit. Darum verbietet die Beschreibung ihn.
+    """
+
+    literary: list[str] = Field(
+        min_length=2,
+        max_length=3,
+        description=(
+            "Search terms for literary scholarship. At least ONE of them must "
+            "name a specific author or work whose problem this premise shares "
+            "(e.g. 'Borges Library of Babel', 'Sebald documentary fiction'); "
+            "the others name a genre, movement or narrative technique "
+            "(e.g. 'unreliable narration', 'magical realism criticism'). "
+            "2-6 words each. NEVER a bare discipline name like 'literature' or "
+            "'allegory' on its own, and never an evocative phrase of your own "
+            "invention -- 'allegorical landscapes' is not a field, and a "
+            "catalogue answers it with books about landscapes."
+        ),
+    )
+    philosophical: list[str] = Field(
+        min_length=2,
+        max_length=3,
+        description=(
+            "Search terms for philosophy: a named concept, tradition, or "
+            "standing debate (e.g. 'epistemic injustice and testimony', not "
+            "'epistemology'). 2-6 words each."
+        ),
+    )
+    scholarly: list[str] = Field(
+        min_length=2,
+        max_length=3,
+        description=(
+            "Search terms for the wider humanities and social sciences: a named "
+            "research field or theory (e.g. 'critical cartography and power', "
+            "not 'geography'). 2-6 words each."
+        ),
+    )
+
+    def all_terms(self) -> list[str]:
+        """Alle Begriffe in Reihenfolge, entdoppelt — fuer Protokoll und Test."""
+        seen: set[str] = set()
+        out: list[str] = []
+        for term in (*self.literary, *self.philosophical, *self.scholarly):
+            key = term.strip().lower()
+            if key and key not in seen:
+                seen.add(key)
+                out.append(term.strip())
+        return out
+
+
 class PhilosophicalAnchor(BaseModel):
     """A proposed thematic anchor for a simulation."""
 

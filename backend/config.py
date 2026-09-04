@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     replicate_api_token: str = ""
     tavily_api_key: str = ""
+    #: OpenAlex verlangt seit Februar 2026 einen Schluessel (Registrierung
+    #: kostenlos, 1 USD Nutzung je Tag frei ≈ 1 000 Suchen). Fehlt er, faellt
+    #: ``ScholarlySearchService`` je Achse auf Crossref zurueck — schluessellos,
+    #: derselbe DOI-Bestand, messbar schwaechere Rangfolge. Die Recherche bricht
+    #: also nicht ab, sie wird nur ungenauer.
+    openalex_api_key: str = ""
     forge_mock_mode: bool = False
 
     # Translation

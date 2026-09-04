@@ -26,6 +26,19 @@ export class AdminApiService extends BaseApiService {
   }
 
   /**
+   * Die Vorgabewerte der sechs Forschungslisten, aus dem Backend.
+   *
+   * Nicht aus einer Kopie hier: „Auf Vorgabewerte zuruecksetzen" schrieb bis
+   * 2026-09-04 eine im TypeScript gepflegte Liste in die Datenbank und haette
+   * damit nach Migration 370 die alten Designmagazine zurueckgeholt. Ein
+   * Vorgabewert an zwei Orten ist beim ersten Auseinanderlaufen ein stiller
+   * Fehler.
+   */
+  async getResearchDefaults(): Promise<ApiResponse<Record<string, string[]>>> {
+    return this.get('/admin/research-defaults');
+  }
+
+  /**
    * Jedes Merkmalstor der Plattform mit Erklaerung und wirksamem Zustand.
    *
    * Eigener Endpunkt und nicht `listSettings()`, weil der wirksame Zustand bei

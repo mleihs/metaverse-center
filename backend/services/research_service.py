@@ -1,21 +1,42 @@
 """Research service for the Simulation Forge (The Astrolabe).
 
-Uses Pydantic AI for structured extraction from thematic context.
-Tavily web searches are delegated to TavilySearchService for async,
-timeout-protected, axis-targeted research grounding.
+Die Recherche laeuft in vier Schritten, und jeder davon existiert, weil der
+Schritt davor allein nicht reicht:
+
+1. **Uebersetzen.** Der Seed ist eine Erzaehlpraemisse. Eine Suchmaschine, der
+   man eine Praemisse gibt, antwortet mit fiktionsfoermigem Material. Ein
+   billiger Modellaufruf macht daraus Fachvokabular (``ResearchQueryPlan``).
+2. **Suchen bei Diensten, deren Bestand die Schranke ist.** OpenAlex,
+   Open Library, Crossref fuehren nur Aufsaetze und Buecher
+   (``ScholarlySearchService``).
+3. **Suchen im Netz, mit Schranke.** Tavily, jetzt mit
+   ``include_domains_mode="filter"`` — das ist der Unterschied zwischen einer
+   Domainliste, die gewichtet, und einer, die ausschliesst.
+4. **Entscheiden.** Jede Zeile aus 2 und 3 laeuft durch
+   ``research_source_policy.filter_sources``. Was nicht durchkommt, verschwindet
+   aus BEIDEM: aus der Quellenliste unter der Ankerkarte und aus der Prosa, die
+   das Modell liest.
+
+Schritt 4 ist der Grund, warum die Prosa hier gebaut wird und nicht mehr in
+``TavilySearchService``. Bis 2026-09-04 entstanden Liste und Prosa auf zwei
+getrennten Wegen aus demselben Treffer; ein Filter auf nur einem Weg saeubert
+die Anzeige und laesst den Fanwiki-Artikel trotzdem die Lore praegen.
+
+Siehe ``docs/plans/forge-scholarly-sources.md``.
 """
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import httpx
 import sentry_sdk
 
 from backend.dependencies import get_admin_supabase
-from backend.models.forge import PhilosophicalAnchor, counted_list
+from backend.models.forge import PhilosophicalAnchor, ResearchQueryPlan, counted_list
 from backend.services.ai_utils import (
     MODEL_CALL_ERRORS,
     create_forge_agent,
@@ -24,11 +45,18 @@ from backend.services.ai_utils import (
     run_ai,
     validate_bilingual_output,
 )
+from backend.services.external.scholarly_search import (
+    PROVIDER_NAMES,
+    ScholarlyRequest,
+    ScholarlySearchService,
+)
 from backend.services.external.tavily_search import (
     TavilySearchRequest,
+    TavilySearchResult,
     TavilySearchService,
 )
-from backend.services.platform_research_domains import get_research_domains
+from backend.services.platform_research_domains import get_research_domains, get_source_denylist
+from backend.services.research_source_policy import SourceRow, filter_sources
 
 logger = logging.getLogger(__name__)
 
@@ -186,91 +214,269 @@ def _emulate_tavily_phase4(seed: str, anchor: dict) -> str:
     return "\n\n".join(parts)
 
 
+# ── Die Achsen ───────────────────────────────────────────────────────────────
+#
+# Die Achsenbezeichnung ist kein Etikett: sie steht unter jeder Quelle auf der
+# Ankerkarte und sagt dem Leser, welche Frage diese Quelle beantwortet hat.
+# Bis 2026-09-04 hiessen die beiden Phase-1-Achsen CONCEPTUAL OVERVIEW und
+# INTELLECTUAL TRADITIONS — Namen fuer eine Suche, die noch das ganze Netz
+# meinte. Die drei hier benennen Gattungen, und das ist jetzt auch das, was
+# gesucht wird.
+AXIS_LITERARY = "LITERARY SCHOLARSHIP"
+AXIS_PHILOSOPHICAL = "PHILOSOPHICAL TRADITION"
+AXIS_SCHOLARLY = "SCHOLARLY CONTEXT"
+AXIS_ARCHITECTURAL = "ARCHITECTURAL HISTORY"
+
+_QUERY_PLANNER_PROMPT = (
+    "You turn a fictional world premise into search terms for scholarly "
+    "databases (OpenAlex, Crossref, Open Library) and for a domain-restricted "
+    "web search over academic publishers.\n\n"
+    "Rules that decide whether the search works at all:\n"
+    "- Name a CONCEPT, THEORY, MOVEMENT or standing DEBATE, never a bare "
+    "discipline. 'collective memory and forgetting' finds Connerton and Olick; "
+    "'memory studies' also finds a paper on dementia prevalence.\n"
+    "- Never reuse the premise's own nouns as the search term, and never name a "
+    "fictional entity from it. You are naming the real scholarship the premise "
+    "touches, not the premise.\n"
+    "- A named author or work is allowed and often best, when an obvious "
+    "canonical one exists.\n"
+    "- English only, 2-6 words per term.\n"
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ThematicResearch:
     """What Phase 1 found: the prose the model reads, and what was fetched.
 
     The two are deliberately separate. ``context`` is prose and goes to the
-    model; ``sources`` are the rows Tavily actually returned, so the claim
-    "research grounded in web sources" on the anchor card has something behind
-    it that a reader can open. Nothing in ``sources`` passes through a model.
-    Empty on the emulator path, which ``research_context.source`` already
-    reports. See finding 17.
+    model; ``sources`` are the rows the providers actually returned, so the
+    claim on the anchor card has something behind it that a reader can open.
+    Nothing in ``sources`` passes through a model. See finding 17.
+
+    ``source`` sagt, welcher Weg tatsaechlich getragen hat. Der Aufrufer hat das
+    bis 2026-09-04 selbst geraten (``"tavily" if settings.tavily_api_key``) —
+    eine Behauptung ueber die Konfiguration, kein Bericht ueber den Lauf: bei
+    gesetztem Schluessel und drei fehlgeschlagenen Suchen stand dort trotzdem
+    "tavily". ``rejected`` zaehlt, was die Gattungsgrenze abgewiesen hat; null
+    zugelassene Quellen sind ein Ereignis, kein leeres Feld.
     """
 
     context: str
     sources: list[dict[str, str]]
+    source: str = "scholarly"
+    rejected: int = 0
+    terms: list[str] = field(default_factory=list)
+
+
+def _compose_context(answers: list[tuple[str, str]], rows: list[SourceRow]) -> str:
+    """Die Prosa, die das Modell liest — aus dem, was die Schranke durchliess.
+
+    Reihenfolge: erst die Zusammenfassungen, die Tavily je Achse geschrieben
+    hat, dann die Belege derselben Achse. Ein Modell liest das Letzte am
+    genauesten (siehe ``last-thing-wins-in-a-prompt``), und das Letzte soll hier
+    die pruefbare Bibliographie sein, nicht die Zusammenfassung eines Dienstes.
+    """
+    by_axis: dict[str, list[SourceRow]] = {}
+    for row in rows:
+        by_axis.setdefault(row.axis, []).append(row)
+
+    blocks: list[str] = []
+    for axis, answer in answers:
+        if answer:
+            blocks.append(f"[{axis} — SUMMARY]\n{answer}")
+    for axis, axis_rows in by_axis.items():
+        blocks.append(ScholarlySearchService.format_rows(axis, axis_rows))
+    return "\n\n".join(b for b in blocks if b)
 
 
 class ResearchService:
     """Service for autonomous thematic research."""
 
     @classmethod
-    async def search_thematic_context(cls, seed: str) -> ThematicResearch:
-        """Phase 1: Dual-axis web research using Tavily (or emulator fallback).
+    async def plan_queries(cls, subject: str, openrouter_key: str | None = None) -> ResearchQueryPlan | None:
+        """Uebersetzt eine Erzaehlpraemisse in Suchbegriffe. ``None`` bei Ausfall.
 
-        Runs 2 parallel searches:
-        - Conceptual: raw seed → encyclopedic domains → deep context
-        - Intellectual: English-glossed seed → broader philosophy/literature sources
+        Der Ausfall ist kein Abbruch: der Aufrufer sucht dann mit der Praemisse
+        selbst weiter. Das ist messbar schlechter (gemessen: JSTOR und ein
+        Wikipedia-Eintrag zur Vergessenskurve statt Connerton und Crampton),
+        aber es bleibt innerhalb der Gattungsgrenze — die haengt an der
+        Schranke, nicht an der Anfrage.
         """
-        if not TavilySearchService.is_available():
-            logger.warning(
-                "Tavily unavailable – using deterministic emulator",
-                extra={"seed_preview": seed[:60], "source": "emulator"},
+        agent = create_forge_agent(
+            system_prompt=_QUERY_PLANNER_PROMPT,
+            api_key=openrouter_key,
+            purpose="research_query",
+        )
+        admin_supabase = await get_admin_supabase()
+        try:
+            result = await run_ai(
+                agent,
+                f"PREMISE: {subject}",
+                "research_query",
+                output_type=ResearchQueryPlan,
+                admin_supabase=admin_supabase,
+                key_source=key_source_for(openrouter_key),
             )
-            return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
+        except (*MODEL_CALL_ERRORS, httpx.HTTPError, KeyError, TypeError, ValueError):
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", "research_query_plan")
+                scope.set_context("forge", {"subject_preview": subject[:80]})
+                sentry_sdk.capture_exception()
+            logger.warning("Query planning failed – falling back to the raw premise as query")
+            return None
 
-        # Build English gloss for non-English seeds: strip to key nouns + context suffix
-        english_gloss = f"{seed} philosophical literary context"
+        logger.info("Research queries planned", extra={"terms": result.output.all_terms()})
+        return result.output
 
-        requests = [
-            TavilySearchRequest(
-                axis="CONCEPTUAL OVERVIEW",
-                query=seed,
-                search_depth="advanced",
-                max_results=5,
-                include_domains=get_research_domains("encyclopedic"),
+    @classmethod
+    async def _gather(
+        cls,
+        scholarly_requests: list[ScholarlyRequest],
+        tavily_requests: list[TavilySearchRequest],
+        *,
+        phase: str,
+        scholarly_timeout_s: float = 12.0,
+        tavily_timeout_s: float = 10.0,
+        tavily_retries: int = 0,
+    ) -> tuple[str, list[SourceRow], int]:
+        """Beide Suchwege, die Schranke, und die Prosa daraus.
+
+        Gibt ``(prosa, zugelassene_zeilen, abgewiesene_anzahl)``. Beide Wege
+        laufen auch dann, wenn einer ausfaellt — Tavily braucht einen Schluessel,
+        die Fachdienste nicht, und genau darum darf ein fehlender Tavily-
+        Schluessel die Recherche nicht mehr auf den Emulator werfen.
+        """
+        scholarly_results, tavily_results = await asyncio.gather(
+            ScholarlySearchService.parallel_search(scholarly_requests, timeout_s=scholarly_timeout_s),
+            cls._tavily(tavily_requests, timeout_s=tavily_timeout_s, max_retries=tavily_retries),
+        )
+
+        rows: list[SourceRow] = [row for result in scholarly_results for row in result.rows]
+        rows.extend(TavilySearchService.to_rows(tavily_results))
+
+        outcome = filter_sources(rows, trusted_providers=PROVIDER_NAMES)
+        if outcome.rejected:
+            # Nicht nur zaehlen: die Hosts stehen im Protokoll, weil eine
+            # Sperrliste nur findet, was man ihr gesagt hat. Was hier auftaucht,
+            # ist der Vorschlag fuer den naechsten Eintrag.
+            logger.info(
+                "Sources rejected by genre policy",
+                extra={
+                    "forge_phase": phase,
+                    "rejected": len(outcome.rejected),
+                    "kept": len(outcome.kept),
+                    "hosts": outcome.rejected_hosts[:20],
+                },
+            )
+        if not outcome.kept:
+            # Ein Lauf ohne zugelassene Quelle sieht von aussen aus wie ein
+            # Lauf ohne Treffer. Er ist es nicht, und die Unterscheidung ist
+            # die zwischen "nichts gefunden" und "alles verworfen".
+            logger.warning(
+                "Research produced no admissible sources",
+                extra={"forge_phase": phase, "fetched": len(rows), "rejected": len(outcome.rejected)},
+            )
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("forge_phase", phase)
+                scope.set_context("forge", {"fetched": len(rows), "rejected": len(outcome.rejected)})
+                sentry_sdk.capture_message("Research returned no admissible sources", level="warning")
+
+        context = _compose_context(TavilySearchService.answers(tavily_results), outcome.kept)
+        return context, outcome.kept, len(outcome.rejected)
+
+    @staticmethod
+    async def _tavily(
+        requests: list[TavilySearchRequest], *, timeout_s: float, max_retries: int
+    ) -> list[TavilySearchResult]:
+        """Tavily, oder nichts — ohne Schluessel ist das kein Fehlerfall mehr."""
+        if not requests or not TavilySearchService.is_available():
+            return []
+        return await TavilySearchService.parallel_search(requests, timeout_s=timeout_s, max_retries=max_retries)
+
+    @classmethod
+    async def search_thematic_context(cls, seed: str, openrouter_key: str | None = None) -> ThematicResearch:
+        """Phase 1: drei Gattungsachsen ueber Fachdienste und gefiltertes Tavily."""
+        plan = await cls.plan_queries(seed, openrouter_key)
+        literary = plan.literary if plan else [seed]
+        philosophical = plan.philosophical if plan else [seed]
+        scholarly = plan.scholarly if plan else [seed]
+        deny = get_source_denylist()
+
+        scholarly_requests = [
+            # Buecher zuerst: auf der literarischen Achse liegen Werke, nicht
+            # Aufsaetze ueber Werke. Ohne Rueckfallebene — Crossref fuehrt keine
+            # Belletristik, es waere ein Ersatz, der die Achse verfehlt.
+            ScholarlyRequest(
+                axis=AXIS_LITERARY,
+                terms=tuple(literary[:2]),
+                providers=("openlibrary", "openalex"),
+                fallback=None,
+                max_results=3,
             ),
-            TavilySearchRequest(
-                axis="INTELLECTUAL TRADITIONS",
-                query=english_gloss,
-                search_depth="basic",
+            ScholarlyRequest(
+                axis=AXIS_PHILOSOPHICAL,
+                terms=tuple(philosophical[:2]),
+                providers=("openalex",),
+                max_results=3,
+            ),
+            ScholarlyRequest(
+                axis=AXIS_SCHOLARLY,
+                terms=tuple(scholarly[:2]),
+                providers=("openalex",),
                 max_results=3,
             ),
         ]
+        tavily_requests = [
+            TavilySearchRequest(
+                axis=AXIS_PHILOSOPHICAL,
+                query=" ".join(philosophical[:2]),
+                search_depth="advanced",
+                max_results=4,
+                include_domains=get_research_domains("philosophy"),
+                exclude_domains=deny,
+            ),
+            TavilySearchRequest(
+                axis=AXIS_SCHOLARLY,
+                query=" ".join(scholarly[:2]),
+                search_depth="advanced",
+                max_results=4,
+                include_domains=get_research_domains("encyclopedic"),
+                exclude_domains=deny,
+            ),
+        ]
 
-        results = await TavilySearchService.parallel_search(requests, timeout_s=10.0)
+        context, kept, rejected = await cls._gather(scholarly_requests, tavily_requests, phase="astrolabe_research")
 
-        if not results:
-            logger.warning(
-                "All Tavily Phase 1 searches failed – falling back to emulator",
-                extra={"seed_preview": seed[:60]},
-            )
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag("forge_phase", "astrolabe_research")
-                scope.set_context("forge", {"seed_preview": seed[:60]})
-                sentry_sdk.capture_message(
-                    "Tavily fully unavailable in Phase 1 – emulator fallback",
-                    level="warning",
-                )
-            return ThematicResearch(context=_emulate_tavily_phase1(seed), sources=[])
-
-        context = TavilySearchService.format_results(results)
-        sources = TavilySearchService.collect_sources(results)
         if not context:
-            context = f"Web search returned no usable results for '{seed}'."
+            logger.warning(
+                "Phase 1 research empty – using deterministic emulator",
+                extra={"seed_preview": seed[:60], "source": "emulator"},
+            )
+            return ThematicResearch(
+                context=_emulate_tavily_phase1(seed),
+                sources=[],
+                source="emulator",
+                rejected=rejected,
+                terms=plan.all_terms() if plan else [],
+            )
 
         logger.info(
             "Phase 1 research completed",
             extra={
                 "seed_preview": seed[:60],
-                "source": "tavily",
-                "axes_completed": len(results),
+                "source": "scholarly",
                 "result_length": len(context),
-                "sources": len(sources),
+                "sources": len(kept),
+                "rejected": rejected,
             },
         )
-        return ThematicResearch(context=context, sources=sources)
+        return ThematicResearch(
+            context=context,
+            sources=[row.as_dict() for row in kept],
+            source="scholarly",
+            rejected=rejected,
+            terms=plan.all_terms() if plan else [],
+        )
 
     @classmethod
     async def research_for_lore(
@@ -280,11 +486,14 @@ class ResearchService:
         astrolabe_context: str = "",
         openrouter_key: str | None = None,
     ) -> str:
-        """Phase 4: Deep LLM research + tri-axis Tavily augmentation.
+        """Phase 4: gefundene Bibliographie zuerst, danach die Deutung.
 
-        Uses a dedicated research agent for literary genealogy, philosophical
-        framework, and architectural vocabulary. Augments with 3 axis-specific
-        Tavily searches that feed each axis independently.
+        Die Reihenfolge ist die Aenderung. Bis 2026-09-04 schrieb das Modell
+        seinen Rechercheentwurf ZUERST, aus dem Gedaechtnis, und die Websuche
+        wurde hinterher angehaengt — das Modell konnte also gar nicht zitieren,
+        was tatsaechlich gefunden wurde. Jetzt laufen die Suchen zuerst, und
+        die Trefferliste steht im Prompt: das Modell ordnet ein, was da ist,
+        statt zu erinnern, was es geben koennte.
 
         Returns a synthesized research brief for the BUREAU_ARCHIVIST_PROMPT.
         """
@@ -299,7 +508,89 @@ class ResearchService:
         if astrolabe_context:
             parts.append(f"[PRIOR ASTROLABE RESEARCH]\n{astrolabe_context}")
 
-        # ── Primary: LLM research agent (cheap model) ────────────────
+        # ── Suchen: drei Gattungsachsen, Fachdienste + gefiltertes Tavily ─────
+        plan = await cls.plan_queries(
+            " ".join(p for p in (title, core_question, literary_influence) if p) or seed,
+            openrouter_key,
+        )
+        literary_terms = plan.literary if plan else [literary_influence or seed]
+        philosophical_terms = plan.philosophical if plan else [core_question or seed]
+        scholarly_terms = plan.scholarly if plan else [seed]
+        deny = get_source_denylist()
+
+        # Die Architekturachse fragt nach ArchitekturGESCHICHTE, nicht nach
+        # Architektur: `sah.org`, JSTOR, Getty statt `dezeen.com` und
+        # `designboom.com`. Der Ersatz beschreibt Bauten datiert und benannt,
+        # zeigt sie aber nicht — die visuelle Achse verliert Bildmaterial und
+        # gewinnt Vokabular. Das ist die bewusste Wahl, nicht ein Versehen.
+        arch_query = f"{' '.join(scholarly_terms[:1])} architectural history movement materials"
+
+        found_context, found_rows, rejected = await cls._gather(
+            [
+                ScholarlyRequest(
+                    axis=AXIS_LITERARY,
+                    terms=tuple(literary_terms[:2]),
+                    providers=("openlibrary", "openalex"),
+                    fallback=None,
+                    max_results=3,
+                ),
+                ScholarlyRequest(
+                    axis=AXIS_PHILOSOPHICAL,
+                    terms=tuple(philosophical_terms[:2]),
+                    providers=("openalex",),
+                    max_results=3,
+                ),
+                ScholarlyRequest(
+                    axis=AXIS_ARCHITECTURAL,
+                    terms=(arch_query,),
+                    providers=("openalex",),
+                    max_results=3,
+                ),
+            ],
+            [
+                TavilySearchRequest(
+                    axis=AXIS_LITERARY,
+                    query=" ".join(literary_terms[:2]),
+                    search_depth="advanced",
+                    max_results=5,
+                    include_domains=get_research_domains("literary"),
+                    exclude_domains=deny,
+                ),
+                TavilySearchRequest(
+                    axis=AXIS_PHILOSOPHICAL,
+                    query=" ".join(philosophical_terms[:2]),
+                    search_depth="advanced",
+                    max_results=5,
+                    include_domains=get_research_domains("philosophy"),
+                    exclude_domains=deny,
+                ),
+                TavilySearchRequest(
+                    axis=AXIS_ARCHITECTURAL,
+                    query=arch_query,
+                    search_depth="advanced",
+                    max_results=4,
+                    include_domains=get_research_domains("architecture"),
+                    exclude_domains=deny,
+                ),
+            ],
+            phase="lore_research",
+            scholarly_timeout_s=15.0,
+            tavily_timeout_s=20.0,
+            tavily_retries=1,
+        )
+
+        if found_context:
+            parts.append(found_context)
+            logger.info(
+                "Phase 4 sources gathered",
+                extra={"sources": len(found_rows), "rejected": rejected, "length": len(found_context)},
+            )
+        else:
+            emulated = _emulate_tavily_phase4(seed, anchor)
+            parts.append(emulated)
+            logger.info("Phase 4 augmentation emulated (no admissible sources)")
+
+        # ── Deutung: LLM research agent (cheap model) ────────────────
         research_agent = create_forge_agent(
             system_prompt=(
                 "You are a research librarian specializing in comparative literature, "
@@ -310,6 +601,13 @@ class ResearchService:
                 "dates. Do not invent references – only cite real sources. Be precise: "
                 "author name, work title, year, and the specific concept or technique "
                 "that applies.\n\n"
+                "The prompt carries a RETRIEVED BIBLIOGRAPHY: real records fetched from "
+                "OpenAlex, Crossref, Open Library and a search restricted to academic "
+                "publishers. Those records are the only ones whose author, year and "
+                "venue are verified. Build your brief on them first and reproduce their "
+                "details exactly; add a work from your own knowledge only where the "
+                "bibliography leaves an axis unserved, and never restate a retrieved "
+                "record with different details.\n\n"
                 "Format your output as three labeled sections:\n"
                 "[LITERARY GENEALOGY] – 3-5 specific literary works/authors and what "
                 "narrative techniques they contribute (e.g., unreliable narration, "
@@ -335,6 +633,7 @@ class ResearchService:
             f"CORE QUESTION: {core_question}\n"
             f"LITERARY INFLUENCE: {literary_influence}\n"
             f"DESCRIPTION: {description}\n\n"
+            f"RETRIEVED BIBLIOGRAPHY:\n{found_context or '(nothing retrieved)'}\n\n"
             f"Produce a research brief covering literary genealogy, philosophical "
             f"framework, and architectural/visual vocabulary for this world."
         )
@@ -360,74 +659,6 @@ class ResearchService:
                 sentry_sdk.capture_exception()
             logger.exception("LLM lore research failed")
 
-        # ── Tri-axis Tavily web search augmentation ───────────────────
-        if TavilySearchService.is_available():
-            lit_query = (
-                f"{literary_influence[:300]} literary analysis narrative technique"
-                if literary_influence
-                else f"{seed[:200]} literature narrative technique"
-            )
-            phil_query = (
-                f"{core_question[:300]} philosophy epistemology"
-                if core_question
-                else f"{seed[:200]} philosophy epistemology"
-            )
-            # Build focused architecture query from title + literary influence, not raw description
-            arch_seed = f"{title} {literary_influence}".strip()[:200] if literary_influence else title
-            arch_query = f"{arch_seed} architecture movement materials visual style"
-
-            requests = [
-                TavilySearchRequest(
-                    axis="WEB: LITERARY AXIS",
-                    query=lit_query,
-                    search_depth="advanced",
-                    max_results=5,
-                    include_domains=get_research_domains("literary"),
-                ),
-                TavilySearchRequest(
-                    axis="WEB: PHILOSOPHICAL AXIS",
-                    query=phil_query,
-                    search_depth="advanced",
-                    max_results=5,
-                    include_domains=get_research_domains("philosophy"),
-                ),
-                TavilySearchRequest(
-                    axis="WEB: ARCHITECTURAL AXIS",
-                    query=arch_query,
-                    search_depth="advanced",
-                    max_results=4,
-                    include_domains=get_research_domains("architecture"),
-                ),
-            ]
-
-            results = await TavilySearchService.parallel_search(requests, timeout_s=20.0, max_retries=1)
-
-            if results:
-                augmentation = TavilySearchService.format_results(results)
-                if augmentation:
-                    parts.append(augmentation)
-                    logger.info(
-                        "Phase 4 tri-axis augmentation completed",
-                        extra={
-                            "axes_completed": len(results),
-                            "total_length": len(augmentation),
-                        },
-                    )
-            else:
-                logger.warning("All Phase 4 Tavily searches failed – continuing with LLM research only")
-                with sentry_sdk.push_scope() as scope:
-                    scope.set_tag("forge_phase", "lore_research_augmentation")
-                    scope.set_context("forge", {"seed": seed[:80], "anchor_title": title[:60]})
-                    sentry_sdk.capture_message(
-                        "Tavily fully unavailable in Phase 4 – LLM research only",
-                        level="warning",
-                    )
-        else:
-            # Emulated augmentation for local development
-            emulated = _emulate_tavily_phase4(seed, anchor)
-            parts.append(emulated)
-            logger.info("Phase 4 Tavily augmentation emulated (no API key)")
-
         return "\n\n".join(parts)
 
     @classmethod
@@ -443,7 +674,13 @@ class ResearchService:
                 "'Philosophical Anchors' "
                 "for a new simulation shard. Each anchor must ground the shard in real-world "
                 "literary, philosophical, or cultural theory. "
-                "Avoid generic tropes; aim for intellectual rigor and surrealist depth."
+                "Avoid generic tropes; aim for intellectual rigor and surrealist depth.\n\n"
+                "The research context lists real works retrieved from scholarly databases "
+                "and from a search restricted to academic publishers -- author, year, venue, "
+                "DOI. Draw `literary_influence` from that list wherever it serves the anchor, "
+                "and reproduce author and title exactly as given. Naming a work that is not "
+                "in the list is allowed only when none of them fits; naming one that IS in "
+                "the list with different details is not."
             ),
             api_key=openrouter_key,
             purpose="anchors",

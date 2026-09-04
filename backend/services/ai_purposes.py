@@ -196,6 +196,27 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         ),
     ),
     _purpose(
+        "research_query",
+        "research",
+        400,
+        30,
+        reasoning="off",
+        why=(
+            "Die Uebersetzung des Seeds in Suchbegriffe fuer Fachdatenbanken. "
+            "Neun kurze Zeichenketten als JSON — 400 Token sind rund das "
+            "Vierfache dessen, was eine vollstaendige Antwort misst, und tragen "
+            "damit auch einen Lauf, der die Begriffe laenger fasst als "
+            "verlangt. Ein groesseres Budget kaufte nichts: die Ausgabe ist "
+            "durch `ResearchQueryPlan` auf 3x3 Eintraege gedeckelt. "
+            "30 s, weil dieser Aufruf VOR den Suchen liegt und jede Sekunde "
+            "hier auf die Wartezeit des Astrolabiums durchschlaegt; die "
+            "Suchen selbst haben zusammen 10-20 s. "
+            "reasoning=off: aus einer Praemisse Fachvokabular zu benennen ist "
+            "Abruf, kein Schluss — und ein durchgesickerter `<think>`-Block "
+            "machte das JSON unparsbar, wie bei `agent_continuation`."
+        ),
+    ),
+    _purpose(
         "research",
         "research",
         2048,

@@ -454,25 +454,30 @@ class ForgeOrchestratorService:
             logger.debug("FORGE_MOCK_MODE: using mock research + anchors")
             context = mock.mock_research_context(seed)
             research_sources: list[dict[str, str]] = []
+            research_source = "mock"
             anchors = [PhilosophicalAnchor(**a) for a in mock.mock_anchors(seed)]
         else:
             or_key, _ = await ForgeDraftService.get_user_keys(user_id)
 
             try:
-                # 1. Scrape web context
-                logger.debug("Scraping thematic context for seed: %s", seed[:50])
-                research = await ResearchService.search_thematic_context(seed)
+                # 1. Fachrecherche: Uebersetzen, suchen, filtern
+                logger.debug("Gathering scholarly context for seed: %s", seed[:50])
+                research = await ResearchService.search_thematic_context(seed, or_key)
                 context = research.context
 
                 # 2. Generate 3 Philosophical Anchors
                 logger.debug("Generating philosophical anchors...")
                 anchors = await ResearchService.generate_anchors(seed, context, or_key)
                 research_sources = research.sources
+                research_source = research.source
             except ModelAPIError as exc:
                 raise ai_error_to_http(exc) from exc
 
-        # 3. Update draft — track research source for frontend transparency
-        research_source = "tavily" if settings.tavily_api_key else "emulator"
+        # 3. Update draft — track research source for frontend transparency.
+        # `research.source` BERICHTET, welcher Weg getragen hat; bis 2026-09-04
+        # stand hier `"tavily" if settings.tavily_api_key` — eine Aussage ueber
+        # die Konfiguration, die auch dann "tavily" sagte, wenn jede Suche
+        # fehlgeschlagen war und der Emulator geantwortet hat.
         logger.info(
             "Astrolabe research completed",
             extra={"draft_id": str(draft_id), "research_source": research_source, "anchor_count": len(anchors)},

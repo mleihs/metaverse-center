@@ -19,12 +19,27 @@ interface DomainAxisMeta {
   description: string;
 }
 
-const DOMAIN_KEYS = [
+/**
+ * Die vier Listen, die die Suche STEUERN: sie gehen als Tavilys
+ * `include_domains` mit und sagen, wo zuerst nachgesehen wird.
+ */
+const STEERING_KEYS = [
   'research_domains_encyclopedic',
   'research_domains_literary',
   'research_domains_philosophy',
   'research_domains_architecture',
 ] as const;
+
+/**
+ * Die beiden Listen, die ENTSCHEIDEN. Sie werden nach der Lieferung auf jede
+ * Quellzeile jedes Anbieters angewandt - auch auf die der Fachdienste, an
+ * denen die Websuche nicht beteiligt ist. Bis 2026-09-04 gab es sie nicht, und
+ * die vier oben wurden fuer sie gehalten: ohne `include_domains_mode` gewichtet
+ * eine Domainliste nur, sie schliesst nichts aus.
+ */
+const POLICY_KEYS = ['research_source_allowlist', 'research_source_denylist'] as const;
+
+const DOMAIN_KEYS = [...STEERING_KEYS, ...POLICY_KEYS] as const;
 
 type DomainSettingKey = (typeof DOMAIN_KEYS)[number];
 
@@ -51,18 +66,23 @@ function getAxisMeta(): Record<DomainSettingKey, DomainAxisMeta> {
     research_domains_architecture: {
       label: msg('Architecture Domains'),
       description: msg(
-        'Architectural movements, materials, and visual vocabulary sources for the visual axis.',
+        'Architectural history sources for the visual axis \u2013 scholarship, not design magazines.',
+      ),
+    },
+    research_source_allowlist: {
+      label: msg('Admitted Sources'),
+      description: msg(
+        'Every source from every provider must match one of these domains, or it is dropped \u2013 from the source list and from the text the model reads. Remove the reference works to draw the line harder.',
+      ),
+    },
+    research_source_denylist: {
+      label: msg('Refused Sources'),
+      description: msg(
+        'Never a source, whatever found it. This list wins over the one beside it, and it also applies to records fetched from the scholarly databases.',
       ),
     },
   };
 }
-
-const DEFAULTS: Record<DomainSettingKey, string[]> = {
-  research_domains_encyclopedic: ['en.wikipedia.org', 'plato.stanford.edu', 'britannica.com'],
-  research_domains_literary: ['en.wikipedia.org', 'britannica.com', 'theparisreview.org'],
-  research_domains_philosophy: ['plato.stanford.edu', 'iep.utm.edu', 'en.wikipedia.org'],
-  research_domains_architecture: ['en.wikipedia.org', 'dezeen.com', 'designboom.com'],
-};
 
 @localized()
 @customElement('velg-admin-research-tab')
@@ -257,6 +277,42 @@ export class VelgAdminResearchTab extends LitElement {
         box-shadow: 0 0 0 1px var(--color-accent-amber);
       }
 
+      /* --- Die zwei Karten, die entscheiden --- */
+
+      /*
+       * Kein farbiger Randbalken (lint-no-accent-edge-bar): der ganze Rand
+       * traegt die Farbe. Das sagt dasselbe und faellt nicht unter die Regel,
+       * weil es die Box einfasst statt sie zu markieren.
+       */
+      .domain-card--gate {
+        border-color: var(--_gate);
+        box-shadow: var(--shadow-xs);
+      }
+
+      .domain-card--gate .domain-card__label {
+        color: var(--_gate);
+      }
+
+      .domain-card--allow {
+        --_gate: var(--color-success);
+      }
+
+      .domain-card--deny {
+        --_gate: var(--color-danger);
+      }
+
+      .domain-card--gate .domain-chip {
+        border-color: color-mix(in srgb, var(--_gate) 30%, var(--color-border));
+      }
+
+      .section-note {
+        margin: 0 0 var(--space-4);
+        font-size: var(--text-xs);
+        line-height: var(--leading-relaxed);
+        color: var(--color-text-secondary);
+        max-width: 78ch;
+      }
+
       .actions {
         margin-top: var(--space-5);
       }
@@ -274,6 +330,12 @@ export class VelgAdminResearchTab extends LitElement {
   @state() private _domains: Record<string, string[]> = {};
   @state() private _originalDomains: Record<string, string[]> = {};
   @state() private _newDomainInputs: Record<string, string> = {};
+  /**
+   * Die Vorgabewerte kommen aus dem Backend, nicht aus einer Kopie hier.
+   * Solange sie nicht da sind, ist „Auf Vorgabewerte zuruecksetzen" gesperrt -
+   * lieber ein abgeblendeter Knopf als einer, der eine leere Liste schreibt.
+   */
+  @state() private _defaults: Record<string, string[]> = {};
 
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
@@ -282,14 +344,23 @@ export class VelgAdminResearchTab extends LitElement {
 
   private async _loadSettings(): Promise<void> {
     this._loading = true;
-    const result = await adminApi.listSettings();
+    const [result, defaults] = await Promise.all([
+      adminApi.listSettings(),
+      adminApi.getResearchDefaults(),
+    ]);
+    if (defaults.success && defaults.data) {
+      this._defaults = defaults.data;
+    }
     if (result.success && result.data) {
       const allSettings = result.data as PlatformSetting[];
       const domains: Record<string, string[]> = {};
 
-      // Seed with defaults
+      // Ohne Zeile in der Datenbank bleibt die Liste leer. Sie hier mit einer
+      // Vorgabe zu fuellen, die niemand gespeichert hat, zeigte einen Zustand,
+      // den das Backend nicht kennt - und „Speichern" haette ihn dann wahr
+      // gemacht, ohne dass jemand ihn gewaehlt hat.
       for (const key of DOMAIN_KEYS) {
-        domains[key] = [...DEFAULTS[key]];
+        domains[key] = [];
       }
 
       // Overlay DB values
@@ -404,10 +475,15 @@ export class VelgAdminResearchTab extends LitElement {
     this._saving = false;
   }
 
+  private get _canReset(): boolean {
+    return DOMAIN_KEYS.some((key) => (this._defaults[key] ?? []).length > 0);
+  }
+
   private _resetToDefaults(): void {
-    const domains: Record<string, string[]> = {};
+    const domains: Record<string, string[]> = { ...this._domains };
     for (const key of DOMAIN_KEYS) {
-      domains[key] = [...DEFAULTS[key]];
+      const fallback = this._defaults[key];
+      if (fallback) domains[key] = [...fallback];
     }
     this._domains = domains;
     this.requestUpdate();
@@ -422,9 +498,15 @@ export class VelgAdminResearchTab extends LitElement {
     const domains = this._domains[key] ?? [];
     const inputValue = this._newDomainInputs[key] ?? '';
     const tooltipId = `tooltip-${key}`;
+    const gateClass =
+      key === 'research_source_allowlist'
+        ? 'domain-card--gate domain-card--allow'
+        : key === 'research_source_denylist'
+          ? 'domain-card--gate domain-card--deny'
+          : '';
 
     return html`
-      <div class="domain-card ${isDirty ? 'domain-card--dirty' : ''}">
+      <div class="domain-card ${gateClass} ${isDirty ? 'domain-card--dirty' : ''}">
         <div class="domain-card__header">
           <p class="domain-card__label">${m.label}</p>
           ${renderInfoBubble(m.description, tooltipId)}
@@ -496,8 +578,32 @@ export class VelgAdminResearchTab extends LitElement {
         </div>
         <div class="forge-section__divider"></div>
 
+        <p class="section-note">
+          ${msg(
+            'These lists steer the search: they tell the web search where to look first. They do not decide what counts as a source \u2013 the two lists below do that.',
+          )}
+        </p>
+
         <div class="domain-grid">
-          ${DOMAIN_KEYS.map((key) => this._renderDomainCard(key))}
+          ${STEERING_KEYS.map((key) => this._renderDomainCard(key))}
+        </div>
+      </div>
+
+      <div class="forge-section marker-corners">
+        <div class="forge-section__header">
+          <span class="forge-section__code">SEC-03</span>
+          <h3 class="forge-section__title">${msg('Source Policy')}</h3>
+        </div>
+        <div class="forge-section__divider"></div>
+
+        <p class="section-note">
+          ${msg(
+            'The Forge grounds worldbuilding in three genres: literary works and criticism, philosophical writing, peer-reviewed scholarship. Every source every provider returns is checked against these two lists after it arrives \u2013 what fails is dropped from the source list and from the text the model reads. The refusal list wins over the admission list.',
+          )}
+        </p>
+
+        <div class="domain-grid">
+          ${POLICY_KEYS.map((key) => this._renderDomainCard(key))}
         </div>
 
         <div class="actions">
@@ -512,7 +618,7 @@ export class VelgAdminResearchTab extends LitElement {
           <button
             class="btn btn--reset"
             aria-label=${msg('Reset domains to defaults')}
-            ?disabled=${this._saving}
+            ?disabled=${this._saving || !this._canReset}
             @click=${this._resetToDefaults}
           >
             ${msg('Reset to Defaults')}

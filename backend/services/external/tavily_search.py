@@ -20,31 +20,14 @@ from dataclasses import dataclass, field
 import httpx
 
 from backend.config import settings
+from backend.services.research_source_policy import SourceRow
 
 logger = logging.getLogger(__name__)
 
-# ── Domain target lists ───────────────────────────────────────────────
-# Steer Tavily toward high-quality sources that match what the Archivist needs.
-ENCYCLOPEDIC_DOMAINS: list[str] = [
-    "en.wikipedia.org",
-    "plato.stanford.edu",
-    "britannica.com",
-]
-LITERARY_DOMAINS: list[str] = [
-    "en.wikipedia.org",
-    "britannica.com",
-    "theparisreview.org",
-]
-PHILOSOPHY_DOMAINS: list[str] = [
-    "plato.stanford.edu",
-    "iep.utm.edu",
-    "en.wikipedia.org",
-]
-ARCHITECTURE_DOMAINS: list[str] = [
-    "en.wikipedia.org",
-    "dezeen.com",
-    "designboom.com",
-]
+# Die vier Domainlisten standen bis 2026-09-04 auch hier, als Kopie der
+# Vorgabewerte in ``platform_research_domains``. Zwei Orte fuer dieselbe Liste,
+# von denen nur einer gelesen wurde: die Kopien waren seit Migration 124 tot.
+# Der eine Ort ist jetzt ``platform_research_domains.HARDCODED_DEFAULTS``.
 
 
 @dataclass
@@ -66,6 +49,29 @@ class TavilySearchRequest:
     search_depth: str = "advanced"
     max_results: int = 5
     include_domains: list[str] = field(default_factory=list)
+    exclude_domains: list[str] = field(default_factory=list)
+
+
+#: Tavilys Betriebsart fuer ``include_domains``. ``filter`` schliesst alles
+#: andere AUS; ``boost`` gewichtet die Liste nur und durchsucht das uebrige Netz
+#: weiter. Gemessen am 2026-09-04, identische Anfrage, identische drei Domains
+#: (``en.wikipedia.org``, ``plato.stanford.edu``, ``britannica.com``):
+#: ohne diesen Parameter kamen **2 von 5** Treffern aus der Liste — darunter
+#: ``facebook.com`` —, mit ihm **5 von 5**. Die Doku nennt ``filter`` als
+#: Vorgabewert; das Verhalten der API tut es nicht. Also steht er hier.
+_INCLUDE_DOMAINS_MODE = "filter"
+
+
+def _domains_mode(request: TavilySearchRequest) -> dict[str, str]:
+    """Die Betriebsart, aber nur wenn es eine Liste gibt, die sie betrifft.
+
+    Ohne ``include_domains`` waere ``include_domains_mode`` ein Parameter ohne
+    Gegenstand. Der Client 0.7.27 fuehrt ihn nicht in seiner Signatur und reicht
+    ihn ueber ``**kwargs`` durch — was heute geht und morgen eine Fehlermeldung
+    sein kann. Ihn nur dann zu senden, wenn er etwas bewirkt, macht diesen
+    Bruch klein und sichtbar statt gross und still.
+    """
+    return {"include_domains_mode": _INCLUDE_DOMAINS_MODE} if request.include_domains else {}
 
 
 class TavilySearchService:
@@ -128,6 +134,8 @@ class TavilySearchService:
                         include_answer=True,
                         max_results=request.max_results,
                         include_domains=request.include_domains or None,
+                        exclude_domains=request.exclude_domains or None,
+                        **_domains_mode(request),
                     )
                 elapsed_ms = (time.monotonic() - t0) * 1000
 
@@ -212,66 +220,49 @@ class TavilySearchService:
         return results
 
     @classmethod
-    def collect_sources(cls, results: list[TavilySearchResult], *, per_axis: int = 5) -> list[dict[str, str]]:
-        """The retrieved sources as structured rows, for provenance.
+    def to_rows(
+        cls, results: list[TavilySearchResult], *, per_axis: int = 5, snippet_len: int = 500
+    ) -> list[SourceRow]:
+        """Die gefundenen Quellen als ``SourceRow`` — die gemeinsame Form.
 
-        ``format_results`` renders the same rows into prose that goes to the
-        model, and prose is where they stop being checkable: the model reads
-        them, writes its citation from memory, and nothing downstream can be
-        reconciled against what was actually fetched. Measured on one production
-        anchor, that produced three correct citations and one classic
-        misattribution (Foucault's 1978/79 course, which is famously *not*
-        mainly about biopolitics) — right shelf, wrong book, and structurally
-        unnoticeable. See finding 17.
+        Bis 2026-09-04 gab es hier zwei Wege aus demselben Treffer heraus:
+        ``collect_sources`` baute die Zeilen fuer die Ankerkarte,
+        ``format_results`` baute daneben die Prosa fuer das Modell. Ein Filter,
+        der nur den einen Weg saeubert, laesst den Fanwiki-Artikel weiterhin
+        die Lore praegen — er verschwindet bloss aus der Anzeige. Darum gibt es
+        jetzt nur noch diesen einen Weg: Zeilen raus, Filter drauf, und die
+        Prosa entsteht aus dem, was uebrig ist (``ResearchService``).
 
-        These rows are what Tavily returned. No model touches them, which is the
-        point: asking a model for URLs is the one change that would make this
-        worse, because a fabricated URL carries more authority than a fabricated
-        book title. Deduplicated by URL, first axis wins.
+        Der Textausschnitt landet in ``abstract`` und wird deshalb NICHT
+        gespeichert — er ist Lesestoff fuer das Modell, kein Nachweis.
+        Nichts hier geht durch ein Modell; das ist der Zweck dieser Zeilen.
         """
-        seen: set[str] = set()
-        collected: list[dict[str, str]] = []
+        rows: list[SourceRow] = []
         for result in results:
             for src in result.sources[:per_axis]:
                 url = str(src.get("url", "")).strip()
-                title = str(src.get("title", "")).strip()
-                if not url or url in seen:
+                if not url:
                     continue
-                seen.add(url)
-                collected.append({"axis": result.axis, "title": title or url, "url": url})
-        return collected
+                title = str(src.get("title", "")).strip()
+                rows.append(
+                    SourceRow(
+                        axis=result.axis,
+                        title=title or url,
+                        url=url,
+                        provider="tavily",
+                        abstract=str(src.get("content", "") or "")[:snippet_len],
+                    )
+                )
+        return rows
 
-    @classmethod
-    def format_result(cls, result: TavilySearchResult, *, snippet_len: int = 500) -> str:
-        """Format a single search result into labeled text block."""
-        parts: list[str] = []
-        if result.answer:
-            parts.append(result.answer)
+    @staticmethod
+    def answers(results: list[TavilySearchResult]) -> list[tuple[str, str]]:
+        """Tavilys eigene Zusammenfassung je Achse, sofern es eine gibt.
 
-        source_lines: list[str] = []
-        for src in result.sources[:5]:
-            title = src.get("title", "")
-            url = src.get("url", "")
-            content = src.get("content", "")
-            if content:
-                source_lines.append(f"- {title} ({url})\n  {content[:snippet_len]}")
-        if source_lines:
-            parts.append("Sources:\n" + "\n".join(source_lines))
-
-        return "\n\n".join(parts)
-
-    @classmethod
-    def format_results(
-        cls,
-        results: list[TavilySearchResult],
-        *,
-        snippet_len: int = 500,
-    ) -> str:
-        """Format multiple search results into axis-labeled sections."""
-        sections: list[str] = []
-        for result in results:
-            body = cls.format_result(result, snippet_len=snippet_len)
-            if body:
-                sections.append(f"[{result.axis}]\n{body}")
-
-        return "\n\n".join(sections)
+        Sie wird aus dem Treffersatz gebildet, den Tavily geliefert hat — und
+        der ist seit ``include_domains_mode="filter"`` bereits auf die Freiliste
+        beschraenkt. Die Zusammenfassung erbt also die Schranke der Suche, nicht
+        die des Hauses: eine Achse ohne ``include_domains`` (es gibt keine mehr)
+        haette eine ungefilterte Zusammenfassung.
+        """
+        return [(r.axis, r.answer) for r in results if r.answer]

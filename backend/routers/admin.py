@@ -59,6 +59,8 @@ from backend.services.forge_orchestrator_service import ForgeOrchestratorService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.platform_api_keys import invalidate as invalidate_api_key_cache
 from backend.services.platform_model_config import invalidate as invalidate_model_config
+from backend.services.platform_research_domains import HARDCODED_DEFAULTS as RESEARCH_DEFAULTS
+from backend.services.platform_research_domains import RESEARCH_SETTING_KEYS
 from backend.services.platform_research_domains import invalidate as invalidate_research_domains
 from backend.services.platform_settings_service import PlatformSettingsService
 from backend.services.settings_service import SettingsService
@@ -177,6 +179,25 @@ async def list_feature_gates(
     return SuccessResponse(data=data)
 
 
+@router.get("/research-defaults")
+async def research_defaults(
+    _user: Annotated[CurrentUser, Depends(require_platform_admin())],
+) -> SuccessResponse[dict[str, list[str]]]:
+    """Die Vorgabewerte der sechs Forschungslisten — als EINE Quelle.
+
+    Der Admin-Bereich hatte seine eigene Kopie der vier Steuerlisten im
+    TypeScript stehen, und „Auf Vorgabewerte zuruecksetzen" schrieb diese Kopie
+    in die Datenbank. Nach Migration 370 waere das ein Ruecksetzen auf die
+    Werte von Migration 124 gewesen — auf die Designmagazine also, die die
+    Gattungsgrenze gerade entfernt hat. Ein Vorgabewert, der an zwei Orten
+    steht, ist beim ersten Auseinanderlaufen ein stiller Fehler.
+
+    Kein Datenbankzugriff: das sind die im Code erklaerten Vorgaben, nicht der
+    gespeicherte Zustand. Den liefert ``GET /admin/settings``.
+    """
+    return SuccessResponse(data={k: list(v) for k, v in RESEARCH_DEFAULTS.items()})
+
+
 @router.put("/settings/{key}")
 async def update_setting(
     key: str,
@@ -216,8 +237,13 @@ async def update_setting(
     if key.startswith(("model_", "reasoning_")):
         invalidate_model_config()
 
-    # Invalidate research domain cache when domain settings change
-    if key.startswith("research_domains_"):
+    # Invalidate research config cache when any list the Forge reads changes.
+    # Gegen die Menge, nicht gegen ein Praefix: die Gattungsgrenze liegt unter
+    # `research_source_allowlist` / `research_source_denylist`, und ein
+    # `startswith("research_domains_")` haette die beiden nicht getroffen —
+    # eine gespeicherte Aenderung waere bis zu fuenf Minuten wirkungslos
+    # geblieben, ohne Fehlermeldung.
+    if key in RESEARCH_SETTING_KEYS:
         invalidate_research_domains()
 
     return SuccessResponse(data=data)
@@ -825,9 +851,11 @@ async def regenerate_lore(
         body.include_images,
     )
 
-    return SuccessResponse(data=MessageResponse(
-        message=f"Lore regeneration started (background{', with images' if body.include_images else ''})"
-    ))
+    return SuccessResponse(
+        data=MessageResponse(
+            message=f"Lore regeneration started (background{', with images' if body.include_images else ''})"
+        )
+    )
 
 
 async def _regenerate_lore_task(
@@ -916,6 +944,4 @@ async def regenerate_images(
         set(body.types),
     )
 
-    return SuccessResponse(data=MessageResponse(
-        message=f"Image regeneration started: {', '.join(body.types)}"
-    ))
+    return SuccessResponse(data=MessageResponse(message=f"Image regeneration started: {', '.join(body.types)}"))

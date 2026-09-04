@@ -1,12 +1,12 @@
 ---
 title: "External Services"
 id: external-services
-version: "1.1"
-date: 2026-03-16
+version: "1.2"
+date: 2026-09-05
 lang: de
 type: spec
 status: active
-tags: [external, apis, facebook, guardian, newsapi, tavily]
+tags: [external, apis, facebook, guardian, newsapi, tavily, openalex, crossref, openlibrary, forge-research]
 ---
 
 # 11 - External Services: Pro Simulation konfigurierbar
@@ -315,89 +315,144 @@ async def get_facebook_posts(
 
 ---
 
-## 6. Tavily Web Search (`TavilySearchService`)
+## 6. Recherche der Schmiede (`TavilySearchService` + `ScholarlySearchService`)
 
-### Architektur
+> **Stand 2026-09-05.** Der Abschnitt beschrieb bis dahin eine Domainsteuerung,
+> die fuer eine Schranke gehalten wurde. Sie war keine. Siehe
+> `docs/plans/forge-scholarly-sources.md`.
 
-Dedizierter async Wrapper fuer die Tavily Search API. Folgt dem `external/replicate.py`-Pattern: lazy init, async-native, timeout-protected, structured logging.
+### Die Gattungsgrenze
 
-**Datei:** `backend/services/external/tavily_search.py`
+Die Recherche belegt Weltenbau mit drei Gattungen: belletristische und
+literaturkritische Werke, philosophische Schriften, begutachtete Fachliteratur.
+Entschieden wird das an **einer** Stelle —
+`backend/services/research_source_policy.py`. Jede Quellzeile jedes Anbieters
+laeuft durch `is_admissible()`; was nicht durchkommt, verschwindet aus der
+Quellenliste **und** aus der Prosa, die das Modell liest.
 
-```
-TavilySearchService (class-level, no instance needed)
-    │
-    ├── is_available()     → bool (checks settings.tavily_api_key)
-    ├── search()           → TavilySearchResult | None
-    ├── parallel_search()  → list[TavilySearchResult]  (asyncio.gather)
-    ├── format_result()    → str (single axis)
-    └── format_results()   → str (multi-axis, labeled sections)
-```
+Zwei Listen, in `platform_settings`, im Admin unter Forschung → Gattungsgrenze:
 
-### Lazy Initialization
+| Schluessel | Wirkung |
+|---|---|
+| `research_source_allowlist` | Nur diese Domains zaehlen (70 Vorgabewerte: Fachverlage, Uni-Verlage, SEP/IEP/PhilPapers, Bibliothekskataloge, Nachschlagewerk, Architekturgeschichte) |
+| `research_source_denylist` | Nie eine Quelle, auch nicht ueber einen DOI (79 Vorgabewerte). Schlaegt die Freiliste. |
 
-`AsyncTavilyClient` wird beim ersten `search()`-Aufruf erstellt, nicht bei Import. Behebt den Production-Bug bei dem `TavilyClient` bei Import-Time `None` blieb wenn der Key erst nach Import gesetzt wurde (hot reload, late env).
+Dazu zwei Regeln, die kein Domainname faengt:
 
-### Timeout + Retry
+* **Trefferlisten sind keine Quellen.** `philarchive.org/s/...`,
+  `.../search?q=...` — zugelassener Host, kein Werk.
+* **Ein Werk, eine Zeile.** Entdoppelt nach URL, dann nach Titel + Jahr.
+  Dieselbe Arbeit kam von PhilPapers und PhilArchive unter zwei Verweisen.
 
-| Parameter | Phase 1 (Astrolabe) | Phase 4 (Ignition) |
-|-----------|--------------------|--------------------|
-| `timeout_s` | 10s | 20s |
-| `max_retries` | 0 | 1 (2s backoff) |
+### `include_domains_mode` — der Befund
 
-Jeder `search()`-Aufruf ist mit `asyncio.timeout()` geschuetzt. Bei Timeout oder API-Fehler: `None` zurueck (graceful degradation). `parallel_search()` nutzt `asyncio.gather(return_exceptions=True)` — partielle Ergebnisse bei partiellem Fehlschlag.
+Tavily kennt zu `include_domains` zwei Betriebsarten: `filter` schliesst aus,
+`boost` gewichtet nur. Ohne `include_domains_mode` galt in der Praxis die
+zweite. Gemessen 2026-09-04, identische Anfrage, identische drei Domains:
 
-### Domain Targeting
+| Aufruf | Treffer aus der Liste |
+|---|---|
+| ohne `include_domains_mode` | **2 von 5** — darunter `facebook.com` |
+| mit `include_domains_mode="filter"` | **5 von 5** |
 
-Gezielte `include_domains` pro Research-Achse statt generischer Suche:
+`TavilySearchService` setzt den Parameter jetzt, und zwar nur wenn es eine
+Liste gibt, die er betrifft: der Client 0.7.27 fuehrt ihn nicht in seiner
+Signatur und reicht ihn ueber `**kwargs` durch.
 
-| Achse | Domains | Zweck |
-|-------|---------|-------|
-| `ENCYCLOPEDIC` | en.wikipedia.org, plato.stanford.edu, britannica.com | Phase 1: Konzeptuelle Uebersicht |
-| `LITERARY` | en.wikipedia.org, britannica.com, theparisreview.org | Phase 4: Literarische Genealogie |
-| `PHILOSOPHY` | plato.stanford.edu, iep.utm.edu, en.wikipedia.org | Phase 4: Philosophisches Framework |
-| `ARCHITECTURE` | archdaily.com, en.wikipedia.org | Phase 4: Architektonisches Vokabular |
+### `ScholarlySearchService`
 
-### Research Pipeline
+**Datei:** `backend/services/external/scholarly_search.py`. Dienste, deren
+*Bestand* die Schranke ist — sie brauchen keine Domainliste.
 
-**Phase 1 (Astrolabe) — `search_thematic_context()`:**
-2 parallele Suchen:
+| Anbieter | Schluessel | Rolle |
+|---|---|---|
+| `openalex` | `OPENALEX_API_KEY`, kostenlos, 1 USD/Tag frei (~1000 Suchen) | Grundlage. Fachfilter `primary_topic.field.id:fields/12\|33\|32` (Geistes-, Sozialwissenschaften, Psychologie). Relevanzboden **relativ** zum Spitzenwert derselben Anfrage — `relevance_score` ist ueber Anfragen hinweg nicht vergleichbar (gemessen 2910 gegen 324 bei gleich guten Treffern). |
+| `openlibrary` | keiner | Buecher. Fragt ueber `subject:"..."`, nicht ueber Freitext: Open Library ist ein Katalog und gewichtet Titel und Autor, nicht Thema. Freitext nur als Rueckfall. |
+| `crossref` | keiner | Rueckfallebene, wenn OpenAlex nichts liefert (fehlender Schluessel, 409 Tagesbudget, 429). |
 
-| Suche | Query | Tiefe | Domains | Max Results |
-|-------|-------|-------|---------|-------------|
-| Conceptual | `{seed}` | advanced | ENCYCLOPEDIC | 5 |
-| Intellectual | `{seed} philosophical literary context` | basic | (keine) | 3 |
+Verworfen: **DOAJ** (Volltextsuche ohne brauchbare Rangfolge — auf
+„memory studies" kam eine Arbeit ueber Drohnenfunk), **Semantic Scholar**
+(ohne Schluessel HTTP 429 bei der ersten Anfrage).
 
-Ergebnis-Format: `[CONCEPTUAL OVERVIEW]` + `[INTELLECTUAL TRADITIONS]`
+### Die Anfrage wird uebersetzt
 
-**Phase 4 (Ignition) — `research_for_lore()` Augmentation:**
-3 achsenspezifische parallele Suchen:
+Der Seed ist eine Erzaehlpraemisse. Eine Suchmaschine, der man eine Praemisse
+gibt, antwortet mit fiktionsfoermigem Material — gemessen an einem
+Produktionsseed: ein Bilderdienst, ein Weltenbau-Forum, ein Bastelratgeber.
 
-| Suche | Query-Quelle | Tiefe | Domains | Max Results |
-|-------|-------------|-------|---------|-------------|
-| Literary | `{anchor.literary_influence} literary analysis narrative technique` | advanced | LITERARY | 5 |
-| Philosophical | `{anchor.core_question} philosophy epistemology` | advanced | PHILOSOPHY | 5 |
-| Architectural | `{anchor.description} architecture movement materials visual` | basic | ARCHITECTURE | 4 |
+Ein billiger Modellaufruf (`ai_purposes: research_query`, 400 Token, 30 s,
+`reasoning=off`) macht daraus `ResearchQueryPlan` — je drei Begriffe fuer
+Literatur, Philosophie, Fachkontext. Der Prompt verbietet blosse
+Disziplinnamen und selbsterfundene Wendungen und verlangt auf der literarischen
+Achse mindestens **einen benannten Autor oder ein benanntes Werk**. Faellt der
+Aufruf aus, wird mit der Praemisse selbst gesucht: schlechter, aber innerhalb
+der Gattungsgrenze — die haengt an der Schranke, nicht an der Anfrage.
 
-Ergebnis-Format: `[WEB: LITERARY AXIS]` + `[WEB: PHILOSOPHICAL AXIS]` + `[WEB: ARCHITECTURAL AXIS]`
+Gemessener Unterschied, OpenAlex, gleicher Seed:
 
-### Emulator (kein API-Key)
+| Begriffsart | Ergebnis |
+|---|---|
+| Fachname (`memory studies`, `epistemology`) | Olick & Robbins **und** *Prevalence of Dementia in the United States*; `allegory` holte C. S. Lewis' *The Allegory of Love* — richtiges Wort, falsche Bedeutung |
+| Begriff (`collective memory and forgetting`, `critical cartography and power`) | Connerton, Olick, Fowler, Crampton, Baldacchino |
 
-Deterministischer Fallback fuer lokale Entwicklung. 6 thematische Linsen (entropy, memory, surveillance, liminality, posthuman, temporal economics). Seed-Hash-basierte Auswahl.
+### Achsen und Ablauf
 
-- `_emulate_tavily_phase1()`: Dual-axis Format (CONCEPTUAL OVERVIEW + INTELLECTUAL TRADITIONS)
-- `_emulate_tavily_phase4()`: Tri-axis Format (WEB: LITERARY/PHILOSOPHICAL/ARCHITECTURAL AXIS)
+Beide Phasen laufen gleich: uebersetzen → Fachdienste **und** gefiltertes
+Tavily parallel → Schranke → Prosa aus dem, was uebrig ist.
 
-### Kosten
+| Phase | Achsen | Zeitlimit (Fach / Tavily) |
+|---|---|---|
+| 1 Astrolabium | `LITERARY SCHOLARSHIP`, `PHILOSOPHICAL TRADITION`, `SCHOLARLY CONTEXT` | 12 s / 10 s, kein Retry |
+| 4 Lore | dieselben plus `ARCHITECTURAL HISTORY` | 15 s / 20 s, 1 Retry |
 
-| Phase | Vorher | Nachher | Delta |
-|-------|--------|---------|-------|
-| Phase 1 | 1 advanced | 1 advanced + 1 basic | +1 basic |
-| Phase 4 | 1 advanced | 2 advanced + 1 basic | +1 adv + 1 basic |
-| **Total pro Forge** | **2 advanced** | **3 advanced + 2 basic** | ~$0.01-0.02 extra |
+Die Architekturachse zeigt seit Migration 370 auf Architekturgeschichte
+(`sah.org`, `getty.edu`, JSTOR, Cambridge) statt auf `dezeen.com` und
+`designboom.com`. Der Ersatz beschreibt Bauten datiert und benannt, zeigt sie
+aber nicht — ein bewusst in Kauf genommener Verlust.
+
+In Phase 4 steht die gefundene Bibliographie **im Prompt**, vor der Deutung.
+Bis 2026-09-04 schrieb das Modell seinen Entwurf zuerst und die Suche wurde
+hinterher angehaengt; es konnte also gar nicht zitieren, was gefunden wurde.
+
+### Was der Entwurf berichtet
+
+`forge_drafts.research_context.source` sagt, welcher Weg getragen hat
+(`scholarly` | `emulator` | `mock`). Bis 2026-09-04 stand dort
+`"tavily" if settings.tavily_api_key` — eine Aussage ueber die Konfiguration,
+die auch dann „tavily" sagte, wenn jede Suche fehlgeschlagen war.
+
+`…sources` traegt jetzt `authors`, `year`, `venue`, `provider`. Die Ankerkarte
+zeigt Autor und Jahr vor dem Titel, wie eine Bibliographie: so laesst sich eine
+Angabe nachschlagen, ohne den Verweis zu oeffnen.
+
+### Emulator (kein Netz, keine Quellen)
+
+Deterministischer Rueckfall, 6 thematische Linsen (entropy, memory,
+surveillance, liminality, posthuman, temporal economics), Auswahl ueber den
+Seed-Hash. Er greift jetzt erst, wenn **beide** Wege nichts geliefert haben —
+ein fehlender Tavily-Schluessel allein reicht nicht mehr, weil zwei der drei
+Fachdienste keinen brauchen.
+
+### Gemessenes Ergebnis
+
+Live-Lauf des echten Code-Pfads gegen den Seed, der den Anlass gab:
+**17 Quellen zugelassen, 0 abgewiesen** — SEP, Springer *Synthese*,
+Cambridge UP, JSTOR, PhilPapers, *History and Theory*, Medina, Bailey,
+D'Ignazio & Klein *Data Feminism*, Alan Liu *The Power of Formalism*. Kein
+YouTube, kein Facebook, kein Fandom. Ein vorheriger Lauf wies genau eine Zeile
+ab: eine PhilArchive-Trefferliste.
 
 ### Sentry Coverage
 
 Alle Tavily-Fehlschlaege werden ueber `sentry_sdk.capture_message()` mit `push_scope()` gemeldet (Tag: `forge_phase`, Context: `seed_preview`/`simulation_id`). Einzelne Tavily-Fehler (Timeouts, 429) sind nur Warnings — diese sind transient und werden per Retry behandelt. Nur vollstaendiger Fehlschlag (alle Achsen gescheitert → Emulator-Fallback) triggert Sentry.
+
+Seit 2026-09-05 kommt ein zweites Ereignis dazu: **eine Recherche ohne eine
+einzige zugelassene Quelle**. Von aussen sieht die aus wie eine ohne Treffer —
+eine kurze Liste in beiden Faellen —, und die Unterscheidung ist die zwischen
+„nichts gefunden" und „alles verworfen". Abgewiesene Hosts stehen als
+`logger.info` mit Hostnamen im Protokoll, weil eine Sperrliste nur findet, was
+man ihr gesagt hat: was dort auftaucht, ist der Vorschlag fuer den naechsten
+Eintrag.
 
 **Release Tracking:** Alle Sentry-Events (Backend + Frontend) werden mit dem Git-Commit-SHA getaggt (`SENTRY_RELEASE`). Source Maps werden waehrend des Docker-Builds via `@sentry/vite-plugin` hochgeladen. CI assoziiert Commits und registriert Deploys via `getsentry/action-release@v3`. Ein Post-Deploy Health Check prueft automatisch auf neue Sentry-Issues nach jedem Deploy. Vollstaendige Architektur: siehe `docs/guides/sentry-cicd-integration.md`.
 

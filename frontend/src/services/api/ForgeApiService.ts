@@ -101,15 +101,32 @@ export interface ForgeDraft {
   ai_settings: Record<string, unknown>;
   research_context: {
     raw_data?: string;
-    source?: 'tavily' | 'emulator';
     /**
-     * The rows the web search actually returned — title and URL, deduplicated,
-     * with no model in between. They do NOT verify a citation; they say what
-     * was read, which is what the card's footer claims. Absent on drafts made
-     * before finding 17 and empty on the emulator path. Never ask a model for
-     * these: a fabricated URL carries more authority than a fabricated title.
+     * Welcher Weg tatsaechlich getragen hat, berichtet vom Lauf selbst.
+     * `'tavily'` steht noch in Entwuerfen von vor 2026-09-04, als der Wert aus
+     * der KONFIGURATION geraten wurde (`"tavily" if settings.tavily_api_key`)
+     * und darum auch dann "tavily" sagte, wenn jede Suche fehlgeschlagen war.
      */
-    sources?: { axis: string; title: string; url: string }[];
+    source?: 'scholarly' | 'tavily' | 'emulator' | 'mock';
+    /**
+     * The rows the providers actually returned — no model in between. They do
+     * NOT verify a citation; they say what was read, which is what the card's
+     * footer claims. `authors`, `year`, `venue` und `provider` sind seit der
+     * Fachrecherche gefuellt (OpenAlex, Crossref, Open Library fuehren sie als
+     * Feld); aeltere Entwuerfe und Treffer aus der Websuche tragen nur Titel
+     * und Verweis. Absent on drafts made before finding 17 and empty on the
+     * emulator path. Never ask a model for these: a fabricated URL carries more
+     * authority than a fabricated title.
+     */
+    sources?: {
+      axis: string;
+      title: string;
+      url: string;
+      provider?: string;
+      authors?: string;
+      year?: string;
+      venue?: string;
+    }[];
   };
   generation_config: ForgeGenerationConfig;
   theme_config: Record<string, string>;

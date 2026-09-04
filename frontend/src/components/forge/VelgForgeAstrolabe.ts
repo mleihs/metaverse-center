@@ -1060,8 +1060,16 @@ export class VelgForgeAstrolabe extends LitElement {
     forgeStateManager.updateGenerationConfig({ [field]: value });
   }
 
-  private get _researchSource(): 'tavily' | 'emulator' | null {
+  private get _researchSource(): 'scholarly' | 'tavily' | 'emulator' | 'mock' | null {
     return forgeStateManager.draft.value?.research_context?.source ?? null;
+  }
+
+  /** Ob die Recherche tatsaechlich Quellen gelesen hat, oder nur gerechnet. */
+  private get _researchGrounded(): boolean {
+    const source = this._researchSource;
+    // `'tavily'` steht in Entwuerfen von vor der Fachrecherche; damals wurde
+    // der Wert aus der Konfiguration geraten, nicht vom Lauf berichtet.
+    return source === 'scholarly' || source === 'tavily';
   }
 
   /**
@@ -1078,7 +1086,15 @@ export class VelgForgeAstrolabe extends LitElement {
    * These rows are Tavily's, not the model's. They do not verify the citation.
    * They say what was read — which is all the footer ever claimed.
    */
-  private get _researchSources(): { axis: string; title: string; url: string }[] {
+  private get _researchSources(): {
+    axis: string;
+    title: string;
+    url: string;
+    provider?: string;
+    authors?: string;
+    year?: string;
+    venue?: string;
+  }[] {
     return forgeStateManager.draft.value?.research_context?.sources ?? [];
   }
 
@@ -1357,12 +1373,12 @@ export class VelgForgeAstrolabe extends LitElement {
           ${
             this._researchSource
               ? html`
-              <div class="research-source-hint ${this._researchSource === 'tavily' ? 'research-source-hint--tavily' : ''}">
+              <div class="research-source-hint ${this._researchGrounded ? 'research-source-hint--tavily' : ''}">
                 <span class="research-source-hint__dot"></span>
                 ${
-                  this._researchSource === 'tavily'
-                    ? msg('Research grounded in web sources + AI analysis')
-                    : msg('Research based on AI analysis (web search unavailable)')
+                  this._researchGrounded
+                    ? msg('Grounded in literary, philosophical and peer-reviewed sources')
+                    : msg('Research based on AI analysis (source search unavailable)')
                 }
               </div>
               ${
@@ -1373,20 +1389,31 @@ export class VelgForgeAstrolabe extends LitElement {
                     ${msg(str`${this._researchSources.length} sources consulted`)}
                   </summary>
                   <ul class="research-sources__list">
-                    ${this._researchSources.map(
-                      (src) => html`
+                    ${this._researchSources.map((src) => {
+                      // Autor und Jahr stehen VOR dem Titel, wie in jeder
+                      // Bibliographie: so laesst sich eine Angabe nachschlagen,
+                      // ohne den Verweis zu oeffnen. Die Felder kommen aus den
+                      // Fachdiensten, nicht aus einem Modell; ein Treffer aus
+                      // der Websuche traegt sie nicht und faellt still auf den
+                      // Titel allein zurueck.
+                      const cite = [src.authors, src.year].filter(Boolean).join(', ');
+                      return html`
                         <li class="research-sources__item">
                           <span class="research-sources__axis">${src.axis}</span>
-                          <a
-                            class="research-sources__link"
-                            href=${src.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            >${src.title}</a
-                          >
+                          <span class="research-sources__cite">
+                            ${cite ? html`<span class="research-sources__by">${cite}</span>` : nothing}
+                            <a
+                              class="research-sources__link"
+                              href=${src.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              >${src.title}</a
+                            >
+                            ${src.venue ? html`<span class="research-sources__venue">${src.venue}</span>` : nothing}
+                          </span>
                         </li>
-                      `,
-                    )}
+                      `;
+                    })}
                   </ul>
                 </details>`
                   : nothing

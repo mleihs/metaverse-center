@@ -426,6 +426,33 @@ export const forgeResearchHintStyles = css`
     letter-spacing: var(--tracking-wide, 0.025em);
   }
 
+  /*
+    Autor, Jahr, Titel, Ort — die Reihenfolge einer Bibliographie, nicht die
+    einer Trefferliste. Sie kommt aus den Feldern der Fachdienste (OpenAlex,
+    Crossref, Open Library) und ist damit nachschlagbar, ohne den Verweis zu
+    oeffnen. Ein Treffer aus der Websuche traegt diese Felder nicht und faellt
+    auf den Titel allein zurueck; die Zeile bleibt dann, was sie vorher war.
+  */
+  .research-sources__cite {
+    display: block;
+    min-width: 0;
+  }
+
+  .research-sources__by {
+    color: var(--color-text-secondary);
+  }
+
+  .research-sources__by::after {
+    content: ': ';
+  }
+
+  .research-sources__venue {
+    display: block;
+    color: var(--color-text-quiet);
+    font-style: italic;
+    overflow-wrap: anywhere;
+  }
+
   .research-sources__link {
     color: var(--color-text-link);
     text-decoration: none;
