@@ -56,15 +56,45 @@ VIOLATIONS=0
 PY_HITS="$("$PY" - <<'PYEOF'
 import ast, io, os, sys, tokenize
 
-def docstring_starts(src):
-    out = set()
+def prose_spans(src):
+    """Jede Zeichenkette, die als ALLEINSTEHENDER Ausdruck dasteht.
+
+    Die erste Fassung fragte nur nach `body[0]` von Modul, Klasse und
+    Funktion -- also nach dem, was `ast` einen Docstring nennt. Damit entging
+    ihr der ATTRIBUT-Docstring:
+
+        missing: frozenset[str] = frozenset()
+        '''Pflichtvariablen, die die Vorlage NICHT nennt -- ...'''
+
+    Fuer `ast` ist das kein Docstring, sondern eine gewoehnliche Anweisung an
+    zweiter Stelle; fuer jeden Leser und fuer Sphinx ist es einer. Das Tor
+    meldete deshalb drei solche Stellen in `prompt_contracts.py` als Inhalt
+    und hielt CI rot, obwohl sein eigener Kopf sagt, Docstrings blieben
+    draussen.
+
+    `ast.Expr` ist der richtige Griff, nicht `body[0]`: ein Expr IST
+    definitionsgemaess ein Ausdruck auf Anweisungsebene, und eine Zeichenkette
+    dort wird ausgewertet und weggeworfen. Sie kann auf keinem Weg einen Leser
+    oder ein Modell erreichen -- egal ob sie erste, zweite oder zehnte
+    Anweisung ist, ob sie in einer Klasse, einem Modul oder einem if-Block
+    steht. Genau das ist die Frage, die dieses Tor stellen will.
+
+    Zurueckgegeben wird die ganze SPANNE, nicht nur der Anfang: bei impliziter
+    Verkettung ueber mehrere Zeilen liefert der Tokenizer mehrere Tokens, von
+    denen die erste Fassung nur das erste ausgelassen haette.
+    """
+    out = []
     for n in ast.walk(ast.parse(src)):
-        if isinstance(n, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            b = n.body
-            if b and isinstance(b[0], ast.Expr) and isinstance(b[0].value, ast.Constant) \
-               and isinstance(b[0].value.value, str):
-                out.add((b[0].value.lineno, b[0].value.col_offset))
+        if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant) \
+           and isinstance(n.value.value, str):
+            v = n.value
+            out.append(((v.lineno, v.col_offset),
+                        (v.end_lineno, v.end_col_offset)))
     return out
+
+
+def in_prose(pos, spans):
+    return any(a <= pos <= b for a, b in spans)
 
 KINDS = (tokenize.STRING, getattr(tokenize, 'FSTRING_MIDDLE', -1))
 for root, dirs, files in os.walk('backend'):
@@ -77,13 +107,13 @@ for root, dirs, files in os.walk('backend'):
         if '—' not in src:
             continue
         try:
-            docs = docstring_starts(src)
+            docs = prose_spans(src)
             toks = list(tokenize.generate_tokens(io.StringIO(src).readline))
         except Exception as exc:      # unparsable file is its own bug, not ours
             print(f'{p}:0: konnte nicht gelesen werden ({exc})')
             continue
         for tok in toks:
-            if tok.type in KINDS and '—' in tok.string and tok.start not in docs:
+            if tok.type in KINDS and '—' in tok.string and not in_prose(tok.start, docs):
                 print(f'{p}:{tok.start[0]}: {tok.string.strip()[:90]}')
 PYEOF
 )"

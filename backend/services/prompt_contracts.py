@@ -263,7 +263,7 @@ _FRAME_DIGEST = (
 _FRAME_GROUP = (
     "You are one person in this scene, and your horizon ends where your senses do.\n"
     "Write what you do, say, notice and feel. You may describe the room and the others "
-    "as far as your own action needs it — what they seem to be doing, how they look to "
+    "as far as your own action needs it – what they seem to be doing, how they look to "
     "you, what you make of it. What they think, decide, or do NEXT is theirs to write.\n"
     "The others are marked with their names; [User] is the human you are talking to. "
     "You may report what has already happened indirectly (\"she asked for the file\"), "
