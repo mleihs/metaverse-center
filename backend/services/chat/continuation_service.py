@@ -58,7 +58,11 @@ from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.chat.conversation_digest_service import ConversationDigestService
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import (
+    BudgetContext,
+    OpenRouterError,
+    OpenRouterService,
+)
 from backend.services.model_resolver import ModelResolver
 from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -266,7 +270,23 @@ class ContinuationService:
                 budget=budget_ctx,
             )
         except BudgetExceededError as exc:
+            # Eine bewusste, protokollierte Verwaltungsentscheidung, kein
+            # Fehlschlag. Wiederholen hiesse dieselbe Absage noch einmal holen.
             logger.info("Wortwechsel in %s durch Budget gestoppt: %s", conversation_id, exc)
+            return None
+        except OpenRouterError:
+            # Die BASISklasse, nicht eine ihrer drei Unterklassen.
+            # `OpenRouterService.generate` wirft sie fuer einen API-Fehler,
+            # eine gescheiterte Verbindung UND erschoepfte Wiederholungen —
+            # die Unterklassen decken davon keinen ab. `lint-model-call-
+            # handlers.sh` besteht darauf, und zu Recht: ein Zeitlimit haette
+            # hier die ganze Herzschlag-Phase mitgerissen.
+            #
+            # Ein misslungener Wortwechsel kostet den Takt NICHT. Beim
+            # naechsten ist der Faden immer noch faellig.
+            logger.warning(
+                "Wortwechsel in %s: Modellaufruf fehlgeschlagen", conversation_id, exc_info=True
+            )
             return None
 
         await AIUsageService.log(

@@ -38,6 +38,7 @@ from uuid import uuid4
 
 import pytest
 
+from backend.services.chat.conversation_digest_service import ConversationDigestService
 from backend.services.chat_ai_service import ChatAIService
 from backend.services.prompt_service import PromptSource, ResolvedPrompt
 
@@ -148,7 +149,9 @@ async def _gruppenzug(besetzung: list[dict]) -> tuple[int, int, int]:
                 user_message="x",
                 saved_messages=[],
                 model_id=setup.model.model_id,
-                digest_text=setup.digest_text,
+                digest_text=ConversationDigestService.render(
+                    setup.digest_rows, setup.locale, since=agent.get("_joined_at")
+                ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
             )

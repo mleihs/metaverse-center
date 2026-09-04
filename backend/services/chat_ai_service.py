@@ -118,6 +118,29 @@ _DEPARTED_SPEAKER = "former participant"
 #: `ConversationDigestService._as_line` in der Mitschrift.
 _USER_SPEAKER = "User"
 
+#: Die Marke der SZENE — eine Stimme, die keiner Figur gehört.
+#:
+#: Der Raum, das Wetter, wer eintritt, was sich bewegt. Bis heute war das
+#: heimatlos: die Szene gehörte niemandem, also schrieb sie jeder — und wer
+#: eine Szene schreibt, schreibt sie von aussen. Daher die allwissende
+#: Erzählstimme, gemessen an 219 Zügen mit 14,6 %.
+#:
+#: DAS IST KEIN VIERTER TEILNEHMER. SillyTavern hat den Erzähler ALS FIGUR
+#: zwei Jahre lang versucht und verworfen (Issue #235): „it didn't really take
+#: on its intended role at all and instead just acted like an 'assistant'
+#: character that continually butted in." Ihre ausgelieferte Antwort ist
+#: dieselbe wie hier — eine neutrale Nachricht mit `role: system`, OHNE
+#: Namenspräfix, die in keiner Sprecherreihenfolge steht.
+#:
+#: Recherchestand 04.09.2026: ein eigener Erzähler als eigene Stimme im
+#: Protokoll ist in KEINEM untersuchten kommerziellen Produkt ausgeliefert.
+#: Die einzigen funktionierenden Umsetzungen sind quelloffen — SillyTaverns
+#: `/sys`, Agnais `ScenarioBook`, AgentVerses `describer`.
+#:
+#: Strukturell wie `_USER_SPEAKER` und `_DEPARTED_SPEAKER`: englisch, im
+#: Prompt, nie auf dem Bildschirm.
+_SCENE_SPEAKER = "Scene"
+
 # ── Zeichen je Token, je Sprache ──────────────────────────────────────────
 #
 # GEMESSEN AM 02.09.2026 an 419 PARALLELEN Textpaaren aus der Produktion
@@ -310,7 +333,6 @@ class _GroupTurnSetup:
     prompt_template: Any
     model: ResolvedModel
     event_context: str
-    digest_text: str = ""
     #: Der Verlauf, EINMAL geladen.
     #:
     #: Er ist fuer alle Sprecher derselbe — dieselbe Unterhaltung, dasselbe
@@ -330,6 +352,12 @@ class _GroupTurnSetup:
     #: dreimal dieselbe Tabelle mit demselben Filter auf
     #: `simulation_id`, nur mit einer anderen `agent_id`.
     relationships: dict[str, str] = field(default_factory=dict)
+    #: Die Verdichtungs-Abschnitte, roh und EINMAL geladen.
+    #:
+    #: Roh und nicht gerendert, weil die Perspektivgrenze je Sprecher
+    #: verschieden liegt: wer spaeter dazukam, hat frueheren Abschnitten nicht
+    #: beigewohnt. Gerendert wird je Agent, und das kostet kein Netz.
+    digest_rows: list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -816,12 +844,16 @@ class ChatAIService:
         Protokollmarke fuer ein Textformat gehalten. Das Tor muss sie deshalb
         kennen.
 
+        Dasselbe fuer `[Scene]`: ein Modell, das die Szenenmarke zurueckgibt,
+        hat sie fuer ein Textformat gehalten und schreibt sich selbst zum
+        Erzaehler — genau der Fehler, den die Marke verhindern soll.
+
         Ohne Besetzung bleibt es bei None: das Tor faellt dann auf sein enges
         Verhalten zurueck, statt gegen einen einzelnen Namen zu raten.
         """
         if not participant_names:
             return participant_names
-        return [*participant_names, _USER_SPEAKER]
+        return [*participant_names, _USER_SPEAKER, _SCENE_SPEAKER]
 
     @staticmethod
     def _strip_speaker_labels(text: str, participant_names: list[str] | None) -> str:
@@ -1302,10 +1334,10 @@ class ChatAIService:
         # ist die Erinnerung an DIESEN Faden, nicht an eine Person. Einmal
         # geladen, nicht je Agent. Dasselbe fuer den Verlauf, die Beziehungen
         # und die Stimmung.
-        prompt_template, reactions, digest_text, history, relationships, _ = await asyncio.gather(
+        prompt_template, reactions, digest_rows, history, relationships, _ = await asyncio.gather(
             self._prompt_resolver.resolve("chat_system_prompt", locale),
             self._load_event_reactions(event_ids, agent_ids),
-            self._digests.load_digest_text(conversation_id, locale),
+            self._digests.load_digest_rows(conversation_id),
             self._load_history(conversation_id, model.model_id),
             self._build_relationship_contexts(agent_ids, locale),
             self._prime_mood_contexts(agent_ids, locale),
@@ -1321,7 +1353,7 @@ class ChatAIService:
             prompt_template=prompt_template,
             model=model,
             event_context=event_context,
-            digest_text=digest_text,
+            digest_rows=digest_rows,
             history=history,
             relationships=relationships,
         )
@@ -1354,7 +1386,9 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
-                digest_text=setup.digest_text,
+                digest_text=ConversationDigestService.render(
+                    setup.digest_rows, setup.locale, since=agent.get("_joined_at")
+                ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
             )
@@ -1441,7 +1475,9 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
-                digest_text=setup.digest_text,
+                digest_text=ConversationDigestService.render(
+                    setup.digest_rows, setup.locale, since=agent.get("_joined_at")
+                ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
             )
@@ -1566,6 +1602,16 @@ class ChatAIService:
         # keinen mitgeben — er ist der alte Weg, nicht der gewoehnliche.
         if history is None:
             history = await self._load_history(conversation_id, model_id)
+
+        # Die Perspektivgrenze. Was vor dem Beitritt dieser Figur geschah, hat
+        # sie nicht miterlebt — siehe `_bound_to_perspective`.
+        history, ungesehen = self._bound_to_perspective(history, agent.get("_joined_at"))
+        if ungesehen:
+            logger.debug(
+                "%s bekommt %d Nachricht(en) nicht: vor dem Beitritt",
+                agent.get("name"),
+                ungesehen,
+            )
         history_messages: list[dict[str, str]] = [
             self._as_turn(msg, agents=agents, current_agent_id=current_agent_id) for msg in history
         ]
@@ -1623,6 +1669,14 @@ class ChatAIService:
           ist der billigere Fehler als eine falsche zu behaupten.
         """
         content = str(msg.get("content") or "")
+
+        # Die Szene gehoert niemandem. Sie bekommt ihre eigene Marke, keinen
+        # Namen und niemals die Rolle `assistant` — sonst waere sie ein
+        # vierter Teilnehmer, und genau daran ist SillyTaverns Erzaehlerkarte
+        # gescheitert.
+        if msg.get("sender_role") == "system":
+            return {"role": "user", "content": f"[{_SCENE_SPEAKER}]: {content}"}
+
         if msg.get("sender_role") != "assistant":
             # Der Mensch bekommt im GRUPPENVERLAUF dieselbe Marke wie alle
             # anderen. Ohne sie steht seine Zeile ohne Besitzer in einem Block
@@ -1655,6 +1709,62 @@ class ChatAIService:
             or _DEPARTED_SPEAKER
         )
         return {"role": "user", "content": f"[{label}]: {content}"}
+
+    @staticmethod
+    def _bound_to_perspective(
+        history: list[dict], joined_at: str | None
+    ) -> tuple[list[dict], int]:
+        """Der Verlauf, den DIESE Figur miterlebt hat. Gibt (Verlauf, weggelassen).
+
+        ⚠ DER STÄRKSTE GEMESSENE BEFUND DIESER ARBEIT, und er stand bis zum
+        04.09.2026 offen. `_load_history` gab jedem Agenten den GANZEN Faden —
+        auch alles, was vor seinem Beitritt geschah. Am echten Gespräch:
+
+            Agent A    0 Nachrichten vor Beitritt   10,8 % allwissend
+            Agent B  228 Nachrichten vor Beitritt   18,2 % allwissend
+            Agent C  309 Nachrichten vor Beitritt   41,2 % allwissend
+
+        Monoton, Faktor vier. Drei Punkte sind kein Beweis, aber die Richtung
+        ist genau die, die das perspektivgebundene Gedächtnis vorhersagt
+        (arXiv:2606.25632, +34,6 Prozentpunkte Knowledge Boundary Fidelity bei
+        ~79 % Gewinnrate in der Erzählqualität — die Grenze senkt allwissende
+        Aussagen, OHNE die Prosa zu verflachen).
+
+        Das Papier nennt den Fehler *Factual Overreach*: eine Figur benutzt
+        Wissen ausserhalb ihrer Perspektive. Generative Agents lösen dasselbe
+        über einen VERALTENDEN Teilgraphen der Welt je Agent — das Weltmodell
+        des Agenten ist absichtlich nicht die Welt.
+
+        WAS EINE FIGUR TROTZDEM WEISS: ihr eigenes Gedächtnis
+        (`agent_memories`, je Agent und damit von Bauart her gebunden), ihre
+        Beziehungen, ihre Stimmung — und die SZENE. Die letzte Szenennachricht
+        überlebt die Grenze immer: sie ist der Raum, in den jemand eintritt,
+        nicht ein Gespräch, das er verpasst hat. Ohne diese Ausnahme stünde
+        eine neu hinzugekommene Figur in einem leeren Nichts.
+
+        WARUM IN PYTHON UND NICHT IN SQL: der Verlauf wird EINMAL je Zug
+        geladen und für alle Sprecher geteilt (siehe `_GroupTurnSetup.history`
+        — das war der Weg von 20 auf 12 Rundreisen). Die Grenze in SQL zu
+        ziehen hiesse, je Agent neu zu laden. Das ist keine Ausnahme von
+        ADR-007, sondern seine Anwendung: eine Filterung über Daten, die schon
+        im Speicher liegen, ist keine Datenbankfrage.
+        """
+        if not joined_at:
+            return history, 0
+
+        letzte_szene = next(
+            (m for m in reversed(history) if m.get("sender_role") == "system"), None
+        )
+        erlebt = [m for m in history if str(m.get("created_at") or "") >= joined_at]
+        weggelassen = len(history) - len(erlebt)
+
+        # Die Szene des Raums, in den die Figur eintritt — auch wenn sie vor
+        # ihrer Zeit gesetzt wurde. Nur die JÜNGSTE: ältere beschreiben Räume,
+        # die es nicht mehr gibt.
+        if letzte_szene is not None and letzte_szene not in erlebt:
+            erlebt = [letzte_szene, *erlebt]
+
+        return erlebt, weggelassen
 
     @staticmethod
     def _merge_consecutive_user_turns(messages: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -1949,7 +2059,8 @@ class ChatAIService:
         response = await (
             self._supabase.table("chat_conversation_agents")
             .select(
-                "agent_id, agents(id, name, character, character_de, background, background_de,"
+                "agent_id, added_at,"
+                " agents(id, name, character, character_de, background, background_de,"
                 " system, gender, primary_profession, primary_profession_de, portrait_image_url)",
             )
             .eq("conversation_id", str(conversation_id))
@@ -1960,6 +2071,10 @@ class ChatAIService:
         for row in extract_list(response):
             agent_data = row.get("agents")
             if agent_data:
+                # Der Beitrittszeitpunkt reist mit dem Agenten. Er entscheidet,
+                # welchen Verlauf diese Figur ueberhaupt miterlebt hat —
+                # siehe `_bound_to_perspective`.
+                agent_data["_joined_at"] = row.get("added_at")
                 agents.append(agent_data)
         return agents
 

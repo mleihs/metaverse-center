@@ -47,7 +47,11 @@ from uuid import UUID
 
 from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import BudgetExceededError
-from backend.services.external.openrouter import BudgetContext, OpenRouterService
+from backend.services.external.openrouter import (
+    BudgetContext,
+    OpenRouterError,
+    OpenRouterService,
+)
 from backend.services.model_resolver import ModelResolver
 from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
@@ -105,16 +109,45 @@ class ConversationDigestService:
 
     # ── Lesen ─────────────────────────────────────────────────────────────
 
-    async def load_digest_text(self, conversation_id: UUID, locale: str = "de") -> str:
+    async def load_digest_text(
+        self, conversation_id: UUID, locale: str = "de", *, since: str | None = None
+    ) -> str:
         """Die vorhandenen Verdichtungen als ein Block für den System-Prompt.
 
-        Reiner Lesevorgang, kein Modellaufruf: er liegt im Anfragepfad eines
-        Chats und darf ihn nicht verlängern. Fehlt eine Verdichtung, fehlt sie
-        eben — das Gespräch läuft mit dem wörtlichen Fenster weiter, nur mit
-        kürzerem Gedächtnis. Erzeugt wird ausserhalb des Pfades
-        (:meth:`ensure_digests`).
+        Der bequeme Weg für den EINZELCHAT, wo es nur eine Perspektive gibt.
+        Der Gruppenzug lädt einmal (:meth:`load_digest_rows`) und rendert je
+        Sprecher (:meth:`render`) — sonst kostete die Perspektivgrenze eine
+        Rundreise je Agent.
         """
-        rows = await self._load_digests(conversation_id)
+        return self.render(await self.load_digest_rows(conversation_id), locale, since=since)
+
+    async def load_digest_rows(self, conversation_id: UUID) -> list[dict[str, Any]]:
+        """Die Abschnitte, roh. Reiner Lesevorgang, kein Modellaufruf.
+
+        Er liegt im Anfragepfad eines Chats und darf ihn nicht verlängern;
+        erzeugt wird ausserhalb (:meth:`ensure_digests`). Fehlt eine
+        Verdichtung, fehlt sie eben — das Gespräch läuft mit dem wörtlichen
+        Fenster weiter, nur mit kürzerem Gedächtnis.
+        """
+        return await self._load_digests(conversation_id)
+
+    @staticmethod
+    def render(rows: list[dict[str, Any]], locale: str = "de", *, since: str | None = None) -> str:
+        """Abschnitte zu einem Block. Reine Rechnung, kein Netz.
+
+        ``since`` ist die PERSPEKTIVGRENZE: ein Abschnitt, der vor dem
+        Beitritt dieser Figur endete, ist Vorgeschichte, die sie nicht
+        miterlebt hat — eine Verdichtung davon zu lesen ist dieselbe
+        Faktenanmassung wie der Urtext, nur kompakter.
+
+        Verglichen wird ``covers_from``, nicht ``covers_to``: ein Abschnitt,
+        der über den Beitritt HINWEGREICHT, ist nur zur Hälfte miterlebt. Ihn
+        ganz zu geben wäre zu viel, ihn zu teilen ginge nicht — er ist ein
+        Text, kein Datensatz. Die vorsichtige Wahl ist, ihn wegzulassen; der
+        Urtext dieser Hälfte steht ohnehin im wörtlichen Fenster.
+        """
+        if since:
+            rows = [r for r in rows if str(r.get("covers_from") or "") >= since]
         if not rows:
             return ""
 
@@ -128,7 +161,9 @@ class ConversationDigestService:
         )
         teile = [kopf]
         for row in rows:
-            teile.append(f"\n[{row['covers_from'][:10]} – {row['covers_to'][:10]}]\n{row['summary']}")
+            teile.append(
+                f"\n[{str(row['covers_from'])[:10]} – {str(row['covers_to'])[:10]}]\n{row['summary']}"
+            )
         return "\n".join(teile)
 
     async def _load_digests(self, conversation_id: UUID) -> list[dict[str, Any]]:
@@ -261,6 +296,23 @@ class ConversationDigestService:
             # Eine bewusste, protokollierte Verwaltungsentscheidung, kein
             # Fehlschlag. Wiederholen hiesse dieselbe Absage noch einmal holen.
             logger.info("Verdichtung von %s durch Budget gestoppt: %s", conversation_id, exc)
+            return False
+        except OpenRouterError:
+            # Die BASISklasse. `generate` wirft sie fuer API-Fehler,
+            # gescheiterte Verbindung und erschoepfte Wiederholungen; die drei
+            # Unterklassen decken davon keinen ab.
+            #
+            # Der Abschnitt bleibt UNVERDICHTET und wird beim naechsten Lauf
+            # wieder versucht — `ensure_digests` fragt, was fehlt. Eine leere
+            # Zeile zu schreiben waere schlimmer: sie belegte die
+            # Abschnittsnummer, und der Abschnitt waere fuer immer
+            # unverdichtbar.
+            logger.warning(
+                "Verdichtung von Abschnitt %d in %s: Modellaufruf fehlgeschlagen",
+                segment_index,
+                conversation_id,
+                exc_info=True,
+            )
             return False
 
         await AIUsageService.log(
