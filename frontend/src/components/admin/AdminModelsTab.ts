@@ -180,7 +180,8 @@ function getModelMeta(): Record<string, ModelSettingMeta> {
  */
 const MODEL_OPTIONS = [
   // 02.09.2026: die beiden DeepSeek-V4-Denkmodelle sind hier RAUS, auf
-  // Entscheidung des Nutzers (Wortlaut nicht wiedergegeben)). Sie stehen
+  // Entscheidung des Betreibers, auf Grundlage der Abrechnung: die Denkmodelle
+  // waren zu teuer fuer ihren Nutzen. Sie stehen
   // auch nicht mehr als Auswahl zur Verfügung, damit „Auf Vorgaben
   // zurücksetzen" sie nicht durch die Hintertür zurückholt. Begründung samt
   // Preisen: HARDCODED_DEFAULTS in backend/services/platform_model_config.py.

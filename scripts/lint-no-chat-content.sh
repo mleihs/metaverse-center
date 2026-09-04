@@ -28,6 +28,22 @@
 #   der oeffentlichen Seite — das ist die Besetzung der Welt, kein privater
 #   Verlauf. Gepruefte Muster sind Sprechermarken MIT Text, Protokollzeilen
 #   mit Zeitstempel, Rollenzeilen und zugeschriebene Zitate.
+#
+# ZWEI BEINE, UND WARUM ES ZWEI BRAUCHT
+#
+#   (1) MUSTER erkennen die FORM einer Gespraechszeile. Sie fangen auch, was
+#       niemand vorher gesehen hat — und genau deshalb sind sie unscharf.
+#   (2) Die SPERRLISTE erkennt bekannten Wortlaut, unabhaengig von jeder Form.
+#
+#   Das zweite Bein gibt es, weil das erste VIERMAL danebengegriffen hat:
+#   ein Zitat in Klammern statt nach Doppelpunkt, ein Zitat ohne
+#   Anfuehrungsstriche, eines ueber zwei Zeilen umgebrochen, und eine Aussage,
+#   die als eigener Befund umformuliert war und den Wortlaut trotzdem trug.
+#   Jedes Mal meldete das Tor PASS. Ein Messgeraet, das seine eigene Blindheit
+#   nicht kennt, braucht ein zweites, das anders misst.
+#
+#   Die Sperrliste steht in `scripts/chat-content-denylist.txt` und fuehrt nur
+#   HASHES. Eine Sperrliste im Klartext waere das Leck, das sie schliessen soll.
 
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,7 +53,44 @@ PY="backend/.venv/bin/python"
 [ -x "$PY" ] || PY="python3"
 
 "$PY" - "$@" <<'PYEOF'
-import re, subprocess, sys
+import hashlib, re, subprocess, sys, unicodedata
+from pathlib import Path
+
+# ── Bein 2: Sperrliste aus Hashes ──────────────────────────────────────────
+FENSTER = 5
+
+def normwoerter(text: str) -> list[str]:
+    """Klein, Umlaute ausgeschrieben, alles andere ist Trenner.
+
+    Die Normalisierung ist der Grund, warum das Bein nicht an der Form haengt:
+    „fuer" und „für", Zitat und Umschreibung, Kommentar und Zeichenkette
+    ergeben dieselbe Wortfolge — und damit denselben Hash.
+    """
+    text = text.lower()
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        text = text.replace(a, b)
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", " ", text).split()
+
+def lade_sperrliste() -> set[str]:
+    p = Path("scripts/chat-content-denylist.txt")
+    if not p.exists():
+        return set()
+    return {z.strip() for z in p.read_text(encoding="utf-8").splitlines()
+            if z.strip() and not z.startswith("#")}
+
+SPERRE = lade_sperrliste()
+
+def sperrtreffer(text: str) -> bool:
+    if not SPERRE:
+        return False
+    w = normwoerter(text)
+    for i in range(len(w) - FENSTER + 1):
+        h = hashlib.sha256(" ".join(w[i:i + FENSTER]).encode()).hexdigest()[:24]
+        if h in SPERRE:
+            return True
+    return False
 
 # Ein Kommentarzeichen davor. GENAU DARAN ist die erste Fassung dieses Tores
 # gescheitert: sie verlangte den Zeilenanfang, und die echten Fundstellen
@@ -65,10 +118,20 @@ MUSTER = [
 ]
 
 def pruefe(text, herkunft, funde):
-    for i, zeile in enumerate(text.split("\n"), 1):
+    zeilen = text.split("\n")
+    for i, zeile in enumerate(zeilen, 1):
         for name, p in MUSTER:
             if p.search(zeile):
                 funde.append((herkunft, i, name, zeile.strip()[:90]))
+
+    # Die Sperrliste laeuft ueber ein FENSTER von drei Zeilen, nicht ueber
+    # einzelne. Ein umgebrochenes Zitat war einer der vier Faelle, an denen die
+    # zeilenweise Musterpruefung vorbeilief.
+    for i in range(len(zeilen)):
+        if sperrtreffer(" ".join(zeilen[i:i + 3])):
+            funde.append((herkunft, i + 1, "Sperrliste: bekannter Wortlaut",
+                          "<nicht wiedergegeben — siehe chat-content-denylist.txt>"))
+            break
 
 funde = []
 dateien = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.split("\n")

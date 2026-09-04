@@ -67,7 +67,7 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### H3. AI Chain-of-Thought leak in message content
 **Severity:** High
 **Component:** AI Pipeline / Chat streaming
-**Description:** Suse Sonnenblum message at 10:47 displays raw AI reasoning: "(the model deliberating about the user, verbatim in the message body oder sucht nach einer klaren Handlungsanweisung. Zwei Aspekte: 1. Was tun mit der Brutzeitverschiebung? 2. Die tanzenden Bananen.)" followed by multiple paragraphs of internal reasoning before the actual response.
+**Description:** Suse Sonnenblum message at 10:47 displays raw AI reasoning: a parenthetical block of the model\'s own deliberation, verbatim in the message body (wording not reproduced here). followed by multiple paragraphs of internal reasoning before the actual response.
 **Impact:** Breaks immersion completely. Users see the AI "thinking out loud."
 **Fix:** System prompt needs `<think>` tag stripping or the streaming handler needs to filter CoT blocks.
 
@@ -118,7 +118,7 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### M5. No visual separator between different agents
 **Severity:** Medium
 **Component:** `ChatMessage.ts`
-**Description:** When the speaking agent changes (e.g., Doktor Freundlich -> Suse Sonnenblum -> General Gutmut), there's no visual break other than the name label. In long conversations this makes it hard to scan who said what.
+**Description:** When the speaking agent changes (e.g., Doktor Freundlich -> Suse Sonnenblum -> General Wolf), there's no visual break other than the name label. In long conversations this makes it hard to scan who said what.
 **Fix:** Add subtle separator line or extra spacing when `sender` changes between consecutive messages.
 
 ### M6. Italic stage directions not visually distinct
@@ -148,7 +148,7 @@ These two alone account for the "unpolished" impression. Fixing them transforms 
 ### M10. Rename input shows truncated name
 **Severity:** Medium
 **Component:** `ConversationList.ts`
-**Description:** Double-click rename shows "FREUNDLICH, BENNO BLATTGOLD" instead of the full "Doktor Freundlich, Suse Sonnenblum +1". The "Doktor" prefix and "+1" suffix are missing from the editable input.
+**Description:** Double-click rename shows "FENN, ELENA VOSS" instead of the full "Doktor Freundlich, Suse Sonnenblum +1". The "Doktor" prefix and "+1" suffix are missing from the editable input.
 **Fix:** Pass the full conversation title to the rename input, not a truncated version.
 
 ---

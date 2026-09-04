@@ -1,11 +1,11 @@
 -- Migration 340: Kein Denkmodell mehr in den Listen
 --
--- Entscheidung des Nutzers am 02.09.2026, auf Grundlage seiner
--- OpenRouter-Rechnung (Wortlaut nicht wiedergegeben)
+-- Entscheidung des Betreibers am 02.09.2026, auf Grundlage der
+-- OpenRouter-Abrechnung: die Denkmodelle waren zu teuer fuer ihren Nutzen.
 --
 -- WARUM SEIN BELEG MEINEN SCHLÄGT
 --
--- Ich konnte die Frage (Wortlaut nicht wiedergegeben) NICHT beantworten:
+-- Ich konnte die Frage „wohin sind die 65 Einheiten gegangen" NICHT beantworten:
 --
 --     /api/v1/activity   403 — braucht einen Management-Key
 --     ai_usage_log       deckt 10,53 von 65 ab und endet am 01.09.

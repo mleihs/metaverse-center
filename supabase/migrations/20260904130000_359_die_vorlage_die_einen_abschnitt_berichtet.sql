@@ -15,8 +15,9 @@
 --
 -- ── Warum der Bericht auf DEN CHARAKTER zielt ──────────────────────────────
 --
--- Der Anlass war der Satz des Nutzers, dass mit einem engen Fenster (Wortlaut nicht wiedergegeben). Eine Verdichtung, die nur
--- Ereignisse aufzählt (Wortlaut nicht wiedergegeben)), rettet den nicht. Der
+-- Der Anlass war der Befund, dass ein enges Fenster den eingespielten
+-- Charakter eines Agenten nicht mehr traegt. Eine Verdichtung, die nur
+-- Ereignisse aufzählt („sie sprachen über die Akte"), rettet den nicht. Der
 -- Auftrag verlangt deshalb ausdrücklich das, was eine Ereignisliste weglässt:
 -- wie die Beteiligten zueinander stehen, was sich zwischen ihnen geändert
 -- hat, welche Anrede und welcher Ton sich eingespielt haben, und was

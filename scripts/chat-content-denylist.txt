@@ -1,0 +1,39 @@
+# Sperrliste fuer scripts/lint-no-chat-content.sh
+#
+# Jede Zeile ist der gekuerzte SHA-256 eines normalisierten Fensters von
+# 5 Woertern aus einem echten Gespraech. Der Wortlaut selbst steht
+# NICHT hier — eine Sperrliste, die ihre Eintraege im Klartext fuehrt, waere
+# genau das Leck, das sie verhindern soll.
+#
+# Normalisierung: klein, Umlaute ausgeschrieben, alles ausser [a-z0-9] wird
+# zum Trenner. Das Tor hasht JEDES Fenster dieser Laenge in jeder Datei und
+# vergleicht. Damit haengt der Fund nicht mehr an der FORM der Umgebung —
+# das war die Schwaeche, an der die Musterpruefung viermal vorbeigelaufen ist
+# (Zitat in Klammern, Zitat ohne Doppelpunkt, Zitat ueber zwei Zeilen,
+# Aussage ohne Anfuehrungszeichen).
+#
+# Neuen Eintrag erzeugen:
+#   bash scripts/add-chat-content-denylist.sh 'der zu sperrende Satz'
+
+02fc2275310e3c885c3b4c64
+0cae45e74d7b0097b5425fd8
+183f761f4f1a41b0bd4baee7
+27201a041abe6507547b1d3c
+28266ed201d566d24821cb7c
+3d4c5dda84a40fae44d3d235
+6d0cc478eb2497e80147088c
+7b1185e506dfc044bd4b8538
+7d30341760e144166b98e201
+903c6b5c00d1af08b4d5746d
+9c7aa7f5a831dfda4f97240c
+9d641e03c8a41ca14c696ad0
+ae2e54559c9e70ac7f3a5c07
+ae4b27bca81c2b78e81c15c4
+ae5e9c95ea0ba0ada48351df
+c063b2290350c175bbc014a0
+c20714ed4036214b0e15d668
+ce8ff43882b8ebce0d68b9b3
+d76f8cee99bad73386246706
+ecd4114c4c86fed6936a1a2e
+eddf956f90d2a9ac8c36d06a
+f6eb41d9ae34ceabd7c0f869

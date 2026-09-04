@@ -42,7 +42,9 @@ _CACHE_TTL = 300  # 5 minutes
 #
 # ── 02.09.2026: KEIN DENKMODELL MEHR IN DIESEM VERZEICHNIS ──────────────────
 #
-# Entscheidung des Nutzers, auf Grundlage seiner OpenRouter-Rechnung (Wortlaut nicht wiedergegeben) Sein Beleg schlägt meinen — die Aktivitätsseite von
+# Entscheidung des Betreibers, auf Grundlage der OpenRouter-Abrechnung: die
+# Denkmodelle waren zu teuer für ihren Nutzen. Die Abrechnung schlägt meine
+# eigene Messung – die Aktivitätsseite von
 # OpenRouter braucht einen Management-Key, und `ai_usage_log` kann die Frage
 # nicht beantworten (er deckt 10,53 von 65 verbrauchten Einheiten ab und endet
 # am 01.09.).

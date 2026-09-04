@@ -65,7 +65,8 @@ ohne benannte Rasten.
 
 ### Verdichtete Vorgeschichte (358/359/360)
 
-Anlass: „ein enges Fenster traegt den eingespielten Charakter nicht."
+Anlass: der Befund, dass ein Fenster von zehn Nachrichten den eingespielten
+Charakter eines Agenten nicht mehr traegt.
 
 Die Bauform folgt drei gemessenen Befunden:
 - **arXiv:2512.12775** — Persona-Drift tritt INNERHALB des Fensters auf. Mehr
