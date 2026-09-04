@@ -33,6 +33,7 @@ Zugang: ``SUPABASE_URL`` und der Dienstschlüssel aus
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -110,7 +111,33 @@ def main() -> int:
     args = parser.parse_args()
 
     src: Path = args.src
-    files = sorted(p for p in src.glob("*") if p.suffix in _MIME)
+
+    # WAS ABGELEGT WIRD, IST DIE LISTE DES LAUFS — NICHT DER INHALT DES ORDNERS.
+    #
+    # Vorher stand hier ein `glob("*")`. Das Ableiten leert `--out` nie, also
+    # lag dort regelmaessig eine fruehere, vollstaendige Generation herum: ein
+    # Teillauf meldete sechs Dateien, und abgelegt wurden alle vierundsiebzig —
+    # mit `x-upsert: true` gegen URLs, die mit `max-age=31536000, immutable`
+    # ausgeliefert werden und die beide Skripte fuer endgueltig erklaeren. Ein
+    # ueberschriebener Inhalt unter einer unveraenderlichen URL ist genau die
+    # Vergiftung, gegen die der datierte Vorsatz ueberhaupt eingefuehrt wurde.
+    #
+    # `_ableitung.json` schreibt `derive_landing_images.py` am Ende jedes
+    # Laufs. Fehlt sie, faellt der Upload auf den Ordnerinhalt zurueck — und
+    # sagt es, statt es zu tun.
+    manifest = src / "_ableitung.json"
+    if manifest.is_file():
+        namen = set(json.loads(manifest.read_text())["dateien"])
+        files = sorted(p for p in src.glob("*") if p.suffix in _MIME and p.name in namen)
+        fremd = sorted(p.name for p in src.glob("*") if p.suffix in _MIME and p.name not in namen)
+        if fremd:
+            print(f"Uebergangen ({len(fremd)} nicht aus diesem Lauf): {', '.join(fremd[:6])}")
+            if len(fremd) > 6:
+                print(f"  ... und {len(fremd) - 6} weitere")
+    else:
+        files = sorted(p for p in src.glob("*") if p.suffix in _MIME)
+        print(f"Keine {manifest.name} — es wird der ganze Ordnerinhalt abgelegt.")
+
     if not files:
         print(f"Keine Bilddateien in {src}", file=sys.stderr)
         return 1
@@ -131,8 +158,7 @@ def main() -> int:
 
     if not args.local and os.environ.get("LANDING_UPLOAD_CONFIRMED") != "yes":
         print(
-            "Prod-Schreibvorgang: setze LANDING_UPLOAD_CONFIRMED=yes, wenn der "
-            "Nutzer zugestimmt hat.",
+            "Prod-Schreibvorgang: setze LANDING_UPLOAD_CONFIRMED=yes, wenn der Nutzer zugestimmt hat.",
             file=sys.stderr,
         )
         return 2

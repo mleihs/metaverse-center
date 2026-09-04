@@ -293,11 +293,21 @@ export class VelgAtlasHero extends LitElement {
 
       /* ---- Haltepunkte nach responsive-spec.md ---- */
 
-      /* Tablet hochkant: gestapelt, die Figur beschnitten auf 16:9 — hochkant
-         unter dem Text waere ein halber Bildschirm Foto vor dem naechsten
-         Blatt. Gegen den WIRT, nicht das Fenster: eine Medienabfrage hier hat
-         am 03.09.2026 dazu gefuehrt, dass das Blatt bei 390 px Blattbreite
-         zweispaltig stehenblieb, weil das Fenster 1728 breit war. */
+      /* Tablet hochkant: gestapelt, die Figur auf 16:9 — hochkant unter dem
+         Text waere ein halber Bildschirm Foto vor dem naechsten Blatt. Gegen
+         den WIRT, nicht das Fenster: eine Medienabfrage hier hat am 03.09.2026
+         dazu gefuehrt, dass das Blatt bei 390 px Blattbreite zweispaltig
+         stehenblieb, weil das Fenster 1728 breit war.
+
+         DAS 16:9 HIER HAT EINE EIGENE BILDDATEI. Vom 04. bis 05.09.2026 nicht:
+         da traf dieser Rahmen auf die neue 3:4-Quelle, und object-fit: cover
+         schnitt 58 % der Zeichnung weg — genau der Beschnitt, gegen den die
+         Hochkant-Fassung eingefuehrt worden war. Die source-media-Paare im
+         Markup liefern hier die Rolle heroWide, einen beim Ableiten gesetzten
+         Zuschnitt. Wer diese Regel aendert, aendert auch Role.aspect in
+         derive_landing_images.py — sonst zeigt der Rahmen wieder etwas
+         anderes als das Bild.
+         (Keine Backticks in diesem Block: sie beenden das css-Template.) */
       @container (max-width: 1023px) {
         .sheet {
           grid-template-columns: 1fr;
@@ -336,6 +346,22 @@ export class VelgAtlasHero extends LitElement {
 
   @property({ type: Object, attribute: false }) counts: LandingCounts | null = null;
 
+  /*
+   * WARUM VIER <source> STATT ZWEI.
+   *
+   * <picture> nimmt die ERSTE <source>, deren `media` UND `type` passen. Die
+   * beiden schmalen stehen deshalb vorn: unter 1023 px ist der Rahmen 16:9
+   * (siehe die @container-Regel oben), und die Hochkant-Quelle wuerde darin
+   * unter `object-fit: cover` zu 58 % weggeschnitten. `heroWide` ist derselbe
+   * Anmeldesaal, beim Ableiten auf 16:9 zugeschnitten — gemessen 78 KB statt
+   * 364 KB, weil ein Telefon nicht mehr Pixel laedt, die es dann wegwirft.
+   *
+   * Die Umschaltung ist hier eine MEDIENabfrage, waehrend der Entwurf eine
+   * Containerabfrage benutzt. Kein Versehen: `<source media>` kennt keine
+   * Containerform. Beide stimmen ueberein, solange der Wirt so breit ist wie
+   * das Fenster — was fuer die Frontseite gilt und in einer eingebetteten
+   * Ansicht nicht mehr.
+   */
   protected render() {
     const online = this.counts?.worlds_transmitting ?? 0;
 
@@ -378,7 +404,20 @@ export class VelgAtlasHero extends LitElement {
 
         <figure class="fig">
           <div class="fig__frame atlas-scan atlas-zoom">
+            <!-- Reihenfolge ist Logik: die erste passende source gewinnt. -->
             <picture>
+              <source
+                media="(max-width: 1023px)"
+                type="image/avif"
+                srcset=${landingSrcset(ATLAS_HERO_STEM, 'heroWide', 'avif')}
+                sizes=${LANDING_IMAGE_SIZES.heroWide}
+              />
+              <source
+                media="(max-width: 1023px)"
+                type="image/webp"
+                srcset=${landingSrcset(ATLAS_HERO_STEM, 'heroWide', 'webp')}
+                sizes=${LANDING_IMAGE_SIZES.heroWide}
+              />
               <source
                 type="image/avif"
                 srcset=${landingSrcset(ATLAS_HERO_STEM, 'heroPortrait', 'avif')}
