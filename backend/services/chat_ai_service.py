@@ -117,7 +117,8 @@ _DEPARTED_SPEAKER = "former participant"
 #:
 #: Bis zum 05.09.2026 stand hier `"User"`. Beim Durchspielen auf Produktion
 #: gemessen: **11 von 24 Agentenzuegen schrieben `[User]` woertlich in ihre
-#: Prosa** — „Ich sehe, wie [User] Mira die Hand auf den Arm legt."
+#: Prosa**, an Stellen, an denen ein NAME stehen muesste — als Subjekt eines
+#: Nebensatzes und im Genitiv vor einem Koerperteil.
 #:
 #: Der Grund ist keine Regelverletzung, sondern eine Luecke im Wortschatz.
 #: Der Mensch traegt NIRGENDS einen Namen: weder `user_profiles` noch
@@ -936,10 +937,9 @@ class ChatAIService:
         # Wort fuer ihn braucht — gemessen am 05.09.2026: 11 von 24 Zuegen.
         #
         # Hier faellt nur die KLAMMER, nicht die Bezeichnung: „wie [dein
-        # Gegenueber] Mira die Hand auf den Arm legt" wird zu „wie dein
-        # Gegenueber Mira die Hand auf den Arm legt" — ein richtiger deutscher
-        # Satz. Genau dafuer ist die Marke eine Bezeichnung in der dritten
-        # Person und kein Anredewort.
+        # Gegenueber] den Korb nimmt" wird zu „wie dein Gegenueber den Korb
+        # nimmt" — ein richtiger deutscher Satz. Genau dafuer ist die Marke
+        # eine Bezeichnung in der dritten Person und kein Anredewort.
         marken = "|".join(re.escape(m) for m in (_USER_SPEAKER, *_USER_SPEAKER_BY_LOCALE.values()))
         return re.sub(rf"\[({marken})\]", r"\1", text)
 

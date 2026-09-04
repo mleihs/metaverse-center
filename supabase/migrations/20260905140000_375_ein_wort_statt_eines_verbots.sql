@@ -23,10 +23,12 @@
 -- ── WAS STATTDESSEN GESCHIEHT ──────────────────────────────────────────────
 --
 --   Die Marke selbst wird zur Bezeichnung, und zwar in der DRITTEN Person:
---   `[dein Gegenüber]` statt `[User]` (`_USER_SPEAKER_BY_LOCALE`). Greift
---   eine Figur sie auf, entsteht ein richtiger Satz — „wie dein Gegenüber
---   Mira die Hand auf den Arm legt". Ein Anredewort taete das nicht: „wie Du
---   … legt" verlangte „legst".
+--   `[dein Gegenüber]` statt `[User]` (`_USER_SPEAKER_BY_LOCALE`).
+--
+--   Der Grund fuer die dritte Person ist grammatisch: eine Bezeichnung in der
+--   dritten Person passt zu einem Verb in der dritten Person, und genau so
+--   erzaehlen die Figuren den Menschen ohnehin. Ein Anredewort verlangte die
+--   zweite Verbform und stuende dann falsch, sobald es aufgegriffen wird.
 --
 --   Dazu faellt im Ausgabetext die KLAMMER (`_strip_speaker_labels`), nicht
 --   die Bezeichnung. Deterministisch, kein Modellaufruf, kein Verlass auf

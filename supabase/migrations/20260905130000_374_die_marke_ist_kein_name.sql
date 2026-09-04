@@ -5,8 +5,9 @@
 -- Beim Durchspielen von sechs Runden auf Produktion gefunden, nicht in einem
 -- Test: die Figuren schreiben die Marke des Menschen woertlich in ihre Prosa.
 --
---   „Ich beobachte, wie [User] Mira die Akte reicht …"
---   „Mein Blick wandert zu [User], kurz, fragend."
+--   Die Marke erscheint dort, wo ein NAME stehen muesste: als Subjekt eines
+--   Nebensatzes, nach einer Praeposition, und im Genitiv vor einem
+--   Koerperteil. Also ueberall dort, wo eine Figur eine Bezeichnung braucht.
 --
 -- ── GEMESSEN, derselbe Faden ───────────────────────────────────────────────
 --

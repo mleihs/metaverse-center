@@ -209,9 +209,9 @@ class TestDieMarkeDesMenschenIstProsa:
         assert _user_speaker("") == "dein Gegenüber"
 
     def test_sie_steht_in_der_dritten_person(self):
-        """Ein Anredewort taete es NICHT. „wie Du Mira die Hand auf den Arm
-        legt" verlangte „legst" — die Figur erzaehlt ihn aber in der dritten
-        Person, und dazu muss die Bezeichnung passen."""
+        """Ein Anredewort taete es NICHT. „wie Du den Korb abstellt" verlangte
+        „abstellst" — die Figur erzaehlt ihn aber in der dritten Person, und
+        dazu muss die Bezeichnung passen."""
         from backend.services.chat_ai_service import _user_speaker
 
         for locale in ("de", "en"):
@@ -220,9 +220,9 @@ class TestDieMarkeDesMenschenIstProsa:
     def test_die_klammer_faellt_die_bezeichnung_bleibt(self):
         """Deterministisch, kein Verlass auf Einhaltung. Was bleibt, muss ein
         richtiger Satz sein."""
-        text = "Ich sehe, wie [dein Gegenüber] Marie die Hand auf den Arm legt."
+        text = "Ich sehe, wie [dein Gegenüber] den Korb auf den Tisch stellt."
         sauber = ChatAIService._strip_speaker_labels(text, [*BESETZUNG, "dein Gegenüber"])
-        assert sauber == "Ich sehe, wie dein Gegenüber Marie die Hand auf den Arm legt."
+        assert sauber == "Ich sehe, wie dein Gegenüber den Korb auf den Tisch stellt."
 
     def test_auch_die_alte_marke_wird_noch_entklammert(self):
         """Der Bestand traegt sie. Eine Reparatur, die nur die Zukunft sauber
