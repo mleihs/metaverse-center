@@ -9,6 +9,28 @@
  * delta colour (positive → warning amber, negative → success green,
  * zero → muted) so the same primitive can frame any signed metric.
  *
+ * Benannte Rasten (``marks``):
+ *   Nicht jede Skala ist eine Zahl. „Wie oft reden die Agenten ohne mich" hat
+ *   fuenf Stufen mit Namen — still, gelegentlich, rege — und die Zahl dahinter
+ *   ist eine Stundenangabe, keine Prozentzahl. Mit ``marks`` traegt die Bahn
+ *   fuenf Kerben statt eines Kontinuums, die Anzeige nennt den NAMEN der
+ *   getroffenen Raste und ihre Erlaeuterung, und ``aria-valuetext`` sagt
+ *   beides statt „2".
+ *
+ *   Warum hier und nicht als eigener Baustein: die Tastaturbedienung, der
+ *   Quadrat-Daumen, der Versatzschatten, die Vorgabe-Kerbe, der
+ *   Zuruecksetzen-Knopf und die Barrierefreiheit stehen alle schon da. Ein
+ *   zweiter Regler waere eine zweite Gelegenheit, sie unterschiedlich zu
+ *   aendern. Geprueft wurden auch die fremden Bausteine
+ *   (`range-slider-element`, `range-slider-input`) — beide ordentlich, beide
+ *   ohne benannte Rasten, und ihr CSS muesste erst in die Schattenwurzel
+ *   gebracht werden.
+ *
+ *   Die Rasten sind reine DARSTELLUNG: der Regler bleibt numerisch. Wer
+ *   Stunden will, gibt min=0 max=4 step=1 und bildet den Index selbst auf
+ *   Stunden ab. Ein Regler, der seinen eigenen Wert uebersetzt, waere an der
+ *   naechsten Stelle im Weg.
+ *
  * Brutalist aesthetics:
  *   - Hard-edge square thumb with offset shadow
  *   - Default-position tick on the track for "where you started"
@@ -49,6 +71,28 @@ import { customElement, property } from 'lit/decorators.js';
 import { icons } from '../../utils/icons.js';
 
 /**
+ * Eine benannte Raste auf der Bahn. Der Aufrufer uebersetzt die Texte; der
+ * Regler setzt sie nur.
+ */
+export interface SliderMark {
+  /** Position auf der Bahn — muss zwischen ``min`` und ``max`` liegen. */
+  value: number;
+  /** Der Name der Raste, uebersetzt vom Aufrufer ("regelmaessig"). */
+  label: string;
+  /**
+   * Die Erlaeuterung. Steht unter dem Namen, wenn die Raste getroffen ist,
+   * und geht in ``aria-valuetext`` mit ein ("alle 12 Stunden").
+   */
+  hint?: string;
+  /**
+   * Was UNTER der Kerbe steht — kurz, weil fuenf davon nebeneinander passen
+   * muessen. Fuer eine Stundenskala die blosse Zahl ("12"). Fehlt sie, traegt
+   * die Kerbe keine Beschriftung.
+   */
+  tick?: string;
+}
+
+/**
  * Detail payload of the ``slider-change`` CustomEvent. Exported so panels
  * can narrow event handlers type-safely without relying on structural
  * subset-matching that would silently drift if the slider extended its
@@ -81,6 +125,11 @@ export class VelgForecastSlider extends LitElement {
   /** Sign of the delta drives colour: 1 = up/warning, -1 = down/success, 0 = neutral. */
   @property({ type: Number, attribute: 'delta-sign' }) deltaSign = 0;
   @property({ type: Boolean }) disabled = false;
+  /**
+   * Benannte Rasten. Ist die Liste leer, verhaelt sich der Regler genau wie
+   * bisher — die Erweiterung kostet die vorhandenen Aufrufer nichts.
+   */
+  @property({ attribute: false }) marks: SliderMark[] = [];
 
   static styles = css`
     :host {
@@ -231,6 +280,73 @@ export class VelgForecastSlider extends LitElement {
       transform: translateX(-50%);
     }
 
+    /* ── Benannte Rasten ──────────────────────────────────────────────── */
+
+    .slider__value--named {
+      font-family: var(--font-brutalist);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: var(--label-transform);
+      font-size: var(--text-sm);
+      text-align: right;
+      min-width: 0;
+    }
+
+    .slider__value-hint {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: var(--font-normal);
+      letter-spacing: var(--tracking-normal);
+      text-transform: none;
+      color: var(--color-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .slider__mark {
+      position: absolute;
+      top: calc(50% - 5px);
+      width: 1px;
+      height: 10px;
+      background: var(--color-border);
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+
+    .slider__mark--active {
+      background: var(--color-primary);
+    }
+
+    /* Die Kerbenbeschriftung sitzt UNTER der Bahn und damit ausserhalb des
+       Umschlags — deshalb ein eigenes Raster statt absoluter Positionen:
+       fuenf gleich breite Spalten, deren Text sich jeweils an seiner Kerbe
+       ausrichtet. Absolut positionierte Beschriftungen liefen an den Enden
+       ueber den Rand und mussten dort einzeln zurechtgerueckt werden. */
+    .slider__ticks {
+      display: grid;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-variant-numeric: tabular-nums;
+      color: var(--color-text-muted);
+      /* Die Bahn ist an beiden Enden um einen halben Daumen eingezogen (der
+         Daumen steht bei min/max mittig). Dieselbe Einziehung hier, sonst
+         staende die erste Zahl neben ihrer Kerbe statt darunter. */
+      padding-inline: calc(var(--_thumb-size) / 2);
+      margin-top: calc(var(--space-1) * -1);
+    }
+
+    .slider__tick {
+      text-align: center;
+    }
+
+    .slider__tick:first-child { text-align: left; }
+    .slider__tick:last-child { text-align: right; }
+
+    .slider__tick--active {
+      color: var(--color-primary);
+      font-weight: var(--font-bold);
+    }
+
     .slider__footer {
       display: grid;
       grid-template-columns: 1fr auto auto;
@@ -318,8 +434,14 @@ export class VelgForecastSlider extends LitElement {
     // points; matches the native browser geometry of WebKit/Gecko range
     // tracks (Chromium/Firefox/Safari all inset by half-thumb).
     const thumbShift = 0.5 - trackPct / 100;
-    const formattedValue = `${this.value}${this.unit}`;
-    const formattedDefault = `${this.default}${this.unit}`;
+    // Die getroffene Raste, falls es Rasten gibt. Der Vergleich ist exakt:
+    // ein Regler mit Rasten hat step=1 ueber ganze Zahlen, und eine Raste
+    // „ungefaehr" zu treffen waere schlimmer als gar keine — die Anzeige
+    // naennte dann einen Namen, der nicht gilt.
+    const activeMark = this.marks.find((m) => m.value === this.value);
+    const defaultMark = this.marks.find((m) => m.value === this.default);
+    const formattedValue = activeMark ? activeMark.label : `${this.value}${this.unit}`;
+    const formattedDefault = defaultMark ? defaultMark.label : `${this.default}${this.unit}`;
     const deltaClass =
       this.deltaSign > 0
         ? 'slider__delta--up'
@@ -331,17 +453,28 @@ export class VelgForecastSlider extends LitElement {
     // Compose aria-valuetext so screen readers announce "100% (+$2.34)"
     // when the operator scrubs — the visible delta is otherwise invisible
     // to assistive tech because it lives in a sibling element.
-    const valuetext = this.deltaText ? `${formattedValue} (${this.deltaText})` : formattedValue;
+    //
+    // Mit Rasten traegt `aria-valuetext` NAMEN UND ERLAEUTERUNG. Ohne das
+    // sagte eine Vorlesesoftware „2" — eine Zahl, die auf dem Bildschirm
+    // nirgends steht und ausserhalb dieses Reglers nichts bedeutet.
+    const valuetext = activeMark
+      ? [activeMark.label, activeMark.hint].filter(Boolean).join(' – ')
+      : this.deltaText
+        ? `${formattedValue} (${this.deltaText})`
+        : formattedValue;
 
     return html`
       <div class="slider" part="root">
         <header class="slider__header">
           <label class="slider__label" for=${inputId}>${this.label}</label>
           <output
-            class="slider__value ${isDirty ? 'slider__value--dirty' : ''}"
+            class="slider__value ${activeMark ? 'slider__value--named' : ''} ${
+              isDirty ? 'slider__value--dirty' : ''
+            }"
             for=${inputId}
           >
             ${formattedValue}
+            ${activeMark?.hint ? html`<span class="slider__value-hint">${activeMark.hint}</span>` : nothing}
           </output>
         </header>
         <div class="slider__track-wrapper">
@@ -364,7 +497,32 @@ export class VelgForecastSlider extends LitElement {
             style="left: calc(${trackPct}% + ${thumbShift} * var(--_thumb-size))"
             aria-hidden="true"
           ></span>
+          ${this.marks.map((mark) => {
+            const pct =
+              this.max === this.min ? 0 : ((mark.value - this.min) / (this.max - this.min)) * 100;
+            return html`<span
+              class="slider__mark ${mark.value === this.value ? 'slider__mark--active' : ''}"
+              style="left: calc(${pct}% + ${0.5 - pct / 100} * var(--_thumb-size))"
+              aria-hidden="true"
+            ></span>`;
+          })}
         </div>
+        ${
+          this.marks.length
+            ? html`<div
+                class="slider__ticks"
+                style="grid-template-columns: repeat(${this.marks.length}, 1fr)"
+                aria-hidden="true"
+              >
+                ${this.marks.map(
+                  (mark) => html`<span
+                    class="slider__tick ${mark.value === this.value ? 'slider__tick--active' : ''}"
+                    >${mark.tick ?? ''}</span
+                  >`,
+                )}
+              </div>`
+            : nothing
+        }
         <footer class="slider__footer">
           <span class="slider__default-label">
             ${msg('default:')} <strong>${formattedDefault}</strong>

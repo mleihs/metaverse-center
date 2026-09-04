@@ -62,6 +62,63 @@ class ChatService:
             .execute()
         )
 
+    @staticmethod
+    async def set_continuation(
+        supabase: Client,
+        conversation_id: UUID,
+        user_id: UUID,
+        *,
+        continues_without_user: bool,
+        notify: str,
+        interval_hours: int,
+    ) -> dict:
+        """Ob und wie dieses Gespraech ohne den Menschen weitergeht.
+
+        Der Besitzerfilter steht — wie bei :meth:`set_locked` — ZUSAETZLICH in
+        der Bedingung, obwohl der Aufrufer `verify_ownership` durchlaufen hat.
+        Der Router benutzt `get_effective_supabase`, und fuer einen
+        Plattform-Admin ist RLS dort ausgeschaltet.
+
+        ⚠ **Ein verschlossener Faden wird nicht umgelegt.** Wer verschliesst,
+        hat eine Geste gemacht; ein Agent, der daraus in der Wochenpost
+        erzaehlt, verraet sie. Die Pruefung steht hier und nicht nur im Router,
+        weil sie zur Sache gehoert und nicht zum Protokoll — die Phase filtert
+        verschlossene Faeden zusaetzlich heraus, aber eine Einstellung, die
+        stillschweigend nichts tut, ist schlimmer als eine abgewiesene.
+        """
+        conversation = await maybe_single_data(
+            supabase.table("chat_conversations")
+            .select("id, locked")
+            .eq("id", str(conversation_id))
+            .eq("user_id", str(user_id))
+            .maybe_single()
+        )
+        if not conversation:
+            raise not_found(detail="Conversation not found")
+        if conversation.get("locked") and continues_without_user:
+            raise bad_request(detail="A sealed conversation does not continue without you. Unseal it first.")
+
+        await (
+            supabase.table("chat_conversations")
+            .update(
+                {
+                    "continues_without_user": continues_without_user,
+                    "continue_notify": notify,
+                    "continue_interval_hours": interval_hours,
+                    "updated_at": datetime.now(UTC).isoformat(),
+                }
+            )
+            .eq("id", str(conversation_id))
+            .eq("user_id", str(user_id))
+            .execute()
+        )
+        return {
+            "id": str(conversation_id),
+            "continues_without_user": continues_without_user,
+            "continue_notify": notify,
+            "continue_interval_hours": interval_hours,
+        }
+
     # ── Batch-load helpers (shared by list + single-load) ──
 
     @staticmethod

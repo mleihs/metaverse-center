@@ -4,6 +4,8 @@ import type {
   ChatEventReference,
   ChatMessage,
   ChatReactionSummary,
+  ConversationContinueHours,
+  ConversationNotifyMode,
 } from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 import type { QueryParams } from './query-params';
@@ -43,6 +45,39 @@ export class ChatApiService extends BaseApiService {
       locked,
       password,
     });
+  }
+
+  /**
+   * Ob und wie dieses Gespraech ohne den Menschen weitergeht.
+   *
+   * Kein Passwort, anders als beim Verschluss nebenan: der Verschluss nimmt
+   * etwas zurueck, was schon geschrieben steht; dies gibt nur der Zukunft
+   * eine Richtung und ist jederzeit wieder umzulegen.
+   *
+   * Der Server weist einen VERSCHLOSSENEN Faden mit 400 ab. Wer verschliesst,
+   * hat eine Geste gemacht, und ein Agent, der daraus in der Wochenpost
+   * erzaehlt, verraet sie.
+   */
+  setConversationContinuation(
+    simulationId: string,
+    conversationId: string,
+    settings: {
+      continues_without_user: boolean;
+      notify: ConversationNotifyMode;
+      interval_hours: ConversationContinueHours;
+    },
+  ): Promise<
+    ApiResponse<{
+      id: string;
+      continues_without_user: boolean;
+      continue_notify: ConversationNotifyMode;
+      continue_interval_hours: ConversationContinueHours;
+    }>
+  > {
+    return this.patch(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/continuation`,
+      settings,
+    );
   }
 
   createConversation(

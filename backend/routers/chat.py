@@ -23,6 +23,7 @@ from backend.models.auth import ConversationLockRequest
 from backend.models.chat import (
     AddAgentRequest,
     ChatMessageResponse,
+    ConversationContinuationRequest,
     ConversationCreate,
     ConversationResponse,
     ConversationUpdate,
@@ -565,6 +566,57 @@ async def set_conversation_lock(
         details={"locked": body.locked},
     )
     return SuccessResponse(data={"id": str(conversation_id), "locked": body.locked})
+
+
+@router.patch("/conversations/{conversation_id}/continuation")
+@limiter.limit(RATE_LIMIT_EXTERNAL_API)
+async def set_conversation_continuation(
+    request: Request,
+    simulation_id: UUID,
+    conversation_id: UUID,
+    body: ConversationContinuationRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[dict]:
+    """Ob die Agenten dieses Fadens ohne den Menschen weiterreden.
+
+    Kein Passwort, anders als beim Verschluss nebenan: der Verschluss nimmt
+    etwas zurueck, was schon geschrieben steht; dies gibt nur der Zukunft eine
+    Richtung.
+
+    ⚠ `require_role("viewer")` genuegt hier — wie beim Verschluss — bewusst
+    NICHT allein: der Faden gehoert seinem BESITZER, nicht einer Weltrolle.
+    `set_continuation` prueft die Besitzerschaft und wirft 404 fuer jeden
+    anderen, auch fuer einen Plattform-Admin, dessen RLS-Umgehung sonst
+    griffe.
+
+    Ein verschlossener Faden wird abgewiesen (400). Das Merkmalstor
+    `agent_continuation_enabled` entscheidet, ob die Phase ueberhaupt laeuft;
+    es ist bewusst KEINE Bedingung fuer diesen Aufruf, damit ein Mensch seine
+    Wahl vorbereiten kann, bevor die Verwaltung das Tor oeffnet, und sie nach
+    einem Schliessen nicht verliert.
+    """
+    result = await _service.set_continuation(
+        supabase,
+        conversation_id,
+        user.id,
+        continues_without_user=body.continues_without_user,
+        notify=body.notify,
+        interval_hours=body.interval_hours,
+    )
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_conversations",
+        conversation_id,
+        "continuation_on" if body.continues_without_user else "continuation_off",
+        # Kein Titel, kein Inhalt: das Protokoll haelt fest, WAS eingestellt
+        # wurde, nicht worueber geredet wird.
+        details={"notify": body.notify, "interval_hours": body.interval_hours},
+    )
+    return SuccessResponse(data=result)
 
 
 @router.patch("/conversations/{conversation_id}")

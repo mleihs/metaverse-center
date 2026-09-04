@@ -63,6 +63,27 @@ class MessageCreate(BaseModel):
     generate_response: bool = False
 
 
+class ConversationContinuationRequest(BaseModel):
+    """Der Griff am einzelnen Gespraech: reden die Agenten ohne mich weiter.
+
+    Kein Passwort, anders als beim Verschluss. Der Verschluss NIMMT etwas
+    zurueck, was schon geschrieben ist; dies gibt nur der Zukunft eine
+    Richtung und ist jederzeit wieder umzulegen.
+
+    ``interval_hours`` ist der MINDESTABSTAND zwischen zwei Wortwechseln, nicht
+    eine Stufenzahl. Fuenf Werte, weil ein Regler mit benannten Rasten fuenf
+    traegt; die Zahl steht am Regler, damit die Beschriftung nicht das einzige
+    ist, was der Mensch zu sehen bekommt.
+
+    ⚠ Die wirkliche Kadenz ist ``max(interval_hours, Heartbeat-Taktlaenge)`` —
+    feiner als der Takt kann nichts werden. Siehe Migration 357.
+    """
+
+    continues_without_user: bool
+    notify: Literal["never", "app", "digest", "immediate"] = "digest"
+    interval_hours: Literal[4, 6, 12, 24, 48] = 12
+
+
 class ConversationResponse(BaseModel):
     """Full conversation response."""
 
@@ -73,6 +94,9 @@ class ConversationResponse(BaseModel):
     title: str | None = None
     status: str = "active"
     locked: bool = False
+    continues_without_user: bool = False
+    continue_notify: Literal["never", "app", "digest", "immediate"] = "digest"
+    continue_interval_hours: int = 12
     message_count: int = 0
     last_message_at: datetime | None = None
     created_at: datetime

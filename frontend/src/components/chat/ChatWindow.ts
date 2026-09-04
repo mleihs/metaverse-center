@@ -16,10 +16,23 @@ import { streamChatResponse, streamRegenerate } from '../../services/chat/ChatSt
 import type { Participant } from '../../services/chat/chat-types.js';
 import { realtimeService } from '../../services/realtime/RealtimeService.js';
 import { captureError } from '../../services/SentryService.js';
-import type { Agent, AgentBrief, ChatConversation, ChatEventReference } from '../../types/index.js';
+import type {
+  Agent,
+  AgentBrief,
+  ChatConversation,
+  ChatEventReference,
+  ConversationContinueHours,
+  ConversationNotifyMode,
+} from '../../types/index.js';
 import { agentAccentColor, MOOD_BANDS } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
 import { VelgToast } from '../shared/Toast.js';
+import {
+  CONTINUE_DEFAULT_INDEX,
+  CONTINUE_HOURS,
+  continueIndexOf,
+  continueMarks,
+} from './continuation-steps.js';
 
 import '../shared/VelgMetricExplainer.js';
 import '../agents/AgentDetailsPanel.js';
@@ -27,6 +40,8 @@ import '../shared/EmptyState.js';
 import '../shared/LoadingState.js';
 import '../shared/VelgAgentTip.js';
 import '../shared/VelgAvatar.js';
+import '../shared/VelgForecastSlider.js';
+import '../shared/VelgToggle.js';
 import '../shared/VelgTooltip.js';
 import './core/ChatFeed.js';
 import './core/ChatComposer.js';
@@ -227,6 +242,121 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     .window__action-btn svg {
       flex-shrink: 0;
+    }
+
+
+    /* ── „Sprecht weiter, wenn ich weg bin" ─────────────────────────────
+       Dasselbe Popup-Muster wie beim Ausfuhr-Menue nebenan (Anker am
+       Umschlag, absolut, Eintritt von oben), aber breiter: hier steht ein
+       Regler mit fuenf beschrifteten Rasten, und der braucht Bahn. */
+    .continue-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: var(--space-1);
+      width: min(320px, calc(100vw - var(--space-8)));
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--color-surface-overlay);
+      border: var(--border-width-thin) solid var(--color-border);
+      box-shadow: var(--shadow-lg);
+      z-index: var(--z-dropdown);
+      animation: continue-menu-enter 150ms var(--ease-out, ease-out) both;
+      text-align: left;
+    }
+
+    @keyframes continue-menu-enter {
+      from { opacity: 0; transform: translateY(-4px); }
+    }
+
+    .continue-menu__title {
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: var(--label-transform);
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+
+    .continue-menu__note {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: var(--leading-snug);
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    /* Die abgeschalteten Regler bleiben SICHTBAR, nur gedaempft. Wer den
+       Schalter umlegt, soll vorher sehen koennen, worauf er sich einlaesst;
+       ein Feld, das erst nach dem Ja erscheint, laesst ihn blind zusagen. */
+    .continue-menu__body[aria-disabled='true'] {
+      opacity: 0.45;
+    }
+
+    .continue-menu__body {
+      display: grid;
+      gap: var(--space-3);
+      transition: opacity var(--transition-normal);
+    }
+
+    /* Vier Wege der Meldung. KEIN velg-tabs: das rendert role=tablist, und
+       eine Vorlesesoftware kuendigte die Wahl dann als Reiter an, die ein
+       Panel umschalten. Das hier ist eine Formularwahl, also eine
+       Optionsgruppe – mit Pfeiltasten, wie es sich gehoert.
+       (Kein Backtick in diesem Kommentar: er beendete das css-Template.) */
+    .notify {
+      display: grid;
+      gap: var(--space-1-5);
+    }
+
+    .notify__options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-1);
+    }
+
+    .notify__option {
+      padding: var(--space-1-5) var(--space-2);
+      font-family: var(--font-brutalist);
+      font-size: var(--text-xs);
+      font-weight: var(--font-bold);
+      letter-spacing: var(--tracking-brutalist);
+      text-transform: var(--label-transform);
+      background: transparent;
+      color: var(--color-text-secondary);
+      border: var(--border-width-thin) solid var(--color-border);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-align: center;
+    }
+
+    .notify__option:hover:not(:disabled) {
+      background: var(--color-surface-sunken);
+      color: var(--color-text-primary);
+    }
+
+    .notify__option[aria-checked='true'] {
+      background: var(--color-primary-bg);
+      border-color: var(--color-primary);
+      color: var(--color-accent-amber);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .notify__option:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .notify__option:disabled {
+      cursor: not-allowed;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .continue-menu { animation: none; }
+      .continue-menu__body,
+      .notify__option { transition: none; }
     }
 
     /* Event reference bar — always rendered, toggled via max-height */
@@ -1152,6 +1282,174 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     );
   }
 
+  // ── „Sprecht weiter, wenn ich weg bin" ──────────────────────────────
+
+  @state() private _showContinueMenu = false;
+  @state() private _savingContinue = false;
+
+  private _toggleContinueMenu(e: Event): void {
+    e.stopPropagation();
+    this._showContinueMenu = !this._showContinueMenu;
+  }
+
+  private _handleContinueKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      this._showContinueMenu = false;
+      this.shadowRoot?.querySelector<HTMLElement>('.continue-wrapper .window__action-btn')?.focus();
+    }
+  }
+
+  /** Pfeiltasten in der Optionsgruppe — Teil des `radiogroup`-Vertrags. */
+  private _handleNotifyKeydown(e: KeyboardEvent): void {
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+    if (!keys.includes(e.key)) return;
+    e.preventDefault();
+    const modes = VelgChatWindow.NOTIFY_MODES;
+    const current = modes.indexOf(this.conversation?.continue_notify ?? 'digest');
+    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+    const next = modes[(current + step + modes.length) % modes.length];
+    void this._saveContinuation({ notify: next });
+    this.updateComplete.then(() => {
+      this.shadowRoot?.querySelector<HTMLElement>(`.notify__option[data-mode="${next}"]`)?.focus();
+    });
+  }
+
+  private static readonly NOTIFY_MODES: readonly ConversationNotifyMode[] = [
+    'never',
+    'app',
+    'digest',
+    'immediate',
+  ] as const;
+
+  /**
+   * Die Aenderung geht sofort hinaus und wird optimistisch zurueckgeschrieben
+   * — wie beim Verschluss. Ein „Speichern"-Knopf in einem Popup mit drei
+   * Reglern waere eine vierte Gelegenheit, etwas zu vergessen.
+   *
+   * Schlaegt der Aufruf fehl, wird der alte Stand wiederhergestellt: eine
+   * Oberflaeche, die eine Einstellung anzeigt, die der Server nicht hat, ist
+   * schlimmer als eine, die den Fehlschlag zugibt.
+   */
+  private async _saveContinuation(patch: {
+    continues?: boolean;
+    notify?: ConversationNotifyMode;
+    hours?: ConversationContinueHours;
+  }): Promise<void> {
+    const conversation = this.conversation;
+    if (!conversation || this._savingContinue) return;
+
+    const vorher = {
+      continues_without_user: conversation.continues_without_user ?? false,
+      continue_notify: conversation.continue_notify ?? 'digest',
+      continue_interval_hours: conversation.continue_interval_hours ?? 12,
+    } as const;
+    const nachher = {
+      continues_without_user: patch.continues ?? vorher.continues_without_user,
+      notify: patch.notify ?? vorher.continue_notify,
+      interval_hours: patch.hours ?? vorher.continue_interval_hours,
+    };
+
+    this._savingContinue = true;
+    this.conversation = {
+      ...conversation,
+      continues_without_user: nachher.continues_without_user,
+      continue_notify: nachher.notify,
+      continue_interval_hours: nachher.interval_hours,
+    };
+    try {
+      await chatApi.setConversationContinuation(this.simulationId, conversation.id, nachher);
+      this.dispatchEvent(
+        new CustomEvent('conversation-continuation-changed', {
+          detail: { conversationId: conversation.id, ...nachher },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    } catch (err) {
+      this.conversation = { ...conversation, ...vorher };
+      captureError(err, { source: 'VelgChatWindow._saveContinuation' });
+      VelgToast.error(msg('The setting could not be saved.'));
+    } finally {
+      this._savingContinue = false;
+    }
+  }
+
+  private _renderContinueMenu(): TemplateResult {
+    const conversation = this.conversation;
+    const an = conversation?.continues_without_user ?? false;
+    const notify = conversation?.continue_notify ?? 'digest';
+    const labels: Record<ConversationNotifyMode, string> = {
+      never: msg('not at all'),
+      app: msg('in the app'),
+      digest: msg('weekly post'),
+      immediate: msg('by mail'),
+    };
+
+    return html`
+      <div class="continue-menu" @click=${(e: Event) => e.stopPropagation()}>
+        <p class="continue-menu__title">${msg('While you are away')}</p>
+        <velg-toggle
+          .checked=${an}
+          ?disabled=${this._savingContinue}
+          label=${msg('Keep talking when I am gone')}
+          variant="scif"
+          size="sm"
+          @toggle-change=${(e: CustomEvent<{ checked: boolean }>) =>
+            void this._saveContinuation({ continues: e.detail.checked })}
+        ></velg-toggle>
+
+        <div class="continue-menu__body" aria-disabled=${an ? 'false' : 'true'}>
+          <velg-forecast-slider
+            key="continue-frequency"
+            label=${msg('How often')}
+            min=${0}
+            max=${4}
+            step=${1}
+            default=${CONTINUE_DEFAULT_INDEX}
+            .value=${continueIndexOf(this.conversation?.continue_interval_hours)}
+            .marks=${continueMarks()}
+            ?disabled=${!an || this._savingContinue}
+            @slider-change=${(e: CustomEvent<{ value: number }>) =>
+              void this._saveContinuation({
+                hours: CONTINUE_HOURS[e.detail.value],
+              })}
+          ></velg-forecast-slider>
+
+          <div class="notify">
+            <p class="continue-menu__title">${msg('Tell me')}</p>
+            <div
+              class="notify__options"
+              role="radiogroup"
+              aria-label=${msg('Tell me')}
+              @keydown=${this._handleNotifyKeydown}
+            >
+              ${VelgChatWindow.NOTIFY_MODES.map(
+                (mode) => html`<button
+                  type="button"
+                  class="notify__option"
+                  role="radio"
+                  data-mode=${mode}
+                  aria-checked=${notify === mode ? 'true' : 'false'}
+                  tabindex=${notify === mode ? '0' : '-1'}
+                  ?disabled=${!an || this._savingContinue}
+                  @click=${() => void this._saveContinuation({ notify: mode })}
+                >
+                  ${labels[mode]}
+                </button>`,
+              )}
+            </div>
+          </div>
+        </div>
+
+        <p class="continue-menu__note">
+          ${msg(
+            'The interval is a minimum. Nothing happens more often than the world beats, and a sealed conversation stays silent.',
+          )}
+        </p>
+      </div>
+    `;
+  }
+
   private _handleExportMarkdown(): void {
     if (!this.conversation) return;
     const session = chatStore.getOrCreate(this.conversation.id);
@@ -1489,6 +1787,27 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
               >
                 ${icons.lock(16)}
               </button>
+              ${
+                this._getAgents().length > 1
+                  ? html`<div class="export-wrapper continue-wrapper" @keydown=${this._handleContinueKeydown}>
+                      <button
+                        class="window__action-btn ${
+                          this.conversation.continues_without_user
+                            ? 'window__action-btn--active'
+                            : ''
+                        }"
+                        @click=${this._toggleContinueMenu}
+                        aria-label=${msg('While you are away')}
+                        title=${msg('While you are away')}
+                        aria-haspopup="true"
+                        aria-expanded=${this._showContinueMenu ? 'true' : 'false'}
+                      >
+                        ${icons.antenna(16)}
+                      </button>
+                      ${this._showContinueMenu ? this._renderContinueMenu() : nothing}
+                    </div>`
+                  : nothing
+              }
               <div class="export-wrapper">
                 <button
                   class="window__action-btn"

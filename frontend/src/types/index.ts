@@ -727,6 +727,12 @@ export interface ChatEventReference {
   referenced_at: string;
 }
 
+/** Die vier Wege, auf denen ein Wortwechsel ohne Zuhoerer gemeldet wird. */
+export type ConversationNotifyMode = 'never' | 'app' | 'digest' | 'immediate';
+
+/** Die fuenf Stufen des Mindestabstands, in Stunden. */
+export type ConversationContinueHours = 4 | 6 | 12 | 24 | 48;
+
 export interface ChatConversation {
   id: UUID;
   simulation_id: UUID;
@@ -736,6 +742,23 @@ export interface ChatConversation {
   status: 'active' | 'archived';
   /** Sichtschutz vor Mitlesern am Geraet — kein Datenschutz. Siehe Migration 349. */
   locked?: boolean;
+  /**
+   * Ob die Agenten dieses Fadens in Abwesenheit des Menschen weiterreden.
+   * Greift nur, wenn das Merkmalstor offen ist und der Faden nicht
+   * verschlossen ist. Siehe Migration 357.
+   */
+  continues_without_user?: boolean;
+  /** Wie der Mensch davon erfaehrt. */
+  continue_notify?: ConversationNotifyMode;
+  /**
+   * Mindestabstand zwischen zwei Wortwechseln in Stunden. Fuenf Werte, die
+   * dieselben sind wie die CHECK-Beschraenkung in Migration 357 und das
+   * Literal im Backend-Modell — steht hier eine sechste Zahl, weist Postgres
+   * sie mit 23514 ab, aus der Tiefe und ohne Hinweis auf die Herkunft.
+   *
+   * ⚠ Die WIRKLICHE Kadenz ist `max(dieser Wert, Heartbeat-Taktlaenge)`.
+   */
+  continue_interval_hours?: ConversationContinueHours;
   locale?: string;
   message_count: number;
   last_message_at?: string;

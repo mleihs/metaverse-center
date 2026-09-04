@@ -9,6 +9,8 @@ import type {
   Agent,
   ChatConversation,
   ChatEventReference,
+  ConversationContinueHours,
+  ConversationNotifyMode,
   Event as SimEvent,
 } from '../../types/index.js';
 import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
@@ -540,6 +542,47 @@ export class VelgChatView extends LitElement {
     }
   }
 
+  /**
+   * Der Faden hat seine Fortsetzungs-Einstellung geaendert.
+   *
+   * Das Fenster schreibt sie schon optimistisch in SEINE Kopie; hier wird die
+   * Liste nachgezogen. Ohne das faellt der Stand beim naechsten Wechsel des
+   * Gespraechs zurueck — die Liste ist die Quelle, aus der `.conversation`
+   * neu gesetzt wird, und eine Kopie, die den neueren Wert nicht kennt,
+   * ueberschreibt ihn stillschweigend.
+   *
+   * Derselbe Weg wie beim Verschluss (`_handleLockSubmit`): vor Ort nachziehen
+   * statt neu zu laden.
+   */
+  private _handleContinuationChanged(
+    e: CustomEvent<{
+      conversationId: string;
+      continues_without_user: boolean;
+      notify: ConversationNotifyMode;
+      interval_hours: ConversationContinueHours;
+    }>,
+  ): void {
+    const { conversationId, continues_without_user, notify, interval_hours } = e.detail;
+    this._conversations = this._conversations.map((c) =>
+      c.id === conversationId
+        ? {
+            ...c,
+            continues_without_user,
+            continue_notify: notify,
+            continue_interval_hours: interval_hours,
+          }
+        : c,
+    );
+    if (this._selectedConversation?.id === conversationId) {
+      this._selectedConversation = {
+        ...this._selectedConversation,
+        continues_without_user,
+        continue_notify: notify,
+        continue_interval_hours: interval_hours,
+      };
+    }
+  }
+
   protected render() {
     if (this._loading) {
       return html`
@@ -587,6 +630,7 @@ export class VelgChatView extends LitElement {
         <div class="main-area" role="main" aria-label=${msg('Chat')}
           @open-agent-selector=${this._handleOpenAgentSelector}
           @conversation-lock-request=${this._handleLockRequest}
+          @conversation-continuation-changed=${this._handleContinuationChanged}
           @open-event-picker=${this._handleOpenEventPicker}
           @remove-event-ref=${this._handleRemoveEventRef}
         >
