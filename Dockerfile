@@ -79,30 +79,22 @@ EXPOSE ${PORT:-8000}
 # avoids a restart-on-unhealthy crash-loop under Coolify.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/api/v1/health || exit 1
-# --proxy-headers / --forwarded-allow-ips: OHNE diese beiden sieht die Anwendung
-# als Absenderadresse den REVERSE PROXY, bei jedem Aufruf dieselbe. Der
-# Ratenbegrenzer (slowapi, key_func=get_remote_address) legt dann ALLE Nutzer in
-# EINEN Eimer. Gemessen auf Produktion am 2026-09-05: sechs Aufrufe von
-# /api/v1/auth/reauth hintereinander -- fuenfmal HTTP 200, danach HTTP 429
-# "Rate limit exceeded: 5 per 1 minute". Das trifft nicht nur den Sechsten,
-# sondern jeden anderen Nutzer derselben Minute, an neun Routern mit
-# RATE_LIMIT_EXTERNAL_API und an jedem anderen Limit gleichermassen.
+# KEIN --proxy-headers, und das ist eine Messung, keine Auslassung.
 #
-# FORWARDED_ALLOW_IPS ist der Preis dafuer: wer den Container DIREKT erreicht,
-# kann seine Adresse ueber X-Forwarded-For faelschen und sein eigenes Limit
-# umgehen. Das ist hinnehmbar, solange der Container nur ueber den Proxy
-# erreichbar ist (Coolify/Traefik im internen Netz, kein veroeffentlichter
-# Port) -- und es ist in jedem Fall besser als ein Eimer fuer alle, der einem
-# einzelnen Aufrufer erlaubt, die Anmeldung fuer die ganze Plattform zu
-# sperren. Wo der Container direkt erreichbar ist, MUSS die Variable auf die
-# Adresse des Proxys gesetzt werden.
+# Der Ratenbegrenzer sah als Absender bis zum 05.09.2026 den Reverse Proxy, bei
+# jedem Nutzer denselben — ein Eimer fuer alle. Der naheliegende Griff
+# (`--proxy-headers --forwarded-allow-ips '*'`) machte es SCHLIMMER: uvicorn
+# 0.52 nimmt bei `always_trust` den ERSTEN Eintrag von `X-Forwarded-For`, und
+# den setzt der Aufrufer selbst. Auf Produktion gemessen: acht Anfragen an
+# /api/v1/auth/reauth mit frei gewaehltem Kopf gingen alle durch, wo ohne den
+# Kopf die siebte mit 429 abgewiesen wurde. Fuer ein Passwort-Orakel ist das
+# die Abschaffung der Schranke.
 #
-# DIE ANFUEHRUNGSZEICHEN UM ${FORWARDED_ALLOW_IPS} SIND PFLICHT.
-# Der Wert ist `*`. Unquoted expandiert die Shell ihn gegen das
-# Arbeitsverzeichnis, und uvicorn bekommt die Dateinamen: gemessen am
-# 05.09.2026 in einem fehlgeschlagenen Deploy —
-#   Error: Got unexpected extra arguments (pyproject.toml static)
-# Der Container startete nicht, die Gesundheitspruefung schlug fehl, Coolify
-# rollte auf den vorherigen zurueck. Kein Ausfall, aber auch kein Deploy.
-ENV FORWARDED_ALLOW_IPS="*"
-CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log --proxy-headers --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS}\""]
+# Geloest wird es eine Ebene hoeher: `backend/middleware/rate_limit.py` schluesselt
+# angemeldete Anfragen nach dem NUTZER (`sub` aus dem Token) statt nach seinem
+# Weg durchs Netz. Das ist nicht faelschbar, ohne das Token ungueltig zu machen.
+#
+# Offen bleibt die Adresse fuer ANONYME Endpunkte: hinter Cloudflare ist sie
+# weiterhin die des Proxys. Die saubere Loesung liest `CF-Connecting-IP` in
+# einer eigenen Middleware; `--forwarded-allow-ips` kann das nicht.
+CMD ["sh", "-c", "uvicorn backend.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-access-log"]
