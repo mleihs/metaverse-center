@@ -20,6 +20,7 @@ import httpx
 import sentry_sdk
 
 from backend.dependencies import get_admin_supabase
+from backend.services.ai_usage_service import AIUsageService
 from backend.services.bond.whisper_template_service import WhisperTemplateService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
@@ -138,7 +139,8 @@ class WhisperService:
         for bond in bonds:
             # Evaluate salience
             should_generate, whisper_type = await cls._evaluate_salience(
-                supabase, bond,
+                supabase,
+                bond,
             )
             if not should_generate or not whisper_type:
                 continue
@@ -158,7 +160,10 @@ class WhisperService:
             whisper_content = None
             if openrouter_api_key and llm_calls_used < llm_budget:
                 whisper_content = await cls._generate_llm(
-                    supabase, simulation_id, context, whisper_type,
+                    supabase,
+                    simulation_id,
+                    context,
+                    whisper_type,
                     openrouter_api_key=openrouter_api_key,
                 )
                 if whisper_content:
@@ -187,7 +192,11 @@ class WhisperService:
                 # catches its own errors and logs to Sentry so a journal
                 # failure never breaks heartbeat whisper generation.
                 await cls._enqueue_journal_impression(
-                    supabase, bond, stored, whisper_type, whisper_content,
+                    supabase,
+                    bond,
+                    stored,
+                    whisper_type,
+                    whisper_content,
                 )
 
         return created_whispers
@@ -242,10 +251,7 @@ class WhisperService:
 
         # 3. State change: mood/stress shifted significantly
         mood = await maybe_single_data(
-            supabase.table("agent_mood")
-            .select("mood_score, stress_level")
-            .eq("agent_id", str(agent_id))
-            .maybe_single()
+            supabase.table("agent_mood").select("mood_score, stress_level").eq("agent_id", str(agent_id)).maybe_single()
         )
         if mood and last_whisper:
             # Check previous whisper's trigger_context for baseline
@@ -338,20 +344,26 @@ class WhisperService:
         agent_data = bond.get("agents") or {}
 
         # Agent mood
-        mood = await maybe_single_data(
-            supabase.table("agent_mood")
-            .select("mood_score, dominant_emotion, stress_level")
-            .eq("agent_id", agent_id)
-            .maybe_single()
-        ) or {}
+        mood = (
+            await maybe_single_data(
+                supabase.table("agent_mood")
+                .select("mood_score, dominant_emotion, stress_level")
+                .eq("agent_id", agent_id)
+                .maybe_single()
+            )
+            or {}
+        )
 
         # Agent needs
-        needs = await maybe_single_data(
-            supabase.table("agent_needs")
-            .select("safety, social, comfort, stimulation, purpose")
-            .eq("agent_id", agent_id)
-            .maybe_single()
-        ) or {}
+        needs = (
+            await maybe_single_data(
+                supabase.table("agent_needs")
+                .select("safety, social, comfort, stimulation, purpose")
+                .eq("agent_id", agent_id)
+                .maybe_single()
+            )
+            or {}
+        )
 
         # Recent whispers (last 3 for novelty check)
         prev_whispers_resp = await (
@@ -379,12 +391,7 @@ class WhisperService:
         zone_name = "the district"
         zone_id = agent_data.get("current_zone_id")
         if zone_id:
-            zone = await maybe_single_data(
-                supabase.table("zones")
-                .select("name")
-                .eq("id", str(zone_id))
-                .maybe_single()
-            )
+            zone = await maybe_single_data(supabase.table("zones").select("name").eq("id", str(zone_id)).maybe_single())
             if zone:
                 zone_name = zone.get("name", zone_name)
 
@@ -399,7 +406,7 @@ class WhisperService:
         )
         building_data = extract_list(building_resp)
         if building_data:
-            bld = (building_data[0].get("buildings") or {})
+            bld = building_data[0].get("buildings") or {}
             building_name = bld.get("name", building_name)
 
         # Mood description for prompt
@@ -460,16 +467,14 @@ class WhisperService:
 
         # Type-specific context
         if whisper_type == "question" and lowest_need:
-            context["need_description"] = (
-                f"{lowest_need[0]} need is critically low ({lowest_need[1]}/100)"
-            )
+            context["need_description"] = f"{lowest_need[0]} need is critically low ({lowest_need[1]}/100)"
         if whisper_type == "memory" and memories:
             recent_action = next(
-                (m for m in memories if m["memory_type"] == "action"), None,
+                (m for m in memories if m["memory_type"] == "action"),
+                None,
             )
             context["memory_description"] = (
-                recent_action["description"] if recent_action
-                else "a past action the player took"
+                recent_action["description"] if recent_action else "a past action the player took"
             )
         if whisper_type == "reflection":
             action_count = sum(1 for m in memories if m["memory_type"] == "action")
@@ -546,6 +551,31 @@ class WhisperService:
                     budget=budget,
                 )
 
+                # DAS BUCH WIRD JETZT GEFUEHRT.
+                #
+                # Bis zum 04.09.2026 stand hier nichts. Jeder Fluester-Aufruf
+                # ging an OpenRouter hinaus und erschien in KEINER
+                # Kostenauswertung — `ai_usage_log` kannte den Zweck
+                # `bond_whisper` nur aus der Deklaration, nie aus einer Zeile.
+                # Der Betrag lief mit, die Buchung nicht.
+                #
+                # Gebucht wird HIER und nicht erst nach der Auswertung: eine
+                # unparsbare Antwort ist bezahlt wie eine brauchbare, und ein
+                # Buch, das nur die gelungenen Faelle kennt, ist genau der
+                # Fehler, den Migration 352 fuer `ai_usage_log` behoben hat
+                # (Handoff `ein-buch-nur-mit-erfolgen`). Ein Wiederholversuch
+                # ist deshalb ZWEI Zeilen, und das ist richtig so — es waren
+                # zwei Aufrufe.
+                await AIUsageService.log(
+                    admin_supabase,
+                    simulation_id=simulation_id,
+                    provider="openrouter",
+                    model=resolved.model_id,
+                    purpose="bond_whisper",
+                    usage=openrouter.last_usage or {},
+                    metadata={"whisper_type": whisper_type, "attempt": attempt + 1},
+                )
+
                 if not content or not content.strip():
                     last_error = "empty response"
                     continue
@@ -580,13 +610,16 @@ class WhisperService:
                 last_error = "timeout"
                 logger.warning(
                     "OpenRouter timeout on whisper attempt %d/%d",
-                    attempt + 1, max_attempts,
+                    attempt + 1,
+                    max_attempts,
                 )
             except httpx.HTTPStatusError as exc:
                 last_error = f"HTTP {exc.response.status_code}"
                 logger.warning(
                     "OpenRouter HTTP error %d on whisper attempt %d/%d",
-                    exc.response.status_code, attempt + 1, max_attempts,
+                    exc.response.status_code,
+                    attempt + 1,
+                    max_attempts,
                 )
                 # 429 (rate limit) or 5xx: worth retrying
                 # 4xx (except 429): likely persistent, skip retry
@@ -596,7 +629,9 @@ class WhisperService:
                 last_error = str(exc)
                 logger.warning(
                     "Whisper generation error on attempt %d/%d: %s",
-                    attempt + 1, max_attempts, exc,
+                    attempt + 1,
+                    max_attempts,
+                    exc,
                 )
 
             if attempt < max_attempts - 1:
@@ -604,14 +639,18 @@ class WhisperService:
 
         logger.info(
             "LLM whisper generation exhausted %d attempts (last error: %s), falling back to template",
-            max_attempts, last_error,
+            max_attempts,
+            last_error,
         )
-        sentry_sdk.set_context("whisper_failure", {
-            "attempts": max_attempts,
-            "last_error": last_error,
-            "whisper_type": whisper_type,
-            "bond_depth": context.get("bond_depth"),
-        })
+        sentry_sdk.set_context(
+            "whisper_failure",
+            {
+                "attempts": max_attempts,
+                "last_error": last_error,
+                "whisper_type": whisper_type,
+                "bond_depth": context.get("bond_depth"),
+            },
+        )
         return None
 
     @classmethod
@@ -884,13 +923,15 @@ class WhisperService:
         try:
             resp = await (
                 supabase.table("bond_whispers")
-                .insert({
-                    "bond_id": bond_id,
-                    "whisper_type": whisper_type,
-                    "content_de": content_de,
-                    "content_en": content_en,
-                    "trigger_context": trigger_context,
-                })
+                .insert(
+                    {
+                        "bond_id": bond_id,
+                        "whisper_type": whisper_type,
+                        "content_de": content_de,
+                        "content_en": content_en,
+                        "trigger_context": trigger_context,
+                    }
+                )
                 .select("*")
                 .execute()
             )
