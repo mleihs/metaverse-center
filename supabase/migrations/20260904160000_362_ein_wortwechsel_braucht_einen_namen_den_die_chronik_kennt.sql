@@ -42,35 +42,45 @@ ALTER TABLE heartbeat_entries ADD CONSTRAINT heartbeat_entries_entry_type_check
 COMMIT;
 
 -- ── Selbstprüfung ──────────────────────────────────────────────────────────
--- Gegen die eigene Wirkung: nimmt der CHECK den neuen Namen an, und weist er
--- einen erfundenen weiterhin ab. Beides in einer Transaktion, die
--- zurückgerollt wird — die Probe darf keine Zeile hinterlassen.
+-- Gegen die eigene Wirkung, und mit einer PROBE: nimmt der CHECK den neuen
+-- Namen an, und weist er einen erfundenen weiterhin ab. Zu zählen, dass die
+-- Beschränkung dasteht, wäre ein Haken ohne Deckung.
 --
--- Anders als bei `chat_conversations` (Migration 357) liegt hier kein
--- Fremdschlüssel im Weg, der vor dem CHECK zuschlüge: `heartbeat_entries`
--- lässt sich mit erfundenen IDs probeweise befüllen. Die Probe ist deshalb
--- die stärkere Prüfung und wird auch benutzt.
+-- ⚠ `heartbeat_entries` verlangt `heartbeat_id` (NOT NULL, Fremdschlüssel)
+-- und `narrative_en`. Die erste Fassung dieser Probe setzte eine Spalte
+-- `title` ein, die es nicht gibt — sie wäre auf einer frischen Datenbank mit
+-- 42703 gescheitert, also an einem Fehler in der PRÜFUNG statt an einem in
+-- der Sache. Gefunden hat es der Trockenlauf gegen Produktion.
+--
+-- Die Probe läuft deshalb gegen einen ECHTEN Herzschlag, falls es einen gibt,
+-- und wird sonst per RAISE NOTICE ÜBERSPRUNGEN. Nicht verschwiegen: eine
+-- Prüfung, die nichts zu prüfen fand, ist keine bestandene.
 DO $$
 DECLARE
-  v_neu_ok boolean := false;
+  v_hb  uuid;
+  v_sim uuid;
 BEGIN
+  SELECT id, simulation_id INTO v_hb, v_sim FROM simulation_heartbeats ORDER BY created_at DESC LIMIT 1;
+  IF v_hb IS NULL THEN
+    RAISE NOTICE '362: kein Herzschlag vorhanden — CHECK-Probe UEBERSPRUNGEN, nicht bestanden. Der neue Wert steht in der Beschraenkung, ist aber nicht ausprobiert.';
+    RETURN;
+  END IF;
+
   BEGIN
-    INSERT INTO heartbeat_entries (simulation_id, tick_number, entry_type, title)
-    VALUES ('00000000-0000-0000-0000-000000000000', 0, 'agent_continuation', 'Probe 362');
-    v_neu_ok := true;
-    RAISE EXCEPTION 'ROLLBACK_PROBE';
-  EXCEPTION
-    WHEN check_violation THEN
-      RAISE EXCEPTION '362: der CHECK weist agent_continuation weiterhin ab';
-    WHEN foreign_key_violation THEN
-      RAISE NOTICE '362: Probe UEBERSPRUNGEN (Fremdschluessel greift zuerst) — nicht bestanden.';
-    WHEN OTHERS THEN
-      IF SQLERRM <> 'ROLLBACK_PROBE' THEN
-        RAISE;
-      END IF;
+    INSERT INTO heartbeat_entries (heartbeat_id, simulation_id, tick_number, entry_type, narrative_en)
+    VALUES (v_hb, v_sim, 0, 'agent_continuation', 'Probe 362');
+    DELETE FROM heartbeat_entries WHERE heartbeat_id = v_hb AND narrative_en = 'Probe 362';
+    RAISE NOTICE '362: agent_continuation wird angenommen.';
+  EXCEPTION WHEN check_violation THEN
+    RAISE EXCEPTION '362: der CHECK weist agent_continuation weiterhin ab';
   END;
 
-  IF v_neu_ok THEN
-    RAISE NOTICE '362: agent_continuation wird angenommen.';
-  END IF;
+  BEGIN
+    INSERT INTO heartbeat_entries (heartbeat_id, simulation_id, tick_number, entry_type, narrative_en)
+    VALUES (v_hb, v_sim, 0, 'erfunden', 'Probe 362b');
+    DELETE FROM heartbeat_entries WHERE heartbeat_id = v_hb AND narrative_en = 'Probe 362b';
+    RAISE EXCEPTION '362: der CHECK hat einen erfundenen Typ durchgelassen';
+  EXCEPTION WHEN check_violation THEN
+    RAISE NOTICE '362: ein erfundener Typ wird weiterhin abgewiesen.';
+  END;
 END $$;

@@ -114,6 +114,23 @@ CREATE POLICY chat_conversation_digests_owner_read
     )
   );
 
+-- ⚠ DIE RICHTLINIE ALLEIN GENÜGT NICHT. Supabase vergibt über
+-- `pg_default_acl` an JEDE neu angelegte Tabelle im Schema `public`
+-- automatisch Rechte an `anon` und `authenticated` — gemessen an dieser
+-- Tabelle im Trockenlauf: SIEBEN Rechte für `anon`. Ein `REVOKE … FROM PUBLIC`
+-- entfernt sie NICHT, weil sie den Rollen direkt zugeschrieben sind und nicht
+-- über PUBLIC vererbt (Handoff `revoke-from-public-does-not-remove-anon`).
+--
+-- Heute hält RLS trotzdem dicht: es gibt keine Richtlinie für `anon`, also
+-- sieht er nichts. Aber ein Recht ohne Richtlinie ist eine geladene Waffe mit
+-- gesicherter Kammer — die nächste Richtlinie, die jemand für `anon` schreibt,
+-- oder ein versehentliches `DISABLE ROW LEVEL SECURITY`, öffnet sie.
+--
+-- Also: erst alles wegnehmen, dann genau das eine Recht zurückgeben, das die
+-- Richtlinie darunter ohnehin einschränkt.
+REVOKE ALL ON public.chat_conversation_digests FROM anon, authenticated;
+GRANT SELECT ON public.chat_conversation_digests TO authenticated;
+
 -- KEINE Schreibrichtlinie für `authenticated`. Verdichtungen entstehen im
 -- Dienst über den service_role-Client; ein Mensch, der seine eigene
 -- Vorgeschichte umschreiben kann, kann dem Modell eine Geschichte
@@ -130,6 +147,7 @@ DECLARE
   v_rls      boolean;
   v_policies int;
   v_anon     int;
+  v_auth     int;
 BEGIN
   SELECT count(*) INTO v_spalten FROM information_schema.columns
   WHERE table_name = 'chat_conversation_digests';
@@ -155,13 +173,23 @@ BEGIN
     RAISE EXCEPTION '358: % Richtlinien statt genau einer (nur Lesen fuer den Besitzer)', v_policies;
   END IF;
 
-  -- `anon` darf hier nichts. Das ist die Zusicherung, die zaehlt, und sie
-  -- wird gemessen statt behauptet.
+  -- `anon` darf hier NICHTS. Das ist die Zusicherung, die zaehlt, und sie wird
+  -- gemessen statt behauptet — dieser Riegel hat den Fund ueberhaupt erst
+  -- gemacht: vor dem REVOKE oben standen hier SIEBEN Rechte.
   SELECT count(*) INTO v_anon FROM information_schema.role_table_grants
   WHERE table_name = 'chat_conversation_digests' AND grantee = 'anon';
   IF v_anon > 0 THEN
     RAISE EXCEPTION '358: anon haelt % Recht(e) auf die Verdichtungen', v_anon;
   END IF;
 
-  RAISE NOTICE '358: Tabelle, Eindeutigkeitszwang, RLS mit einer Leserichtlinie, anon ohne Recht.';
+  -- `authenticated` darf GENAU lesen. Ein INSERT-Recht waere die Tuer, durch
+  -- die ein Mensch seine eigene Vorgeschichte umschreibt.
+  SELECT count(*) INTO v_auth FROM information_schema.role_table_grants
+  WHERE table_name = 'chat_conversation_digests' AND grantee = 'authenticated'
+    AND privilege_type <> 'SELECT';
+  IF v_auth > 0 THEN
+    RAISE EXCEPTION '358: authenticated haelt % Recht(e) ausser SELECT', v_auth;
+  END IF;
+
+  RAISE NOTICE '358: Tabelle, Eindeutigkeitszwang, RLS mit einer Leserichtlinie, anon ohne Recht, authenticated nur lesend.';
 END $$;
