@@ -100,7 +100,7 @@ async def _turns(service: ChatAIService, idx: int, saved: list[dict] | None = No
         patch.object(AgentMemoryService, "retrieve", return_value=[]),
         patch.object(service, "_build_relationship_context", return_value=""),
     ):
-        _extra, messages = await service._build_group_turn_context(
+        _extra, messages, _anweisung = await service._build_group_turn_context(
             conversation_id=uuid4(),
             agents=AGENTS,
             agent_names=AGENT_NAMES,
@@ -239,7 +239,10 @@ class TestSanitizeMarke:
 
     def test_marke_mitten_im_text_wird_gefangen(self):
         text = "Ich lese noch ein Kapitel.\n[Benno Blattgold] Und ich giesse die Blumen."
-        assert ChatAIService._sanitize_response(text, AGENT_NAMES) == "Ich lese noch ein Kapitel.\nUnd ich giesse die Blumen."
+        assert (
+            ChatAIService._sanitize_response(text, AGENT_NAMES)
+            == "Ich lese noch ein Kapitel.\nUnd ich giesse die Blumen."
+        )
 
     def test_regieanweisung_bleibt_stehen(self):
         """Der Grund, gegen NAMEN zu prüfen statt gegen ein weites Muster."""
@@ -248,7 +251,10 @@ class TestSanitizeMarke:
 
     def test_ohne_namensliste_bleibt_es_beim_engen_verhalten(self):
         """Ein Tor, das rät, ist schlimmer als eines, das nichts weiss."""
-        assert ChatAIService._sanitize_response("[Benno Blattgold] *winkt freundlich*") == "[Benno Blattgold] *winkt freundlich*"
+        assert (
+            ChatAIService._sanitize_response("[Benno Blattgold] *winkt freundlich*")
+            == "[Benno Blattgold] *winkt freundlich*"
+        )
         assert ChatAIService._sanitize_response("[Benno Blattgold]: winkt freundlich") == "winkt freundlich"
 
 
@@ -380,3 +386,95 @@ class TestDerMenschHatAuchEineMarke:
         einzelnen Namen zu raten."""
         assert ChatAIService._known_speakers(None) is None
         assert ChatAIService._known_speakers([]) == []
+
+
+class TestDieAnweisungStehtVorDerAntwort:
+    """Nicht im System-Prompt, sondern als Letztes.
+
+    GEMESSEN am 04.09.2026: die Gruppen-Anweisung stand an Position 0 von 9 —
+    vor dem ganzen Verlauf. In einem Faden mit 373 Nachrichten liegen
+    zweihundert Züge dazwischen.
+
+    Der Praktiker-Konsens ist eindeutig und trägt den einzigen quantifizierten
+    Datenpunkt, den es zu dieser Frage gibt: 37 von 40 sauberen Durchläufen
+    (DeepSeek, Temperatur 0, Sampler aus) mit der Regel unmittelbar vor der
+    Antwort. SillyTavern nennt es „Post-History Instructions" bzw. eine
+    Autorennotiz auf Tiefe 0.
+    """
+
+    def test_sie_wird_an_den_letzten_nutzerzug_gehaengt(self, service):
+        msgs = service._append_closing_instruction(
+            [
+                {"role": "system", "content": "Persona"},
+                {"role": "user", "content": "[User]: Und dann?"},
+            ],
+            "DIE REGEL",
+        )
+        assert len(msgs) == 2, "es darf kein zusaetzlicher Zug entstehen"
+        assert msgs[-1]["content"].endswith("DIE REGEL")
+        assert msgs[-1]["role"] == "user"
+
+    def test_nach_einem_agentenzug_kommt_ein_eigener_zug(self, service):
+        """Endet der Faden mit einer Agentenantwort, gibt es nichts, woran man
+        anhaengen koennte — dann wird ein eigener `user`-Zug daraus."""
+        msgs = service._append_closing_instruction(
+            [
+                {"role": "system", "content": "Persona"},
+                {"role": "assistant", "content": "Ihre Antwort."},
+            ],
+            "DIE REGEL",
+        )
+        assert len(msgs) == 3
+        assert msgs[-1] == {"role": "user", "content": "DIE REGEL"}
+
+    def test_keine_system_rolle_mitten_im_verlauf(self, service):
+        """Eine `system`-Rolle mitten im Verlauf ist bei OpenAI-kompatiblen
+        Anbietern nicht verlaesslich — DeepSeek dokumentiert sie nur am Anfang.
+        Dieselbe Vorsicht wie beim Zusammenfassen der `user`-Zuege."""
+        msgs = service._append_closing_instruction(
+            [{"role": "system", "content": "Persona"}, {"role": "user", "content": "x"}],
+            "DIE REGEL",
+        )
+        assert [m["role"] for m in msgs].count("system") == 1
+
+    def test_ohne_anweisung_bleibt_alles_wie_es_war(self, service):
+        vorher = [{"role": "system", "content": "P"}, {"role": "user", "content": "x"}]
+        assert service._append_closing_instruction(list(vorher), "") == vorher
+        assert service._append_closing_instruction(list(vorher), "   ") == vorher
+
+    async def test_der_gruppenzug_gibt_sie_getrennt_zurueck(self, service):
+        """Sie darf NICHT in `extra_parts` landen — das ist der System-Prompt.
+        Dort traegt `extra_parts` weiterhin INHALT (Ereignisse, Erinnerungen,
+        Beziehungen, Vorgeschichte): was die Figur weiss, nicht was sie tun
+        soll."""
+        resolved = ResolvedPrompt(
+            template_type="chat_group_instruction",
+            locale="de",
+            prompt_content="ANWEISUNG fuer {other_agent_names}.",
+            system_prompt=None,
+            variables=[],
+            default_model=None,
+            temperature=0.7,
+            max_tokens=1024,
+            negative_prompt=None,
+            source=PromptSource.PLATFORM_LOCALE,
+        )
+        with (
+            patch.object(service, "_load_history", return_value=list(HISTORY)),
+            patch.object(service._prompt_resolver, "resolve", return_value=resolved),
+            patch.object(AgentMemoryService, "retrieve", return_value=[]),
+            patch.object(service, "_build_relationship_context", return_value=""),
+        ):
+            extra_parts, _messages, closing = await service._build_group_turn_context(
+                conversation_id=uuid4(),
+                agents=AGENTS,
+                agent_names=AGENT_NAMES,
+                idx=0,
+                event_context="EIN EREIGNIS",
+                locale="de",
+                user_message="x",
+                saved_messages=[],
+            )
+        assert "ANWEISUNG" in closing
+        assert not any("ANWEISUNG" in teil for teil in extra_parts)
+        assert any("EIN EREIGNIS" in teil for teil in extra_parts), "der Inhalt fehlt vorn"

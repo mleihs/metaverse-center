@@ -384,6 +384,7 @@ class ChatAIService:
         history_messages: list[dict[str, str]],
         extra_variables: dict[str, str] | None = None,
         extra_context: str = "",
+        closing_instruction: str = "",
     ) -> list[dict[str, str]]:
         """Build the full message list (system prompt + history) for OpenRouter.
 
@@ -426,7 +427,48 @@ class ChatAIService:
         if extra_context:
             system_prompt += f"\n\n{extra_context}"
 
-        return [{"role": "system", "content": system_prompt}, *history_messages]
+        messages = [{"role": "system", "content": system_prompt}, *history_messages]
+        return self._append_closing_instruction(messages, closing_instruction)
+
+    @staticmethod
+    def _append_closing_instruction(
+        messages: list[dict[str, str]], instruction: str
+    ) -> list[dict[str, str]]:
+        """Die Anweisung, die UNMITTELBAR VOR der Antwort stehen muss.
+
+        ⚠ GEMESSEN am 04.09.2026: die Gruppen-Anweisung stand an Position 0 von
+        9 — im System-Prompt, also VOR dem ganzen Verlauf. In einem Faden mit
+        373 Nachrichten liegen zweihundert Zuege dazwischen.
+
+        Der Praktiker-Konsens dazu ist eindeutig und mit dem einzigen
+        quantifizierten Datenpunkt belegt, den es zu dieser Frage gibt
+        (37 von 40 sauberen Durchlaeufen, DeepSeek, Temperatur 0): was vorne
+        steht, verblasst mit wachsendem Chat; was hinter dem Verlauf sitzt,
+        bleibt. SillyTavern nennt es „Post-History Instructions" bzw. eine
+        Autorennotiz auf Tiefe 0.
+
+        WARUM ANGEHAENGT UND NICHT ALS EIGENE `system`-NACHRICHT:
+        eine `system`-Rolle MITTEN im Verlauf ist bei OpenAI-kompatiblen
+        Anbietern nicht verlaesslich — DeepSeek dokumentiert sie nur am
+        Anfang. Dieselbe Vorsicht, aus der `_merge_consecutive_user_turns`
+        entstanden ist: ein Aufruf, der bei DeepSeek durchgeht und beim
+        naechsten Modell mit 400 abbricht, ist kein Aufruf, sondern eine
+        Falle.
+
+        Steht am Ende ein `user`-Zug, wird angehaengt; steht dort ein
+        `assistant`-Zug (der Faden endet mit einer Agentenantwort), kommt ein
+        eigener `user`-Zug dazu. In beiden Faellen ist die Anweisung das
+        Letzte, was das Modell liest.
+        """
+        if not instruction.strip():
+            return messages
+        if messages and messages[-1]["role"] == "user":
+            messages[-1] = {
+                "role": "user",
+                "content": f"{messages[-1]['content']}\n\n{instruction.strip()}",
+            }
+            return messages
+        return [*messages, {"role": "user", "content": instruction.strip()}]
 
     # ── Core generation helper (non-streaming) ─────────────
 
@@ -442,6 +484,7 @@ class ChatAIService:
         history_messages: list[dict[str, str]],
         extra_variables: dict[str, str] | None = None,
         extra_context: str = "",
+        closing_instruction: str = "",
         extra_metadata: dict[str, Any] | None = None,
         participant_names: list[str] | None = None,
     ) -> tuple[str, dict]:
@@ -465,6 +508,7 @@ class ChatAIService:
             history_messages=history_messages,
             extra_variables=extra_variables,
             extra_context=extra_context,
+            closing_instruction=closing_instruction,
         )
 
         budget = await self._chat_budget()
@@ -532,6 +576,7 @@ class ChatAIService:
         agent_total: int = 1,
         extra_variables: dict[str, str] | None = None,
         extra_context: str = "",
+        closing_instruction: str = "",
         extra_metadata: dict[str, Any] | None = None,
         participant_names: list[str] | None = None,
     ) -> AsyncIterator[SSEEvent]:
@@ -578,6 +623,7 @@ class ChatAIService:
             history_messages=history_messages,
             extra_variables=extra_variables,
             extra_context=extra_context,
+            closing_instruction=closing_instruction,
         )
 
         yield SSEEvent(
@@ -1274,7 +1320,7 @@ class ChatAIService:
         saved_messages: list[dict] = []
 
         for idx, agent in enumerate(agents):
-            extra_parts, history_messages = await self._build_group_turn_context(
+            extra_parts, history_messages, closing_instruction = await self._build_group_turn_context(
                 conversation_id=conversation_id,
                 agents=agents,
                 agent_names=agent_names,
@@ -1298,6 +1344,7 @@ class ChatAIService:
                 model=model,
                 history_messages=history_messages,
                 extra_context="\n\n".join(extra_parts),
+                closing_instruction=closing_instruction,
                 extra_metadata={"group_turn_index": idx},
                 participant_names=agent_names,
             )
@@ -1360,7 +1407,7 @@ class ChatAIService:
         saved_messages: list[dict] = []
 
         for idx, agent in enumerate(agents):
-            extra_parts, history_messages = await self._build_group_turn_context(
+            extra_parts, history_messages, closing_instruction = await self._build_group_turn_context(
                 conversation_id=conversation_id,
                 agents=agents,
                 agent_names=agent_names,
@@ -1386,6 +1433,7 @@ class ChatAIService:
                 agent_index=idx,
                 agent_total=len(agents),
                 extra_context="\n\n".join(extra_parts),
+                closing_instruction=closing_instruction,
                 extra_metadata={"group_turn_index": idx},
                 participant_names=agent_names,
             ):
@@ -1429,7 +1477,7 @@ class ChatAIService:
         digest_text: str = "",
         history: list[dict] | None = None,
         relationship_context: str = "",
-    ) -> tuple[list[str], list[dict[str, str]]]:
+    ) -> tuple[list[str], list[dict[str, str]], str]:
         """Build extra_parts and history_messages for a single agent's turn
         in a group conversation. Shared by streaming and non-streaming paths.
         """
@@ -1466,16 +1514,25 @@ class ChatAIService:
         if digest_text:
             extra_parts.append(digest_text)
 
+        # ⚠ Die Gruppen-Anweisung geht NICHT in `extra_parts`. Sie stand dort
+        # bis zum 04.09.2026 und landete damit im System-Prompt, also an
+        # Position 0 vor dem ganzen Verlauf — bei 373 Nachrichten mit
+        # zweihundert Zuegen dazwischen. Sie wird jetzt als
+        # `closing_instruction` unmittelbar vor die Antwort gesetzt.
+        #
+        # `extra_parts` traegt weiterhin INHALT (Ereignisse, Erinnerungen,
+        # Beziehungen, Vorgeschichte). Der gehoert nach vorn: er ist das, was
+        # die Figur weiss, nicht das, was sie tun soll.
+        closing_instruction = ""
         if len(agents) > 1:
             group_instr = await self._prompt_resolver.resolve("chat_group_instruction", locale)
             other_names = [n for i, n in enumerate(agent_names) if i != idx]
-            group_text = self._prompt_resolver.fill_template(
+            closing_instruction = self._prompt_resolver.fill_template(
                 group_instr,
                 {
                     "other_agent_names": ", ".join(other_names),
                 },
             )
-            extra_parts.append(group_text)
 
         current_agent_id = str(agents[idx]["id"]) if idx < len(agents) else ""
 
@@ -1506,7 +1563,11 @@ class ChatAIService:
         for prev_msg in saved_messages:
             history_messages.append(self._as_turn(prev_msg, agents=agents, current_agent_id=current_agent_id))
 
-        return extra_parts, self._merge_consecutive_user_turns(history_messages)
+        return (
+            extra_parts,
+            self._merge_consecutive_user_turns(history_messages),
+            closing_instruction,
+        )
 
     def _as_turn(
         self,

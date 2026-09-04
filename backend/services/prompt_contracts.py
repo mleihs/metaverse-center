@@ -261,15 +261,14 @@ _FRAME_DIGEST = (
 #: strukturelle Hälfte der Reparatur sitzt in `chat_ai_service._as_turn`; dies
 #: ist die andere Hälfte, und sie muss jede Vorlage überleben.
 _FRAME_GROUP = (
-    "Speak only as yourself, and only in the first person. Never write, quote or continue "
-    "another participant's lines, and never answer on their behalf. Do not put any name in "
-    'front of your reply: no bracketed tag, no "Name:" opener. Messages from the others '
-    "reach you marked with their name; that mark identifies them and is not a format for "
-    "your own text.\n"
-    "One of those marks is [User]. That is the person you are talking to. They are present, "
-    "they act, and they speak for themselves. Never write what they say, never narrate what "
-    "they do, never decide what they feel or agree to. You may describe how you perceive "
-    "them. If your reply depends on something only they can do, stop and let them do it."
+    "You are one person in this scene, and your horizon ends where your senses do.\n"
+    "Write what you do, say, notice and feel. You may describe the room and the others "
+    "as far as your own action needs it — what they seem to be doing, how they look to "
+    "you, what you make of it. What they think, decide, or do NEXT is theirs to write.\n"
+    "The others are marked with their names; [User] is the human you are talking to. "
+    "You may report what has already happened indirectly (\"she asked for the file\"), "
+    "but you never author their next move.\n"
+    "One action per turn. When the scene needs someone else to move, let it wait."
 )
 
 
