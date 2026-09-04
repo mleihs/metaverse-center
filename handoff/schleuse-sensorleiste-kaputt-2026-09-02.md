@@ -128,7 +128,8 @@ wollte.
 ## ⚠ BERICHTIGUNG: „Es gibt keine Bilder" war falsch
 
 Ich hatte geschrieben, der Zufluss liefere überwiegend keine Bilder. Der Nutzer
-hat widersprochen — zu Recht. Ich hatte zwei Aussagen verwechselt (Wortlaut nicht wiedergegeben) und (Wortlaut nicht wiedergegeben). Nur die
+hat widersprochen — zu Recht. Ich hatte zwei Aussagen verwechselt: dass heute
+keine Bilder in der Datenbank liegen, und dass die Quellen keine liefern. Nur die
 erste stimmte, und auch die nur, weil auf Prod kein Guardian-Schlüssel steht.
 
 **Jeden Dienst einzeln abgefragt (02.09.2026, echte Antworten):**

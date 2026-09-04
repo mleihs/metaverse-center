@@ -87,11 +87,27 @@ SPERRE = lade_sperrliste()
 # aus dem PRODUKT stammen und nicht aus einem Gespraech — nur mit Beleg
 # ergaenzen.
 ZITAT_FREI = (
+    # Beschriftungen der Oberflaeche
     "Is Architect",
     "Simulation Forge Access",
     "Chronik erzeugen",
     "Command Stage",
+    "Auf Vorgaben",
+    "BUREAU DIRECTIVE",
+    "runs every request through your credentials",
     "/users/me",
+    # Zeilen aus PLAN- und Entwurfsdokumenten, die zitiert werden duerfen —
+    # sie stammen aus dem Werk, nicht aus einem Gespraech.
+    "wenn der Spieler darin vorkommt",
+    "Substrat-Narbengewebe",
+    "Jeder Zug lebt",
+    "Sicht umgeht RLS",
+    "nach Erdbeben aussieht",
+    "Cron f",
+    "Sprich nur als du selbst",
+    "Fragmente sammeln sich",
+    "Stimmung &gt;",
+    "Stimmung >",
 )
 
 def sperrtreffer(text: str) -> bool:
@@ -127,7 +143,7 @@ MUSTER = [
     # dann ein Zitat ab 14 Zeichen. Kurze Zitate bleiben frei, weil dort fast
     # immer eine Beschriftung der Oberflaeche steht und kein Gespraech.
     ("zugeschriebenes Zitat",
-     re.compile(r'(Nutzers?|User|Mensch(en)?|Anwender)[^\n„"]{0,60}[:,(—-]?[ \t]*„[^"]{14,}"')),
+     re.compile(r'(Nutzers?|User|Mensch(en)?|Anwender|Betreiber)[^„"]{0,160}?„([^"]{14,300})"', re.S)),
     # Eine Sprechermarke MIT Text ist eine Gespraechszeile. Erlaubt sind genau
     # die erfundenen Testfiguren — an ihnen erkennt man auf einen Blick, dass
     # ein Beispiel ein Beispiel ist. Jeder ANDERE Zweiwortname an dieser Stelle
@@ -158,8 +174,13 @@ def pruefe(text, herkunft, funde):
         # Das Fenster normalisieren, bevor die Freiliste greift: eine
         # Beschriftung, die ueber zwei Zeilen umbricht („Chronik\n# erzeugen"),
         # traf sonst keinen Eintrag und meldete sich als Fund.
+        # BEIDE Seiten normalisieren. Erst nur das Fenster zu glaetten war ein
+        # halber Schritt: der Bindestrich in einem Eintrag wurde dort zum
+        # Leerzeichen, im Eintrag selbst nicht — und der Vergleich schlug fehl.
         flach = re.sub(r"[\s#*/-]+", " ", fenster)
-        if zitat.search(fenster) and not any(g in flach for g in ZITAT_FREI):
+        if zitat.search(fenster) and not any(
+            re.sub(r"[\s#*/-]+", " ", g) in flach for g in ZITAT_FREI
+        ):
             funde.append((herkunft, i + 1, "zugeschriebenes Zitat",
                           zeilen[i].strip()[:90]))
             break

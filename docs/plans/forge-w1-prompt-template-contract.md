@@ -406,10 +406,10 @@ Liegt unter
 ## Arbeitsweise, die der Nutzer erwartet
 
 - **Am laufenden System messen, nicht aus dem Quelltext schließen.** Drei meiner Hypothesen sind
-  in dieser Sitzung an einer Messung gestorben. Der Nutzer honoriert das Zurücknehmen — er hat
-  mehrfach selbst korrigiert (Wortlaut nicht wiedergegeben)) und erwartet dasselbe
-  zurück.
-- **Nicht pausieren, nicht (Wortlaut nicht wiedergegeben) fragen.** Autonom weiterarbeiten; Befunde
+  in dieser Sitzung an einer Messung gestorben. Zurücknehmen wird honoriert — es wurde
+  mehrfach selbst korrigiert (Anker neu erzeugt), und dasselbe wird zurück
+  erwartet.
+- **Nicht pausieren, nicht „soll ich weitermachen?" fragen.** Autonom weiterarbeiten; Befunde
   sofort notieren statt zu sammeln.
 - **Er liest mit und stellt Zwischenfragen** — oft sehr gute („addiert ergibt nicht 16", „ist das
   das gleiche flux pro modell?", „warum will das modell nix zurückliefern?"). Diese Fragen sind

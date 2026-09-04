@@ -8,7 +8,8 @@ Alle Punkte am Bildschirm gesehen oder im Code nachgemessen — keine Vermutunge
 
 ## A. Fragen des Nutzers (offen)
 
-- [ ] **A1 — Glow um die Gegner.** (Wortlaut nicht wiedergegeben) Andere Präsentation entwerfen. Betrifft die Gegner-Sprites
+- [ ] **A1 — Glow um die Gegner.** Der Schein um die Gegner beschädigt das
+Artwork. Andere Präsentation entwerfen. Betrifft die Gegner-Sprites
       auf der Bühne im Kampf. Vor der Umsetzung `velg-frontend-design` laden.
 - [ ] **A2 — Was passiert, wenn ein Agent stirbt?** Teilantwort aus dem Code:
       es gibt keinen Tod, sondern eine Zustandsleiter
