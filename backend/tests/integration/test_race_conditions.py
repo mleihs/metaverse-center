@@ -5,6 +5,7 @@ These tests document and verify concurrent behavior using real threads
 """
 
 import asyncio
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
@@ -35,10 +36,35 @@ async def _fresh_admin_client():
     return await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
 
 
-def _resolve_in_thread(epoch_id):
-    """Run resolve_cycle in a separate thread with its own async Supabase client."""
+def _resolve_in_thread(epoch_id, barrier):
+    """Run resolve_cycle in a separate thread with its own async Supabase client.
+
+    THE BARRIER IS THE TEST.
+
+    Without it this test asserted "exactly one increment" while doing nothing
+    to make the two calls overlap. Building the async client is the expensive
+    part -- an HTTP client, a connection, a fresh event loop -- and whichever
+    thread wins the pool can finish its entire resolve before the other has
+    read `current_cycle` at all. Two SEQUENTIAL resolves then move the epoch
+    3 -> 4 -> 5 legitimately, the optimistic lock never gets a chance to
+    refuse anything, and the assertion fails with `got 5` on a codebase that
+    is perfectly correct.
+
+    That is what happened in CI on 04.09.2026: green for months on fast
+    runners where the threads happened to overlap, red under load. A test
+    whose verdict depends on which thread wins a race it does not control
+    proves nothing in EITHER direction -- a passing run only meant the
+    scheduler cooperated.
+
+    So: build the client first, then meet at the barrier, then resolve. Both
+    threads are now inside the read-modify-write window at the same moment,
+    which is the only situation the optimistic lock exists for. The timeout
+    turns a thread that never arrives into a loud failure instead of a CI job
+    that hangs until it is killed.
+    """
     async def _run():
         client = await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
+        barrier.wait(timeout=30)
         return await CycleResolutionService.resolve_cycle(client, epoch_id)
     return asyncio.run(_run())
 
@@ -63,10 +89,11 @@ class TestConcurrentCycleResolve:
 
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=10, rp_cap=40)
 
+        barrier = threading.Barrier(2)
         with ThreadPoolExecutor(max_workers=2) as pool:
             futures = [
-                pool.submit(_resolve_in_thread, epoch.epoch_id),
-                pool.submit(_resolve_in_thread, epoch.epoch_id),
+                pool.submit(_resolve_in_thread, epoch.epoch_id, barrier),
+                pool.submit(_resolve_in_thread, epoch.epoch_id, barrier),
             ]
             results = []
             for f in futures:
