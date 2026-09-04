@@ -108,6 +108,12 @@ ZITAT_FREI = (
     "Fragmente sammeln sich",
     "Stimmung &gt;",
     "Stimmung >",
+    "Mini-TCG-Karten",
+    # Die erfundenen Ersaetze aus der Bereinigung. Sie stehen dort, wo frueher
+    # ein Zitat stand — und sehen deshalb zwangslaeufig aus wie eines.
+    "Der Brunnen glitzert heute",
+    "frische Aepfel hin",
+    "frische Äpfel hin",
 )
 
 def sperrtreffer(text: str) -> bool:
