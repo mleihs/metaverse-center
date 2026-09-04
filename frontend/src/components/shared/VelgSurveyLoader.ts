@@ -121,18 +121,30 @@ export class VelgSurveyLoader extends LitElement {
          * sondern mitten drin, und das Feld ist im ersten Bild schon in
          * Bewegung. Ein Wartezeichen, das erst nach einer Sekunde etwas tut,
          * sieht in genau der Sekunde aus wie ein Fehler.
+         *
+         * DER NENNER IST GERECHNET, NICHT GERATEN.
+         *   Es gibt sieben Diagonalen (0..6). Der Versatz spannt sie ueber
+         *   6/8 = 75 % des Takts; das Fenster unten ist 12 % breit. Wieviele
+         *   also gleichzeitig leuchten: 0,12 / 0,75 * 7 = rund EINE.
+         *
+         *   Die erste Fassung nahm /-14 und ein Fenster von 20 %, also
+         *   0,20 / 0,43 * 7 = 3,3 Diagonalen zugleich. Im Browser gemessen sah
+         *   das nicht nach einer Vermessung aus, sondern nach einem massiven
+         *   Block, der sich fuellt und leert — und die Rasterlinien darunter
+         *   waren verdeckt. Bei einer leuchtenden Diagonale wandert eine Kante
+         *   ueber ein sichtbares Raster, und genau das war gemeint.
          */
-        animation-delay: calc(var(--i, 0) * var(--_takt) / -14);
+        animation-delay: calc(var(--i, 0) * var(--_takt) / -8);
       }
 
       @keyframes zelle-aufnehmen {
         0%,
-        70%,
+        22%,
         100% {
           opacity: 0;
         }
-        20%,
-        40% {
+        10%,
+        18% {
           opacity: 1;
         }
       }
