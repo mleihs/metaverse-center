@@ -523,13 +523,7 @@ export class VelgKontorPanel extends LitElement {
                       }
                     </td>
                     <td class="kontor-col--amount">
-                      ${
-                        r.ohne > 0
-                          ? html`<span class="kontor-cell kontor-cell--unrecorded"
-                            >${formatCount(r.ohne)}</span
-                          >`
-                          : renderCell(formatAmount(0))
-                      }
+                      ${this._ohneBetragZelle(r.basisBekannt, r.ohne)}
                     </td>
                   </tr>
                 `,
@@ -539,6 +533,32 @@ export class VelgKontorPanel extends LitElement {
         </div>
       </section>
     `;
+  }
+
+  /**
+   * Die Spalte „ohne Betrag" -- eine ZAEHLUNG, kein Betrag.
+   *
+   * ⚠ Hier stand `renderCell(formatAmount(0))`, also `$0.00`, wenn keine Zeile
+   * der Gruppe ohne Betrag ist. Im Browser gesehen: eine Waehrung in einer
+   * Zaehlspalte, direkt neben Zeilen, die dort `203` zeigen. Zwei Einheiten in
+   * einer Spalte, und die falsche sieht aus wie ein Betrag von null.
+   *
+   * Drei Faelle, drei Aussagen:
+   *   Basis unbekannt    die Datenbank kennt `billed` nicht (vor Migration
+   *                      389) -> nicht erfasst, nicht "null"
+   *   keine ohne Betrag  echte Null, als Zaehlung: 0
+   *   welche vorhanden   die Zahl auf der Schraffur
+   */
+  private _ohneBetragZelle(basisBekannt: boolean, ohne: number): TemplateResult {
+    if (!basisBekannt) {
+      return renderCell(formatAmount(null), msg('not recorded'));
+    }
+    if (ohne === 0) {
+      return html`<span class="kontor-cell kontor-cell--zero">${formatCount(0)}</span>`;
+    }
+    return html`<span class="kontor-cell kontor-cell--unrecorded" title=${msg('not recorded')}
+      >${formatCount(ohne)}</span
+    >`;
   }
 
   /**
