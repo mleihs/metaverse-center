@@ -202,8 +202,40 @@ class ReplicateService:
 
                 # Output is either a FileOutput or a list of FileOutput
                 if isinstance(output, list):
+                    # WENIGER BILDER ALS BESTELLT IST KEIN ERFOLG.
+                    #
+                    # `replicate/cog-flux` entfernt ein beanstandetes Bild aus
+                    # der Ausgabeliste und meldet nur dann einen Fehler, wenn
+                    # ALLE betroffen sind. Bei `num_outputs > 1` kommt also
+                    # `status: succeeded` mit einer kuerzeren Liste zurueck —
+                    # kein Fehler, kein Feld, kein Hinweis.
+                    #
+                    # Genau so ist am 05.09.2026 ein bestelltes Szenenbild
+                    # verschwunden und durch nichts ersetzt worden, und es sah
+                    # von aussen aus wie ein gelungener Lauf. Deshalb wird hier
+                    # gezaehlt und nicht bloss auf „leer" geprueft.
+                    bestellt = int(params.get("num_outputs", 1) or 1)
+                    if len(output) < bestellt:
+                        logger.warning(
+                            "Replicate lieferte weniger Bilder als bestellt",
+                            extra={
+                                "model": model,
+                                "bestellt": bestellt,
+                                "geliefert": len(output),
+                                "hinweis": "Anbieterfilter verwirft beanstandete Bilder still",
+                            },
+                        )
                     if not output:
-                        raise ReplicateError("Model returned empty output list")
+                        # Bei `num_outputs=1` — unserem Normalfall — IST die
+                        # leere Liste der Filterfall. Die alte Meldung
+                        # („empty output list") schickte jeden, der sie las,
+                        # zur Fehlersuche ins Modell statt zum Filter.
+                        raise ReplicateError(
+                            f"Replicate model {model!r} returned no image. With num_outputs="
+                            f"{bestellt} this is what a provider-side content filter looks like: "
+                            "the flagged image is dropped from the output and the prediction "
+                            "still reports success."
+                        )
                     image_bytes = await output[0].aread()
                 else:
                     image_bytes = await output.aread()

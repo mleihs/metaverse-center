@@ -26,7 +26,7 @@ Drei Richtungen, und die dritte ist die, die den Aufruf umbringt:
 
 import pytest
 
-from backend.services.image_model_families import family_for
+from backend.services.image_model_families import family_for, tuning_for
 from backend.services.model_resolver import ResolvedImageModel
 
 #: Abschrift der `Input.properties`-Schluessel, gemessen 05.09.2026.
@@ -141,6 +141,22 @@ ENUMS: dict[str, dict[str, set[str]]] = {
         },
         "output_format": {"webp", "jpg", "png"},
     },
+    # Die beiden Modelle der Erwachsenenspur. Ihr Scheduler-Enum steht hier,
+    # seit `MODEL_TUNINGS` einen Wert dafuer schickt — und genau DESHALB steht
+    # es hier: ein gesendeter Enum-Wert muss gepinnt sein, sonst ist die
+    # naechste Aenderung an der Empfehlungstabelle ein 422 auf jeden Aufruf.
+    "asiryan/juggernaut-xl-v7": {
+        "scheduler": {
+            "DDIM", "DPMSolverMultistep", "HeunDiscrete", "KarrasDPM",
+            "K_EULER_ANCESTRAL", "K_EULER", "PNDM",
+        },
+    },
+    "datacte/proteus-v0.2": {
+        "scheduler": {
+            "DDIM", "DPMSolverMultistep", "HeunDiscrete", "KarrasDPM",
+            "K_EULER_ANCESTRAL", "K_EULER", "PNDM",
+        },
+    },
 }
 
 
@@ -185,13 +201,41 @@ class TestKeinFremdesFeld:
         assert not fremd, f"{model} kennt {fremd} nicht — Replicate wirft sie still weg"
 
     @pytest.mark.parametrize("model", sorted(SCHEMATA))
-    def test_kein_scheduler_geht_je_hinaus(self, model: str):
+    def test_scheduler_nur_fuer_gemessene_modelle(self, model: str):
         # Der einzige Feldname, bei dem ein falscher Wert nicht still
         # verschwindet. Vier unvereinbare Vokabulare unter sieben gemessenen
-        # Modellen, und `K_EULER` — die Plattformvorgabe — steht in zweien
+        # Modellen, und `K_EULER` — die alte Plattformvorgabe — steht in zweien
         # davon nicht. Ein echter Lauf gegen `charlesmccarthy/pony-sdxl` endete
         # damit auf 422, also mit gar keinem Bild.
-        assert "scheduler" not in _params(model)
+        #
+        # Die Regel hiess frueher „NIE ein Scheduler". Das war die richtige
+        # Regel, solange die Quelle eine FAMILIE war: ueber vier Vokabulare
+        # kann eine Familienvorgabe nicht richtig sein.
+        #
+        # Seit `MODEL_TUNINGS` gibt es eine zweite Quelle, und die kennt das
+        # einzelne Modell. Ein Eintrag dort entsteht erst, nachdem das Schema
+        # des Modells gelesen UND ein echter Aufruf gemacht wurde. Die Regel
+        # ist deshalb genauer geworden, nicht weicher:
+        #
+        #     kein Eintrag  ->  kein Scheduler, wie bisher
+        #     Eintrag       ->  der Wert MUSS im Enum dieses Modells stehen
+        #
+        # Die zweite Haelfte prueft `TestKeinUnzulaessigerWert` mit; deshalb
+        # stehen die Scheduler-Enums der beiden Modelle jetzt in `ENUMS`.
+        tuning = tuning_for(model)
+        if tuning is None or not tuning.scheduler:
+            assert "scheduler" not in _params(model), (
+                f"{model} hat keine gemessene Empfehlung — ein Scheduler waere geraten"
+            )
+        else:
+            assert _params(model).get("scheduler") == tuning.scheduler
+
+    def test_ein_ungemessenes_modell_bekommt_keinen_scheduler(self):
+        # Die Gegenprobe zur Regel oben: ein Modell, das in keiner
+        # Empfehlungstabelle steht, darf auch dann keinen Scheduler bekommen,
+        # wenn es in derselben Familie liegt wie eines, das einen hat.
+        assert tuning_for("stability-ai/sdxl") is None
+        assert "scheduler" not in _params("stability-ai/sdxl")
 
 
 class TestKeinUnzulaessigerWert:

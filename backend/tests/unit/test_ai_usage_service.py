@@ -7,7 +7,12 @@ from uuid import UUID
 
 import pytest
 
-from backend.services.ai_usage_service import MODEL_COST_PER_1M_TOKENS, AIUsageService, _estimate_cost
+from backend.services.ai_usage_service import (
+    _UNKNOWN_IMAGE_COST,
+    MODEL_COST_PER_1M_TOKENS,
+    AIUsageService,
+    _estimate_cost,
+)
 
 SIM_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 USER_ID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
@@ -37,12 +42,31 @@ class TestEstimateCost:
         assert cost == pytest.approx(0.025, abs=0.001)
 
     def test_replicate_flux2_pro_cost(self):
-        cost = _estimate_cost("replicate", "black-forest-labs/flux.2-pro", 0, 0)
-        assert cost == pytest.approx(0.031, abs=0.001)
+        # BEIDE Schreibweisen, und das ist der Punkt. Dieser Test rief nur die
+        # Punktform auf und bestand jahrelang, weil der Rueckfallwert zufaellig
+        # derselbe Preis war — die Punktform stand nie in der Tabelle. Erst als
+        # der Rueckfall sich aenderte, wurde aus zwei sich deckenden Fehlern
+        # ein roter Test.
+        for name in ("black-forest-labs/flux-2-pro", "black-forest-labs/flux.2-pro"):
+            assert _estimate_cost("replicate", name, 0, 0) == pytest.approx(0.031, abs=0.001)
 
     def test_replicate_unknown_model_uses_default(self):
+        # Der Rueckfall ist bewusst NICHT der Preis eines bestimmten Modells.
+        # Vorher war er `0.031`, also der Preis von flux-2-pro: ein unbekanntes
+        # Modell bekam damit eine Zahl, die richtig aussieht, statt einer, die
+        # zum Nachschlagen zwingt.
         cost = _estimate_cost("replicate", "unknown/image-model", 0, 0)
-        assert cost == pytest.approx(0.031, abs=0.001)
+        assert cost == pytest.approx(_UNKNOWN_IMAGE_COST, abs=0.001)
+        assert cost not in {0.031, 0.025, 0.073}, "der Rueckfall darf kein echter Modellpreis sein"
+
+    def test_die_erwachsenenspur_wird_nicht_als_flux_gebucht(self):
+        # Der eigentliche Befund vom 05.09.2026: drei Bilder, drei Modelle,
+        # dreimal `estimated_cost_usd = 0.031`. Proteus und Juggernaut fielen
+        # auf den Flux-Preis durch.
+        for name in ("datacte/proteus-v0.2", "asiryan/juggernaut-xl-v7", "asiryan/proteus-v0.2"):
+            kosten = _estimate_cost("replicate", name, 0, 0)
+            assert kosten != pytest.approx(0.031, abs=0.0001), f"{name} wird als flux-2-pro gebucht"
+            assert 0 < kosten < 0.02
 
     def test_zero_tokens_zero_cost(self):
         cost = _estimate_cost("openrouter", "deepseek/deepseek-chat", 0, 0)

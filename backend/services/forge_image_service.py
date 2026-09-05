@@ -13,6 +13,7 @@ from backend.services.ai_utils import key_source_for
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.image_content_policy import ContentRating
+from backend.services.image_prompt_budget import fit_to_token_budget, tokenbudget, wortbudget
 from backend.services.model_resolver import ModelResolver, ResolvedImageModel
 from backend.services.style_reference_service import StyleReferenceService
 from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
@@ -673,11 +674,37 @@ class ForgeImageService:
         """
         description = self._sanitize_prompt(description)
 
+        image_model = await self._model_resolver.resolve_image_model("scene", rating=rating)
+
+        # Erst das Modell, dann der Prompt — und in DIESER Reihenfolge, weil
+        # das Modell sagt, wie viel Text ueberhaupt ankommt.
+        #
+        # Die SDXL-Spur kodiert mit CLIP und fasst 77 Token; was darueber
+        # steht, wird abgeschnitten, ohne Fehler und ohne Spur in der Antwort
+        # (siehe `image_prompt_budget`). Vorher wurde hier erst der Stilprompt
+        # angehaengt und dann alles abgeschickt: von rund 160 Woertern kamen
+        # 60 an, und weggefallen ist das ENDE — dort, wo die dritte Figur und
+        # der Bildausschnitt stehen.
+        #
+        # Der Stilprompt geht deshalb zuerst ueber die Klinge und nicht die
+        # Beschreibung. Er ist die Handschrift der Welt; sie ist das Bild.
+        grenze = image_model.family.clip_token_limit
+        if grenze:
+            description = fit_to_token_budget(description, grenze, was="scene_description")
+
         style_prompt = await self._model_resolver.resolve_style_prompt("scene")
         if style_prompt:
-            description = f"{description}, {style_prompt}"
+            if grenze:
+                # Was nach der Beschreibung noch frei ist, bekommt der Stil.
+                rest = wortbudget(grenze) - len(description.split())
+                style_prompt = (
+                    fit_to_token_budget(style_prompt, tokenbudget(rest), was="scene_style")
+                    if rest > 0
+                    else ""
+                )
+            if style_prompt:
+                description = f"{description}, {style_prompt}"
 
-        image_model = await self._model_resolver.resolve_image_model("scene", rating=rating)
         if references:
             image_model.reference_image_url = references[0]
             image_model.extra_reference_urls = tuple(references[1:])

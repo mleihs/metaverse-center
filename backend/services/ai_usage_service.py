@@ -61,12 +61,49 @@ MODEL_COST_PER_1M_TOKENS: dict[str, tuple[float, float]] = {
 }
 
 # Approximate cost per image generation (USD) by model.
+#
+# ZWEI ABRECHNUNGSARTEN, NICHT EINE
+#
+# Die offiziellen Modelle von Black Forest Labs haben einen Festpreis je Bild;
+# die Zahlen unten stammen von ihren Modellkarten. Ein GEMEINSCHAFTSMODELL
+# rechnet Replicate anders ab, naemlich nach GPU-Sekunde — der Preis eines
+# Bildes haengt dort an Schrittzahl, Aufloesung und Hardware und ist keine
+# Konstante.
+#
+# Bis zum 05.09.2026 stand hier nur die Flux-Reihe, und der Rueckfallwert war
+# `0.031` — der Preis von `flux-2-pro`. Damit buchte die ganze
+# Erwachsenenspur (`proteus`, `juggernaut`) den Preis eines Modells, das sie
+# nie aufruft. Das faellt niemandem auf: die Zahl ist plausibel, sie steht in
+# jeder Auswertung, und `duration_ms` ist bei Bildern `0`, also gibt es auch
+# keine Sekunden, an denen man es nachrechnen koennte.
+#
+# Die SDXL-Werte unten sind DEUTLICH niedriger und trotzdem noch grosszuegig
+# gerechnet: eine Erzeugung mit 30-35 Schritten auf der von Replicate
+# gewaehlten Hardware liegt in der Groessenordnung von Zehntelcent. Sie
+# ueberschaetzen also eher, was die richtige Richtung ist — ein zu billig
+# gebuchtes Modell verschwindet in der Auswertung.
+# ZWEI SCHREIBWEISEN DERSELBEN MARKE
+#
+# Die Familientabelle kennt `flux-2` UND `flux.2` als Marke (siehe `_FLUX2`),
+# weil beide Schreibweisen vorkommen. Diese Tabelle kannte nur den Bindestrich.
+# Ein bestehender Test rief ausgerechnet `black-forest-labs/flux.2-pro` auf und
+# bestand — nicht, weil der Preis gefunden wurde, sondern weil der
+# Rueckfallwert damals ZUFAELLIG derselbe Preis war (`0.031`). Zwei Fehler, die
+# einander verdeckt haben; aufgefallen ist es erst, als der Rueckfallwert sich
+# aenderte.
 IMAGE_COST_PER_CALL: dict[str, float] = {
+    # Festpreis je Bild, Modellkarte des Anbieters.
     "black-forest-labs/flux-2-pro": 0.031,
+    "black-forest-labs/flux.2-pro": 0.031,
     "black-forest-labs/flux-2-max": 0.073,
+    "black-forest-labs/flux.2-max": 0.073,
     "black-forest-labs/flux-1.1-pro": 0.040,
     "black-forest-labs/flux-dev": 0.025,
     "black-forest-labs/flux-schnell": 0.003,
+    # Gemeinschaftsmodelle, nach GPU-Sekunde abgerechnet — Schaetzung.
+    "datacte/proteus-v0.2": 0.004,
+    "asiryan/proteus-v0.2": 0.004,
+    "asiryan/juggernaut-xl-v7": 0.005,
 }
 
 
@@ -74,6 +111,15 @@ IMAGE_COST_PER_CALL: dict[str, float] = {
 # unknown model should look expensive in the usage view, because an unpriced
 # model is a model nobody checked.
 _UNKNOWN_COST_PER_1M: tuple[float, float] = (1.00, 3.00)
+
+#: Dasselbe fuer Bilder — und aus demselben Grund pessimistisch.
+#:
+#: Hier stand `0.031` als nackte Zahl im Rueckgabeausdruck, also der Preis von
+#: `flux-2-pro`. Ein unbekanntes Modell bekam damit nicht „teuer, bitte
+#: nachsehen", sondern den Preis eines bestimmten anderen Modells — eine Zahl,
+#: die richtig aussieht und niemanden zum Nachschlagen bringt. Genau so lief
+#: die Erwachsenenspur monatelang unter fremdem Namen durch die Auswertung.
+_UNKNOWN_IMAGE_COST: float = 0.05
 
 
 def _estimate_cost(
@@ -88,7 +134,7 @@ def _estimate_cost(
     why a single blended rate could not be right.
     """
     if provider == "replicate":
-        return IMAGE_COST_PER_CALL.get(model, 0.031)
+        return IMAGE_COST_PER_CALL.get(model, _UNKNOWN_IMAGE_COST)
 
     # Longest matching prefix wins: `…v4-flash-0731` must be priced as itself,
     # not as the `…v4-flash` alias it happens to start with. Plain dict order

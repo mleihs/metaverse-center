@@ -115,6 +115,20 @@ class ImageModelFamily:
     supports_output_fields: bool = True
     #: Ob `aspect_ratio` angenommen wird.
     supports_aspect_ratio: bool = True
+    #: Wie viele Token der Textkodierer dieser Familie fasst. ``0`` heisst
+    #: „nicht gemessen" und laesst den Prompt unveraendert.
+    #:
+    #: CLIP kann 77, und die SDXL-Huellen auf Replicate teilen lange Prompts
+    #: NICHT auf — was darueber steht, wird abgeschnitten, ohne Fehler und ohne
+    #: Feld in der Antwort. Am 05.09.2026 an beiden Modellen der
+    #: Erwachsenenspur im Modellprotokoll gelesen (`194 > 77`); von 162 Woertern
+    #: ueberlebten rund 40 Prozent, und weggefallen ist das Ende, wo die dritte
+    #: Figur und der Bildausschnitt stehen.
+    #:
+    #: Fuer Flux steht hier bewusst nichts: es kodiert mit T5 und hat ein
+    #: erheblich groesseres Fenster. Eine Zahl, die wir dort nicht gemessen
+    #: haben, waere geraten — und eine geratene Grenze kappt echte Bildaussage.
+    clip_token_limit: int = 0
     #: Welche Seitenverhaeltnisse die Familie WIRKLICH fuehrt.
     #:
     #: Leer heisst: nicht geprueft, unser Wert geht so raus. Steht etwas da,
@@ -366,6 +380,9 @@ _SDXL = ImageModelFamily(
     # Schemata kennt sie. Das Format entscheidet ohnehin unser Upload.
     supports_output_fields=False,
     supports_aspect_ratio=False,
+    # Gemessen an beiden Modellen der Erwachsenenspur. Siehe
+    # `image_prompt_budget` — hier stirbt ein langer Prompt lautlos.
+    clip_token_limit=77,
 )
 
 
@@ -438,3 +455,110 @@ def family_for(model_id: str) -> ImageModelFamily:
         if any(marker in needle for marker in family.markers):
             return family
     return _UNKNOWN
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Was der AUTOR eines EINZELNEN Modells empfiehlt
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Die Familie oben beantwortet „welche Felder darf ich senden". Sie kann NICHT
+# beantworten, welche WERTE gut sind: `datacte/proteus-v0.2` und
+# `asiryan/juggernaut-xl-v7` liegen beide in `_SDXL`, nehmen dieselben Felder
+# — und ihre Autoren empfehlen fast gegenteilige Zahlen.
+#
+#     proteus-v0.2      CFG 7 bis 8      (Modellkarte des Autors)
+#     juggernaut-xl-v7  CFG 3 bis 6      („less is a bit more realistic")
+#
+# Wir schickten beiden dieselbe Zahl. Bis zum 05.09.2026 war das die 3,5 aus
+# den Welteinstellungen — ein Wert, der fuer Flux gesetzt worden war und den
+# ausser der Erwachsenenspur niemand liest, weil die Flux-Familie ihre eigenen
+# Schluessel hat (`flux_guidance`). Also steuerte ein Flux-Regler das einzige
+# SDXL-Modell der Plattform, ohne dass irgendwo etwas danebenstand.
+#
+# WARUM HIER DOCH EIN SCHEDULER STEHT
+#
+# Der Kommentar bei `aspect_ratio_choices` begruendet ausfuehrlich, warum die
+# FAMILIE keinen Scheduler schickt: vier unvereinbare Vokabulare, und ein
+# falscher Enum-Wert kostet den ganzen Aufruf mit 422. Das Argument gilt
+# weiterhin — fuer eine Vermutung ueber ein unbekanntes Modell.
+#
+# Hier ist es kein unbekanntes Modell. Ein Eintrag in dieser Tabelle entsteht
+# nur, nachdem das Schema des Modells GELESEN und ein echter Aufruf gemacht
+# wurde. Beide Eintraege unten fuehren dasselbe klassische Sieben-Werte-Enum,
+# `KarrasDPM` steht in beiden. Ein Modell ohne Eintrag bekommt weiterhin
+# keinen Scheduler — die Vorsicht bleibt genau dort, wo sie begruendet ist.
+#
+# WAS EIN EINTRAG KOSTET, WENN ER FEHLT
+#
+# `apply_watermark` steht bei `datacte/proteus-v0.2` per Vorgabe auf `True`.
+# Wir haben es nie gesetzt, also hat das Modell jedes Bild der Erwachsenenspur
+# mit einem Wasserzeichen versehen — kein Fehler, keine Meldung, und auf einem
+# AVIF-Daumennagel sieht man es nicht.
+
+
+@dataclass(frozen=True, slots=True)
+class ModelTuning:
+    """Die Empfehlung des Modellautors, gemessen und nicht geraten.
+
+    ``None`` heisst „dazu haben wir nichts gemessen, nimm den Vorgabewert der
+    Ebene darueber". Es heisst NICHT „egal": ein nicht gesetzter Wert ist ein
+    Wert, den jemand noch nachschlagen muss.
+    """
+
+    #: Erkennungsmarken im Modellnamen. Wie bei den Familien: erste Uebereinstimmung gewinnt.
+    markers: tuple[str, ...]
+    #: Was der Autor als Fuehrung empfiehlt.
+    guidance_scale: float | None = None
+    #: Was der Autor als Schrittzahl empfiehlt.
+    num_inference_steps: int | None = None
+    #: Der Scheduler — nur setzen, wenn das Enum des Modells GELESEN wurde.
+    scheduler: str = ""
+    #: Der vom Autor empfohlene Negativprompt. Ein leerer Text ist eine
+    #: AUSSAGE („starte ohne Negativprompt", so Juggernauts Autor woertlich)
+    #: und deshalb von „nicht gemessen" (``None``) unterschieden.
+    negative_prompt: str | None = None
+    #: Feste Zusatzfelder, die dieses Modell braucht und die Familie nicht kennt.
+    extra_params: tuple[tuple[str, object], ...] = ()
+
+
+#: Gemessen am 05.09.2026 gegen die echten Replicate-Schemata UND mit echten
+#: Aufrufen. Reihenfolge ist Bedeutung, wie bei `FAMILIES`.
+MODEL_TUNINGS: tuple[ModelTuning, ...] = (
+    ModelTuning(
+        # Beide Huellen derselben Gewichte: `datacte/proteus-v0.2` fuehrt einen
+        # abschaltbaren Sicherheitspruefer, `asiryan/proteus-v0.2` hat keinen.
+        # Die Empfehlung des Gewichtsautors gilt fuer beide.
+        markers=("proteus-v0.2", "proteus-v0.1"),
+        # 7,5 und NICHT 4 bis 6. Die oft zitierte niedrige Fuehrung gehoert zu
+        # ProteusV0.4; die Karte von v0.2 sagt ausdruecklich „a CFG scale of 8
+        # to 7". Die Zahl vom falschen Modell zu uebernehmen war der erste
+        # Entwurf dieser Zeile.
+        guidance_scale=7.5,
+        num_inference_steps=30,
+        scheduler="KarrasDPM",
+        negative_prompt="worst quality, low quality",
+        # Ohne das traegt jedes Bild ein Wasserzeichen. Vorgabe des Modells ist
+        # `True`, und ein nicht gesetztes Feld heisst hier nicht „aus".
+        extra_params=(("apply_watermark", False),),
+    ),
+    ModelTuning(
+        markers=("juggernaut",),
+        # Der Autor (KandooAI) nennt 3 bis 6 und begruendet die untere Haelfte
+        # mit Fotorealismus. 4 liegt darin; unsere bisherigen 7,5 lagen darueber.
+        guidance_scale=4.0,
+        num_inference_steps=35,
+        scheduler="KarrasDPM",
+        # „Start with no negative" — woertlich die Empfehlung des Autors. Der
+        # leere Text ist deshalb Absicht und kein fehlender Wert.
+        negative_prompt="",
+    ),
+)
+
+
+def tuning_for(model_id: str) -> ModelTuning | None:
+    """Die Empfehlung zu einem Modell, oder ``None``, wenn keine gemessen ist."""
+    needle = model_id.lower()
+    for tuning in MODEL_TUNINGS:
+        if any(marker in needle for marker in tuning.markers):
+            return tuning
+    return None

@@ -9,7 +9,7 @@ from uuid import UUID
 
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
 from backend.services.image_content_policy import ContentRating
-from backend.services.image_model_families import ImageModelFamily, family_for
+from backend.services.image_model_families import ImageModelFamily, ModelTuning, family_for, tuning_for
 from backend.services.platform_model_config import get_platform_model
 from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
@@ -40,6 +40,10 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     "image_width_building": 768,
     "image_height_building": 512,
     "image_guidance_scale": 7.5,
+    # Wie stark eine Referenz wirkt. Siehe `_reference_strength` — die 0,90 fuer
+    # die Szene ist gemessen und nicht gewaehlt.
+    "image_ref_strength": 0.75,
+    "image_ref_strength_scene": 0.90,
     "image_num_inference_steps": 50,
     "image_scheduler": "K_EULER",
     "negative_prompt_agent": (
@@ -50,6 +54,15 @@ PLATFORM_DEFAULT_PARAMS: dict[str, float | int | str] = {
     ),
     "negative_prompt_building": (
         "people, humans, characters, faces, text, watermark, cartoon, anime, low quality, blurry, distorted"
+    ),
+    # Eine Szene will Menschen im Bild — hier steht deshalb NICHTS ueber
+    # Personenzahl, Gesichter oder Koerper. Der Gebaeude-Prompt darueber
+    # verbietet genau das, und eine Szene lief bis zum 05.09.2026 in ihn
+    # hinein. Uebrig bleibt, was in JEDEM Bild stoert: Schrift, Zeichen,
+    # Artefakte.
+    "negative_prompt_scene": (
+        "text, watermark, signature, caption, subtitles, speech bubble, "
+        "low quality, blurry, jpeg artifacts, deformed, extra limbs, extra fingers"
     ),
     # Flux defaults (used when model contains "flux")
     "flux_guidance": 3.5,
@@ -235,6 +248,19 @@ class ResolvedImageModel:
 
         if fam.supports_negative_prompt and self.negative_prompt:
             params["negative_prompt"] = self.negative_prompt
+
+        # Die Empfehlung des Modellautors — Scheduler und Zusatzfelder.
+        #
+        # Der Scheduler steht bewusst NICHT in der Familie: dort waere er eine
+        # Vermutung ueber vier unvereinbare Vokabulare (siehe den Kommentar bei
+        # `aspect_ratio_choices`). Hier ist er eine Messung an EINEM Modell,
+        # dessen Enum gelesen wurde. Ein Modell ohne Eintrag bekommt weiterhin
+        # keinen — die begruendete Vorsicht bleibt, wo sie hingehoert.
+        if (tuning := tuning_for(self.model)) is not None:
+            if tuning.scheduler:
+                params["scheduler"] = tuning.scheduler
+            for feld, wert in tuning.extra_params:
+                params[feld] = wert
 
         if fam.safety == "tolerance":
             params["safety_tolerance"] = self.safety_tolerance
@@ -447,6 +473,84 @@ class ModelResolver:
                 self._toleranz_cache[schluessel] = vorgabe
         return self._toleranz_cache[schluessel]
 
+    @staticmethod
+    def _negative_prompt_for(
+        purpose: str,
+        ai_settings: dict[str, str],
+        tuning: ModelTuning | None,
+    ) -> str:
+        """Der Negativprompt fuer diesen Zweck — Welt, Autor, Plattform.
+
+        Drei Quellen, in dieser Reihenfolge:
+
+        1. Die Welt. `negative_prompt_{schluessel}` in den Welteinstellungen
+           ist die Entscheidung des Betreibers und geht allem vor.
+        2. Der Autor des Modells. Juggernauts Autor sagt woertlich „start with
+           no negative"; das ist ein LEERER Text und keine fehlende Angabe,
+           deshalb unterscheidet `ModelTuning.negative_prompt` zwischen `""`
+           und `None`.
+        3. Die Plattformvorgabe zum Zweck.
+
+        Der Zweckschluessel kennt jetzt drei Faelle statt zwei. `scene` ist der
+        neue: eine Szene will Menschen IM Bild, das Gegenteil des
+        Gebaeude-Prompts, in den sie vorher fiel.
+        """
+        if "portrait" in purpose:
+            schluessel = "agent"
+        elif "scene" in purpose:
+            schluessel = "scene"
+        else:
+            schluessel = "building"
+
+        welt = ai_settings.get(f"negative_prompt_{schluessel}")
+        if welt is not None:
+            return str(welt)
+        if tuning is not None and tuning.negative_prompt is not None:
+            return tuning.negative_prompt
+        return str(PLATFORM_DEFAULT_PARAMS.get(f"negative_prompt_{schluessel}", ""))
+
+    @staticmethod
+    def _reference_strength(purpose: str, ai_settings: dict[str, str]) -> float:
+        """Wie stark das Referenzbild wirkt — und warum eine Szene mehr braucht.
+
+        DAS IST DIE ZAHL, AN DER DIE SZENENBILDER GESCHEITERT SIND.
+
+        `strength` ist bei beiden SDXL-Modellen dasselbe, und ihre Schemata
+        sagen es woertlich gleich: „1.0 corresponds to full destruction of
+        information in image". Es ist also die Menge Rauschen, NICHT „wie stark
+        der Prompt zaehlt" — niedrig heisst nah am Eingabebild.
+
+        Am lebenden Modell gemessen, gleicher Seed, gleicher Prompt, eine
+        Portraetreferenz mit EINER Person, bestellt war eine Szene mit dreien:
+
+            0,60   Einzelportraet
+            0,75   Einzelportraet          <- unsere bisherige Vorgabe
+            0,90   die bestellte Szene
+
+        Auf `datacte/proteus-v0.2` und `asiryan/juggernaut-xl-v7` GETRENNT
+        gemessen, nicht vom einen aufs andere geschlossen. Bei 0,75 gewinnt die
+        Vorlage gegen den Prompt: das Modell malt die Referenz nach, und die
+        Szene, die im Prompt korrekt beschrieben stand, kam nie an.
+
+        DER PREIS, UND ER IST KEINE FEHLFUNKTION
+
+        Bei 0,90 erscheint die Szene, und das Gesicht der Referenz ist weg.
+        `strength` ist EIN Regler zwischen Identitaet und Komposition; img2img
+        kann nicht beides. Figurentreue in einer Mehrpersonenszene braucht
+        einen anderen Mechanismus (InstantID, oder Gesichter nachtraeglich
+        einsetzen) und keine andere Zahl. Deshalb steht die Zahl hier als
+        EINSTELLUNG und nicht als Konstante: eine Welt, der die Gesichter
+        wichtiger sind als die Szene, dreht sie herunter.
+
+        Die uebrigen Zwecke bleiben bei 0,75 — dort IST die Referenz das Ziel
+        (ein Portraet soll wie die Figur aussehen), und die Szene ist der
+        einzige Fall, in dem sie es nicht ist.
+        """
+        vorgabe = float(PLATFORM_DEFAULT_PARAMS.get(f"image_ref_strength_{purpose}", 0.0)) or float(
+            PLATFORM_DEFAULT_PARAMS.get("image_ref_strength", 0.75)
+        )
+        return ModelResolver._get_float(ai_settings, f"image_ref_strength_{purpose}", vorgabe)
+
     async def resolve_image_model(
         self,
         purpose: str,
@@ -567,27 +671,59 @@ class ModelResolver:
         )
         width = self._get_int(ai_settings, "image_width", default_w)
         height = self._get_int(ai_settings, "image_height", default_h)
+
+        # Die Vorgabe kommt vom AUTOR des Modells, wo wir sie gemessen haben.
+        #
+        # Vorher stand hier EINE Zahl fuer alle Nicht-Flux-Modelle. Das ging
+        # gut, solange es keine gab. Seit die Erwachsenenspur existiert, sind
+        # es zwei Modelle mit fast gegenteiligen Empfehlungen (proteus 7-8,
+        # juggernaut 3-6), und beide bekamen denselben Wert — in dieser Welt
+        # die 3,5 aus `simulation_settings`, dort fuer Flux eingetragen. Die
+        # Flux-Familie liest diesen Schluessel gar nicht (sie hat
+        # `flux_guidance`), also steuerte ein Flux-Regler ausschliesslich das
+        # einzige SDXL-Modell der Plattform.
+        #
+        # Die Welteinstellung geht weiterhin vor: sie ist die Entscheidung des
+        # Betreibers, und die Empfehlung ist eine Vorgabe, keine Decke. Neu ist
+        # nur, dass die Vorgabe das Modell kennt.
+        tuning = tuning_for(sim_model)
         guidance = self._get_float(
             ai_settings,
             "image_guidance_scale",
-            float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5)),
+            (tuning.guidance_scale if tuning and tuning.guidance_scale is not None else None)
+            or float(PLATFORM_DEFAULT_PARAMS.get("image_guidance_scale", 7.5)),
         )
         steps = self._get_int(
             ai_settings,
             "image_num_inference_steps",
-            int(PLATFORM_DEFAULT_PARAMS.get("image_num_inference_steps", 50)),
+            (tuning.num_inference_steps if tuning and tuning.num_inference_steps is not None else None)
+            or int(PLATFORM_DEFAULT_PARAMS.get("image_num_inference_steps", 50)),
         )
         scheduler = ai_settings.get(
             "image_scheduler",
             str(PLATFORM_DEFAULT_PARAMS.get("image_scheduler", "K_EULER")),
         )
 
-        # Negative prompt per purpose type
-        neg_key = "agent" if is_portrait else "building"
-        negative = ai_settings.get(
-            f"negative_prompt_{neg_key}",
-            str(PLATFORM_DEFAULT_PARAMS.get(f"negative_prompt_{neg_key}", "")),
-        )
+        # Der Negativprompt gehoert zum ZWECK, und „Szene" ist ein eigener.
+        #
+        # Hier standen zwei Faelle, `agent` und `building`, und `is_portrait`
+        # entschied zwischen ihnen. Eine Szene ist weder das eine noch das
+        # andere und fiel deshalb in den Gebaeude-Zweig — dessen Negativprompt
+        # dafuer geschrieben ist, Menschen AUS einem Architekturbild
+        # herauszuhalten („people, humans, characters, faces"). Wir haben also
+        # eine Szene mit drei Figuren bestellt und im selben Aufruf Menschen
+        # und Gesichter verboten.
+        #
+        # Aufgefallen ist es nie, weil die jugendfreie Spur auf flux-2-pro
+        # laeuft und Flux keinen Negativprompt kennt: die Zeichenkette wurde
+        # gebaut und stillschweigend verworfen. Scharf wurde sie erst mit dem
+        # ersten SDXL-Modell.
+        #
+        # (Eine Gegenprobe am lebenden Modell hat gezeigt, dass dieser
+        # Negativprompt die Gruppe NICHT unterdrueckt hat — die eigentliche
+        # Ursache der Einzelportraits war die Referenzstaerke. Falsch ist er
+        # trotzdem: er verbietet, was bestellt ist.)
+        negative = self._negative_prompt_for(purpose, ai_settings, tuning)
 
         return ResolvedImageModel(
             model=sim_model,
@@ -597,6 +733,7 @@ class ModelResolver:
             num_inference_steps=steps,
             scheduler=scheduler,
             negative_prompt=negative,
+            img2img_strength=self._reference_strength(purpose, ai_settings),
             safety_tolerance=await self._safety_tolerance(rating),
             source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
         )
