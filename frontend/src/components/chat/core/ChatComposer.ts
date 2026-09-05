@@ -270,13 +270,27 @@ export class ChatComposer extends LitElement {
     }
 
     .composer__scene--busy svg {
-      opacity: 0.35;
+      /* 0,55 statt 0,35: der Knopf soll waehrend des Malens noch als der
+         Knopf zu erkennen sein, den man gedrueckt hat. */
+      opacity: 0.55;
     }
 
     .composer__scene--busy::after {
-      animation: scene-belichten 1200ms var(--ease-in-out) infinite;
+      animation: scene-belichten 2400ms var(--ease-in-out) infinite;
     }
 
+    /* Ruhiger als der erste Entwurf, und zwar an drei Zahlen.
+     *
+     * Der hatte 8 -> 15 px in 1200 ms und einen Helligkeitssprung von 1 auf
+     * 0,45: die Marken wanderten fast das Doppelte, zweimal in der Sekunde,
+     * und blinkten dabei. Im Augenwinkel neben einem Textfeld, in das man
+     * gerade schreibt, ist das kein Sucher, sondern ein Warnlicht.
+     *
+     * Jetzt 8 -> 11 px in 2400 ms bei 1 -> 0,72. Die Bewegung ist noch da —
+     * sie ist die Aussage, dass gerade belichtet wird — aber sie atmet,
+     * statt zu pochen. Die RUHEDARSTELLUNG ist nicht angefasst: sie war
+     * gerade erst repariert, weil der Knopf ohne Grund und Schatten wie
+     * inaktiv aussah. */
     @keyframes scene-belichten {
       0%,
       100% {
@@ -284,8 +298,8 @@ export class ChatComposer extends LitElement {
         opacity: 1;
       }
       50% {
-        --marker-arm: 15px;
-        opacity: 0.45;
+        --marker-arm: 11px;
+        opacity: 0.72;
       }
     }
 
@@ -543,6 +557,16 @@ export class ChatComposer extends LitElement {
       .composer__mic--live::after {
         animation: none;
         opacity: 0.9;
+      }
+
+      /* Fehlte. Wer weniger Bewegung bestellt hat, bekam die wandernden
+         Passermarken trotzdem — und von allen Bewegungen in dieser Datei war
+         das die auffaelligste. Stehen bleibt die AUSSAGE: die Marken sind auf
+         dem weiten Arm festgestellt, der Rahmen ist also sichtbar offen. */
+      .composer__scene--busy::after {
+        animation: none;
+        --marker-arm: 11px;
+        opacity: 0.85;
       }
 
       .composer__hearing-dot {
