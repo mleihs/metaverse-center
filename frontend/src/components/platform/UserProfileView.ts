@@ -72,10 +72,10 @@ const CORRESPONDENCE_LOCALES = [
  * Die Inhaltsstufe. Zwei Werte, also zwei Chips und keine Auswahlliste —
  * dieselbe Begruendung wie bei der Sprache weiter unten.
  *
- * Die Beschriftungen sagen, was der Betreiber TUT, nicht was er ist: „Was die
- * Welt vorgibt" gegen „Auch was fuer Erwachsene ist". Eine Stufe ist hier ein
- * Wunsch und keine Erlaubnis — der Server rechnet ihn gegen die Anfrage und
- * nimmt das Minimum.
+ * Die Beschriftungen benennen eine Haltung und keine Eigenschaft: die eine
+ * folgt der Vorgabe der Welt, die andere schliesst Erwachseneninhalte ein.
+ * Eine Stufe ist hier ein Wunsch und keine Erlaubnis — der Server rechnet ihn
+ * gegen die Anfrage und nimmt das Minimum.
  */
 const IMAGE_RATINGS = [
   { code: 'general', label: () => msg('As the world intends') },

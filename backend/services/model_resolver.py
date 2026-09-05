@@ -484,11 +484,11 @@ class ModelResolver:
         Drei Quellen, in dieser Reihenfolge:
 
         1. Die Welt. `negative_prompt_{schluessel}` in den Welteinstellungen
-           ist die Entscheidung des Betreibers und geht allem vor.
-        2. Der Autor des Modells. Juggernauts Autor sagt woertlich „start with
-           no negative"; das ist ein LEERER Text und keine fehlende Angabe,
-           deshalb unterscheidet `ModelTuning.negative_prompt` zwischen `""`
-           und `None`.
+           ist die Entscheidung fuer diese Welt und geht allem vor.
+        2. Der Autor des Modells. Juggernauts Modellkarte empfiehlt
+           ausdruecklich, ohne Negativprompt anzufangen: das ist ein LEERER
+           Text und keine fehlende Angabe, deshalb unterscheidet
+           `ModelTuning.negative_prompt` zwischen `""` und `None`.
         3. Die Plattformvorgabe zum Zweck.
 
         Der Zweckschluessel kennt jetzt drei Faelle statt zwei. `scene` ist der
@@ -704,15 +704,15 @@ class ModelResolver:
             str(PLATFORM_DEFAULT_PARAMS.get("image_scheduler", "K_EULER")),
         )
 
-        # Der Negativprompt gehoert zum ZWECK, und „Szene" ist ein eigener.
+        # Der Negativprompt gehoert zum ZWECK, und `scene` ist ein eigener.
         #
         # Hier standen zwei Faelle, `agent` und `building`, und `is_portrait`
         # entschied zwischen ihnen. Eine Szene ist weder das eine noch das
-        # andere und fiel deshalb in den Gebaeude-Zweig — dessen Negativprompt
-        # dafuer geschrieben ist, Menschen AUS einem Architekturbild
-        # herauszuhalten („people, humans, characters, faces"). Wir haben also
-        # eine Szene mit drei Figuren bestellt und im selben Aufruf Menschen
-        # und Gesichter verboten.
+        # andere und fiel deshalb in den Gebaeude-Zweig. Dessen Negativprompt
+        # ist dafuer geschrieben, Figuren aus einem Architekturbild
+        # herauszuhalten, und fuehrt dazu `people`, `humans`, `characters` und
+        # `faces`. Eine Szene mit drei Figuren wurde also bestellt und im
+        # selben Aufruf untersagt.
         #
         # Aufgefallen ist es nie, weil die jugendfreie Spur auf flux-2-pro
         # laeuft und Flux keinen Negativprompt kennt: die Zeichenkette wurde
