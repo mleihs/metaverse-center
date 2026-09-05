@@ -1296,3 +1296,47 @@ threaded through the chat services today". Das ist die Stelle.
 
 Verwandt und schon behoben: `key_source` (Commit `2a0235d6`) — dieselbe
 Familie, andere Spalte.
+
+---
+
+## T17 · 18 Migrationen sind angewandt, aber nicht verbucht — 🟡 GEMESSEN, teilbehoben
+
+**Gemessen 05.09.2026.** Prod hat **null** Migrationen, die nicht im Repo
+stehen — die Richtung stimmt. Umgekehrt fehlen 18 Verbuchungen:
+
+    134 · 185 · 187 · 188 · 189 · 190 · 191 · 192 · 193 · 194 · 195
+    201 · 215 · 274 · 279 · 312 · 314 · 315
+
+Neun weitere fehlten ebenfalls (233, 234, 237, 238, 336, 382, 385, 387, 388);
+die sind nachgetragen, nachdem ich **jede einzeln gegen ihre Wirkung geprüft**
+habe — Funktion vorhanden, Richtlinie gesetzt, Zeile geschrieben.
+
+### Warum das gefährlich ist
+
+`supabase db push` würde diese 18 erneut anwenden. Die meisten sind
+idempotent (`CREATE OR REPLACE`, `ON CONFLICT DO UPDATE`), aber nicht alle —
+ein `CREATE MATERIALIZED VIEW` ohne `IF NOT EXISTS` bricht ab und **blockiert
+den ganzen Push**.
+
+### Was NICHT getan werden darf
+
+Sie ungeprüft eintragen. **Verbuchen heißt „ist gelaufen"** — wer eine
+Migration einträgt, die nie lief, sorgt dafür, dass sie nie mehr läuft. Jede
+der 18 braucht dieselbe Einzelprüfung wie die neun oben: ihre WIRKUNG auf Prod
+nachmessen, nicht ihre Existenz im Repo.
+
+### Zwei Fallen, in die ich dabei getreten bin
+
+**Die Zeitstempel im Repo stimmen nicht mit denen auf Prod überein.** 229 heißt
+im Repo `20260421300000`, auf Prod `20260421093305` — die Dateinamen wurden
+nach dem Push umbenannt. Ein Vergleich über den Zeitstempel meldet deshalb
+Unsinn (45 fehlend statt 18). **Über die NUMMER im Namen vergleichen.**
+
+**Und daran bin ich hängengeblieben:** Mein erster Nachtrag hat 229, 230 und
+231 ein zweites Mal eingetragen, weil ich über den Zeitstempel verglichen
+hatte. `ON CONFLICT (version)` greift dort nicht — die Version war ja neu.
+Wieder entfernt, jede Nummer steht jetzt einmal.
+
+⚠ 038 (×2) und 228 (×4) sind **keine** Doppelungen, sondern verschiedene
+Migrationen mit gleichem Nummernpräfix. Wer hier aufräumt, muss über den
+vollen Namen gehen, nicht über die Nummer.
